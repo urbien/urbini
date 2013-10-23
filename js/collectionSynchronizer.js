@@ -141,7 +141,7 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
       this._success(results, 'success', {
         getResponseHeader: function(p) {
           if (p == 'X-Pagination')
-            return pagination;
+            return JSON.stringify(pagination);
         }
       }); // add to / update collection
     }

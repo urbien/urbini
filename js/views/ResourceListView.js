@@ -438,6 +438,7 @@ define('views/ResourceListView', [
 
         if (liView !== false) {
           this.postRenderItem(liView._html, info);
+          currentPageHtml += liView._html;
           numRendered++;
         }
         
@@ -527,8 +528,8 @@ define('views/ResourceListView', [
     },
     
     getNewSize: function() {
-      this.trigger('invalidateSize');
-      this.pageView.trigger('invalidateSize');
+//      this.trigger('invalidateSize');
+//      this.pageView.trigger('invalidateSize');
     },
 
 //    calcAddRemoveSize: function(n, grow, growingHead) {
@@ -979,7 +980,7 @@ define('views/ResourceListView', [
     postRenderItem: function(el, info) {
       // override me
 //      info.frag.appendChild(el);
-      info.html += el;
+//      info.html += el;
     },
     
     setupSearchAndFilter: function() {

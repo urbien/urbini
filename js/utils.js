@@ -239,6 +239,17 @@ define('utils', [
     },
 
     getTranslationString: function(position) {
+      var x, y, z;
+      if (typeof position == 'object') {
+        x = position.x;
+        y = position.y;
+        z = position.z;
+      }
+      else {
+        x = position;
+        y = arguments[1];
+        z = arguments[2];
+      }
 //      return 'translate({0}px, {1}px)'.format(position.X, position.Y);
       return 'translate({0}px, {1}px) translateZ({2}px)'.format(position.X, position.Y, position.Z || 0);
     },
@@ -280,10 +291,12 @@ define('utils', [
     
     getStylePropertyValue: function(computedStyle, prop) {
       var value,
-          vendorSpecific = G.crossBrowser.css[prop];
+          vendorSpecific = G.crossBrowser.css;
       
       if (vendorSpecific) {
-        value = computedStyle.getPropertyValue(vendorSpecific.cssPrefix + prop);
+        value = computedStyle.getPropertyValue(vendorSpecific.prefix + prop);
+        if (value === undefined)
+          value = computedStyle.getPropertyValue(prop);
       }
       else {
         for (var i = 0; i < vendorPrefixes.length; i++) {
@@ -299,10 +312,10 @@ define('utils', [
     setStylePropertyValues: function(style, propMap) {
       for (var prop in propMap) {
         var value = propMap[prop],
-            vendorSpecific = G.crossBrowser.css[prop];
+            vendorSpecific = G.crossBrowser.css;
         
         if (vendorSpecific) {
-          style[vendorSpecific.cssPrefix + prop] = value;
+          style[vendorSpecific.prefix + prop] = value;
         }
         else {
           for (var i = 0; i < vendorPrefixes.length; i++) {
@@ -885,6 +898,13 @@ define('utils', [
       
       return _.any(U.getPropCloneOf(prop), _['=='].bind(_, iPropName));
     },
+    
+//    getLongUri1: function(uri, vocModel) {
+//      console.log("getLongUri1 in: " + uri);
+//      var out = U._getLongUri1(uri, vocModel);
+//      console.log("getLongUri1 in: " + out);
+//      return out;
+//    },
     
     getLongUri1: function(uri, vocModel) {
       if (!uri) {
@@ -2098,7 +2118,7 @@ define('utils', [
               val += "<a href='" + G.serverName + '/' + G.pageRoot + '#' + uri + "'>" + t + "</a>";
             }
           }
-          else
+          else if (prop.facet != 'emailAddress')
             val = "<span>" + val + "</span>";
         }
         else if (prop.range == 'enum') {
@@ -4212,12 +4232,12 @@ define('utils', [
   },
   {
     // http://.../voc/... with query string or without
-    regex: /^http:\/\/([^\?]+)\??(.*)/,
+    regex: /^(http:\/\/)?(.*)\.com\/voc\/([^\?]+)\??(.*)/,
     onMatch: function(uri, matches, vocModel) {
-      var sqlIdx = matches[1].indexOf(G.sqlUri);
+      var sqlIdx = matches[2].indexOf(G.sqlUri);
       if (sqlIdx === -1) { // sth like http://www.hudsonfog.com/voc/commerce/urbien....
-        if (matches[2]) // has query string
-          return G.sqlUrl + '/' + uri.slice(7);
+        if (matches[4]) // has query string
+          return G.sqlUrl + '/' + (matches[1] ? uri.slice(7) : uri);
         else
           return uri;
       }

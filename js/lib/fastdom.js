@@ -17,7 +17,8 @@ define('lib/fastdom', ['globals'], function(G) {
       FRAME_SIZE = 16,
       FRAME_END = 14,
       modeOrder = ['nonDom', 'read', 'write'],
-      numModes = modeOrder.length;
+      numModes = modeOrder.length,
+      BYPASS = false;
   
   /**
    * Creates a fresh
@@ -37,7 +38,12 @@ define('lib/fastdom', ['globals'], function(G) {
       this.queue[modeOrder[i]] = [];
     }
     
-    this.frame = this.frame.bind(this);
+//    this.frame = this.frame.bind(this);
+    for (var prop in this) {
+      var val = this[prop];
+      if (typeof val == 'function')
+        this[prop] = val.bind(this);
+    }
   }
 
   for (var i = 0; i < modeOrder.length; i++) {
@@ -64,7 +70,7 @@ define('lib/fastdom', ['globals'], function(G) {
             }
           }
         }
-          
+
         var job = this.add(mode, fn, ctx, args, options);
         this.queue[mode].push(job.id);
         this.request(mode);
@@ -143,6 +149,9 @@ define('lib/fastdom', ['globals'], function(G) {
    * @api private
    */
   FastDom.prototype.request = function(type) {
+    if (BYPASS)
+      return;
+    
     var mode = this.mode;
 
     // If there is already a frame
@@ -298,6 +307,11 @@ define('lib/fastdom', ['globals'], function(G) {
    * @api public
    */
   FastDom.prototype.defer = function(frames, type, fn, ctx, args, options) {
+    if (BYPASS) {
+      this[type](fn, ctx, args, options);
+      return;
+    }
+    
     if (frames < 0) return;
     var self = this;
     var job = this.add('defer', this[type].bind(this, fn, ctx, args, options)); // use regular queueing mechanism
@@ -326,7 +340,7 @@ define('lib/fastdom', ['globals'], function(G) {
    */
   FastDom.prototype.add = function(type, fn, ctx, args, options) {
     var id = this.uniqueId();
-    return this.jobs[id] = {
+    var job = this.jobs[id] = {
       id: id,
       type: type,
       fn: fn,
@@ -334,6 +348,11 @@ define('lib/fastdom', ['globals'], function(G) {
       args: args,
       options: options
     };
+    
+    if (BYPASS)
+      this.run(job);
+    
+    return job;
   };
 
   FastDom.prototype.queueLength = function() {
@@ -347,7 +366,7 @@ define('lib/fastdom', ['globals'], function(G) {
   };
   
   FastDom.prototype.whenIdle = function(type, fn, ctx, args, options) {
-    if (this.queueLength() == 0)
+    if (BYPASS || this.queueLength() == 0)
       this[type](fn, ctx, args, options);
     else
       this.defer(5, 'nonDom', this.whenIdle.bind(this, type, fn, ctx, args, options));

@@ -16,7 +16,25 @@ define('views/BasicPageView', [
       doc = document,
       $wnd = $(window);
 
+  function saveViewportSize() {
+    var viewport = G.viewport;
+    if (!viewport)
+      viewport = G.viewport = {};
+    
+    viewport.X = window.innerWidth;
+    viewport.Y = window.innerHeight;
+  }
   
+  saveViewportSize();
+  
+  window.addEventListener('resize', _.debounce(function() {
+    saveViewportSize();
+  }, 20));
+
+  window.addEventListener('orientationchange', function() {
+    saveViewportSize();
+  }); 
+
   function isInsideDraggableElement(element) {
     return !!$(element).parents('[draggable=true]').length;
   };

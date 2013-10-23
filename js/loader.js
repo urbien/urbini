@@ -403,42 +403,33 @@ define('globals', function() {
       commonTypes[type] = defaultVocPath + commonTypes[type];
     }  
 
-    css.transform = (function() {
-      var _vendorCSSPrefix, _vendorStylePropertyPrefix, _vendorTransformLookup;
+//    css.transform = (function() {
+      var prefix, stylePropertyPrefix, transformLookup;
       if (document.createElement('div').style.transform !== undefined) {
-        _vendorCSSPrefix = '';
-        _vendorStylePropertyPrefix = '';
-        _vendorTransformLookup = 'transform';
+        prefix = '';
+        stylePropertyPrefix = '';
+        transformLookup = 'transform';
       } else if (window.opera && Object.prototype.toString.call(window.opera) === '[object Opera]') {
-        _vendorCSSPrefix = '-o-';
-        _vendorStylePropertyPrefix = 'O';
-        _vendorTransformLookup = 'OTransform';
+        prefix = '-o-';
+        stylePropertyPrefix = 'O';
+        transformLookup = 'OTransform';
       } else if (document.documentElement.style.MozTransform !== undefined) {
-        _vendorCSSPrefix = '-moz-';
-        _vendorStylePropertyPrefix = 'Moz';
-        _vendorTransformLookup = 'MozTransform';
+        prefix = '-moz-';
+        stylePropertyPrefix = 'Moz';
+        transformLookup = 'MozTransform';
       } else if (document.documentElement.style.webkitTransform !== undefined) {
-        _vendorCSSPrefix = '-webkit-';
-        _vendorStylePropertyPrefix = 'webkit';
-        _vendorTransformLookup = '-webkit-transform';
+        prefix = '-webkit-';
+        stylePropertyPrefix = 'webkit';
+        transformLookup = '-webkit-transform';
       } else if (typeof navigator.cpuClass === 'string') {
-        _vendorCSSPrefix = '-ms-';
-        _vendorStylePropertyPrefix = 'ms';
-        _vendorTransformLookup = '-ms-transform';
+        prefix = '-ms-';
+        stylePropertyPrefix = 'ms';
+        transformLookup = '-ms-transform';
       }
       
-      return {
-        cssPrefix: _vendorCSSPrefix,
-        stylePropertyPrefix: _vendorStylePropertyPrefix,
-        lookup: _vendorTransformLookup
-      }
-    })();
-    
-    css.transition = {
-      cssPrefix: css.transform.cssPrefix,
-      stylePropertyPrefix: css.transform.stylePropertyPrefix,
-      lookup: css.transform.lookup.replace('transform', 'transition')      
-    };
+      css.prefix = prefix;
+      css.stylePropertyPrefix = stylePropertyPrefix;
+      css.transformLookup = transformLookup;
   };
   
   function adjustForVendor() {

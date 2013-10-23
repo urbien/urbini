@@ -101,22 +101,29 @@ define('collections/ResourceList', [
 //      });
 
       if (!this['final']) {
+        var self = this;
         this.listenTo(Events, 'newResource:' + this.type, function(resource, options) {
           // we are adding this resource to this collection at the moment
-          Q.defer(30, 'nonDom', this.filterAndAddResources.bind(this, [resource], options), this);
-        }.bind(this));
+          setTimeout(function() {            
+            Q.nonDom(self.filterAndAddResources.bind(self, [resource], options), self);
+          }, 1000);
+        });
         
         this.listenTo(Events, 'newResources:' + this.type, function(resources, options) {
           // we are adding this resource to this collection at the moment
-          Q.defer(30, 'nonDom', this.filterAndAddResources.bind(this, resources, options), this);
-        }.bind(this));
+          setTimeout(function() {            
+            Q.nonDom(self.filterAndAddResources.bind(self, resources, options), self);
+          }, 1000);
+        });
         
         this.listenTo(Events, 'newResourceList:' + this.type, function(list) {
-          if (list === this)
+          if (list === self)
             return;
   
-          Q.defer(30, 'nonDom', this.filterAndAddResources.bind(this, list.models), this);
-        }.bind(this));
+          setTimeout(function() {            
+            Q.nonDom(self.filterAndAddResources.bind(self, list.models), self);
+          }, 1000);
+        });
       }
       
       this.monitorQueryChanges();

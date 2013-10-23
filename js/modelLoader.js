@@ -502,7 +502,11 @@ define('modelLoader', [
     
     m.prototype.parse = Resource.prototype.parse;
     m.prototype.validate = Resource.prototype.validate;
-    _.defaults(m.properties, Resource.properties);
+    if (!m.enumeration) {
+      _.defaults(m.properties, Resource.properties);
+      _.extend(m.properties, U.systemProps);
+    }
+    
     m.superClasses = _.map(m.superClasses, function(type) {
       if (/\//.test(type))
         return U.getLongUri1(type);
@@ -510,7 +514,6 @@ define('modelLoader', [
         return G.defaultVocPath + 'system/fog/' + type;
     });
       
-    _.extend(m.properties, U.systemProps);
     m.prototype.initialize = getInit.call(m);
     Q.whenIdle('nonDom', function triggerInitPlugs() {
       Events.trigger('initPlugs', type);
@@ -574,9 +577,7 @@ define('modelLoader', [
 
 
   function getEnumsFromStorage() {
-    Q.whenIdle('nonDom', function() {
-      G.localStorage.get(ENUMERATIONS_KEY);
-    });
+    return G.localStorage.get(ENUMERATIONS_KEY);
   };
 
   function storeEnums(enums) {

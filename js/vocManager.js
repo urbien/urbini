@@ -242,7 +242,7 @@ define('vocManager', [
     });
   });
   
-  Events.on('newResources', Q.defer.bind(Q, 30, 'nonDom', function(resources) {
+  Events.on('newResources', setTimeout.bind(window, function(resources) {
     var actualTypes = {};
     _.each(resources, function(resource) {
       if (resource._changingModel)
@@ -269,7 +269,7 @@ define('vocManager', [
         }
       });
     }
-  }));
+  }, 500));
   
   Events.on('newResourceList', function(list) {
     _.each(['updated', 'added', 'reset'], function(event) {
@@ -281,8 +281,11 @@ define('vocManager', [
   });
 
   Events.on('newResource', function(res) {
-    if (!res.collection)
-      Q.defer(30, 'nonDom', Voc.fetchLinkedAndReferredModels.bind(Voc, ([res])));
+    if (!res.collection) {
+      setTimeout(function() {
+        Q.nonDom(fetchLinkedAndReferredModels.bind(Voc, ([res])));
+      }, 1000);
+    }
   });
 
 //  Events.on('newPlugs', Q.defer.bind(Q, 30, 'nonDom', function() {

@@ -537,7 +537,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
         if (result)
           return result;
         else
-          return $.Deferred().reject().promise();
+          return G.getRejectedPromise();
       });
     });
   };
@@ -594,8 +594,9 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
         args[0] = self.$idb.objectStore(args[0], IDBTransaction.READ_ONLY);
         return backup.apply(query, args).then(function(results) {
           return parse.call(self, results || []).then(function(results) {
-//            Events.trigger('garbage', results);
-            return results;
+            return Q.nextFramePromise().then(function() {
+              return results;
+            });
           });
         });
       });
@@ -647,7 +648,9 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
         promises = [],
         done = false,
         finish = function() {
-          return results;
+          return Q.nextFramePromise().then(function() {
+            return results;
+          });
         },
         overallPromise;
 
@@ -658,16 +661,23 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       function processItem(item) {
         if (done)
           return false; // ends the cursor transaction
+
+        var dfd = $.Deferred(),
+            promise = dfd.promise();
         
-        var parsePromise = parse.call(self, item.value).done(function(val) {
-          if (filter(val)) {
-            results.push(val);
-            if (results.length >= limit)
-              done = true;
-          }
+        Q.nonDom(function() {          
+          parse.call(self, item.value).done(function(val) {
+            if (filter(val)) {
+              results.push(val);
+              if (results.length >= limit)
+                done = true;
+            }
+            
+            dfd.resolve();
+          }).fail(dfd.resolve); // resolve always to make sure we return results
         });
         
-        promises.push(parsePromise);
+        promises.push(promise);
       };
           
       store.each(processItem, from && IDBKeyRange.lowerBound(from, true), direction);

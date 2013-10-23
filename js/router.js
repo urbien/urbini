@@ -13,12 +13,13 @@ define('router', [
   'jqueryMobile',
   'appAuth',
   'redirecter'
+//  ,
 //  'transitions'
 //  , 
 //  'views/ListPage', 
 //  'views/ViewPage'
 //  'views/EditPage' 
-], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth, Redirecter /*, ListPage, ViewPage*/) {
+], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth, Redirecter, Transitioner /*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
   var Modules = {};
   
@@ -1276,13 +1277,35 @@ define('router', [
     },
 
 //    $changePage: function(toPage, options) {
+//      var fromPage = this._previousView,
+//          $toPage;
 //      
+//      if (toPage instanceof $) {
+//        $toPage = toPage;
+//        toPage = toPage[0];
+//      }
+//      else {
+//        $toPage = $(toPage);
+//      }
+//      
+//      if (fromPage == toPage)
+//        return;
+//      
+//      $toPage.addClass('ui-page-active');
+//      if ($toPage.page)
+//        $toPage.page();
+//      
+//      if (fromPage)
+//        $(fromPage).removeClass('ui-page-active');
+//        
+//      this._previousView = toPage;
+//      Transitioner[options && options.reverse ? 'left' : 'right'](fromPage, toPage, 'ease-in-out', 600);
 //    },
-
+    
     $changePage: function(toPage, options) {
       $m.changePage(toPage, options);
     },
-//
+
 //    $changePage: function(toPage, options) {
 //      var path = $m.path,
 //          urlHistory = $m.navigate.history,
@@ -1307,6 +1330,9 @@ define('router', [
 //      if (toPage[0] === $m.firstPage[0] && !settings.dataUrl)
 //        settings.dataUrl = documentUrl.hrefNoHash;
 //      
+//      if (fromPage && fromPage[0] === toPage[0])
+//        return;
+//      
 //      var url = ( settings.dataUrl && path.convertUrlToDataUrl( settings.dataUrl ) ) || toPage.jqmData( "url" ),
 //          // The pageUrl var is usually the same as url, except when url is obscured as a dialog url. pageUrl always contains the file path
 //          pageUrl = url,
@@ -1315,29 +1341,6 @@ define('router', [
 //          activeIsInitialPage = urlHistory.activeIndex === 0,
 //          historyDir = 0,
 //          pageTitle = document.title;
-//
-//
-//      // By default, we prevent changePage requests when the fromPage and toPage
-//      // are the same element, but folks that generate content manually/dynamically
-//      // and reuse pages want to be able to transition to the same page. To allow
-//      // this, they will need to change the default value of allowSamePageTransition
-//      // to true, *OR*, pass it in as an option when they manually call changePage().
-//      // It should be noted that our default transition animations assume that the
-//      // formPage and toPage are different elements, so they may behave unexpectedly.
-//      // It is up to the developer that turns on the allowSamePageTransitiona option
-//      // to either turn off transition animations, or make sure that an appropriate
-//      // animation transition is used.
-//      if ( fromPage && fromPage[0] === toPage[0] && !settings.allowSamePageTransition ) {
-//        isPageTransitioning = false;
-//        mpc.trigger( "pagechange", triggerData );
-//
-//        // Even if there is no page change to be done, we should keep the urlHistory in sync with the hash changes
-//        if ( settings.fromHashChange ) {
-//          urlHistory.direct({ url: url });
-//        }
-//
-//        return;
-//      }
 //
 //      // We need to make sure the page we are given has already been enhanced.
 //      toPage.page();
@@ -1419,17 +1422,17 @@ define('router', [
 //      //clear page loader
 //      $m.hidePageLoadingMsg();          
 //      if (fromPage) {
-//        var direction = settings.reverse ? 'right' : 'left',
-//            transition = $.mobile._maybeDegradeTransition(settings.transition),
-//            reverseClass = settings.reverse ? " reverse" : "",
-//            screenHeight = $.mobile.getScreenHeight(),
-//            maxTransitionOverride = $m.maxTransitionWidth !== false && $m.window.width() > $m.maxTransitionWidth,
-//            none = !$.support.cssTransitions || maxTransitionOverride || !transition || transition === "none" || Math.max( $m.window.scrollTop(), toScroll ) > $m.getMaxScrollForTransition(),
-//            toPreClass = " ui-page-pre-in",
-//            toScroll = $m.urlHistory.getActive().lastScroll || $m.defaultHomeScroll;
+////        var direction = settings.reverse ? 'right' : 'left',
+////            transition = $.mobile._maybeDegradeTransition(settings.transition),
+////            reverseClass = settings.reverse ? " reverse" : "",
+////            screenHeight = $.mobile.getScreenHeight(),
+////            maxTransitionOverride = $m.maxTransitionWidth !== false && $m.window.width() > $m.maxTransitionWidth,
+////            none = !$.support.cssTransitions || maxTransitionOverride || !transition || transition === "none" || Math.max( $m.window.scrollTop(), toScroll ) > $m.getMaxScrollForTransition(),
+////            toPreClass = " ui-page-pre-in",
+////            toScroll = $m.urlHistory.getActive().lastScroll || $m.defaultHomeScroll;
 //            
 //        toPage.css("z-index", -10).addClass($m.activePageClass + toPreClass);
-//        window.transition.css(fromPage[0], toPage[0], direction, 'ease-in-out', 600).done(function() {
+//        Transitioner[settings.reverse ? 'right' : 'left'](fromPage[0], toPage[0], 'ease-in-out', 600).done(function() {
 //
 //          // Send focus to page as it is now display: block
 //          $m.focusPage( toPage );

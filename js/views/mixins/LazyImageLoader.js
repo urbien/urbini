@@ -358,6 +358,9 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
         }
        
         var realSrc = info.realSrc;
+        if (!realSrc)
+          return;
+        
         info.onload = function() {
           U.getImage(realSrc, 'blob').done(function(blob) {
             if (!blob)
