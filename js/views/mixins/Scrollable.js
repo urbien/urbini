@@ -254,6 +254,10 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         return COASTING;
       },
       
+      keyup: function(e) {
+        this._scrollerProps._keyHeld = null;
+      },
+      
       touchstart: function(e) {
         if (lockedBy && lockedBy !== this)
           return;
@@ -399,40 +403,12 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       },
       
       keyup: function(e) {
-        var s = this._scrollerProps,
-            keyCode;
-
-        if (!s._keyHeld)
-          return s.state;
-        
-        keyCode = U.getKeyEventCode(e);
-        if (keyCode == s._keyHeld) {
-          this._updateScrollPosition();
-          this._scrollTo(this._scrollerProps.position);
-          this._resetScroller();
-          return READY;
-        }
-        else {
-          debugger;
-          return s.state;
-        }
-              
-//        switch (keyCode) {
-//        case 33: // page up
-//          this.log('keyEvent page up');
-//          break;
-//        case 34: // page down
-//          this.log('keyEvent page down');
-//          break;
-//        case 38: // up arrow
-//          this.log('keyEvent up arrow');
-//          break;
-//        case 40: // down arrow
-//          this.log('keyEvent down arrow');
-//          break;
-//        }
+        var s = this._scrollerProps;
+        this._updateScrollPosition();
+        this._scrollTo(this._scrollerProps.position);
+        this._resetScroller();
+        return READY;
       },
-
 
       touchstart: function(e) {
         // stop, calc new position, then call ready->touchstart handler and return whatever it returns
@@ -628,22 +604,25 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       if (!this.rendered || !this._scrollerProps || !this._scrollerProps.position || !this.isActive())
         return;
       
-      console.log("RECALCULATING SCROLLER SIZE", e && e.type);
       if (this.getLastPageEvent() !== 'pageshow') {
+        if (this._scrollerSizeRecalcQueued)
+          return;
+        
+        this._scrollerSizeRecalcQueued = true;
         this.pageView.$el.one('pageshow', this._onSizeInvalidated);
         return;
       }
       
-//      var timeout = e ? 0 : 100;
+//      if (e && e.type == 'load' && e.target && e.target.tagName == 'IMG')
+//        return;
+      
+      console.log("RECALCULATING SCROLLER SIZE", e && e.type);
+      this._scrollerSizeRecalcQueued = false;
       this.log('invalidated size');
-//      this._queueScrollTimeout(function() {        
-//        this.log('old size: ' + JSON.stringify(this.getScrollInfo()));
-        this._calculateSizes();
-//        this.log('new size: ' + JSON.stringify(this.getScrollInfo()));
-        if (!this._isInBounds())
-          this._snapScroller(true);
-//      }.bind(this), timeout);
-    }, 50),
+      this._calculateSizes();
+      if (!this._isInBounds())
+        this._snapScroller(true);
+    }, 100),
     
     _calculateSizes: function() {
       var s = this._scrollerProps,
@@ -859,9 +838,14 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     handleEvent: function(e) {
-//      console.log('scroll event: ', e.type);      
+      var s = this._scrollerProps;
+//      console.log('scroll event: ', e.type, 'state', s.state);      
       if (e.type == 'click')
         return this._onClickInScroller(e);
+      else if (e.type == 'keydown' && s._keyHeld)
+        return;
+      else if (e.type == 'keyup' && U.getKeyEventCode(e) !== s._keyHeld)
+        return;
       else if (e.type == 'mouseout') {
         // check if the user swiped offscreen (in which case we can't detect 'mouseup' so we will simulate 'mouseup' NOW)
         
