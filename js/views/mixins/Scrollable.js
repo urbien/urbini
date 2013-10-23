@@ -38,8 +38,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       doc = document,
       $doc = $(doc),
       $wnd = $(window),
-      CSS = U.CSS,
-      _mutationObserver;
+      CSS = U.CSS;
 
   function scrollDimension(el, dimension) {
     return dimension == 'X' ? el.offsetWidth : el.offsetHeight;
