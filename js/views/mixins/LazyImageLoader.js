@@ -4,7 +4,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
       docEl = doc.documentElement,
       LAZY_ATTR = G.lazyImgSrcAttr,
       DUMMY_IMG = G.blankImgDataUrl,
-      WIN_HEIGHT,
+//      WIN_HEIGHT,
       // Vertical offset in px. Used for preloading images while scrolling
       IMG_OFFSET = 200;
 
@@ -28,7 +28,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
   function cleanImage(img) {
     img.onload = null;
     img.removeAttribute('onload');
-    // on IE < 8 we get an onerror event instead of an onload event
+    // in IE < 8 we get an onerror event instead of an onload event
     img.onerror = null;
     img.removeAttribute('onerror');
     img.removeAttribute(LAZY_ATTR);
@@ -46,12 +46,12 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     }
   };
 
-  function saveViewport() {
-    WIN_HEIGHT = G.viewportHeight = viewport();
-  };
-  
-  saveViewport();
-  $wnd.on('resize', _.throttle(saveViewport, 20));
+//  function saveViewport() {
+//    WIN_HEIGHT = G.viewportHeight = viewport();
+//  };
+//  
+//  saveViewport();
+//  $wnd.on('resize', _.throttle(saveViewport, 20));
 
   function getDummyImages($el) {
     return $el.find('img[src="{0}"]'.format(DUMMY_IMG)).toArray();
@@ -68,7 +68,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
   function overrideGetattribute() {
     var original = HTMLImageElement.prototype.getAttribute;
     HTMLImageElement.prototype.getAttribute = function(name) {
-      if(name === 'src') {
+      if (name === 'src') {
         var realSrc = original.call(this, LAZY_ATTR);
         return realSrc || original.call(this, name);
       } else {
@@ -210,6 +210,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
       Q.read(function() {
         var imgInfos = _.map(imgs, getImageInfo),
             toFetch = [],
+            toFetchInfos = [],
             delayed = [];
         
         Q.nonDom(function() {
@@ -230,6 +231,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
               // To avoid onload loop calls
               // removeAttribute on IE is not enough to prevent the event to fire
               toFetch.push(img);
+              toFetchInfos.push(info);
             }
             else if (info.inDoc) {
               // wait till it's scrolled into the viewport
@@ -243,7 +245,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
           }
           
           if (toFetch.length)
-            this._fetchImages(toFetch);
+            this._fetchImages(toFetch, toFetchInfos);
           
           this._loadQueue.length = 0;
         }, this);
@@ -262,15 +264,24 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
         cleanImage(img);
         if (info.onload)
           img.onload = info.onload;
-        if (info.onerror)
-          img.onerror = info.onerror;
         if (_.has(info, 'width'))
           img.style.width = info.width;
         if (_.has(info, 'height'))
           img.style.height = info.height;
+        if (info.onerror)
+          img.onerror = info.onerror;
         if (info.data) {
-          var src = img.src = URL.createObjectURL(info.data); // blob or file
-          URL.revokeObjectURL(src);
+          var src = URL.createObjectURL(info.data); // blob or file
+          var onload = info.onload;
+          img.onload = function() {
+            try {
+              return onload && onload.apply(this, arguments);
+            } finally {
+              URL.revokeObjectURL(src);
+            }
+          };
+          
+          img.src = src;
           if (info.realSrc)
             img.setAttribute(LAZY_ATTR, info.realSrc);
         }
@@ -281,11 +292,11 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
       });
     },
     
-    _fetchImages: function(imgs) {
+    _fetchImages: function(imgs, infos) {
       // do all DOM reads first, then writes
       imgs = imgs.slice();
       Q.read(function() {
-        var infos = _.map(imgs, getImageInfo);
+        infos = infos || _.map(imgs, getImageInfo);
         for (var i = 0, num = imgs.length; i < num; i++) {
           var img = imgs[i],
               info = infos[i];

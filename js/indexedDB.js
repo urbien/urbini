@@ -1,19 +1,4 @@
-define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQueue', 'cache', 'lib/fastdom'], function(G, _, U, idbq, TaskQueue, C, Q) {
-  
-
-// IndexedDB desired interface
-
-//var IDB = new IDB(name).createObjectStores(stores).deleteObjectStores(stores).open();
-//
-//IDB.createObjectStores(toMake).deleteObjectStores(toKill).start();
-//
-//IDB.restart();
-//IDB.clean();
-//IDB.wipe();
-//IDB.get(storeName, uri);
-//IDB.get(storeName, query);
-//IDB.put(storeName, uris);
-
+define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQueue', 'cache', 'lib/fastdom'], function(G, _, U, idbq, TaskQueue, C, Q) {  
   var instance,
       FileSystem,
       fileSystemPromise,
@@ -168,7 +153,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     return getFileSystem(items).then(function() {
       return $.when.apply($, _.map(items, _prep.bind(self)));
     }).then(function() {
-      return [].slice.call(arguments);
+      return _.toArray(arguments);
     });
   };
   

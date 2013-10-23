@@ -71,7 +71,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
   }
   
   function calcAnimationTime(distance) {
-    return parseInt(Math.sqrt(Math.abs(distance)) * 50, 10);
+    return (Math.sqrt(Math.abs(distance)) * 50) | 0;
   }
   
   function calcDistance(pos1, pos2) {
@@ -191,7 +191,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         if (s._keyHeld)
           return;
         
-        var keyCode = s._keyHeld = U.getKeyEventCode(e),
+        var keyCode = U.getKeyEventCode(e),
             axis = this._getScrollAxis(),
             pos = s.position,
             newPos = _.clone(pos),
@@ -202,7 +202,9 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
             time,
             distance;
 
-        this._resetScroller();        
+        this._resetScroller();
+        s._keyHeld = keyCode;
+        
         switch (keyCode) {
         case 33: // page up
           distance = window.innerHeight;
@@ -235,7 +237,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         if (_.isEqual(newPos, pos))
           return READY;
               
-        time = time || this._calcAnimationTime(pos, newPos);
+        time = time ? Math.abs(time) : this._calcAnimationTime(pos, newPos);
         if (jump)
           time = Math.min(time, maxJumpTime);
         
@@ -405,6 +407,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         
         keyCode = U.getKeyEventCode(e);
         if (keyCode == s._keyHeld) {
+          this._updateScrollPosition();
+          this._scrollTo(this._scrollerProps.position);
           this._resetScroller();
           return READY;
         }
@@ -625,10 +629,10 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         return;
       
       console.log("RECALCULATING SCROLLER SIZE", e && e.type);
-//      if (this.getLastPageEvent() !== 'pageshow') {
-//        this.pageView.$el.one('pageshow', this._onSizeInvalidated);
-//        return;
-//      }
+      if (this.getLastPageEvent() !== 'pageshow') {
+        this.pageView.$el.one('pageshow', this._onSizeInvalidated);
+        return;
+      }
       
 //      var timeout = e ? 0 : 100;
       this.log('invalidated size');
@@ -644,9 +648,6 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     _calculateSizes: function() {
       var s = this._scrollerProps,
           frame = s.frame,
-//          scrollWidth = this.el.offsetWidth,
-//          scrollHeight = this.el.offsetHeight,
-//          visibleBounds = U.getVisibleBounds(this.el),
           scrollWidth = this.el.scrollWidth,
           scrollHeight = this.el.offsetHeight,
           containerWidth = frame.offsetWidth,
@@ -660,13 +661,6 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       
       if (!scrollDim || !containerDim)
         return false;
-
-//      if (hadPosition) {
-//        debugger;
-//      }
-//      
-//      if (s.metrics && s.metrics.content.height - scrollHeight > 200) // height suddenly decreased?
-//        debugger;
       
       _.extend(s, {        
         metrics: {
@@ -766,61 +760,6 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       }
     },    
 
-//    _listenToTouchEvents: function() {
-//      this._stopListeningToTouchEvents.apply(this, arguments);
-//      var types = arguments,
-//          s = this._scrollerProps,
-//          listeners = s.touchListeners;
-//      
-//      if (typeof types == 'string')
-//        types = [types];
-//
-//      if (!listeners) {
-//        listeners = s.touchListeners = {
-//          keydown: false,
-//          keyup: false,
-//          click: false,
-//          touchstart: false,
-//          touchmove: false,
-//          touchend: false
-//        };
-//      }
-//      
-//      for (var i = 0; i < types.length; i++) {
-//        var type = types[i];
-//        type = TOUCH_EVENTS[type] || type;
-//        if (!listeners[type]) {
-//          listeners[type] = true;
-//          var listener = type == 'click' ? this.el : doc;
-//          listener.addEventListener(type, this, true);
-//        }
-//      }
-//    },
-//
-//    _stopListeningToTouchEvents: function() {
-//      var types = arguments,
-//          listeners = this._scrollerProps.touchListeners;
-//      
-//      if (!listeners)
-//        return;
-//      
-//      if (!types.length)
-//        types = _.keys(listeners);
-//      
-//      if (typeof types == 'string')
-//        types = [types];
-//      
-//      for (var i = 0; i < types.length; i++) {
-//        var type = types[i];
-//        type = TOUCH_EVENTS[type] || type;
-//        if (listeners[type]) {
-//          listeners[type] = false;
-//          var listener = type == 'click' ? this.el : doc;
-//          listener.removeEventListener(type, this, true);
-//        }
-//      }
-//    },
-
     _queueScrollTimeout: function(fn, time) {
       this._scrollerProps.timeouts.push(setTimeout(fn, time));
     },
@@ -842,19 +781,14 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       var s = this._scrollerProps;
       this._clearScrollTimeouts();
       this._clearTouchHistory();
-      s._keyHeld = null;
-
-      Q.write(this._clearScrollerTransitionStyle, this, undefined, {
-        throttle: true,
-        last: true
-      });
+      if (s._keyHeld || s.preventClick) {
+        Q.write(this._clearScrollerTransitionStyle, this, undefined, {
+          throttle: true,
+          last: true
+        });
+      }
       
-//      doc.removeEventListener('keydown', this, true);
-//      doc.removeEventListener('keyup', this, true);
-//      doc.removeEventListener(TOUCH_EVENTS.touchmove, this, true);
-//      doc.removeEventListener(TOUCH_EVENTS.touchend, this, true);
-//      doc.removeEventListener(TOUCH_EVENTS.touchstart, this, true);
-//      this._stopListeningToTouchEvents();
+      s._keyHeld = null;
     },
     
     _clearTouchHistory: function() {

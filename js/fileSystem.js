@@ -1,4 +1,4 @@
-define('fileSystem', ['globals'], function(G) {
+define('fileSystem', ['globals', 'utils'], function(G, U) {
   window.requestFileSystem = window.requestFileSystem || window.webkitRequestFileSystem;
   if (!window.requestFileSystem)
     return null;
@@ -35,35 +35,11 @@ define('fileSystem', ['globals'], function(G) {
     defer.reject(e);
   };
   
-  function dataURLToBlob(dataURL, contentType) {
-    var BASE64_MARKER = ';base64,';
-    if (dataURL.indexOf(BASE64_MARKER) == -1) {
-      var parts = dataURL.split(',');
-      var contentType = parts[0].split(':')[1];
-      var raw = parts[1];
-
-      return new Blob([raw], {type: contentType});
-    }
-
-    var parts = dataURL.split(BASE64_MARKER);
-    contentType = contentType || parts[0].split(':')[1];
-    var raw = window.atob(parts[1]);
-    var rawLength = raw.length;
-
-    var uInt8Array = new Uint8Array(rawLength);
-
-    for (var i = 0; i < rawLength; ++i) {
-      uInt8Array[i] = raw.charCodeAt(i);
-    }
-
-    return new Blob([uInt8Array], {type: contentType});
-  };
-
   function readAsBlob(file, contentType) {
     this.readAsDataURL(file);
     var onload = this.onload;
     this.onload = function(event) {
-      event.target.result = dataURLToBlob(event.target.result, contentType);
+      event.target.result = U.dataURLToBlob(event.target.result, contentType);
       onload(event);
     };
   };
@@ -107,7 +83,7 @@ define('fileSystem', ['globals'], function(G) {
         reader[method](file);
         reader.onload = function(e) {
           var res = e.target.result;
-          defer.resolve(blobby ? dataURLToBlob(res, contentType) : res);
+          defer.resolve(blobby ? U.dataURLToBlob(res, contentType) : res);
         };
       }, getErrorFunc('fileEntry error', defer));
     }).promise();
