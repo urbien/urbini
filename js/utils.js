@@ -253,7 +253,7 @@ define('utils', [
         z = arguments[2];
       }
 //      return 'translate({0}px, {1}px)'.format(position.X, position.Y);
-      return 'translate({0}px, {1}px) translateZ({2}px)'.format(position.X, position.Y, position.Z || 0);
+      return 'translate({0}px, {1}px) translateZ({2}px)'.format(x || 0, y || 0, z || 0);
     },
     
     /**
@@ -4095,14 +4095,17 @@ define('utils', [
       return [];
     },
 
-    recycle: function(obj) {
-      if (_.isArray(obj)) {
-        obj.length = 0;
-        RECYCLED_ARRAYS.push(obj);
-      }
-      else if (_.isObject(obj)) {
-        _.wipe(obj);
-        RECYCLED_OBJECTS.push(obj);
+    recycle: function() {
+      for (var i = 0, len = arguments.length; i < len; i++) {
+        var obj = arguments[i];
+        if (_.isArray(obj)) {
+          obj.length = 0;
+          RECYCLED_ARRAYS.push(obj);
+        }
+        else if (_.isObject(obj)) {
+          _.wipe(obj);
+          RECYCLED_OBJECTS.push(obj);
+        }
       }
     },
     

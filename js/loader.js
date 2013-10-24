@@ -157,12 +157,18 @@ define('globals', function() {
   };
 
   function isModuleNeeded(name) {
-    if (name === 'lib/IndexedDBShim' && G.dbType !== 'shim')
-      return false;
-    if (name === 'lib/whammy' && browser.firefox)
-      return false;
-      
-    return true;
+    switch (name) {
+    case 'lib/IndexedDBShim':
+      return G.dbType == 'shim';
+    case 'lib/whammy':
+      return browser.chrome;
+    case 'chrome':
+      return G.inWebview;
+    case 'firefox':
+      return G.hasFFApps;
+    default:
+      return true;
+    }
   };
   
   function addModule(text) {
@@ -198,19 +204,6 @@ define('globals', function() {
     }
   };
 
-  function needModule(name) {
-    switch (name) {
-    case 'chrome':
-      return G.inWebview;
-    case 'firefox':
-      return G.hasFFApps;
-//    case 'views/mixin/Scrollable1':
-//      return G.browser.mobile;
-    default:
-      return true;
-    }
-  };
-  
   // maybe we don't even need deferreds here, but if sth here ever becomes async with onload callbacks...
   function loadModule (name, url, text) {
     return $.Deferred(function(defer) {        
@@ -1020,7 +1013,7 @@ define('globals', function() {
           var bt = bundle[type];
           for (var i = bt.length - 1; i >= 0; i--) {
             var info = bt[i];
-            if (!needModule(info.name))
+            if (!isModuleNeeded(info.name))
               bt.splice(i, 1);
               
             G.files[info.name] = info;

@@ -439,7 +439,7 @@ define('views/ResourceListView', [
           stop = false,
           dfd = $.Deferred(),
           promise = dfd.promise(),
-          $dummy = this.dummies[info.atTheHead ? 'head' : 'tail'], 
+          $dummy = this.dummies[atTheHead ? 'head' : 'tail'], 
           dummyDim, pages, slidingWindowBefore, slidingWindowAfter, postRenderResult, currentPageHtml, finish;
       
       finish = Q.nonDom.bind(Q, dfd.resolve);
@@ -472,7 +472,7 @@ define('views/ResourceListView', [
         }
       }
       
-      for (var i = 0, resNum = 0; i < n; i++) {
+      for (var i = 0, resNum = colRange.from; i < n; i++) {
         for (var j = 0, numEls = this._elementsPerPage; j < numEls; ++j && ++resNum) {
           if (resNum + 1 == colRange.to)
             stop = true;

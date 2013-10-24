@@ -65,18 +65,24 @@ define('underscoreMixins', ['_underscore'], function(_) {
   };
   
   _.extend(Array, {
-//    split: function(array, idx) {
-//      return [array.slice(0, idx), array.slice(idx)];
-//    },
     remove: function(array /* items */) {
-      var items = concat.apply(ArrayProto, slice.call(arguments, 1));
-      
-      for (var i in items) {
-        var item = items[i],
-            idx = indexOf.call(array, item);
-        
-        if (idx != -1)
-          array.splice(idx, 1);
+      for (var i = 1, len = arguments.length; i < len; i++) {
+        var arg = arguments[i];
+        if (_.isArray(arg)) {
+          for (var j = 0, argLen = arg.length; j < argLen; j++) {
+            Array.remove(array, arg[j]);
+          }
+        }
+        else {
+          var idx = indexOf.call(array, arg);
+          if (~idx) {
+            for (var j = idx, arrLen = array.length - 1; j < arrLen; j++) {
+              array[j] = array[j + 1];
+            }
+            
+            array.length = arrLen;
+          }
+        }
       }
       
       return array;

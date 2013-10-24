@@ -197,23 +197,24 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
       if (!this._delayedImages.length)
         return;
       
-      var counts = U.clone(this._delayedImagesCounts),
+      var self = this,
+          counts = U.clone(this._delayedImagesCounts),
           delayedImages = U.clone(this._delayedImages),
           newCounts;
       
       this._delayedImages.length = 0;
       this._loadImages(delayedImages).always(function() {
         U.recycle(delayedImages);
-        newCounts = this._delayedImagesCounts;
+        newCounts = self._delayedImagesCounts;
         for (var i = counts.length - 1; i >= 0; i--) {
           if (counts[i] == newCounts[i]) {
-            this._delayedImages.splice(i, 1);
-            this._delayedImagesCounts.splice(i, 1); 
+            self._delayedImages.splice(i, 1);
+            self._delayedImagesCounts.splice(i, 1); 
           }
         }
         
-        if (this._delayedImages.length)
-          this._loadDelayedImages();
+        if (self._delayedImages.length)
+          self._loadDelayedImages();
       });
     }, 100),
     

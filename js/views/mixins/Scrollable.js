@@ -1,69 +1,23 @@
-define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', 'lib/fastdom'], function(G, _, U, Events, Q) {
-
-  var FORCE_TOUCH = false,
-      SCROLL_DISTANCE_THRESH = 10,
-      SCROLL_TIME_THRESH = 1000,
-      lockedBy, // view
-      nonTouchEvents = ['mousedown', 'mouseup', 'mousemove', 'keydown', 'keyup'],
-      touchEvents = ['touchstart', 'touchend', 'touchmove'],
-      AXES = ['X', 'Y'],
-      IS_TOUCH = FORCE_TOUCH || G.browser.touch,
-      TOUCH_EVENTS = IS_TOUCH ? {
-        touchstart: 'touchstart',
-        touchend: 'touchend',
-        touchmove: 'touchmove',
-        touchcancel: 'touchcancel'
-      } : {
-        touchstart: 'mousedown',
-        touchend: 'mouseup',
-        touchmove: 'mousemove'
-//          ,
-//        touchcancel: 'touchcancel'
-      },
+define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', 'lib/fastdom', 'lib/hammer'], function(G, _, U, Events, Q, Hammer) {
+  var AXES = ['X', 'Y'],
       beziers = {
         fling: 'cubic-bezier(0.103, 0.389, 0.307, 0.966)', // cubic-bezier(0.33, 0.66, 0.66, 1)
         bounceDeceleration: 'cubic-bezier(0, 0.5, 0.5, 1)',
         bounce: 'cubic-bezier(0.7, 0, 0.9, 0.6)',
         easeIn: 'cubic-bezier(0.420, 0.000, 1.000, 1.000)'
-      },
-      
-      // SCROLLER STATES
-      UNINITIALIZED = 'uninitialized',
-      INACTIVE = 'inactive',
-      READY = 'ready',
-      DRAGGING = 'dragging',
-      COASTING = 'coasting',
-      SNAPPING = 'snapping',
-      // END SCROLLER STATES
+      },      
       doc = document,
-      $doc = $(doc),
-      $wnd = $(window),
       CSS = U.CSS;
 
-  function scrollDimension(el, dimension) {
-    return dimension == 'X' ? el.offsetWidth : el.offsetHeight;
-  };
-      
-//  document.body.addEventListener('mousemove', function() {
-//    debugger;
-//    e.preventDefault();
-//  }, false)
-
-  doc.body.addEventListener('touchmove', function(e) {
-    // This prevents native scrolling from happening.
-    e.preventDefault();
-  }, false);
-
+  function getDirectionMultiplier(direction) {
+    return direction == 'up' || direction == 'left' ? -1 : 1; 
+  }
+  
   function scrollPosToOffset(pos) {
     return {
       scrollLeft: -pos.X,
       scrollTop: -pos.Y
     }
-  }
-  
-  function isScrollableContainer(el) {
-    var style = window.getComputedStyle(el);
-    return style.overflow == 'hidden' && style.position == 'absolute';
   }
   
   function oppositeDir(dir) {
@@ -79,38 +33,6 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         y = pos1.Y - pos2.Y;
     
     return Math.sqrt(x * x + y * y);
-  }
-  
-  function normalizePosition(pos) {
-    pos.X = parseInt(pos.X);
-    pos.Y = parseInt(pos.Y);
-    return pos;
-  }
-
-  function toTouchEvent(mouseEvent) {
-    var touches = [{
-      clientX: mouseEvent.clientX,
-      clientY: mouseEvent.clientY
-    }];
-    
-    return {
-      target: mouseEvent.target,
-      currentTarget: mouseEvent.target,
-      targetTouches: touches,
-      changedTouches: touches,
-      timeStamp: mouseEvent.timeStamp,
-      preventDefault: mouseEvent.preventDefault.bind(mouseEvent),
-      stopPropagation: mouseEvent.stopPropagation.bind(mouseEvent)
-    }
-  }
-  
-  function getGesture(touch1, touch2) {
-    return {
-      X: touch2.X - touch1.X,
-      Y: touch2.Y - touch1.Y,
-      distance: calcDistance(touch1, touch2),
-      time: touch2.timeStamp - touch1.timeStamp
-    }
   }
   
   function isInBounds(point, bounds, includeBorder) {
@@ -145,351 +67,23 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     return limited;
   }
   
-  // START Sroller Finite State Machine. Each scroller state expects only certain events, and has functions to handle those events, and then return the new scroller state
-  var TRANSITION_MAP = {
-    uninitialized: {
-      // Events to expect in 'uninitialized' state
-      init: function(e) {
-        if (this._scrollerProps.metrics || this._calculateSizes() !== false) {
-//          this.el.addEventListener('click', this.);
-//          doc.addEventListener('keydown', this, true);
-//          doc.addEventListener(TOUCH_EVENTS.touchstart, this, true);
-          this._scrollTo(this._scrollerProps.position);
-          return this._transitionScrollerState(INACTIVE, 'wake');
-        }
-        else {
-          this._queueScrollTimeout(function() {
-            this._transitionScrollerState(UNINITIALIZED, 'init');
-          }.bind(this), 100);
-          
-          return UNINITIALIZED;
-        }
-      }
-    },
-    
-    inactive: {
-      wake: function() {
-//        this._listenToTouchEvents('touchstart', 'keydown', 'click');
-        this._toggleScrollEventHandlers(true);
-        return READY;
-      }
-    },
-    
-    ready: {
-      // Events to expect in READY state
-      mousedown: function(e) {
-        switch (e.button) {
-        case 0:
-          return this._transitionScrollerState(READY, 'touchstart', toTouchEvent(e));
-        default:
-          return READY;
-        }
-      },
-      
-      keydown: function(e) {
-        var s = this._scrollerProps;
-        if (s._keyHeld)
-          return;
-        
-        var keyCode = U.getKeyEventCode(e),
-            axis = this._getScrollAxis(),
-            pos = s.position,
-            newPos = _.clone(pos),
-            bounds = s.scrollBounds[axis],
-            maxJumpTime = 300,
-            jump = keyCode >= 33 && keyCode <=36,
-            ease,
-            time,
-            distance;
-
-        this._resetScroller();
-        s._keyHeld = keyCode;
-        
-        switch (keyCode) {
-        case 33: // page up
-          distance = window.innerHeight;
-          break;
-        case 34: // page down
-          distance = -window.innerHeight;
-          break;
-        case 36: // home
-          distance = bounds.max - pos[axis];
-          break;
-        case 38: // up arrow
-          distance = bounds.max - pos[axis];
-          time = distance * 3;
-          ease = beziers.easeIn;
-          break;
-        case 40: // down arrow
-          distance = bounds.min - pos[axis];
-          time = distance * 3; //calcAnimationTime(distance);
-          ease = beziers.easeIn;
-          break;
-        case 35: // end
-          distance = bounds.min - pos[axis];
-          break;
-        default:
-          return s.state;
-        }        
-        
-        newPos[axis] += distance;
-        newPos = this._limitToBounds(normalizePosition(newPos));
-        if (_.isEqual(newPos, pos))
-          return READY;
-              
-        time = time ? Math.abs(time) : this._calcAnimationTime(pos, newPos);
-        if (jump)
-          time = Math.min(time, maxJumpTime);
-        
-        this._scrollTo(newPos, time, ease);
-        this._scheduleScrollerStateTransition(COASTING, 'coastcomplete', {
-          time: time,
-          to: newPos
-        }, time);
-        
-//        this._stopListeningToTouchEvents('keyup');
-//        this._listenToTouchEvents('keyup');
-//        doc.removeEventListener('keyup', this, true); // just in case we left one hanging
-//        doc.addEventListener('keyup', this, true);
-        return COASTING;
-      },
-      
-      keyup: function(e) {
-        this._scrollerProps._keyHeld = null;
-      },
-      
-      touchstart: function(e) {
-        if (lockedBy && lockedBy !== this)
-          return;
-        
-        if (!this.isInnermostScroller(e))
-          return;
-        
-        lockedBy = this;
-//        lockedBy = this.cid;
-        // grab, subscribe to touchmove
-        e.preventDefault();
-        this._clearScrollTimeouts();
-        this._clearTouchHistory();
-//        this._stopListeningToTouchEvents('touchend');
-//        this._listenToTouchEvents('touchend', 'touchmove');
-//        doc.removeEventListener(TOUCH_EVENTS.touchstart, this, true);
-//        doc.removeEventListener(TOUCH_EVENTS.touchmove, this, true); // just in case
-//        doc.removeEventListener(TOUCH_EVENTS.touchend, this, true); // just in case
-//        doc.addEventListener(TOUCH_EVENTS.touchmove, this, true);
-//        doc.addEventListener(TOUCH_EVENTS.touchend, this, true);
-        this._updateTouchHistory(e, e.targetTouches[0]);
-        return DRAGGING;
-      },
-      
-      sleep: function(e) {
-        this._cleanupScroller();
-        this._toggleScrollEventHandlers(false);
-        return INACTIVE;
-      }
-    },
-    dragging: {
-      // Events to expect in DRAGGING state
-      mousemove: function(e) {
-        return this._transitionScrollerState(DRAGGING, 'touchmove', toTouchEvent(e));
-      },
-      touchmove: function(e) {
-        if (lockedBy && lockedBy !== this)
-          return;
-        
-        // scroll to new position
-        e.preventDefault();
-        var s = this._scrollerProps, 
-            history = s.touchHistory,
-            historyLength = history.length,
-            lastTimeStamp, 
-            scrollX,
-            gesture,
-            position,
-            targetPosition;
-        
-        if (!historyLength || !e.targetTouches.length) { // || !this._isDragging())
-//          debugger; // should never happen
-          return READY;
-        }
-        
-  //      this.log('touchmove at: ' + e.targetTouches[0].clientY);
-        lastTimeStamp = s._lastTouchMoveTime || Date.now();
-        s._lastTouchMoveTime = Date.now();
-        if (!historyLength)
-          this._triggerScrollEvent('scrollstart');
-          
-        this._updateTouchHistory(e, e.targetTouches[0]);
-        scrollX = this._getScrollAxis() == 'X';
-        gesture = s.lastGesture;
-        position = s.position;
-        
-        targetPosition = normalizePosition({ 
-          X: scrollX ? s.position.X + gesture.X : s.position.X, 
-          Y: !scrollX ? s.position.Y + gesture.Y : s.position.Y 
-        });
-  
-        this._scrollTo(targetPosition); // immediate, duration 0
-        return DRAGGING;
-      },
-
-      mouseup: function(e) {
-        return this._transitionScrollerState(DRAGGING, 'touchend', toTouchEvent(e));
-      },
-
-      touchend: function(e) {
-        if (lockedBy && lockedBy !== this)
-          return;
-        
-        lockedBy = null;
-        // if fling
-        if (!e.changedTouches.length) {
-          debugger; // should never happen
-          return READY;
-        }
-        
-        e.preventDefault();
-        var isInBounds = this._isInBounds(),
-            s = this._scrollerProps;
-        
-        if (!isInBounds 
-            || s.distanceTraveled > SCROLL_DISTANCE_THRESH 
-            || (s.distanceTraveled > (SCROLL_DISTANCE_THRESH / 2) && s.timeTraveled > SCROLL_TIME_THRESH)) {          
-          s.preventClick = true;
-          e.preventDefault();
-          e.stopPropagation();
-//          this.log('trying to prevent click event');
-        }
-        else {
-          s.preventClick = false;
-          // this was a click, not a swipe/scroll
-//          this.log('this was a click, not a scroll, only traveled: ' + s.distanceTraveled + 'px');
-          var touch = _.last(s.touchHistory);
-//          $(document.elementFromPoint(touch.X, touch.Y)).click();
-          this._resetScroller();
-          if (IS_TOUCH) {
-            var clickOn = e.target;
-            if (clickOn.nodeType != 1)
-              clickOn = clickOn.parentNode;
-            
-            setTimeout(function() {
-              $(clickOn).click();
-            });
-          }
-          
-          return READY;
-        }
-
-        if (this._flingScrollerIfNeeded()) {
-          // fling scroll, schedule state change to bounce/snap/ready
-          return COASTING;
-        }
-        else {
-          // update position and reset scroll, unsubscribe from touchmove/touchend
-          if (this._snapScrollerIfNeeded())
-            return SNAPPING;
-          
-//          this._updateScrollPosition(); // parse it from CSS transform
-          this._resetScroller();
-          return READY;
-        }
-      },
-      
-      sleep: function(e) {
-        return this._transitionScrollerState(READY, 'sleep', e);
-      }
-    },
-    coasting: {
-      // Events to expect in COASTING state
-      mousedown: function(e) {
-        return this._transitionScrollerState(COASTING, 'touchstart', toTouchEvent(e));
-      },
-
-      keydown: function(e) {
-        return this._transitionScrollerState(READY, 'keydown', e);
-      },
-      
-      keyup: function(e) {
-        var s = this._scrollerProps;
-        this._updateScrollPosition();
-        this._scrollTo(this._scrollerProps.position);
-        this._resetScroller();
-        return READY;
-      },
-
-      touchstart: function(e) {
-        // stop, calc new position, then call ready->touchstart handler and return whatever it returns
-        this._clearScrollTimeouts();
-        this._clearTouchHistory();
-        this._updateScrollPosition(); // parse it from CSS transform
-        var pos = this._getScrollPosition();
-        this._scrollTo(pos);
-        return this._transitionScrollerState(READY, 'touchstart', e);
-      },
-      
-      coastcomplete: function(flingInfo) {
-        this._updateScrollPosition(flingInfo.to);
-        if (this._snapScrollerIfNeeded())
-          return SNAPPING;
-        
-        this._resetScroller();
-        return READY;
-      },
-      
-      sleep: function(e) {
-        return this._transitionScrollerState(READY, 'sleep', e);
-      }
-    },
-    snapping: {
-      // Events to expect in 'snapping' state
-      mousedown: function(e) {
-        return this._transitionScrollerState(SNAPPING, 'touchstart', toTouchEvent(e));
-      },
-      
-      touchstart: function(e) {
-//        var touch = e.targetTouches[0];
-//        if (!isInBounds(U.cloneTouch(touch), this._scrollerProps.scrollBounds))
-//          return SNAPPING; // keep on snapping if the user clicks out of bounds (nothing to click/drag there)
-//        else {
-          // same as when you get a touchstart during coasting
-          return this._transitionScrollerState(COASTING, 'touchstart', e);
-//        }
-      },
-      snapcomplete: function(e) {
-        return this._transitionScrollerState(COASTING, 'coastcomplete', e);
-      },
-      
-      sleep: function(e) {
-        return this._transitionScrollerState(READY, 'sleep', e);
-      }
-    }
-  }
-  
-  // END Sroller Finite State Machine. Each scroller state expects only certain events, and has functions to handle those events, and then return the new scroller state
-
-  
   var initScrollerProps = {
-    state: UNINITIALIZED,
     axis: 'Y',
-    touchHistory: [],
     SCROLL_EVENT_TIME_PERIOD: 200,
     SCROLL_EVENT_DISTANCE_PERIOD: 200,
     MAX_COAST_TIME: 1500,
     MAX_VELOCITY: 5,
-//    MIN_START_VELOCITY_: 0.25,
     MAX_OUT_OF_BOUNDS: 50,
-    BOUNCE_OUT_TIME: 400,
-    BOUNCE_BACK_TIME: 400,
     acceleration: 0.005,
     momentum: true,
-    timeTraveled: 0,
-    distanceTraveled: 0,
     timeouts: []
   };
   
   var Scrollable = Backbone.Mixin.extend({
     initialize: function(options) {
-      _.bindAll(this, '_initScroller', '_resetScroller', '_snapScroller', '_flingScroller', '_scrollTo', '_calculateSizes', '_onSizeInvalidated', '_onClickInScroller', '_onScrollerActive', '_onScrollerInactive');
+      _.bindAll(this, '_initScroller', '_resetScroller', '_snapScroller', '_flingScroller', '_scrollTo', '_calculateSizes', '_onSizeInvalidated', '_onClickInScroller', '_onScrollerActive', '_onScrollerInactive',
+                      '_onDragScrollerStart', '_onDragScrollerEnd', '_onDragScroller', '_onSwipeScroller', '_onKeyDown', '_onKeyUp');
+      
       this.onload(this._initScroller.bind(this));
       this.$el.addClass('scrollable');
     },
@@ -500,10 +94,23 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     
     _initScroller: function(options) {
       this._scrollerProps = _.deepExtend({}, initScrollerProps, this._scrollableOptions, options);
+      var self = this;
       var el = this.el;
       var s = this._scrollerProps;
       var frame = s.frame = el.parentNode || doc.body;
-      this._transitionScrollerState(UNINITIALIZED, 'init'); // simulate 'init' event in UNINITIALIZED state      
+      s.hammer = Hammer(frame, {
+        prevent_default: true,
+        no_mouseevents: true        
+      });
+      
+      (function calcSize() {        
+        if (self._calculateSizes() !== false)
+          self._toggleScrollEventHandlers(true);
+        else
+          self._queueScrollTimeout(calcSize, 100);
+      })();
+      
+//      this._transitionScrollerState(UNINITIALIZED, 'init'); // simulate 'init' event in UNINITIALIZED state      
     },
     
     events: {
@@ -514,68 +121,198 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       'pagebeforehide': '_onScrollerInactive'
     },
 
-//    globalEvents: {
-//      'pageChange': '_onScrollerPageChanged'
-//    },
-    
     myEvents: {
       'invalidateSize': '_onSizeInvalidated'
-//        ,
-//      'active': '_onScrollerActive',
-//      'inactive': '_onScrollerInactive'
     },
     
-//    _onScrollerPageChanged: function(from, to) {
-//      if (this == to)
-//        this._updateScrollPosition();
-//    },
+    _isScrolling: function() {
+      var s = this._scrollerProps;
+      return !!(s._keyHeld || s._start || s._flinging || s._snapping);
+    },
     
     _onScrollerActive: function() {
-      var s = this._scrollerProps;
-      if (s && s.state == INACTIVE) {
-        this.log("waking up scroller");
-        this._transitionScrollerState(this._scrollerProps.state, 'wake');
-      }
+      this._toggleScrollEventHandlers(true);
     },
 
     _onScrollerInactive: function() {
-      var s = this._scrollerProps;
-      if (s && s.state !== UNINITIALIZED) {
-        this.log("putting scroller to sleep");
-        this._transitionScrollerState(this._scrollerProps.state, 'sleep');
+      this._resetScroller();
+      this._toggleScrollEventHandlers(false);
+    },
+
+    _onDragScrollerStart: function(e) {
+      e.gesture.preventDefault();
+      this._resetScroller();
+      this._scrollerProps._start = e.gesture.touches[0];
+    },
+
+    _onDragScrollerEnd: function(e) {
+      e.gesture.preventDefault();
+      var s = this._scrollerProps,
+          pos = s.position,
+          axis = this._getScrollAxis();
+      
+      s._start = null;
+      if (!s._flinging) {
+        if (!this._isInBounds(pos, false /* don't include bounce gutter */))
+          this._snapScroller(); //To(axis, pos[axis] < s.scrollBounds[axis].min ? 'min' : 'max');
+        else
+          this._resetScroller();
       }
+    },
+
+    _onDragScroller: function(e) {
+      // scrollTo immediately
+      e.gesture.preventDefault();
+      var s = this._scrollerProps;
+      if (!s._start) {
+        this._onDragScrollerStart(e);
+        return;
+      }
+      
+      var touch = e.gesture.touches[0],
+          pos = s.position,
+          axis = this._getScrollAxis(),
+          coordProp = axis == 'X' ? 'pageX' : 'pageY',
+          distance = touch[coordProp] - s._start[coordProp],
+          newX, newY;
+      
+      if (!distance)
+        return;
+      
+      s._start = touch;
+      if (axis == 'X') {
+        newX = pos.X + distance;
+        newY = pos.Y;
+      }
+      else {
+        newX = pos.X;        
+        newY = pos.Y + distance;
+      }
+      
+      this._scrollTo(newX, newY);
+    },
+
+    _onSwipeScroller: function(e) {
+      // scrollTo and do momentum
+      var s = this._scrollerProps,
+          velocity,
+          pos;
+       
+      if (!s.momentum)
+        return
+            
+      velocity = Math.min(e.gesture['velocity' + this._getScrollAxis()], this._scrollerProps.MAX_VELOCITY) * getDirectionMultiplier(e.gesture.direction)
+      pos = s.position;
+          
+      if (!this._isInBounds(pos, false /* don't include bounce gutter */, true /* border counts as out */)) { 
+        var axis = this._getScrollAxis(),
+            offset = s.position[axis],
+            tooBig = offset > s.scrollBounds[axis].max;
+          
+        if ((tooBig && velocity < 0) || (!tooBig && velocity > 0))
+          this._flingScroller(velocity);
+      }
+      else if (Math.abs(velocity) > 0.5)
+        this._flingScroller(velocity);
+    },
+
+    _onKeyDown: function(e) {
+      var s = this._scrollerProps;
+      if (s._keyHeld)
+        return;
+      
+      var self = this,
+          keyCode = U.getKeyEventCode(e),
+          axis = this._getScrollAxis(),
+          pos = s.position,
+          newPos = _.clone(pos),
+          bounds = s.scrollBounds[axis],
+          maxJumpTime = 300,
+          jump = keyCode >= 33 && keyCode <=36,
+          ease,
+          time,
+          distance;
+
+      this._resetScroller();
+      s._keyHeld = keyCode;
+      
+      switch (keyCode) {
+      case 33: // page up
+        distance = window.innerHeight;
+        break;
+      case 34: // page down
+        distance = -window.innerHeight;
+        break;
+      case 36: // home
+        distance = bounds.max - pos[axis];
+        break;
+      case 38: // up arrow
+        distance = bounds.max - pos[axis];
+        time = distance;
+        ease = beziers.easeIn;
+        break;
+      case 40: // down arrow
+        distance = bounds.min - pos[axis];
+        time = distance; //calcAnimationTime(distance);
+        ease = beziers.easeIn;
+        break;
+      case 35: // end
+        distance = bounds.min - pos[axis];
+        break;
+      default:
+        return s.state;
+      }        
+      
+      distance = distance | 0;
+      newPos[axis] += distance;
+      newPos = this._limitToBounds(newPos);
+      if (_.isEqual(newPos, pos))
+        return;
+            
+      time = time ? Math.abs(time) : this._calcAnimationTime(pos, newPos);
+      if (jump)
+        time = Math.min(time, maxJumpTime);
+      
+      this._scrollTo(newPos.X, newPos.Y, time, ease);
+    },
+    
+    _onKeyUp: function(e) {
+      var s = this._scrollerProps;
+      this._updateScrollPosition();
+      this._scrollTo(s.position.X, s.position.Y);
+      this._resetScroller();
     },
 
     _toggleScrollEventHandlers: function(enable) {
       if (this._scrollingEnabled == enable)
         return;
       
-      var method = enable ? 'addEventListener' : 'removeEventListener';
-      var frame = this._scrollerProps.frame;
-      var observer = frame;//doc;
-      this._scrollingEnabled = enable;
-      this.el[method]('click', this, true);
-//      this.el[method]('DOMSubtreeModified', function() {
-//        // TODO
-//      }, true);
+      var self = this;
+      var s = this._scrollerProps;
+      var horizontal = this._getScrollAxis() == 'X';
+      var hammerMethod = enable ? 'on' : 'off';
+      var domMethod = enable ? 'addEventListener' : 'removeEventListener';
+      var frame = s.frame;
+//      var observer = frame;//doc;
+      var hammer = s.hammer;
+      var dragEvents = horizontal ? 'dragright dragleft' : 'dragup dragdown';
+      var swipeEvents = horizontal ? 'swiperight swipeleft' : 'swipeup swipedown';
       
-      frame[method]('load', this._onSizeInvalidated, true);
-      observer[method]('touchstart', this, true);
-      observer[method]('touchmove', this, true);
-      observer[method]('touchend', this, true);
-      observer[method]('touchcancel', this, true);
-      observer[method]('mousedown', this, true);
-      observer[method]('mousemove', this, true);
-      observer[method]('mouseup', this, true);
-      observer[method]('keydown', this, true);
-      observer[method]('keyup', this, true);
-      observer[method]('mouseout', this, true);
+      this._scrollingEnabled = enable;
+      frame[domMethod]('load', this._onSizeInvalidated, true);
+      hammer[hammerMethod]('tap', this._onClickInScroller);
+      hammer[hammerMethod](dragEvents, this._onDragScroller);
+      hammer[hammerMethod](swipeEvents, this._onSwipeScroller);
+      hammer[hammerMethod]('dragstart', this._onDragScrollerStart);
+      hammer[hammerMethod]('dragend', this._onDragScrollerEnd);
+      doc[domMethod]('keydown', this._onKeyDown, true);
+      doc[domMethod]('keyup', this._onKeyUp, true);
       
       if (!enable) {
         if (this._mutationObserver) {
           this._mutationObserver.disconnect();
         } else {
-          frame[method]('DOMSubtreeModified', this._onSizeInvalidated, true);
+          frame[domMethod]('DOMSubtreeModified', this._onSizeInvalidated, true);
         }
         
         return;
@@ -595,7 +332,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         });
       } else {
         var self = this;
-        frame[method]('DOMSubtreeModified', _.debounce(function (e) {
+        frame[domMethod]('DOMSubtreeModified', _.debounce(function (e) {
           // Ignore changes to nested FT Scrollers - even updating a transform style
           // can trigger a DOMSubtreeModified in IE, causing nested scrollers to always
           // favour the deepest scroller as parent scrollers 'resize'/end scrolling.
@@ -733,29 +470,22 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       }
     },
 
-    _transitionScrollerState: function(fromState, withEvent, event) {
-//      this.log('state: ' + fromState + ', event: ' + withEvent);
-      var handlers = TRANSITION_MAP[fromState],
-          handler = handlers && handlers[withEvent];
-      
-      if (handler) {
-//        try {
-          return (this._scrollerProps.state = handler.call(this, event) || this._scrollerProps.state);
-//        } finally {
-//          console.log("SCROLL STATE FROM: {0} TO: {1}".format(fromState, this._scrollerProps.state));
-//        }
-      }
-    },    
-
     _queueScrollTimeout: function(fn, time) {
       this._scrollerProps.timeouts.push(setTimeout(fn, time));
     },
     
     _resetScroller: function(wake) {
-//      this.log('resetting scroll');
-//      this._updateScrollPosition(); // parse it from CSS transform
-      this._cleanupScroller();
-//      this._transitionScrollerState(INACTIVE, 'wake');
+      var s = this._scrollerProps;
+      this._clearScrollTimeouts();
+//      this._clearTouchHistory();
+      if (this._isScrolling()) {
+        this._updateScrollPosition(); // parse from CSS
+        s._keyHeld = s._flinging = s._snapping = null;
+        Q.write(this._clearScrollerTransitionStyle, this, undefined, {
+          throttle: true,
+          last: true
+        });
+      }
     },
     
     _clearScrollerTransitionStyle: function() {
@@ -764,27 +494,13 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       });
     },
     
-    _cleanupScroller: function() {
-      var s = this._scrollerProps;
-      this._clearScrollTimeouts();
-      this._clearTouchHistory();
-      if (s._keyHeld || s.preventClick) {
-        Q.write(this._clearScrollerTransitionStyle, this, undefined, {
-          throttle: true,
-          last: true
-        });
-      }
-      
-      s._keyHeld = null;
-    },
-    
-    _clearTouchHistory: function() {
-      var s = this._scrollerProps;
-      s.touchHistory.length = s.distanceTraveled = s.timeTraveled = 0;
-    },
+//    _clearTouchHistory: function() {
+//      var s = this._scrollerProps;
+//      s.touchHistory.length = s.distanceTraveled = s.timeTraveled = 0;
+//    },
     
     _clearScrollTimeouts: function() {
-      var timeouts = this._scrollerProps.timeouts;   
+      var timeouts = this._scrollerProps.timeouts;
       for (var i = 0; i < timeouts.length; i++) {
         clearTimeout(timeouts[i]);
       }
@@ -792,36 +508,6 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       timeouts.length = 0;
     },
 
-    _updateTouchHistory: function(e, touch) {
-      var s = this._scrollerProps,
-          history = s.touchHistory;
-      
-      history.push({
-        X: touch.clientX,
-        Y: touch.clientY,
-        timeStamp: e.timeStamp
-      });
-
-      if (history.length > 1) {
-        var g = s.lastGesture = this._getLastGesture();
-        s.distanceTraveled += g.distance;
-        s.timeTraveled += g.time;
-        
-        if (history.length > 30)
-          history = history.slice(history.length - 10);
-      }
-    },
-    
-    _getLastGesture: function() {
-      var history = this._scrollerProps.touchHistory,
-          l = history.length;
-      
-      if (l > 1)
-        return getGesture(history[l - 2], history[l - 1]);
-      else
-        return null;
-    },
-    
     _updateScrollPosition: function(x, y) {
       var pos = this._scrollerProps.position;
       if (arguments.length) {
@@ -833,8 +519,10 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
           pos.Y = y;
         }
       }
-      else
+      else {
         this._scrollerProps.position = CSS.getTranslation(this.el);
+        console.debug("PARSED SCROLL POS:", this._scrollerProps.position);
+      }
     },
     
     _getScrollerState: function() {
@@ -845,76 +533,20 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       return this.el == $(e.target).closest('.scrollable')[0];
     },
     
-    handleEvent: function(e) {
-      var s = this._scrollerProps;
-//      console.log('scroll event: ', e.type, 'state', s.state);      
-      if (e.type == 'click')
-        return this._onClickInScroller(e);
-      else if (e.type == 'keydown' && s._keyHeld)
-        return;
-      else if (e.type == 'keyup' && U.getKeyEventCode(e) !== s._keyHeld)
-        return;
-      else if (e.type == 'mouseout') {
-        // check if the user swiped offscreen (in which case we can't detect 'mouseup' so we will simulate 'mouseup' NOW)
-        
-        e = e ? e : window.event;
-        var from = e.relatedTarget || e.toElement;
-        if (!from || from.nodeName == "HTML") {
-          var lastTouch = Array.last(this._scrollerProps.touchHistory);
-          if (!lastTouch)
-            return;
-
-          lastTouch = [lastTouch];
-          this.handleEvent({
-            type: 'mouseup',
-            target: e.target,
-            targetTouches: lastTouch,
-            changedTouches: lastTouch,
-            timeStamp: lastTouch.timeStamp,
-            preventDefault: G.emptyFn,
-            stopPropagation: G.emptyFn
-          })
-        }
-        
-        return;
-      }
-      
-      if (e.type.endsWith('move') && !this._scrollerProps.touchHistory.length)
-        return;
-            
-      var state = this._getScrollerState(),
-          stateHandlers = TRANSITION_MAP[state],
-          eventType = e.type;
-      
-      if (stateHandlers && stateHandlers[eventType])
-        this._transitionScrollerState(state, eventType, e);
-    },
-    
     _onClickInScroller: function(e) {
-//      this.log('in scroller onclick handler');
-      var ok = !this._scrollerProps.preventClick;
-//      if (ok) {
-//        this._resetScroller();
-//      }
-//      else {
-      if (!ok) {
+      console.debug("CLICK EVENT: ", e);
+      var s = this._scrollerProps;
+      if (this._isScrolling()) {
+        console.debug("PREVENTING CLICK EVENT: ", e);
         e.preventDefault();
         e.stopPropagation();
-        this._scrollerProps.preventClick = false;
+        return false;
       }
       
-      return ok;
-    },
-    
-    onTransitionEnd: function(e) {
-//      CSS.setStylePropertyValues(this.el.style, {
-//        transition: null
-//      });
-//      this.log('event', 'transitionend event: ' + e.propertyName);
+      this._resetScroller();
     },
     
     _triggerScrollEvent: function(type, scroll) {
-//      this.log('SCROLL: ' + type, Date.now());
       this.$el.trigger(type.replace('scroll', 'scrollo'), this.getScrollInfo(scroll));
     },
     
@@ -923,27 +555,58 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       return _.extend(_.deepExtend({}, _.pick(this._scrollerProps.metrics, 'container', 'content')), scroll);      
     },
     
-    _scrollTo: function(position, time, ease) {
+    _scrollTo: function(x, y, time, ease) {
 //      this.log('scrolling to: ' + JSON.stringify(position) + ', in ' + time + 'ms');
       time = time || 0;
       var s = this._scrollerProps,
+          pos = s.position,
           bounce = s.bounce;
       
-      if (!time)
-        this._updateScrollPosition(position);
+      if (time) {
+        // queue up scroll events
+        var self = this,
+            axis = this._getScrollAxis(),
+            newCoord = arguments[axis == 'X' ? 0 : 1],
+            distance = Math.abs(newCoord - pos[axis]),
+            numScrollEvents = Math.max(time / s.SCROLL_EVENT_TIME_PERIOD, distance / s.SCROLL_EVENT_DISTANCE_PERIOD) | 0, // round to int
+            period = (time / numScrollEvents) | 0, // round to int
+            distanceUnit = distance / numScrollEvents,
+            pingPos = U.clone(pos),
+            scrollTime = 0;
+    
+        function ping() {
+          if (self._isScrolling()) {
+            pingPos[axis] += distanceUnit;
+            self._triggerScrollEvent('scroll', scrollPosToOffset(pingPos));
+          }
+        }
+        
+        this._queueScrollTimeout(function() {
+          s.position.X = x;
+          s.position.Y = y;
+          self._resetScroller();
+          U.recycle(pingPos);
+        }, time);
+        
+        for (var i = 0; i < numScrollEvents; i++) {
+          this._queueScrollTimeout(ping, scrollTime += period);
+        }      
+      }
+      else
+        this._updateScrollPosition(x, y);
 //      else
 //        this._queueScrollTimeout(this._updateScrollPosition.bind(this, offsetX, offsetY), time);
       
-      Q.write(this._setScrollerCSS, this, [position, time, ease], {
+      Q.write(this._setScrollerCSS, this, [x, y, time, ease], {
         throttle: true,
         last: true
       });
     },
     
-    _setScrollerCSS: function (position, time, ease) {
+    _setScrollerCSS: function (x, y, time, ease) {
       CSS.setStylePropertyValues(this.el.style, {
         transition: 'all {0}ms {1}'.format(time, time == 0 ? '' : ease || beziers.fling),
-        transform: CSS.getTranslationString(position)
+        transform: CSS.getTranslationString(x, y)
       });
       
       this._triggerScrollEvent('scroll');
@@ -972,16 +635,6 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
                            includeBounceGutter ? s.bounceBounds : s.scrollBounds);
     },
     
-    _snapScrollerIfNeeded: function() {
-      if (this._isInBounds())
-        return;
-      
-//      doc.addEventListener(TOUCH_EVENTS.touchstart, this, true);
-//      this._listenToTouchEvents('touchstart');
-      this._snapScroller();
-      return true;
-    },
-    
     _snapScroller: function(immediate) {
       this._clearScrollTimeouts();
       // snap the content div to its frame
@@ -995,27 +648,32 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     _snapScrollerTo: function(axis, endpoint, immediate) {
-      var s = this._scrollerProps,
-          snapTo = _.clone(s.position),
+      var self = this,
+          s = this._scrollerProps,
+          pos = s.position,
+          snapToX = pos.X,
+          snapToY = pos.Y,
+          destination = s.scrollBounds[axis][endpoint],
           time;
       
-      snapTo[axis] = s.scrollBounds[axis][endpoint];
-      time = immediate ? 0 : this._calcAnimationTime(s.position, snapTo);    
-      this._scrollTo(snapTo, time, beziers.bounce, time);
-      this._scheduleScrollerStateTransition(SNAPPING, 'snapcomplete', {
-        time: time,
-        to: snapTo
-      }, time);
+      this._snappingScroller = true;
+      if (axis == 'X')
+        snapToX = destination;
+      else
+        snapToY = destination;
+      
+      time = immediate ? 0 : this._calcAnimationTime(pos.X, pos.Y, snapToX, snapToY);    
+      this._scrollTo(snapToX, snapToY, time, beziers.bounce, time);
     },
     
-    _scheduleScrollerStateTransition: function(fromState, eventName, eventData, time) {
-      this._queueScrollTimeout(this._transitionScrollerState.bind(this, fromState, eventName, eventData), time);
-    },
-
     _calcAnimationTime: function(distance) {
       if (arguments.length == 2) {
         var axis = this._getScrollAxis();
         distance = Math.abs(arguments[0][axis] - arguments[1][axis]);
+      }
+      else if (arguments.length == 4) {
+        var idx = axis == 'X' ? 0 : 1;
+        distance = Math.abs(arguments[idx] - arguments[idx + 2]);
       }
       
       return Math.min(calcAnimationTime(distance), this._scrollerProps.MAX_COAST_TIME);
@@ -1029,77 +687,27 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       this._scrollerProps.axis = axis;      
     },
 
-    _updateEndVelocity: function(direction) {
-      var s = this._scrollerProps,
-          axis = this._getScrollAxis(),
-          lastGesture = s.lastGesture,
-          velocity = lastGesture[axis] / lastGesture.time,
-          sign = velocity < 0 ? -1 : 1;
-      
-      s.velocity = Math.min(Math.abs(velocity), s.MAX_VELOCITY) * sign;
-    },
-
-    _flingScrollerIfNeeded: function() {
-      var s = this._scrollerProps;
-      this._updateEndVelocity();
-      if (!this._isInBounds(s.position, false /* don't include bounce gutter */, true /* border counts as out */)) { 
-        var axis = this._getScrollAxis(),
-            offset = s.position[axis],
-            tooBig = offset > s.scrollBounds[axis].max;
-          
-        if ((tooBig && s.velocity < 0) || (!tooBig && s.velocity > 0)) {
-          this._flingScroller();
-          return true;
-        }
-      }
-      else if (Math.abs(s.velocity) > 0.5) {
-        this._flingScroller();
-        return true;
-      }
-    },
-    
-    _flingScroller: function() {
+    _flingScroller: function(velocity) {
       this._clearScrollTimeouts();
-//      doc.addEventListener(TOUCH_EVENTS.touchstart, this, true);
-//      this._listenToTouchEvents('touchstart');
-      var s = this._scrollerProps,
+      var self = this,
+          s = this._scrollerProps,
           axis = this._getScrollAxis(),
           otherAxis = oppositeDir(axis),
-          velocity = s.velocity,
           acceleration = velocity < 0 ? s.acceleration : -s.acceleration,
-          distance = -(velocity * velocity) / (2 * acceleration),
+          distance = (-(velocity * velocity) / (2 * acceleration)) | 0,
           newPos = {},
-          destination,
           pastDestination,
           timeToDestination,
           timeToReset;
 
+      s._flinging = true;
       newPos[axis] = s.position[axis] + distance;
       newPos[otherAxis] = s.position[otherAxis];
-      destination = this._limitToBounds(normalizePosition(newPos));
-      distance = calcDistance(s.position, destination);
+      newPos = this._limitToBounds(newPos);
+      distance = calcDistance(s.position, newPos);
 //      pastDestination = this._limitToBounds(newPos, true);
       timeToDestination = timeToReset = this._calcAnimationTime(distance);    
-      this._scrollTo(destination, timeToDestination, beziers.fling);      
-      this._scheduleScrollerStateTransition(COASTING, 'coastcomplete', {
-        to: destination,
-        time: timeToDestination
-      }, timeToDestination);
-      
-      
-      // queue up events
-      var numScrollEvents = Math.max(timeToReset / s.SCROLL_EVENT_TIME_PERIOD, distance / s.SCROLL_EVENT_DISTANCE_PERIOD) | 0, // round to int
-          period = (timeToReset / numScrollEvents) | 0, // round to int
-          distanceUnit = (destination[axis] - s.position[axis]) / numScrollEvents, 
-          pingPos = _.clone(s.position),
-          scrollTime = 0;
-      
-      for (var i = 0; i < numScrollEvents; i++) {
-        this._queueScrollTimeout(function() {
-          pingPos[axis] += distanceUnit;
-          this._triggerScrollEvent('scroll', scrollPosToOffset(pingPos));
-        }.bind(this), scrollTime += period);
-      }      
+      this._scrollTo(newPos.X, newPos.Y, timeToDestination, beziers.fling);      
     }
   }, {
     displayName: 'Scrollable'    

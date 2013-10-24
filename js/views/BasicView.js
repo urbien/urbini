@@ -114,6 +114,15 @@ define('views/BasicView', [
 //      G.log(this.TAG, 'new view', this.getPageTitle());
       return this;
     },
+
+//    setElement: function(el) {
+//      this._hammer = Hammer(el instanceof $ ? el[0] : el, {
+//        prevent_default: true,
+//        no_mouseevents: true
+//      });
+//      
+//      return Backbone.View.prototype.setElement.apply(this, arguments);
+//    },
     
     myEvents: {
       '.default active': '_onActive',
