@@ -7,7 +7,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       nonTouchEvents = ['mousedown', 'mouseup', 'mousemove', 'keydown', 'keyup'],
       touchEvents = ['touchstart', 'touchend', 'touchmove'],
       AXES = ['X', 'Y'],
-      IS_TOUCH = FORCE_TOUCH || G.browser.mobile,
+      IS_TOUCH = FORCE_TOUCH || G.browser.touch,
       TOUCH_EVENTS = IS_TOUCH ? {
         touchstart: 'touchstart',
         touchend: 'touchend',
@@ -367,8 +367,15 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
           var touch = _.last(s.touchHistory);
 //          $(document.elementFromPoint(touch.X, touch.Y)).click();
           this._resetScroller();
-          if (TOUCH_EVENTS.touchstart == 'touchstart')
-            $(e.target).click();
+          if (IS_TOUCH) {
+            var clickOn = e.target;
+            if (clickOn.nodeType != 1)
+              clickOn = clickOn.parentNode;
+            
+            setTimeout(function() {
+              $(clickOn).click();
+            });
+          }
           
           return READY;
         }
@@ -545,6 +552,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       
       var method = enable ? 'addEventListener' : 'removeEventListener';
       var frame = this._scrollerProps.frame;
+      var observer = frame;//doc;
       this._scrollingEnabled = enable;
       this.el[method]('click', this, true);
 //      this.el[method]('DOMSubtreeModified', function() {
@@ -552,16 +560,16 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
 //      }, true);
       
       frame[method]('load', this._onSizeInvalidated, true);
-      doc[method]('touchstart', this, true);
-      doc[method]('touchmove', this, true);
-      doc[method]('touchend', this, true);
-      doc[method]('touchcancel', this, true);
-      doc[method]('mousedown', this, true);
-      doc[method]('mousemove', this, true);
-      doc[method]('mouseup', this, true);
-      doc[method]('keydown', this, true);
-      doc[method]('keyup', this, true);
-      doc[method]('mouseout', this, true);
+      observer[method]('touchstart', this, true);
+      observer[method]('touchmove', this, true);
+      observer[method]('touchend', this, true);
+      observer[method]('touchcancel', this, true);
+      observer[method]('mousedown', this, true);
+      observer[method]('mousemove', this, true);
+      observer[method]('mouseup', this, true);
+      observer[method]('keydown', this, true);
+      observer[method]('keyup', this, true);
+      observer[method]('mouseout', this, true);
       
       if (!enable) {
         if (this._mutationObserver) {

@@ -108,12 +108,13 @@ define('globals', function() {
     browser.chrome = browser.webkit && !!window.chrome;
     browser.safari = browser.webkit && !window.chrome;
     browser.ios = !!navigator.userAgent.match(/iPad|iPhone|iPod/i);
-    var mobile = browser.ios || navigator.userAgent.match(/(Android|webOS|BlackBerry|IEMobile|Opera Mini)/);
-    if (mobile || browser.ios) {
+    var mobile = browser.ios || navigator.userAgent.match(/(Android|webOS|BlackBerry|IEMobile|Opera Mini)/) || 'ontouchstart' in window;
+    if (mobile) {
       browser.mobile = true;
       browser[mobile[1].toLowerCase()] = true;
     }
 
+    browser.touch = 'ontouchstart' in window;
     browser.firefox = browser.mozilla;
     browser.name = browser.chrome ? 'chrome' : browser.firefox ? 'firefox' : browser.safari ? 'safari' : 'unknown';
     return browser;

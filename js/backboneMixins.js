@@ -101,9 +101,9 @@ define('backboneMixins', ['underscore', 'backbone', 'events', 'utils'], function
        
         if (events && context) {
           for (var name in events) {
-            var fnName = events[name],
+            var fnName = events[name], //Events.getEventName(events[name]),
                 fn = typeof fnName == 'string' ? this[fnName] : fnName;
-            
+                
             this.listenTo(context, name, fn.bind(this));
           }
         }

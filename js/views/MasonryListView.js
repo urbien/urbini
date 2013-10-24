@@ -189,6 +189,7 @@ define('views/MasonryListView', [
       }
     }
   }, {
-    displayName: "MasonryListView"
+    displayName: "MasonryListView",
+    _itemView: ResourceMasonryItemView
   });
 });

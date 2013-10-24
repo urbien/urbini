@@ -44,6 +44,14 @@ define('modelLoader', [
       }
     }
     
+    for (var i = 0, len = models.length; i < len; i++) {
+      var uri = models[i],
+          mapped = G.classMap[uri];
+      
+      if (mapped)
+        models[i] = mapped;
+    }
+    
     return models;
   };
       

@@ -117,6 +117,7 @@ define('views/HorizontalListView', [
       }
     }
   }, {
-    displayName: "HorizontalListView"
+    displayName: "HorizontalListView",
+    _itemView: HorizontalListItemView
   });
 });

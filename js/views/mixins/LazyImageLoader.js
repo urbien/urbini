@@ -113,29 +113,32 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     },
 
     _hideOffscreenImages: function() {
-      var offscreenImgs;
+      var offscreenImgs = this.$('img:not([src="{0}"])'.format(DUMMY_IMG));
       if (this.isActive()) {
-        offscreenImgs = this.$('img:not([src="{0}"])'.format(DUMMY_IMG)).filter(function() {
+        offscreenImgs = offscreenImgs.filter(function() {
           return !U.isRectPartiallyInViewport(this.getBoundingClientRect(), IMG_OFFSET);
         });
       }
-      else 
-        offscreenImgs = this.$('img'); // TODO only images that are lazy loaded
           
-      if (offscreenImgs.length) {
+      if (offscreenImgs.length)
         U.HTML.lazifyImages(offscreenImgs);
-      }
     },
     
-    _showImages: _.debounce(function() {
+    _showImages: _.debounce(function() {      
       this._lazyImages = getDummyImages(this.$el);      
       if (!this._lazyImages.length)
         return;
       
-      this._loadImages(this._lazyImages);
-      if (!this._lazyImages.length)
-        this._pause();
-    }, 100),
+      var self = this,
+          lazy = U.clone(this._lazyImages);
+      
+      this._lazyImages.length = 0;
+      this._loadImages(lazy).always(function() {        
+        U.recycle.bind(U, lazy);
+        if (!self._lazyImages.length)
+          self._pause();
+      });
+    }, 50),
     
     _queueImageLoad: function(e) {
       this._loadQueue.push(e.target);
@@ -148,7 +151,9 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     },
 
     _doProcessImageLoadQueue: _.debounce(function() {
-      this._loadImages(this._loadQueue);
+      var loadQueue = U.clone(this._loadQueue);
+      this._loadQueue.length = 0;
+      this._loadImages(loadQueue).always(U.recycle.bind(U, loadQueue));
     }, 100),
 
     _queueImageFetch: function(img) {
@@ -189,24 +194,37 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     },
     
     _loadDelayedImages: _.debounce(function() {
-      var counts = this._delayedImagesCounts.slice(),
+      if (!this._delayedImages.length)
+        return;
+      
+      var counts = U.clone(this._delayedImagesCounts),
+          delayedImages = U.clone(this._delayedImages),
           newCounts;
       
-      this._loadImages(this._delayedImages);
-      newCounts = this._delayedImagesCounts;
-      for (var i = counts.length - 1; i >= 0; i--) {
-        if (counts[i] == newCounts[i]) {
-          this._delayedImages.splice(i, 1);
-          this._delayedImagesCounts.splice(i, 1); 
+      this._delayedImages.length = 0;
+      this._loadImages(delayedImages).always(function() {
+        U.recycle(delayedImages);
+        newCounts = this._delayedImagesCounts;
+        for (var i = counts.length - 1; i >= 0; i--) {
+          if (counts[i] == newCounts[i]) {
+            this._delayedImages.splice(i, 1);
+            this._delayedImagesCounts.splice(i, 1); 
+          }
         }
-      }
-      
-      if (this._delayedImages.length)
-        this._loadDelayedImages();
+        
+        if (this._delayedImages.length)
+          this._loadDelayedImages();
+      });
     }, 100),
     
     _loadImages: function(imgs) {
-      imgs = imgs.slice();
+      if (!imgs.length)
+        return G.getRejectedPromise();
+      
+//      imgs = imgs.slice();
+      var dfd = $.Deferred(),
+          promise = dfd.promise();
+      
       Q.read(function() {
         var imgInfos = _.map(imgs, getImageInfo),
             toFetch = [],
@@ -247,9 +265,12 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
           if (toFetch.length)
             this._fetchImages(toFetch, toFetchInfos);
           
-          this._loadQueue.length = 0;
+          dfd.resolve();
+//          this._loadQueue.length = 0;
         }, this);
       }, this);
+      
+      return promise;
     },
 
     _updateImages: function(imagesData) {
@@ -262,8 +283,6 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
       Q.write(function() {        
   //      this.log('imageLoad', 'lazy loading image: ' + info.realSrc);
         cleanImage(img);
-        if (info.onload)
-          img.onload = info.onload;
         if (_.has(info, 'width'))
           img.style.width = info.width;
         if (_.has(info, 'height'))
@@ -285,8 +304,11 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
           if (info.realSrc)
             img.setAttribute(LAZY_ATTR, info.realSrc);
         }
-        else if (info.realSrc)
+        else if (info.realSrc) {
+          if (info.onload)
+            img.onload = info.onload;
           img.src = info.realSrc;
+        }
         
         _.wipe(info); // just in case it gets leaked...yea, that sounds bad
       });

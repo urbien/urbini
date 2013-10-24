@@ -18,6 +18,8 @@ define('utils', [
       doc = document,
       compiledTemplates = {},
       HAS_PUSH_STATE = G.support.pushState,
+      RECYCLED_OBJECTS = [],
+      RECYCLED_ARRAYS = [],
       FRAGMENT_SEPARATOR = HAS_PUSH_STATE ? '/' : '#';
 
   setInterval(function() { // TODO: make this less stupid
@@ -4077,6 +4079,45 @@ define('utils', [
       }
 
       return new Blob([uInt8Array.buffer], {type: contentType});
+    },
+    
+    array: function() {
+      if (RECYCLED_ARRAYS.length)
+        return RECYCLED_ARRAYS.pop();
+      
+      return [];
+    },
+
+    object: function() {
+      if (RECYCLED_OBJECTS.length)
+        return RECYCLED_OBJECTS.pop();
+      
+      return [];
+    },
+
+    recycle: function(obj) {
+      if (_.isArray(obj)) {
+        obj.length = 0;
+        RECYCLED_ARRAYS.push(obj);
+      }
+      else if (_.isObject(obj)) {
+        _.wipe(obj);
+        RECYCLED_OBJECTS.push(obj);
+      }
+    },
+    
+    clone: function(obj) {
+      if (_.isArray(obj)) {
+        var arr = U.array();
+        arr.push.apply(arr, obj);
+        return arr;
+      }
+      else if (_.isObject(obj)) {
+        var newObj = U.object();
+        return _.extend(newObj, obj);
+      }
+      else
+        throw "Cloning unsupported";
     }
   };
   

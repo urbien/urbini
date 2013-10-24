@@ -409,6 +409,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
 //    ENUMERATIONS_KEY: 'enumerations',
     getCachedView: viewCache.getCachedView.bind(viewCache),
     getModel: function(type) {
+      type = G.classMap[type] || type;
       return typeToModel[type] || shortNameToModel[type];
     },
     

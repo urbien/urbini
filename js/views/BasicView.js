@@ -51,19 +51,19 @@ define('views/BasicView', [
         superCtor = superDuperCtor;
       }
       
-      // replace click with vclick and so on, if necessary
-      for (var eventSelectorName in this.events) {
-        var eventName = eventSelectorName.match(/^([^\.\ ]+)/);
-        if (!eventName)
-          continue;
-        
-        eventName = eventName[1];
-        var actualName = Events.getEventName(eventName);
-        if (actualName !== eventName && !events[actualName]) {
-          this.events[eventSelectorName.replace(eventName, actualName)] = this.events[eventSelectorName];
-          delete this.events[eventSelectorName];
-        }
-      }
+//      // replace click with vclick and so on, if necessary
+//      for (var eventSelectorName in this.events) {
+//        var eventName = eventSelectorName.match(/^([^\.\ ]+)/);
+//        if (!eventName)
+//          continue;
+//        
+//        eventName = eventName[1];
+//        var actualName = Events.getEventName(eventName);
+//        if (actualName !== eventName && !events[actualName]) {
+//          this.events[eventSelectorName.replace(eventName, actualName)] = this.events[eventSelectorName];
+//          delete this.events[eventSelectorName];
+//        }
+//      }
       
       options = options || {};
       this._updateHashInfo();
@@ -214,7 +214,7 @@ define('views/BasicView', [
         return result;
       }
       else {
-        this._renderData = arguments;
+        this._renderArgs = arguments;
         return this;
       }
     },
@@ -793,11 +793,12 @@ define('views/BasicView', [
     
     doesModelSubclass: function(clName) {
       var supers = this['extends'];
-      return !!(supers.length && (~supers.indexOf(clName) || (!/\^http:\/\//.test(clName) && ~supers.indexOf(U.getLongUri1(clName)))));
+      return !!(supers && supers.length && (~supers.indexOf(clName) || (!/\^http:\/\//.test(clName) && ~supers.indexOf(U.getLongUri1(clName)))));
     },
 
     doesModelImplement: function(iface) {
-      return !!~this['implements'].indexOf(iface);
+      var interfaces = this['implements'];
+      return !!(interfaces && ~interfaces.indexOf(iface));
     }
   }, {
     displayName: 'BasicView',

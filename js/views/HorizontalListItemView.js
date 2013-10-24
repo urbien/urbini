@@ -62,6 +62,8 @@ define('views/HorizontalListItemView', [
           isFriendApp = this.doesModelSubclass(G.commonTypes.FriendApp),
           isIntersection = this.doesModelImplement('Intersection'),
           cloned = this.clonedProperties,
+          clonedI = cloned.Intersection || {},
+          clonedIR = cloned.ImageResource || {},
           imgProp = this.imageProperty,
 //          intersectionSide = options.intersection,
           intersection = this.intersectionProp,
@@ -129,7 +131,7 @@ define('views/HorizontalListItemView', [
         }
       }
       else {
-        var props = cloned['ImageResource.smallImage'];
+        var props = clonedIR.smallImage;
         if (!props.length)
           return this;
         else
