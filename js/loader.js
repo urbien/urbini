@@ -157,7 +157,12 @@ define('globals', function() {
   };
 
   function isModuleNeeded(name) {
+    if (~G.skipModules.indexOf(name))
+      return false;
+    
     switch (name) {
+    case '../templates_bb.jsp':
+      return G.currentApp.widgetLibrary == 'Building Blocks';
     case 'lib/IndexedDBShim':
       return G.dbType == 'shim';
     case 'lib/whammy':
@@ -1789,6 +1794,7 @@ define('globals', function() {
   });
   
   determineMinificationMode();
+  G.skipModules = G.skipModules || [];
   G.DEBUG = !G.minify;
 
   setupLocalStorage();

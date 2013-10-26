@@ -11,7 +11,8 @@ define('views/HorizontalListView', [
     mixins: [Scrollable],
     _renderedIntersectionUris: [],
     _scrollableOptions: {
-      axis: 'X'
+      axis: 'X',
+      keyboard: false
     },
     _horizontal: true,
     _visible: false,

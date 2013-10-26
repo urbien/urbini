@@ -34,6 +34,7 @@ define('views/PhotogridListView', [
         tagName: 'div', 
         linkToIntersection: true,
         resource: res,
+        bothSides: this._preinitializedItem.prototype.doesModelImplement('Intersection'),
         parentView: this
       }));
       

@@ -836,29 +836,33 @@ define('views/BasicView', [
           supers = preinit['extends'],
           clonedProps = preinit.clonedProperties;
           
-      for (var iface in interfaceProps) {
-        if (U.isA(vocModel, iface)) {
-          ifaces.push(iface);
-          var props = interfaceProps[iface],
-              cloned = clonedProps[iface] = {};
-          
-          if (props) {
-            for (var i = 0, len = props.length; i < len; i++) {
-              var prop = props[i];
-              cloned[prop] = U.getCloneOf(vocModel, iface + '.' + prop)[0];
+      if (interfaceProps) {
+        for (var iface in interfaceProps) {
+          if (U.isA(vocModel, iface)) {
+            ifaces.push(iface);
+            var props = interfaceProps[iface],
+                cloned = clonedProps[iface] = {};
+            
+            if (props) {
+              for (var i = 0, len = props.length; i < len; i++) {
+                var prop = props[i];
+                cloned[prop] = U.getCloneOf(vocModel, iface + '.' + prop)[0];
+              }
             }
           }
         }
       }
       
-      for (var i = 0, len = superclasses.length; i < len; i++) {
-        var sCl = superclasses[i];
-        if (U.isAssignableFrom(vocModel, sCl)) {
-          var sIdx = sCl.indexOf('/');
-          if (~sIdx)
-            sCl = sCl.slice(sIdx + 1);
-        
-          supers.push(sCl);
+      if (superclasses) {
+        for (var i = 0, len = superclasses.length; i < len; i++) {
+          var sCl = superclasses[i];
+          if (U.isAssignableFrom(vocModel, sCl)) {
+            var sIdx = sCl.indexOf('/');
+            if (~sIdx)
+              sCl = sCl.slice(sIdx + 1);
+          
+            supers.push(sCl);
+          }
         }
       }
       

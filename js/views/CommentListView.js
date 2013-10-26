@@ -30,6 +30,7 @@ define('views/CommentListView', [
     }
   },
   {
-    displayName: "CommentListView"
+    displayName: "CommentListView",
+    _itemView: CommentListItemView
   });
 });

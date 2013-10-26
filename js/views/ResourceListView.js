@@ -19,7 +19,7 @@ define('views/ResourceListView', [
   return BasicView.extend({
 //    _listItemViews: [],
 //    _pageReqNum: 0,
-    _itemView: ResourceListItemView,
+//    _itemView: ResourceListItemView,
     _pages: [],
     _adjustmentQueued: false,
     _slidingWindowInsideBuffer: 1200, // px, should depend on size of visible area of the list, speed of device, RAM
@@ -854,7 +854,8 @@ define('views/ResourceListView', [
       if (this._isPaging)
         return this._pagingPromise;
       
-      var col = this.collection,
+      var self = this,
+          col = this.collection,
           before = col.length,
           defer = $.Deferred(),
           nextPagePromise,
@@ -882,9 +883,11 @@ define('views/ResourceListView', [
         nextPageUrl = nextPagePromise._url;
       
       this._isPaging = true;
+      
+      // if we fail to page, then keep isPaging true to prevent more paging
       this._pagingPromise = defer.promise().done(function() {
-        this._isPaging = false;
-      }.bind(this)); // if we fail to page, then keep isPaging true to prevent more paging
+        self._isPaging = false;
+      }); 
       
       this._pagingPromise._range = 'from: ' + before + ', to: ' + (before + numResourcesToFetch);
       return this._pagingPromise;
@@ -936,7 +939,7 @@ define('views/ResourceListView', [
           preinitializedItem = this._preinitializedItem,
           options = {
             delegateEvents: false,
-            preinitialized: preinitializedItem,
+//            preinitialized: preinitializedItem,
             resource: res
           }
       

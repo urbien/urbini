@@ -1370,6 +1370,13 @@
   </a> 
 </script>
 
+<script type="text/template" id="intersectionListItemTemplate">
+  <li data-viewid="{{= viewId }}">
+    {{= a }}
+    {{= b }}
+  </li>
+</script>
+
 <script type="text/template" id="photogridTemplate">
   <!-- an image grid with per-image overlays -->
 

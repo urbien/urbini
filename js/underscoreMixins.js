@@ -76,11 +76,12 @@ define('underscoreMixins', ['_underscore'], function(_) {
         else {
           var idx = indexOf.call(array, arg);
           if (~idx) {
-            for (var j = idx, arrLen = array.length - 1; j < arrLen; j++) {
-              array[j] = array[j + 1];
-            }
-            
-            array.length = arrLen;
+            Array.removeFromTo(array, idx, idx + 1);
+//            for (var j = idx, arrLen = array.length - 1; j < arrLen; j++) {
+//              array[j] = array[j + 1];
+//            }
+//            
+//            array.length = arrLen;
           }
         }
       }
@@ -88,11 +89,20 @@ define('underscoreMixins', ['_underscore'], function(_) {
       return array;
     },
 
-    // courtesy of John Resig
-    removeFromTo: function(array, from, to) {
-      var rest = array.slice((to || from) + 1 || array.length);
-      array.length = from < 0 ? array.length + from : from;
-      return array.push.apply(array, rest);
+//    removeFromTo: function(array, from, to) {
+//      var rest = array.slice((to || from) + 1 || array.length);
+//      array.length = from < 0 ? array.length + from : from;
+//      return array.push.apply(array, rest);
+//    },
+
+    removeFromTo: function(array, fromIdx, toIdx) {
+      var howMany = toIdx - fromIdx;
+      for (var i = fromIdx, len = array.length - howMany; i < len; i++) {
+        array[i] = array[toIdx++];
+      }
+
+      array.length = len;
+      return array;
     },
 
     last: function(array) {

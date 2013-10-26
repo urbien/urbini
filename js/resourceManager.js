@@ -88,7 +88,8 @@ define('resourceManager', [
     cleanDatabase: function(del) {
       return IDB.onOpen().then(function() {
         IDB.wipe(function(storeName) {
-          return !_.contains([MODULE_STORE.name, MODEL_STORE.name], storeName);
+          return storeName != MODULE_STORE.name && 
+                 storeName != MODEL_STORE.name;
         }, del);
       });
     },

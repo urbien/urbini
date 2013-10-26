@@ -395,8 +395,12 @@ define('lib/fastdom', ['globals'], function(G) {
 
     // Call the job in
 //    try { 
-      if (job.args)
-        job.fn.apply(job.ctx, job.args);
+      if (job.args) {
+        if (_.isArray(job.args))
+          job.fn.apply(job.ctx, job.args);
+        else
+          job.fn.call(job.ctx, job.args);
+      }
       else if (job.ctx)
         job.fn.call(job.ctx);
       else

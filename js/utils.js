@@ -4092,9 +4092,15 @@ define('utils', [
       if (RECYCLED_OBJECTS.length)
         return RECYCLED_OBJECTS.pop();
       
-      return [];
+      return {};
     },
 
+    recycleContents: function(array) {
+      for (var i = 0, len = array.length; i < len; i++) {
+        U.recycle(array[i]);
+      }
+    },
+    
     recycle: function() {
       for (var i = 0, len = arguments.length; i < len; i++) {
         var obj = arguments[i];

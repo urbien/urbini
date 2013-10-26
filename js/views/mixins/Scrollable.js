@@ -1,4 +1,4 @@
-define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', 'lib/fastdom', 'lib/hammer'], function(G, _, U, Events, Q, Hammer) {
+define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', 'lib/fastdom', 'lib/jquery.hammer'], function(G, _, U, Events, Q, Hammer) {
   var AXES = ['X', 'Y'],
       beziers = {
         fling: 'cubic-bezier(0.103, 0.389, 0.307, 0.966)', // cubic-bezier(0.33, 0.66, 0.66, 1)
@@ -75,6 +75,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     MAX_VELOCITY: 5,
     MAX_OUT_OF_BOUNDS: 50,
     acceleration: 0.005,
+    keyboard: true,
     momentum: true,
     timeouts: []
   };
@@ -82,7 +83,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
   var Scrollable = Backbone.Mixin.extend({
     initialize: function(options) {
       _.bindAll(this, '_initScroller', '_resetScroller', '_snapScroller', '_flingScroller', '_scrollTo', '_calculateSizes', '_onSizeInvalidated', '_onClickInScroller', '_onScrollerActive', '_onScrollerInactive',
-                      '_onDragScrollerStart', '_onDragScrollerEnd', '_onDragScroller', '_onSwipeScroller', '_onKeyDown', '_onKeyUp');
+                      '_onDragScrollerStart', '_onDragScrollerEnd', '_onDragScroller', '_onSwipeScroller', '_onKeyDown', '_onKeyUp'); //, '_onReleaseInScroller');
       
       this.onload(this._initScroller.bind(this));
       this.$el.addClass('scrollable');
@@ -97,12 +98,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       var self = this;
       var el = this.el;
       var s = this._scrollerProps;
-      var frame = s.frame = el.parentNode || doc.body;
-      s.hammer = Hammer(frame, {
-        prevent_default: true,
-        no_mouseevents: true        
-      });
-      
+      var frame = s.frame = el.parentNode || doc.body;      
       (function calcSize() {        
         if (self._calculateSizes() !== false)
           self._toggleScrollEventHandlers(true);
@@ -127,18 +123,29 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     
     _isScrolling: function() {
       var s = this._scrollerProps;
-      return !!(s._keyHeld || s._start || s._flinging || s._snapping);
+      return !!(s._keyHeld || s._start || s._flinging || s._snapping || s._dragging);
     },
     
     _onScrollerActive: function() {
-      this._toggleScrollEventHandlers(true);
+      if (this._scrollerInitialized)
+        this._toggleScrollEventHandlers(true);
     },
 
     _onScrollerInactive: function() {
-      this._resetScroller();
-      this._toggleScrollEventHandlers(false);
+      if (this._scrollerInitialized) {
+        this._resetScroller();
+        this._toggleScrollEventHandlers(false);
+      }
     },
 
+//    _onReleaseInScroller: function(e) {
+//      e.preventDefault();
+//      if (this._isScrolling()) {
+//        e.stopImmediatePropagation();
+//        return false;
+//      }
+//    },
+    
     _onDragScrollerStart: function(e) {
       e.gesture.preventDefault();
       this._resetScroller();
@@ -169,6 +176,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         return;
       }
       
+      s._dragging = true;
       var touch = e.gesture.touches[0],
           pos = s.position,
           axis = this._getScrollAxis(),
@@ -193,6 +201,9 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
 
     _onSwipeScroller: function(e) {
+      if (!e.gesture)
+        return;
+      
       // scrollTo and do momentum
       var s = this._scrollerProps,
           velocity,
@@ -217,6 +228,9 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
 
     _onKeyDown: function(e) {
+      if (!this._scrollerInitialized)
+        return;
+      
       var s = this._scrollerProps;
       if (s._keyHeld)
         return;
@@ -233,9 +247,6 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
           time,
           distance;
 
-      this._resetScroller();
-      s._keyHeld = keyCode;
-      
       switch (keyCode) {
       case 33: // page up
         distance = window.innerHeight;
@@ -260,8 +271,12 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         distance = bounds.min - pos[axis];
         break;
       default:
-        return s.state;
+        return;
       }        
+      
+      this._resetScroller();
+      s._keyHeld = keyCode;
+//      this.log('KEYING DOWN', keyCode);
       
       distance = distance | 0;
       newPos[axis] += distance;
@@ -278,6 +293,10 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     
     _onKeyUp: function(e) {
       var s = this._scrollerProps;
+      if (!this._scrollerInitialized || !s._keyHeld)
+        return;
+
+//      this.log('KEYING UP', U.getKeyEventCode(e));
       this._updateScrollPosition();
       this._scrollTo(s.position.X, s.position.Y);
       this._resetScroller();
@@ -294,19 +313,23 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       var domMethod = enable ? 'addEventListener' : 'removeEventListener';
       var frame = s.frame;
 //      var observer = frame;//doc;
-      var hammer = s.hammer;
+      var hammer = this.hammer();
       var dragEvents = horizontal ? 'dragright dragleft' : 'dragup dragdown';
       var swipeEvents = horizontal ? 'swiperight swipeleft' : 'swipeup swipedown';
       
       this._scrollingEnabled = enable;
       frame[domMethod]('load', this._onSizeInvalidated, true);
       hammer[hammerMethod]('tap', this._onClickInScroller);
+      hammer[hammerMethod]('release', this._onReleaseInScroller);
       hammer[hammerMethod](dragEvents, this._onDragScroller);
       hammer[hammerMethod](swipeEvents, this._onSwipeScroller);
       hammer[hammerMethod]('dragstart', this._onDragScrollerStart);
       hammer[hammerMethod]('dragend', this._onDragScrollerEnd);
-      doc[domMethod]('keydown', this._onKeyDown, true);
-      doc[domMethod]('keyup', this._onKeyUp, true);
+      
+      if (s.keyboard) {
+        doc[domMethod]('keydown', this._onKeyDown, true);
+        doc[domMethod]('keyup', this._onKeyUp, true);
+      }
       
       if (!enable) {
         if (this._mutationObserver) {
@@ -346,7 +369,16 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     _onSizeInvalidated: _.debounce(function(e) {
-      if (!this.rendered || !this._scrollerProps || !this._scrollerProps.position || !this.isActive())
+      if (!this.isActive())
+        return;
+      
+      if (!this.isPageView()) {
+        var page = this.getPageView();
+        if (page)
+          page.$el.trigger('resize');
+      }
+        
+      if (!this.rendered || !this._scrollerProps || !this._scrollerProps.position)
         return;
       
       if (this.getLastPageEvent() !== 'pageshow') {
@@ -361,7 +393,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
 //      if (e && e.type == 'load' && e.target && e.target.tagName == 'IMG')
 //        return;
       
-      console.log("RECALCULATING SCROLLER SIZE", e && e.type);
+      this.log("RECALCULATING SCROLLER SIZE", e && e.type);
       this._scrollerSizeRecalcQueued = false;
       this.log('invalidated size');
       this._calculateSizes();
@@ -370,6 +402,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     }, 100),
     
     _calculateSizes: function() {
+      this._scrollerInitialized = false;
       var s = this._scrollerProps,
           frame = s.frame,
           scrollWidth = this.el.scrollWidth,
@@ -386,6 +419,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       if (!scrollDim || !containerDim)
         return false;
       
+      this._scrollerInitialized = true;
       _.extend(s, {        
         metrics: {
           snapGrid: {
@@ -474,13 +508,14 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       this._scrollerProps.timeouts.push(setTimeout(fn, time));
     },
     
-    _resetScroller: function(wake) {
+    _resetScroller: function() {
+      this.log('RESETTING SCROLLER');
       var s = this._scrollerProps;
       this._clearScrollTimeouts();
 //      this._clearTouchHistory();
       if (this._isScrolling()) {
         this._updateScrollPosition(); // parse from CSS
-        s._keyHeld = s._flinging = s._snapping = null;
+        s._start = s._keyHeld = s._flinging = s._snapping = s._dragging = null;
         Q.write(this._clearScrollerTransitionStyle, this, undefined, {
           throttle: true,
           last: true
@@ -489,6 +524,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     _clearScrollerTransitionStyle: function() {
+//      this.log("clearing scroller transition style");
       CSS.setStylePropertyValues(this.el.style, {
         transition: null
       });
@@ -521,7 +557,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       }
       else {
         this._scrollerProps.position = CSS.getTranslation(this.el);
-        console.debug("PARSED SCROLL POS:", this._scrollerProps.position);
+        console.debug("PARSED SCROLL POS:", this._scrollerProps.position, this.TAG);
       }
     },
     
@@ -556,8 +592,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     _scrollTo: function(x, y, time, ease) {
-//      this.log('scrolling to: ' + JSON.stringify(position) + ', in ' + time + 'ms');
       time = time || 0;
+//      this.log('scrolling to:', x, ',', y, ', in ' + time + 'ms');
       var s = this._scrollerProps,
           pos = s.position,
           bounce = s.bounce;
@@ -656,14 +692,15 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
           destination = s.scrollBounds[axis][endpoint],
           time;
       
-      this._snappingScroller = true;
+      s._snapping = true;
       if (axis == 'X')
         snapToX = destination;
       else
         snapToY = destination;
       
-      time = immediate ? 0 : this._calcAnimationTime(pos.X, pos.Y, snapToX, snapToY);    
+      time = immediate ? 0 : this._calcAnimationTime(pos.X, pos.Y, snapToX, snapToY) / 2;    
       this._scrollTo(snapToX, snapToY, time, beziers.bounce, time);
+      s._snapping = false;
     },
     
     _calcAnimationTime: function(distance) {
@@ -672,6 +709,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         distance = Math.abs(arguments[0][axis] - arguments[1][axis]);
       }
       else if (arguments.length == 4) {
+        var axis = this._getScrollAxis();
         var idx = axis == 'X' ? 0 : 1;
         distance = Math.abs(arguments[idx] - arguments[idx + 2]);
       }

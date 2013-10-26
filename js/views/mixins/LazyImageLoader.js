@@ -97,13 +97,11 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     },
     
     _start: function() { 
-      if (this._started)
-        return;
-      
-      this._started = true;
-      this.$el.on('scrollo', this._showImages);
-//      this._lazyImages = getDummyImages(this.$el);
-      this._showImages();
+      if (!this._started) {
+        this.$el.on('scrollo', this._showImages);
+  //      this._lazyImages = getDummyImages(this.$el);
+        this._showImages();
+      }
     },
 
     _pause: function() {
@@ -125,6 +123,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     },
     
     _showImages: _.debounce(function() {      
+      this._started = true;
       this._lazyImages = getDummyImages(this.$el);      
       if (!this._lazyImages.length)
         return;

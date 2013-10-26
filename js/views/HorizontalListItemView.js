@@ -44,6 +44,7 @@ define('views/HorizontalListItemView', [
       this.makeTemplate(this.template, 'template', this.vocModel.type);
       this.resource.on('change', this.refresh, this);      
       this.isTrigger = this.vocModel.type === G.commonTypes.Handler;
+//      this.bothSides = options.bothSides;
       this.showArrows = options.arrows !== false;
     },
     
@@ -54,8 +55,94 @@ define('views/HorizontalListItemView', [
       this.render();
     },
     
+//    renderIntersectionSides: function(options) {
+//      var json = this.resource.attributes,
+//          cloned = this.clonedProperties,
+//          intersection = cloned.Intersection,          
+//          iProps = {
+//            a: resource.get(intersection.a), 
+//            b: resource.get(intersection.b)
+//          };
+//      
+//      if (!iProps.a || !iProps.b || !json[iProps.a] || !json[iProps.b])
+//        return false;
+//      
+//      var imgProps = {a: U.getCloneOf(vocModel, 'Intersection.aFeatured')[0], b: U.getCloneOf(vocModel, 'Intersection.bFeatured')[0]};
+//      if (!imgProps.a || !imgProps.b)
+//        return false;
+//      
+//      var resUri = res.getUri();
+//      var data1 = this._getXSideData(options, 'a');
+//      var data2 = this._getXSideData(options, 'b');
+//      
+//      var html = this.template(data1) + this.template(data2);
+//      if (options.renderToHtml)
+//        this._html = html;
+//      else
+//        this.$el.html(html)
+//        
+//      return this;           
+//    },
+//    
+//    _getXSideData: function(options, side) {
+//      var json = this.resources.attributes,
+//          vocModel = this.vocModel,
+//          meta = vocModel.properties,
+//          iProps = this.clonedProperties.Intersection,
+//          sidePropName = iProps[side],
+////          sideProp = meta[sidePropName],
+//          target = this.linkToIntersection ? resUri : json[sidePropName];
+//
+//      if (!target)
+//        return;
+//      
+//      target = U.getLongUri1(target);
+//      var imgProp = iProps[side + 'Featured'];
+//      var metaP = meta[imgProp];
+//      var image = json[imgProp];
+//      if (image && image.indexOf('Image/') == 0)
+//        image = image.slice(6);    
+//
+//      var imageData = {
+//        imageProperty: imgProp,
+//        image: image,
+//        _uri: json[iProps[p]],
+//        target: U.makePageUrl('view', target),
+//        title: json[sidePropName + '.displayName'],
+//        width: json[side + 'OriginalWidth'],
+//        height: json[side + 'OriginalHeight'],            
+//        metaW: metaP['imageWidth'],
+//        metaH: metaP['imageHeight'],
+//        metaDim: metaP['maxImageDimension']
+//      };
+//      
+//      if (vocModel.type == G.commonTypes.Handler) {
+//        if (side === 'a') {
+//          imageData.caption = json['cause.displayName'];
+//          imageData.superscript = 'Cause';
+//        }
+//        else {
+//          imageData.caption = json['effect.displayName'];
+//          imageData.superscript = 'Effect';
+//        }
+//      }
+//      else {
+//        imageData.caption = this.getCaption(iProps[side]);
+//      }
+//      
+////      if (side === 'b')
+////        imageData['float'] = 'right';
+////      else if (this.showArrows)
+////        imageData['arrow'] = resUri;
+//      
+//      return imageData;
+//    },
+    
     render: function(options) {
-      var source = this.source,
+//      if (options.bothSides)
+//        return renderIntersectionSides(options);
+      
+      var source = options.source || this.source,
           vocModel = this.vocModel,
           meta = vocModel.meta,
           resource = this.resource,
@@ -76,7 +163,7 @@ define('views/HorizontalListItemView', [
           intersection,
           targetProp,
           imgProp;
-      
+          
       if (isIntersection) {        
         var iValues = {
             a: resource.get(intersection.a), 
@@ -143,7 +230,7 @@ define('views/HorizontalListItemView', [
       }
       
       if (typeof target == 'undefined') 
-        return;
+        return false;
 
       plugs = resource.get('plugs') || {count: undefined};
       superscript = isFriendApp ? plugs.count : undefined;
@@ -184,12 +271,6 @@ define('views/HorizontalListItemView', [
           imageProperty = U.getImageProperty(vocModel),
           more = {};
           
-//      if (imageProperty) {
-//        more.imageProperty = imageProperty;
-//        if (more.imageProperty)
-//          more.maxImageDimension = meta[imageProperty].maxImageDimension;
-//      }
-      
       more.displayNameProps = U.getDisplayNameProps(vocModel);
       if (intersection) {
         more.intersectionProp = {

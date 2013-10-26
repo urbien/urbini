@@ -1,13 +1,10 @@
 //'use strict';
 define('templates', [
-  'globals',
-//  'fileCache!../templates.jsp',
-  '../templates.jsp',
-  '../templates_bb.jsp',
-  'underscore',
-  'events',
-  'lib/fastdom'
-], function(G, HTML, HTML_bb,_, Events, Q) {
+  'globals', 
+  'underscore', 
+  'events', 
+  '../templates.jsp'
+].concat(Lablz.currentApp.widgetLibrary == 'Building Blocks' ? '../templates_bb.jsp' : []), function(G,_, Events, HTML, HTML_bb) {
   _.templateSettings = {
     evaluate:    /\{\{(.+?)\}\}/g,
     interpolate: /\{\{=(.+?)\}\}/g
@@ -90,20 +87,17 @@ define('templates', [
     // This implementation should be changed in a production environment:
     // All the template files should be concatenated in a single file.
     loadTemplates: function() {
+      if (HTML_bb) {
+        HTML += HTML_bb;
+        HTML_bb = null; // in case loadTemplates is ever called again;
+      }
+      
       var elts = $('script[type="text/template"]', $(HTML));
       _.each(elts, function(elt) {
         this.templates[elt.id] = {
           'default': prepTemplate(elt.innerHTML)
         };
-      }.bind(this));
-      if (G.currentApp.widgetLibrary  && G.currentApp.widgetLibrary == 'Building Blocks') {
-        var elts = $('script[type="text/template"]', $(HTML_bb));
-        _.each(elts, function(elt) {
-          this.templates[elt.id] = {
-            'default': prepTemplate(elt.innerHTML)
-          };
-        }.bind(this));
-      }
+      }.bind(this));      
     },
  
     _treatTemplate: function(text) {

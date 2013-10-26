@@ -9,7 +9,9 @@ define('views/ListPage', [
   'views/ResourceListView', 
   'views/Header' 
 ], function(G, Events, U, Errors, Voc, BasicPageView, ResourceListView, Header) {
-  var MapView;
+  var MapView,
+      SPECIAL_INTERSECTIONS = [G.commonTypes.Handler, G.commonTypes.Friend, U.getLongUri1('model/social/NominationForConnection') /*, commonTypes.FriendApp*/];
+  
   return BasicPageView.extend({
     template: 'resource-list',
     clicked: false,
@@ -39,14 +41,14 @@ define('views/ListPage', [
       var isChooser = hash  &&  hash.indexOf('#chooser/') == 0;  
       var isMasonry = this.isMasonry = !isChooser  &&  U.isMasonryModel(vocModel); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
       var isOwner = !G.currentUser.guest  &&  G.currentUser._uri == G.currentApp.creator;
-      this.isPhotogrid = false; //_.contains([G.commonTypes.Handler, G.commonTypes.Friend /*, commonTypes.FriendApp*/], type);
+      this.isSpecialIntersection = _.contains(SPECIAL_INTERSECTIONS, type);
       /*
-      if (!this.isPhotogrid) {
+      if (!this.isSpecialIntersection) {
         if (U.isA(this.vocModel, "Intersection")) {
           var af = U.getCloneOf(this.vocModel, 'Intersection.aFeatured');
           var bf = U.getCloneOf(this.vocModel, 'Intersection.bFeatured');
           if (af.length  &&  bf.length)
-            this.isPhotogrid = true;
+            this.isSpecialIntersection = true;
         }
       }
       */
@@ -147,8 +149,8 @@ define('views/ListPage', [
       this.isEdit = (params  &&  params['$editList'] != null); // || U.isAssignableFrom(vocModel, G.commonTypes.CloneOfProperty);
       this.listContainer = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : (this.isEdit ? '#editRlList' : '#sidebar'));
       var listViewType;
-      if (this.isPhotogrid)
-        listViewType = 'PhotogridListView';
+      if (this.isSpecialIntersection)
+        listViewType = 'IntersectionListView';
       else if (this.isComment)
         listViewType = 'CommentListView';
       else if (isMasonry || isModification)
@@ -163,7 +165,7 @@ define('views/ListPage', [
         readyDfd.resolve();
       });
       
-      this.canSearch = !this.isPhotogrid; // for now - search + photogrid results in something HORRIBLE, try it if you're feeling brave
+      this.canSearch = !this.isSpecialIntersection; // for now - search + photogrid results in something HORRIBLE, try it if you're feeling brave
       
       // setup filtering
       this.listenTo(filtered, 'endOfList', function() {
@@ -368,10 +370,10 @@ define('views/ListPage', [
         this.$('#mv').hide();
       if (!this.isEdit)
         this.$('#editRlForm').hide();
-      if (this.isPhotogrid) {
-        this.listView.$el.addClass('grid-listview');
+//      if (this.isSpecialIntersection) {
+//        this.listView.$el.addClass('grid-listview');
 //        this.listView.$el.find('ul').removeClass('grid-listview');
-      }
+//      }
       this.$('#sidebarDiv').css('clear', 'both');
       if (G.theme.backgroundImage) { 
         this.$('#sidebarDiv').css('background-image', 'url(' + G.theme.backgroundImage +')');
