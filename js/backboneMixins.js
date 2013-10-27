@@ -1,12 +1,8 @@
 define('backboneMixins', ['underscore', 'backbone', 'events', 'utils', 'lib/jquery.hammer'], function(_, Backbone, Events, U) {  
   (function(_, Backbone) {
-    if( !$.fn.hammer ){
-      throw new Error('Hammer jQuery plugin not loaded.');
-    }
-
     Backbone.hammerOptions = {
       prevent_default: true,
-      no_mouseevents: true
+      tap_always: false
     };
     
     var delegateEventSplitter = /^(\S+)\s*(.*)$/;
@@ -26,28 +22,16 @@ define('backboneMixins', ['underscore', 'backbone', 'events', 'utils', 'lib/jque
       _hammered: false,
 
       undelegateEvents: function(){
-        return this.undelegateHammerEvents();
-//        return undelegateEvents.apply(this, arguments);
-      },
-
-      undelegateHammerEvents: function(){
-        if (this._hammered) {
-          this.hammer().off('.hammerEvents' + this.cid);
-        }
+        if (this._hammered)
+          this.hammer().off('.hammerEvents' + this.TAG + this.cid);
         
         return this;
       },
 
-      delegateEvents: function(){
-//        delegateEvents.apply(this, arguments);
-        return this.delegateHammerEvents();
-//        return this;
-      },
-
-      delegateHammerEvents: function(events){
+      delegateEvents: function(events){
         var options = _.defaults(this.hammerOptions || {}, Backbone.hammerOptions);
         if (!(events || (events = _.result(this, 'events')))) return this;
-        this.undelegateHammerEvents();
+        this.undelegateEvents();
         for(var key in events) {
           var method = events[key];
           if (!_.isFunction(method)) method = this[events[key]];
@@ -55,8 +39,8 @@ define('backboneMixins', ['underscore', 'backbone', 'events', 'utils', 'lib/jque
 
           var match = key.match(delegateEventSplitter);
           var eventName = match[1], selector = match[2];
-          eventsName = Events.getEventName(eventName);
-          eventName += '.hammerEvents' + this.cid;
+//          eventName = Events.getEventName(eventName);
+          eventName += '.hammerEvents' + this.TAG + this.cid;
           method = _.bind(method, this);
           if (selector === '') {
             this.hammer(options).on(eventName, method);
@@ -154,21 +138,21 @@ define('backboneMixins', ['underscore', 'backbone', 'events', 'utils', 'lib/jque
         origDE = ViewProto.delegateEvents,
         origUDE = ViewProto.undelegateEvents;
     
-    ViewProto.delegateEvents = function(events) {
-      origDE.apply(this, arguments);
-      var eventContexts = {
-          myEvents: this,
-          globalEvents: Events,
-          modelEvents: this.model
-//          ,
-//          pageEvents: this.pageView.$el
-  //        ,
-  //        windowEvents: window
-        },
-        windowEvents = this.windowEvents,
-        pageEvents = this.pageEvents,
-        pageView = this.pageView,
-        $pageViewEl = pageView && pageView.$el;
+    ViewProto.delegateEvents = function() {
+      var result = origDE.apply(this, arguments),
+          eventContexts = {
+            myEvents: this,
+            globalEvents: Events,
+            modelEvents: this.model
+  //          ,
+  //          pageEvents: this.pageView.$el
+    //        ,
+    //        windowEvents: window
+          },
+          windowEvents = this.windowEvents,
+          pageEvents = this.pageEvents,
+          pageView = this.pageView,
+          $pageViewEl = pageView && pageView.$el;
 
       for (var eventsType in eventContexts) {
         var events = this[eventsType],
@@ -202,12 +186,13 @@ define('backboneMixins', ['underscore', 'backbone', 'events', 'utils', 'lib/jque
           $pageViewEl.on(name, fn);
         }        
       }
+      
+      return result;
     };
     
     ViewProto.undelegateEvents = function() {
-      origUDE.apply(this, arguments);
-      
-      var windowEvents = this.windowEvents,
+      var result = origUDE.apply(this, arguments),
+          windowEvents = this.windowEvents,
           pageEvents = this.pageEvents,
           pageView = this.pageView,
           $pageViewEl = pageView && pageView.$el;
@@ -236,6 +221,8 @@ define('backboneMixins', ['underscore', 'backbone', 'events', 'utils', 'lib/jque
           $pageViewEl.off(name, fn);
         }
       }
+      
+      return result;
     };
   }
   

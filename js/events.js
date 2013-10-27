@@ -6,8 +6,8 @@ define('events', [
   var hammerMap = {
     click: 'tap',
     dblclick: 'doubletap',
-    mousedown: 'touch',
-    mouseup: 'release',
+    mousedown: 'touchstart',
+    mouseup: 'touchend',
     touchstart: 'touch',
     touchmove: 'drag',
     touchend: 'release'

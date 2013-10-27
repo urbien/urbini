@@ -13,6 +13,10 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     return direction == 'up' || direction == 'left' ? -1 : 1; 
   }
   
+  function isVertical(direction) {
+    return direction == 'up' || direction == 'down';
+  }
+
   function scrollPosToOffset(pos) {
     return {
       scrollLeft: -pos.X,
@@ -114,7 +118,13 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       'resize': '_onSizeInvalidated',
       'orientationchange': '_onSizeInvalidated',
       'pageshow': '_onScrollerActive',      
-      'pagebeforehide': '_onScrollerInactive'
+      'pagebeforehide': '_onScrollerInactive',
+      'tap': '_onClickInScroller',
+//      'release': '_onReleaseInScroller',
+      'drag': '_onDragScroller',
+      'swipe': '_onSwipeScroller',
+      'dragstart': '_onDragScrollerStart',
+      'dragend': '_onDragScrollerEnd'
     },
 
     myEvents: {
@@ -168,6 +178,9 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
 
     _onDragScroller: function(e) {
+      if (this._isUnscrollableDirection(e))
+        return;
+      
       // scrollTo immediately
       e.gesture.preventDefault();
       var s = this._scrollerProps;
@@ -200,19 +213,31 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       this._scrollTo(newX, newY);
     },
 
+    _isUnscrollableDirection: function(e) {
+      var axis = this._getScrollAxis(),
+          dir = e.gesture.direction;
+      
+      if ((axis == 'X' && isVertical(dir)) || 
+          (axis == 'Y' && !isVertical(dir))) {
+        return true;
+      }
+    },
+    
     _onSwipeScroller: function(e) {
-      if (!e.gesture)
+      if (this._isUnscrollableDirection(e))
         return;
       
       // scrollTo and do momentum
       var s = this._scrollerProps,
+          axis,
           velocity,
           pos;
-       
+      
       if (!s.momentum)
-        return
+        return;
             
-      velocity = Math.min(e.gesture['velocity' + this._getScrollAxis()], this._scrollerProps.MAX_VELOCITY) * getDirectionMultiplier(e.gesture.direction)
+      axis = this._getScrollAxis();
+      velocity = Math.min(e.gesture['velocity' + axis], s.MAX_VELOCITY) * getDirectionMultiplier(e.gesture.direction);
       pos = s.position;
           
       if (!this._isInBounds(pos, false /* don't include bounce gutter */, true /* border counts as out */)) { 
@@ -314,17 +339,18 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       var frame = s.frame;
 //      var observer = frame;//doc;
       var hammer = this.hammer();
-      var dragEvents = horizontal ? 'dragright dragleft' : 'dragup dragdown';
-      var swipeEvents = horizontal ? 'swiperight swipeleft' : 'swipeup swipedown';
+//      var dragEvents = horizontal ? 'dragright dragleft' : 'dragup dragdown';
+//      var swipeEvents = horizontal ? 'swiperight swipeleft' : 'swipeup swipedown';
       
       this._scrollingEnabled = enable;
       frame[domMethod]('load', this._onSizeInvalidated, true);
-      hammer[hammerMethod]('tap', this._onClickInScroller);
-      hammer[hammerMethod]('release', this._onReleaseInScroller);
-      hammer[hammerMethod](dragEvents, this._onDragScroller);
-      hammer[hammerMethod](swipeEvents, this._onSwipeScroller);
-      hammer[hammerMethod]('dragstart', this._onDragScrollerStart);
-      hammer[hammerMethod]('dragend', this._onDragScrollerEnd);
+//      hammer[hammerMethod]('tap', this._onClickInScroller);
+////      hammer[hammerMethod]('release', this._onReleaseInScroller);
+//      this.hammer({ drag_block_horizontal:true, drag_block_vertical:true })
+//        [hammerMethod](dragEvents, this._onDragScroller)
+//        [hammerMethod](swipeEvents, this._onSwipeScroller);
+//        [hammerMethod]('dragstart', this._onDragScrollerStart)
+//        [hammerMethod]('dragend', this._onDragScrollerEnd);
       
       if (s.keyboard) {
         doc[domMethod]('keydown', this._onKeyDown, true);
@@ -395,7 +421,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       
       this.log("RECALCULATING SCROLLER SIZE", e && e.type);
       this._scrollerSizeRecalcQueued = false;
-      this.log('invalidated size');
+//      this.log('invalidated size');
       this._calculateSizes();
       if (!this._isInBounds())
         this._snapScroller(true);
@@ -509,7 +535,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     _resetScroller: function() {
-      this.log('RESETTING SCROLLER');
+//      this.log('RESETTING SCROLLER');
       var s = this._scrollerProps;
       this._clearScrollTimeouts();
 //      this._clearTouchHistory();
@@ -570,7 +596,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     _onClickInScroller: function(e) {
-      console.debug("CLICK EVENT: ", e);
+      console.debug(this.TAG, e.type.toUpperCase(), "EVENT:", e);
       var s = this._scrollerProps;
       if (this._isScrolling()) {
         console.debug("PREVENTING CLICK EVENT: ", e);
