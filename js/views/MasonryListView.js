@@ -61,16 +61,16 @@ define('views/MasonryListView', [
     getPageTag: function() {
       return 'div';
     },
+
+    preinitializeItem: function(res) {
+      this._preinitializedItem = ResourceMasonryItemView.preinitialize({
+        vocModel: this.vocModel,
+        className: 'nab nabBoard',
+        parentView: this
+      });
+    },
     
     renderItem: function(res, info) {
-      if (!this._preinitializedItem) {
-        this._preinitializedItem = ResourceMasonryItemView.preinitialize({
-          vocModel: this.vocModel,
-          className: 'nab nabBoard',
-          parentView: this
-        });
-      }
-      
       var liView = this.addChild(new this._preinitializedItem({
         resource: res
       }));

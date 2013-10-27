@@ -60,6 +60,15 @@ define('views/HorizontalListView', [
           this._elementsPerPage = 10;
       }
     },
+
+    preinitializeItem: function(res) {
+      var source = this.parentView.resource;
+      this._preinitializedItem = HorizontalListItemView.preinitialize({
+        vocModel: this.vocModel,
+        parentView: this,
+        source: source && source.getUri()
+      });
+    },
     
     renderItem: function(res, info) {
       var source = this.parentView.resource,
@@ -68,14 +77,6 @@ define('views/HorizontalListView', [
           b;
 
       source = source && source.getUri();
-      if (!this._preinitializedItem) {
-        this._preinitializedItem = HorizontalListItemView.preinitialize({
-          vocModel: this.vocModel,
-          parentView: this,
-          source: source
-        });
-      }
-
       if (this._isIntersectingWithCollection) {
         a = res.get('Intersection.a');
         b = res.get('Intersection.b');

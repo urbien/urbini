@@ -900,7 +900,7 @@ define('views/ResourceListView', [
       this.mode = mode;
     },
 
-    _preinitializeItem: function(res) {
+    preinitializeItem: function(res) {
       var vocModel = res.vocModel,
           params = {
             parentView: this,
@@ -978,7 +978,7 @@ define('views/ResourceListView', [
       var vocModel = first.vocModel;
       var meta = vocModel.properties;
       if (!this._preinitializedItem)
-        this._preinitializeItem(first);
+        this.preinitializeItem(first);
       
       if (U.isA(vocModel, 'Intersection')) {
         var ab = U.getCloneOf(vocModel, 'Intersection.a', 'Intersection.b'),

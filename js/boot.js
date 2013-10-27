@@ -12,9 +12,9 @@ DOMReady.add( function () {
   if (localStorage  &&  localStorage.getItem)
     localStorage.setItem('homePage', l.homePage);
     
-//  var hash = window.location.hash;
-//  if (!hash || /\#home/.test(hash))
-//    div.innerHTML = l.homePage;
+/*  var hash = window.location.hash;
+    if (!hash || /\#home/.test(hash)) */
+    div.innerHTML = l.homePage;
   
   var scripts = div.getElementsByTagName('script');
 /*  console.log('scripts: ' + scripts.length); */ 
