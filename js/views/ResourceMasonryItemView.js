@@ -115,7 +115,8 @@ define('views/ResourceMasonryItemView', [
       var html = this.template(data);
       if (options && options.renderToHtml) {
         var tagName = this.tagName || 'div';
-        this._html = '<{0} class="{1}">{2}</{0}>'.format(tagName, this.className, html);
+//        this._html = '<{0} class="{1}">{2}</{0}>'.format(tagName, this.className, html);
+        this._html = html;
         return this;
       }
       else

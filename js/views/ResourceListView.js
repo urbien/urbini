@@ -980,7 +980,7 @@ define('views/ResourceListView', [
       if (!this._preinitializedItem)
         this._preinitializeItem(first);
       
-      if (this._preinitializedItem.prototype.doesModelImplement('Intersection')) {
+      if (U.isA(vocModel, 'Intersection')) {
         var ab = U.getCloneOf(vocModel, 'Intersection.a', 'Intersection.b'),
             a = ab['Intersection.a'],
             b = ab['Intersection.b'];

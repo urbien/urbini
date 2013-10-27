@@ -178,7 +178,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
 
     _onDragScroller: function(e) {
-      if (this._isUnscrollableDirection(e))
+      if (this._canScroll(e))
         return;
       
       // scrollTo immediately
@@ -213,7 +213,10 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       this._scrollTo(newX, newY);
     },
 
-    _isUnscrollableDirection: function(e) {
+    _canScroll: function(e) {
+      if (!this._scrollerInitialized)
+        return;
+      
       var axis = this._getScrollAxis(),
           dir = e.gesture.direction;
       
@@ -224,7 +227,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     _onSwipeScroller: function(e) {
-      if (this._isUnscrollableDirection(e))
+      if (this._canScroll(e))
         return;
       
       // scrollTo and do momentum
@@ -622,7 +625,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
 //      this.log('scrolling to:', x, ',', y, ', in ' + time + 'ms');
       var s = this._scrollerProps,
           pos = s.position,
-          bounce = s.bounce;
+          bounce = s.bounce,
+          args = U.array();
       
       if (time) {
         // queue up scroll events

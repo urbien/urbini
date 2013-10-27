@@ -160,9 +160,11 @@ define('globals', function() {
     if (~G.skipModules.indexOf(name))
       return false;
     
+    var isBB = G.currentApp.widgetLibrary == 'Building Blocks';
+    if (!isBB && /\/bb\/|templates_bb\.jsp|bb_styles\.css/.test(name))
+      return false;
+    
     switch (name) {
-    case '../templates_bb.jsp':
-      return G.currentApp.widgetLibrary == 'Building Blocks';
     case 'lib/IndexedDBShim':
       return G.dbType == 'shim';
     case 'lib/whammy':
@@ -592,7 +594,13 @@ define('globals', function() {
         value = Object.prototype.toString.call(value) === '[object String]' ? value : JSON.stringify(value);
         try {
   //        G.localStorage.del(key);
-          localStorage.setItem(key, value);
+          if (window.fastdom) {
+            window.fastdom.nonDom(function() {              
+              localStorage.setItem(key, value);
+            });
+          }
+          else
+            localStorage.setItem(key, value);
         } catch(e) {
           debugger;
           if (['QuotaExceededError', 'QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
@@ -780,6 +788,20 @@ define('globals', function() {
   };
   
   var Bundler = {
+    pruneUnneededModules: function() {
+      var bundles = G.bundles;
+      for (var name in bundles) {
+        var bundle = bundles[name];
+        for (var type in bundle) {
+          var subBundle = bundle[type];
+          for (var i = subBundle.length - 1; i >= 0; i--) {
+            if (!isModuleNeeded(subBundle[i].name))
+              subBundle.splice(i, 1);
+          }
+        }
+      }
+    },
+      
     pruneBundle: function(bundle, options) {
       options = options || {};
       var source = options.source || 'localStorage';
@@ -822,7 +844,7 @@ define('globals', function() {
 //              }
           }
           
-          if (!name || appcache[name] || !isModuleNeeded(name))
+          if (!name || appcache[name])
             continue;
           
 //            var inAppcache = !!appcache[name];
@@ -906,9 +928,7 @@ define('globals', function() {
     loadBundle: function(bundle, options) {
       var bundleDfd = $.Deferred(),
           bundlePromise = bundleDfd.promise(),
-          options = options || {
-            async: true
-          },
+          options = options || {},
           source = options.source = options.source || 'localStorage',
           useWorker = G.hasWebWorkers && options.async,
           worker;
@@ -1017,10 +1037,7 @@ define('globals', function() {
         for (var type in bundle) {
           var bt = bundle[type];
           for (var i = bt.length - 1; i >= 0; i--) {
-            var info = bt[i];
-            if (!isModuleNeeded(info.name))
-              bt.splice(i, 1);
-              
+            var info = bt[i];              
             G.files[info.name] = info;
             if (when === 'appcache') {
     //        if ((type === 'js' && ALL_IN_APPCACHE && !/^lib/.test(info.name)) || when === 'appcache') {
@@ -1390,7 +1407,7 @@ define('globals', function() {
       });
       
       if (missing.length) {
-        debugger; // should only happen when dynamically deciding which modules to load (like based on browser)
+        // should only happen when dynamically deciding which modules to load (like based on browser, or based on app settings)
         bundlePromises.push(Bundler.loadBundle(missing));
       }
       
@@ -1802,6 +1819,7 @@ define('globals', function() {
   setMiscGlobals();
   adjustForVendor();
   testIfInsidePackagedApp();
+  Bundler.pruneUnneededModules();
   Bundler.prepAppCacheBundle();
   require.config(requireConfig);   
   load();
