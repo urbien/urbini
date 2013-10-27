@@ -101,6 +101,12 @@ define('views/MenuPanel', [
       if (href.indexOf("Alert?") != -1) 
         G.currentUser.newAlertsCount = 0;
 
+      if (G.currentApp.widgetLibrary &&  G.currentApp.widgetLibrary == 'Building Blocks') {
+        Events.stopEvent(e);
+        window.location.replace(G.appUrl + '#' + href);
+        window.location.reload(true);
+        return;  
+      }
       var hash = window.location.hash;
       if (hash  &&  href == hash.substring(1)) {
         var menu = this.$el.closest('[data-role="panel"]');
@@ -253,7 +259,7 @@ define('views/MenuPanel', [
       if (p  &&  p[0].tagName.toLowerCase() == 'section') 
         p.css('visibility', 'visible');
       else {
-        p.panel("open");
+        p.panel().panel("open");
         this.$('#menuItems').listview();
       }
 //      p.panel().panel("open");
