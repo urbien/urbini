@@ -45,7 +45,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
   
   function finishedTransaction(idbTransaction) {
     var idx = pendingTransactions.indexOf(idbTransaction);
-    if (idx >= 0)
+    if (~idx)
       Array.removeFromTo(pendingTransactions, idx, idx + 1);
     
     if (!pendingTransactions.length)
@@ -481,6 +481,8 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
               try {
                 
                 idbTransaction = db.transaction(storeNames, mode);
+                idbTransaction._blahblah = storeNames;
+                idbTransaction._dfd = dfd;
 								startedTransaction(idbTransaction);
                 
                 idbTransaction.onabort = idbTransaction.onerror = function(e) {

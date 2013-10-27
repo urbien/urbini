@@ -19,16 +19,19 @@
    {{ } }}
    ></ul-->
 
-  <div id="sidebarDiv" role="main" data-scrollable="true">
-    <section data-type="list" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
-    <div id="sidebar">
-    <div class="dummy head"></div>
-    <div class="dummy tail"></div>
+  <div id="sidebarDiv" role="main">
+    <div class="ui-input-search">
+      <input placeholder="Search..." data-type="search" class="ui-input-text ui-body-c" id="filter" /> 
     </div>
-   </section>
+    <section data-type="list" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
+      <div id="sidebar">
+        <div class="dummy head"></div>
+        <div class="dummy tail"></div>
+      </div>
+    </section>
     <div id="nabs_grid" class="masonry">
-    <div class="dummy head"></div>
-    <div class="dummy tail"></div>
+      <div class="dummy head"></div>
+      <div class="dummy tail"></div>
     </div>
     
     <!-- ul id="columns">
@@ -1365,6 +1368,13 @@
     {{= obj.caption ? '<p>{0}</p>'.format(obj.caption) : '' }}
     {{= typeof obj.superscript !== 'undefined' ? '<p class="ui-li-aside">{0}</p>'.format(superscript) : '' }}
   </a> 
+</script>
+
+<script type="text/template" id="intersectionListItemTemplate">
+  <li data-viewid="{{= viewId }}">
+    {{= a }}
+    {{= b }}
+  </li>
 </script>
 
 <script type="text/template" id="photogridTemplate">

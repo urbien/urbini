@@ -44,6 +44,14 @@ define('modelLoader', [
       }
     }
     
+    for (var i = 0, len = models.length; i < len; i++) {
+      var uri = models[i],
+          mapped = G.classMap[uri];
+      
+      if (mapped)
+        models[i] = mapped;
+    }
+    
     return models;
   };
       
@@ -56,11 +64,23 @@ define('modelLoader', [
     };
 
     this.appendRequest = function(models, options) {
-      delete options.wait;
       _.each(models, function(model) {
         _.pushUniq(collected, model);
       });
       
+      if (options.wait) {
+        delete options.wait;
+      }
+      
+      if (options.debounce) {
+        // debounce, fetch in bulk
+        if (this._fetchMoreModelsTimeout)
+          clearTimeout(this._fetchMoreModelsTimeout);
+        
+        this._fetchMoreModelsTimeout = setTimeout(this.execute, options.debounce);
+        delete options.debounce;
+      }
+
       return promise.then(function() {
         var resultDfd = $.Deferred();
         return resultDfd.resolve.apply(resultDfd, _.map(models, U.getModel));
@@ -68,7 +88,9 @@ define('modelLoader', [
     };
     
     this.execute = function(options) {
-      delete options.go;
+      if (options)
+        delete options.go;
+      
       _getModels(collected, options);
       return makeModelsPromise(collected).done(dfd.resolve).fail(dfd.reject).always(this.reset);
     };
@@ -82,6 +104,7 @@ define('modelLoader', [
       return collected.length;
     };
     
+    _.bindAll(this, 'execute');
     this.reset();
   };
 
@@ -240,7 +263,7 @@ define('modelLoader', [
             url: G.modelsUrl, 
             data: {models: modelsCsv}, 
             type: 'POST'
-          }, _.pick(options, 'sync'));
+          });
       
       U.ajax(ajaxSettings, 'fetchModels').done(function(data, status, xhr) {
         if (xhr.status === 304)
@@ -267,7 +290,7 @@ define('modelLoader', [
   
   function getModels(models, options) {
     options = options || {};
-    if (options.wait)
+    if (options.wait || options.debounce)
       return modelRequestCollector.appendRequest(models, options);
     else if (options.go)
       return modelRequestCollector.execute(options);
@@ -306,7 +329,7 @@ define('modelLoader', [
           Events.once('online', function(online) {
             var infoClone = _.clone(modelsInfo);
             infoClone.have = [];
-            fetchAndLoadModels(infoClone, _.extend({}, options, {sync: false}));
+            fetchAndLoadModels(infoClone, _.extend({}, options));
           });
           
           var loading = _.union(modelsInfo.have || [], _.values(modelsInfo.mightBeStale.models));

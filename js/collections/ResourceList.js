@@ -42,7 +42,7 @@ define('collections/ResourceList', [
       var vocModel = this.vocModel = this.model,
           meta = vocModel.properties;
           
-      _.bindAll(this, 'fetch', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'onResourceChange', 'disablePaging', 'enablePaging'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'fetch', 'parse', '_parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'onResourceChange', 'disablePaging', 'enablePaging'); // fixes loss of context for 'this' within methods
 //      this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
 //      this.on('aroundMe', vocModel.getAroundMe);
@@ -54,11 +54,11 @@ define('collections/ResourceList', [
       this.baseUrl = G.apiUrl + encodeURIComponent(this.type);
       this.url = this.baseUrl;
       if (options.params) {
-        this.params = options.params;
-        this.query = $.param(this.params);
+        this._parseParams(options.params);
+//        this.query = $.param(this.params);
       }
       else
-        this.parseQuery(options._query);
+        this._parseQuery(options._query);
       
       if (vocModel.adapter) {
         var validator = vocModel.adapter.validateCollection,
@@ -128,7 +128,7 @@ define('collections/ResourceList', [
       
       this.monitorQueryChanges();
       this.enablePaging();
-      this.on('endOfList', this.disablePaging);
+      this.on('endOfList', this.disablePaging);      
       log("info", "init " + this.shortName + " resourceList");      
     },
 
@@ -184,35 +184,48 @@ define('collections/ResourceList', [
         this.trigger('updated', [resource]);
     },
     add: function(resources, options) {
+      if (!_.size(resources))
+        return;
+      
       if (this['final'] && this.models.length)
         throw "This list is locked, it cannot be changed";
       
       options = options || {};
       var self = this,
-          multiAdd = _.isArray(resources);
+          multiAdd = _.isArray(resources),
+          fromServer = this.lastFetchOrigin == 'server',
+          params = this.modelParams,
+          setInitialParams = fromServer && _.size(params);
       
       resources = multiAdd ? resources : [resources];
       if (!resources.length)
         return;
       
-      resources = _.map(resources, function(resource) {
-        return resource instanceof Backbone.Model ? resource : new this.vocModel(resource, {silent: true, parse: true}); // avoid tripping newResource event as we want to trigger bulk 'added' event        
-      }.bind(this));
-
-      _.each(resources, function(resource) {
-        var uri = resource.getUri();
+      for (var i = 0, len = resources.length; i < len; i++) {
+        var resource = resources[i],
+            uri;
+        
+        resource = resources[i] = resource instanceof Backbone.Model ? 
+                                                            resource : 
+                                                            new this.vocModel(resource, {silent: true, parse: true}); // avoid tripping newResource event as we want to trigger bulk 'added' event
+        
+        uri = resource.getUri();
         if (U.isTempUri(uri)) {
           resource.once('uriChanged', function(oldUri) {
             var newUri = resource.getUri();
-            this._byId[newUri] = this._byId[oldUri]; // HACK? we need to replace the internal models cache mapping to use the new uri
-            delete this._byId[oldUri];
-          }.bind(this));
+            self._byId[newUri] = self._byId[oldUri]; // HACK? we need to replace the internal models cache mapping to use the new uri
+            delete self._byId[oldUri];
+          });
         }
         
-        self.listenTo(resource, 'change', self.onResourceChange);
-        self.listenTo(resource, 'change', self.onResourceChange);
-      });
-      
+        if (setInitialParams) {
+          // we may be end up requesting models with $select=..., or $omit=..., so we should set the provided ones right now, in case they're omitted from the fetch response
+          resource.set(params, {silent: true});
+        }
+
+        this.listenTo(resource, 'change', self.onResourceChange);
+        this.listenTo(resource, 'change', self.onResourceChange);
+      }
 //      this.adding = true;
       try {
         return Backbone.Collection.prototype.add.call(this, resources, _.defaults({ silent: true }, options));
@@ -286,30 +299,35 @@ define('collections/ResourceList', [
       
       return this.baseUrl + '?' + $.param(params);
     },
-    parseQuery: function(query) {
-      var params, filtered = {};
+    
+    _parseQuery: function(query) {
+      var params;
       if (query)
         params = U.getQueryParams(query);
       else
         params = this.params || {};
       
+      this._parseParams(params);
+    },
+    
+    _parseParams: function(params) {
+      var modelParams = {};
       for (var name in params) {
         if (name == '$offset') {
           this.setOffset(parseInt(val)); // offset is special because we need it for lookup in db
           this.page = Math.floor(this.offset / this.perPage);
         }
         else if (name == '$limit') {
-          this.perPage = filtered.$limit = parseInt(val);
+          this.perPage = params.$limit = parseInt(val);
         }
-        else if (name.charAt(0) == '-')
-          continue;
-        else
-          filtered[name] = params[name];
+        else if (!/^[\$-]/.test(name))
+          modelParams[name] = params[name];
       }
       
-      this.params = filtered;
+      this.params = params;
+      this.modelParams = modelParams;
       this.url = this.baseUrl + (this.params ? $.param(this.params) : ''); //this.getUrl();
-      this.query = U.getQueryString(U.getQueryParams(this), true); // sort params in alphabetical order for easier lookup
+      this.query = U.getQueryString(modelParams, true); // sort params in alphabetical order for easier lookup
     },
     isAll: function(interfaceNames) {
       return U.isAll(this.vocModel, interfaceNames);
@@ -420,6 +438,7 @@ define('collections/ResourceList', [
           vocModel = this.vocModel,
           error = options.error = options.error || Errors.getBackboneErrorHandler(),
           adapter = vocModel.adapter,
+          params = this.params,
           extraParams = options.params || {};
 
       if (this['final']) {
@@ -437,9 +456,8 @@ define('collections/ResourceList', [
         }
       }
 
-      this.params = this.params || {};
       if (this.offset)
-        this.params.$offset = this.offset;
+        params.$offset = this.offset;
       
       this.rUri = options.rUri;
       var urlParams = this.rUri ? _.getParamMap(this.rUri) : {};
@@ -454,8 +472,7 @@ define('collections/ResourceList', [
       if (limit > 50)
         options.timeout = 5000 + limit * 50;
       
-      this.params.$limit = limit;
-      
+      params.$limit = limit;
       try {
         options.url = this.getUrl(extraParams);
       } catch (err) {

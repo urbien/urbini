@@ -5,10 +5,10 @@ define('views/ResourceListView', [
   'events',
   'views/BasicView',
   'views/ResourceListItemView',
-  'views/PhotogridView',
   'collections/ResourceList',
-  'lib/fastdom'
-], function(G, U, Events, BasicView, ResourceListItemView, PhotogridView, ResourceList, Q) {
+  'lib/fastdom',
+  'vocManager'
+], function(G, U, Events, BasicView, ResourceListItemView, ResourceList, Q, Voc) {
   var $wnd = $(window),
       doc = document;
 
@@ -19,6 +19,7 @@ define('views/ResourceListView', [
   return BasicView.extend({
 //    _listItemViews: [],
 //    _pageReqNum: 0,
+//    _itemView: ResourceListItemView,
     _pages: [],
     _adjustmentQueued: false,
     _slidingWindowInsideBuffer: 1200, // px, should depend on size of visible area of the list, speed of device, RAM
@@ -36,7 +37,7 @@ define('views/ResourceListView', [
     _horizontal: false,
 
     initialize: function(options) {
-      _.bindAll(this, 'render', 'getNextPage', 'refresh', 'onScroll', 'adjustSlidingWindow', 'setMode', 'appendPages', 'onResourceChanged', 'getNewSize', '_viewportSizeChanged', '_updateConstraints', 'onFilter'); //, 'onScrollerSizeChanged');
+      _.bindAll(this, 'render', 'getNextPage', 'refresh', 'onScroll', 'adjustSlidingWindow', 'setMode', 'appendPages', 'onResourceChanged', 'getNewSize', '_viewportSizeChanged', '_updateConstraints'); //, 'onScrollerSizeChanged');
       BasicView.prototype.initialize.call(this, options);
       options = options || {};
       if (options.axis)
@@ -63,6 +64,25 @@ define('views/ResourceListView', [
       }
   
       this.isEdit = this.hashParams['$editList'];
+      
+//      var self = this,
+//          col = this.collection;
+//      _.each(['updated', 'added', 'reset'], function(event) {
+//        self.stopListening(col, event);
+//        self.listenTo(col, event, function(resources) {
+//          resources = U.isCollection(resources) ? resources.models : U.isModel(resources) ? [resources] : resources;
+//          var options = {
+//            resources: resources
+//          };
+//          
+//          options[event] = true;
+//          if (event == 'reset')
+//            self._resetPaging();
+//          
+//          self.refresh(options);
+//        });
+//      });
+
       return this;    
     },
 
@@ -73,6 +93,19 @@ define('views/ResourceListView', [
     
     pageEvents: {
       'scrollo.resourceListView': 'onScroll'
+    },
+
+    modelEvents: {
+      'reset': '_resetPaging'
+    },
+    
+    _resetPaging: function() {
+      this._pages.length = 0;
+      this._pageOffset = 0;
+      this._pagesCurrentlyInSlidingWindow = 0;
+      this._displayedCollectionRange.from = this._displayedCollectionRange = 0;
+      this.$('.listPage').remove();
+      this.adjustSlidingWindow();
     },
     
     getViewport: function() {
@@ -129,31 +162,6 @@ define('views/ResourceListView', [
       if (this.rendered)
         return this.refresh();
       
-      // setup filtering
-      var self = this,
-          col = this.filteredCollection = this.collection.clone();
-      
-      this.listenTo(col, 'endOfList', function() {
-        self.pageView.trigger('endOfList');
-      });
-      
-      this.listenTo(col, 'reset', function() {
-        self.pageView.trigger('newList');
-      });
-      
-//      _.each(['updated', 'added', 'reset'], function(event) {
-//        this.stopListening(col, event);
-//        this.listenTo(col, event, function(resources) {
-//          resources = U.isCollection(resources) ? resources.models : U.isModel(resources) ? [resources] : resources;
-//          var options = {
-//            resources: resources
-//          };
-//          
-//          options[event] = true;
-//          this.refresh(options);
-//        }.bind(this));
-//      }.bind(this));
-//      
 //      this._visibleArea = {
 //        top: 0,
 //        bottom: window.innerHeight,
@@ -170,7 +178,6 @@ define('views/ResourceListView', [
         this.dummies.tail.css('display', 'inline-block');
       }
       
-      this.setupSearchAndFilter();
       this.adjustSlidingWindow();
     },
   
@@ -301,7 +308,7 @@ define('views/ResourceListView', [
         n = Math.ceil((this._slidingWindowInsideBuffer - diff) / viewportDim);
         if (tailDiff < this._slidingWindowOutsideBuffer)
           return this.page(n).done(this.adjustSlidingWindow);
-        else if (this.filteredCollection.length - this._collectionRange.to < this._elementsPerPage * 2)
+        else if (this.collection.length - this._collectionRange.to < this._elementsPerPage * 2)
           return this.getNextPage();
         else
           return G.getResolvedPromise();
@@ -365,17 +372,11 @@ define('views/ResourceListView', [
 //      console.log("ADDING", n, "PAGES");
       n = n || 1;
       var self = this,
-          col = this.filteredCollection,
-          pageTag = this.getPageTag(),
-          pageAttributes = this.getPageAttributes(),
-//          sizes = this._slidingWindowAddRemoveInfo,
-          numRendered = 0,
-          numPagesRendered = 0,
-          pageStartTag = '<{0} class="listPage" {1}>'.format(pageTag, pageAttributes),
-          pageEndTag = '</{0}>'.format(pageTag),
-          stop = false,
-          colRange, $dummy, dummyDim, pages, frag, info, dfd, promise, slidingWindowBefore, slidingWindowAfter, postRenderResult, currentPageHtml, finish;
-
+          col = this.collection,
+          colRange, 
+          info,
+          preRenderPromise;
+      
       if (atTheHead) {
         var from = Math.max(this._pageOffset - n, 0);
         if (from == this._pageOffset) {
@@ -404,9 +405,43 @@ define('views/ResourceListView', [
       if (colRange.from >= colRange.to)
         return G.getRejectedPromise();
             
-      this._collectionRange = colRange;
-      dfd = $.Deferred();
-      promise = dfd.promise();
+//      frag = doc.createDocumentFragment();
+      info = {
+        isFirstPage: !this._pagesCurrentlyInSlidingWindow, 
+//        frag: frag,
+        range: colRange,
+//        total: colRange.to - colRange.from,
+        appended: [],
+        html: ''
+      };
+      
+//      page = $('<div class="listPage" id="{0}" />'.format(G.nextId())); // style="visibility:hidden;" ?
+//      this._pages[atTheHead ? 'unshift' : 'push'](page);
+
+      preRenderPromise = this.preRender(info);
+      if (_.isPromise(preRenderPromise))
+        return preRenderPromise.then(this._addPages.bind(this, n, atTheHead, info));
+      else
+        return this._addPages(n, atTheHead, info);
+    },
+    
+    _addPages: function(n, atTheHead, info) {
+      var self = this,
+          pageTag = this.getPageTag(),
+          pageAttributes = this.getPageAttributes(),
+    //      sizes = this._slidingWindowAddRemoveInfo,
+          colRange = this._collectionRange = info.range,
+          col = this.collection,
+          numRendered = 0,
+          numPagesRendered = 0,
+          pageStartTag = '<{0} class="listPage" {1}>'.format(pageTag, pageAttributes),
+          pageEndTag = '</{0}>'.format(pageTag),
+          stop = false,
+          dfd = $.Deferred(),
+          promise = dfd.promise(),
+          $dummy = this.dummies[atTheHead ? 'head' : 'tail'], 
+          dummyDim, pages, slidingWindowBefore, slidingWindowAfter, postRenderResult, currentPageHtml, finish;
+      
       finish = Q.nonDom.bind(Q, dfd.resolve);
       label(promise);
       dfd.done(function() {
@@ -415,20 +450,6 @@ define('views/ResourceListView', [
           self._pageOffset = Math.max(self._pageOffset - n, 0);
       });
       
-      $dummy = this.dummies[atTheHead ? 'head' : 'tail'];
-//      frag = doc.createDocumentFragment();
-      info = {
-        isFirstPage: !this._pagesCurrentlyInSlidingWindow, 
-//        frag: frag,
-        total: colRange.to - colRange.from,
-        appended: [],
-        html: ''
-      };
-      
-//      page = $('<div class="listPage" id="{0}" />'.format(G.nextId())); // style="visibility:hidden;" ?
-//      this._pages[atTheHead ? 'unshift' : 'push'](page);
-
-      this.preRender(info);
       function renderOneListItem(resNum, isFirst, isLast) {
         var res = col.models[resNum],
             liView = this.renderItem(res, atTheHead);
@@ -451,7 +472,7 @@ define('views/ResourceListView', [
         }
       }
       
-      for (var i = 0, resNum = 0; i < n; i++) {
+      for (var i = 0, resNum = colRange.from; i < n; i++) {
         for (var j = 0, numEls = this._elementsPerPage; j < numEls; ++j && ++resNum) {
           if (resNum + 1 == colRange.to)
             stop = true;
@@ -820,7 +841,7 @@ define('views/ResourceListView', [
 //        }, mock.toJSON())));
 //      }
 //      
-//      this.filteredCollection.add(models);
+//      this.collection.add(models);
 //      this._isPaging = true;
 //      this._pagingPromise = defer.promise().done(function() {
 //        this._isPaging = false;
@@ -833,7 +854,8 @@ define('views/ResourceListView', [
       if (this._isPaging)
         return this._pagingPromise;
       
-      var col = this.filteredCollection,
+      var self = this,
+          col = this.collection,
           before = col.length,
           defer = $.Deferred(),
           nextPagePromise,
@@ -861,9 +883,11 @@ define('views/ResourceListView', [
         nextPageUrl = nextPagePromise._url;
       
       this._isPaging = true;
+      
+      // if we fail to page, then keep isPaging true to prevent more paging
       this._pagingPromise = defer.promise().done(function() {
-        this._isPaging = false;
-      }.bind(this)); // if we fail to page, then keep isPaging true to prevent more paging
+        self._isPaging = false;
+      }); 
       
       this._pagingPromise._range = 'from: ' + before + ', to: ' + (before + numResourcesToFetch);
       return this._pagingPromise;
@@ -876,57 +900,57 @@ define('views/ResourceListView', [
       this.mode = mode;
     },
 
+    preinitializeItem: function(res) {
+      var vocModel = res.vocModel,
+          params = {
+            parentView: this,
+            vocModel: vocModel
+          },
+          preinitializer = this.constructor._itemView;
+          
+      while (preinitializer && !preinitializer.preinitialize) {
+        preinitializer = preinitializer.__super__.constructor;
+      }
+        
+      if (this.isEdit) {
+        params.editCols = this.hashParams['$editCols']; 
+        params.edit = true;
+        this._preinitializedItem = preinitializer.preinitialize(params);
+      }
+      else if (this.isMultiValueChooser) {
+        params.mv = true;
+        params.tagName = 'div';
+        params.className = "ui-controlgroup-controls";
+        params.mvProp = this.mvProp;
+        this._preinitializedItem = preinitializer.preinitialize(params);
+      }
+      else {
+        this._defaultSwatch = G.theme  &&  (G.theme.list  ||  G.theme.swatch);
+        this._preinitializedItem = preinitializer.preinitialize(params);
+      }
+    },
+    
     /**
      * @return view for rendered list item
      */
     renderItem: function(res, prepend) {
-      // TODO: do
       var viewName = 'listItem' + G.nextId(),
-          params = {
-            parentView: this,
-            vocModel: res.vocModel
-          },
           liView,
           preinitializedItem = this._preinitializedItem,
           options = {
             delegateEvents: false,
-            preinitialized: preinitializedItem,
+//            preinitialized: preinitializedItem,
             resource: res
           }
-          
+      
       if (this.isEdit) {
-        if (!preinitializedItem) {
-          params.editCols = this.hashParams['$editCols']; 
-          params.edit = true;
-          preinitializedItem = this._preinitializedItem = options.preinitialized = ResourceListItemView.preinitialize(params);
-        }
-        
         liView = new preinitializedItem(options);
       }
       else if (this.isMultiValueChooser) {
-        if (!preinitializedItem) {
-          params.mv = true;
-          params.tagName = 'div';
-          params.className = "ui-controlgroup-controls";
-          params.mvProp = this.mvProp;
-          preinitializedItem = this._preinitializedItem = options.preinitialized = ResourceListItemView.preinitialize(params);
-        }
-        
-//        var params = hash ? _.getParamMap(hash) : {};
-//        var mvProp = params.$multiValue;
-  //      var isChecked = defaultUnchecked === isListed;
         options.checked = _.contains(this.mvVals, res.get('davDisplayName'));
         liView = new preinitializedItem(options);
       }
       else {
-        if (!preinitializedItem) {
-          this._defaultSwatch = (G.theme  &&  (G.theme.list  ||  G.theme.swatch));
-//          if (this.imageProperty != null)
-//            params.imageProperty = this.imageProperty;
-          
-          preinitializedItem = this._preinitializedItem = options.preinitialized = ResourceListItemView.preinitialize(params);
-        }
-        
         options.swatch = res.get('swatch') || this._defaultSwatch;
         liView = new preinitializedItem(options);
       }
@@ -943,20 +967,56 @@ define('views/ResourceListView', [
       return liView;
     },
     
-//    addChild: function(view, prepend) {
-//      BasicView.prototype.addChild.call(this, view);
-//      this._listItemViews[prepend ? 'unshift' : 'push'](view);
-//      view.once('destroyed', function() {
-//        var idx = this._listItemViews.indexOf(view);
-//        if (~idx) {
-//          debugger; // should only happen if a view was destroyed other than due to sliding window management
-//          this._listItemViews.splice(idx, 1);
-//        }
-//      }.bind(this));
-//    },
-
     preRender: function(info) {
       // override me
+      var self = this;
+      var colRange = info.range;
+      var from = colRange.from;
+      var to = colRange.to;
+      var ranges = [];
+      var first = this.collection.models[from];
+      var vocModel = first.vocModel;
+      var meta = vocModel.properties;
+      if (!this._preinitializedItem)
+        this.preinitializeItem(first);
+      
+      if (U.isA(vocModel, 'Intersection')) {
+        var ab = U.getCloneOf(vocModel, 'Intersection.a', 'Intersection.b'),
+            a = ab['Intersection.a'],
+            b = ab['Intersection.b'];
+        
+        if (a && !U.getModel(a = a[0]))
+          ranges.push(meta[a].range);
+        if (b && !U.getModel(b = b[0]))
+          _.pushUniq(ranges, meta[b].range);
+          
+//        for (var i = from; i < to; i++) {
+//          var resource = this.collection.models[i];
+//          var range = model.properties[clonedI[side]].range;
+//          var r = U.getLongUri1(range);
+//          if (!U.getModel(r))
+//            ranges.push(r);
+//        }
+        
+        if (ranges.length)
+          return Voc.getModels(ranges);
+      }
+      
+//      .then(function() {
+//        var m = U.getModel(r);
+//        if (self.imageProperty.cloneOf == 'aFeatured' || self.imageProperty.cloneOf == 'bFeatured') {
+//          p = m.properties[U.cloneOf(m, 'ImageResource.mediumImage')];
+//          maxDim = m.properties[p].maxImageDimention || m.properties[p].imageWidth; 
+//        }
+//        else {
+//          p = m.properties[U.cloneOf(m, 'ImageResource.smallImage')];
+//          maxDim = m.properties[p].maxImageDimention || m.properties[p].imageWidth; 
+//        }
+//        
+//        rect = self.clipRect(resource, image, oW, oH, maxDim);
+//        _.extend(props, {top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right});
+//        return self.doRender(options, props);
+//      });
     },
 
     /**
@@ -983,53 +1043,11 @@ define('views/ResourceListView', [
 //      info.html += el;
     },
     
-    setupSearchAndFilter: function() {
-      this.$filteredUl = this.parentView.$('ul[data-filter="true"]');
-      this.$filteredUl.on('listviewbeforefilter', _.debounce(this.onFilter, 150));
-    },
-    
-    onFilter: function(e, data) {
-      var filtered = this.filteredCollection,
-          collection = this.collection,
-          $input = $(data.input),
-          value = $input.val(),
-          resourceMatches,
-          numResults;
-      
-      if (!value) {
-        filtered.reset(collection.models, {params: collection.params});
-        return;
-      }
-      
-      resourceMatches = _.filter(collection.models, function(res) {
-        var dn = U.getDisplayName(res);
-        return dn && dn.toLowerCase().indexOf(value.toLowerCase()) != -1;
-      });
-
-      filtered.reset(resourceMatches, {
-        params: _.extend({
-          '$like': 'davDisplayName,' + value
-        }, collection.params)
-      });
-      
-      numResults = filtered.size();
-      if (numResults < this.displayPerPage) {
-        var numOriginally = collection.size(),
-            indicatorId = this.showLoadingIndicator(3000), // 3 second timeout
-            hideIndicator = this.hideLoadingIndicator.bind(this, indicatorId);
-        
-        filtered.fetch({
-          forceFetch: true,
-          success: hideIndicator,
-          error: hideIndicator
-        });
-      }            
-    },
-    
     hasMasonry: function() {
       return this.type == 'masonry';
     }
   }, {
-    displayName: 'ResourceListView'
+    displayName: 'ResourceListView',
+    _itemView: ResourceListItemView
   });
 });

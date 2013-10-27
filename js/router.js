@@ -21,8 +21,7 @@ define('router', [
 //  'views/EditPage' 
 ], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth, Redirecter, Transitioner /*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
-  var Modules = {};
-  
+  var Modules = {};    
   function log() {
     var args = [].slice.call(arguments);
     args.unshift("router");
@@ -276,7 +275,7 @@ define('router', [
       this.fragmentToOptions[fragment] = adjustedOptions;
       _.extend(this, {
 //        previousView: this.currentView, 
-        previousHash: U.getHash() 
+        previousHash: G.currentHash 
       });
       
       if (options.transition)
@@ -304,15 +303,15 @@ define('router', [
 //    wasBackClicked: function() {
 //      return !this.navigating && !this.firstPage;
 //    },
-    route: function() {
-      var currentView = this.currentView;
-      this.previousHash = U.getHash(); 
-//      try {
-        return Backbone.Router.prototype.route.apply(this, arguments);
-//      } finally {
-//        this.previousView = currentView;
-//      }
-    },
+//    route: function() {
+//      var currentView = this.currentView;
+//      this.previousHash = U.getHash(); 
+////      try {
+//        return Backbone.Router.prototype.route.apply(this, arguments);
+////      } finally {
+////        this.previousView = currentView;
+////      }
+//    },
 
     /**
      * Backbone 1.0 decodes parameters, which confuses our routes, as we have fragments such as
@@ -472,8 +471,8 @@ define('router', [
       var params = U.getHashParams();
 //      var list =  (mode &&  mode == G.LISTMODES.CHOOSER &&  (params['$more'] || params['$less'])) ? null : C.getResourceList(model, query);
       var list =  (mode &&  mode == G.LISTMODES.CHOOSER &&  (params['$more'] || params['$less'])) ? null : C.getResourceList(model, query);
-      if (list && !list._lastFetchedOn)
-        list = null;
+//      if (list && !list._lastFetchedOn)
+//        list = null;
       
       var meta = model.properties;      
 //      var viewsCache = this.CollectionViews[typeUri] = this.CollectionViews[typeUri] || {};

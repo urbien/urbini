@@ -394,17 +394,24 @@ define('lib/fastdom', ['globals'], function(G) {
     delete this.jobs[job.id];
 
     // Call the job in
-//    try { 
-      if (job.args)
-        job.fn.apply(job.ctx, job.args);
-      else if (job.ctx)
-        job.fn.call(job.ctx);
+    try { 
+      var args = job.args,
+          ctx = job.ctx;
+    
+      if (args) {
+        if (_.isArray(args))
+          job.fn.apply(ctx, args);
+        else
+          job.fn.call(ctx, args);
+      }
+      else if (ctx)
+        job.fn.call(ctx);
       else
         job.fn();
-//    } catch(e) {
-//      debugger;
-//      this.onError(e);
-//    }
+    } catch(e) {
+      debugger;
+      this.onError(e);
+    }
     
     this.time();
     return job;

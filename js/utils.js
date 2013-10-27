@@ -18,6 +18,8 @@ define('utils', [
       doc = document,
       compiledTemplates = {},
       HAS_PUSH_STATE = G.support.pushState,
+      RECYCLED_OBJECTS = [],
+      RECYCLED_ARRAYS = [],
       FRAGMENT_SEPARATOR = HAS_PUSH_STATE ? '/' : '#';
 
   setInterval(function() { // TODO: make this less stupid
@@ -251,7 +253,7 @@ define('utils', [
         z = arguments[2];
       }
 //      return 'translate({0}px, {1}px)'.format(position.X, position.Y);
-      return 'translate({0}px, {1}px) translateZ({2}px)'.format(position.X, position.Y, position.Z || 0);
+      return 'translate({0}px, {1}px) translateZ({2}px)'.format(x || 0, y || 0, z || 0);
     },
     
     /**
@@ -4077,6 +4079,54 @@ define('utils', [
       }
 
       return new Blob([uInt8Array.buffer], {type: contentType});
+    },
+    
+    array: function() {
+      if (RECYCLED_ARRAYS.length)
+        return RECYCLED_ARRAYS.pop();
+      
+      return [];
+    },
+
+    object: function() {
+      if (RECYCLED_OBJECTS.length)
+        return RECYCLED_OBJECTS.pop();
+      
+      return {};
+    },
+
+    recycleContents: function(array) {
+      for (var i = 0, len = array.length; i < len; i++) {
+        U.recycle(array[i]);
+      }
+    },
+    
+    recycle: function() {
+      for (var i = 0, len = arguments.length; i < len; i++) {
+        var obj = arguments[i];
+        if (_.isArray(obj)) {
+          obj.length = 0;
+          RECYCLED_ARRAYS.push(obj);
+        }
+        else if (_.isObject(obj)) {
+          _.wipe(obj);
+          RECYCLED_OBJECTS.push(obj);
+        }
+      }
+    },
+    
+    clone: function(obj) {
+      if (_.isArray(obj)) {
+        var arr = U.array();
+        arr.push.apply(arr, obj);
+        return arr;
+      }
+      else if (_.isObject(obj)) {
+        var newObj = U.object();
+        return _.extend(newObj, obj);
+      }
+      else
+        throw "Cloning unsupported";
     }
   };
   

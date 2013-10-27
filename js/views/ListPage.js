@@ -9,22 +9,26 @@ define('views/ListPage', [
   'views/ResourceListView', 
   'views/Header' 
 ], function(G, Events, U, Errors, Voc, BasicPageView, ResourceListView, Header) {
-  var MapView;
+  var MapView,
+      SPECIAL_INTERSECTIONS = [G.commonTypes.Handler, G.commonTypes.Friend, U.getLongUri1('model/social/NominationForConnection') /*, commonTypes.FriendApp*/];
+  
   return BasicPageView.extend({
     template: 'resource-list',
     clicked: false,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'setMode', 'orientationchange');
+      _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'setMode', 'orientationchange', 'onFilter');
       this.constructor.__super__.initialize.apply(this, arguments);
       this.mode = options.mode || G.LISTMODES.DEFAULT;
 //      this.options = _.pick(options, 'checked', 'props');
       this.viewId = options.viewId;
       
+      var self = this;
       var rl = this.collection;
+      var filtered = this.filteredCollection = rl.clone();
       var readyDfd = $.Deferred();
       
       var commonParams = {
-        model: rl,
+        model: filtered,
         parentView: this
       };
       
@@ -37,14 +41,14 @@ define('views/ListPage', [
       var isChooser = hash  &&  hash.indexOf('#chooser/') == 0;  
       var isMasonry = this.isMasonry = !isChooser  &&  U.isMasonryModel(vocModel); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
       var isOwner = !G.currentUser.guest  &&  G.currentUser._uri == G.currentApp.creator;
-      this.isPhotogrid = false; //_.contains([G.commonTypes.Handler, G.commonTypes.Friend /*, commonTypes.FriendApp*/], type);
+      this.isSpecialIntersection = _.contains(SPECIAL_INTERSECTIONS, type);
       /*
-      if (!this.isPhotogrid) {
+      if (!this.isSpecialIntersection) {
         if (U.isA(this.vocModel, "Intersection")) {
           var af = U.getCloneOf(this.vocModel, 'Intersection.aFeatured');
           var bf = U.getCloneOf(this.vocModel, 'Intersection.bFeatured');
           if (af.length  &&  bf.length)
-            this.isPhotogrid = true;
+            this.isSpecialIntersection = true;
         }
       }
       */
@@ -54,10 +58,10 @@ define('views/ListPage', [
         this.mapReady = this.mapReadyDfd.promise();
         U.require('views/MapView', function(MV) {
           MapView = MV;
-          this.mapView = new MapView(commonParams);
-          this.addChild(this.mapView);
-          this.mapReadyDfd.resolve();
-        }.bind(this));
+          self.mapView = new MapView(commonParams);
+          self.addChild(self.mapView);
+          self.mapReadyDfd.resolve();
+        });
       }      
 
       var showAddButton;
@@ -118,6 +122,7 @@ define('views/ListPage', [
           }
         }
       }
+      
       this.headerButtons = {
         back: true,
         add: showAddButton,
@@ -135,10 +140,7 @@ define('views/ListPage', [
       
       this.addChild(this.header);
       
-      
-      var models = rl.models;
       var isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
-
       var meta = vocModel.properties;
       var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, U.getLongUri1('model/portal/Comment'));
 
@@ -147,8 +149,8 @@ define('views/ListPage', [
       this.isEdit = (params  &&  params['$editList'] != null); // || U.isAssignableFrom(vocModel, G.commonTypes.CloneOfProperty);
       this.listContainer = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : (this.isEdit ? '#editRlList' : '#sidebar'));
       var listViewType;
-      if (this.isPhotogrid)
-        listViewType = 'PhotogridListView';
+      if (this.isSpecialIntersection)
+        listViewType = 'IntersectionListView';
       else if (this.isComment)
         listViewType = 'CommentListView';
       else if (isMasonry || isModification)
@@ -158,20 +160,23 @@ define('views/ListPage', [
       
       this.ready = readyDfd.promise();
       U.require('views/' + listViewType).done(function(listViewCl) {
-        this.listView = new listViewCl(_.extend({mode: this.mode}, commonParams, self.options));
-        this.addChild(this.listView);
+        self.listView = new listViewCl(_.extend({mode: self.mode}, self.options, commonParams));
+        self.addChild(self.listView);
         readyDfd.resolve();
-      }.bind(this));
+      });
       
-      this.canSearch = !this.isPhotogrid; // for now - search + photogrid results in something HORRIBLE, try it if you're feeling brave
-      this.on('endOfList', function() {
-        this.$('#nextPage').hide();
-      }.bind(this));
+      this.canSearch = !this.isSpecialIntersection; // for now - search + photogrid results in something HORRIBLE, try it if you're feeling brave
       
-      this.on('newList', function() {
-        this.$('#nextPage').show();
-      }.bind(this));
+      // setup filtering
+      this.listenTo(filtered, 'endOfList', function() {
+        self.pageView.trigger('endOfList');
+      });
+      
+      this.listenTo(filtered, 'reset', function() {
+        self.pageView.trigger('newList');
+      });      
     },
+    
     setMode: function(mode) {
       if (!G.LISTMODES[mode])
         throw new Error('this view doesn\'t have a mode ' + mode);
@@ -183,12 +188,56 @@ define('views/ListPage', [
     
     events: {
       'click'            : 'click',
-      'click #nextPage'  : 'getNextPage',
+//      'click #nextPage'  : 'getNextPage',
       'click #homeBtn'   : 'home',
       'submit'            : 'submit',
       'orientationchange' : 'orientationchange',
-      'resize'            : 'orientationchange'
+      'resize'            : 'orientationchange',
+      'click #filter'    : 'focusFilter',
+      'change #filter'    : 'onFilter'
     },
+    
+    focusFilter: function(e) {
+      // HACK - JQM does sth weird to prevent focus when we're not using their listfilter widget
+      this.$filter.focus();
+    },
+    
+    onFilter: _.debounce(function(e, data) {
+      var filtered = this.filteredCollection,
+          collection = this.collection,
+          value = e.target.value,
+          resourceMatches,
+          numResults;
+      
+      if (!value) {
+        filtered.reset(collection.models, {params: collection.params});
+        return;
+      }
+      
+      resourceMatches = _.filter(collection.models, function(res) {
+        var dn = U.getDisplayName(res);
+        return dn && dn.toLowerCase().indexOf(value.toLowerCase()) != -1;
+      });
+
+      filtered.reset(resourceMatches, {
+        params: _.extend({
+          '$like': 'davDisplayName,' + value
+        }, collection.params)
+      });
+      
+      numResults = filtered.size();
+      if (numResults < this.displayPerPage) {
+        var numOriginally = collection.size(),
+            indicatorId = this.showLoadingIndicator(3000), // 3 second timeout
+            hideIndicator = this.hideLoadingIndicator.bind(this, indicatorId);
+        
+        filtered.fetch({
+          forceFetch: true,
+          success: hideIndicator,
+          error: hideIndicator
+        });
+      }            
+    }, 50),
 
     orientationchange: function(e) {
 //      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
@@ -244,14 +293,16 @@ define('views/ListPage', [
       window.location.href = here.slice(0, here.indexOf('#'));
       return this;
     },
-    getNextPage: function() {
-      if (this.isActive())
-        this.listView && this.listView.getNextPage();
-    },
+    
+//    getNextPage: function() {
+//      if (this.isActive())
+//        this.listView && this.listView.getNextPage();
+//    },
   //  nextPage: function(e) {
   //    Events.trigger('nextPage', this.resource);    
   //  },
 //    tap: Events.defaultTapHandler,
+    
     click: function(e) {
       this.clicked = true;
       var buyLink;
@@ -295,14 +346,16 @@ define('views/ListPage', [
     },
 
     renderHelper: function() {
+      var self = this,
+          tmpl_data = this.getBaseTemplateData(),
+          views = {
+            '#headerDiv': this.header
+          },
+          filter;
+      
       this.$el.attr("data-scrollable", "true");
-      var tmpl_data = this.getBaseTemplateData();
       tmpl_data.isMasonry = this.isMasonry;
       this.$el.html(this.template(tmpl_data));
-      
-      var views = {
-        '#headerDiv': this.header
-      };
       
       views[this.listContainer] = this.listView;
       this.assign(views);
@@ -317,16 +370,23 @@ define('views/ListPage', [
         this.$('#mv').hide();
       if (!this.isEdit)
         this.$('#editRlForm').hide();
-      if (this.isPhotogrid) {
-        this.listView.$el.addClass('grid-listview');
+//      if (this.isSpecialIntersection) {
+//        this.listView.$el.addClass('grid-listview');
 //        this.listView.$el.find('ul').removeClass('grid-listview');
-      }
+//      }
       this.$('#sidebarDiv').css('clear', 'both');
       if (G.theme.backgroundImage) { 
         this.$('#sidebarDiv').css('background-image', 'url(' + G.theme.backgroundImage +')');
       }
       if (!this.isMasonry)
         this.$('#sidebarDiv').css('overflow-x', 'visible');
+
+      this.$filter = this.$('#filter');
+      filter = this.$filter[0];
+      document.addEventListener('keydown', function(e) {
+        if (filter == e.target)
+          self.$filter.change();
+      });
       
       this.finish();
       return this;

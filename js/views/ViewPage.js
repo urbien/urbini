@@ -162,10 +162,7 @@ define('views/ViewPage', [
                       model: this.friends, 
                       parentView: this, 
                       source: uri, 
-                      swipeable: true, 
-                      _scrollableOptions: { 
-                        axis: 'X' 
-                      }
+                      swipeable: true 
                     });
                     
 //                    self.photogrid = new PhotogridView({model: self.friends, parentView: self, source: uri, swipeable: true});

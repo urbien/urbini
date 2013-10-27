@@ -979,7 +979,7 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   }
   
   .connect i { font-size:16px; color: #888;}
-  .thumb-gal .thumb-gal-item .thumb-gal-thumb {
+  .thumb-gal-item .thumb-gal-thumb {
     height: auto; /* To keep aspect ratio. */
     max-width: 100%;
     max-height: none;
@@ -997,13 +997,13 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   }
   
   /* Text position */
-  .thumb-gal .thumb-gal-item .thumb-gal-heading {
+  .thumb-gal-item .thumb-gal-heading {
     margin: 0;
     padding: 20px;
     bottom: 50%;
   }
   
-  .thumb-gal .thumb-gal-item .thumb-gal-desc {
+  .thumb-gal-item .thumb-gal-desc {
     margin: 0;
     padding: 0 20px;
     min-height: 50%;
@@ -1084,7 +1084,7 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   }*/
   .ui-listview .connect { float: left; top:110px; padding:0px; border:0px; background: none; background-image:none;}
   .connect i { font-size:36px;color: lightgrey;}
-  .thumb-gal .thumb-gal-item {
+  .thumb-gal-item {
     width: 232px;
     height: 232px;
     #margin: 9px 1.2%;
@@ -1113,7 +1113,7 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   }*/
   /* Because of the 1000px max-width the width will always be 230px (and margin left/right 10px),
   but we stick to percentage values for demo purposes. */
-  .thumb-gal .thumb-gal-item {
+  .thumb-gal-item {
     width: 230px;
     height: 230px;
     #margin: 10px 1%;

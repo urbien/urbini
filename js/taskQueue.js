@@ -129,7 +129,7 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
       running.push(task);
       promise.always(function() {
         var resolved = promise.state() === 'resolved';
-        log(resolved? 'taskQueue' : 'error', 'Task {0}: {1}'.format(resolved ? 'completed' : 'failed', task.name));        
+        log(resolved? 'taskQueue' : 'error', 'Task {0}: {1}'.format(resolved ? 'completed' : 'failed', task.name), arguments[0]);
         running.splice(running.indexOf(task), 1);
         if (tq.isBlocked())
           tq.open();
@@ -238,7 +238,7 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
           log('taskQueue', 'Task timed out: ' + self.name);
           defer.reject();
         }
-      }, 10000 + Math.random() * 5000);
+      }, 2000); // + Math.random() * 5000);
     };
     
     // allow task consumers to treat the task as a promise

@@ -65,28 +65,44 @@ define('underscoreMixins', ['_underscore'], function(_) {
   };
   
   _.extend(Array, {
-//    split: function(array, idx) {
-//      return [array.slice(0, idx), array.slice(idx)];
-//    },
     remove: function(array /* items */) {
-      var items = concat.apply(ArrayProto, slice.call(arguments, 1));
-      
-      for (var i in items) {
-        var item = items[i],
-            idx = indexOf.call(array, item);
-        
-        if (idx != -1)
-          array.splice(idx, 1);
+      for (var i = 1, len = arguments.length; i < len; i++) {
+        var arg = arguments[i];
+        if (_.isArray(arg)) {
+          for (var j = 0, argLen = arg.length; j < argLen; j++) {
+            Array.remove(array, arg[j]);
+          }
+        }
+        else {
+          var idx = indexOf.call(array, arg);
+          if (~idx) {
+            Array.removeFromTo(array, idx, idx + 1);
+//            for (var j = idx, arrLen = array.length - 1; j < arrLen; j++) {
+//              array[j] = array[j + 1];
+//            }
+//            
+//            array.length = arrLen;
+          }
+        }
       }
       
       return array;
     },
 
-    // courtesy of John Resig
-    removeFromTo: function(array, from, to) {
-      var rest = array.slice((to || from) + 1 || array.length);
-      array.length = from < 0 ? array.length + from : from;
-      return array.push.apply(array, rest);
+//    removeFromTo: function(array, from, to) {
+//      var rest = array.slice((to || from) + 1 || array.length);
+//      array.length = from < 0 ? array.length + from : from;
+//      return array.push.apply(array, rest);
+//    },
+
+    removeFromTo: function(array, fromIdx, toIdx) {
+      var howMany = toIdx - fromIdx;
+      for (var i = fromIdx, len = array.length - howMany; i < len; i++) {
+        array[i] = array[toIdx++];
+      }
+
+      array.length = len;
+      return array;
     },
 
     last: function(array) {

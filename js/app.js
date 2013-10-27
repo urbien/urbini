@@ -164,6 +164,9 @@ define('app', [
     
     return $.Deferred(function(defer) {      
       templatesRL.fetch({
+        params: {
+          $select: '$all'
+        },
         success: function() {
           templatesRL.each(function(template) {
             Templates.addCustomTemplate(template);
@@ -194,6 +197,9 @@ define('app', [
 
     return $.Deferred(function(defer) {      
       viewsRL.fetch({
+        params: {
+          $select: '$all'
+        },
         success: function() {
           viewsRL.each(function(view) {
             debugger;
@@ -216,7 +222,7 @@ define('app', [
     if (G.currentUser.guest)
       return RESOLVED_PROMISE;
       
-    return Voc.getModels(G.commonTypes.Grab).then(function() {
+    return Voc.getModels(G.commonTypes.Grab, {debounce: 3000}).then(function() {
       G.currentUser.grabbed = new ResourceList(G.currentUser.grabbed, {
         model: U.getModel(G.commonTypes.Grab),
         params: {
@@ -335,7 +341,7 @@ define('app', [
     if (!type)
       return G.getRejectedPromise();
       
-    return Voc.getModels(type, {wait: true}).then(function(model) {
+    return Voc.getModels(type, {debounce: 3000}).then(function(model) {
       var data;
       switch (hashInfo.route) {
         case "chooser": 
@@ -385,6 +391,9 @@ define('app', [
         
         Events.trigger('cache' + (U.isModel(data) ? 'Resource' : 'List'), data);
         data.fetch({
+          params: {
+            $select: '$all'
+          },
           success: function() {
             if (!data.isFetching())
               fetchDfd.resolve();
@@ -398,8 +407,8 @@ define('app', [
       });
     });
     
-    if (Voc.isDelayingModelsFetch())
-      Voc.getModels(null, {go: true});    
+//    if (Voc.isDelayingModelsFetch())
+//      Voc.getModels(null, {go: true});    
   };
   
   function doPostStartTasks() {
@@ -407,7 +416,9 @@ define('app', [
     initGrabs();
     setupPushNotifications();
     ResourceManager.sync();
-    prefetchResources();
+    if (U.getUrlInfo().route == 'home')
+      prefetchResources();
+    
   //    if (G.inWebview) {
   //      App.replaceGetUserMedia();
   //      Events.on('messageToApp', function(msg) {

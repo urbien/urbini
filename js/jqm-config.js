@@ -1,10 +1,17 @@
 // see: http://jquerymobile.com/test/docs/pages/backbone-require.html
 //'use strict';
 define('jqmConfig', function() {
+  var block = ['swipe', 'tap'];
+  
   $(document).bind("mobileinit", function () {
       var $m = $.mobile;
 //      console.log('mobileinit');
       $m.ajaxEnabled = false;
+      for (var i = 0; i < block.length; i++) {
+        delete $.event.special[block[i]];
+      }
+      
+      $.event.special.swipe = null;
       $m.linkBindingEnabled = false;
       $m.hashListeningEnabled = false;
       $m.pushStateEnabled = false;
