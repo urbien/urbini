@@ -212,7 +212,7 @@ define('views/BasicView', [
 
     _render: function(rOptions) {
   //    this.log('render', 'page title:', this.getPageTitle());
-      if (this.isActive()) {
+      if (rOptions && rOptions.force || this.isActive()) {
         var result = this._doRender.apply(this, arguments);
         if (this.autoFinish !== false)
           this.finish();

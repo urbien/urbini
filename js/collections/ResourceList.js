@@ -313,6 +313,7 @@ define('collections/ResourceList', [
     _parseParams: function(params) {
       var modelParams = {};
       for (var name in params) {
+        var val = params[name];
         if (name == '$offset') {
           this.setOffset(parseInt(val)); // offset is special because we need it for lookup in db
           this.page = Math.floor(this.offset / this.perPage);

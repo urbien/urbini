@@ -9,13 +9,33 @@ define('views/CommentListView', [
 ], function(G, U, Events, ResourceListView, CommentListItemView, ResourceList, $m) {
   return ResourceListView.extend({
     type: 'comment',
-    renderItem: function(res, last) {
+    
+    preinitializeItem: function() {
+    },
+        
+    getPageTag: function() {
+      return 'tbody';
+    },
+    
+    getDummies: function() {
+      var dummies = this.$('.dummy');
+      return {
+        head: dummies.filter('.head'),
+        tail: dummies.filter('.tail')
+      }
+    },
+
+    renderItem: function(res, prepend) {
       var liView = this.addChild(new CommentListItemView({
-        parentView: this,
         resource: res
       }));
       
-      liView.render({force: true});
+      this.addChild(liView, prepend);
+      liView.render({
+        force: true,
+        renderToHtml: true
+      });
+      
       return liView;
     },
     

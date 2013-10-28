@@ -342,8 +342,10 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
         return;
       }
       
-      if (!(imgInfo = info['for']))
+      if (!(imgInfo = info['for'])) {
+        img.src = info.realSrc;
         return;
+      }
       
       res = this.findResourceByCid(imgInfo.id) || this.findResourceByUri(imgInfo.id);
       prop = imgInfo.prop;

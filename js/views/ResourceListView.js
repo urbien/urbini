@@ -901,13 +901,13 @@ define('views/ResourceListView', [
     },
 
     preinitializeItem: function(res) {
-//      var vocModel = res.vocModel,
-//          params = {
-//            parentView: this,
-//            vocModel: vocModel
-//          },
-//          preinitializer = this.constructor._itemView;
-//          
+      var vocModel = res.vocModel,
+          params = {
+            parentView: this,
+            vocModel: vocModel
+          },
+          preinitializer = this.constructor._itemView;
+          
 //      while (preinitializer && !preinitializer.preinitialize) {
 //        preinitializer = preinitializer.__super__.constructor;
 //      }

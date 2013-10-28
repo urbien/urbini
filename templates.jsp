@@ -37,6 +37,8 @@
     <!-- ul id="columns">
     </ul -->
     <table class="table-stroke" width="100%" style="display:none" id="comments">
+      <tr class="dummy head"></tr>
+      <tr class="dummy tail"></tr>
     </table>
     <form data-ajax="false" id="mv" action="#">
       <input type="submit" id="mvSubmit" value="{{= loc('submit') }}" />
@@ -1191,7 +1193,7 @@
 
 <script type="text/template" id="comment-item">
 <td width="1%" valign="top">
-  <a href="{{= U.makePageUrl('view', submitter) }}">
+  <a href="{{= U.makePageUrl('view', submitter) }}"> 
     <img src="{{= obj['submitter.thumb'] }}" />
   </a>
 </td>
