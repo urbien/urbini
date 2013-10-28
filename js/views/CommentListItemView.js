@@ -65,15 +65,21 @@ define('views/CommentListItemView', [
 
 //    tap: Events.defaultTapHandler,
 //    click: Events.defaultClickHandler,  
-    render: function(event) {
-      var json = this.resource.toJSON();
+    render: function(options) {
+      var json = _.pick(this.resource.attributes, 'submitter', 'submitter.displayName', 'submitter.thumb', 'submitTime', 'title', 'description', 'votes');
       var thumb = json['submitter.thumb'];
       if (thumb) {
         var idx = thumb.indexOf('=');
         json['submitter.thumb'] = thumb.slice(idx + 1);
       }
-        
-      this.$el.html(this.template(json));
+
+      var html = this.template(json);
+      if (options && options.renderToHtml)
+        this._html = '<{0}>{1}</{0}>'.format(this.tagName, html);
+      else
+        this.$el.html(html);
+      
+      U.recycle(json);
       return this;
     }
   }, {

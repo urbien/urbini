@@ -1,5 +1,6 @@
 (function(window, doc, undefined) {
-var __started = new Date();
+var __started = new Date(),
+    ArrayProto = Array.prototype;
 
 $.extend({
   RESOLVED_PROMISE: $.Deferred().resolve().promise(),
@@ -204,7 +205,7 @@ define('globals', function() {
     var self = this;
     return function() {
       var args = arguments;
-      var timeout = constantTimeout || Array.prototype.shift.apply(args);
+      var timeout = constantTimeout || ArrayProto.shift.apply(args);
       setTimeout(function() {
         self.apply(self, args);
       }, timeout);
@@ -1599,6 +1600,10 @@ define('globals', function() {
       xhr.send(params);
     },
     
+    debug: function() {
+      console.debug.apply(console, arguments);
+    },
+
     log: function(tag, type) {
       if (!G.DEBUG || !TRACE.ON || !console || !console.log || !type)
         return;
@@ -1613,7 +1618,7 @@ define('globals', function() {
         
         var b = G.browser;
         var css = b && ((b.mozilla && parseInt(b.version.slice(0,2))) > 4 || b.chrome && parseInt(b.version.slice(0,2)) >= 24);
-        var msg = Array.prototype.slice.call(arguments, 2);
+        var msg = ArrayProto.slice.call(arguments, 2);
         var msgStr = '';
         for (var i = 0; i < msg.length; i++) {
           msgStr += (typeof msg[i] === 'string' ? msg[i] : JSON.stringify(msg[i]));

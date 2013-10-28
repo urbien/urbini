@@ -908,9 +908,9 @@ define('views/ResourceListView', [
           },
           preinitializer = this.constructor._itemView;
           
-      while (preinitializer && !preinitializer.preinitialize) {
-        preinitializer = preinitializer.__super__.constructor;
-      }
+//      while (preinitializer && !preinitializer.preinitialize) {
+//        preinitializer = preinitializer.__super__.constructor;
+//      }
         
       if (this.isEdit) {
         params.editCols = this.hashParams['$editCols']; 

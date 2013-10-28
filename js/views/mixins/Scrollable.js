@@ -157,12 +157,18 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
 //    },
     
     _onDragScrollerStart: function(e) {
+      if (!this._canScroll(e))
+        return;
+      
       e.gesture.preventDefault();
       this._resetScroller();
       this._scrollerProps._start = e.gesture.touches[0];
     },
 
     _onDragScrollerEnd: function(e) {
+      if (!this._canScroll(e))
+        return;
+      
       e.gesture.preventDefault();
       var s = this._scrollerProps,
           pos = s.position,
@@ -178,7 +184,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
 
     _onDragScroller: function(e) {
-      if (this._canScroll(e))
+      if (!this._canScroll(e))
         return;
       
       // scrollTo immediately
@@ -215,19 +221,24 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
 
     _canScroll: function(e) {
       if (!this._scrollerInitialized)
-        return;
+        return false;
+
+      if (!e || !e.gesture)
+        return true;
       
       var axis = this._getScrollAxis(),
           dir = e.gesture.direction;
       
-      if ((axis == 'X' && isVertical(dir)) || 
-          (axis == 'Y' && !isVertical(dir))) {
+      if ((axis == 'X' && !isVertical(dir)) || 
+          (axis == 'Y' && isVertical(dir))) {
         return true;
       }
+      else
+        return false;
     },
     
     _onSwipeScroller: function(e) {
-      if (this._canScroll(e))
+      if (!this._canScroll(e))
         return;
       
       // scrollTo and do momentum
@@ -256,7 +267,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
 
     _onKeyDown: function(e) {
-      if (!this._scrollerInitialized)
+      if (!this._canScroll(e))
         return;
       
       var s = this._scrollerProps;
@@ -320,8 +331,11 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     _onKeyUp: function(e) {
+      if (!this._canScroll(e))
+        return;
+      
       var s = this._scrollerProps;
-      if (!this._scrollerInitialized || !s._keyHeld)
+      if (!s._keyHeld)
         return;
 
 //      this.log('KEYING UP', U.getKeyEventCode(e));
@@ -586,7 +600,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       }
       else {
         this._scrollerProps.position = CSS.getTranslation(this.el);
-        console.debug("PARSED SCROLL POS:", this._scrollerProps.position, this.TAG);
+//        console.debug("PARSED SCROLL POS:", this._scrollerProps.position, this.TAG);
       }
     },
     
@@ -599,7 +613,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     _onClickInScroller: function(e) {
-      console.debug(this.TAG, e.type.toUpperCase(), "EVENT:", e);
+//      console.debug(this.TAG, e.type.toUpperCase(), "EVENT:", e);
       var s = this._scrollerProps;
       if (this._isScrolling()) {
         console.debug("PREVENTING CLICK EVENT: ", e);
@@ -625,8 +639,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
 //      this.log('scrolling to:', x, ',', y, ', in ' + time + 'ms');
       var s = this._scrollerProps,
           pos = s.position,
-          bounce = s.bounce,
-          args = U.array();
+          bounce = s.bounce;
       
       if (time) {
         // queue up scroll events

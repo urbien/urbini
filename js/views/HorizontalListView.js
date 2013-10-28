@@ -31,6 +31,7 @@ define('views/HorizontalListView', [
     },
 
     preRender: function() {
+      ResourceListView.prototype.preRender.apply(this, arguments);
       if (!_.has(this, '_isIntersectingWithCollection')) { // only calc this once
         var source = this.parentView.resource,
             vocModel = this.vocModel,
