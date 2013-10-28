@@ -26,13 +26,19 @@ define('views/IntersectionListItemView', [
     },
     
     render: function(options) {
-      var _options = _.defaults({
+      var _options1 = _.defaults({
         force: true,
+        cloneOf: 'Intersection.a',
+        renderToHtml: true
+      }, options);
+      var _options2 = _.defaults({
+        force: true,
+        cloneOf: 'Intersection.b',
         renderToHtml: true
       }, options);
       
-      this.hItemA.render(_options);
-      this.hItemB.render(_options);
+      this.hItemA.render(_options1);
+      this.hItemB.render(_options2);
       var htmlA = this.hItemA._html,
           htmlB = this.hItemB._html;
       
