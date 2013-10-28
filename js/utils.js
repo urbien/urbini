@@ -479,7 +479,11 @@ define('utils', [
         // end repeat url check
         
         if (opts.success) defer.done(opts.success);
-        if (opts.error) defer.fail(opts.error);        
+        if (opts.error) defer.fail(opts.error);
+        
+        if (opts.url == null || opts.url.slice(opts.url.length - 'null'.length) == 'null')
+            debugger;
+
         if (useWorker) {
           log('xhr', 'webworker', opts.url);
           G.getXhrWorker().done(function() {
@@ -1906,8 +1910,8 @@ define('utils', [
       }
       
       if (U.isA(vocModel, 'ImageResource')) {
-        cloneOf = U.getCloneOf(vocModel, 'ImageResource.smallImage')[0] || U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
         var isMasonry = U.isMasonry(vocModel)  &&  U.isMasonryModel(vocModel);
+        cloneOf = isMasonry ? U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0] : U.getCloneOf(vocModel, 'ImageResource.smallImage')[0] || U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
         if (isMasonry  &&  cloneOf) {
           var ww = $(window).width() - 40;
           if (ww < $(window).height()) {
@@ -2636,6 +2640,8 @@ define('utils', [
     clipToFrame: function(frmWidth, frmHeight, oWidth, oHeight, maxDim) {
       if (!maxDim)
         return;
+      if (oWidth < maxDim  &&  oHeight < maxDim)
+        return {clip_top: 0, clip_right: oWidth, clip_bottom: oHeight, clip_left: 0, top: 0, left: 0};
       if (maxDim  &&  (maxDim > frmWidth)) {
         var mdW, mdH;
         if (oWidth >= oHeight) {
@@ -2650,8 +2656,9 @@ define('utils', [
         }
         var dW = mdW > frmWidth ? Math.floor((mdW - frmWidth) / 2) : 0;
         var dH = mdH > frmHeight ? Math.floor((mdH - frmHeight) / 2) : 0;    
-        
-        return {clip_top: dH, clip_right: frmWidth + dW, clip_bottom: frmHeight + dH, clip_left: dW, top: (dH ? -dH : 0), left: (dW ? -dW : 0)};
+        var t = dH, l = dW, r = mdW > frmWidth ? frmWidth + dW : mdW, b = mdH > frmHeight ? frmHeight + dH : mdH;
+        return {clip_top: t, clip_right: r, clip_bottom: b, clip_left: l, top: (dH ? -dH : 0), left: (dW ? -dW : 0)};
+        //return {clip_top: dH, clip_right: frmWidth + dW, clip_bottom: frmHeight + dH, clip_left: dW, top: (dH ? -dH : 0), left: (dW ? -dW : 0)};
       }
     },
     
