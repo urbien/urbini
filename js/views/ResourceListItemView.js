@@ -702,8 +702,7 @@ define('views/ResourceListItemView', [
       if (!meta)
         return this;
       
-      var oW = clonedIR.originalWidth;
-      var oH = clonedIR.originalHeight;
+      var oW, oH;
       var type = vocModel.type;
       var img, dn, rUri, h, w, ab;
       
@@ -712,45 +711,45 @@ define('views/ResourceListItemView', [
         var imageP = clonedX.aThumb;
         var hasAImageProps;
         if (imageP  &&  imageP.length != 0) {
-          img = atts[imageP[0]];
+          img = atts[imageP];
           hasAImageProps = true;
         }
         if (!img) {
           imageP = clonedX.aFeatured;
           if (imageP  &&  imageP.length != 0) { 
-            img = atts[imageP[0]];
+            img = atts[imageP];
             hasAImageProps = true;
           }
         }
         if (!img  &&  !hasAImageProps  &&  this.doesModelImplement('Intersection')) {
           imageP = clonedIR.smallImage;
           if (imageP  &&  imageP.length != 0) {
-            img = atts[imageP[0]];
+            img = atts[imageP];
           }
         }
     //        img = json[U.getCloneOf(vocModel, 'Intersection.aFeatured')] || json[U.getCloneOf(vocModel, 'Intersection.aThumb')];
-        if (img) {
-          w = atts[clonedX.aOriginalWidth];
-          h = atts[clonedX.aOriginalHeight];
-        }
+        oH = clonedX.aOriginalHeight;
+        oW = clonedX.aOriginalWidth;
       }
       else {
         ab = atts[clonedX.b];
         var imageP = clonedX.bThumb;
         if (imageP  &&  imageP.length != 0)
-          img = atts[imageP[0]]; 
+          img = atts[imageP]; 
         if (!img) {
           imageP = clonedX.bFeatured;
         
           if (imageP) 
-            img = atts[imageP[0]];
+            img = atts[imageP];
         }
     //        img = json[U.getCloneOf(vocModel, 'Intersection.bThumb')] || json[U.getCloneOf(vocModel, 'Intersection.bFeatured')];
     //        img = json[U.getCloneOf(vocModel, 'Intersection.bFeatured')] || json[U.getCloneOf(vocModel, 'Intersection.bThumb')];
-        if (img) {
-          w = atts[clonedX.bOriginalWidth];
-          h = atts[clonedX.bOriginalHeight];
-        }
+        oH = clonedX.bOriginalHeight;
+        oW = clonedX.bOriginalWidth;
+      }
+      if (img) {
+        w = atts[oW];
+        h = atts[oH];
       }
       if (img  &&  !this.isCommonTemplate) {
         this.$el.addClass("image_fitted");
@@ -763,21 +762,29 @@ define('views/ResourceListItemView', [
       // fit image to frame
       if (typeof w != 'undefined'  &&   typeof h != 'undefined') {
         
-        this.$el.addClass("image_fitted");
+//        this.$el.addClass("image_fitted");
         
-        var maxDim = this.maxImageDimension;
+        var maxDim = this.imageProperty.maxImageDimension;
         var clip = U.clipToFrame(80, 80, m.get(oW), m.get(oH), maxDim);
-
-        var dim = U.fitToFrame(80, 80, w / h)
-        json.width = dim.w;
-        json.height = dim.h;
-        json.top = dim.y; //w > h ? dim.y : dim.y + (atts[oH] - atts[oW]) / 2;
-        json.right = dim.w - dim.x;
-        json.bottom = dim.h - dim.y; ////w > h ? dim.h - dim.y : dim.h - dim.y + (atts[oH] - atts[oW]) / 2;
+        if (clip) {
+          json.top = clip.clip_top;
+          json.right = clip.clip_right;
+          json.bottom = clip.clip_bottom;
+          json.left = clip.clip_left;
+          json.height = json.top + json.bottom;
+        }
+        else {
+          var dim = U.fitToFrame(80, 80, w / h);
+          json.width = dim.w;
+          json.height = dim.h;
+          json.top = dim.y; //w > h ? dim.y : dim.y + (atts[oH] - atts[oW]) / 2;
+          json.right = dim.w - dim.x;
+          json.bottom = dim.h - dim.y; ////w > h ? dim.h - dim.y : dim.h - dim.y + (atts[oH] - atts[oW]) / 2;
+          json.left = dim.x;
 //        json.top = dim.y;
 //        json.right = dim.w - dim.x;
 //        json.bottom = dim.h - dim.y;
-        json.left = dim.x;
+        }
         if (w > h)
           json.mH = 80;
         else if (w <= h)
