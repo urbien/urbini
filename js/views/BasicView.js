@@ -844,9 +844,12 @@ define('views/BasicView', [
                 cloned = clonedProps[iface] = {};
             
             if (props) {
-              for (var i = 0, len = props.length; i < len; i++) {
+              for (var i = 0, n = props.length; i < n; i++) {
                 var prop = props[i];
-                cloned[prop] = U.getCloneOf(vocModel, iface + '.' + prop)[0];
+                var cOf = U.getCloneOf(vocModel, iface + '.' + prop);
+                var len = cOf.length;
+                if (len)
+                  cloned[prop] = len == 1 ? cOf[0] : cOf;
               }
             }
           }
