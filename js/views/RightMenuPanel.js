@@ -62,6 +62,7 @@ define('views/RightMenuPanel', [
         Events.stopEvent(e);
         window.location.replace(G.appUrl + '#' + href);
         window.location.reload(true);
+        return;
       }
       else
         this.router.navigate(href, {trigger: true});
