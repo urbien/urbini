@@ -308,7 +308,6 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 #menuItems li {padding-bottom: 0px; cursor: pointer;}
 #rightMenuItems li[role="heading"], #menuItems li[role="heading"] {padding-bottom:10px;font-size:18px;font-weight:normal;font-family:Tahoma,Helvetica,Arial;}
 
-
 .headerMessageBar {
   margin:0;
   padding:10px 0 10px 0;
@@ -1165,4 +1164,12 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   display: block;
 }
 
+.listPage li > div:nth-child(2) {
+  float:right;
+}
+
+.listPage li > div {
+  margin: 0.3rem;
+  font-size: 1.4rem;
+}
 
