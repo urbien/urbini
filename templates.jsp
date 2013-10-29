@@ -11,31 +11,20 @@
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
-  <!-- div id="sidebarDiv" class="ui-content" role="main">
-
-    <ul id="sidebar"  data-role="listview" data-theme="{{= G.theme.list }}"  data-filter-theme="{{= G.theme.list }}" 
-    {{ if (this.collection.models.length > 5) { }}
-     data-filter="{{= this.canSearch }}" data-filter-placeholder="{{= loc(obj.placeholder || 'search') }}"
-   {{ } }}
-   ></ul-->
-
   <div id="sidebarDiv" role="main">
-    <div class="ui-input-search">
-      <input placeholder="Search..." data-type="search" class="ui-input-text ui-body-c" id="filter" /> 
+    <div id="sidebar" data-theme="{{= G.theme.list }}"  data-filter-theme="{{= G.theme.list }}" 
+      {{ if (this.collection.models.length > 5) { }}
+       data-filter="{{= this.canSearch }}" data-filter-placeholder="{{= loc(obj.placeholder || 'search') }}"
+     {{ } }}
+    >
+      <div class="dummy head"></div>
+      <div class="dummy tail"></div>
     </div>
-    <section data-type="list" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
-      <div id="sidebar">
-        <div class="dummy head"></div>
-        <div class="dummy tail"></div>
-      </div>
-    </section>
     <div id="nabs_grid" class="masonry">
       <div class="dummy head"></div>
       <div class="dummy tail"></div>
     </div>
     
-    <!-- ul id="columns">
-    </ul -->
     <table class="table-stroke" width="100%" style="display:none" id="comments">
       <tr class="dummy head"></tr>
       <tr class="dummy tail"></tr>
@@ -53,15 +42,6 @@
       </ul>
     </form>  
   </div>
-  
-  <!-- div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
-     <a data-role="button" data-icon="repeat" id="homeBtn" target="#">Home</a -->
-     <!-- "Next" button removed after endless page introduction>
-     {{ if (this.collection.length > this.collection.perPage) { }}
-       <a data-role="button" data-shadow="false" data-icon="arrow-right" id="nextPage" target="#" class="next" style="float:right;">{{= loc('next') }}</a>
-     {{ }                                                       }}
-     -->
-  <!-- /div -->
 </script>  
  
 <script type="text/template" id="resource">
@@ -641,20 +621,24 @@
 <script type="text/template" id="listItemTemplate">
   <!-- JQM one row on a list page -->
   {{ var action = action ? action : 'view' }}
-  <div class="ui-btn-inner ui-li ui-li-has-thumb" style="cursor:pointer;" data-viewid="{{= viewId }}">
-  {{ if (typeof v_submitToTournament == 'undefined') { }}
-    <div class="ui-btn-text" style="padding:.7em 10px 10px 90px;min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
+  <div class="ui-btn-inner ui-li ui-li-has-thumb" data-viewid="{{= viewId }}">
+  {{ if (!obj.v_submitToTournament) { }}
+    <div class="ui-btn-text" style="padding:0.7em 10px 10px 90px;min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
   {{ } }}
-  {{ if (typeof v_submitToTournament != 'undefined') { }}
-    <div class="ui-btn-text" style="padding:.7em 10px 0 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
+  {{ if (obj.v_submitToTournament) { }}
+    <div class="ui-btn-text" style="padding:0em 10px 0 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
   {{ } }}
-    <img src="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : 'icons/blank.png'}}" 
+    <img src="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : G.blankImgDataUrl}}" 
     {{ if (obj.right) { }}  
       style="
         left:-{{= left }}px; top:-{{= top }}px;
-        clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px); {{= obj.mH ? 'max-height:' + mH + 'px;' : '' }} {{= obj.mW ? 'max-width:' + mW + 'px;' : '' }}"
+        clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px); {{= obj.mH ? 'max-height:' + mH + 'px;' : '' }}"
     {{ } }}
-    class="ui-li-thumb" data-for="{{= U.getImageAttribute(this.resource, this.imageProperty) }}" /></i> 
+    {{ if (!obj.right) { }}
+      class="ui-li-thumb" style="max-width:80px; max-height:80px;"
+    {{ } }}
+    
+    data-for="{{= U.getImageAttribute(this.resource, this.imageProperty) }}" /></i> 
     {{= viewCols }}
   </div>
   </div>
@@ -685,7 +669,7 @@
 
 <script type="text/template" id="listItemTemplateNoImage">
   <!-- one row on a list page (no image) -->
-  <div class="ui-btn-inner ui-li" style="border:none; padding:10px; cursor:pointer;" data-viewid="{{= viewId }}">
+  <div class="ui-btn-inner ui-li" style="padding:10px;" data-viewid="{{= viewId }}">
   {{ if (!obj.v_submitToTournament) { }}  
     <div class="ui-btn-text"
     {{ if (obj.isJst) { }}
@@ -739,7 +723,7 @@
       {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl) + '"' : '' }} >
     
     <!-- {{ if (!obj.homePage) { }} -->   
-    <img src="{{= obj.image || 'icons/blank.png'}}" class="thumb" 
+    <img src="{{= obj.image || G.blankImgDataUrl }}" class="thumb" 
     {{ if (typeof obj.width != 'undefined'  &&  obj.width.length) { }}  
       style="
         width:{{= width }}px; height:{{= height }}px;
@@ -781,7 +765,7 @@
 <script type="text/template" id="homeMenuItemTemplate">
   <!-- app home page menu item -->
   <li {{= obj.icon ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}  id="{{= typeof id == 'undefined' ? 'home123' : id }}">
-    <img src="{{= typeof image != 'undefined' ? image : 'icons/blank.png'}}" style="float: right;" class="ui-li-thumb" /> 
+    <img src="{{= typeof image != 'undefined' ? image : G.blankImgDataUrl }}" style="float: right;" class="ui-li-thumb" /> 
     <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} target="#">
       {{= title }}
     </a>
@@ -832,7 +816,8 @@
 >
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
-     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp" data-icon="plus-sign" data-theme="{{= G.theme.list }}">
+     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a>
+     <a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp" data-icon="plus-sign" data-theme="{{= G.theme.list }}">
      {{ if (typeof comment != 'undefined') { }}
        <p style="padding-left: 15px;">{{= comment }}</p>
      {{ } }}
@@ -871,7 +856,7 @@
  {{ params[backlink] = _uri; }}
  {{ if (!value  &&  !chat) { }}  
    <a data-role="button" data-shadow="false" data-shortName="{{= shortName }}" data-title="{{= title }}" style="text-align:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; border:1px solid {{= borderColor }}; background-color: {{= color }}" href="#">
-     <span style="font-size: 16px;"><i class="{{= icon }}""></i>&#160;{{= name }}</span>
+     <span style="font-size: 18px;"><i class="{{= icon }}"></i>&#160;{{= name }}</span>
    </a>
  {{ } }}
  {{ if (obj.value != 'undefined' || chat) { }}  
@@ -1049,20 +1034,18 @@
 
 <script type="text/template" id="publishBtnTemplate">
   <!-- button to (re-)publish an app, i.e. a glorified 'Save App' button -->
-  <!--a target="#" data-icon="book" id="publish" data-role="button" data-position="notext">{{= loc(wasPublished ? 'appChangedClickToRepublish' : 'publishAppWhenDone') }}</a-->
   <a target="#" data-icon="book" id="publish" data-role="button" data-position="notext">{{= loc(wasPublished ? 'appChangedClickToRepublish' : 'publishAppWhenDone') }}</a>
   
 </script>
 
 <script type="text/template" id="resetTemplateBtnTemplate">
 <!-- button to reset a template to its default value -->
-<a target="#" data-icon="retweet" id="resetTemplate" data-role="button" data-position="notext" data-mini="true">{{= loc('resetToDefault') }}</a>
+  <a target="#" data-icon="retweet" id="resetTemplate" data-role="button" data-position="notext" data-mini="true">{{= loc('resetToDefault') }}</a>
 </script>
 
 <script type="text/template" id="doTryBtnTemplate">
   <!-- button that spirits you away to go try a particular app -->
-  <!--a target="#" data-icon="circle-arrow-up" id="doTry" data-role="button" data-position="notext">{{= loc('gotoApp') }}</a-->
-  <a target="#" id="doTry" role="button" style="font-size:1rem"><i class="ui-icon-circle-arrow-up"></i>&#160;{{= loc('gotoApp') }}</a>
+  <a target="#" data-icon="circle-arrow-up" id="doTry" data-role="button" data-position="notext">{{= loc('gotoApp') }}</a>
 </script>
 
 <script type="text/template" id="installAppBtnTemplate">
@@ -1072,8 +1055,8 @@
 
 <script type="text/template" id="forkMeBtnTemplate">
   <!-- a la Github's Fork It button, let's you clone an existing app -->
-  <!--a target="#" data-icon="copy" id="forkMe" data-role="button" data-position="notext">{{= loc('forkMe') }}</a-->
-  <a target="#" id="forkMe" role="button" style="font-size:1rem"><i class="ui-icon-circle-arrow-up"></i>&#160;{{= loc('forkMe') }}</a>
+  <a target="#" data-icon="copy" id="forkMe" data-role="button" data-position="notext">{{= loc('forkMe') }}</a>
+  <!-- a target="#" id="forkMe" role="button" style="font-size:1rem"><i class="ui-icon-circle-arrow-up"></i>&#160;{{= loc('forkMe') }}</a -->
 </script>
 
 <script type="text/template" id="enterTournamentBtnTemplate">
@@ -1216,7 +1199,7 @@
   <div class="anab" data-viewid="{{= viewId }}">
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img src="{{= obj.resourceMediumImage || 'icons/blank.png' }}" border="0" 
+        <img src="{{= obj.resourceMediumImage || G.blankImgDataUrl }}" border="0" 
         {{ if (typeof imgWidth != 'undefined') { }} 
          style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"
          {{ } }}
@@ -1229,7 +1212,7 @@
     <tr>
       <td class="urbien" width="55px">
         <a href="{{= modifiedBy }}">
-          <img src="{{= obj.v_modifiedByPhoto || 'icons/blank.png' }}" data-for="{{= U.getImageAttribute(this.resource, 'v_modifiedByPhoto') }}" border="0" />
+          <img src="{{= obj.v_modifiedByPhoto || G.blankImgDataUrl }}" data-for="{{= U.getImageAttribute(this.resource, 'v_modifiedByPhoto') }}" border="0" />
         </a>
       </td>
       <td>
@@ -1291,7 +1274,7 @@
   <div class="anab" data-viewid="{{= viewId }}">
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img src="{{= obj.resourceMediumImage || 'icons/blank.png' }}" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}"
+        <img src="{{= obj.resourceMediumImage || G.blankImgDataUrl }}" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}"
          {{ if (obj.imgWidth) { }}
            {{ if (!obj.top) { }}
              <!-- style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;" -->
@@ -1362,14 +1345,27 @@
 
 <script type="text/template" id="horizontalListItem">
   <a href="{{= target }}">
-    {{ if (obj.image) { }}
-      <img src="{{= image }}" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" />    
-    {{ }              }}
-    
-    {{= obj.title ? '<h3>{0}</h3>'.format(obj.title) : '' }}
-    {{= obj.caption ? '<p>{0}</p>'.format(obj.caption) : '' }}
-    {{= typeof obj.superscript !== 'undefined' ? '<p class="ui-li-aside">{0}</p>'.format(superscript) : '' }}
   </a> 
+    {{ if (obj.image) { }}
+      <img src="{{= image }}" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" 
+      {{ if (obj.right) { }}  
+          style="position:absolute; left:-{{= left }}px; top:-{{= top }}px;
+          clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
+      {{ } }}
+      />    
+    {{ }              }}
+  <div class="phOverlay">
+    {{= obj.title ? '<h3>{0}</h3>'.format(obj.title) : '' }}
+    {{= obj.caption  &&  obj.caption.trim() ? '<p>{0}</p>'.format(obj.caption) : '' }}
+    {{= typeof obj.superscript !== 'undefined' ? '<p class="ui-li-aside">{0}</p>'.format(superscript) : '' }}
+  </div>
+</script>
+
+<script type="text/template" id="intersectionListItemTemplate">
+  <li data-viewid="{{= viewId }}">
+    {{= a }}
+    {{= b }}
+  </li>
 </script>
 
 <script type="text/template" id="intersectionListItemTemplate">
@@ -1580,14 +1576,14 @@
     {{ if (obj.img) { }}    
       style="padding-left: 60px; padding-bottom:0px; min-height: 40px;"><img name="{{= shortName }}" src="{{= img }}" style="
       
-    {{ if (typeof obj.width != 'undefined') { }}  
-        height:{{= height }}px;
-        left:-{{= left }}px; top:-{{= top }}px;
-        clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
-    {{ } }}
-    {{ if (typeof obj.width == 'undefined') { }}  
-        max-height: 50px;
-    {{ } }}
+      {{ if (obj.width) { }}  
+          height:{{= height }}px;
+          left:-{{= left }}px; top:-{{= top }}px;
+          clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
+      {{ } }}
+      {{ if (typeof obj.width == 'undefined') { }}  
+          max-height: 50px;
+      {{ } }}
       
       "/>
     {{ }              }}
