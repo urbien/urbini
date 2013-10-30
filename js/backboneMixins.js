@@ -53,10 +53,11 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         return this;
       },
 
-      _debug: function() {
-        var args = _.toArray(arguments);
-        args.unshift('events', this.TAG, 'HAMMER');
-        G.debug.apply(G, args);
+      _debug: function(e) {
+//        var args = _.toArray(arguments);
+//        args.unshift('events', this.TAG, 'HAMMER');
+//        G.debug.apply(G, args);
+        G.log('events', this.TAG, 'Hammer', e.type);
       },
       
       hammer: function(options){

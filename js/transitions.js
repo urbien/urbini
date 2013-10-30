@@ -1,111 +1,118 @@
-define('transitions', ['globals', 'utils'], function(G, U) {  
+define('transitions', ['globals', 'utils', 'lib/fastdom'], function(G, U, Q) {  
   var cssIndentityTransform = 'matrix(1, 0, 0, 1, 0, 0)';
+  var cssNoTranslation = 'translate(0px, 0px) translateZ(0px)';
   var identityMatrix;
   var vendorPrefixes = ['', '-moz-', '-ms-', '-o-', '-webkit-'];
   var CSS = U.CSS;
   var transitions = {
 		none: {
-      fromPageTransition: function() {
-        return cssIndentityTransform;
+      fromPageTransition: function(fromView) {
+        return cssNoTranslation;
       },
-      toPageBeforeTransition: function() {
-        return cssIndentityTransform;
+      toPageBeforeTransition: function(toView) {
+        return cssNoTranslation;
       }	        
 		},
 		left: {
-      fromPageTransition: function() {
-        return CSS.getTranslationString(-G.viewport.X);
+      fromPageTransition: function(fromView) {
+        return adjustTranslation(fromView, -G.viewport.X);
       },
-      toPageBeforeTransition: function(to) {
-        return CSS.getTranslationString(G.viewport.X);
+      toPageBeforeTransition: function(toView) {
+        return adjustTranslation(toView, G.viewport.X);
       }			    
 		},
 		right: {
-      fromPageTransition: function() {
-        return CSS.getTranslationString(G.viewport.X);
+      fromPageTransition: function(fromView) {
+        return adjustTranslation(fromView, G.viewport.X);
       },
-      toPageBeforeTransition: function(to) {
-        return CSS.getTranslationString(-G.viewport.X);
+      toPageBeforeTransition: function(toView) {
+        return adjustTranslation(toView, -G.viewport.X);
       }         
 		},
 		up: {
-      fromPageTransition: function() {
-        var viewport = G.viewport;
-        return CSS.getTranslationString(0, -viewport.Y);
+      fromPageTransition: function(fromView) {
+        return adjustTranslation(fromView, 0, -G.viewport.Y);
       },
-      toPageBeforeTransition: function(to) {
-        var viewport = G.viewport;
-        return CSS.getTranslationString(0, viewport.Y);
+      toPageBeforeTransition: function(toView) {
+        return adjustTranslation(toView, 0, G.viewport.Y);
       }         
 		},
 		down: {
-      fromPageTransition: function() {
+      fromPageTransition: function(fromView) {
         var viewport = G.viewport;
-        return CSS.getTranslationString(0, viewport.Y);
+        return adjustTranslation(fromView, 0, viewport.Y);
       },
-      toPageBeforeTransition: function(to) {
+      toPageBeforeTransition: function(toView) {
         var viewport = G.viewport;
-        return CSS.getTranslationString(0, -viewport.Y);
+        return adjustTranslation(toView, 0, -viewport.Y);
       }         
 		},
-		zoomIn: {
-      fromPageTransition: function() {
-        return cssIndentityTransform;
-      },
-      toPageBeforeTransition: function(to) {
-        return 'matrix(0, 0, 0, 0, 0, 0)';
-      }         
-		},
+//		zoomIn: {
+//      fromPageTransition: function(fromView) {
+//        return cssNoTranslation;
+//      },
+//      toPageBeforeTransition: function(toView) {
+//        return 'matrix(0, 0, 0, 0, 0, 0)';
+//      }         
+//		},
 		downLeft: {
-      fromPageTransition: function() {
-        return transitions.upRight.css.toPageBeforeTransition();
+      fromPageTransition: function(fromView) {
+        return transitions.upRight.css.toPageBeforeTransition(fromView);
       },
-      toPageBeforeTransition: function() {
+      toPageBeforeTransition: function(toView) {
         var viewport = G.viewport;
-        return CSS.getTranslationString(viewport.X, -viewport.Y);
+        return adjustTranslation(toView, viewport.X, -viewport.Y);
       }
 		},
 		downRight: {
-      fromPageTransition: function() {
-        return transitions.upLeft.css.toPageBeforeTransition();
+      fromPageTransition: function(fromView) {
+        return transitions.upLeft.css.toPageBeforeTransition(fromView);
       },
-      toPageBeforeTransition: function() {
+      toPageBeforeTransition: function(toView) {
         var viewport = G.viewport;
-        return CSS.getTranslationString(-viewport.X, -viewport.Y);
+        return adjustTranslation(toView, -viewport.X, -viewport.Y);
       }			    
 		},
 		upLeft: {
-      fromPageTransition: function() {
-        return transitions.downRight.css.toPageBeforeTransition();
+      fromPageTransition: function(fromView) {
+        return transitions.downRight.css.toPageBeforeTransition(fromView);
       },
-      toPageBeforeTransition: function() {
+      toPageBeforeTransition: function(toView) {
         var viewport = G.viewport;
-        return CSS.getTranslationString(viewport.X, viewport.Y);
+        return adjustTranslation(toView, viewport.X, viewport.Y);
       }         
 		},
 		upRight: {
-      fromPageTransition: function() {
-        return transitions.downLeft.css.toPageBeforeTransition();
+      fromPageTransition: function(fromView) {
+        return transitions.downLeft.css.toPageBeforeTransition(fromView);
       },
-      toPageBeforeTransition: function() {
+      toPageBeforeTransition: function(toView) {
         var viewport = G.viewport;
-        return CSS.getTranslationString(-viewport.X, viewport.Y);
+        return adjustTranslation(toView, -viewport.X, viewport.Y);
       }
 		}
 		/*,
 		skewRight: {
-			fromPageTransition: function() {
+			fromPageTransition: function(fromView) {
 				return transitions.right.fromPageTransition();
 			},
-			toPageBeforeTransition: function() {
+			toPageBeforeTransition: function(toView) {
 				return transitions.right.toPageBeforeTransition();
 			}
 		},*/
 
 	};
 	
-  function defaultToPageTransition(to) {
-    return cssIndentityTransform;
+	function adjustTranslation(view, x, y) {
+  	var pos = view._getScrollPosition(),
+  	    currentX = pos && pos.X || 0,
+        currentY = pos && pos.Y || 0;
+        
+	  return CSS.getTranslationString(currentX + (x || 0), currentY + (y || 0));
+	}
+	
+  function defaultToPageTransition(view) {
+    return adjustTranslation(view, 0, 0);
   }     
 
   for (var name in transitions) {
@@ -114,33 +121,75 @@ define('transitions', ['globals', 'utils'], function(G, U) {
       trans.toPageTransition = defaultToPageTransition;
   }
 
-	function doTransition(transition, from, to, ease, duration) {
-    var dfd = $.Deferred();
-    duration = typeof duration == 'number' ? duration : 1000;
-    ease = 'all {0}ms {1}'.format(duration, ease || '');
-    
-    CSS.setStylePropertyValues(to.style, {
-      transform: transition.toPageBeforeTransition(to)
-    });
-    
-    if (from) {
-      CSS.setStylePropertyValues(from.style, {
-        transition: ease,
-        transform: transition.fromPageTransition()
-      });
+	function doTransition(transition, fromView, toView, ease, duration) {
+    var dfd = $.Deferred(),
+        promise = dfd.promise(),
+        canceled = false,
+        transitionTimeout,
+        from = fromView && fromView.el,
+        to = toView && toView.el,
+        $from = fromView && fromView.$el,
+        $to = toView && toView.$el;
+
+    duration = typeof duration == 'number' ? duration : 600;
+    ease = 'all {0}ms {1}'.format(duration, ease || 'linear');
+    if ($from) {
+      $from.trigger('page_beforehide');
+//      console.log("FROM PAGE:", $from.width());
     }
+      
+//    console.log("TO PAGE:", $to.width());
+    $to.trigger('page_beforeshow');
+    Q.write(function() {
+      CSS.setStylePropertyValues(to.style, {
+        transform: transition.toPageBeforeTransition(toView)
+      });
+      
+  //    to.style['z-index'] = -100;
+      if ($.mobile && $.fn.page)
+        $(to).addClass('ui-page-active').page();
+    });
+      
+    Q.defer(1, 'write', function() {
+      if (from) {
+        console.log("FROM PAGE:", $from.width());
+        CSS.setStylePropertyValues(from.style, {
+          transition: ease,
+          transform: transition.fromPageTransition(fromView)
+        });        
+      }
     
-    CSS.setStylePropertyValues(to.style, {
-      transition: ease,
-      transform: transition.toPageTransition(to)
+      console.log("TO PAGE:", $to.width());
+      CSS.setStylePropertyValues(to.style, {
+        transition: ease,
+        transform: transition.toPageTransition(toView)
+      });
+      
+      if (!duration)
+        dfd.resolve();
+      else
+        transitionTimeout = setTimeout(dfd.resolve, duration);
+    });
+        
+    promise.cancel = function() {
+      canceled = true;
+      if (transitionTimeout)
+        clearTimeout(transitionTimeout);
+      
+      dfd.reject();
+      // reverse transition?
+    };
+    
+    promise.done(function() {
+      Q.nextFramePromise().done(function() {
+        if (from)      
+          $from.trigger('page_hide');
+                  
+        $to.trigger('page_show');
+      });
     });
     
-    if (!from)
-      dfd.resolve();
-    else
-      setTimeout(dfd.resolve.bind(dfd), duration);
-    
-    return dfd.promise();
+    return promise;
   }
 
 	var Transitioner = {};

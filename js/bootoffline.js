@@ -20,7 +20,8 @@ window.onload = function() {
 
   var div = document.createElement('div');
   div.innerHTML = ls.getItem('homePage');
-  document.getElementById('page').appendChild(div);
+/*  document.getElementById('page').appendChild(div);*/
+  document.body.appendChild(div);
 
   new Function("d", g.boot)(document);
 }

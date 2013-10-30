@@ -17,6 +17,10 @@ define('views/CommentListView', [
       return 'tbody';
     },
     
+    getDummyTag: function() {
+      return 'tr';
+    },
+    
     getDummies: function() {
       var dummies = this.$('.dummy');
       return {

@@ -10,7 +10,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       viewCache = ViewCache(),
       // codemirror editors
       codemirrors = {},
-      MAX_VIEWS_TO_CACHE = 2,
+      MAX_VIEWS_TO_CACHE = 6,
       AP = Array.prototype;
 
 //  function CacheEntry(obj, permanent) {
@@ -326,9 +326,11 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
     });
     
     Events.on('viewDestroyed', function(destroyedView) {
-      cache = _.filter(cache, function(entry) {
-        return entry.getView() !== destroyedView;
-      });
+      if (destroyedView.isPageView()) {
+        cache = _.filter(cache, function(entry) {
+          return entry.getView() !== destroyedView;
+        });
+      }
       
       var resOrList = destroyedView.model,
           destroy = true;

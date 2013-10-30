@@ -180,20 +180,20 @@ define('views/ResourceView', [
 
         if (this.vocModel.type.endsWith("coupon/Coupon")) {
           if (json.discount < 90) {
-            U.addToFrag(frag, this.priceTemplate({color: color[1], name: 'Discount', shortName: 'discount', value: U.getFlatValue(meta.discount, json.discount)})); //json['discount']})));
-            U.addToFrag(frag, this.priceTemplate({color: color[0], name: 'You save', shortName: 'dealDiscount', value: U.getFlatValue(meta.dealAmount, json.dealValue) - U.getFlatValue(meta.dealPrice, json['dealPrice'])}));
+            U.addToFrag(frag, this.priceTemplate({color: color[1], name: 'Discount', shortName: 'discount', value: U.getFlatValue(meta.discount, json.discount)})); //res.get('discount')})));
+            U.addToFrag(frag, this.priceTemplate({color: color[0], name: 'You save', shortName: 'dealDiscount', value: U.getFlatValue(meta.dealAmount, json.dealValue) - U.getFlatValue(meta.dealPrice, res.get('dealPrice'))}));
           }
           else
             U.addToFrag(frag, this.priceTemplate({color: color[0], name: 'Deal value', shortName: 'dealValue', value: U.getFlatValue(meta.dealAmount, json.dealValue)}));
           
           var buyUrl = U.makePageUrl('make', 'http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy', {coupon: this.resource.get('_uri'), '-makeId': G.nextId()});
-          U.addToFrag(frag, this.buyTemplate({color: color[2], name: 'Price', shortName: 'dealPrice', value: U.getFlatValue(meta.dealPrice, json['dealPrice']), buyUrl: buyUrl}));
+          U.addToFrag(frag, this.buyTemplate({color: color[2], name: 'Price', shortName: 'dealPrice', value: U.getFlatValue(meta.dealPrice, res.get('dealPrice')), buyUrl: buyUrl}));
         }
         else {        
-//          U.addToFrag(frag, this.priceTemplate(_.extend({color: color[1], name: 'Discount', shortName: 'discount', value: U.getFlatValue(meta.discount, json.discount)}))); //json['discount']})));
-//          U.addToFrag(frag, this.priceTemplate(_.extend({color: color[0], name: 'You save', shortName: 'dealDiscount', value: U.getFlatValue(meta.dealAmount, json.dealAmount) - U.getFlatValue(meta.price, json['price'])})));
+//          U.addToFrag(frag, this.priceTemplate(_.extend({color: color[1], name: 'Discount', shortName: 'discount', value: U.getFlatValue(meta.discount, json.discount)}))); //res.get('discount')})));
+//          U.addToFrag(frag, this.priceTemplate(_.extend({color: color[0], name: 'You save', shortName: 'dealDiscount', value: U.getFlatValue(meta.dealAmount, json.dealAmount) - U.getFlatValue(meta.price, res.get('price'))})));
           var buyUrl = res.get('ItemListing.externalBuyUrl');
-          U.addToFrag(frag, this.buyTemplate({color: color[2], name: meta['price'].displayName, shortName: 'price', value: U.getFlatValue(meta.price, json['price']), buyUrl: buyUrl}));
+          U.addToFrag(frag, this.buyTemplate({color: color[2], name: meta['price'].displayName, shortName: 'price', value: U.getFlatValue(meta.price, res.get('price')), buyUrl: buyUrl}));
           U.addToFrag(frag, this.sellTemplate({color: color[2], background: 'rgba(255, 0, 0, 0.9)'}));
         }
         this.$el.html(frag);      
@@ -215,7 +215,7 @@ define('views/ResourceView', [
         if (d.length > 0) {
           var val = res.get(d[0]);
           if (val) {
-//            var val = U.makeProp({resource: res, propName: d, prop: meta[p], value: json[d]});
+//            var val = U.makeProp({resource: res, propName: d, prop: meta[p], value: res.get(d)});
 //            U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
             this.$el.removeClass('hidden');
             U.addToFrag(frag, '<div id="Description">' + val + '</div>');
@@ -259,7 +259,7 @@ define('views/ResourceView', [
             if (prop['app']  &&  (!currentAppProps || $.inArray(p, currentAppProps) == -1))
               continue;
             displayedProps[p] = true;
-            var val = U.makeProp({resource: res, prop: prop, value: json[p]});
+            var val = U.makeProp({resource: res, prop: prop, value: res.get(p)});
             if (!groupNameDisplayed) {
               U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
               groupNameDisplayed = true;
@@ -317,7 +317,7 @@ define('views/ResourceView', [
           groupNameDisplayed = true;
         }
         
-        var val = U.makeProp({resource: res, propName: p, prop: prop, value: json[p]});
+        var val = U.makeProp({resource: res, propName: p, prop: prop, value: res.get(p)});
         if (prop.code) {
           val.value = this.__prependNumbersDiv(prop, val.value);          
         }

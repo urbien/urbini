@@ -20,7 +20,7 @@ define('views/MasonryListView', [
       'refresh': 'refresh',
       'resize': 'reloadMasonry'
 //        ,
-//      'pageshow': 'reloadMasonry'
+//      'page_show': 'reloadMasonry'
     },
 
     initialize: function(options) {
@@ -132,7 +132,7 @@ define('views/MasonryListView', [
 //          });
 //   
 //          self.centerMasonry(self);
-//          self.$el.on('pageshow', self.reloadMasonry.bind(self));
+//          self.$el.on('page_show', self.reloadMasonry.bind(self));
 //          self.finish();
 //        });
 //      }
@@ -162,7 +162,7 @@ define('views/MasonryListView', [
           });
    
           self.centerMasonry(self);
-          self.$el.on('pageshow', self.reloadMasonry.bind(self));
+          self.$el.on('page_show', self.reloadMasonry.bind(self));
           self.finish();
         });
       }

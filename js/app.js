@@ -504,8 +504,30 @@ define('app', [
     G.currentUser.role = G.currentUser.guest ? 'guest' : G.currentUser.role || 'contact';
   };
   
+  function setupWidgetLibrary() {
+    if (G.isJQM()) {
+      var $doc = $(document);
+      $doc.on('pagebeforeshow', '[data-role="page"]', function() {
+        $(this).trigger('page_beforeshow');
+      });
+
+      $doc.on('pagebeforehide', '[data-role="page"]', function() {
+        $(this).trigger('page_beforehide');
+      });
+
+      $doc.on('pageshow', '[data-role="page"]', function() {
+        $(this).trigger('page_show');
+      });
+
+      $doc.on('pagehide', '[data-role="page"]', function() {
+        $(this).trigger('page_hide');
+      });
+    }
+  }
+  
   function doPreStartTasks() {
 //    setupHashMonitor();
+    setupWidgetLibrary();
     setupPackagedApp();
     setupUser();
     setupAvailibilityMonitor();

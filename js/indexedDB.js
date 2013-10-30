@@ -121,8 +121,8 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   }
 
   function _prep(item) {
-    var promises = U.array(),
-        _item = U.object();
+    var promises = [],
+        _item = {};
     
     for (var prop in item) {
       var val = item[prop];
@@ -137,7 +137,6 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
 
     if (promises.length) {
       return $.when.apply($, promises).then(function() {
-        U.recycle(promises);
         return _item;
       });
     }
@@ -168,7 +167,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     if (!_items)
       return U.resolvedPromise(_items);
     
-    promises = U.array();
+    promises = [];
     returnObj = U.getObjectType(_items) === '[object Object]';
     if (returnObj)
       _items = [_items];
@@ -195,7 +194,6 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     }
     
     function finish() {
-      U.recycle(promises);
       return returnObj ? _items[0] : _items;
     }
     

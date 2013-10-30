@@ -173,6 +173,11 @@ define('views/ResourceListView', [
       this._updateConstraints();
       this.imageProperty = U.getImageProperty(this.collection);
       this.dummies = this.getDummies();
+      if (!this.dummies.length) {
+        this.$el.html(this.makeDummies());
+        this.dummies = this.getDummies();
+      }
+      
       if (this._horizontal) {
         this.dummies.head.css('display', 'inline-block');
         this.dummies.tail.css('display', 'inline-block');
@@ -323,6 +328,15 @@ define('views/ResourceListView', [
 //      }
 
       return false;
+    },
+
+    getDummyTag: function() {
+      return 'div';
+    },
+    
+    makeDummies: function() {
+      var tag = this.getDummyTag();
+      return '<{0} class="dummy head"></{0}><{0} class="dummy tail"></{0}>'.format(tag);
     },
     
     getDummies: function() {

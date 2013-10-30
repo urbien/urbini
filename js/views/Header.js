@@ -411,7 +411,7 @@ define('views/Header', [
 //          "data-position": "fixed"
 //        });
       }
-      if (!G.currentApp.widgetLibrary  || G.currentApp.widgetLibrary == 'Jquery Mobile') {
+      if (G.isJQM()) {
         if (!this.publish  &&  this.doTry  &&  this.forkMe)
           templateSettings.className = 'ui-grid-b';
       }      

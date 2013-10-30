@@ -6,8 +6,9 @@ define('views/ViewPage', [
   'views/BasicPageView',
   'views/Header',
   'views/ResourceView',
-  'views/ControlPanel'
-], function(G, U, Events, BasicPageView, Header, ResourceView, ControlPanel) {
+  'views/ControlPanel',
+  'lib/fastdom'
+], function(G, U, Events, BasicPageView, Header, ResourceView, ControlPanel, Q) {
   return BasicPageView.extend({
     clicked: false,
     initialize: function(options) {
@@ -17,7 +18,7 @@ define('views/ViewPage', [
       var self = this,
           res = this.resource;
       
-      this.$el.on('pageshow', function() {
+      this.$el.on('page_show', function() {
         setTimeout(self.pageChange, 1000);
       });
       
@@ -256,9 +257,14 @@ define('views/ViewPage', [
     },
 
     render: function() {
+      Q.write(this.renderHelper, this, arguments);
+    },
+
+    renderHelper: function() {
       var res = this.resource;
-      var json = res.toJSON();
-      json.viewId = this.cid;
+//      var json = res.toJSON();
+      var json = this.getBaseTemplateData();
+//      json.viewId = this.cid;
       this.$el.html(this.template(json));      
       var self = this;
       this.photogridPromise.done(function() {        
@@ -313,10 +319,7 @@ define('views/ViewPage', [
         this.assign(this.imgDiv, this.imageView);
       }.bind(this));
       
-      this.onload(function() {
-        
-//      });
-//      this._queueTask(function() {        
+      this.onload(Q.write.bind(Q, function() {          
         if (!this.isAbout) {
           if (G.currentUser.guest) {
             this.$('#edit').hide();
@@ -331,7 +334,7 @@ define('views/ViewPage', [
           this.$('#resourceViewHolder').css('background-image', 'url(' + G.theme.backgroundImage +')');
   
         this.$('#chatbox').css("display", "none");      
-      }.bind(this));
+      }, this));
 //      renderDfd.resolve();
 //      this.restyle();
       

@@ -150,7 +150,7 @@ define('views/BasicView', [
 //          delete baseTemplateData[p];
 //      }
 //      
-//      baseTemplateData.viewId = this.cid;
+//      baseTemplateData._viewId = this.cid;
 //      if (this.resource)
 //        baseTemplateData._uri = this.resource.get('_uri');
 //
@@ -615,10 +615,20 @@ define('views/BasicView', [
       
       if (!selectors) 
         return;
+
+      for (var selector in selectors) {
+        selectors[selector].setElement(this.$(selector)).render(renderOptions);
+      }
       
-      _.each(selectors, function (view, selector) {
-          view.setElement(this.$(selector)).render(renderOptions);
-      }, this);
+//      Q.read(function() {
+//        for (var selector in selectors) {
+//          selectors[selector].setElement(this.$(selector));
+//        }
+//        
+//        for (var selector in selectors) {      
+//          selectors[selector].render(renderOptions);
+//        }
+//      }, this);      
     },
     
     finalize: function () {
@@ -826,7 +836,7 @@ define('views/BasicView', [
           meta = vocModel.properties,
           preinitData = this.preinitData,
           interfaceProps = preinitData && preinitData.interfaceProperties,
-          superclasses = preinitData && preinitData.superclasses,
+          superclasses = preinitData && preinitData.superclasses || [],
           preinit = _.extend({
             clonedProperties: {},
             'extends': [],
@@ -853,6 +863,7 @@ define('views/BasicView', [
         }
       }
       
+      _.pushUniq(superclasses, vocModel.type);
       if (superclasses) {
         for (var i = 0, len = superclasses.length; i < len; i++) {
           var sCl = superclasses[i];

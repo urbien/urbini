@@ -161,7 +161,7 @@ define('globals', function() {
     if (~G.skipModules.indexOf(name))
       return false;
     
-    var isBB = G.currentApp.widgetLibrary == 'Building Blocks';
+    var isBB = G.getWidgetLibrary() == 'Building Blocks';
     if (!isBB && /\/bb\/|templates_bb\.jsp|bb_styles\.css/.test(name))
       return false;
     
@@ -1214,6 +1214,13 @@ define('globals', function() {
   }, false);
 
   $.extend(G, {
+    _widgetLibrary: G.currentApp.widgetLibrary || 'JQuery Mobile',
+    isJQM: function() {
+      return G.getWidgetLibrary().toLowerCase() == 'jquery mobile';
+    },
+    getWidgetLibrary: function() {
+      return G._widgetLibrary;
+    },
     lazyImgSrcAttr: 'data-frz-src',
     blankImgDataUrl: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
     emptyFn: function() {},

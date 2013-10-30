@@ -11,7 +11,7 @@ define('views/MenuPanel', [
 //    id: 'menuPanel',
 //    theme: 'd',
     initialize: function(options) {
-      _.bindAll(this, 'render','click', 'edit');
+      _.bindAll(this, 'render','click', 'edit', 'hide');
       this.constructor.__super__.initialize.apply(this, arguments);
   //    this.resource.on('change', this.render, this);
       this.tagName = options.tagName;
@@ -37,6 +37,22 @@ define('views/MenuPanel', [
       'click #urbien123' : 'home',
       'click'            : 'click'
     },
+    
+    pageEvents: {
+      'page_beforehide': 'hide'
+    },
+    
+    hide: function() {
+      if (G.isJQM())
+        this.$el.closest('[data-role="panel"]').panel('close');
+      else {
+        this.$el.css('visibility', 'visible');
+//        var section = this.$el.closest('section');
+//        this.destroy();
+//        section.remove();
+      }
+    },
+    
     edit: function(e) {
       Events.stopEvent(e);
       this.router.navigate(U.makeMobileUrl('edit', this.resource.getUri()), {trigger: true, replace: true});
@@ -103,9 +119,10 @@ define('views/MenuPanel', [
 
       var hash = window.location.hash;
       if (hash  &&  href == hash.substring(1)) {
-        var menu = this.$el.closest('[data-role="panel"]');
-//        menu.hide('slow');
-        menu.panel('close');
+//        var menu = this.$el.closest('[data-role="panel"]');
+////        menu.hide('slow');
+//        menu.panel('close');
+        this.hide();
         return;
       }
       this.router.navigate(href, {trigger: true});
@@ -117,10 +134,11 @@ define('views/MenuPanel', [
     },
 //    tap: Events.defaultTapHandler,
     render:function (eventName) {
-      var mi = $('#' + this.viewId).find('ul#menuItems');
+      var menu = $('#' + this.viewId);
+      var mi = menu.find('#menuItems');
       if (mi  &&  mi.length != 0) {
 //        $('#' + this.viewId).panel().panel("open");
-        $('#' + this.viewId).panel("open");
+        menu.panel("open");
         return;
       }
       var self = this;

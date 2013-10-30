@@ -117,8 +117,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
 //      'click': '_onClickInScroller',
       'resize': '_onSizeInvalidated',
       'orientationchange': '_onSizeInvalidated',
-      'pageshow': '_onScrollerActive',      
-      'pagebeforehide': '_onScrollerInactive',
+      'page_show': '_onScrollerActive',      
+      'page_beforehide': '_onScrollerInactive',
       'tap': '_onClickInScroller',
 //      'release': '_onReleaseInScroller',
       'drag': '_onDragScroller',
@@ -424,12 +424,12 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       if (!this.rendered || !this._scrollerProps || !this._scrollerProps.position)
         return;
       
-      if (this.getLastPageEvent() !== 'pageshow') {
+      if (this.getLastPageEvent() !== 'page_show') {
         if (this._scrollerSizeRecalcQueued)
           return;
         
         this._scrollerSizeRecalcQueued = true;
-        this.pageView.$el.one('pageshow', this._onSizeInvalidated);
+        this.pageView.$el.one('page_show', this._onSizeInvalidated);
         return;
       }
       

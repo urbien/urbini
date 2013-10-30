@@ -79,6 +79,40 @@ define('lib/fastdom', ['globals'], function(G) {
     })(i);
   }
   
+  var FrameWatch = window.FrameWatch = (function() {
+    var listeners = [],
+        frameId;
+    
+    function subscribe(callback) {
+      listeners.push(callback);
+      if (frameId === undefined)
+        frameId = raf(publish);
+    }
+    
+    function unsubscribe(callback) {
+      Array.remove(listeners, callback);
+      if (!listeners.length && frameId !== undefined) {
+        caf(frameId);
+        frameId = undefined;
+      }
+    }
+
+    function publish() {
+      frameId = raf(publish);
+      for (var i = listeners.length - 1; i > -1; i--) {
+        listeners[i]();
+      }
+    }
+    
+    return {
+      subscribe: subscribe,
+      unsubscribe: unsubscribe,
+      isRunning: function() {
+        return frameId !== undefined;
+      }
+    }
+  })();
+  
   FastDom.prototype.debug = function() {
     if (!G.DEBUG)
       return;
@@ -126,11 +160,11 @@ define('lib/fastdom', ['globals'], function(G) {
 
     // Defer jobs are cleared differently
     if (job.type === 'defer') {
-      if (job.timer)
-        caf(job.timer);
-      else if (job.timeout)
-        clearTimeout(job.timeout);
-      
+//      if (job.timer)
+//        caf(job.timer);
+//      else if (job.timeout)
+//        clearTimeout(job.timeout);
+//      
       return;
     }
 
@@ -316,14 +350,13 @@ define('lib/fastdom', ['globals'], function(G) {
     var self = this;
     var job = this.add('defer', this[type].bind(this, fn, ctx, args, options)); // use regular queueing mechanism
     
-    (function wrapped() {
+    FrameWatch.subscribe(function wrapped() {
       if (!(frames--)) {
-         self.run(job);
-         return;
+        FrameWatch.unsubscribe(wrapped);
+        self.run(job);
+        return;
       }
-
-      job.timer = raf(wrapped);
-    })();
+    });
 
     return job.id;
   };

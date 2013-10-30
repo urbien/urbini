@@ -7,8 +7,9 @@ define('views/ListPage', [
   'vocManager',
   'views/BasicPageView',
   'views/ResourceListView', 
-  'views/Header' 
-], function(G, Events, U, Errors, Voc, BasicPageView, ResourceListView, Header) {
+  'views/Header',
+  'lib/fastdom'
+], function(G, Events, U, Errors, Voc, BasicPageView, ResourceListView, Header, Q) {
   var MapView,
       SPECIAL_INTERSECTIONS = [G.commonTypes.Handler, G.commonTypes.Friend, U.getLongUri1('model/social/NominationForConnection') /*, commonTypes.FriendApp*/];
   
@@ -340,8 +341,7 @@ define('views/ListPage', [
           self = this;
       
       this.ready.done(function() {
-        self.renderHelper.apply(self, args);
-        self = args = null;
+        Q.write(self.renderHelper, self, args);
       });
     },
 

@@ -10,12 +10,12 @@ define('views/HomePage', [
     TAG: 'HomePage',
     first: true,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'pagehide', 'pagebeforeshow', 'click');
+      _.bindAll(this, 'render', 'click', 'pagehide', 'pagebeforeshow');
       this.constructor.__super__.initialize.apply(this, arguments);
       
 //      Events.on('pagehide', this.pagehide);
-//      $(document).on('pagehide',       this.pagehide);
-//      $(document).on('pagebeforeshow', this.pagebeforeshow);
+//      $(document).on('page_hide',       this.pagehide);
+//      $(document).on('page_beforeshow', this.pagebeforeshow);
 //      $(div[data-role="page"]).on
       return this;
     },
@@ -25,8 +25,8 @@ define('views/HomePage', [
     
     },
     events: {
-      'pagehide'            : 'pagehide',
-      'pagebeforeshow'      : 'pagebeforeshow',
+      'page_hide'            : 'pagehide',
+      'page_beforeshow'      : 'pagebeforeshow',
       'click'              : 'click',
       'click #installApp'  : 'installApp'
     },
@@ -78,7 +78,7 @@ define('views/HomePage', [
     render: function(options) {
       var self = this;
       
-      this.$el.trigger('pagebeforeshow');
+//      this.$el.trigger('page_beforeshow');
       var item = $('#homePage');
       item.css('display', 'block');
       if (!item || item.length == 0) { 
@@ -106,7 +106,7 @@ define('views/HomePage', [
       
       $('title').text(G.currentApp.title);
 //      this.finish();
-      this.$el.trigger('pageshow');
+//      this.$el.trigger('page_show');
       return this;
     },
     

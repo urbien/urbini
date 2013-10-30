@@ -71,7 +71,7 @@ define('fileSystem', ['globals', 'utils'], function(G, U) {
       }
   
       var filePromise = file ? $.Deferred().resolve(file).promise() : getFile(filePath);
-      filePromise.then(function(file) {
+      filePromise.done(function(file) {
         if (raw) {
           defer.resolve(file);
           return;
@@ -85,7 +85,7 @@ define('fileSystem', ['globals', 'utils'], function(G, U) {
           var res = e.target.result;
           defer.resolve(blobby ? U.dataURLToBlob(res, contentType) : res);
         };
-      }, getErrorFunc('fileEntry error', defer));
+      }).fail(getErrorFunc('fileEntry error', defer));
     }).promise();
   };
   

@@ -12,9 +12,8 @@ define('router', [
   'templates',
   'jqueryMobile',
   'appAuth',
-  'redirecter'
-//  ,
-//  'transitions'
+  'redirecter',
+  'transitions'
 //  , 
 //  'views/ListPage', 
 //  'views/ViewPage'
@@ -328,9 +327,37 @@ define('router', [
       
       var prev = this.currentView,
           reverse;
+//      ,
+//          mainDiv = $('.mainDiv'); 
+//
+//      if (!mainDiv[0].childElementCount) {
+//        $('body').append(G.homePage);
+//        mainDiv.html(G.homePage);
+//      }
+//      else {
+//        if (mainDiv.is(':hidden'))
+//          mainDiv.show();
+//      }
       
+      if (G.homePage) {
+//        $('body').append(G.homePage);
+//        document.body.style.background = 'none';
+//        div = document.createElement('div');
+//        div.className = 'mainDiv';
+//        div.style.background = 'none';
+//        div.innerHTML = G.homePage;
+//        document.body.appendChild(div);
+//        delete G.homePage;
+        G.initHome();
+      }
+      
+      homePageEl = $('#homePage');
       if (!this.homePage)
-        this.homePage = new HomePage({el: $('#homePage')});
+        this.homePage = new HomePage({el: homePageEl });
+      
+      Events.trigger('activeView', this.homePage);
+//      if (this.firstPage)
+//        this.homePage.$el.trigger('page_beforeshow');
       
       this.checkBackClick();
       if (this.backClicked) {
@@ -348,7 +375,7 @@ define('router', [
         }
         
         $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
-        this.$changePage(this.currentView.$el, {
+        this.$changePage({
           changeHash: false, 
           transition: 'slide', 
           reverse: true
@@ -360,8 +387,12 @@ define('router', [
         this.currentView = this.homePage;
         // no need to call change page when home page is displayed for the very first time
 //        if (this.urlsStack.length)
-        if (!this.firstPage)
-          this.$changePage(this.currentView.$el, {changeHash:false, transition: 'slide', reverse: true});
+        if (this.firstPage) {
+          // HACK - needed it for lazyImageLoader, otherwise no way to easily get a callback for when the page is in the viewport
+//          this.homePage.$el.trigger('page_show');
+        }
+        else
+          this.$changePage({changeHash:false, transition: 'slide', reverse: true});
       }
 
 //      if (this.backClicked) {
@@ -369,11 +400,7 @@ define('router', [
 //      }
       
       // HACK, this div is hidden for some reason when going to #home/...
-      var mainDiv = $('.mainDiv'); 
-      if (mainDiv.is(':hidden'))
-        mainDiv.show();
 
-      Events.trigger('activeView', this.homePage);
       Events.trigger('pageChange', prev, this.currentView);
       this.checkErr();
     },
@@ -1275,34 +1302,40 @@ define('router', [
       }
     },
 
-//    $changePage: function(toPage, options) {
-//      var fromPage = this._previousView,
-//          $toPage;
-//      
-//      if (toPage instanceof $) {
-//        $toPage = toPage;
-//        toPage = toPage[0];
-//      }
-//      else {
-//        $toPage = $(toPage);
-//      }
-//      
-//      if (fromPage == toPage)
-//        return;
-//      
-//      $toPage.addClass('ui-page-active');
-//      if ($toPage.page)
-//        $toPage.page();
-//      
-//      if (fromPage)
-//        $(fromPage).removeClass('ui-page-active');
-//        
-//      this._previousView = toPage;
-//      Transitioner[options && options.reverse ? 'left' : 'right'](fromPage, toPage, 'ease-in-out', 600);
-//    },
+    $changePage: function(options) {
+      var method = G.isJQM() ? this.$changePageJQM : this.$changePageBB;
+      return method.call(this, this._previousView, this.currentView, options);
+    },
     
-    $changePage: function(toPage, options) {
-      $m.changePage(toPage, options);
+    $changePageBB: function(fromView, toView, options) {
+      if (fromView == toView)
+        return;
+      
+      this._previousView = toView;
+      
+      // kill the keybord, from JQM
+      try {
+        var toBlur;
+        Q.read(function() {          
+          if ( document.activeElement && document.activeElement.nodeName.toLowerCase() !== 'body' ) {
+            toBlur = document.activeElement;
+          } else {
+            toBlur = $( "input:focus, textarea:focus, select:focus" );
+          }
+          
+          Q.write(function() {
+            toBlur.blur();
+          });
+        });
+      } catch( e ) {}
+      
+      Transitioner[options && options.reverse ? 'right' : 'left'](fromView, toView, null, this.firstPage ? 0 : 500).done(function() {
+        $m.activePage = toView.$el;
+      });
+    },
+    
+    $changePageJQM: function(fromView, toView, options) {
+      $m.changePage(toView.$el, options);
     },
 
 //    $changePage: function(toPage, options) {
@@ -1457,7 +1490,7 @@ define('router', [
 //            fromPage.data( "mobile-page" )._trigger( "hide", null, { nextPage: toPage } );
 //          }
 //
-//          //trigger pageshow, define prevPage as either fromPage or empty jQuery obj
+//          //trigger page_show, define prevPage as either fromPage or empty jQuery obj
 //          toPage.data( "mobile-page" )._trigger( "show", null, { prevPage: fromPage || $( "" ) } );
 //                      
 ////            removeActiveLinkClass();
@@ -1546,7 +1579,7 @@ define('router', [
       // perform transition
 //      view.onload(function() {
         $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
-        this.$changePage(view.$el, {changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});        
+        this.$changePage({changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});        
 
 //        if (G.currentApp.frameworkType  && G.currentApp.frameworkType != 'Jquery Mobile') {
           var hdr = $('div.ui-page-active .hdr');

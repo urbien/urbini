@@ -88,8 +88,8 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     _updateQueue: [],
     events: {
       'imageOnload': '_queueImageLoad',
-      'pageshow': '_start',
-      'pagehide': '_pause'
+      'page_show': '_start',
+      'page_hide': '_pause'
     },
     
     initialize: function() {

@@ -12,7 +12,7 @@
   background: radial-gradient(center center, circle cover, rgba(0,0,0,0.3), rgba(0,0,0,0.95));
 }
 */
-#homePage {height: 99.9%;}
+//#homePage {height: 99.9%;}
 
 #homePage {background: none;background-image: none;text-shadow: 0 1px 0 #000; }
 #homePage span {color: #ddd; }

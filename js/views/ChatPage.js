@@ -347,7 +347,7 @@ define('views/ChatPage', [
       'click #chatCaptureBtn'             : 'takeSnapshot',
       'resize'                             : 'resize',
       'orientationchange'                  : 'resize',
-      'pagehide'                           : 'pagehide' 
+      'page_hide'                           : 'pagehide' 
     },
     pagehide: function(e, data) {
       G.log('Changing to page:' + window.location.href);

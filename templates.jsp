@@ -25,20 +25,14 @@
     </div>
     <section data-type="list" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
       <div id="sidebar">
-        <div class="dummy head"></div>
-        <div class="dummy tail"></div>
       </div>
     </section>
     <div id="nabs_grid" class="masonry">
-      <div class="dummy head"></div>
-      <div class="dummy tail"></div>
     </div>
     
     <!-- ul id="columns">
     </ul -->
     <table class="table-stroke" width="100%" style="display:none" id="comments">
-      <tr class="dummy head"></tr>
-      <tr class="dummy tail"></tr>
     </table>
     <form data-ajax="false" id="mv" action="#">
       <input type="submit" id="mvSubmit" value="{{= loc('submit') }}" />

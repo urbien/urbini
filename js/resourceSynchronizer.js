@@ -38,10 +38,11 @@ define('resourceSynchronizer', [
     if (this.data.detached)
       return false;
 
-    var result = Synchronizer.prototype._preProcess.call(this);
+    var result = Synchronizer.prototype._preProcess.call(this),
+        uri = this.data.getUri();
     
-    if (U.isTempUri(this.data.getUri())) {
-      this.info.tempUri = this.data.getUri();
+    if (U.isTempUri(uri)) {
+      this.info.tempUri = uri;
       this.info.isForceFetch = this.info.isUpdate = false;
     }
     

@@ -11,7 +11,7 @@ define('views/BasicPageView', [
   'jqueryImagesLoaded'
 ], function(G, _, U, Events, BasicView, LazyImageLoader, Scrollable, $m) {
   var MESSAGE_BAR_TYPES = ['info', 'error', 'tip', 'countdown'],
-      pageEvents = ['pageshow', 'pagehide', 'pagebeforeshow'],
+      pageEvents = ['page_show', 'page_hide', 'page_beforeshow'],
       viewportEvents = ['resize', 'orientationchange'],
       doc = document,
       $wnd = $(window);
@@ -45,7 +45,7 @@ define('views/BasicPageView', [
     initialize: function(options) {
       var self = this;
       BasicView.prototype.initialize.apply(this, arguments);
-      _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft', 'scroll', '_onScroll', '_onViewportDimensionsChanged'); //, 'onpageshow', 'onpagehide');            
+      _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft', 'scroll', '_onScroll', '_onViewportDimensionsChanged'); //, 'onpage_show', 'onpage_hide');            
       
 //      this._subscribeToImageEvents();
 //      
@@ -102,9 +102,9 @@ define('views/BasicPageView', [
       'scrollstart.page': 'reverseBubbleEvent',
       'scrollstop.page': 'reverseBubbleEvent',      
       'scroll.page': 'scroll',
-      'pagehide.page': 'onpageevent',
-      'pageshow.page': 'onpageevent',
-      'pagebeforeshow.page': 'onpageevent',
+      'page_hide.page': 'onpageevent',
+      'page_show.page': 'onpageevent',
+      'page_beforeshow.page': 'onpageevent',
       'swiperight.page': 'swiperight',
       'swipeleft.page': 'swipeleft'
     },
@@ -117,10 +117,10 @@ define('views/BasicPageView', [
     },
     
     myEvents: {
-      '.page active': '_onActive',
-      '.page inactive': '_onInactive',
       '.page titleChanged': '_updateTitle',
-      '.page destroyed': '_onDestroyed'
+      '.default active': '_onActive',
+      '.default inactive': '_onInactive',
+      '.default destroyed': '_onDestroyed'
     },
     
     windowEvents: {
@@ -167,9 +167,9 @@ define('views/BasicPageView', [
     
     onpageevent: function(e) {
       this._lastPageEvent = e.type;
-//      if (e.type == 'pageshow')
+//      if (e.type == 'page_show')
 //        this.trigger('active');
-//      else if (e.type == 'pagehide')
+//      else if (e.type == 'page_hide')
 //        this.trigger('inactive');
       
       this.reverseBubbleEvent.apply(this, arguments);      
@@ -257,7 +257,7 @@ define('views/BasicPageView', [
 
     onTourStep: function(step) {
       if (this.isActive())
-        this.onpageshow(this.runTourStep.bind(this, step));
+        this.onpage_show(this.runTourStep.bind(this, step));
     },
     
     runTourStep: function(step) {      
@@ -449,6 +449,8 @@ define('views/BasicPageView', [
       for (var i = 0; i < viewportEvents.length; i++) {
         window.removeEventListener(viewportEvents[i], this._onViewportDimensionsChanged);          
       }
+      
+      return BasicView.prototype._onDestroyed.apply(this, arguments);
     },
 
     _checkAutoClose: function() {
@@ -489,7 +491,7 @@ define('views/BasicPageView', [
             };
             
         var countdownPromise = U.countdown(seconds).progress(countdownSpan.text.bind(countdownSpan)).done(cleanup);
-        this.$el.one('pagehide', countdownPromise.cancel);
+        this.$el.one('page_hide', countdownPromise.cancel);
         
         hash = U.replaceParam(hash, '-autoClose', null);
       }
@@ -578,7 +580,7 @@ define('views/BasicPageView', [
     displayName: 'BasicPageView'
   });
   
-  _.each(['pageshow', 'pagehide'], function(e) {
+  _.each(['page_show', 'page_hide'], function(e) {
     PageView.prototype['on' + e] = function(fn) {
       if (this._lastPageEvent == e)
         fn();
