@@ -366,6 +366,7 @@ define('views/Header', [
     
     restyleNavbar: function() {
       this.$('[data-role="navbar"]').navbar();
+      this.$('[data-role="navbar"]').removeClass('ui-mini');
     },
     
     renderHelper: function() {
@@ -462,27 +463,30 @@ define('views/Header', [
         this.$el.find('#headerButtons').attr('class', 'hidden');
 //        
       }
-      /*
-      if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges) {
-        this.$el.find('#name').removeClass('resTitle');
-        if (this.resource  &&  !this.isEdit) {
-          var pt = this.$el.find('#pageTitle');
-          if (pt) {
-            pt.css('padding-bottom', '4px');
-            pt.css('border-bottom', '1px solid rgba(255,255,255,0.5)');
+      if (!G.currentApp.widgetLibrary  || G.currentApp.widgetLibrary != 'Building Blocks') {
+        if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges) {
+          this.$el.find('#name').removeClass('resTitle');
+          if (this.resource  &&  !this.isEdit) {
+            var pt = this.$el.find('#pageTitle');
+            if (pt) {
+              pt.css('padding-bottom', '4px');
+              pt.css('border-bottom', '1px solid rgba(255,255,255,0.5)');
+            }
           }
+          // this.$el.find('#pageTitle').css('margin-bottom', '0px'); 
         }
-        // this.$el.find('#pageTitle').css('margin-bottom', '0px'); 
-      }
-      */
-      if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges) {
+      }      
+      if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges  &&  !this.isEdit) {
         this.$el.find('#name.resTitle').css('padding-bottom', '0px');
       }
-      if (this.noButtons) 
-        this.$el.find('h4').css('margin-top', '10px');
-      else
-        this.$el.find('h4').css('margin-top', '4px');
-
+      var wl = G.currentApp.widgetLibrary;
+      var isJQM = !wl  ||  wl == 'Jquery Mobile';
+      if (isJQM) {
+        if (this.noButtons) 
+          this.$el.find('h4').css('margin-top', '10px');
+        else
+          this.$el.find('h4').css('margin-top', '4px');
+      }
       for (var btn in btns) {
         var badge = btns[btn].$el.find('.menuBadge');
         if (badge  &&  badge.length)

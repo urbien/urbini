@@ -66,7 +66,8 @@ define('views/ResourceView', [
       return this;
     },
     events: {
-      'click': 'click'
+      'click': 'click',
+      'click #other': 'showOther'  
     },
     click: function(e) {
       if (!this.isBuyGroup)
@@ -74,6 +75,7 @@ define('views/ResourceView', [
       
       var t = e.target;
       var tagName = t.tagName.toLowerCase();
+        
       while (tagName  &&  tagName != 'a') {
         t = t.parentElement;
         tagName = t.tagName.toLowerCase();
@@ -102,7 +104,20 @@ define('views/ResourceView', [
       props[bl.backLink] = res.getUri();
       return this.router.navigate(U.makeMobileUrl('make', U.getLongUri1(cbType), props));
     },
-    
+    showOther: function(e) {
+      var t = e.target;
+      var tagName = t.tagName.toLowerCase();
+      if (tagName == 'header'  &&  t.parentElement.tagName.toLowerCase() == 'section') {
+        Events.stopEvent(e);
+        var ul = $(t.parentElement).find('ul');
+        var cl = ul.attr('class');
+        if (!cl  ||  cl.indexOf('hidden') == -1)
+          ul.attr('class', 'hidden');
+        else
+          ul.removeAttr('class');
+        return;
+      }
+    },
     refresh: function(resource, options) {
       options = options || {};
       if (options.skipRefresh || options.fromDB)
@@ -235,7 +250,6 @@ define('views/ResourceView', [
       var groupNameDisplayed;
       var maxChars = 30;
 
-
       if (propGroups.length) {
         for (var i = 0; i < propGroups.length; i++) {
           var grMeta = propGroups[i];
@@ -270,7 +284,6 @@ define('views/ResourceView', [
             if (prop.code) {
               val.value = this.__prependNumbersDiv(prop, val.value);          
             }
-            
             if (val.name.length + v.length > maxChars)
               U.addToFrag(frag, this.propRowTemplate2(val));
             else
@@ -311,12 +324,20 @@ define('views/ResourceView', [
         if (!willShow(res, prop)) //(!U.isPropVisible(res, prop))
           continue;
   
+        var wl = G.currentApp.widgetLibrary;
+        var isJQM = !wl  ||  wl == 'Jquery Mobile';
         if (numDisplayed  &&  !groupNameDisplayed) {
-          otherLi = '<li data-role="collapsible" id="other" data-inset="false" style="border:0px;' + (G.theme.backgroundImage ? 'background-image: url(' + G.theme.backgroundImage + ')' : '') + '" data-content-theme="' + G.theme.list + '"  data-theme="' + G.theme.list + '" id="other"><h3 style="margin:0px;">Other</h3><ul data-inset="true" data-role="listview" style="margin: -10px 0px;">';
+          var wl = G.currentApp.widgetLibrary;
+          if (isJQM)
+            otherLi = '<li data-role="collapsible" id="other" data-inset="false" style="border:0px;' + (G.theme.backgroundImage ? 'background-image: url(' + G.theme.backgroundImage + ')' : '') + '" data-content-theme="' + G.theme.list + '"  data-theme="' + G.theme.list + '"><h3 style="margin:0px;">Other</h3><ul data-inset="true" data-role="listview" style="margin: -10px 0px;">';
+          else 
+            otherLi = '<section id="other"><header style="margin:0px;cursor:pointer;"><i class="ui-icon-plus-sign"></i>&#160;Other</header><ul class="hidden">';            
+
   //        this.$el.append('<li data-role="collapsible" data-content-theme="c" id="other"><h2>Other</h2><ul data-role="listview">'); 
           groupNameDisplayed = true;
         }
         
+        displayedProps[p] = true;
         var val = U.makeProp({resource: res, propName: p, prop: prop, value: res.get(p)});
         if (prop.code) {
           val.value = this.__prependNumbersDiv(prop, val.value);          
@@ -338,7 +359,10 @@ define('views/ResourceView', [
       }
       
       if (otherLi) {
-        otherLi += "</ul></li>";
+        if (isJQM)
+          otherLi += "</ul></li>";
+        else
+          otherLi += "</ul></section>";
         U.addToFrag(frag, otherLi);
       }
   //    if (displayedProps.length  &&  groupNameDisplayed)
@@ -353,7 +377,8 @@ define('views/ResourceView', [
       }
       else
         this.$el.trigger('create');      
-
+      if (!_.size(displayedProps))
+        this.$el.css('display', 'none');
 
       if (this.isCode && CodeMirror) {
 //        var doc = document;

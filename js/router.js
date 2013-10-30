@@ -1553,7 +1553,10 @@ define('router', [
 //        view.trigger('active', true);
         activated = true;
         view.render();
-        view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
+//        view.onload(function() {          
+        if (!G.currentApp.widgetLibrary  || G.currentApp.widgetLibrary != 'Building Blocks') 
+          view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
+//        });
       }
 
 //      if (!G.browser.mobile) {
@@ -1579,9 +1582,11 @@ define('router', [
       // perform transition
 //      view.onload(function() {
         $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
-        this.$changePage({changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});        
-
-//        if (G.currentApp.frameworkType  && G.currentApp.frameworkType != 'Jquery Mobile') {
+        
+        if (G.isJQM()) 
+          this.$changePage({changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});        
+/*
+        if (G.currentApp.widgetLibrary  && G.currentApp.widgetLibrary == 'Building Blocks') {
           var hdr = $('div.ui-page-active .hdr');
           if (hdr) {
             var bg = G.theme.menuHeaderBackground, 
@@ -1615,15 +1620,15 @@ define('router', [
             }
             if (c  &&  bg) {
               $('div.ui-page-active #buttons #name').css('background', bg);
-              if (view.collection  &&  liBg)
-                $('div.ui-page-active #sidebar li').css('background', liBg);
+//              if (view.collection  &&  liBg)
+//                $('div.ui-page-active #sidebar li').css('background', liBg);
               $('div.ui-page-active #pageTitle').css('color', c);
               c = $('[data-role="page"]').css('color');
 //              $('div.ui-page-active #sidebar span').css('color', c);
               G.theme.descColor = c.charAt(0) == '#' ? U.colorLuminance(c, 0.7) : U.colorLuminanceRGB(c, 0.7);
               $('.u-desc').css('color', G.theme.descColor );
             }
-//          }
+          }
 //            var bg = $('.ui-body-' + swatch).css('background')  ||  $('.ui-body-' + swatch).css('background-color');
 //            if (bg  &&  bg.indexOf('rgb(') != -1)
 //              $('div.ui-page-active .hdr').css('background', U.colorLuminanceRGB(bg, -0.1));
@@ -1632,6 +1637,7 @@ define('router', [
 //              $('div.ui-page-active #pageTitle').css('color', c);
 //            }
         }
+*/        
         this.nextTransition = null;
         Events.trigger('pageChange', prev, view);
 //      }.bind(this));

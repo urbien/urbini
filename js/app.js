@@ -872,10 +872,14 @@ define('app', [
           onDismiss();
         });
       }
-      
-      $popup.trigger('create');
-      $popup.popup().popup("open");
-      $popup.parent().css('z-index', 1000000);
+      if (!G.currentApp.widgetLibrary  ||  G.currentApp.widgetLibrary == 'Jquery Mobile') {
+        $popup.trigger('create');
+        $popup.popup().popup("open");
+        $popup.parent().css('z-index', 1000000);
+      }  
+      else {
+        $popup.css('left', ($(window).width() - 255) / 2);
+      }
       return false; // prevents login button highlighting
     });
     

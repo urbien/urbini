@@ -19,7 +19,7 @@ span.comment {
   font-size: 12px;  
 }
 
-label.req::before {
+label.req::after {
   content: "* ";
   font-weight: bold;
   color: #f66;  

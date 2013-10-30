@@ -58,7 +58,14 @@ define('views/RightMenuPanel', [
       var idx = href.lastIndexOf('#');
       href = idx == -1 ? href : href.slice(idx + 1);
       
-      this.router.navigate(href, {trigger: true});
+      if (G.currentApp.widgetLibrary &&  G.currentApp.widgetLibrary == 'Building Blocks') {
+        Events.stopEvent(e);
+        window.location.replace(G.appUrl + '#' + href);
+        window.location.reload(true);
+        return;
+      }
+      else
+        this.router.navigate(href, {trigger: true});
     },
     
     release: function(e) {
@@ -254,7 +261,7 @@ define('views/RightMenuPanel', [
         p.css('visibility', 'visible');
       else {
 
-//      p.panel().panel("open");
+//        p.panel().panel("open");
         p.panel("open");
         ul.listview();
       }
@@ -400,7 +407,7 @@ define('views/RightMenuPanel', [
         p.css('visibility', 'visible');
       else {
 
-        p.panel("open");
+        p.panel().panel("open");
 //      p.panel().panel("open");
         ul.listview();
 //      p.trigger("updatelayout")
