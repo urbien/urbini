@@ -6,7 +6,7 @@ define('views/MasonryListView', [
   'views/ResourceListView',
   'views/ResourceMasonryItemView',
   'collections/ResourceList',
-  'jqueryMobile',
+  '@widgets',
   'jqueryImagesLoaded'
 ], function(G, U, Events, ResourceListView, ResourceMasonryItemView, ResourceList, $m) {
   var MASONRY_FN = 'masonry', // in case we decide to switch to Packery or some other plugin
@@ -169,24 +169,24 @@ define('views/MasonryListView', [
     },
     
     centerMasonry: function(list) {
-      var l = _.filter(list.$el.find('.nab'), function(a) {
-          return $(a).css('top') == '0px';
-        }),
-        len = l.length;
-      
-      if (len) {
-        var w = $(l[0]).css('width');
-        w = w.substring(0, w.length - 2);
-        len = l.length * w;
-//        len += l.length * 18;
-        var d = (($(window).width() - len) / 2) - 10;
-        var style = list.$el.attr('style'); 
-        var left = list.$el.css('left');
-        if (left)
-          list.$el.css('left', d + 'px');
-        else
-          list.$el.attr('style', style + 'left: ' + d + 'px;');
-      }
+//      var l = _.filter(list.$el.find('.nab'), function(a) {
+//          return $(a).css('top') == '0px';
+//        }),
+//        len = l.length;
+//      
+//      if (len) {
+//        var w = $(l[0]).css('width');
+//        w = w.substring(0, w.length - 2);
+//        len = l.length * w;
+////        len += l.length * 18;
+//        var d = (($(window).width() - len) / 2) - 10;
+//        var style = list.$el.attr('style'); 
+//        var left = list.$el.css('left');
+//        if (left)
+//          list.$el.css('left', d + 'px');
+//        else
+//          list.$el.attr('style', style + 'left: ' + d + 'px;');
+//      }
     }
   }, {
     displayName: "MasonryListView",

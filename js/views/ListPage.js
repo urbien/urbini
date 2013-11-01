@@ -353,7 +353,7 @@ define('views/ListPage', [
           },
           filter;
       
-      this.$el.attr("data-scrollable", "true");
+//      this.$el.attr("data-scrollable", "true");
       tmpl_data.isMasonry = this.isMasonry;
       this.$el.html(this.template(tmpl_data));
       

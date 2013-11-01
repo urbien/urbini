@@ -2,6 +2,8 @@ html {
   font-size: 10px;
 }
 
+[data-role="page"] { top: 0; left: 0; width: 100%; min-height: 100%; position: absolute; border: 0; }
+
 [data-type="list"] {
   padding: 0;
   background: #eee;

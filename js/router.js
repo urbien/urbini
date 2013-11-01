@@ -10,7 +10,7 @@ define('router', [
   'vocManager',
   'views/HomePage',
   'templates',
-  'jqueryMobile',
+  '@widgets',
   'appAuth',
   'redirecter',
   'transitions'
@@ -325,89 +325,19 @@ define('router', [
       if (!this.routePrereqsFulfilled('home', arguments))
         return;
       
-      var prev = this.currentView,
-          reverse;
-//      ,
-//          mainDiv = $('.mainDiv'); 
-//
-//      if (!mainDiv[0].childElementCount) {
-//        $('body').append(G.homePage);
-//        mainDiv.html(G.homePage);
-//      }
-//      else {
-//        if (mainDiv.is(':hidden'))
-//          mainDiv.show();
-//      }
-      
-      if (G.homePage) {
-//        $('body').append(G.homePage);
-//        document.body.style.background = 'none';
-//        div = document.createElement('div');
-//        div.className = 'mainDiv';
-//        div.style.background = 'none';
-//        div.innerHTML = G.homePage;
-//        document.body.appendChild(div);
-//        delete G.homePage;
-        G.initHome();
-      }
-      
-      homePageEl = $('#homePage');
-      if (!this.homePage)
-        this.homePage = new HomePage({el: homePageEl });
-      
-      Events.trigger('activeView', this.homePage);
-//      if (this.firstPage)
-//        this.homePage.$el.trigger('page_beforeshow');
-      
-      this.checkBackClick();
-      if (this.backClicked) {
-        this.currentView = C.getCachedView(); // this.viewsStack.pop();
-        if (!this.currentView) {
-          this.homePage.render();
-          this.currentView = this.homePage;
-          var idx = window.location.href.indexOf('#');
-          this.currentUrl = (idx == -1) ? window.location.href : window.location.href.substring(0, idx);
-        }
-        else {
-          this.currentUrl = this.urlsStack.pop();
-//          if (!this.viewsStack.length)
-//            this.currentView = $.mobile.firstPage;
+      var homePage = C.getCachedView();
+      if (!homePage) {
+        if (G.homePage) {
+          $(document.body).append(G.homePage);
+          delete G.homePage;
         }
         
-        $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
-        this.$changePage({
-          changeHash: false, 
-          transition: 'slide', 
-          reverse: true
-        });
+        homePage = new HomePage({el: $('#homePage') });
+        homePage.render();
       }
-      else {
-        this.currentUrl = window.location.href;
-        this.homePage.render();
-        this.currentView = this.homePage;
-        // no need to call change page when home page is displayed for the very first time
-//        if (this.urlsStack.length)
-        if (this.firstPage) {
-          // HACK - needed it for lazyImageLoader, otherwise no way to easily get a callback for when the page is in the viewport
-//          this.homePage.$el.trigger('page_show');
-        }
-        else
-          this.$changePage({changeHash:false, transition: 'slide', reverse: true});
-      }
-
-//      if (this.backClicked) {
-//        Events.trigger('pageChange', prev, this.currentView);
-//      }
       
-      // HACK, this div is hidden for some reason when going to #home/...
-
-      Events.trigger('pageChange', prev, this.currentView);
-      this.checkErr();
+      this.changePage(homePage);
     },
-    
-//    install: function() {
-//      
-//    },
     
     social: function() {
       if (!this.routePrereqsFulfilled('social', arguments))
@@ -1329,7 +1259,7 @@ define('router', [
         });
       } catch( e ) {}
       
-      Transitioner[options && options.reverse ? 'right' : 'left'](fromView, toView, null, this.firstPage ? 0 : 500).done(function() {
+      Transitioner[options && options.reverse ? 'right' : 'left'](fromView, toView, null, this.firstPage ? 0 : 400).done(function() {
         $m.activePage = toView.$el;
       });
     },
@@ -1554,7 +1484,7 @@ define('router', [
         activated = true;
         view.render();
 //        view.onload(function() {          
-        if (!G.currentApp.widgetLibrary  || G.currentApp.widgetLibrary != 'Building Blocks') 
+//        if (!G.currentApp.widgetLibrary  || G.currentApp.widgetLibrary != 'Building Blocks') 
           view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
 //        });
       }
@@ -1583,7 +1513,7 @@ define('router', [
 //      view.onload(function() {
         $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
         
-        if (G.isJQM()) 
+//        if (G.isJQM()) 
           this.$changePage({changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});        
 /*
         if (G.currentApp.widgetLibrary  && G.currentApp.widgetLibrary == 'Building Blocks') {

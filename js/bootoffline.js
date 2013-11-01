@@ -18,10 +18,11 @@ window.onload = function() {
   g = JSON.parse(g);
   window.Lablz = g;
 
-  var div = document.createElement('div');
-  div.innerHTML = ls.getItem('homePage');
-/*  document.getElementById('page').appendChild(div);*/
-  document.body.appendChild(div);
-
+  var hash = window.location.hash;
+  if (!hash || /\#home/.test(hash)) {
+    var body = document.body;
+    body.innerHTML = body.innerHTML + ls.getItem('homePage');
+  }
+  
   new Function("d", g.boot)(document);
 }

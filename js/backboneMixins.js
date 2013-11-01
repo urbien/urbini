@@ -53,21 +53,21 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         return this;
       },
 
-      _debug: function(e) {
+//      _debug: function(e) {
 //        var args = _.toArray(arguments);
 //        args.unshift('events', this.TAG, 'HAMMER');
 //        G.debug.apply(G, args);
-        G.log('events', this.TAG, 'Hammer', e.type);
-      },
+//        G.log('events', this.TAG, 'Hammer', e.type);
+//      },
       
       hammer: function(options){
         var hammer = this.$el.hammer(options);
         if (!this._hammered) {
           this._hammered = true;
-          var debug = this._debug.bind(this);
-          for (var i = 0; i < hammer_events.length; i++) {
-            hammer.on(hammer_events[i], debug);
-          }
+//          var debug = this._debug.bind(this);
+//          for (var i = 0; i < hammer_events.length; i++) {
+//            hammer.on(hammer_events[i], debug);
+//          }
         }
         
         return hammer;

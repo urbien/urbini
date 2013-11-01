@@ -426,29 +426,36 @@ define('lib/fastdom', ['globals'], function(G) {
     // Clear reference to the job
     delete this.jobs[job.id];
 
-    // Call the job in
-    try { 
-      var args = job.args,
-          ctx = job.ctx;
+    if (G.DEBUG)
+      return this._run(job);
     
-      if (args) {
-        if (_.isArray(args))
-          job.fn.apply(ctx, args);
-        else
-          job.fn.call(ctx, args);
-      }
-      else if (ctx)
-        job.fn.call(ctx);
-      else
-        job.fn();
+    try { 
+      return this._run(job);
     } catch(e) {
       debugger;
       this.onError(e);
     }
+  };
+
+  FastDom.prototype._run = function(job) {
+    // Call the job in
+    var args = job.args,
+        ctx = job.ctx;
+  
+    if (args) {
+      if (_.isArray(args))
+        job.fn.apply(ctx, args);
+      else
+        job.fn.call(ctx, args);
+    }
+    else if (ctx)
+      job.fn.call(ctx);
+    else
+      job.fn();
     
     this.time();
     return job;
-  };
-
+  }
+  
   return window.fastdom = new FastDom();
 })

@@ -502,7 +502,9 @@ define('views/Header', [
       // END HACK
       
 //      this.refreshCallInProgressHeader();
-      this.restyleNavbar();
+      if (G.isJQM())
+        this.restyleNavbar();
+      
       this.finish();      
       return this;
     }

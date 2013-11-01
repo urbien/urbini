@@ -4,9 +4,12 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 	var indexedDB = usingShim ? window.shimIndexedDB : window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
   var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
   var IDBCursor = window.IDBCursor || window.webkitIDBCursor || {};
-  IDBCursor.PREV = IDBCursor.PREV || "prev";
-  IDBCursor.NEXT = IDBCursor.NEXT || "next";
-
+  if (typeof IDBCursor.PREV === "undefined")
+    IDBCursor.PREV = "prev";
+  
+  if (typeof IDBCursor.NEXT === "undefined")
+    IDBCursor.NEXT = "next";
+  
   function getDefaultTransaction(mode) {
     switch (mode) {
       case 0:

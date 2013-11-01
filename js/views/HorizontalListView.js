@@ -31,17 +31,20 @@ define('views/HorizontalListView', [
     },
 
     preRender: function() {
-      ResourceListView.prototype.preRender.apply(this, arguments);
-      if (!_.has(this, '_isIntersectingWithCollection')) { // only calc this once
-        var source = this.parentView.resource,
-            vocModel = this.vocModel,
-            first = this.collection.models[0];
-        
-        this.isIntersection = U.isA(vocModel, 'Intersection');
-        this._isIntersectingWithCollection = source && 
-                                             this.isIntersection && 
-                                             source.vocModel.type == U.getTypeUri(first.get('Intersection.a') || first.get('Intersection.b'));
-      }
+      try {
+        if (!this._prerendered) {
+          var source = this.parentView.resource,
+              vocModel = this.vocModel,
+              first = this.collection.models[0];
+          
+          this.isIntersection = U.isA(vocModel, 'Intersection');
+          this._isIntersectingWithCollection = source && 
+                                               this.isIntersection && 
+                                               source.vocModel.type == U.getTypeUri(first.get('Intersection.a') || first.get('Intersection.b'));
+        }
+      } finally {
+        return ResourceListView.prototype.preRender.apply(this, arguments);
+      }    
     },
     
     getPageTag: function() {

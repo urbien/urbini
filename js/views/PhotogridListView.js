@@ -6,7 +6,7 @@ define('views/PhotogridListView', [
   'views/ResourceListView',
   'views/HorizontalListItemView',
   'collections/ResourceList',
-  'jqueryMobile'
+  '@widgets'
 ], function(G, U, Events, ResourceListView, HorizontalListItemView, ResourceList, $m) {
   return ResourceListView.extend({
 //    events: {

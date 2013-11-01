@@ -8,15 +8,13 @@ DOMReady.add( function () {
   
   if (localStorage  &&  localStorage.getItem)
     localStorage.setItem('homePage', l.homePage);
-    
-  l.initHome = function() {
-    var div = d.createElement('div');
-    div.className = 'mainDiv';
-    div.style.background = 'none';
-    div.innerHTML = l.homePage;
-    d.body.appendChild(div);
+   
+  
+  var hash = window.location.hash;
+  if (!hash || /\#home/.test(hash)) {
+    d.body.innerHTML = d.body.innerHTML + l.homePage;
     delete l.homePage;
-    var scripts = div.getElementsByTagName('script');
+    var scripts = d.body.getElementsByTagName('script');
 /*  console.log('scripts: ' + scripts.length); */ 
 
     try {
@@ -34,11 +32,7 @@ DOMReady.add( function () {
     } catch (e) {
       console.log('eval failed: ' + e);
     }
-  };
-  
-  var hash = window.location.hash;
-  if (!hash || /\#home/.test(hash))
-    l.initHome();
+  }
   
   
 /*  if (window.location.hash) { 

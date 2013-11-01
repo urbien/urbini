@@ -17,8 +17,6 @@
        data-filter="{{= this.canSearch }}" data-filter-placeholder="{{= loc(obj.placeholder || 'search') }}"
      {{ } }}
     >
-      <div class="dummy head"></div>
-      <div class="dummy tail"></div>
     </div>
     <div id="nabs_grid" class="masonry">
     </div>

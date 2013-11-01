@@ -78,23 +78,27 @@ define('views/HomePage', [
     render: function(options) {
       var self = this;
       
+      if (!this.rendered) {
 //      this.$el.trigger('page_beforeshow');
-      var item = $('#homePage');
-      item.css('display', 'block');
-      if (!item || item.length == 0) { 
-        var itemS = G.haslocalStorage  &&  G.localStorage.get('homePage');
-        if (itemS) { 
-          $(itemS).css('display:none');
-          $(itemS).appendTo('body');
-//          $(itemS).appendTo('#page');
-        }
+        this.$el.css('display', 'block');
       }
-      if ($('#homePage').attr("data-stretch"))
-        $('#homePage').anystretch();
-//      if (this.first)
-//        $.mobile.initializePage();
-//      $(".demo").anystretch();
+//      var item = $('#homePage');
+//      item.css('display', 'block');
+//      if (!item || item.length == 0) { 
+//        var itemS = G.haslocalStorage  &&  G.localStorage.get('homePage');
+//        if (itemS) { 
+//          $(itemS).css('display:none');
+//          $(itemS).appendTo('body');
+////          $(itemS).appendTo('#page');
+//        }
+//      }
+      
+      if (this.$el.attr("data-stretch"))
+        this.$el.anystretch();
+
       this.first = false;
+      if (this.rendered)
+        return;
 
       if (navigator.mozApps) {
         G.firefoxAppInstalled.done(function() {
@@ -104,9 +108,7 @@ define('views/HomePage', [
       else 
         this.removeInstallBtn();
       
-      $('title').text(G.currentApp.title);
-//      this.finish();
-//      this.$el.trigger('page_show');
+      document.title = G.currentApp.title;
       return this;
     },
     

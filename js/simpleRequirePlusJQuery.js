@@ -9663,9 +9663,19 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     var url = toUrl(name);
     var dfd = moduleMap[url] = moduleMap[url] || $.Deferred();
     defineMap[name] = true;
-    require(deps, function() {
+    
+    function _define() {
       dfd.resolve(cb.apply(root, arguments));
-    });
+    }
+    
+    if (deps && deps.length)
+      require(deps, _define);
+    else
+      _define();
+    
+//    require(deps, function() {
+//      dfd.resolve(cb.apply(root, arguments));
+//    });
   }
   
   /**
@@ -9796,4 +9806,6 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     s.src = main; 
     head.appendChild(s);
   }
+  
+  window.moduleMap = moduleMap;
 })(jQuery, undefined);

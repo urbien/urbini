@@ -194,7 +194,7 @@ define('collections/ResourceList', [
       var self = this,
           multiAdd = _.isArray(resources),
           fromServer = this.lastFetchOrigin == 'server',
-          params = this.modelParams,
+          params = this.modelParamsStrict,
           setInitialParams = fromServer && _.size(params);
       
       resources = multiAdd ? resources : [resources];
@@ -311,7 +311,9 @@ define('collections/ResourceList', [
     },
     
     _parseParams: function(params) {
-      var modelParams = {};
+      var modelParams = {},
+          strict = {};
+      
       for (var name in params) {
         var val = params[name];
         if (name == '$offset') {
@@ -321,12 +323,16 @@ define('collections/ResourceList', [
         else if (name == '$limit') {
           this.perPage = params.$limit = parseInt(val);
         }
-        else if (!/^[\$-]/.test(name))
-          modelParams[name] = params[name];
+        else if (!/^-/.test(name)) {
+          modelParams[name] = val;
+          if (!/^\$/.test(name))
+            strict[name] = val;
+        }
       }
       
       this.params = params;
       this.modelParams = modelParams;
+      this.modelParamsStrict = strict;
       this.url = this.baseUrl + (this.params ? $.param(this.params) : ''); //this.getUrl();
       this.query = U.getQueryString(modelParams, true); // sort params in alphabetical order for easier lookup
     },

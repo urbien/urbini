@@ -142,7 +142,8 @@ define('transitions', ['globals', 'utils', 'lib/fastdom'], function(G, U, Q) {
     $to.trigger('page_beforeshow');
     Q.write(function() {
       CSS.setStylePropertyValues(to.style, {
-        transform: transition.toPageBeforeTransition(toView)
+        transform: transition.toPageBeforeTransition(toView),
+        transition: null
       });
       
   //    to.style['z-index'] = -100;

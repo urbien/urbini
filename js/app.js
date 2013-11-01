@@ -685,13 +685,13 @@ define('app', [
       }
       
       App.router = new Router();
-      if (G.support.pushState) {
-        Backbone.history.start({
-          pushState: true, 
-          root: G.appUrl.slice(G.appUrl.indexOf('/', 8))
-        });
-      }
-      else
+//      if (G.support.pushState) {
+//        Backbone.history.start({
+//          pushState: true, 
+//          root: G.appUrl.slice(G.appUrl.indexOf('/', 8))
+//        });
+//      }
+//      else
         Backbone.history.start();
       
       dfd.resolve();

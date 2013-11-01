@@ -6,7 +6,7 @@ define('utils', [
   'templates',
   'cache',
   'events',
-  'jqueryMobile'
+  '@widgets'
 ], function(G, _, Backbone, Templates, C, Events, $m) {
   var ArrayProto = Array.prototype,
       slice = ArrayProto.slice,

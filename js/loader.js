@@ -77,7 +77,7 @@ define('globals', function() {
   /**
    * @param constantTimeout: if specified, this will always be the timeout for this function, otherwise the first param of the returned async function will be the timeout
    */
-
+  
   // From jQuery.browser (deprecated in 1.3, removed in 1.9.1)
   // Use of jQuery.browser is frowned upon.
   // More details: http://docs.jquery.com/Utilities/jQuery.browser
@@ -162,10 +162,15 @@ define('globals', function() {
       return false;
     
     var isBB = G.getWidgetLibrary() == 'Building Blocks';
-    if (!isBB && /\/bb\/|templates_bb\.jsp|bb_styles\.css/.test(name))
+    if (isBB && /jquery\.mobile/.test(name, 'ig'))
       return false;
     
+//    if (!isBB && /\/bb\/|templates_bb\.jsp|bb_styles\.css/.test(name))
+//      return false;
+    
     switch (name) {
+//    case '@widgets':
+//      return !isBB;
     case 'lib/IndexedDBShim':
       return G.dbType == 'shim';
     case 'lib/whammy':
@@ -256,7 +261,10 @@ define('globals', function() {
   };
 
   var orgLoad = require.load;
-  require.load = function (name) {
+  require.load = function(name) {
+//    if (/^@/.test(name))
+//      return $.Deferred(function(defer) { require([name]).done(defer.resolve) }).promise();
+    
     var url = G.getCanonicalPath(require.toUrl(name));
     var args = arguments,
         self = this;
@@ -707,6 +715,73 @@ define('globals', function() {
     G.localStorage.cleanAsync = G.localStorage.clean.async(100);
   };
 
+  function setupWidgetLibrary() {
+    var widgets = G._widgetsLib = [],
+        bundle = widgetsBundle;
+    
+    for (var i = 0, len = bundle.length; i < len; i++) {
+      widgets.push(bundle[i].name);
+    }
+    
+//    var req = window.require,
+//        def = window.define;
+//    
+//    window.require = function(modules, cb) {
+//      modules = modules ? ($.isArray(modules) ? modules : [modules]) : [];
+//      var idxW = modules.indexOf('@widgets'),
+//          idxL = modules.indexOf('@widgetsLib'),
+//          idx = ~idxW ? idxW : idxL;
+//      
+//      if (idxW == -1 && idxL == -1)
+//        return req.apply(this, arguments);
+//      
+//      modules.splice(idx, 1);
+//      var wBundleFiles = _.pluck(widgetsBundle, 'name');
+//      if (~idxW)
+//        wBundleFiles = wBundleFiles.concat('widgetLibAdapter');
+//      
+//      var newArgs = [];
+//      return req(modules.concat(wBundleFiles), function() {
+//        var lastArg = arguments[arguments.length - 1];
+//        if (!modules.length)
+//          return idxW ? lastArg : undefined;
+//        
+//        for (var i = 0; i < idx; i++) {
+//          newArgs.push(arguments[i]);
+//        }
+//        
+//        if (~idxW)
+//          newArgs.push(lastArg);
+//
+//        if (cb)
+//          cb.apply(window, newArgs);  
+//        
+//        if (newArgs.length)
+//          return newArgs;
+//      }).then(function() {
+//        if (newArgs.length)
+//          return newArgs;
+//      });
+//    };
+//
+//    window.define = function(name, deps, cb) {
+//      if (arguments.length != 3 || !/^@/.test(name))
+//        return def.apply(this, arguments);
+//      
+//      debugger;
+//    };
+//    
+//    for (var prop in req) {
+//      if (req.hasOwnProperty(prop))
+//        window.require[prop] = req[prop]; // copy over define.amd, and whatever else
+//    }
+//    
+//    for (var prop in def) {
+//      if (def.hasOwnProperty(prop))
+//        window.define[prop] = def[prop]; // copy over define.amd, and whatever else
+//    }
+  }
+  
   function load() {
     var spinner = 'app init',
         priorityModules = [];
@@ -747,22 +822,29 @@ define('globals', function() {
       loadRegular();
   };
   
+  function getCSS(bundle) {
+    var css = [];
+    for (var i = 0; i < bundle.length; i++) {
+      var info = bundle[i];
+      if (/\.css$/.test(info.name))
+        css.push(info.name);
+    }
+    
+    return css;
+  }
+  
   function loadRegular() {
-    Bundler.loadBundle(preBundle).then(function() {
+    Bundler.loadBundle(preBundle.concat(widgetsBundle)).then(function() {
 //        preBundle._deferred.resolve();
-      G.finishedTask("loading pre-bundle");
-      
+      G.finishedTask("loading pre-bundle and widgets-bundle");
       G.startedTask("loading modules");
-      var css = preBundle.css.slice();
-      for (var i = 0; i < css.length; i++) {
-        var cssObj = css[i];
-        css[i] = cssObj.name;
-      }
-      
+      var css = getCSS(preBundle).concat(getCSS(widgetsBundle));      
       return require('__domReady__').then(function() {
-        var essential = ['jqmConfig', 'events', 'app'];
-        if (G.modules['js/lib/l20n.js'])
-          essential.push('lib/l20n');
+        var essential = ['events', 'app', 'lib/l20n'];
+//        if (G.modules['js/lib/l20n.js'])
+        essential.push('lib/l20n');
+        if (G.isJQM())
+          essential.unshift('jqmConfig');
         
         essential = essential.concat(css)
         return require(essential);
@@ -793,12 +875,9 @@ define('globals', function() {
       var bundles = G.bundles;
       for (var name in bundles) {
         var bundle = bundles[name];
-        for (var type in bundle) {
-          var subBundle = bundle[type];
-          for (var i = subBundle.length - 1; i >= 0; i--) {
-            if (!isModuleNeeded(subBundle[i].name))
-              subBundle.splice(i, 1);
-          }
+        for (var i = bundle.length - 1; i >= 0; i--) {
+          if (!isModuleNeeded(bundle[i].name))
+            bundle.splice(i, 1);
         }
       }
     },
@@ -1036,14 +1115,11 @@ define('globals', function() {
         var bundle = bundles[when];
         bundle._deferred = $.Deferred();
         for (var type in bundle) {
-          var bt = bundle[type];
-          for (var i = bt.length - 1; i >= 0; i--) {
-            var info = bt[i];              
-            G.files[info.name] = info;
-            if (when === 'appcache') {
-    //        if ((type === 'js' && ALL_IN_APPCACHE && !/^lib/.test(info.name)) || when === 'appcache') {
-              G.files.appcache[info.name] = info;
-            }
+          var info = bundle[type];
+          G.files[info.name] = info;
+          if (when === 'appcache') {
+  //        if ((type === 'js' && ALL_IN_APPCACHE && !/^lib/.test(info.name)) || when === 'appcache') {
+            G.files.appcache[info.name] = info;
           }
         }
       }
@@ -1051,8 +1127,8 @@ define('globals', function() {
     getFromAppcacheBundle: function(url) {
       var appcacheBundle = G.bundles.appcache;
       url = url.slice(url.indexOf('/') + 1);
-      if (/\.js$/.test(url)) 
-        url = url.slice(0, url.length - 3);
+//      if (/\.js$/.test(url)) 
+//        url = url.slice(0, url.length - 3);
       
       var info = G.files.appcache[url];
       return info ? info.fullName || info.name : null;
@@ -1128,6 +1204,7 @@ define('globals', function() {
   
   var requireConfig = {
     paths: {
+      '@widgets': 'widgetsLibAdapter',
       mobiscroll: 'lib/mobiscroll-datetime-min',
       simplewebrtc: 'lib/simplewebrtc',
       jqmConfig: 'jqm-config',
@@ -1199,6 +1276,7 @@ define('globals', function() {
       
       // bundles
       bundles = G.bundles, // is part of initial globals
+      widgetsBundle = bundles.widgetsFramework,
       preBundle = bundles.pre,
       postBundle = bundles.post, 
       extrasBundle = bundles.extras;
@@ -1284,12 +1362,12 @@ define('globals', function() {
         }
       }
       else {
-        var pre = G.bundles.pre.js,
-            shimIdx = pre.indexOf('lib/IndexedDBShim');
-        
-        if (shimIdx >= 0)
-          pre.splice(shimIdx, 1);
-        
+//        var pre = G.bundles.pre.js,
+//            shimIdx = pre.indexOf('lib/IndexedDBShim');
+//        
+//        if (shimIdx >= 0)
+//          pre.splice(shimIdx, 1);
+//        
 //        G.log(G.TAG, 'db', "don't need indexeddb shim");
         type = 'idb';
       }
@@ -1384,35 +1462,29 @@ define('globals', function() {
           baseUrlLength = require.getConfig().baseUrl.length,
           modules = typeof modules === 'string' ? [modules] : modules;
       
-      _.each(modules, function(module) {
-        var found = false,
+      for (var i = 0, len = modules.length; i < len; i++) {
+        var module = modules[i],
+            found = false,
             fullName = require.toUrl(module).slice(baseUrlLength);
         
-        if (/\.js$/.test(fullName))
-          fullName = fullName.slice(0, fullName.length - 3);
+//        if (/\.js$/.test(fullName))
+//          fullName = fullName.slice(0, fullName.length - 3);
         
         for (var bName in G.bundles) {
           var bundle = G.bundles[bName];
-          for (var type in bundle) {
-            if (_.any(bundle[type], function(info) {
-              return info.name == fullName;
-            })) {
-              found = true;
-              if (bName !== 'pre') {                
-                bundlePromises.push(bundle._deferred.promise());
-              }
-              
-              break;
+          if (_.any(bundle, function(info) { return info.name == fullName; })) {
+            found = true;
+            if (bName !== 'pre') {
+              bundlePromises.push(bundle._deferred.promise());
             }
-          }
-          
-          if (found)
+            
             break;
+          }
         }
         
         if (!found)
           missing.push(fullName);
-      });
+      }
       
       if (missing.length) {
         // should only happen when dynamically deciding which modules to load (like based on browser, or based on app settings)
@@ -1747,8 +1819,8 @@ define('globals', function() {
         if (G.workers.length)
           worker = G.workers.shift();
         else {
-          var xw = G.files.xhrWorker;
-          worker = new Worker(G.serverName + '/js/' + (xw.fullName || xw.name) + '.js');
+          var xw = G.files['xhrWorker.js'];
+          worker = new Worker(G.serverName + '/js/' + (xw.fullName || xw.name));
         }
         
         dfd.resolve(worker);
@@ -1826,6 +1898,7 @@ define('globals', function() {
   G.skipModules = G.skipModules || [];
   G.DEBUG = !G.minify;
 
+  setupWidgetLibrary();
   setupLocalStorage();
   saveBootInfo();
   setMiscGlobals();

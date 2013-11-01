@@ -7,7 +7,7 @@ define('views/EditView', [
   'cache',
   'vocManager',
   'views/BasicView',
-  'jqueryMobile'
+  '@widgets'
 ], function(G, Events, Errors, U, C, Voc, BasicView, $m) {
   var spinner = 'loading edit view';
   var scrollerClass = 'i-txt',

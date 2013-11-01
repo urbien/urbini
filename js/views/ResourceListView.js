@@ -982,6 +982,9 @@ define('views/ResourceListView', [
     },
     
     preRender: function(info) {
+      if (this._prerendered)
+        return;
+      
       // override me
       var self = this;
       var colRange = info.range;
@@ -1012,10 +1015,15 @@ define('views/ResourceListView', [
 //            ranges.push(r);
 //        }
         
-        if (ranges.length)
-          return Voc.getModels(ranges);
+        if (ranges.length) {
+          return Voc.getModels(ranges).done(function() {
+            self._prerendered = true;
+          });
+        }
       }
-      
+
+      this._prerendered = true;
+
 //      .then(function() {
 //        var m = U.getModel(r);
 //        if (self.imageProperty.cloneOf == 'aFeatured' || self.imageProperty.cloneOf == 'bFeatured') {

@@ -7,7 +7,7 @@ define('views/BasicPageView', [
   'views/BasicView',
   'views/mixins/LazyImageLoader',
   'views/mixins/Scrollable',
-  'jqueryMobile',
+  '@widgets',
   'jqueryImagesLoaded'
 ], function(G, _, U, Events, BasicView, LazyImageLoader, Scrollable, $m) {
   var MESSAGE_BAR_TYPES = ['info', 'error', 'tip', 'countdown'],

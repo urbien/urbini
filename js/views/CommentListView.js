@@ -5,7 +5,7 @@ define('views/CommentListView', [
   'views/ResourceListView',
   'views/CommentListItemView',
   'collections/ResourceList',
-  'jqueryMobile'
+  '@widgets'
 ], function(G, U, Events, ResourceListView, CommentListItemView, ResourceList, $m) {
   return ResourceListView.extend({
     type: 'comment',
