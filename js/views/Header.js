@@ -479,8 +479,8 @@ define('views/Header', [
       if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges  &&  !this.isEdit) {
         this.$el.find('#name.resTitle').css('padding-bottom', '0px');
       }
-      var wl = G.currentApp.widgetLibrary;
-      var isJQM = !wl  ||  wl == 'Jquery Mobile';
+//      var wl = G.currentApp.widgetLibrary;
+      var isJQM = G.isJQM(); //!wl  ||  wl == 'Jquery Mobile';
       if (isJQM) {
         if (this.noButtons) 
           this.$el.find('h4').css('margin-top', '10px');

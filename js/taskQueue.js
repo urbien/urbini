@@ -238,7 +238,7 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
           log('taskQueue', 'Task timed out: ' + self.name);
           defer.reject();
         }
-      }, 2000); // + Math.random() * 5000);
+      }, 4000); // + Math.random() * 5000);
     };
     
     // allow task consumers to treat the task as a promise

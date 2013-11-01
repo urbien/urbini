@@ -324,8 +324,9 @@ define('views/ResourceView', [
         if (!willShow(res, prop)) //(!U.isPropVisible(res, prop))
           continue;
   
-        var wl = G.currentApp.widgetLibrary;
-        var isJQM = !wl  ||  wl == 'Jquery Mobile';
+//        var wl = G.currentApp.widgetLibrary;
+//        var isJQM = !wl  ||  wl == 'Jquery Mobile';
+        var isJQM = G.isJQM();
         if (numDisplayed  &&  !groupNameDisplayed) {
           var wl = G.currentApp.widgetLibrary;
           if (isJQM)

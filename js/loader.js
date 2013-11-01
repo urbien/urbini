@@ -838,18 +838,13 @@ define('globals', function() {
 //        preBundle._deferred.resolve();
       G.finishedTask("loading pre-bundle and widgets-bundle");
       G.startedTask("loading modules");
-      var css = getCSS(preBundle).concat(getCSS(widgetsBundle));      
+      var essential = ['events', 'app', 'lib/l20n'];
+      essential.push.apply(essential, getCSS(preBundle));
+      essential.push.apply(essential, getCSS(widgetsBundle));
       return require('__domReady__').then(function() {
-        var essential = ['events', 'app', 'lib/l20n'];
-//        if (G.modules['js/lib/l20n.js'])
-        essential.push('lib/l20n');
-        if (G.isJQM())
-          essential.unshift('jqmConfig');
-        
-        essential = essential.concat(css)
         return require(essential);
       });
-    }).then(function(jqmConfig, Events, App) {
+    }).then(function(Events, App) {
       Events.once('appStart', APP_START_DFD.resolve);
       G.log(G.TAG, 'info', "Loaded pre-bundle: " + (new Date().getTime() - __started) + ' millis');
       G.finishedTask("loading modules");

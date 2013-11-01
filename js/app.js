@@ -872,7 +872,8 @@ define('app', [
           onDismiss();
         });
       }
-      if (!G.currentApp.widgetLibrary  ||  G.currentApp.widgetLibrary == 'Jquery Mobile') {
+//      if (!G.currentApp.widgetLibrary  ||  G.currentApp.widgetLibrary == 'Jquery Mobile') {
+      if (G.isJQM()) {
         $popup.trigger('create');
         $popup.popup().popup("open");
         $popup.parent().css('z-index', 1000000);
