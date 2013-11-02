@@ -335,7 +335,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       var resOrList = destroyedView.model,
           destroy = true;
       
-      if ((resOrList instanceof Backbone.Model) && resOrList.collection) {
+      if (!resOrList || ((resOrList instanceof Backbone.Model) && resOrList.collection)) {
         // don't destroy resources that are in live collections
         return;
       }

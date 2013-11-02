@@ -612,6 +612,9 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     _onClickInScroller: function(e) {
+      if (this._scrollerInitialized)
+        return;
+      
 //      console.debug(this.TAG, e.type.toUpperCase(), "EVENT:", e);
       var s = this._scrollerProps;
       if (this._isScrolling()) {
