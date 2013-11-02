@@ -129,7 +129,8 @@ define('transitions', ['globals', 'utils', 'lib/fastdom'], function(G, U, Q) {
         from = fromView && fromView.el,
         to = toView && toView.el,
         $from = fromView && fromView.$el,
-        $to = toView && toView.$el;
+        $to = toView && toView.$el,
+        isJQM = G.isJQM();
 
     duration = typeof duration == 'number' ? duration : 600;
     ease = 'all {0}ms {1}'.format(duration, ease || 'linear');
@@ -145,8 +146,8 @@ define('transitions', ['globals', 'utils', 'lib/fastdom'], function(G, U, Q) {
         });
       }
       
-      if ($.mobile && $.fn.page)
-        $(to).addClass('ui-page-active').page();
+      if (isJQM)
+        $to.addClass('ui-page-active').page();
     });
       
     Q.defer(1, 'write', function() {
@@ -163,6 +164,9 @@ define('transitions', ['globals', 'utils', 'lib/fastdom'], function(G, U, Q) {
         transition: ease,
         transform: transition.toPageTransition(toView)
       });
+      
+      if (isJQM)
+        $to.trigger('create');
       
       if (!duration)
         dfd.resolve();

@@ -520,7 +520,7 @@ define('app', [
             page_event = 'page_' + pageevent.slice(4);
             
         $doc.on(pageevent, fwdEvent(page_event));        
-      }
+      }      
     }
   }
   
