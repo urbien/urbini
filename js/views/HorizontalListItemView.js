@@ -232,7 +232,7 @@ define('views/HorizontalListItemView', [
               toApp: iValues.a
             });
 
-            target = U.makePageUrl('list', triggerType, {
+            target = U.makePageUrl('list', G.commonTypes.Handler, {
               $or: U.makeOrGroup($.param({$and: and1}), $.param({$and: and2}))
             });
           }
