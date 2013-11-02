@@ -819,12 +819,23 @@ define('globals', function() {
       loadRegular();
   };
   
-  function getCSS(bundle) {
+  function getCSS(/* bundles */) {
     var css = [];
-    for (var i = 0; i < bundle.length; i++) {
-      var info = bundle[i];
-      if (/\.css$/.test(info.name))
-        css.push(info.name);
+    for (var i = 0; i < arguments.length; i++) {
+      var bundle = arguments[i];
+      for (var j = 0, len = bundle.length; j < len; j++) {
+        var info = bundle[j];
+        if (/\.css$/.test(info.name))
+          css.push(info);
+      }
+    }
+    
+    css.sort(function(item) {
+      return item.order || 0;
+    });
+    
+    for (var i = 0, len = css.length; i < len; i++) {
+      css[i] = css[i].name;
     }
     
     return css;
@@ -835,9 +846,8 @@ define('globals', function() {
 //        preBundle._deferred.resolve();
       G.finishedTask("loading pre-bundle and widgets-bundle");
       G.startedTask("loading modules");
-      var essential = ['events', 'app', 'lib/l20n'];
-      essential.push.apply(essential, getCSS(preBundle));
-      essential.push.apply(essential, getCSS(widgetsBundle));
+      var essential = getCSS(preBundle, widgetsBundle);
+      essential.unshift.call(essential, 'events', 'app', 'lib/l20n');
       return require('__domReady__').then(function() {
         return require(essential);
       });

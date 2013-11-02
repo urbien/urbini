@@ -224,7 +224,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         return false;
 
       if (!e || !e.gesture)
-        return true;
+        return false;
       
       var axis = this._getScrollAxis(),
           dir = e.gesture.direction;

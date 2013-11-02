@@ -205,8 +205,9 @@ define('views/ResourceImageView', [
       
       var oWidth,
           oHeight,
-          imageProp = props[0], 
-          image = imageProp && res.get(imageProp);
+          imagePropName = props[0],
+          imageProp = imagePropName && meta[imagePropName],
+          image = imagePropName && res.get(imagePropName);
       
       if (typeof image == 'undefined') 
         return this;
@@ -237,9 +238,9 @@ define('views/ResourceImageView', [
       var winW = $(window).width(); // - 3;
       var winH = $(window).height();
 
-      var metaW = meta[imageProp]['imageWidth'];
-      var metaH = meta[imageProp]['imageHeight'];
-      var metaDim = meta[imageProp]['maxImageDimension'];
+      var metaW = imageProp['imageWidth'];
+      var metaH = imageProp['imageHeight'];
+      var metaDim = imageProp['maxImageDimension'];
 
       var w, h, t, r, b, l, left, top, maxW;
 
@@ -322,7 +323,7 @@ define('views/ResourceImageView', [
       
       var imgAtts = U.HTML.lazifyImage({
         src: image,
-        'data-for': U.getImageAttribute(res, imageProp)
+        'data-for': U.getImageAttribute(res, imagePropName)
       });
       
       if (l) {
