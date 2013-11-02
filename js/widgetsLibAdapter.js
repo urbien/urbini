@@ -1,4 +1,4 @@
-define('@widgets', ['globals'].concat(Lablz._widgetsLib), function(G, $w) {
+define('@widgets', ['globals', '../styles/styles.css', '../styles/common-template-m.css'].concat(Lablz._widgetsLib), function(G, css1, css2, $w) {
   var $doc = $(document);  
   $doc.on('click','.closeparent', function(e) {
     e.preventDefault();

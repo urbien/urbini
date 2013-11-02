@@ -29,9 +29,9 @@ define('views/ChatButton', [
         }))[0];
         
         var unread = cachedChatView && cachedChatView.getNumUnread();
-        var $menuBadge = this.$('.menuBadge');
-        $menuBadge.html(unread || '');
-        $menuBadge[unread ? 'show' : 'hide']();
+        this.$menuBadge = this.$('.menuBadge').
+                               html(unread || '')
+                               [unread ? 'show' : 'hide']();
       }
     },
     
@@ -61,7 +61,7 @@ define('views/ChatButton', [
       
       this.finish();
       if (this.isChat)
-        this.$('.menuBadge').hide();
+        this.$menuBadge.hide();
       else
         this.refresh();
       
