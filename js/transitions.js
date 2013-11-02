@@ -133,20 +133,18 @@ define('transitions', ['globals', 'utils', 'lib/fastdom'], function(G, U, Q) {
 
     duration = typeof duration == 'number' ? duration : 600;
     ease = 'all {0}ms {1}'.format(duration, ease || 'linear');
-    if ($from) {
+    if ($from)
       $from.trigger('page_beforehide');
-//      console.log("FROM PAGE:", $from.width());
-    }
       
-//    console.log("TO PAGE:", $to.width());
     $to.trigger('page_beforeshow');
     Q.write(function() {
-      CSS.setStylePropertyValues(to.style, {
-        transform: transition.toPageBeforeTransition(toView),
-        transition: null
-      });
+      if (fromView) {
+        CSS.setStylePropertyValues(to.style, {
+          transform: transition.toPageBeforeTransition(toView),
+          transition: null
+        });
+      }
       
-  //    to.style['z-index'] = -100;
       if ($.mobile && $.fn.page)
         $(to).addClass('ui-page-active').page();
     });

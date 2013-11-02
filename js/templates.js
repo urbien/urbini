@@ -13,7 +13,7 @@ define('templates', [
   
   var lazyImgSrcAttr = G.lazyImgSrcAttr,
       blankImgDataUrl = G.blankImgDataUrl;
-  
+
   window.onimageload = function onimageload() {
 //    var $this = $(this);
 //    Q.defer(Math.random() * 5 | 0, 'read', $this.trigger.bind($this, 'imageOnload'));

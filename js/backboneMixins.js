@@ -31,7 +31,9 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       },
 
       delegateEvents: function(events){
-        var options = _.defaults(this.hammerOptions || {}, Backbone.hammerOptions);
+        var options = _.defaults(this.hammerOptions || {}, Backbone.hammerOptions),
+            hammer = this.hammer(options);
+        
         if (!(events || (events = _.result(this, 'events')))) return this;
         this.undelegateEvents();
         for(var key in events) {
@@ -45,9 +47,9 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
           eventName += '.hammerEvents' + this.TAG + this.cid;
           method = _.bind(method, this);
           if (selector === '') {
-            this.hammer(options).on(eventName, method);
+            hammer.on(eventName, method);
           } else {
-            this.hammer(options).on(eventName, selector, method);
+            hammer.on(eventName, selector, method);
           }
         }
         return this;

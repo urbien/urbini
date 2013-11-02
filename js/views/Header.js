@@ -373,6 +373,7 @@ define('views/Header', [
       if (window.location.hash.indexOf("#menu") != -1)
         return this;
 
+      var isJQM = G.isJQM(); //!wl  ||  wl == 'Jquery Mobile';
       var res = this.resource; // undefined, if this is a header for a collection view
       var error = res && res.get('_error');
       if (error)
@@ -412,7 +413,7 @@ define('views/Header', [
 //          "data-position": "fixed"
 //        });
       }
-      if (G.isJQM()) {
+      if (isJQM) {
         if (!this.publish  &&  this.doTry  &&  this.forkMe)
           templateSettings.className = 'ui-grid-b';
       }      
@@ -480,7 +481,6 @@ define('views/Header', [
         this.$el.find('#name.resTitle').css('padding-bottom', '0px');
       }
 //      var wl = G.currentApp.widgetLibrary;
-      var isJQM = G.isJQM(); //!wl  ||  wl == 'Jquery Mobile';
       if (isJQM) {
         if (this.noButtons) 
           this.$el.find('h4').css('margin-top', '10px');
@@ -502,7 +502,7 @@ define('views/Header', [
       // END HACK
       
 //      this.refreshCallInProgressHeader();
-      if (G.isJQM())
+      if (isJQM)
         this.restyleNavbar();
       
       this.finish();      

@@ -506,22 +506,21 @@ define('app', [
   
   function setupWidgetLibrary() {
     if (G.isJQM()) {
-      var $doc = $(document);
-      $doc.on('pagebeforeshow', '[data-role="page"]', function() {
-        $(this).trigger('page_beforeshow');
-      });
-
-      $doc.on('pagebeforehide', '[data-role="page"]', function() {
-        $(this).trigger('page_beforehide');
-      });
-
-      $doc.on('pageshow', '[data-role="page"]', function() {
-        $(this).trigger('page_show');
-      });
-
-      $doc.on('pagehide', '[data-role="page"]', function() {
-        $(this).trigger('page_hide');
-      });
+      var jqmEvents = ['pagebeforecreate', 'pagecreate', 'pagebeforehide', 'pagehide', 'pagebeforeshow', 'pageshow', 'pagebeforechange', 'pagechange'],
+          $doc = $(document);
+      
+      function fwdEvent(page_event) {
+        return function() {
+          $(this).trigger(page_event);
+        }
+      }
+      
+      for (var i = 0, len = jqmEvents.length; i < len; i++) {
+        var pageevent = jqmEvents[i],
+            page_event = 'page_' + pageevent.slice(4);
+            
+        $doc.on(pageevent, fwdEvent(page_event));        
+      }
     }
   }
   

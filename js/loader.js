@@ -262,9 +262,6 @@ define('globals', function() {
 
   var orgLoad = require.load;
   require.load = function(name) {
-//    if (/^@/.test(name))
-//      return $.Deferred(function(defer) { require([name]).done(defer.resolve) }).promise();
-    
     var url = G.getCanonicalPath(require.toUrl(name));
     var args = arguments,
         self = this;

@@ -1233,7 +1233,8 @@ define('router', [
     },
 
     $changePage: function(options) {
-      var method = G.isJQM() ? this.$changePageJQM : this.$changePageBB;
+//      var method = G.isJQM() ? this.$changePageJQM : this.$changePageBB;
+      var method = this.$changePageBB;
       return method.call(this, this._previousView, this.currentView, options);
     },
     
@@ -1265,6 +1266,9 @@ define('router', [
     },
     
     $changePageJQM: function(fromView, toView, options) {
+      if (!$m.autoInitializePage)
+        $m.initializePage(toView.$el);
+      
       $m.changePage(toView.$el, options);
     },
 
