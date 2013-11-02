@@ -49,9 +49,6 @@ define('views/HorizontalListItemView', [
       this.showArrows = options.arrows !== false;
     },
     
-    events: {
-    },
-    
     refresh: function() {
       this.render();
     },

@@ -24,6 +24,7 @@ define('views/ResourceMasonryItemView', [
 //          preinitialized = options.preinitialized || RMIV.preinitialize(options);
 //      _.extend(this, preinitialized);
       var cloned = this.clonedProperties;
+      var viewport = G.viewport;
       
       this.isModification = this.doesModelSubclass('system/changeHistory/Modification'); //U.isAssignableFrom(this.vocModel, U.getLongUri1('system/changeHistory/Modification'));
       if (this.isModification)
@@ -31,12 +32,12 @@ define('views/ResourceMasonryItemView', [
       else
         this.makeTemplate('masonry-list-item', 'template', type);
 
-      if ($(window).height() > $(window).width()) {
+      if (viewport.height > viewport.width) {
         this.IMG_MAX_WIDTH = 272;
         vocModel = this.vocModel;
         var imgP, isBM, clonedIR = cloned.ImageResource;
         
-        var ww = $(window).width();
+        var ww = viewport.width;
         if (/*ww >= 320  && */ ww < 340) 
           imgP = clonedIR  &&  clonedIR['bigMedium320'];
         else  if (/*ww >= 360  &&*/  ww < 380) 
@@ -585,7 +586,8 @@ define('views/ResourceMasonryItemView', [
     renderModificationTile: function(options, event) {
       var meta = this.vocModel.properties,
           res = this.resource,
-          atts = res.attributes;
+          atts = res.attributes,
+          viewport = G.viewport;
       
       if (!meta)
         return this;
@@ -600,7 +602,7 @@ define('views/ResourceMasonryItemView', [
       var modBy = U.makePageUrl('view', U.getLongUri1(atts.modifiedBy));
 
       _.extend(tmpl_data, _.pick(atts, 'modifiedBy', 'resourceDisplayName', 'resourceMediumImage', 'dateModified', 'v_modifiedByPhoto'))
-      var isHorizontal = ($(window).height() < $(window).width());
+      var isHorizontal = this.isLandscape();
   //    alert(isHorizontal);
       var img = atts.resourceMediumImage;
       if (typeof img != 'undefined') {

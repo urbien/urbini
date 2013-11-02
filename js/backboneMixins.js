@@ -12,7 +12,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
     var delegateEvents = View.prototype.delegateEvents;
     var undelegateEvents = View.prototype.undelegateEvents;
     var hammer_events = ['touch', 'release', 'hold', 'tap', 'doubletap', 'dragstart','drag','dragend','dragleft','dragright','dragup','dragdown', 'swipe','swipeleft','swiperight','swipeup','swipedown', 
-                         'transformstart','transform','transformend','rotate','pinch','pinchin', 'pinchout'];
+                         'transformstart','transform','transformend','rotate','pinch','pinchin', 'pinchout'].join(' ');
 
     Backbone.View = View.extend({
       constructor: function(options){
@@ -55,21 +55,18 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         return this;
       },
 
-//      _debug: function(e) {
-//        var args = _.toArray(arguments);
-//        args.unshift('events', this.TAG, 'HAMMER');
-//        G.debug.apply(G, args);
-//        G.log('events', this.TAG, 'Hammer', e.type);
-//      },
+      _debug: function(e) {
+        var args = _.toArray(arguments);
+        args.unshift('events', this.TAG, 'HAMMER');
+        G.debug.apply(G, args);
+        G.log('events', this.TAG, 'Hammer', e.type);
+      },
       
       hammer: function(options){
         var hammer = this.$el.hammer(options);
         if (!this._hammered) {
           this._hammered = true;
-//          var debug = this._debug.bind(this);
-//          for (var i = 0; i < hammer_events.length; i++) {
-//            hammer.on(hammer_events[i], debug);
-//          }
+          hammer.on(hammer_events, this._debug.bind(this));
         }
         
         return hammer;

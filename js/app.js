@@ -878,7 +878,7 @@ define('app', [
         $popup.parent().css('z-index', 1000000);
       }  
       else {
-        $popup.css('left', ($(window).width() - 255) / 2);
+        $popup.css('left', (G.viewport.width - 255) / 2);
       }
       return false; // prevents login button highlighting
     });

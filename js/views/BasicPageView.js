@@ -21,8 +21,8 @@ define('views/BasicPageView', [
     if (!viewport)
       viewport = G.viewport = {};
     
-    viewport.X = window.innerWidth;
-    viewport.Y = window.innerHeight;
+    viewport.width = window.innerWidth;
+    viewport.height = window.innerHeight;
   }
   
   saveViewportSize();
@@ -315,10 +315,11 @@ define('views/BasicPageView', [
      
       var self = this;
       var position = el.offset();
+      var viewport = G.viewport;
       var t = position.top + el.outerHeight()/2 - 20;
       var l = position.left + el.outerWidth()/2 - 20;
-      if (l + 40 > $(window).width()) 
-        l = $(window).width() - 40;
+      if (l + 40 > viewport.width) 
+        l = viewport.width - 40;
       if (tooltip)
         $('#page').prepend('<div class="play ' + classes.join(' ') + '" style="top:' + t + 'px; left:' + l + 'px" data-hint="' + tooltip + '"><div class="glow"></div><div class="shape"></div></div>');
       else
@@ -334,8 +335,8 @@ define('views/BasicPageView', [
         var position = el.offset();
         var t = position.top + el.outerHeight()/2 - 20;
         var l = position.left + el.outerWidth()/2 - 20;
-        if (l + 40 > $(window).width()) 
-          l = $(window).width() - 40;
+        if (l + 40 > viewport.width) 
+          l = viewport.width - 40;
         $('.play').css('top', t + 'px');
         $('.play').css('left', l + 'px');
       });

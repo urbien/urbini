@@ -1913,8 +1913,9 @@ define('utils', [
         var isMasonry = U.isMasonry(vocModel)  &&  U.isMasonryModel(vocModel);
         cloneOf = isMasonry ? U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0] : U.getCloneOf(vocModel, 'ImageResource.smallImage')[0] || U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
         if (isMasonry  &&  cloneOf) {
-          var ww = $(window).width() - 40;
-          if (ww < $(window).height()) {
+          var viewport = G.viewport;
+          var ww = viewport.width - 40;
+          if (ww < viewport.height) {
             if (ww <= 340) 
               cloneOf = U.getCloneOf(vocModel, 'ImageResource.bigMedium320')[0];
             else  if (ww <= 380) 

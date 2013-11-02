@@ -119,7 +119,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       'orientationchange': '_onSizeInvalidated',
       'page_show': '_onScrollerActive',      
       'page_beforehide': '_onScrollerInactive',
-      'tap': '_onClickInScroller',
+      'click': '_onClickInScroller',
+//      'release': '_onClickInScroller',
 //      'release': '_onReleaseInScroller',
       'drag': '_onDragScroller',
       'swipe': '_onSwipeScroller',
@@ -220,10 +221,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
 
     _canScroll: function(e) {
-      if (!this._scrollerInitialized)
-        return false;
-
-      if (!e || !e.gesture)
+      if (!this._scrollerInitialized || !e || !e.gesture)
         return false;
       
       var axis = this._getScrollAxis(),
@@ -250,6 +248,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       if (!s.momentum)
         return;
             
+      e.gesture.preventDefault();
       axis = this._getScrollAxis();
       velocity = Math.min(e.gesture['velocity' + axis], s.MAX_VELOCITY) * getDirectionMultiplier(e.gesture.direction);
       pos = s.position;
@@ -617,8 +616,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       var s = this._scrollerProps;
       if (this._isScrolling()) {
         console.debug("PREVENTING CLICK EVENT: ", e);
-        e.preventDefault();
-        e.stopPropagation();
+        (e.gesture || e).preventDefault();
         return false;
       }
       

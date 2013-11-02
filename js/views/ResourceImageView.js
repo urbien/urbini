@@ -228,7 +228,7 @@ define('views/ResourceImageView', [
       }
       
       var frag = document.createDocumentFragment();
-      var isHorizontal = ($(window).height() < $(window).width());
+      var isHorizontal = this.isLandscape();
   
       if (image.indexOf('Image/') == 0)
         image = decodeURIComponent(image.slice(6));

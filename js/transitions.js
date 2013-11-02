@@ -15,36 +15,36 @@ define('transitions', ['globals', 'utils', 'lib/fastdom'], function(G, U, Q) {
 		},
 		left: {
       fromPageTransition: function(fromView) {
-        return adjustTranslation(fromView, -G.viewport.X);
+        return adjustTranslation(fromView, -G.viewport.width);
       },
       toPageBeforeTransition: function(toView) {
-        return adjustTranslation(toView, G.viewport.X);
+        return adjustTranslation(toView, G.viewport.width);
       }			    
 		},
 		right: {
       fromPageTransition: function(fromView) {
-        return adjustTranslation(fromView, G.viewport.X);
+        return adjustTranslation(fromView, G.viewport.width);
       },
       toPageBeforeTransition: function(toView) {
-        return adjustTranslation(toView, -G.viewport.X);
+        return adjustTranslation(toView, -G.viewport.width);
       }         
 		},
 		up: {
       fromPageTransition: function(fromView) {
-        return adjustTranslation(fromView, 0, -G.viewport.Y);
+        return adjustTranslation(fromView, 0, -G.viewport.height);
       },
       toPageBeforeTransition: function(toView) {
-        return adjustTranslation(toView, 0, G.viewport.Y);
+        return adjustTranslation(toView, 0, G.viewport.height);
       }         
 		},
 		down: {
       fromPageTransition: function(fromView) {
         var viewport = G.viewport;
-        return adjustTranslation(fromView, 0, viewport.Y);
+        return adjustTranslation(fromView, 0, viewport.height);
       },
       toPageBeforeTransition: function(toView) {
         var viewport = G.viewport;
-        return adjustTranslation(toView, 0, -viewport.Y);
+        return adjustTranslation(toView, 0, -viewport.height);
       }         
 		},
 //		zoomIn: {
@@ -61,7 +61,7 @@ define('transitions', ['globals', 'utils', 'lib/fastdom'], function(G, U, Q) {
       },
       toPageBeforeTransition: function(toView) {
         var viewport = G.viewport;
-        return adjustTranslation(toView, viewport.X, -viewport.Y);
+        return adjustTranslation(toView, viewport.width, -viewport.height);
       }
 		},
 		downRight: {
@@ -70,7 +70,7 @@ define('transitions', ['globals', 'utils', 'lib/fastdom'], function(G, U, Q) {
       },
       toPageBeforeTransition: function(toView) {
         var viewport = G.viewport;
-        return adjustTranslation(toView, -viewport.X, -viewport.Y);
+        return adjustTranslation(toView, -viewport.width, -viewport.height);
       }			    
 		},
 		upLeft: {
@@ -79,7 +79,7 @@ define('transitions', ['globals', 'utils', 'lib/fastdom'], function(G, U, Q) {
       },
       toPageBeforeTransition: function(toView) {
         var viewport = G.viewport;
-        return adjustTranslation(toView, viewport.X, viewport.Y);
+        return adjustTranslation(toView, viewport.width, viewport.height);
       }         
 		},
 		upRight: {
@@ -88,7 +88,7 @@ define('transitions', ['globals', 'utils', 'lib/fastdom'], function(G, U, Q) {
       },
       toPageBeforeTransition: function(toView) {
         var viewport = G.viewport;
-        return adjustTranslation(toView, -viewport.X, viewport.Y);
+        return adjustTranslation(toView, -viewport.width, viewport.height);
       }
 		}
 		/*,

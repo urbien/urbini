@@ -731,7 +731,8 @@ define('views/BasicView', [
     },
     
     getOrientation: function() {
-      return ($(window).height() > $(window).width()) ? 'portrait' : 'landscape';
+      var viewport = G.viewport;
+      return viewport.height > viewport.width ? 'portrait' : 'landscape';
     },
 
     navigate: function(fragment, options) {
