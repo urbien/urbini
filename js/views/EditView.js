@@ -1573,7 +1573,9 @@ define('views/EditView', [
           });
           
           reset.insertAfter($textarea.next());
-          reset.button();
+          if (reset.button)
+            reset.button();
+          
           if (defaultText === textarea.value) {
             reset.addClass('ui-disabled');
             changeHandler = function(from, to, text, removed, next) {

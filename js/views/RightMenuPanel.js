@@ -58,13 +58,13 @@ define('views/RightMenuPanel', [
       var idx = href.lastIndexOf('#');
       href = idx == -1 ? href : href.slice(idx + 1);
       
-      if (G.currentApp.widgetLibrary &&  G.currentApp.widgetLibrary == 'Building Blocks') {
-        Events.stopEvent(e);
-        window.location.replace(G.appUrl + '#' + href);
-        window.location.reload(true);
-        return;
-      }
-      else
+//      if (G.isBB()) {
+//        Events.stopEvent(e);
+//        window.location.replace(G.appUrl + '#' + href);
+//        window.location.reload(true);
+//        return;
+//      }
+//      else
         this.router.navigate(href, {trigger: true});
     },
     

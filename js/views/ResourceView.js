@@ -36,16 +36,7 @@ define('views/ResourceView', [
 
       var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
       this.isCode = codemirrorModes.length; // we don't need to use the actual modes, just need to know whether we need codemirror stuff
-      var readyDfd = $.Deferred(function(defer) {
-        if (this.isCode) {
-          U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes), function() {
-            defer.resolve();
-          });
-        }
-        else
-          defer.resolve();
-      }.bind(this));
-      
+      this.ready = this.isCode ? U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes)) : G.getResolvedPromise();
       if (options.isBuyGroup) {
         this.isBuyGroup = true;
 //        var purchasesBLProp, 
@@ -61,8 +52,8 @@ define('views/ResourceView', [
 //        else
         this.purchasesBacklinkProp = this.vocModel.properties[options.purchasesBLProp];
       }
+      
       this.autoFinish = false;
-      this.ready = readyDfd.promise();      
       return this;
     },
     events: {

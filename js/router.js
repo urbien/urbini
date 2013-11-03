@@ -520,16 +520,18 @@ define('router', [
       
       var descendants = previousView.getDescendants();
       var templateToTypes = {};
-      _.each(descendants, function(d) {
+      for (var i = 0, len = descendants.length; i < len; i++) {
+        var d = descendants[i];
         var templates = d._templates || [];
         var type = d.vocModel.type;
         if (templates.length) {
-          _.each(templates, function(t) {
+          for (var j = 0, tLen = templates.length; j < tLen; j++) {
+            var t = templates[j];
             var typeTemplates = templateToTypes[t] = templateToTypes[t] || [];
             _.pushUniq(typeTemplates, type);
-          });
+          }
         }
-      });
+      }
       
       var appTemplates = G.appTemplates;
       var templates = [];
@@ -554,7 +556,8 @@ define('router', [
       var jstType = G.commonTypes.Jst;
       var jstModel = U.getModel(jstType);
       var jstUriBase = G.sqlUrl + '/' + jstType.slice(7) + '?';
-      _.each(templateToTypes, function(types, tName) {
+      for (var tName in templateToTypes) {
+        var types = templateToTypes[tName];
         templates.push(new jstModel({
           _uri:  jstUriBase + $.param({templateName: tName}),
           templateName: tName,
@@ -563,7 +566,7 @@ define('router', [
         }, {
           detached: true
         }));
-      });
+      }
       
       var tList = new ResourceList(templates, {params: {forResource: currentAppUri}});
       if (!G.appTemplates)

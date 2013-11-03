@@ -65,9 +65,6 @@ define('models/Resource', [
       
       if (this.loaded)
         this.announceNewResource(options);
-      else if (this.vocModel.type === commonTypes.Jst) {
-        Events.trigger('newTemplate', this);
-      }
       
       if (commonTypes.App == this.type) {
         this.listenTo(Events, 'saved', function(res) {

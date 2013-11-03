@@ -182,6 +182,6 @@ define('templates', [
     }
   };
   
-  Events.on('newTemplate', Templates.prepNewTemplate);
+  Events.on('newResource:' + G.commonTypes.Jst, Templates.prepNewTemplate);
   return Templates;
 });
