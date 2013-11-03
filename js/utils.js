@@ -4049,13 +4049,13 @@ define('utils', [
     toTimedFunction: function(obj, name, thresh) {
       var fn = obj[name];
       return function() {
-        var now = window.performance.now(),
+        var now = _.now(),
             frame = window.fastdom.frameNum;
         
         try {
           return fn.apply(this, arguments);
         } finally {
-          var time = window.performance.now() - now;
+          var time = _.now() - now;
           if (!thresh || time > thresh)
             console.log("function", name, "took", time, "millis", window.fastdom.frameNum - frame, "frames");
         }

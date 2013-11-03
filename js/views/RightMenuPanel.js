@@ -33,8 +33,9 @@ define('views/RightMenuPanel', [
       'click #subscribe'         : 'subscribe',
       'click .chattee'           : 'chat',
       'click #urbien123'         : 'home',
-      'click #login'             : 'login',
-      'click'                    : 'click'
+      'click #login'             : 'login'
+//        ,
+//      'click'                    : 'click'
 //      'click #logout': 'logout',
     },
     home: function(e) {
@@ -42,31 +43,33 @@ define('views/RightMenuPanel', [
       window.location.href = G.serverName + '/app/UrbienApp';
     },
 
-    click: function(e) {
-      var t = e.target;
-      var text = t.innerHTML;
-      while (t  &&  t.nodeName.toLowerCase() != 'a') {
-        if ($(t).attr("data-href"))
-          break;
-        t = t.parentNode;
-      }
-      
-      if (typeof t === 'undefined' || !t)
-        return;
-
-      var href = $(t).attr('href') || $(t).attr('link') || $(t).attr("data-href");
-      var idx = href.lastIndexOf('#');
-      href = idx == -1 ? href : href.slice(idx + 1);
-      
-//      if (G.isBB()) {
-//        Events.stopEvent(e);
-//        window.location.replace(G.appUrl + '#' + href);
-//        window.location.reload(true);
+//    click: function(e) {
+//      var t = e.target,
+//          $t;
+//      
+//      if (t.nodeName == 'A')
 //        return;
-//      }
-//      else
-        this.router.navigate(href, {trigger: true});
-    },
+//      
+//      $t = $(t).closest('[data-href]');
+//      if ($t.length)
+//        Events.trigger('navigate', $t[0].dataset.href);
+//      
+////      if (!t)
+////        return;
+////
+////      var href = $(t).attr('href') || $(t).attr('link') || $(t).attr("data-href");
+////      var idx = href.lastIndexOf('#');
+////      href = idx == -1 ? href : href.slice(idx + 1);
+////      
+//////      if (G.isBB()) {
+//////        Events.stopEvent(e);
+//////        window.location.replace(G.appUrl + '#' + href);
+//////        window.location.reload(true);
+//////        return;
+//////      }
+//////      else
+////        this.router.navigate(href, {trigger: true});
+//    },
     
     release: function(e) {
       Events.stopEvent(e);

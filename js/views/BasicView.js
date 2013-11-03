@@ -29,7 +29,7 @@ define('views/BasicView', [
       return false;
     });
   }
-  
+
   // END http://open.bekk.no/mixins-in-backbone //
   
   var BasicView = Backbone.View.extend({

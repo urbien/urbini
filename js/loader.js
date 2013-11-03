@@ -444,10 +444,6 @@ define('globals', function() {
     window.AudioContext = window.AudioContext || window.webkitAudioContext; // keep in mind, firefox doesn't have AudioContext.createMediaStreamSource
     window.MediaStream = window.webkitMediaStream || window.MediaStream;
     window.URL = window.URL || window.webkitURL;
-    window.performance = window.performance || function() {
-      return Date.now();
-    };
-
     (function( window ) {
       'use strict';
      

@@ -6,7 +6,7 @@ define('@widgets', ['globals', '../styles/styles.css', '../styles/common-templat
       $(this).remove();
     });
   });
-
+  
   $.fn.clearForm = function() {
     return this.each(function() {
       var type = this.type, tag = this.tagName.toLowerCase();

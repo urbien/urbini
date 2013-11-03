@@ -45,12 +45,8 @@ define('views/MenuPanel', [
     hide: function() {
       if (G.isJQM())
         this.$el.closest('[data-role="panel"]').panel('close');
-      else {
-        this.$el.css('visibility', 'visible');
-//        var section = this.$el.closest('section');
-//        this.destroy();
-//        section.remove();
-      }
+//      else
+//        this.$el.css('visibility', 'visible');
     },
     
     edit: function(e) {
@@ -80,63 +76,33 @@ define('views/MenuPanel', [
       return this;
     },
     click: function(e) {
-      var t = e.target;
-      var text = t.innerHTML;
-      while (t  &&  t.nodeName.toLowerCase() != 'a') {
-        if ($(t).attr("data-href"))
-          break;
-        t = t.parentNode;
+      var t = e.target,
+          $t,
+          hashIdx,
+          href,
+          text = U.removeHTML(t.innerHTML).trim();
+      
+      this.hide();
+      if (href = this.tabs[text]) {
+        e.originalEvent.preventDefault();
+        Events.trigger('navigate', U.replaceParam(href, '$title', text));
+        return;
+      }
+      
+      if (t  &&  t.nodeName != 'A'  &&  !t.dataset.href) {
+        $t = $(t).closest('[data-href]');
+        t = $t[0];
       }
       
       if (typeof t === 'undefined' || !t)
         return;
-      
-      text = U.removeHTML(text).trim();
-      var attr;
-      if ($(t).attr('href'))
-        attr = 'href';
-      else if ($(t).attr('link'))
-        attr = 'link';
-      else
-        attr = 'data-href';
-      
-      var href = $(t).attr(attr); //$(t).attr('href') || $(t).attr('link') || $(t).attr("data-href");
-      G.log(this.TAG, "Recording step for tour: selector = '" + attr + "'; value = '" + href + "'");
-      
-      
-      var idx = href.lastIndexOf('#');
-      href = idx == -1 ? href : href.slice(idx + 1);
-          
-      if (this.tabs[text]) {
-        if (this.tabs[text] == href) {
-          e.originalEvent.preventDefault();
-          this.router.navigate(href, {trigger: true, destinationTitle: text});
-          return;
-        }
-      }
-      if (href.indexOf("Alert?") != -1) 
-        G.currentUser.newAlertsCount = 0;
 
-      if (G.currentApp.widgetLibrary &&  G.currentApp.widgetLibrary == 'Building Blocks') {
-        Events.stopEvent(e);
-        window.location.replace(G.appUrl + '#' + href);
-        window.location.reload(true);
-        return;  
-      }
-      var hash = window.location.hash;
-      if (hash  &&  href == hash.substring(1)) {
-//        var menu = this.$el.closest('[data-role="panel"]');
-////        menu.hide('slow');
-//        menu.panel('close');
-        this.hide();
-        return;
-      }
-      this.router.navigate(href, {trigger: true});
-//      var link = $(t).attr('link');
-//      if (link) {
-//        $(t).removeAttr('link');
-//        $(t).attr('href', link);
-//      }
+      href = t.href || t.dataset.href;      
+//      var hashIdx = href.lastIndexOf('#');
+//      href = hashIdx == -1 ? href : href.slice(hashIdx + 1);
+          
+      if (href.indexOf("Alert?") != -1) 
+        G.currentUser.newAlertsCount = 0;      
     },
 //    tap: Events.defaultTapHandler,
     render:function (eventName) {
@@ -162,23 +128,17 @@ define('views/MenuPanel', [
       if (!G.currentUser.guest) {
         var mobileUrl = 'view/profile';
         if (!hash  ||  hash != mobileUrl) {
-          var title = this.loc('profile');
-          U.addToFrag(frag, this.menuItemTemplate({title: title, mobileUrl: mobileUrl, image: G.currentUser.thumb, cssClass: 'menu_image_fitted' }));
-          self.tabs[title] = U.getPageUrl(mobileUrl);
+          U.addToFrag(frag, this.menuItemTemplate({title: this.loc('profile'), mobileUrl: mobileUrl, image: G.currentUser.thumb, cssClass: 'menu_image_fitted' }));
         } 
       }
+      
       if (G.tabs) {
         var tabs = _.clone(G.tabs);
-//        U.addToFrag(frag, self.menuItemTemplate({title: 'Home', icon: 'home', pageUrl: G.pageRoot}));
-//        U.addToFrag(frag, self.groupHeaderTemplate({value: G.appName}));
-        _.each(tabs, function(t) {
-//          t.mobileUrl = t.mobileUrl || U.getMobileUrl(t.pageUrl);
+        for (var name in tabs) {
+          var t = tabs[name];
           t.pageUrl = t.hash;
-          U.addToFrag(frag, self.menuItemTemplate(t))
-//          self.tabs[t.title] = t.mobileUrl;
-        });
-        
-        tabs = null;
+          U.addToFrag(frag, this.menuItemTemplate(t))
+        }
       }
       
       var params = {lastPublished: '!null'};
@@ -242,7 +202,7 @@ define('views/MenuPanel', [
           var $in = '_uri,' + _.pluck(_.toArray(installed), 'application').join(',');
           
           // Apps I installed
-          U.addToFrag(frag, this.menuItemTemplate({title: this.loc("myApps"), mobileUrl: U.makeMobileUrl('list', "model/social/App", {$in: $in, $myApps: 'y'})}));          
+          U.addToFrag(frag, this.menuItemTemplate({title: this.loc("myApps"), mobileUrl: U.makeMobileUrl('list', "model/social/App", {$in: $in, $myApps: 'y'})}));
         }
         
         // Apps I created
@@ -268,7 +228,7 @@ define('views/MenuPanel', [
       
       if (G.pageRoot != 'app/UrbienApp') {
 //        U.addToFrag(frag, this.homeMenuItemTemplate({title: "Urbien Home", icon: 'repeat', id: 'urbien123'}));
-        U.addToFrag(frag, this.menuItemTemplate({title: this.loc("urbienHome"), icon: 'repeat', id: 'urbien123', mobileUrl: '#'}));
+        U.addToFrag(frag, this.menuItemTemplate({title: this.loc("urbienHome"), icon: 'repeat', id: 'urbien123', mobileUrl: '#home/'}));
       }
       
       ul.append(frag);      

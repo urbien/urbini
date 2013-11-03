@@ -21,13 +21,20 @@ define('router', [
 //  'views/EditPage' 
 ], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth, Redirecter, Transitioner, Q /*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
-  var Modules = {};    
+  var Modules = {},
+      $doc = $(document);
+  
   function log() {
     var args = [].slice.call(arguments);
     args.unshift("router");
     G.log.apply(G, args);
   };
-  
+
+  $doc.on('click', '[data-href]', function(e) {
+    e.preventDefault();
+    Events.trigger('navigate', this.dataset.href);
+  });
+
   var Router = Backbone.Router.extend({
     TAG: 'Router',
     routes:{
@@ -255,19 +262,26 @@ define('router', [
       
       options = options || {};
       var adjustedOptions = _.extend({}, this.defaultOptions, _.pick(options, 'forceFetch', 'errMsg', 'info', 'replace', 'postChangePageRedirect')),
-          hashInfo = G.currentHashInfo;
+          hashInfo = G.currentHashInfo,
+          pageRoot = G.pageRoot;
       
       if (G.inFirefoxOS)
         U.rpc('setUrl', window.location.href);
       
       if (fragment.startsWith('http://')) {
-        var appPath = G.serverName + '/' + G.pageRoot;
-        if (fragment.startsWith(appPath))
+        var appPath = G.serverName + '/' + pageRoot;
+        if (fragment.startsWith(appPath)) // link within app
           fragment = fragment.slice(appPath.length);
         else {
           window.location.href = fragment;
           return;
         }
+      }
+      else if (fragment.startsWith(pageRoot)) // link within app
+        fragment = fragment.slice(pageRoot.length);
+      else if (/app\/[a-zA-Z]+\#/.test(fragment)) { // link to another app
+        window.location.href = G.serverName + '/' + fragment;
+        return;
       }
       
       G.log(this.TAG, 'events', 'navigate', fragment);

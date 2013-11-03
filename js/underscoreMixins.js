@@ -396,7 +396,9 @@ define('underscoreMixins', ['_underscore'], function(_) {
           };
         }
       }
-    }
+    },
+    
+    now: window.performance ? window.performance.now.bind(window.performance) : Date.now.bind(Date)
   });
   
   return _;

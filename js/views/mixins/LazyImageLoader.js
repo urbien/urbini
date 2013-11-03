@@ -11,10 +11,11 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
   function getImageInfo(img) {
     var resInfoStr = img.getAttribute('data-for'),
         resInfo = resInfoStr && U.parseImageAttribute(resInfoStr),
+        rect = img.getBoundingClientRect(),
         info  = {
           src: img.src,
           realSrc: img.getAttribute(LAZY_ATTR),
-          inBounds: U.isRectPartiallyInViewport(img.getBoundingClientRect(), IMG_OFFSET),
+          inBounds: U.isRectPartiallyInViewport(rect, IMG_OFFSET),
           inDoc: $.contains(docEl, img),
           data: img.file || img.blob
         };
@@ -133,7 +134,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
       
       this._lazyImages.length = 0;
       this._loadImages(lazy).always(function() {        
-        U.recycle.bind(U, lazy);
+        U.recycle(lazy);
         if (!self._lazyImages.length)
           self._pause();
       });
@@ -245,19 +246,18 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
             if (!info.realSrc)
               continue;
             
-            if (info.inDoc && info.inBounds) {
-              // To avoid onload loop calls
-              // removeAttribute on IE is not enough to prevent the event to fire
-              toFetch.push(img);
-              toFetchInfos.push(info);
-            }
-            else if (info.inDoc) {
+            if (info.inDoc) {
+              if (info.inBounds) {
+                toFetch.push(img);
+                toFetchInfos.push(info);
+                continue;
+              }
+              
               // wait till it's scrolled into the viewport
               if (!_.contains(this._lazyImages, img))
                 this._lazyImages.push(img);
-            }
-            else {
-              // should be here in a bit
+                
+              // check on it a couple more times in case it's arriving in the viewport and we missed the load event
               this._delayImage(img);
             }
           }

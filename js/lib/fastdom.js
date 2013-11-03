@@ -289,7 +289,7 @@ define('lib/fastdom', ['globals'], function(G) {
   };
 
   FastDom.prototype.time = function() {
-    var now = window.performance.now();
+    var now = _.now();
     this.timestamps.push(now);
     if (this.timestamps.length > 50)
       this.timestamps = this.timestamps.slice(0, 10);
@@ -331,11 +331,20 @@ define('lib/fastdom', ['globals'], function(G) {
 //    return job.id;
 //  }
 
+//  var waiting = window.WAITING = [];
+  
   /**
    * @return promise object that gets resolved after "frames" frames
    */
   FastDom.prototype.wait = function(frames) {
-    var dfd = $.Deferred();
+    var dfd = $.Deferred(),
+        promise = dfd.promise();
+    
+//    waiting.push(promise);
+//    promise.done(function() {
+//      Array.remove(waiting, promise);
+//    });
+    
     FrameWatch.subscribe(function wrapped() {
       if (!(frames--)) {
         FrameWatch.unsubscribe(wrapped);
@@ -344,7 +353,7 @@ define('lib/fastdom', ['globals'], function(G) {
       }
     });
     
-    return dfd.promise();
+    return promise;
   };
   
   FastDom.prototype.waitOne = function() {
