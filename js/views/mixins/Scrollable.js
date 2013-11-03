@@ -1,4 +1,4 @@
-define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', 'lib/fastdom', 'lib/jquery.hammer'], function(G, _, U, Events, Q, Hammer) {
+define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', 'lib/fastdom', 'hammer'], function(G, _, U, Events, Q) {
   var AXES = ['X', 'Y'],
       beziers = {
         fling: 'cubic-bezier(0.103, 0.389, 0.307, 0.966)', // cubic-bezier(0.33, 0.66, 0.66, 1)
@@ -9,6 +9,26 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       doc = document,
       CSS = U.CSS;
 
+  doc.addEventListener('click', function(e) {
+    try {
+      if (G.getScrollState() !== 'clicking') {
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+    } finally {
+      Events.trigger('scrollState', 'idle');
+    }
+  }, true);
+  
+//  $(doc).hammer().on('click', function(e) {
+//    if (G.getScrollState() !== 'clicking') {
+//      e.preventDefault();
+//      e.stopPropagation();
+//      return false;
+//    }
+//  });
+  
   function getDirectionMultiplier(direction) {
     return direction == 'up' || direction == 'left' ? -1 : 1; 
   }
@@ -87,7 +107,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
   var Scrollable = Backbone.Mixin.extend({
     initialize: function(options) {
       _.bindAll(this, '_initScroller', '_resetScroller', '_snapScroller', '_flingScroller', '_scrollTo', '_calculateSizes', '_onSizeInvalidated', '_onClickInScroller', '_onScrollerActive', '_onScrollerInactive',
-                      '_onDragScrollerStart', '_onDragScrollerEnd', '_onDragScroller', '_onSwipeScroller', '_onKeyDown', '_onKeyUp'); //, '_onReleaseInScroller');
+                      '_onTouchScroller', '_onReleaseScroller', '_onDragScrollerStart', '_onDragScrollerEnd', '_onDragScroller', '_onSwipeScroller', '_onKeyDown', '_onKeyUp'); //, '_onReleaseInScroller');
       
       this.onload(this._initScroller.bind(this));
       this.$el.addClass('scrollable');
@@ -114,17 +134,19 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     events: {
-//      'click': '_onClickInScroller',
+      'click': '_onClickInScroller',
+//      'release': '_onClickInScroller',
+//      'release': '_onDragScrollerEnd',
+//      'touchend': '_onClickInScroller',
+      'touch': '_onTouchScroller',
+      'release': '_onReleaseScroller',
       'resize': '_onSizeInvalidated',
       'orientationchange': '_onSizeInvalidated',
       'page_show': '_onScrollerActive',      
       'page_beforehide': '_onScrollerInactive',
-      'click': '_onClickInScroller',
-//      'release': '_onClickInScroller',
       'drag': '_onDragScroller',
       'swipe': '_onSwipeScroller',
       'dragstart': '_onDragScrollerStart',
-      'release': '_onDragScrollerEnd',
       'dragend': '_onDragScrollerEnd'
     },
 
@@ -145,7 +167,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     _onScrollerInactive: function() {
       if (this._scrollerInitialized) {
         var s = this._scrollerProps;
-        if (s._snapping)
+        if (s._snapping || !this._isInBounds(s.position, false /* don't include bounce gutter */))
           this._snapScroller(true); // immediate snap
         else
           this._resetScroller();
@@ -154,14 +176,43 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       }
     },
 
-//    _onReleaseInScroller: function(e) {
+    _onReleaseScroller: function(e) {
+      var s = this._scrollerProps;
+//      if (G.getScrollState() != 'idle') {
+//        console.log("PREVENTING RELEASE");
+//        Events.stopEvent(e);
+//        e.gesture.preventDefault();
+//        e.gesture.stopPropagation();
+//        return false;
+//      }
+//      else
+      if (G.getScrollState() == 'touching')
+        Events.trigger('scrollState', 'clicking');
+        
 //      e.preventDefault();
 //      if (this._isScrolling()) {
 //        e.stopImmediatePropagation();
 //        return false;
 //      }
-//    },
+    },
+
+    _updateScrollPositionAndReset: function() {
+      var s = this._scrollerProps;
+      this._updateScrollPosition();
+      this._scrollTo(s.position.X, s.position.Y);
+      this._resetScroller();
+    },
     
+    _onTouchScroller: function(e) {
+      var s = this._scrollerProps;
+      if (s._flinging || s._snapping) {
+        e.gesture.preventDefault();
+        this._updateScrollPositionAndReset();
+      }
+      else if (G.getScrollState() == 'idle')
+        Events.trigger('scrollState', 'touching');
+    },
+
     _onDragScrollerStart: function(e) {
       if (!this._canScroll(e))
         return;
@@ -177,15 +228,22 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       
       e.gesture.preventDefault();
       var s = this._scrollerProps,
-          pos = s.position,
-          axis = this._getScrollAxis();
+          pos,
+          axis;
       
+      if (!s._start)
+        return;
+      
+      pos = s.position;
+      axis = this._getScrollAxis();
       s._start = null;
       if (!s._flinging) {
         if (!this._isInBounds(pos, false /* don't include bounce gutter */))
           this._snapScroller(); //To(axis, pos[axis] < s.scrollBounds[axis].min ? 'min' : 'max');
-        else
+        else {
+          Events.trigger('scrollState', 'idle');          
           this._resetScroller();
+        }
       }
     },
 
@@ -202,6 +260,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       }
       
       s._dragging = true;
+      Events.trigger('scrollState', 'dragging');
       var touch = e.gesture.touches[0],
           pos = s.position,
           axis = this._getScrollAxis(),
@@ -343,9 +402,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         return;
 
 //      this.log('KEYING UP', U.getKeyEventCode(e));
-      this._updateScrollPosition();
-      this._scrollTo(s.position.X, s.position.Y);
-      this._resetScroller();
+      this._updateScrollPositionAndReset();
     },
 
     _toggleScrollEventHandlers: function(enable) {
@@ -355,16 +412,20 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       var self = this;
       var s = this._scrollerProps;
       var horizontal = this._getScrollAxis() == 'X';
-      var hammerMethod = enable ? 'on' : 'off';
       var domMethod = enable ? 'addEventListener' : 'removeEventListener';
       var frame = s.frame;
 //      var observer = frame;//doc;
       var hammer = this.hammer();
+      var hammerMethod = enable ? 'on' : 'off';
 //      var dragEvents = horizontal ? 'dragright dragleft' : 'dragup dragdown';
 //      var swipeEvents = horizontal ? 'swiperight swipeleft' : 'swipeup swipedown';
       
       this._scrollingEnabled = enable;
       frame[domMethod]('load', this._onSizeInvalidated, true);
+//      this.el[domMethod]('click', this._onClickInScroller, true); // we want clicks on capture phase
+//      hammer[hammerMethod]('tap', this._onClickInScroller, true);
+//      hammer[hammerMethod]('click', this._onClickInScroller, true);
+//      this.el[domMethod]('tap', this._onClickInScroller, true); // we want clicks on capture phase
 //      hammer[hammerMethod]('tap', this._onClickInScroller);
 ////      hammer[hammerMethod]('release', this._onReleaseInScroller);
 //      this.hammer({ drag_block_horizontal:true, drag_block_vertical:true })
@@ -563,11 +624,14 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       if (this._isScrolling()) {
         this._updateScrollPosition(); // parse from CSS
         s._start = s._keyHeld = s._flinging = s._snapping = s._dragging = null;
+//        Events.trigger('scrollState', 'idle');
         Q.write(this._clearScrollerTransitionStyle, this, undefined, {
           throttle: true,
           last: true
         });
       }
+      
+      Events.trigger('scrollState', 'idle');
     },
     
     _clearScrollerTransitionStyle: function() {
@@ -615,7 +679,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     isInnermostScroller: function(e) {
       return this.el == $(e.target).closest('.scrollable')[0];
     },
-    
+
     _onClickInScroller: function(e) {
       if (!this._scrollerInitialized)
         return;
@@ -624,7 +688,15 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       var s = this._scrollerProps;
       if (this._isScrolling()) {
         console.debug("PREVENTING CLICK EVENT: ", e);
-        (e.gesture || e).preventDefault();
+        e = e.gesture || e;
+        e.preventDefault();
+        e.stopPropagation();
+        if (!s._start && !s._snapping && !this._isInBounds(s.position, false /* don't include bounce gutter */)) {
+          // theoretically, this shouldn't happen, but it happened once
+          debugger;
+          this._snapScroller();
+        }
+        
         return false;
       }
       
@@ -742,6 +814,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
           time;
       
       s._snapping = true;
+      Events.trigger('scrollState', 'snapping');
       if (axis == 'X')
         snapToX = destination;
       else
@@ -787,6 +860,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
           timeToReset;
 
       s._flinging = true;
+      Events.trigger('scrollState', 'flinging');
       newPos[axis] = s.position[axis] + distance;
       newPos[otherAxis] = s.position[otherAxis];
       newPos = this._limitToBounds(newPos);

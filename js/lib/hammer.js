@@ -152,10 +152,10 @@ Hammer.Instance.prototype = {
      * @param   {Function}    handler
      * @returns {Hammer.Instance}
      */
-    on: function onEvent(gesture, handler){
+    on: function onEvent(gesture, handler, capture){
         var gestures = gesture.split(' ');
         for(var t=0; t<gestures.length; t++) {
-            this.element.addEventListener(gestures[t], handler, false);
+            this.element.addEventListener(gestures[t], handler, !!capture);
         }
         return this;
     },
@@ -167,10 +167,10 @@ Hammer.Instance.prototype = {
      * @param   {Function}    handler
      * @returns {Hammer.Instance}
      */
-    off: function offEvent(gesture, handler){
+    off: function offEvent(gesture, handler, capture){
         var gestures = gesture.split(' ');
         for(var t=0; t<gestures.length; t++) {
-            this.element.removeEventListener(gestures[t], handler, false);
+            this.element.removeEventListener(gestures[t], handler, !!capture);
         }
         return this;
     },

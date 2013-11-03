@@ -1,4 +1,4 @@
-define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils', 'lib/jquery.hammer'], function(G, _, Backbone, Events, U) {  
+define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils', 'hammer'], function(G, _, Backbone, Events, U) {  
   (function(_, Backbone) {
     Backbone.hammerOptions = {
       prevent_default: true,
@@ -22,18 +22,39 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       },
 
       _hammered: false,
+      _getHammerNamespace: function() {
+        return this._hammerNamespace || (this._hammerNamespace = '.hammerEvents' + this.TAG + this.cid);
+      },
 
-      undelegateEvents: function(){
-        if (this._hammered)
-          this.hammer().off('.hammerEvents' + this.TAG + this.cid);
+      undelegateEvents: function(events) {
+        if (this._hammered) {
+          this.hammer().off(this._getHammerNamespace());
+//          var hammer = this._hammer;
+//          if (!(events || (events = _.result(this, 'events')))) return this;
+//          for(var key in events) {            
+//            var method = events[key];
+//            if (!_.isFunction(method)) method = this[events[key]];
+//            if (!method) continue;
+//
+//            var match = key.match(delegateEventSplitter);
+//            var eventName = match[1], selector = match[2];
+//            if (selector === '') {
+//              hammer.off(eventName, method);
+//            } else {
+//              hammer.off(eventName, selector, method);
+//            }
+//          }
+        }
         
         return this;
       },
-
-      delegateEvents: function(events){
+      
+      delegateEvents: function(events) {
         var options = _.defaults(this.hammerOptions || {}, Backbone.hammerOptions),
-            hammer = this.hammer(options);
+            hammer = this.hammer(options),
+            hammerNamespace = this._getHammerNamespace();
         
+        if (!hammer) return this;
         if (!(events || (events = _.result(this, 'events')))) return this;
         this.undelegateEvents();
         for(var key in events) {
@@ -44,7 +65,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
           var match = key.match(delegateEventSplitter);
           var eventName = match[1], selector = match[2];
 //          eventName = Events.getEventName(eventName);
-          eventName += '.hammerEvents' + this.TAG + this.cid;
+          eventName += hammerNamespace;
           method = _.bind(method, this);
           if (selector === '') {
             hammer.on(eventName, method);
@@ -65,7 +86,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         var hammer = this.$el.hammer(options);
         if (!this._hammered) {
           this._hammered = true;
-//          hammer.on(hammer_events, this._debug.bind(this));
+          hammer.on(hammer_events, this._debug.bind(this));
         }
         
         return hammer;
@@ -91,6 +112,11 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       _.defaults(to.windowEvents, namespaceEvents(from.windowEvents, namespace));
       _.defaults(to.globalEvents, namespaceEvents(from.globalEvents, namespace));
       _.defaults(to.myEvents, namespaceEvents(from.myEvents, namespace));
+//      _.defaults(to.events, from.events);
+//      _.defaults(to.pageEvents, from.pageEvents);
+//      _.defaults(to.windowEvents, from.windowEvents);
+//      _.defaults(to.globalEvents, from.globalEvents);
+//      _.defaults(to.myEvents, from.myEvents);
     }
   };
 
