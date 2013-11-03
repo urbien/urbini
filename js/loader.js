@@ -344,7 +344,7 @@ define('globals', function() {
 
   function putCached(keyToData, options) {
     options = options || {};
-    var storage = options.storage || 'localStorage',
+    var storage = options.storage || G.getPreferredStorage(),
         store = options.store || 'modules',
         storeInfo = store === 'modules' ? G.getModulesStoreInfo() : G.getModelsStoreInfo(),
         keyPath = storeInfo.options.keyPath;        
@@ -839,7 +839,7 @@ define('globals', function() {
   
   function loadRegular() {
     Bundler.loadBundle(preBundle.concat(widgetsBundle)).then(function() {
-//        preBundle._deferred.resolve();
+      preBundle._deferred.resolve();
       G.finishedTask("loading pre-bundle and widgets-bundle");
       G.startedTask("loading modules");
       var essential = getCSS(preBundle, widgetsBundle);
@@ -848,6 +848,7 @@ define('globals', function() {
         return require(essential);
       });
     }).then(function(Events, App) {
+      Events.once('dbOpen', DB_OPEN_DFD.resolve);
       Events.once('appStart', APP_START_DFD.resolve);
       G.log(G.TAG, 'info', "Loaded pre-bundle: " + (new Date().getTime() - __started) + ' millis');
       G.finishedTask("loading modules");
@@ -861,7 +862,7 @@ define('globals', function() {
 
     G.onAppStart(function() {            
       G.startedTask('loading extras-bundle');
-      Bundler.loadBundle(extrasBundle, {source: G.dbType === 'none' ? 'localStorage' : 'indexedDB', async: true}).done(function() {
+      Bundler.loadBundle(extrasBundle, {async: true}).done(function() {
         G.startedTask('loading extras-bundle');
         extrasBundle._deferred.resolve();
       });
@@ -882,7 +883,7 @@ define('globals', function() {
       
     pruneBundle: function(bundle, options) {
       options = options || {};
-      var source = options.source || 'localStorage';
+      var source = options.source || G.getPreferredStorage();
       var pruneDfd = $.Deferred();
       var prunePromise = pruneDfd.promise();
       var modules = [];
@@ -1002,12 +1003,26 @@ define('globals', function() {
       
       return prunePromise;
     },
+
+//    _queuedToLoad: [],
+//    queueLoadBundle: function(/* module names */) {
+//      var self = this;
+//      this._queuedToLoad.push.apply(this._queuedToLoad, arguments);
+//      if (this._bundleTimer) {
+//        clearTimeout(this._bundleTimer);
+//        debugger;
+//      }
+//      
+//      this._bundleTimer = setTimeout(function() {
+//        self.loadBundle(self._queuedToLoad);
+//      }, 50);
+//    },
     
     loadBundle: function(bundle, options) {
       var bundleDfd = $.Deferred(),
           bundlePromise = bundleDfd.promise(),
           options = options || {},
-          source = options.source = options.source || 'localStorage',
+          source = options.source = options.source || G.getPreferredStorage(),
           useWorker = G.hasWebWorkers && options.async,
           worker;
 
@@ -1203,6 +1218,7 @@ define('globals', function() {
   var requireConfig = {
     paths: {
       '@widgets': 'widgetsLibAdapter',
+      hammer: 'lib/jquery.hammer',
       mobiscroll: 'lib/mobiscroll-datetime-min',
       simplewebrtc: 'lib/simplewebrtc',
       jqmConfig: 'jqm-config',
@@ -1243,6 +1259,7 @@ define('globals', function() {
 
   var G = window.Lablz,
       APP_START_DFD = $.Deferred(),
+      DB_OPEN_DFD = $.Deferred(),
       RESOLVED_PROMISE = $.Deferred().resolve().promise(),
       REJECTED_PROMISE = $.Deferred().reject().promise(),
       browser = G.browser = detectBrowser(),
@@ -1369,12 +1386,25 @@ define('globals', function() {
 //        G.log(G.TAG, 'db', "don't need indexeddb shim");
         type = 'idb';
       }
-      
+
       return type;
     })(),
+    
+    _preferredStorageMedium: 'indexedDB',
+    getPreferredStorage: function() {
+      var type = this._preferredStorageMedium;
+      if (type == 'indexedDB') {
+        if (this.dbType == 'none' || DB_OPEN_DFD.state() != 'resolved') {
+          type = 'localStorage';
+        }
+      }
+      
+      return type;
+    },
     media_events: ["loadstart", "progress", "suspend", "abort", "error", "emptied", "stalled", 
                     "loadedmetadata", "loadeddata", "canplay", "canplaythrough", "playing", "waiting", 
                     "seeking", "seeked", "ended", "durationchange", "timeupdate", "play", "pause", "ratechange", "volumechange"],
+                    
     nukeAll: function(reload) {
       hasLocalStorage && localStorage.clear();
       if (G.ResourceManager) {
@@ -1889,6 +1919,15 @@ define('globals', function() {
     },
     crossBrowser: {
       css: {}
+    },
+    SCROLL_STATES: ['idle', 'dragging', 'flinging', 'snapping', 'touching', 'clicking'],
+    _scrollState: 'idle',
+    getScrollState: function() {
+      return G._scrollState;
+    },
+    isScrolling: function() {
+      var state = this.getScrollState();
+      return state != 'clicking' && state != 'idle';
     }
   });
   

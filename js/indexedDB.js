@@ -1,4 +1,4 @@
-define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQueue', 'cache', 'lib/fastdom'], function(G, _, U, idbq, TaskQueue, C, Q) {  
+define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB', 'taskQueue', 'cache', 'lib/fastdom'], function(G, _, Events, U, idbq, TaskQueue, C, Q) {  
   var instance,
       FileSystem,
       fileSystemPromise,
@@ -240,7 +240,9 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     this.taskQueue = new TaskQueue("indexedDB");
 //    this.defaultStoreOptions = defaultStoreOptions
     this._openDfd = $.Deferred();
-    this._openPromise = this._openDfd.promise();
+    this._openPromise = this._openDfd.promise().done(function() {
+      Events.trigger('dbOpen');
+    });
     
     for (var fn in IDB.prototype) {
       this[fn] = this[fn].bind(this);
