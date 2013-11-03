@@ -121,10 +121,10 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       'page_beforehide': '_onScrollerInactive',
       'click': '_onClickInScroller',
 //      'release': '_onClickInScroller',
-//      'release': '_onReleaseInScroller',
       'drag': '_onDragScroller',
       'swipe': '_onSwipeScroller',
       'dragstart': '_onDragScrollerStart',
+      'release': '_onDragScrollerEnd',
       'dragend': '_onDragScrollerEnd'
     },
 
@@ -144,7 +144,12 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
 
     _onScrollerInactive: function() {
       if (this._scrollerInitialized) {
-        this._resetScroller();
+        var s = this._scrollerProps;
+        if (s._snapping)
+          this._snapScroller(true); // immediate snap
+        else
+          this._resetScroller();
+        
         this._toggleScrollEventHandlers(false);
       }
     },
@@ -615,7 +620,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       if (!this._scrollerInitialized)
         return;
       
-//      console.debug(this.TAG, e.type.toUpperCase(), "EVENT:", e);
+      console.debug(this.TAG, e.type.toUpperCase(), "EVENT:", e);
       var s = this._scrollerProps;
       if (this._isScrolling()) {
         console.debug("PREVENTING CLICK EVENT: ", e);
@@ -744,7 +749,6 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       
       time = immediate ? 0 : this._calcAnimationTime(pos.X, pos.Y, snapToX, snapToY) / 2;    
       this._scrollTo(snapToX, snapToY, time, beziers.bounce, time);
-      s._snapping = false;
     },
     
     _calcAnimationTime: function(distance) {
