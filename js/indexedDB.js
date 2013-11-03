@@ -515,7 +515,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
         });
     
     return $.when(resultPromise, transPromise).then(function(result) {
-      return Q.nextFramePromise().then(function() {
+      return Q.waitOne().then(function() {
         log('returning result for ' + primaryKey);
         if (result)
           return result;
@@ -575,7 +575,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
         args[0] = instance.$idb.objectStore(args[0], IDBTransaction.READ_ONLY);
         return backup.apply(query, args).then(function(results) {
           return parse(results || []).then(function(results) {
-            return Q.nextFramePromise().then(function() {
+            return Q.waitOne().then(function() {
               return results;
             });
           });
@@ -627,9 +627,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
         promises = [],
         done = false,
         finish = function() {
-          return Q.nextFramePromise().then(function() {
-            return results;
-          });
+          return results;
         },
         overallPromise;
 
@@ -664,8 +662,8 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       debugger;
     }).then(function() {
 //      Events.trigger('garbage', promises);
-      log("db", 'Finished getItems Transaction, got {0} items'.format(results.length));      
-      return $.when.apply($, promises).then(Q.nextFramePromise);
+      log("db", 'Finished getItems Transaction, got {0} items'.format(results.length));
+      return $.when.apply($, promises).then(Q.waitOne);
     }).then(finish, finish);
     
     return overallPromise; 
@@ -688,7 +686,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
    * @returns a JQuery Promise object
    */
   IDB.prototype.search = function(storeName, options) {
-    return this._queueTask('search for items in object store {0}'.format(storeName), search.bind(this, storeName, options));
+    return this._queueTask('{0} search for items in object store {1}'.format(G.nextId(), storeName), search.bind(this, storeName, options));
   };
 
   function put(storeName, items) {

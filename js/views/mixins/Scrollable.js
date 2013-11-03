@@ -266,7 +266,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
 
     _onKeyDown: function(e) {
-      if (!this._canScroll(e))
+      if (!this._scrollerInitialized)
         return;
       
       var s = this._scrollerProps;
@@ -330,7 +330,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     _onKeyUp: function(e) {
-      if (!this._canScroll(e))
+      if (!this._scrollerInitialized)
         return;
       
       var s = this._scrollerProps;
@@ -612,7 +612,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     _onClickInScroller: function(e) {
-      if (this._scrollerInitialized)
+      if (!this._scrollerInitialized)
         return;
       
 //      console.debug(this.TAG, e.type.toUpperCase(), "EVENT:", e);

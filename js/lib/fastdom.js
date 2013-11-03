@@ -133,17 +133,17 @@ define('lib/fastdom', ['globals'], function(G) {
 //    console.log.apply(console, args);
   };
 
-  FastDom.prototype.nextFramePromise = function() {
-    if (this.mode == null && !this.pending)
-      return G.getResolvedPromise();
-      
-    if (!this._nextFramePromise || this._nextFramePromise.state() != 'pending') {
-      this._nextFrameDeferred = $.Deferred();
-      this._nextFramePromise = this._nextFrameDeferred.promise();
-    }
-    
-    return this._nextFramePromise;
-  };
+//  FastDom.prototype.nextFramePromise = function() {
+//    if (this.mode == null && !this.pending)
+//      return G.getResolvedPromise();
+//      
+//    if (!this._nextFramePromise || this._nextFramePromise.state() != 'pending') {
+//      this._nextFrameDeferred = $.Deferred();
+//      this._nextFramePromise = this._nextFrameDeferred.promise();
+//    }
+//    
+//    return this._nextFramePromise;
+//  };
   
   /**
    * Removes a job from the queue
@@ -305,8 +305,8 @@ define('lib/fastdom', ['globals'], function(G) {
    */
   FastDom.prototype.frame = function() {
     var postponed = false;
-    if (this._nextFrameDeferred)
-      this._nextFrameDeferred.resolve();
+//    if (this._nextFrameDeferred)
+//      this._nextFrameDeferred.resolve();
     
     // Set the pending flag to
     // false so that any new requests
@@ -330,7 +330,27 @@ define('lib/fastdom', ['globals'], function(G) {
 //    job.timeout = setTimeout(this.run.bind(this, job), 1000 / 60 * frames);
 //    return job.id;
 //  }
+
+  /**
+   * @return promise object that gets resolved after "frames" frames
+   */
+  FastDom.prototype.wait = function(frames) {
+    var dfd = $.Deferred();
+    FrameWatch.subscribe(function wrapped() {
+      if (!(frames--)) {
+        FrameWatch.unsubscribe(wrapped);
+        dfd.resolve();
+        return;
+      }
+    });
+    
+    return dfd.promise();
+  };
   
+  FastDom.prototype.waitOne = function() {
+    return this.wait(1);
+  };
+
   /**
    * Defers the given job
    * by the number of frames
@@ -341,12 +361,12 @@ define('lib/fastdom', ['globals'], function(G) {
    * @api public
    */
   FastDom.prototype.defer = function(frames, type, fn, ctx, args, options) {
-    if (BYPASS) {
-      this[type](fn, ctx, args, options);
-      return;
-    }
+    if (BYPASS)
+      return this[type](fn, ctx, args, options);
     
-    if (frames < 0) return;
+    if (frames < 0) 
+      throw "Can't defer job by a non-positive number of frames";
+    
     var self = this;
     var job = this.add('defer', this[type].bind(this, fn, ctx, args, options)); // use regular queueing mechanism
     
@@ -354,6 +374,7 @@ define('lib/fastdom', ['globals'], function(G) {
       if (!(frames--)) {
         FrameWatch.unsubscribe(wrapped);
         self.run(job);
+        job = null; // prevent circular ref in case job has a property that points to this (like ctx) 
         return;
       }
     });

@@ -58,7 +58,6 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       _debug: function(e) {
         var args = _.toArray(arguments);
         args.unshift('events', this.TAG, 'HAMMER');
-        G.debug.apply(G, args);
         G.log('events', this.TAG, 'Hammer', e.type);
       },
       
@@ -66,7 +65,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         var hammer = this.$el.hammer(options);
         if (!this._hammered) {
           this._hammered = true;
-          hammer.on(hammer_events, this._debug.bind(this));
+//          hammer.on(hammer_events, this._debug.bind(this));
         }
         
         return hammer;

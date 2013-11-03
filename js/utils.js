@@ -1220,7 +1220,7 @@ define('utils', [
       return props;
     },
     
-    splitRequestFirstHalf: '$gridCols,$images,$displayNameElm',  // change these together
+    splitRequestFirstHalf: '$gridCols,$images,$displayNameElm,$alwaysReturnToClient',  // change these together
     setSplitRequest: function(vocModel) {        // change these together
       var meta = vocModel.properties,
           gridCols = U.getColsMeta(vocModel, 'grid'),

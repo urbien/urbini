@@ -184,7 +184,7 @@ define('transitions', ['globals', 'utils', 'lib/fastdom'], function(G, U, Q) {
     };
     
     promise.done(function() {
-      Q.nextFramePromise().done(function() {
+      Q.waitOne().done(function() {
         if (from)      
           $from.trigger('page_hide');
                   

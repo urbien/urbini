@@ -13,12 +13,13 @@ define('router', [
   '@widgets',
   'appAuth',
   'redirecter',
-  'transitions'
+  'transitions',
+  'lib/fastdom'
 //  , 
 //  'views/ListPage', 
 //  'views/ViewPage'
 //  'views/EditPage' 
-], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth, Redirecter, Transitioner /*, ListPage, ViewPage*/) {
+], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth, Redirecter, Transitioner, Q /*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
   var Modules = {};    
   function log() {
@@ -332,7 +333,11 @@ define('router', [
           delete G.homePage;
         }
         
-        homePage = new HomePage({el: $('#homePage') });
+        var homePageEl = $('#homePage');
+        if (!homePageEl.length)
+          debugger;
+        
+        homePage = new HomePage({el: homePageEl });
         homePage.render();
       }
       

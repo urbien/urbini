@@ -271,7 +271,7 @@ define('resourceManager', [
         query = QueryBuilder.buildQuery(data, filter);
         if (query) {
           return IDB.queryByIndex(query).getAll(type).then(function(results) {
-            return Q.nextFramePromise().then(function() {  
+            return Q.wait(1).then(function() {  
               return results;
             });
           }, search);
@@ -305,7 +305,7 @@ define('resourceManager', [
         }
         
         debugger;
-        return RM.getItems(options).then(Q.nextFramePromise);
+        return RM.getItems(options).then(Q.waitOne);
       });
     },
     

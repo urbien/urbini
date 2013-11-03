@@ -41,13 +41,13 @@ define('views/HomePage', [
     },
     
     pagehide: function(e) {
-      this.$el.hide();
-      BasicPageView.prototype.onpageevent.apply(this, arguments);
+//      this.$el.hide();
+      return BasicPageView.prototype.onpageevent.apply(this, arguments);
     },
     
     pagebeforeshow: function(e) {
-      this.$el.show();
-      BasicPageView.prototype.onpageevent.apply(this, arguments);
+//      this.$el.show();
+      return BasicPageView.prototype.onpageevent.apply(this, arguments);
     },
     
     click: function(e) {

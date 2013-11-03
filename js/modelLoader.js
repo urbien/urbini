@@ -12,6 +12,7 @@ define('modelLoader', [
   var MODEL_CACHE = [],
       MODEL_PREFIX = 'model:',
       ENUMERATIONS_KEY = 'enumerations',
+      ENUMS,
       MODEL_STORE,
       IDB,
       preferredStorage,
@@ -557,10 +558,10 @@ define('modelLoader', [
     if (!enums)
       return;
     
-    enums = JSON.parse(enums);
-    for (var type in enums) {
+    ENUMS = JSON.parse(enums);
+    for (var type in ENUMS) {
       makeModelPromise(type);
-      loadModel(Backbone.Model.extend({}, enums[type]));
+      loadModel(Backbone.Model.extend({}, ENUMS[type]));
     }
   };
 
@@ -582,19 +583,23 @@ define('modelLoader', [
     }
     
     var enumModels = {};
-    _.each(models, function(model) {
-      var modelJson = model; //U.toJSON(model);
-      if (model.enumeration)
-        enumModels[model.type] = modelJson;
+    for (var i = 0, len = models.length; i < len; i++) {
+      var modelJson = models[i];
+      if (modelJson.enumeration)
+        enumModels[modelJson.type] = modelJson;
       else
         storeModel(modelJson, storageType);
-    });
+    }
     
     if (_.size(enumModels)) {
-      var enums = getEnumsFromStorage();
-      enums = enums ? JSON.parse(enums) : {};
-      _.extend(enums, enumModels);
-      storeEnums(enums, storageType);
+//      var enums = getEnumsFromStorage();
+//      enums = enums ? JSON.parse(enums) : {};
+      if (!ENUMS)
+        ENUMS = enumModels;
+      else
+        _.extend(ENUMS, enumModels);
+      
+      storeEnums(ENUMS, storageType);
     }
   };
 
@@ -604,7 +609,7 @@ define('modelLoader', [
   };
 
   function storeEnums(enums) {
-    G.localStorage.putAsync(ENUMERATIONS_KEY, JSON.stringify(enums));
+    G.localStorage.put(ENUMERATIONS_KEY, JSON.stringify(enums));
   };
 
   function deleteModelFromStorage(uri) {

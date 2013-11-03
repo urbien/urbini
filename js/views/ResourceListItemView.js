@@ -202,6 +202,11 @@ define('views/ResourceListItemView', [
               Events.trigger('navigate', U.makeMobileUrl('view', self.resource.get(b))); //, {trigger: true, forceFetch: true});
             else if (self.hashParams[b])
               Events.trigger('navigate', U.makeMobileUrl('view', self.resource.get(a))); //, {trigger: true, forceFetch: true});
+            else
+              dfd.reject();
+//            else
+//              Events.trigger('navigate', U.makeMobileUrl('view', self.resource.getUri())); //, {trigger: true, forceFetch: true});
+              
             return;
           } 
         }
@@ -248,7 +253,7 @@ define('views/ResourceListItemView', [
             }
           }
           else if (U.isA(m, 'Reference')) {
-            var forResource = U.getCloneOf(m, 'Reference.forResource');
+            var forResource = U.getCloneOf(m, 'Reference.forResource')[0];
             var uri = forResource && self.resource.get(forResource);
             if (uri) {
               Events.trigger('navigate', U.makeMobileUrl('view', uri)); //, {trigger: true, forceFetch: true});
