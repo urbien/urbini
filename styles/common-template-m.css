@@ -1,6 +1,11 @@
 body { -webkit-text-size-adjust: none; }
 
 html { height: 100%; }
+
+[data-role="page"] {
+  min-height: 100%;
+}
+
 /* Gallery */
 .galleryItem, .galleryItem_css3 {
   border-width: 0px;

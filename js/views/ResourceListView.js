@@ -37,7 +37,7 @@ define('views/ResourceListView', [
     _horizontal: false,
 
     initialize: function(options) {
-      _.bindAll(this, 'render', 'getNextPage', 'refresh', 'onScroll', 'adjustSlidingWindow', 'setMode', 'appendPages', 'onResourceChanged', 'getNewSize', '_viewportSizeChanged', '_updateConstraints'); //, 'onScrollerSizeChanged');
+      _.bindAll(this, 'render', 'getNextPage', 'refresh', 'onScroll', 'adjustSlidingWindow', 'setMode', 'appendPages', 'onResourceChanged', 'getNewSize', '_onScrollerSizeChanged'); //, 'onScrollerSizeChanged');
       BasicView.prototype.initialize.call(this, options);
       options = options || {};
       if (options.axis)
@@ -86,13 +86,9 @@ define('views/ResourceListView', [
       return this;    
     },
 
-    events: {
-      'resize': '_viewportSizeChanged',
-      'orientationchange': '_viewportSizeChanged'
-    },
-    
     pageEvents: {
-      'scrollo.resourceListView': 'onScroll'
+      'scrollo.resourceListView': 'onScroll',
+      'scrollosize.resourceListView': '_onScrollerSizeChanged'
     },
 
     modelEvents: {
@@ -108,42 +104,63 @@ define('views/ResourceListView', [
       this.adjustSlidingWindow();
     },
     
-    getViewport: function() {
-//      return {
-//        head: 0,
-//        tail: this._horizontal ? window.innerWidth : window.innerHeight
-//      }
-      return this.getHeadAndTail(this.getVisibleArea(true));
+    _updateViewport: function(info) {
+//            width = Math.min(window.innerWidth, content.width),
+//            height = Math.min(window.innerHeight, content.height),
+      var container = info.container,
+          width = container.width,
+          height = container.height,
+          top = info.scrollTop,
+          left = info.scrollLeft;
+          
+      if (!this._viewport)
+        this._viewport = {};
+      
+      
+      this._viewport.head = this._horizontal ? left : top;
+      this._viewport.tail = this._horizontal ? left + width : top + height;
     },
     
-    _updateConstraints: function() {
-      var viewport = this._viewport = this.getViewport(),
-          viewportDim = this._viewportDim = viewport.tail - viewport.head;
+    getViewport: function() {
+      return this._viewport;
+    },
+    
+    _onScrollerSizeChanged: function(e, info) {
+      var dimProp = this._horizontal ? 'width' : 'height',
+          dim = info.container[dimProp];
       
-      if (!viewportDim) {
-        setTimeout(this._updateConstraints, 100);
-        return;
+      if (this._scrollerContainer) {
+        if (this._scrollerContainer[dimProp] == dim) {
+          return;
+        }
       }
-        
-      this._slidingWindowInsideBuffer = viewportDim * 3;
-      this._slidingWindowOutsideBuffer = viewportDim * 1.5; // px, should depend on size of visible area of the list, speed of device, RAM
+      else
+        this._scrollerContainer = {};
+      
+      _.extend(this._scrollerContainer, info.container);
+      this._updateViewport(info);
+      this._slidingWindowInsideBuffer = dim * 4;
+      this._slidingWindowOutsideBuffer = dim * 2; // px, should depend on size of visible area of the list, speed of device, RAM
 //      _slidingWindowBuffer: 800, // px, should depend on size of visible area of the list, speed of device, RAM
-      this._minSlidingWindowDimension = viewportDim * 6; // px, should depend on size of visible area of the list, speed of device, RAM
-      if (G.browser.mobile && viewportDim < 500)
+      this._minSlidingWindowDimension = dim * 6; // px, should depend on size of visible area of the list, speed of device, RAM
+      if (G.browser.mobile && dim < 500)
         this._elementsPerPage = 5;
       else
         this._elementsPerPage = 10;
-    },
-    
-    _viewportSizeChanged: function() {
-//      this._bounds = this.el.getBoundingClientRect();
-      this._updateConstraints();
-      this.refresh();
+      
+      if (this._initSlidingWindowTimer) {
+        clearTimeout(this._initSlidingWindowTimer);
+        this.adjustSlidingWindow();
+      }
+      else if (this.rendered)
+        this.refresh();
     },
     
     onScroll: _.throttle(function(e, info) {
-      if ((this.el == e.target || e.currentTarget.contains(this.el)) && this.isActive())
+      if ((this.el == e.target || e.currentTarget.contains(this.el)) && this.isActive()) {
+        this._updateViewport(info);
         this.adjustSlidingWindow();
+      }
     }, 20),
     
     setHorizontal: function() {
@@ -170,7 +187,6 @@ define('views/ResourceListView', [
 //      };
       
 //      this._viewportSizeChanged();
-      this._updateConstraints();
       this.imageProperty = U.getImageProperty(this.collection);
       this.dummies = this.getDummies();
       if (!this.dummies.length) {
@@ -282,20 +298,25 @@ define('views/ResourceListView', [
         return G.getRejectedPromise();
       
       var self = this,
-          viewport = this.getViewport(),
-          viewportDim = viewport.tail - viewport.head,
-          slidingWindow = this.getSlidingWindow(), // should be relative to this view, i.e. head==0 means we're at the top/left of the page
-          slidingWindowDim = slidingWindow.tail - slidingWindow.head,
-          headDiff = viewport.head - slidingWindow.head,
-          tailDiff = slidingWindow.tail - viewport.tail,
           n = 1,
+          viewport = this.getViewport(),
+          viewportDim,
+          slidingWindow, // should be relative to this view, i.e. head==0 means we're at the top/left of the page
+          slidingWindowDim,
+          headDiff,
+          tailDiff,
           diff; 
   
-      if (!viewportDim) {
-        setTimeout(this.adjustSlidingWindow, 50);
+      if (!viewport) {
+        this._initSlidingWindowTimer = setTimeout(this.adjustSlidingWindow, 50);
         return false;
       }
         
+      viewportDim = viewport && viewport.tail - viewport.head;
+      slidingWindow = this.getSlidingWindow(); // should be relative to this view, i.e. head==0 means we're at the top/left of the page
+      slidingWindowDim = slidingWindow.tail - slidingWindow.head;
+      headDiff = viewport.head - slidingWindow.head;
+      tailDiff = slidingWindow.tail - viewport.tail;
       if (slidingWindowDim < this._minSlidingWindowDimension) {
         var growAtTheHead;
 //        if (this._pagesCurrentlyInSlidingWindow < this._pagesInSlidingWindow) {
@@ -611,7 +632,7 @@ define('views/ResourceListView', [
     page: function(n, up) {
       n = n || 1;
 //      this._pageReqNum++;
-//      console.log("PAGING", up ? "UP" : "DOWN", "START");
+      this.log("PAGING", up ? "UP" : "DOWN");
       // append a new page, remove the first page, move visibility down a page
 //      this.calcAddRemoveSize(n, false);
       var self = this,

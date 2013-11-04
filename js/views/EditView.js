@@ -96,8 +96,8 @@ define('views/EditView', [
       return this;
     },
     events: {
-      'click .cancel'                     :'cancel',
-      'submit form'                        :'submit',
+      'click #cancel'                     :'cancel',
+      'submit form'                       :'submit',
       'click .resourceProp'               :'chooser',
       'click input[data-duration]'        :'scrollDuration',
       'click input[data-date]'            :'scrollDate',

@@ -778,29 +778,6 @@ define('views/BasicView', [
       return undefined;
     },
     
-    /**
-     * @return offsets on all sides of the visible part of the element, an area no greater than the browser viewport
-     */
-    getVisibleArea: function(forceRecalc) {
-      var width,
-          height,
-          top,
-          bottom;
-      
-      // assume for now that we don't nest scrollables in scrollables...and that only pageViews use the Scrollable mixin...for now
-      if (this.pageView.mixes('Scrollable')) {
-      	return this.pageView.getVisibleScrollerArea(forceRecalc);
-      }
-      else {
-        var offset = this.$el.offset();
-        width = Math.min(window.innerWidth, this.$el.width());
-        height = Math.min(window.innerHeight, this.$el.height());
-        offset.bottom = offset.top + height;
-        offset.right = offset.left + width;
-        return offset;
-      }
-    },
-    
     on: function() {
       var args = arguments;
       if (args.length == 2) {
@@ -872,9 +849,9 @@ define('views/BasicView', [
         for (var i = 0, len = superclasses.length; i < len; i++) {
           var sCl = superclasses[i];
           if (U.isAssignableFrom(vocModel, sCl)) {
-            var sIdx = sCl.indexOf('/');
-            if (~sIdx)
-              sCl = sCl.slice(sIdx + 1);
+//            var sIdx = sCl.indexOf('/');
+//            if (~sIdx)
+//              sCl = sCl.slice(sIdx + 1);
           
             supers.push(sCl);
           }

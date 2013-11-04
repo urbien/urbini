@@ -1,5 +1,6 @@
 //'use strict';
 define('resourceManager', [
+  '__domReady__',
   'globals',
   'utils', 
   'events', 
@@ -7,14 +8,13 @@ define('resourceManager', [
   'vocManager',
   'collections/ResourceList',
   'lib/fastdom',
-  '__domReady__'
-].concat(Lablz.dbType == 'none' ? [] : [
   'taskQueue', 
   'indexedDB', 
   'idbQueryBuilder',
   'synchronizer',
   'resourceSynchronizer', 
-  'collectionSynchronizer']), function(G, U, Events, C, Voc, ResourceList, Q, __domReady__, TaskQueue, IndexedDBModule, QueryBuilder, Synchronizer, ResourceSynchronizer, CollectionSynchronizer) {
+  'collectionSynchronizer'
+], function(__domReady__, G, U, Events, C, Voc, ResourceList, Q, TaskQueue, IndexedDBModule, QueryBuilder, Synchronizer, ResourceSynchronizer, CollectionSynchronizer) {
       
   function getSynchronizer(method, data, options) {
     return U.isModel(data) ? new ResourceSynchronizer(method, data, options) : new CollectionSynchronizer(method, data, options);

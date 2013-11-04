@@ -524,19 +524,19 @@ define('app', [
     }
   }
   
-  function setupScrollMonitor() {
-    Events.on('scrollState', function(state) {
-      if (G.SCROLL_STATES.indexOf(state) == -1)
-        throw "Illegal scroll state: " + state;
-      
-      G._scrollState = state;
-//      console.log('SCROLL STATE', state);
-    });
-  }
+//  function setupScrollMonitor() {
+//    Events.on('scrollState', function(state) {
+//      if (G.SCROLL_STATES.indexOf(state) == -1)
+//        throw "Illegal scroll state: " + state;
+//      
+//      G._scrollState = state;
+////      console.log('SCROLL STATE', state);
+//    });
+//  }
   
   function doPreStartTasks() {
 //    setupHashMonitor();
-    setupScrollMonitor();
+//    setupScrollMonitor();
     setupWidgetLibrary();
     setupPackagedApp();
     setupUser();

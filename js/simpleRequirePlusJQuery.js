@@ -9617,10 +9617,15 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
       baseUrl: ''
     };
     
-    
+
+  function getRealName(name) {
+    var paths = config.paths;
+    return paths && paths[name] || name;
+  }
+
   function toUrl(name) {
     var paths = config.paths;
-    var url = config.baseUrl + ((paths && paths[name]) || name);
+    var url = config.baseUrl + getRealName(name);
     return url.match(extRegExp) ? url : url + '.js';
   }
 
@@ -9789,6 +9794,7 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
   
   require.load = load;
   require.toUrl = toUrl;
+  require.getRealName = getRealName;
   root.require = require;
   root.define = define;
   var main = $('[data-main]');

@@ -20,7 +20,8 @@ define('utils', [
       HAS_PUSH_STATE = G.support.pushState,
       RECYCLED_OBJECTS = [],
       RECYCLED_ARRAYS = [],
-      FRAGMENT_SEPARATOR = HAS_PUSH_STATE ? '/' : '#';
+      FRAGMENT_SEPARATOR = HAS_PUSH_STATE ? '/' : '#',
+      isFF = G.browser.firefox;
 
   setInterval(function() { // TODO: make this less stupid
     for (var templateName in compiledTemplates) {
@@ -241,7 +242,9 @@ define('utils', [
     },
 
     getTranslationString: function(position) {
-      var x, y, z;
+      var x, y, z, 
+          translation;
+      
       if (typeof position == 'object') {
         x = position.x;
         y = position.y;
@@ -252,8 +255,14 @@ define('utils', [
         y = arguments[1];
         z = arguments[2];
       }
+      
+      translation = 'translate(' + (x || 0) + 'px, ' + (y || 0) + 'px) translateZ(' + (z || 0) + 'px)' + (isFF ? ' rotate(0.01deg)' : '');
+      return translation;
 //      return 'translate({0}px, {1}px)'.format(position.X, position.Y);
-      return 'translate({0}px, {1}px) translateZ({2}px)'.format(x || 0, y || 0, z || 0);
+//      return 'translate({0}px, {1}px) translateZ({2}px) {3}'.format(x || 0, y || 0, z || 0, isFF ? 'rotate(0.01deg)' : '');
+//      return 'translate({0}px, {1}px)'.format(x || 0, y || 0);
+//      return 'translate3d({0}px, {1}px, 0px)'.format(x || 0, y || 0);
+//      return 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, {0}, {1}, 0, 1)'.format(x || 0, y || 0);
     },
     
     /**

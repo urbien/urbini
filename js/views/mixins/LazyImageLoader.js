@@ -55,7 +55,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
 //  $wnd.on('resize', _.throttle(saveViewport, 20));
 
   function getDummyImages($el) {
-    return $el.find('img[src="{0}"]'.format(DUMMY_IMG)).toArray();
+    return $el.find('img[src="{0}"]'.format(DUMMY_IMG)).not('[{0}="{1}"]'.format(LAZY_ATTR, DUMMY_IMG)).toArray();
   }
 
   function getLoadedImages($el) {
@@ -245,6 +245,11 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
             
             if (!info.realSrc)
               continue;
+
+            if (info.realSrc == DUMMY_IMG) {
+              cleanImage(img);
+              continue;
+            }
             
             if (info.inDoc) {
               if (info.inBounds) {

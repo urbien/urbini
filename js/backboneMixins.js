@@ -1,8 +1,8 @@
 define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils', 'hammer'], function(G, _, Backbone, Events, U) {  
   (function(_, Backbone) {
     Backbone.hammerOptions = {
-      prevent_default: true,
-      tap_always: false
+//      prevent_default: true,
+//      tap_always: false
     };
     
     var delegateEventSplitter = /^(\S+)\s*(.*)$/;
@@ -64,7 +64,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
 
           var match = key.match(delegateEventSplitter);
           var eventName = match[1], selector = match[2];
-//          eventName = Events.getEventName(eventName);
+          eventName = Events.getEventName(eventName);
           eventName += hammerNamespace;
           method = _.bind(method, this);
           if (selector === '') {
@@ -79,7 +79,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       _debug: function(e) {
         var args = _.toArray(arguments);
         args.unshift('events', this.TAG, 'HAMMER');
-        G.log('events', this.TAG, 'Hammer', e.type);
+        G.log('events', this.TAG, 'Hammer', e.type.toUpperCase(), _.now());
       },
       
       hammer: function(options){

@@ -161,16 +161,18 @@ define('globals', function() {
     if (~G.skipModules.indexOf(name))
       return false;
     
-    var isBB = G.getWidgetLibrary() == 'Building Blocks';
-    if (isBB && /jquery\.mobile/.test(name, 'ig'))
-      return false;
-    
+//    var isBB = G.getWidgetLibrary() == 'Building Blocks';
+//    if (isBB && /jquery\.mobile/.test(name, 'ig'))
+//      return false;
+//    
 //    if (!isBB && /\/bb\/|templates_bb\.jsp|bb_styles\.css/.test(name))
 //      return false;
     
     switch (name) {
 //    case '@widgets':
 //      return !isBB;
+    case '../templates_bb.jsp':
+      return G.isBB();
     case 'lib/IndexedDBShim':
       return G.dbType == 'shim';
     case 'lib/whammy':
@@ -262,6 +264,10 @@ define('globals', function() {
 
   var orgLoad = require.load;
   require.load = function(name) {
+    name = require.getRealName(name);
+    if (!isModuleNeeded(name))
+      return G.getResolvedPromise();
+    
     var url = G.getCanonicalPath(require.toUrl(name));
     var args = arguments,
         self = this;
@@ -1311,6 +1317,9 @@ define('globals', function() {
     isJQM: function() {
       return G.getWidgetLibrary().toLowerCase() == 'jquery mobile';
     },
+    isBB: function() {
+      return G.getWidgetLibrary().toLowerCase() == 'building blocks';
+    },
     getWidgetLibrary: function() {
       return G._widgetLibrary;
     },
@@ -1920,14 +1929,26 @@ define('globals', function() {
     crossBrowser: {
       css: {}
     },
-    SCROLL_STATES: ['idle', 'dragging', 'flinging', 'snapping', 'touching', 'clicking'],
-    _scrollState: 'idle',
-    getScrollState: function() {
-      return G._scrollState;
+//    SCROLL_STATES: ['idle', 'dragging', 'flinging', 'snapping', 'touching', 'clicking'],
+//    _scrollState: 'idle',
+//    getScrollState: function() {
+//      return G._scrollState;
+//    },
+//    isScrolling: function() {
+//      var state = this.getScrollState();
+//      return state != 'clicking' && state != 'idle';
+//    },
+    _clickDisabled: false,
+    enableClick: function() {
+      this.log('events', 'CLICK MONITOR', 'ENABLED CLICK');
+      this._clickDisabled = false;
     },
-    isScrolling: function() {
-      var state = this.getScrollState();
-      return state != 'clicking' && state != 'idle';
+    disableClick: function() {
+      this.log('events', 'CLICK MONITOR', 'DISABLED CLICK');
+      this._clickDisabled = true;
+    },
+    canClick: function() {
+      return !this._clickDisabled;
     }
   });
   
@@ -1941,7 +1962,7 @@ define('globals', function() {
   setMiscGlobals();
   adjustForVendor();
   testIfInsidePackagedApp();
-  Bundler.pruneUnneededModules();
+//  Bundler.pruneUnneededModules();
   Bundler.prepAppCacheBundle();
   require.config(requireConfig);   
   load();

@@ -166,7 +166,7 @@ define('models/Resource', [
           else if (prop.range.endsWith('model/portal/Image') && /^(http|https|ftp):\/\//.test(val))
             return val;
           else
-            return val.startsWith('data:') ? val : U.getLongUri1(val);
+            return /^(data:|!?null)/.test(val) ? val : U.getLongUri1(val);
         }
         else
           return val;

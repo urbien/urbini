@@ -4,13 +4,7 @@ define('events', [
   'backbone'
 ], function(_, Backbone) {
   var hammerMap = {
-    click: 'tap',
-    dblclick: 'doubletap',
-    mousedown: 'touchstart',
-    mouseup: 'touchend',
-    touchstart: 'touch',
-    touchmove: 'drag',
-    touchend: 'release'
+    click: 'tap'
   }
   
   var Events = _.extend({

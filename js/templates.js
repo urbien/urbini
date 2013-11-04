@@ -3,8 +3,9 @@ define('templates', [
   'globals', 
   'underscore', 
   'events', 
-  '../templates.jsp'
-].concat(Lablz.currentApp.widgetLibrary == 'Building Blocks' ? '../templates_bb.jsp' : []), function(G,_, Events, HTML, HTML_bb) {
+  '../templates.jsp',
+  '../templates_bb.jsp'
+], function(G,_, Events, HTML, HTML_bb) {
   _.templateSettings = {
     evaluate:    /\{\{(.+?)\}\}/g,
     interpolate: /\{\{=(.+?)\}\}/g
