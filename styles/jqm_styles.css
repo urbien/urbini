@@ -22,10 +22,10 @@
   top: 5px;
 }
 
-.ui-mini .ui-btn-icon-top .ui-icon {
+.ui-mini .ui-btn-icon-top .ui-icon, .ui-header .ui-btn-icon-top .ui-icon {
   top: 13px;
 }
-
+ 
 .ui-field-contain div.ui-slider, .ui-field-contain div.ui-slider.ui-mini { margin:0.3em 0 }
 
 #resourceViewHolder .ui-icon {
@@ -438,4 +438,18 @@
 }
 .listPage li {
   border-bottom: solid 0.1rem #e3e3e3;
+}
+#photogridHeader {
+  border: 1px solid #707070;
+  background: #eee;
+  color: #f9f9f9;
+  font-weight: 700;
+  text-shadow: 0 1px 0 #000;
+  background: #757575;
+  text-align: center;
+  top: -3px;
+}
+#photogridHeader h3 {
+  font-size: 1.8rem;
+  margin: 1rem;
 }

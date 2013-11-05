@@ -649,7 +649,7 @@
      {{ } }}
    </div>
   {{ } }}
-  {{= obj.showCount ? '<span class="ui-li-count">' + obj[showCount].count + '</span>' : '' }} 
+  {{= obj.showCount ? '<span class="ui-li-count">' + obj.showCount.count + '</span>' : '' }} 
   -->  
   {{ if (typeof distance != 'undefined') { }}
     <span class="ui-li-count">{{= Math.round(distance * 100) /100  + ' ' + distanceUnits }}</span>
@@ -697,7 +697,7 @@
   {{ if (this.resource.isA('Distance')  &&  obj.distance) { }}
     <span class="ui-li-count">{{= distance + ' mi' }}</span>
   {{ } }}
-  {{= obj.showCount ? '<span class="ui-li-count">' + obj[showCount].count + '</span>' : '' }} 
+  {{= obj.showCount ? '<span class="ui-li-count">' + obj.showCount.count + '</span>' : '' }} 
   <!--
   {{ if (typeof v_submitToTournament != 'undefined') { }}
     <a href="{{= v_submitToTournament.uri }}" data-role="button" data-icon="plus" data-theme="e" data-iconpos="notext"></a>
@@ -1169,12 +1169,18 @@
 </script>
 
 <script type="text/template" id="comment-item">
-<td width="1%" valign="top">
-  <a href="{{= U.makePageUrl('view', submitter) }}"> 
-    <img src="{{= obj['submitter.thumb'] }}" />
+<td valign="top">
+  <a href="{{= U.makePageUrl('view', submitter) }}" style="position:relative;"> 
+    <img src="{{= obj['submitter.thumb'] }}" 
+    
+      {{ if (obj.top) { }}     
+        style="position:absolute; left:-{{= left }}px; top:-{{= top }}px;
+        clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
+      {{ } }}
+    />
   </a>
 </td>
-<td width="99%" class="cl" valign="top">
+<td class="cl" style="padding-left:60px;" valign="top">
   <span class="commentListDate" style="float:right;">{{= G.U.getFormattedDate(submitTime, true) }}</span>
   <a href="{{= U.makePageUrl('view', submitter) }}">
     {{= obj['submitter.displayName'] }}

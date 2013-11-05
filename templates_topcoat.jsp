@@ -22,10 +22,14 @@
     </form>
    {{ } }}
    -->
-    <section  id="sidebar" data-type="list" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
+    <div  id="sidebar" data-type="list" class="topcoat-list__container" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
+      <div class="dummy head"></div>
+      <div class="dummy tail"></div>
    </div>
     </section>
     <div id="nabs_grid" class="masonry">
+      <div class="dummy head"></div>
+      <div class="dummy tail"></div>
     </div>
     
     <table class="table-stroke" width="100%" style="display:none" id="comments">
@@ -60,7 +64,7 @@
     </div>
     <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     
-    <div id="photogridHeader" class="hidden"><h3></h3></div>
+    <div id="photogridHeader" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
     <!--div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="grid-listview hidden">
       <div class="dummy head"></div>
       <div class="dummy tail"></div>
@@ -75,20 +79,16 @@
        <div style="padding:10px;"><a data-role="button" class="{{= 'ui-btn-hover-' + G.theme.swatch }}" data-icon="heart" data-theme="{{= G.theme.swatch }}" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></div>
     {{ } }}
     
-    <section data-type="list" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
-      <ul data-theme="{{= G.theme.list }}" id="resourceView" style="padding:10px;">
-      </ul>
-    </section>
+    <ul data-theme="{{= G.theme.list }}" class="topcoat-list__container" id="resourceView">
+    </ul>
     <div id="about" class="hidden" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}"></div>
     
     {{ if ($('#other')) { }}
       <!--br/>
       <br/-->
     {{ } }}
-    <section data-type="list" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
-      <ul data-theme="{{= G.theme.list }}" id="cpView" style="padding: 10px;">
-      </ul>
-    </section>
+    <ul class="topcoat-list__container" id="cpView">
+    </ul>
   </div>
   <!--div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
      <a data-role="button" data-shadow="false" data-icon="repeat" id="homeBtn" target="#">Home</a>
@@ -122,7 +122,7 @@
 
 <script type="text/template" id="cpTemplate">
 <!-- readwrite backlink in resource view -->
-<li data-propName="{{= shortName }}"
+<li class="topcoat-list__item" data-propName="{{= shortName }}"
 {{= obj.inline ? ' data-theme="{0}">'.format(G.theme.footer) : '' }}
 >
      {{ var params = {}; }}
@@ -131,23 +131,22 @@
    <a target="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp">
      <i class="ui-icon-plus-sign"></i>
    </a>
-<p>
+
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
      </a>
      <div style="display:inline;position:absolute;right:4rem;font-size: 11px;top:1.5rem;border-radius:1rem;border: 1px solid #777;padding: 0.1rem 0.3rem;">{{= value }}</div>
-</p>     
+     
      {{ if (typeof comment != 'undefined') { }}
-       <br/><p style="padding-top: 0.7rem;font-size:1.3rem;color:#808080; line-height:1.5rem;">{{= comment }}</p>
+       <p style="font-size:1.3rem;color:#808080; line-height:1rem;">{{= comment }}</p>
      {{ } }}
    </li>
 </script>
 
 <script type="text/template" id="cpTemplateNoAdd">
 <!-- readonly backlink in resource view -->
-<li data-propName="{{= shortName }}"
+<li class="topcoat-list__item" data-propName="{{= shortName }}"
   {{= obj.inline ? ' data-theme="{0}">'.format(G.theme.activeButton) : '' }}
 >
-<p>
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
@@ -155,7 +154,6 @@
      <!--span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="{{= G.theme.list }}" data-icon="chevron-right" data-iconshadow="false" class="cp" -->
      </a>
      <div style="display:inline;position:absolute;right:4rem;top:1rem;font-size: 11px;border-radius:1rem;border: 1px solid #777;padding: 0.1rem 0.3rem;">{{= value }}</div>
-</p>     
    </li>
 </script>
 
@@ -163,20 +161,22 @@
 <!-- button for an important backlink on a resource on the resource's view page -->
  {{ var params = {}; }}
  {{ params[backlink] = _uri; }}
- {{ if (!value  &&  !chat) { }}  
-   <a role="button" data-shortName="{{= shortName }}" data-title="{{= title }}" style="border:1px solid {{= borderColor }}; background-color: {{= color }}" href="#">
+ <div style="width:100%;padding:5px;">
+  <button class="topcoat-button--cta" style="width:95%;border:1px solid {{= borderColor }}; background-color: {{= color }}"
+ {{ if (!obj.value  &&  !obj.chat) { }}  
+   <a data-shortName="{{= shortName }}" data-title="{{= title }}" href="#">
      <span><i class="{{= icon }}"></i>&#160;{{= name }}</span>
    </a>
  {{ } }}
- {{ if (obj.value != 'undefined' || chat) { }}  
-   <a role="button" data-propName="{{= shortName }}" style="border:1px solid {{= borderColor }}; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
+ {{ if (obj.value || obj.chat) { }}  
+   <a data-propName="{{= shortName }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" style="width:95%;">
      <span><i class="{{= icon }}"></i>&#160;{{= name }}</span>
      
-     <!-- {{= obj.value ? '<span class="counter">' + value + '</span>' :  ''  }} -->
-     {{= obj.value ? '<div class="counter">' + value + '</div>' :  ''  }}
+     {{= obj.value ? '<div style="display:inline-block;position:absolute;top:-35%;right:1px"><span class="counter" style="padding:1px 5px;background:#EEF;border-radius:1rem;font-size:1.2rem;">' + value + '</span></div>' :  ''  }}
    </a>
  {{ } }}
-</script>
+ </button></div>
+ </script>
 
 <script type="text/template" id="cpMainGroupTemplateH">
 <!-- button for an important backlink on a resource on the resource's view page (horizontal mode) -->
@@ -201,10 +201,10 @@
   {{ var action = action ? action : 'view' }}
   <div style="margin:0" data-viewid="{{= viewId }}">
   {{ if (!obj.v_submitToTournament) { }}
-    <div style="padding:.7em 10px 10px 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
+    <div style="padding-left: 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
   {{ } }}
   {{ if (obj.v_submitToTournament) { }}
-    <div style="padding:.7em 10px 0 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
+    <div style="padding-left: 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
   {{ } }}
     <img {{= typeof image != 'undefined' ? 'src="' + (image.indexOf('/Image') == 0 ? image.slice(6) : image) + '"' : 'src="' + G.blankImgDataUrl + '" style="position:absolute;left:0px"'}}" 
     {{ if (obj.right) { }}  
@@ -229,8 +229,8 @@
     {{ if (obj.isJst) { }}
       style="padding: .7em 10px 10px 0px;"
     {{ } }}
-    {{ if (!obj.isJst  &&  (obj._hasSubmittedBy || !obj.v_submitToTournament)) { }}
-      style="padding-left: 1rem;min-height:59px"
+    {{ if (!obj.isJst  &&  obj._hasSubmittedBy) { }}
+      style="min-height:59px;"
     {{ } }}
   {{ } }}
   {{ if (obj.v_submitToTournament) { }}
@@ -261,7 +261,7 @@
 
 <script type="text/template" id="propGroupsDividerTemplate">
   <!-- row divider / property group header in resource view -->
-  <header>{{= value }}</header>
+  <li class="topcoat-list__header"><h3>{{= value }}</h3></li>
 </script>
 
 <script type="text/template" id="mapItButtonTemplate">
@@ -271,14 +271,18 @@
 
 <script type="text/template" id="backButtonTemplate">
   <!-- The UI back button (not the built-in browser one) -->
-  <a target="#" class="back"><i class="ui-icon-chevron-left"></i></a>
+    <button class="topcoat-button-bar__button">
+     <a target="#" class="back"><i class="ui-icon-chevron-left"></i></a>
+    </button>
 </script>
 
 <script type="text/template" id="chatButtonTemplate">
   <!-- Button that opens up a chat page -->
+    <button class="topcoat-button-bar__button">
   <a href="{{= url || '#' }}"><i class="ui-icon-comments-alt"></i>
     {{= '<span class="menuBadge">{0}</span>'.format(obj.unreadMessages || '') }}
   </a>
+    </button>
 </script>
 
 <script type="text/template" id="videoButtonTemplate">
@@ -288,37 +292,47 @@
 
 <script type="text/template" id="addButtonTemplate">
   <!-- button used for creating new resources -->
+    <button class="topcoat-button-bar__button" style="overflow:visible">
   <a target="#" {{= obj.empty ? 'class="hint--bottom hint--always" data-hint="Add item"' : '' }}><i class="ui-icon-plus-sign"></i></a>
+    </button>
 </script>
 
 <script type="text/template" id="menuButtonTemplate">
   <!-- button that toggles the menu panel -->
+    <button class="topcoat-button-bar__button">
   <a target="#" href="#{{= viewId }}"><i class="ui-icon-reorder"></i>
-    {{= '<span class="menuBadge">{0}</span>'.format(obj.newAlerts || '') }}
+    {{= '<span class="menuBadge" style="top:1rem">{0}</span>'.format(obj.newAlerts || '') }}
   </a>
+  </button>
 </script>
 
 <script type="text/template" id="rightMenuButtonTemplate">
   <!-- button that toggles the object properties panel -->
+    <button class="topcoat-button-bar__button">
   <a target="#" href="#{{= viewId }}"><i class="ui-icon-indent-right"></i></a>{{= '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}
   </a>
+  </button>
 </script>
 
 <script type="text/template" id="loginButtonTemplate">
   <!-- button that summons the login popup -->
-  <a target="#"><i class="ui-icon-signin"></i></a>
+  <button class="topcoat-button-bar__button" style="width:100%">
+    <a target="#"><i class="ui-icon-signin"></i></a>
+  </button>
 </script>
 
 <script type="text/template" id="loginPopupTemplate">
   <!-- login popup with various social network based logins -->
   {{ var canDismiss = typeof dismissible === 'undefined' || dismissible == true; }}
-  <section id="login_popup" role="region" class="loginPopup">
+  <section id="login_popup" role="region" style="position:absolute; top:15%; padding-top:0.5rem; border:1px solid #aaa; border-radius:1rem; z-index:1000000; background:#cccccc;width:auto;">
   <ul class="compact">
     <h4 style="margin:10px 0;color:#757575;" id="loginMsg">{{= msg }}</h4>
+    <!--a href="#" data-cancel="cancel" data-rel="back" data-role="button" data-theme="{{= G.theme.menu }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a-->
+    
     {{ _.forEach(nets, function(net) { }} 
-<li>
-    <a role="button" href="{{= net.url }}" class="lpButton" {{= net.name == 'Facebook' ? ' target="_top"' : '' }}>
-      <i class="big_symbol 
+<li style="padding:0;border-bottom:none;">
+    <a role="button" href="{{= net.url }}" style="text-align:center;border-radius:1rem;width:85%;font-weight:bold;" {{= net.name == 'Facebook' ? ' target="_top"' : '' }}>
+        <i style="padding-top:0.7rem" class="big_symbol 
       {{ if(net.name == "Facebook") { }} ui-icon-facebook-sign {{ } }}
       {{ if(net.name == "Google") { }} ui-icon-google-plus-sign {{ } }}
       {{ if(net.name == "Twitter") { }} ui-icon-twitter-sign {{ } }}
@@ -326,7 +340,7 @@
       {{ if(net.name == "Live") { }} ui-icon-live-sign {{ } }}
         ">
        </i>
-     <span>{{= net.name }}</span>
+     {{= net.name }}
     </a>
 </li>
     {{ }); }}
@@ -387,14 +401,10 @@
   <!-- the page header, including buttons and the page title, used for all pages except the home page -->
   <div id="callInProgress"></div>
   <div id="header" {{= obj.style ? style + ';z-index:1000;': 'style="z-index:1000;"' }} {{= obj.more || '' }} >
-    <div class="hdr">
-    <section role="region">
-      <header>
-      <ul id="headerUl">
+    <section class="component">
+      <ul  id="headerUl" class="topcoat-button-bar" style="width:100%">
       </ul>
-      </header>
     </section>
-    </div>
   </div>
   <div id="buttons">  
     {{= this.categories ? '<div style="margin:10px 0 0 10px; float:left"><a id="categories" href="#"><i class="ui-icon-tags"></i></a></div>' : '' }} 
@@ -402,37 +412,37 @@
     <div id="name" class="resTitle" {{= this.categories ? 'style="width: 100%;background:#757575;"' : 'style="min-height: 20px;background:#757575;"' }} align="center">
       <h4 id="pageTitle" style="font-weight:normal;">{{= this.title }}</h4>
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
-        <button style="max-width:200px; display: inline-block;" id="doTryBtn">
+        <button style="max-width:200px; display: inline-block;" id="doTryBtn" class="topcoat-button--cta">
           {{ if (obj.tryApp) { }}
               {{= tryApp }}
           {{ } }}
         </button>
-        <button style="max-width:200px; display: inline-block;" id="forkMeBtn">
+        <button style="max-width:200px; display: inline-block;" id="forkMeBtn" class="topcoat-button--cta">
           {{ if (obj.forkMeApp) { }}
               {{= forkMeApp }}
           {{ } }}
         </button>
-        <button style="max-width:400px;" id="publishBtn" class="headerSpecialBtn">
+        <button style="max-width:400px;" id="publishBtn" class="headerSpecialBtn topcoat-button--cta">
           {{ if (obj.publishApp) { }}
               {{= publish }}
           {{ } }}
         </button>
-        <button style="max-width:200px;" id="testPlugBtn" class="headerSpecialBtn">
+        <button style="max-width:200px;" id="testPlugBtn" class="headerSpecialBtn topcoat-button--cta">
           {{ if (obj.testPlug) { }}
               {{= testPlug }}
           {{ } }}
         </button>
-        <button style="max-width:200px;" id="installAppBtn"  class="headerSpecialBtn">
+        <button style="max-width:200px;" id="installAppBtn"  class="headerSpecialBtn topcoat-button--cta">
           {{ if (obj.installApp) { }}
             {{= installApp }}
           {{ } }}
         </button>
-        <button style="max-width:320px;" id="enterTournamentBtn" class="headerSpecialBtn">
+        <button style="max-width:320px;" id="enterTournamentBtn" class="headerSpecialBtn topcoat-button--cta">
           {{ if (obj.enterTournament) { }}
               {{= enterTournament }}
           {{ } }}
         </button>
-        <button style="max-width:320px;" id="resetTemplateBtn" class="headerSpecialBtn">
+        <button style="max-width:320px;" id="resetTemplateBtn" class="headerSpecialBtn topcoat-button--cta">
           {{ if (obj.resetTemplate) { }}
               {{= resetTemplate }}
           {{ } }}
@@ -444,19 +454,19 @@
 
 <script type="text/template" id="menuP">
   <!-- Left-side slide-out menu panel -->
-  <ul class="menuItems" id="menuItems">
+  <ul id="menuItems" class="topcoat-list__container menuItems">
   </ul>
 </script>  
 
 <script type="text/template" id="rightMenuP">
   <!-- Right-side slide-out menu panel -->
-  <ul id="rightMenuItems" class="menuItems">
+  <ul id="rightMenuItems"  class="topcoat-list__container menuItems">
   </ul>
 </script>  
 
 <script type="text/template" id="menuItemTemplate">
   <!-- one item on the left-side slide-out menu panel -->
-  <li style="{{= obj.image ? 'padding-top: 0;padding-right:0px;padding-bottom: 7px;' : 'padding-bottom:0px;' }}"  id="{{= obj.id ? obj.id : G.nextId() }}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
+  <li style="{{= obj.image ? 'padding-top: 0;padding-right:0px;padding-bottom: 7px;' : 'padding-bottom:0px;' }}"  id="{{= obj.id ? obj.id : G.nextId() }}" class="topcoat-list__item{{= obj.cssClass ? ' ' + cssClass : '' }}" 
       {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl) + '"' : '' }} >
     
     <!-- {{ if (!obj.homePage) { }} -->   
@@ -469,7 +479,7 @@
     {{ } }}
     /> 
     <!-- {{ } }} -->
-    <div class="gradientEllipsis mi1" style="min-height:38px;max-width:100%;font-size:18px;margin-left:15px;{{= obj.image ? 'padding-top:10px;' : '' }}" 
+    <div style="min-height:38px;max-width:100%;font-size:18px;margin-left:15px;{{= obj.image ? 'padding-top:10px;' : '' }}" 
       {{ if (obj.data) {                              }}
       {{   for (var d in data) {                      }}
       {{=    ' data-{0}="{1}"'.format(d, data[d])     }}
@@ -485,15 +495,15 @@
     </div>
     
     {{ if (obj.icon  &&  !obj.homePage) { }}
-      <i class="ui-icon-{{= icon }} home"></i>
+      <i style="position:absolute;right:1.5rem;font-size:2rem;" class="ui-icon-{{= icon }} home"></i>
     {{ }               }}
   </li>
 </script>
 
 <script type="text/template" id="menuItemNewAlertsTemplate">
   <!-- Notifications item on the left-side slide-out menu panel -->
-  <li class="mi" {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }} data-href="{{= pageUrl }}">
-    <div style="margin:15px 0 0 15px;"  id="{{= typeof id === 'undefined' ? G.nextId() : id}}">
+  <li class="topcoat-list__item{{= typeof cssClass == 'undefined' ? '' : ' ' + cssClass }}" data-href="{{= pageUrl }}">
+    <div style="margin-top:15px;min-height:38px;max-width:100%;font-size:18px;margin-left:15px;position:relative;"  id="{{= typeof id === 'undefined' ? G.nextId() : id}}">
       {{= title }}   <span class="acounter">{{= newAlerts }}</span> 
     </div>
   </li>
@@ -501,7 +511,7 @@
 
 <script type="text/template" id="homeMenuItemTemplate">
   <!-- app home page menu item -->
-  <li {{= obj.icon ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}  id="{{= typeof id == 'undefined' ? 'home123' : id }}">
+  <li class="topcoat-list__item{{= obj.cssClass ? '' : ' ' + cssClass }}"  id="{{= typeof id == 'undefined' ? 'home123' : id }}">
     <img src="{{= typeof image != 'undefined' ? image : G.blankImgDataUrl }}" style="float: right;" /> 
     <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} target="#">
       {{= title }}
@@ -511,19 +521,20 @@
 
 <script type="text/template" id="propRowTemplate">
   <!-- wrapper for one row on a list page (short) -->
-  <li data-shortname="{{= shortName }}" {{= obj.rules || '' }}><p>{{= name }}<div style="position:absolute; right:1.5rem;top:1rem; font-weight: normal;">{{= value }}</div></p></li>
+  <li data-shortname="{{= shortName }}" class="topcoat-list__item" {{= obj.rules || '' }}>{{= name }}<div style="float:right;font-weight: normal;">{{= value }}</div></li>
 </script>
 
 <script type="text/template" id="propRowTemplate2">
   <!-- wrapper for one row on a list page (long) -->
-  <li data-shortname="{{= shortName }}" {{= obj.rules || '' }}><p>{{= name }}<div style="margin-left:1.5rem;font-weight: normal;">{{= value }}</div></p></li>
+  <li data-shortname="{{= shortName }}" class="topcoat-list__item" {{= obj.rules || '' }}><div>{{= name }}<div style="margin-left:1.5rem;font-weight: normal;">{{= value }}</div></div></li>
 </script>
 
 <script type="text/template" id="menuHeaderTemplate">
   <!-- menu header -->
-  <li {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} class="mi" style="margin: 15px 0 0 15px;"><i class="ui-icon-" + {{= icon }}"></i>
+  <li class="topcoat-list__item{{= obj.cssClass ? ' ' + cssClass : '' }}" style="min-height:38px;max-width:100%;font-size:18px;padding:15px 0 0 15px;"><div><i class="ui-icon-" + {{= icon }}"></i>
     {{= title }}
-  </li>
+  </div
+  ></li>
 </script>
 
 <!-- EDIT TEMPLATES -->

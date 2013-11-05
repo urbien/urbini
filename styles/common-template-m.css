@@ -214,7 +214,19 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   color: #999999;
   font-size: 11px;
 }
-#comments {padding-top: 12px; padding-bottom: 12px;}
+#comments {
+  padding-top: 12px; 
+  padding-bottom: 12px;
+  font-size: 14px;
+}
+#comments .listPage  tr {
+  height:60px;
+}
+
+#comments tr td:nth-child(2) {
+  padding-left:63px;
+}
+
 .commentList {
   background-color: &[PrimaryColor_4];; 
   border-bottom: #ccc; 
@@ -229,7 +241,9 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   border-bottom: 1px solid rgba(0, 0, 0, .05);
 }
 #resourceViewHolder .cp {text-decoration: none; font-size: 14px; }
+
 .commentList .cl { padding-left: 5px; }
+
 .commentList a { color: #f47414; font-size: 11px; text-decoration: none; font-weight: bold; }
 .commentListDate {
   color: #999999;
@@ -946,7 +960,7 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 }
 
 .thumb-gal {
-  padding: 10px 0px 0px 0px;
+  padding: 10px 0px 0px 5px;
   width: 100%;
   white-space: nowrap;
 }
@@ -975,6 +989,10 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   z-index: 10001;
   position:absolute;
 }
+.phOverlay h3 {
+  font-size:14px;
+  margin-left: -5px;
+}
 .phOverlay {
   position:absolute;
   bottom:-1px;
@@ -994,12 +1012,12 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   height: auto;
 }
 
-  .thumb-gal-item {
-    width: 140px; /* 50% incl. 2 x 2% margin */
-    height: 140px;
-    #margin: 9px 1.7%;
-    #border-width: 0;
-  }
+.thumb-gal-item {
+  width: 140px; /* 50% incl. 2 x 2% margin */
+  height: 140px;
+  #margin: 9px 1.7%;
+  #border-width: 0;
+}
 @media all and (min-width: 298px) {
   
   .connect i { font-size:16px; color: #888;}
@@ -1114,11 +1132,13 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   */
   .ui-listview .connect { float: left; top:110px; padding:0px; border:0px; background: none; background-image:none;}
   .connect i { font-size:36px;color: lightgrey;}
+  /*
   .thumb-gal-item {
     width: 232px;
     height: 232px;
     #margin: 9px 1.2%;
     #border-width: 0; /* The 1px border would break the layout so we set it on .ui-btn-inner instead. */
+    */
   }
   /*  
   .ui-listview .ui-li-has-thumb .ui-li-heading {
@@ -1174,7 +1194,10 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 }
 
 .listPage li > div {
-  margin: 0.3rem;
-  font-size: 1.4rem;
+ /* margin: 0.3rem; */
+  font-size: 18px;
 }
 
+div {
+  font-family: Helvetica, Ariel, sans-serif;
+}

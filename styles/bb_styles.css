@@ -2,7 +2,15 @@ html {
   font-size: 10px;
 }
 
-[data-role="page"] { top: 0; left: 0; width: 100%; min-height: 100%; position: absolute; border: 0; }
+[data-role="page"] { 
+  top: 0; 
+  left: 0;
+ /* bottom: 0; */ 
+  width: 100%; 
+  min-height: 100%; 
+  position: absolute; 
+  border: 0; 
+}
 
 [data-type="list"] {
   padding: 0;
@@ -19,7 +27,12 @@ html {
 .menuBadge {
   top:10px;
 }
-
+#name h4 {
+  font-weight:normal;
+  margin: 15px 0 7px 0;
+  font-size:2.3rem;
+  color:#eee;
+}
 .hdr {
   width:100%;height:40px
 }
@@ -92,7 +105,9 @@ button {
   width: 90%;
   height: auto; 
 }
-
+#mainGroup div {
+  height: 30px;
+}
 #mainGroup {
   width:50%; 
   float:right;
@@ -118,10 +133,17 @@ button {
 }
 .counter {
   position:absolute;
-  right:20px;
   margin-top:-1rem;
-  height:40%;
   font-size:1.4rem;
+  
+  height:3rem; 
+  display:inline-block;
+  
+  background:#eee;
+  right: 0;
+  top: 0;
+  padding: 1px 7px;
+  border-radius:1rem;
   
 }
 
@@ -203,19 +225,20 @@ li label.ui-input-text, li label.select {
   margin: 0 2% 0 0 ;
   overflow: visible;
 /*  vertical-align: top; */
-  width: 18%;
+/*  width: 18%; */
 }
 /*
 div.ui-input-text, input.ui-input-text {
   width: 78%;
   display: inline-block;
   position:relative;
-  border-rdius: 1rem
+  border-radius: 1rem
 }
 */
+
 div.ui-input-text, input.ui-input-text, textarea {
   width: 100%;
-  display: inline-block;
+  display: block;
   position: relative;
   border-radius: 1rem;
   padding: 0.7rem;
@@ -225,10 +248,11 @@ div.ui-input-text, input.ui-input-text, textarea {
 
 textarea {
   border-radius: 1rem;
+  padding: 0.9rem 0 0 0.9rem;
 }
 
 div.ui-input-text input.ui-input-text {
-  padding: 0;
+  padding: 0.9rem 0 0 0.9rem;
 }
 fieldset {
   background: none;
@@ -251,19 +275,38 @@ fieldset {
 }
 
 .editList li {
-  padding: 1rem 1.5rem; 
+  padding: 0.5rem 1.5rem; 
   min-height: 2rem;
   font-size: 1.6rem;
 }
+
 .editList select {
-  width: 78%;
   border: 1px solid #bbb;
   padding: 0.5rem;
   font-size: 1.6rem;
+  width: 100%;
+}
+
+@media all and (min-width:420px) {
+  .editList select {
+    width: 76%;
+    border: 1px solid #bbb;
+    padding: 0.5rem;
+    font-size: 1.6rem;
+  }
+  li label.ui-input-text, li label.select {
+    display: inline-block;
+    width: 18%;
+  }
+  div.ui-input-text, input.ui-input-text, textarea {
+    display: inline-block;
+    width: 75%;
+  }
 }
 
 fieldset div {
-  padding: 2rem;
+/*  padding: 2rem; */
+  margin: 1rem -.5px 0 -.5rem;
 } 
 
 label.pack-switch input + span {
@@ -271,11 +314,26 @@ label.pack-switch input + span {
 }
 
 fieldset#submitBtns {
-  text-align:center;background:#d0d0d0;border:none;
+  text-align:center;
+  background:#d0d0d0;
+  border:none;
   margin:0;
 }
 fieldset#submitBtns div {
-  width:40%;display:inline-block;
+  width:50%;
+  display:inline-block;
+}
+
+fieldset#submitBtns div:first-child {
+  float:left;
+}
+
+fieldset#submitBtns div:nth-child(2) {
+  float:right;
+}
+fieldset#submitBtns div:nth-child(2) button {
+  color: #fff;
+  background: #333;
 }
 a {
   color: #333333;
@@ -309,4 +367,33 @@ a {
   top:1rem;
   right:0.5rem;
   font-size:22px;
+}
+.listPage li > div {
+  margin: 0.3rem;
+  font-size: 1.6rem;
+}
+#login_popup li a[role="button"] {
+  padding:0;
+  width:99.5%;
+  text-align:center;
+  border-radius:1rem;
+  font-weight:bold;
+}
+#login_popup li a[role="button"] span {
+  margin-left: -1rem;
+}
+
+#login_popup li a[role="button"]:after {
+  background:none;
+}
+#login_popup li {
+  padding:0;
+  border-bottom:none;
+}
+section#login_popup {
+  background:#f9f9f9;position:absolute; top:5%; padding-top:0.5rem; border:1px solid #aaa; border-radius:1rem; z-index:1000000; width:auto;
+}
+#login_popup li a[role="button"] i {
+  padding-top:0.7rem;
+  margin-left:0.7rem;
 }
