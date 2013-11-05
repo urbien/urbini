@@ -294,7 +294,7 @@ define('views/RightMenuPanel', [
         
         this.$el.html(this.template({}));      
         frag = document.createDocumentFragment();
-        uri = U.makePageUrl('make', 'aspects/tags/Vote', {votable: G.currentApp._uri, makeId: G.nextId, $title: U.makeHeaderTitle(likeVerb, G.currentApp.davDisplayName)});
+        uri = U.makePageUrl('make', 'aspects/tags/Vote', {votable: G.currentApp._uri, '-makeId': G.nextId, $title: U.makeHeaderTitle(likeVerb, G.currentApp.davDisplayName)});
         U.addToFrag(frag, this.menuItemTemplate({title: likeVerb, pageUrl: uri, icon: 'heart', homePage: 'y'}));
 
         if (!G.currentUser.guest) {
@@ -302,7 +302,7 @@ define('views/RightMenuPanel', [
           U.addToFrag(frag, this.menuItemTemplate({title: icons, mobileUrl: U.makePageUrl('social', '', {}), homePage: 'y'}));
         }
 
-        uri = U.makePageUrl('make', 'model/portal/Comment', {$editCols: 'description', forum: G.currentApp._uri, makeId: G.nextId, $title: U.makeHeaderTitle(commentVerb, G.currentApp.davDisplayName)});
+        uri = U.makePageUrl('make', 'model/portal/Comment', {$editCols: 'description', forum: G.currentApp._uri, '-makeId': G.nextId, $title: U.makeHeaderTitle(commentVerb, G.currentApp.davDisplayName)});
         U.addToFrag(frag, this.menuItemTemplate({title: commentVerb, pageUrl: uri, icon: 'comments', homePage: 'y'}));
         var isAllowedToEdit = G.currentUser != 'guest'  &&  (G.currentUser._uri == G.currentApp._creator  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'));
         if (isAllowedToEdit) {

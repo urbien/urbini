@@ -242,9 +242,7 @@ define('utils', [
     },
 
     getTranslationString: function(position) {
-      var x, y, z, 
-          translation;
-      
+      var x, y, z;
       if (typeof position == 'object') {
         x = position.x;
         y = position.y;
@@ -256,8 +254,7 @@ define('utils', [
         z = arguments[2];
       }
       
-      translation = 'translate(' + (x || 0) + 'px, ' + (y || 0) + 'px) translateZ(' + (z || 0) + 'px)' + (isFF ? ' rotate(0.01deg)' : '');
-      return translation;
+      return 'translate(' + (x || 0) + 'px, ' + (y || 0) + 'px) translateZ(' + (z || 0) + 'px)' + (isFF ? ' rotate(0.01deg)' : '');
 //      return 'translate({0}px, {1}px)'.format(position.X, position.Y);
 //      return 'translate({0}px, {1}px) translateZ({2}px) {3}'.format(x || 0, y || 0, z || 0, isFF ? 'rotate(0.01deg)' : '');
 //      return 'translate({0}px, {1}px)'.format(x || 0, y || 0);
