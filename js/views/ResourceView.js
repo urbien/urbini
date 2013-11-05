@@ -98,14 +98,15 @@ define('views/ResourceView', [
     showOther: function(e) {
       var t = e.target;
       var tagName = t.tagName.toLowerCase();
-      if (tagName == 'header'  &&  t.parentElement.tagName.toLowerCase() == 'section') {
+      var wl = G.currentApp.widgetLibrary
+      if (wl  &&  wl != 'Jquery Mobile') {
         Events.stopEvent(e);
         var ul = $(t.parentElement).find('ul');
         var cl = ul.attr('class');
         if (!cl  ||  cl.indexOf('hidden') == -1)
-          ul.attr('class', 'hidden');
+          ul.addClass('hidden');
         else
-          ul.removeAttr('class');
+          ul.removeClass('hidden');
         return;
       }
     },
@@ -315,16 +316,19 @@ define('views/ResourceView', [
         if (!willShow(res, prop)) //(!U.isPropVisible(res, prop))
           continue;
   
-//        var wl = G.currentApp.widgetLibrary;
-//        var isJQM = !wl  ||  wl == 'Jquery Mobile';
+//        var wl = G.currentApp.getWidgetLibrary();
+//        var isJQM = au!wl  ||  wl == 'Jquery Mobile';
+//        var isBB = !isJQM  &&  wl == 'Building Blocks';
         var isJQM = G.isJQM();
+        var isBB = G.isBB();
         if (numDisplayed  &&  !groupNameDisplayed) {
-          var wl = G.currentApp.widgetLibrary;
+//          var wl = G.currentApp.widgetLibrary;
           if (isJQM)
             otherLi = '<li data-role="collapsible" id="other" data-inset="false" style="border:0px;' + (G.theme.backgroundImage ? 'background-image: url(' + G.theme.backgroundImage + ')' : '') + '" data-content-theme="' + G.theme.list + '"  data-theme="' + G.theme.list + '"><h3 style="margin:0px;">Other</h3><ul data-inset="true" data-role="listview" style="margin: -10px 0px;">';
+          else if (isBB)
+            otherLi = '<section id="other"><header style="margin:0px;cursor:pointer;"><i class="ui-icon-plus-sign"></i>&#160;Other</header><ul class="other hidden">';
           else 
-            otherLi = '<section id="other"><header style="margin:0px;cursor:pointer;"><i class="ui-icon-plus-sign"></i>&#160;Other</header><ul class="hidden">';            
-
+            otherLi = '<li id="other" class="topcoat-list__item"><h3><i class="ui-icon-plus-sign"></i>&#160;Other</h3><ul class="topcoat-list__container hidden">';
   //        this.$el.append('<li data-role="collapsible" data-content-theme="c" id="other"><h2>Other</h2><ul data-role="listview">'); 
           groupNameDisplayed = true;
         }
@@ -351,7 +355,7 @@ define('views/ResourceView', [
       }
       
       if (otherLi) {
-        if (isJQM)
+        if (!isBB)
           otherLi += "</ul></li>";
         else
           otherLi += "</ul></section>";
