@@ -117,6 +117,8 @@ define('views/ResourceMasonryItemView', [
       if (options && options.renderToHtml) {
         var tagName = this.tagName || 'div';
         this._html = '<{0} class="{1}">{2}</{0}>'.format(tagName, this.className, html);
+//        this._html = '<{0}>{1}</{0}>'.format(tagName, html);
+//        this._html = html; 
         return this;
       }
       else
@@ -247,7 +249,15 @@ define('views/ResourceMasonryItemView', [
         var oWidth  = m.get('ImageResource.originalWidth'); //atts.originalWidth;
         var oHeight = m.get('ImageResource.originalHeight');
         if (typeof oWidth != 'undefined' && typeof oHeight != 'undefined') {
-          var ratio = (oWidth > this.IMG_MAX_WIDTH) ? this.IMG_MAX_WIDTH / oWidth : 1;
+          var ratio = 1;
+          if (oWidth > oHeight) {
+            if (oWidth > this.IMG_MAX_WIDTH) 
+              ratio = this.IMG_MAX_WIDTH / oWidth;
+          }
+          else {
+            if (oHeight > this.IMG_MAX_WIDTH) 
+              ratio = this.IMG_MAX_WIDTH / oHeight;
+          }
           var iW = Math.floor(oWidth * ratio);
           var iH = Math.floor(oHeight * ratio);
           tmpl_data['imgWidth'] = iW;
@@ -366,7 +376,7 @@ define('views/ResourceMasonryItemView', [
       if (!this.postRender) {
         this.postRender = function() {        
     //      this.$el.attr('style', 'width:' + (this.IMG_MAX_WIDTH + 20) + 'px !important;');
-          Q.write(function() {
+//          Q.write(function() {
             this.$el.attr('style', 'width:' + (this.IMG_MAX_WIDTH + 17) + 'px !important;' + (divHeight ? 'height:' +  divHeight + 'px;' : '')); 
       //      if (!tmpl_data['top'])
       //        this.$el.find('.galleryItem_css3 img').attr('style', 'max-width:' + this.IMG_MAX_WIDTH + 'px !important;');
@@ -383,7 +393,7 @@ define('views/ResourceMasonryItemView', [
               tmpl_data['margin-left'] = 0 - dW;
               */ 
             }
-          }, this);
+//          }, this);
         }.bind(this);
       }
       
