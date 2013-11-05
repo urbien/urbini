@@ -4154,7 +4154,7 @@ define('utils', [
     getDisplayNameProps: '_displayNameProps', 
     getPrimaryKeys: '_primaryKeys', 
     getModelImageProperty: '_imageProperty',
-    isRsourceProp: '_isResourceProp',
+    isResourceProp: '_isResourceProp',
     getPropCloneOf: '_clonedProperties',
     getPositionProps: '_positionProperties',
     isInlined: '_isInlined',

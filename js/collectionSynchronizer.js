@@ -172,8 +172,10 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
     }
           
     for (var key in filter) {
-      var val = filter[key];
-      if (U.isResourceProp(props[key]) && U.isTempUri(val)) {
+      var val = filter[key],
+          prop = props[key];
+      
+      if (prop && U.isResourceProp(prop) && U.isTempUri(val)) {
         temps[key] = val;
       }
     }
