@@ -60,7 +60,6 @@ define('views/ResourceListItemView', [
       
       if (options.swatch)
         elAttrs["data-theme"] = options.swatch;
-        
 //      if (this.resource.isA("Buyable"))
 //      else
 //        this.$el.attr("data-icon", "chevron-right");
@@ -426,7 +425,7 @@ define('views/ResourceListItemView', [
       if (oW  &&  oH  &&  (typeof atts[oW] != 'undefined' &&  typeof  atts[oH] != 'undefined')) {
         this.$el.addClass("image_fitted");
         
-        var clip = U.clipToFrame(80, 80, m.get(oW), m.get(oH), maxDim);
+        var clip = U.clipToFrame(80, 80, m.get(oW), m.get(oH), maxDim, 80);
         if (clip) {
           json.top = clip.clip_top;
           json.right = clip.clip_right;
@@ -631,7 +630,7 @@ define('views/ResourceListItemView', [
   
             if (prop1.backLink) { 
               if (atts[p].count) 
-                json['showCount'] = p;
+                json['showCount'] = atts[p];
               continue;
             }
             if (first) {
@@ -655,7 +654,7 @@ define('views/ResourceListItemView', [
         }
         if (prop.backLink) { 
           if (atts[pName].count) 
-            json['showCount'] = pName;
+            json['showCount'] = atts[pName];
           continue;
         }
 
@@ -709,10 +708,11 @@ define('views/ResourceListItemView', [
       
       var oW, oH;
       var type = vocModel.type;
-      var img, dn, rUri, h, w, ab;
+      var img, dn, rUri, h, w, ab, prop;
       
       if (cloneOf == 'Intersection.a') {
-        ab = atts[cloneOf];
+        prop = clonedX.a;
+        ab = atts[prop];
         var imageP = clonedX.aThumb;
         var hasAImageProps;
         if (imageP  &&  imageP.length != 0) {
@@ -737,7 +737,8 @@ define('views/ResourceListItemView', [
         oW = clonedX.aOriginalWidth;
       }
       else {
-        ab = atts[clonedX.b];
+        prop = clonedX.a;
+        ab = atts[prop];
         var imageP = clonedX.bThumb;
         if (imageP  &&  imageP.length != 0)
           img = atts[imageP]; 
@@ -751,6 +752,13 @@ define('views/ResourceListItemView', [
     //        img = json[U.getCloneOf(vocModel, 'Intersection.bFeatured')] || json[U.getCloneOf(vocModel, 'Intersection.bThumb')];
         oH = clonedX.bOriginalHeight;
         oW = clonedX.bOriginalWidth;
+      }
+      var range = meta[prop].range;
+      var rm = U.getModel(U.getLongUri1(range));
+      if (U.isA(rm, 'ImageResource')) {
+        var rmeta = rm.properties;
+        var imgP = imageP  &&  imageP.indexOf('Featured') == -1 ? U.getCloneOf(rm, 'ImageResource.smallImage') : U.getCloneOf(rm, 'ImageResource.mediumImage'); 
+        maxDim = imgP  &&  rmeta[imgP].maxImageDimension;
       }
       if (img) {
         w = atts[oW];
