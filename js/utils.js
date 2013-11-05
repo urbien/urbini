@@ -1906,9 +1906,16 @@ define('utils', [
       var hasImgs;
 //      var isIntersection = !hasImgs  &&  this.isA(vocModel, 'Intersection'); 
       var isIntersection = this.isA(vocModel, 'Intersection'); 
+      var isView = window.location.hash  &&  window.location.hash.indexOf('#view/') == 0;
       if (isIntersection) {
-        aCloneOf = U.getCloneOf(vocModel, 'Intersection.aThumb')[0] ||  U.getCloneOf(vocModel, 'Intersection.aFeatured')[0];
-        bCloneOf = U.getCloneOf(vocModel, 'Intersection.bThumb')[0]  ||  U.getCloneOf(vocModel, 'Intersection.bFeatured')[0];
+        if (isView) {
+          aCloneOf = U.getCloneOf(vocModel, 'Intersection.aFeatured')[0]  ||  U.getCloneOf(vocModel, 'Intersection.aThumb')[0];
+          bCloneOf = U.getCloneOf(vocModel, 'Intersection.bFeatured')[0]  ||  U.getCloneOf(vocModel, 'Intersection.bThumb')[0];
+        }
+        else {
+          aCloneOf = U.getCloneOf(vocModel, 'Intersection.aThumb')[0]  ||  U.getCloneOf(vocModel, 'Intersection.aFeatured')[0];
+          bCloneOf = U.getCloneOf(vocModel, 'Intersection.bThumb')[0]  ||  U.getCloneOf(vocModel, 'Intersection.bFeatured')[0];
+        }
         if (aCloneOf)
           return aCloneOf;
         if (bCloneOf)
@@ -1916,30 +1923,49 @@ define('utils', [
       }
       
       if (U.isA(vocModel, 'ImageResource')) {
-        var isMasonry = U.isMasonry(vocModel)  &&  U.isMasonryModel(vocModel);
-        cloneOf = isMasonry ? U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0] : U.getCloneOf(vocModel, 'ImageResource.smallImage')[0] || U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
-        if (isMasonry  &&  cloneOf) {
-          var viewport = G.viewport;
-          var ww = viewport.width - 40;
-          if (ww < viewport.height) {
-            if (ww <= 340) 
-              cloneOf = U.getCloneOf(vocModel, 'ImageResource.bigMedium320')[0];
-            else  if (ww <= 380) 
-              cloneOf = U.getCloneOf(vocModel, 'ImageResource.bigMedium360')[0];
-            else if (ww <= 420)  //  &&  ww <= 400) {
-              cloneOf = U.getCloneOf(vocModel, 'ImageResource.bigMedium400')[0];
+        var isMasonry = !isView  &&  U.isMasonry(vocModel)  &&  U.isMasonryModel(vocModel);
+        var cloneOfTmp = isMasonry ? U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0]  ||  U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0] 
+                                   : (isView  ?  U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0] || U.getCloneOf(vocModel, 'ImageResource.bigImage')[0] : U.getCloneOf(vocModel, 'ImageResource.smallImage')[0] || U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0]);
+        if (cloneOfTmp) {
+          if (isMasonry) {
+            var viewport = G.viewport;
+            var ww = viewport.width - 40;
+            if (ww < viewport.height) {
+              if (ww <= 340) 
+                cloneOf = U.getCloneOf(vocModel, 'ImageResource.bigMedium320')[0];
+              else  if (ww <= 380) 
+                cloneOf = U.getCloneOf(vocModel, 'ImageResource.bigMedium360')[0];
+              else if (ww <= 420)  //  &&  ww <= 400) {
+                cloneOf = U.getCloneOf(vocModel, 'ImageResource.bigMedium400')[0];
+            }
+            else {
+              if (ww > 460  &&  ww <= 630)
+                cloneOf = U.getCloneOf(vocModel, 'ImageResource.masonry533_h')[0];
+              else if (ww > 630  &&  ww <= 660)
+                cloneOf = U.getCloneOf(vocModel, 'ImageResource.masonry680_h')[0];
+            }
           }
-          else {
-            if (ww > 460  &&  ww <= 630)
-              cloneOf = U.getCloneOf(vocModel, 'ImageResource.masonry533_h')[0];
-            else if (ww > 630  &&  ww <= 660)
-              cloneOf = U.getCloneOf(vocModel, 'ImageResource.masonry680_h')[0];
+          else if (isView) {
+            var ww = $(window).width();
+            if (ww < $(window).height()) {
+              if (ww <= 340) 
+                cloneOf = U.getCloneOf(vocModel, 'ImageResource.bigMedium320')[0];
+              else  if (ww <= 380) 
+                cloneOf = U.getCloneOf(vocModel, 'ImageResource.bigMedium360')[0];
+              else if (ww <= 420)  //  &&  ww <= 400) {
+                cloneOf = U.getCloneOf(vocModel, 'ImageResource.bigMedium400')[0];
+            }
+            else {
+              if (ww > 460  &&  ww <= 630)
+                cloneOf = U.getCloneOf(vocModel, 'ImageResource.masonry533_h')[0];
+              else if (ww > 630  &&  ww <= 660)
+                cloneOf = U.getCloneOf(vocModel, 'ImageResource.masonry680_h')[0];
+            }
+            
           }
-          
           if (!cloneOf)
-            cloneOf = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0] || U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];          
+            cloneOf = cloneOfTmp;          
         }
-        
         if (cloneOf)
           return cloneOf;
       }
@@ -2087,7 +2113,8 @@ define('utils', [
           var isView = href.startsWith("#view/");
 
           if (isDisplayName)
-            val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
+            val = "<span>" + val + "</span>";
+//            val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
           else if (!isView  &&  prop.maxSize > 1000) {
             var color = G.theme.descColor; 
             /*
@@ -2644,22 +2671,36 @@ define('utils', [
       return {x: x, y: y, w: w, h: h};
     },
     
-    clipToFrame: function(frmWidth, frmHeight, oWidth, oHeight, maxDim) {
+    clipToFrame: function(frmWidth, frmHeight, oWidth, oHeight, maxDim, minDim) {
       if (!maxDim)
         return;
       if (oWidth < maxDim  &&  oHeight < maxDim)
         return {clip_top: 0, clip_right: oWidth, clip_bottom: oHeight, clip_left: 0, top: 0, left: 0};
       if (maxDim  &&  (maxDim > frmWidth)) {
         var mdW, mdH;
-        if (oWidth >= oHeight) {
-          mdW = maxDim; 
-          var r = maxDim /oWidth;
-          mdH = Math.floor(oHeight * r); 
+        if (minDim  &&  minDim >= frmWidth) {
+          if (oWidth <= oHeight) {
+            mdW = minDim; 
+            var r = maxDim /oWidth;
+            mdH = Math.floor(oHeight * r); 
+          }
+          else {
+            mdH = minDim; 
+            var r = maxDim /oHeight;
+            mdW = Math.floor(oWidth * r); 
+          }
         }
         else {
-          mdH = maxDim; 
-          var r = maxDim /oHeight;
-          mdW = Math.floor(oWidth * r); 
+          if (oWidth >= oHeight) {
+            mdW = maxDim; 
+            var r = maxDim /oWidth;
+            mdH = Math.floor(oHeight * r); 
+          }
+          else {
+            mdH = maxDim; 
+            var r = maxDim /oHeight;
+            mdW = Math.floor(oWidth * r); 
+          }
         }
         var dW = mdW > frmWidth ? Math.floor((mdW - frmWidth) / 2) : 0;
         var dH = mdH > frmHeight ? Math.floor((mdH - frmHeight) / 2) : 0;    
@@ -4150,7 +4191,7 @@ define('utils', [
     isMasonryModel: '_isMasonryModel', 
     getDisplayNameProps: '_displayNameProps', 
     getPrimaryKeys: '_primaryKeys', 
-    getModelImageProperty: '_imageProperty',
+//    getModelImageProperty: '_imageProperty',
     isResourceProp: '_isResourceProp',
     getPropCloneOf: '_clonedProperties',
     getPositionProps: '_positionProperties',
