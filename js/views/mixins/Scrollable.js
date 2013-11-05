@@ -119,6 +119,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       
       this.onload(this._initScroller.bind(this));
       this.$el.addClass('scrollable');
+      this.$el.css('min-height', $(window).height());
     },
     
     render: function() {
