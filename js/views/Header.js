@@ -383,7 +383,9 @@ define('views/Header', [
       if (this.rendered)
         this.html("");
       
-      if (!res && (U.isAssignableFrom(this.vocModel, G.commonTypes.App) || (U.isA(this.vocModel, 'Taggable')  &&  U.getCloneOf(this.vocModel, 'Taggable.tags').length/*  &&  U.isAssignableFrom(this.vocModel, 'Urbien')*/)))
+      var isTemplates = window.location.hash && window.location.hash.indexOf('#templates/') != -1; 
+      
+      if (!isTemplates  &&  !res && (U.isAssignableFrom(this.vocModel, G.commonTypes.App) || (U.isA(this.vocModel, 'Taggable')  &&  U.getCloneOf(this.vocModel, 'Taggable.tags').length/*  &&  U.isAssignableFrom(this.vocModel, 'Urbien')*/)))
         this.categories = true;
       else if (!res) {
         var hash = window.location.hash;
@@ -464,7 +466,7 @@ define('views/Header', [
         this.$el.find('#headerButtons').attr('class', 'hidden');
 //        
       }
-      if (!G.currentApp.widgetLibrary  || G.currentApp.widgetLibrary != 'Building Blocks') {
+      if (isJQM) {
         if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges) {
           this.$el.find('#name').removeClass('resTitle');
           if (this.resource  &&  !this.isEdit) {
@@ -489,8 +491,12 @@ define('views/Header', [
       }
       for (var btn in btns) {
         var badge = btns[btn].$el.find('.menuBadge');
-        if (badge  &&  badge.length)
-          badge.css('left', Math.floor(btnWidth/2) + '%');
+        if (badge  &&  badge.length) {
+          if (G.currentApp.widgetLibrary  &&  G.currentApp.widgetLibrary == 'Topcoat')
+            badge.css('left', '50%');
+          else
+            badge.css('left', Math.floor(btnWidth/2) + '%');
+        }
       }
       // HACK
       // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view 
@@ -504,6 +510,8 @@ define('views/Header', [
 //      this.refreshCallInProgressHeader();
       if (isJQM)
         this.restyleNavbar();
+      if (G.isTopcoat())
+        this.$el.find('li').attr('class', 'topcoat-button-bar__item');
       
       this.finish();      
       return this;
