@@ -47,7 +47,6 @@ define('views/IntersectionListView', [
         this.el.dataset.viewid = this.cid;
         this.$el.removeClass("hidden")
                 .trigger("create");
-        this.$el.find('li').attr('style', 'padding:0.3rem 0;');
       }
     }
   }, {
