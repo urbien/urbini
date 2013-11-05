@@ -105,16 +105,17 @@ define('globals', function() {
       browser[ browserMatch.browser ] = true;
       browser.version = browserMatch.version;
     }
-    
+
     browser.chrome = browser.webkit && !!window.chrome;
     browser.safari = browser.webkit && !window.chrome;
-    browser.ios = !!navigator.userAgent.match(/iPad|iPhone|iPod/i);
-    var mobile = browser.ios || navigator.userAgent.match(/(Android|webOS|BlackBerry|IEMobile|Opera Mini)/) || 'ontouchstart' in window;
+    browser.ios = navigator.userAgent.match(/iPad|iPhone|iPod/i);
+    var mobile = browser.ios || navigator.userAgent.match(/(Android|webOS|BlackBerry|IEMobile|Opera Mini|Opera Mobi)/);
     if (mobile) {
       browser.mobile = true;
       browser[mobile[1].toLowerCase()] = true;
     }
 
+    browser.ios = !!browser.ios;
     browser.touch = 'ontouchstart' in window;
     browser.firefox = browser.mozilla;
     browser.name = browser.chrome ? 'chrome' : browser.firefox ? 'firefox' : browser.safari ? 'safari' : 'unknown';
@@ -171,6 +172,8 @@ define('globals', function() {
     switch (name) {
 //    case '@widgets':
 //      return !isBB;
+    case '../templates_topcoat.jsp':
+      return G.isTopcoat();
     case '../templates_bb.jsp':
       return G.isBB();
     case 'lib/IndexedDBShim':
@@ -1320,6 +1323,9 @@ define('globals', function() {
     isBB: function() {
       return G.getWidgetLibrary().toLowerCase() == 'building blocks';
     },
+    isTopcoat: function() {
+      return G.getWidgetLibrary().toLowerCase() == 'topcoat';
+    },
     getWidgetLibrary: function() {
       return G._widgetLibrary;
     },
@@ -1681,6 +1687,8 @@ define('globals', function() {
 //      if (options.raw && browser.chrome)
 //        xhr.responseType = 'blob';
       var params = options.data;
+      if (url == null || url.slice(url.length - 'null'.length) == 'null')
+        debugger;
       xhr.open(method, url, true);
       if (options.responseType)
         xhr.responseType = options.responseType;

@@ -1,8 +1,9 @@
 //'use strict';
 define('events', [
+  'globals',
   'underscore',
   'backbone'
-], function(_, Backbone) {
+], function(G, _, Backbone) {
   var hammerMap = {
     click: 'tap'
   }
@@ -16,13 +17,26 @@ define('events', [
       e.stopImmediatePropagation();
     },
     getEventName: function(event) {
-      return hammerMap[event] || event;
+      if (!G.browser.touch)
+        return event;
+      
+      var match = event.match(/^(dbl)?click/),
+          newEvent;
+      
+      if (match) {
+        var dbl = match[1] || '';
+        newEvent = 'tap' + event.slice(dbl ? 8 : 5);
+        return dbl + newEvent;
+      }
+      
+      return event;
+//      return hammerMap[event] || event;
     }
   }, Backbone.Events);
 
   // <debug>
-  if (Lablz.DEBUG)
-    Lablz.Events = Events;
+  if (G.DEBUG)
+    G.Events = Events;
   // </debug>
   
   return Events;

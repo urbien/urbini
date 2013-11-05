@@ -79,7 +79,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       _debug: function(e) {
         var args = _.toArray(arguments);
         args.unshift('events', this.TAG, 'HAMMER');
-        G.log('events', this.TAG, 'Hammer', e.type.toUpperCase(), _.now());
+        G.log('events', this.TAG + ' Hammer ' + e.type.toUpperCase() + ' ' + _.now());
       },
       
       hammer: function(options){

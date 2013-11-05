@@ -14,7 +14,7 @@ define('views/MasonryListView', [
   
   return ResourceListView.extend({
     type: 'masonry',
-    _elementsPerPage: 4,
+    _elementsPerPage: Math.round(window.innerWidth / 100 * window.innerHeight / 100) + 3,
     events: {
       'orientationchange': 'reloadMasonry',
       'refresh': 'refresh',
@@ -146,7 +146,7 @@ define('views/MasonryListView', [
       if (this.rendered) {
         if (appended || _.size(updated)) {
           this.$el.imagesLoaded(function() {
-            if (appended)
+            if (appended) 
               self.masonry('appended', appended);
             if (_.size(updated))
               self.masonry('reload');
