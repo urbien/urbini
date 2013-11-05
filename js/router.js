@@ -1510,7 +1510,6 @@ define('router', [
         activated = true;
         view.render();
 //        view.onload(function() {          
-//        if (!G.currentApp.widgetLibrary  || G.currentApp.widgetLibrary != 'Building Blocks') 
           view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
 //        });
       }
@@ -1540,7 +1539,7 @@ define('router', [
         $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
         
 //        if (G.isJQM()) 
-          this.$changePage({changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});        
+        this.$changePage({changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});        
 /*
         if (G.currentApp.widgetLibrary  && G.currentApp.widgetLibrary == 'Building Blocks') {
           var hdr = $('div.ui-page-active .hdr');
