@@ -163,7 +163,7 @@ define('models/Resource', [
         if (val) {
           if (prop.range.endsWith('model/portal/Video'))
             return val;
-          else if (prop.range.endsWith('model/portal/Image') && /^(http|https|ftp):\/\//.test(val))
+          else if (prop.range.endsWith('model/portal/Image') && /(^(http|https|ftp):\/\/)|(^(icons\/))/.test(val))
             return val;
           else
             return /^(data:|!?null)/.test(val) ? val : U.getLongUri1(val);
