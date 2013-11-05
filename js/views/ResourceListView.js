@@ -396,6 +396,10 @@ define('views/ResourceListView', [
     getPageAttributes: function() {
       return '';
     },
+    getWidgetLibClasses: function() {
+      var wb = G.currentApp.widgetLibrary;
+      return  wb  &&  wb == 'Topcoat' ? ' topcoat-list__container' : '';
+    },
     
     /** 
     * shorten the dummy div below this page by this page's height/width (if there's a dummy div to shorten)
@@ -464,12 +468,13 @@ define('views/ResourceListView', [
       var self = this,
           pageTag = this.getPageTag(),
           pageAttributes = this.getPageAttributes(),
+          pageClasses = this.getWidgetLibClasses(),
     //      sizes = this._slidingWindowAddRemoveInfo,
           colRange = this._collectionRange = info.range,
           col = this.collection,
           numRendered = 0,
           numPagesRendered = 0,
-          pageStartTag = '<{0} class="listPage" {1}>'.format(pageTag, pageAttributes),
+          pageStartTag = '<{0} class="listPage{2}" {1}>'.format(pageTag, pageAttributes, pageClasses),
           pageEndTag = '</{0}>'.format(pageTag),
           stop = false,
           dfd = $.Deferred(),
@@ -489,9 +494,10 @@ define('views/ResourceListView', [
         var res = col.models[resNum],
             liView = this.renderItem(res, atTheHead);
 
-        if (isFirst)
+        if (isFirst) {
           currentPageHtml = pageStartTag;
-
+          info.html += pageStartTag;
+        } 
         if (liView !== false) {
           this.postRenderItem(liView._html, info);
           currentPageHtml += liView._html;
@@ -1069,6 +1075,8 @@ define('views/ResourceListView', [
      * }
      */
     postRender: function(info) {
+      if (G.currentApp.widgetLibrary  &&  G.currentApp.widgetLibrary == 'Topcoat') 
+        this.$el.find('li').attr('class', 'topcoat-list__item');
       // override me
       // init/refresh listview
 //      if (this.rendered) {
