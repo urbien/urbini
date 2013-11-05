@@ -70,11 +70,33 @@ define('views/CommentListItemView', [
       var thumb = json['submitter.thumb'];
       if (thumb) {
         var idx = thumb.indexOf('=');
-        json['submitter.thumb'] = thumb.slice(idx + 1);
-      }
+        thumb = thumb.slice(idx + 1);
+        json['submitter.thumb'] = thumb;
 
+        var idx = thumb.indexOf('_thumbnail.');
+        if (idx > 0) {
+          var i = idx - 1;
+          for (; i>=0  &&  thumb.charAt(i) != '_'; i--) {}
+          var w, h;
+          if (i) {
+            var s = thumb.substring(i + 1, idx);
+            idx = s.indexOf('-');
+            w = s.substring(0, idx);
+            h = s.substring(idx + 1);
+          }
+          var maxDim = w > h ? w : h;  
+          var clip = U.clipToFrame(60, 60, w, h, maxDim);
+          if (clip) {
+            json.top = clip.clip_top;
+            json.right = clip.clip_right;
+            json.bottom = clip.clip_bottom;
+            json.left = clip.clip_left;
+          }
+        }
+      }
       var html = this.template(json);
       if (options && options.renderToHtml)
+//        this._html = '<{0} data-viewid="{2}">{1}</{0}>'.format(this.tagName, html, this.cid);
         this._html = '<{0}>{1}</{0}>'.format(this.tagName, html);
       else
         this.$el.html(html);
