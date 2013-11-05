@@ -66,24 +66,3 @@ DOMReady.add( function () {
       head.appendChild(k);
     }
 });
-/*
-function ajaxCallback() {
-  div.innerHTML= request.responseText;
-  runScripts(div); //run all scripts now contained in the target div element
-}
- 
-function runScripts(e) {
-  if (e.nodeType != 1) return; //if it's not an element node, return
- 
-  if (e.tagName.toLowerCase() == 'script') {
-    eval(e.text); //run the script
-  }
-  else {
-    var n = e.firstChild;
-    while ( n ) {
-      if ( n.nodeType == 1 ) runScripts( n ); //if it's an element node, recurse
-      n = n.nextSibling;
-    }
-  }
-}
-*/
