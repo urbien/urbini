@@ -693,7 +693,8 @@ define('app', [
         G.log(App.TAG, "info", "hash stripped");
         window.location.hash = '';
       }
-      
+
+      $('head').append(G.globalCss);
       App.router = new Router();
 //      if (G.support.pushState) {
 //        Backbone.history.start({
