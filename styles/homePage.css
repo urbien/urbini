@@ -226,7 +226,7 @@ body {
 
 /*[class*="icon-"]*/ 
 
-.b1 i {
+.b1 span, .b1 i {
   font-family: 'customFont';
   speak: none;
   font-style: normal;
