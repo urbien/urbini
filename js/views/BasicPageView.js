@@ -23,10 +23,10 @@ define('views/BasicPageView', [
     
     viewport.width = window.innerWidth;
     viewport.height = window.innerHeight;
+    Events.trigger('viewportResize', viewport);
   }
   
-  saveViewportSize();
-  
+  saveViewportSize();  
   window.addEventListener('resize', _.debounce(function() {
     saveViewportSize();
   }, 20));
@@ -45,7 +45,7 @@ define('views/BasicPageView', [
     initialize: function(options) {
       var self = this;
       BasicView.prototype.initialize.apply(this, arguments);
-      _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft', 'scroll', '_onScroll', '_onViewportDimensionsChanged'); //, 'onpage_show', 'onpage_hide');            
+      _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft', /*'scroll', '_onScroll',*/ '_onViewportDimensionsChanged'); //, 'onpage_show', 'onpage_hide');            
       
 //      this._subscribeToImageEvents();
 //      
@@ -101,7 +101,7 @@ define('views/BasicPageView', [
     events: {
       'scrollstart.page': 'reverseBubbleEvent',
       'scrollstop.page': 'reverseBubbleEvent',      
-      'scroll.page': 'scroll',
+//      'scroll.page': 'scroll',
       'page_hide.page': 'onpageevent',
       'page_show.page': 'onpageevent',
       'page_beforeshow.page': 'onpageevent',
@@ -123,9 +123,9 @@ define('views/BasicPageView', [
       '.default destroyed': '_onDestroyed'
     },
     
-    windowEvents: {
-      'scroll': '_onScroll'
-    },
+//    windowEvents: {
+//      'scroll': '_onScroll'
+//    },
     
     _onActiveView: function(view) {
       if (view !== this) {
@@ -161,9 +161,9 @@ define('views/BasicPageView', [
       this._clearMessageBar();        
     },
     
-    _restoreScroll: function() {
-      this.scrollTo(this._scrollPosition);
-    },
+//    _restoreScroll: function() {
+//      this.scrollTo(this._scrollPosition);
+//    },
     
     onpageevent: function(e) {
       this._lastPageEvent = e.type;
@@ -175,22 +175,22 @@ define('views/BasicPageView', [
       this.reverseBubbleEvent.apply(this, arguments);      
     },
 
-    scroll: function() {
-//      if (this._scrollPosition && $wnd.scrollTop() == 0)
-//        debugger;
-      
-      var newTop = $wnd.scrollTop(),
-          oldTop = this._scrollPosition || 0,
-          scrollCheckpoint = this._scrollCheckpoint || 0;
-      
-      this._scrollPosition = newTop;
-      if (Math.abs(newTop - scrollCheckpoint) > 100) {
-        this._scrollCheckpoint = newTop;
-        this._hideOffscreenImages();
-      }
-      
-      this.reverseBubbleEvent.apply(this, arguments);
-    },
+//    scroll: function() {
+////      if (this._scrollPosition && $wnd.scrollTop() == 0)
+////        debugger;
+//      
+//      var newTop = $wnd.scrollTop(),
+//          oldTop = this._scrollPosition || 0,
+//          scrollCheckpoint = this._scrollCheckpoint || 0;
+//      
+//      this._scrollPosition = newTop;
+//      if (Math.abs(newTop - scrollCheckpoint) > 100) {
+//        this._scrollCheckpoint = newTop;
+//        this._hideOffscreenImages();
+//      }
+//      
+//      this.reverseBubbleEvent.apply(this, arguments);
+//    },
     
     swipeleft: function(e) {
 //      if (isInsideDraggableElement(e.target))
@@ -228,22 +228,22 @@ define('views/BasicPageView', [
       return true;
     },
     
-    _onScroll: _.throttle(function() {
-      if (!this.isActive())
-        return;
-      
-      if (typeof this._scrollPosition == 'undefined' && !$wnd.scrollTop()) // weird fake scroll event after page load
-        return;
-      
-      if (this.$el) {
-        this.$el.triggerHandler('scroll');
-        // <debug>
-//        this.log('visibility', 'START visibility report for ' + this.TAG);
-//        this.logVisibility();
-//        this.log('visibility', 'END visibility report for ' + this.TAG);
-        // </debug>
-      }
-    }, 100),
+//    _onScroll: _.throttle(function() {
+//      if (!this.isActive())
+//        return;
+//      
+//      if (typeof this._scrollPosition == 'undefined' && !$wnd.scrollTop()) // weird fake scroll event after page load
+//        return;
+//      
+//      if (this.$el) {
+//        this.$el.triggerHandler('scroll');
+//        // <debug>
+////        this.log('visibility', 'START visibility report for ' + this.TAG);
+////        this.logVisibility();
+////        this.log('visibility', 'END visibility report for ' + this.TAG);
+//        // </debug>
+//      }
+//    }, 100),
 
     _onViewportDimensionsChanged: _.debounce(function(e) {
       if (this.$el)

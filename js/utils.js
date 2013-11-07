@@ -6,8 +6,9 @@ define('utils', [
   'templates',
   'cache',
   'events',
-  '@widgets'
-], function(G, _, Backbone, Templates, C, Events, $m) {
+  '@widgets',
+  'lib/fastdom'
+], function(G, _, Backbone, Templates, C, Events, $m, Q) {
   var ArrayProto = Array.prototype,
       slice = ArrayProto.slice,
       concat = ArrayProto.concat,
@@ -88,36 +89,41 @@ define('utils', [
     **/
     
     toHTML: function(element) {
-      var pieces = [];
-      
       // Text node
       if (typeof element == "string") {
-        pieces.push(HTML.escape(element));
+        return element; // already html
       }
       // Empty tag
       else if (!element.content || element.content.length == 0) {
-        pieces.push("<" + element.name + HTML.toAttributesString(element.attributes) + "/>");
+        return "<" + element.name + HTML.toAttributesString(element.attributes) + "/>";
       }
       // Tag with content
       else {
-        pieces.push("<" + element.name + HTML.toAttributesString(element.attributes) + ">");
-        _.each(element.content, HTML.toHTML);
-        pieces.push("</" + element.name + ">");
+        var html = ["<", element.name, HTML.toAttributesString(element.attributes), ">"],
+            content = element.content,
+            len = content.length;
+        
+        for (var i = 0; i < len; i++) {
+          html[html.length] = HTML.toHTML(content[i]);
+        }
+        
+        html[html.length] = "</" + element.name + ">";
+        return html.join("");
       }
       
       return pieces.join("");
     },
   
+    _replacements: [[/&/g, "&amp;"], [/"/g, "&quot;"], [/</g, "&lt;"], [/>/g, "&gt;"]],
     escape: function(text) {
       if (typeof text !== 'string')
         text = '' + text;
       
-      var replacements = [[/&/g, "&amp;"], [/"/g, "&quot;"],
-                          [/</g, "&lt;"], [/>/g, "&gt;"]];
-      
-      _.each(replacements, function(replace) {
+      var replacements = HTML._replacements;
+      for (var i = 0; i < replacements.length; i++) {
+        var replace = replacements[i];
         text = text.replace(replace[0], replace[1]);
-      });
+      }
       
       return text;
     },
@@ -137,58 +143,123 @@ define('utils', [
           isHTMLElement = images[0] instanceof HTMLElement,
           get = isHTMLElement ? function(el, attr) { return el.getAttribute(attr) } : _.index;
       
-      
-      for (var i = 0, num = images.length; i < num; i++) {
-        img = images[i];
-        realSrc = get(img, lazyImgAttr);
-        src = get(img, 'src');
-        
-        if (realSrc && src == blankImg) {
-          infos.push(null); // already lazy
-          debugger;
-        }
-        else {
-          infos.push({
-            src: realSrc || src,
-            width: get(img, 'width'),
-            height: get(img, 'height')
-          });  
-        }
-      }
-      
-      for (var i = 0, num = images.length; i < num; i++) {
-        var img = images[i],
-            info = infos[i];
-        
-        if (!info)
-          continue;
+      function read() {
+        for (var i = 0, num = images.length; i < num; i++) {
+          img = images[i];
+          realSrc = get(img, lazyImgAttr);
+          src = get(img, 'src');
           
-        if (isHTMLElement) {
-          if (!info.src.startsWith('data:') || info.src != blankImg)
-            img.setAttribute(lazyImgAttr, info.src);
-          if (typeof info.width == 'number')
-            img.style.width = info.width;
-          if (typeof info.height == 'number')
-            img.style.height = info.height;
+          if (realSrc && src == blankImg) {
+            infos.push(null); // already lazy
+            debugger;
+          }
+          else {
+            infos.push({
+              src: realSrc || src,
+              width: get(img, 'width'),
+              height: get(img, 'height')
+            });  
+          }
+        }
+      };
+
+      function write() {
+        for (var i = images.length - 1; i >= 0; i--) { // MUST be backwards loop, as this may be a NodeList and thus may be automatically updated by the browser when we add/remove a class
+          var img = images[i],
+              info = infos[i];
           
-          img.onload = window.onimageload;
-          img.onerror = window.onimageerror;
+          if (!info)
+            continue;
+            
+          if (isHTMLElement) {
+            if (!info.src.startsWith('data:') || info.src != blankImg) {
+              img.setAttribute(lazyImgAttr, info.src);
+              img.classList.remove('wasLazyImage');
+              img.classList.add('lazyImage');
+            }
+            if (typeof info.width == 'number')
+              img.style.width = info.width;
+            if (typeof info.height == 'number')
+              img.style.height = info.height;
+            
+  //          img.onload = window.onimageload;
+  //          img.onerror = window.onimageerror;
+          }
+          else {
+            img[lazyImgAttr] = info.src;
+            img['class'] = 'lazyImage';
+  //          img.onload = 'window.onimageload.call(this)';
+  //          img.onerror = 'window.onimageerror.call(this)';
+          }
+          
+          img.src = blankImg;
         }
-        else {
-          img[lazyImgAttr] = info.src;
-          img.onload = 'window.onimageload.call(this)';
-          img.onerror = 'window.onimageerror.call(this)';
-        }
-        
-        img.src = blankImg;
-      }
+      };
       
-      return images;
+      if (isHTMLElement) {
+        Q.read(read);
+        Q.write(write);
+      }
+      else {
+        read();
+        write();
+        return images;
+      }
     }
   };
-  
+
+  // Bezier functions
+  function B1(t) { return t*t*t }
+  function B2(t) { return 3*t*t*(1-t) }
+  function B3(t) { return 3*t*(1-t)*(1-t) }
+  function B4(t) { return (1-t)*(1-t)*(1-t) }
+
   var vendorPrefixes = ['', '-moz-', '-ms-', '-o-', '-webkit-'];
   var CSS = {
+    getBezierCoordinate: function(p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y, percentComplete) {
+      percentComplete = Math.max(0, Math.min(percentComplete, 1));
+      var percent = 1 - percentComplete;
+      return [p1x*B1(percent) + p2x*B2(percent) + p3x*B3(percent) + p4x*B4(percent),
+              p1y*B1(percent) + p2y*B2(percent) + p3y*B3(percent) + p4y*B4(percent)];
+    },
+        
+    getBezierPercentComplete: function(x1, y1, x2, y2, xTarget, xTolerance) {
+      xTolerance = xTolerance || 0.01; //adjust as you please
+      var myBezier = function(t) {
+        return CSS.getBezierCoordinate(0, 0, x1, y1, x2, y2, 1, 1, t);
+      };
+  
+      //we could do something less stupid, but since the x is monotonic
+      //increasing given the problem constraints, we'll do a binary search.
+  
+      //establish bounds
+      var lower = 0;
+      var upper = 1;
+      var percent = (upper + lower) / 2;
+  
+      //get initial x
+      var bezier = myBezier(percent);
+      var x = bezier[0];
+      var numLoops = 0;
+  
+      //loop until completion
+      while (Math.abs(xTarget - x) > xTolerance) {
+        if (numLoops++ > 100)
+          debugger;
+        
+        if (xTarget > x) 
+          lower = percent;
+        else 
+          upper = percent;
+  
+        percent = (upper + lower) / 2;
+        bezier = myBezier(percent);
+        x = bezier[0];
+      }
+      //we're within tolerance of the desired x value.
+      //return the y value.
+      return bezier[1];
+    },
     getNewIdentityMatrix: function(n) {
       n = n || 4;
       var rows = new Array(n);
@@ -3915,29 +3986,29 @@ define('utils', [
     HTML: HTML,
     CSS: CSS,
 
-    getVisibleBounds: function(el) {
-      var translation = U.CSS.getTranslation(this.el),
-          contentRect = this.el.getBoundingClientRect(),
-          contentLeft = Math.max(0, contentRect.left),
-          contentTop = Math.max(0, contentRect.top),
-          visibleWidth = Math.min(contentLeft + contentRect.width, window.innerWidth) - contentLeft,
-          visibleHeight = Math.min(contentTop + contentRect.height, window.innerHeight) - contentTop;
-      
-      return {
-        top: contentTop,
-        left: contentLeft,
-        right: contentLeft + visibleWidth,
-        bottom: contentTop + visibleHeight
-      }
-    },
+//    getVisibleBounds: function(el) {
+//      var translation = U.CSS.getTranslation(this.el),
+//          contentRect = this.el.getBoundingClientRect(),
+//          contentLeft = Math.max(0, contentRect.left),
+//          contentTop = Math.max(0, contentRect.top),
+//          visibleWidth = Math.min(contentLeft + contentRect.width, window.innerWidth) - contentLeft,
+//          visibleHeight = Math.min(contentTop + contentRect.height, window.innerHeight) - contentTop;
+//      
+//      return {
+//        top: contentTop,
+//        left: contentLeft,
+//        right: contentLeft + visibleWidth,
+//        bottom: contentTop + visibleHeight
+//      }
+//    },
     
     isRectPartiallyInViewport: function(rect, fuzz) {
-      var documentElement = doc.documentElement;
+      var viewport = G.viewport;
       fuzz = fuzz || 0; 
       return rect.bottom + fuzz >= 0 
-          && rect.top - fuzz <= (window.innerHeight || documentElement.clientHeight) 
+          && rect.top - fuzz <= viewport.height 
           && rect.right + fuzz >= 0 
-          && rect.left - fuzz <= (window.innerWidth || documentElement.clientWidth);
+          && rect.left - fuzz <= viewport.width;
     },
 
     isRectInViewport: function(rect, fuzz) {
@@ -3948,30 +4019,30 @@ define('utils', [
              rect.right - fuzz <= (window.innerWidth || documentElement.clientWidth); /*or $(window).width() */
     },
     
-    isInViewport: function(element) {
-      var rect = element.getBoundingClientRect(),
-          documentElement = doc.documentElement;
-
-      return U.isRectInViewport(rect);
-    },
-    
-    isAtLeastPartiallyInViewport: function(element) {
-      if (element.offsetWidth === 0 || element.offsetHeight === 0) 
-        return false;
-      
-      var height = doc.documentElement.clientHeight,
-          rects = element.getClientRects();
-        
-      for (var i = 0, l = rects.length; i < l; i++) {
-        var r = rects[i];
-            in_viewport = r.top > 0 ? r.top <= height : (r.bottom > 0 && r.bottom <= height);
-            
-        if (in_viewport) 
-          return true;
-      }
-        
-      return false;
-    },
+//    isInViewport: function(element) {
+//      var rect = element.getBoundingClientRect(),
+//          documentElement = doc.documentElement;
+//
+//      return U.isRectInViewport(rect);
+//    },
+//    
+//    isAtLeastPartiallyInViewport: function(element) {
+//      if (element.offsetWidth === 0 || element.offsetHeight === 0) 
+//        return false;
+//      
+//      var height = doc.documentElement.clientHeight,
+//          rects = element.getClientRects();
+//        
+//      for (var i = 0, l = rects.length; i < l; i++) {
+//        var r = rects[i];
+//            in_viewport = r.top > 0 ? r.top <= height : (r.bottom > 0 && r.bottom <= height);
+//            
+//        if (in_viewport) 
+//          return true;
+//      }
+//        
+//      return false;
+//    },
     
     getBacklinkCount: function(res, name) {
       return res.get(name + 'Count') || res.get(name).count;

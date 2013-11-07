@@ -14,7 +14,8 @@ define('templates', [
   };
   
   var lazyImgSrcAttr = G.lazyImgSrcAttr,
-      blankImgDataUrl = G.blankImgDataUrl;
+      blankImgDataUrl = G.blankImgDataUrl,
+      lazyReplacement = 'src="{0}" {1}'.format(blankImgDataUrl, lazyImgSrcAttr);
 
   window.onimageload = function onimageload() {
 //    var $this = $(this);
@@ -29,8 +30,11 @@ define('templates', [
   };
   
   function prepTemplate(text) {
+    return text.trim().replace(lazyImgSrcAttr, lazyReplacement);
 //    return text.trim();
-    return text.trim().replace('<img src=', '<img src="{0}" onload="window.onimageload.call(this);" onerror="window.onimageerror.call(this);" {1}='.format(blankImgDataUrl, lazyImgSrcAttr));
+//    return text.trim().replace('<img src=', '<img src="{0}" onload="window.onimageload.call(this);" onerror="window.onimageerror.call(this);" {1}='.format(blankImgDataUrl, lazyImgSrcAttr));
+//    return text.trim().replace('<img src=', '<img src="{0}" {1}='.format(blankImgDataUrl, lazyImgSrcAttr));
+    
 //    return text.trim().replace('<img src=', '<img src="{0}" onload="lzld(this);" onerror="lzld(this)" {1}='.format(blankImgDataUrl, lazyImgSrcAttr));
   };
   

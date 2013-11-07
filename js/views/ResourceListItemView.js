@@ -12,9 +12,6 @@ define('views/ResourceListItemView', [
     tagName: "li",
 //    tagName: "div",
 //    className: "ui-li ui-li-static ui-btn-up-c ui-first-child",
-//    attributes: {
-//      style: 'cursor: pointer; '
-//    },
     isCommonTemplate: true,
     initialize: function(options) {
       _.bindAll(this, 'render', 'click', /*'recipeShoppingListHack',*/ 'remove'); // fixes loss of context for 'this' within methods
@@ -273,7 +270,7 @@ define('views/ResourceListItemView', [
     doRender: function(options, data) {
       var html = this.template(data);
       if (options && options.renderToHtml)
-        this._html = "<{0}>{1}</{0}>".format(this.tagName, html);
+        this._html = this.renderHtml(html); //"<{0}>{1}</{0}>".format(this.tagName, html);
       else 
         this.$el.html(html);
       
@@ -433,7 +430,7 @@ define('views/ResourceListItemView', [
           json.left = clip.clip_left;
         }
         else {
-          var dim = U.fitToFrame(80, 80, m.get(oW) / m.get(oH))
+          var dim = U.fitToFrame(80, 80, m.get(oW) / m.get(oH));
           json.width = dim.w;
           json.height = dim.h;
           json.top = oW > oH ? dim.y : dim.y + (m.get(oH) - m.get(oW)) / 2;
@@ -451,6 +448,7 @@ define('views/ResourceListItemView', [
           json.left = clip.clip_left;
         }
       }
+      
       var params = this.hashParams;
       if (this.doesModelSubclass('media/publishing/Video')  &&  params['-tournament'])
         json['v_submitToTournament'] = {uri: params['-tournament'], name: params['-tournamentName']};

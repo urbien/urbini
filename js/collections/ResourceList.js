@@ -139,10 +139,11 @@ define('collections/ResourceList', [
       var self = this,
           added = [];
       
-      _.each(resources, function(resource) {          
-        if (!self.get(resource) && self.belongsInCollection(resource))
+      for (var i = 0, len = resources.length; i < len; i++) {
+        var resource = resources[i];
+        if (!this.get(resource) && this.belongsInCollection(resource))
           added.push(resource);
-      });
+      }
       
       self.add(added, {
         announce: false
@@ -356,9 +357,10 @@ define('collections/ResourceList', [
         this._lastFetchedOn = G.currentServerTime();
       
       var vocModel = this.vocModel;
-      _.each(response, function(res) {
+      for (var i = 0, len = response.length; i < len; i++) {
+        var res = response[i];
         res._uri = U.getLongUri1(res._uri, vocModel);
-      });
+      }
       
       var adapter = this.vocModel.adapter;
       if (adapter && adapter.parseCollection)
@@ -517,9 +519,9 @@ define('collections/ResourceList', [
           try {
             mojo = JSON.parse(mojo);
             if (mojo = mojo.edit) {
-              _.each(resp, function(m) {
-                m.edit = mojo;
-              });
+              for (var i = 0, len = resp.length; i < len; i++) {
+                resp[i].edit = mojo;
+              }
             }
           } catch (err) {
           }
@@ -557,11 +559,22 @@ define('collections/ResourceList', [
             success([], status, xhr);
             return;
           case 304:
-            var ms = self.models.slice(options.start, options.end);
-            _.each(ms, function(m) {
-              m.set({'_lastFetchedOn': now}, {silent: true});
-            });
+//            var ms = self.models.slice(options.start, options.end);
+            var models = self.models,
+                start = options.start || 0,
+                end = options.end || (start + params.$limit);
             
+            end = Math.min(end, models.length);
+            if (typeof start != 'undefined' && typeof end != 'undefined') {
+              for (var i = start; i < end; i++) {
+                models[i].set({'_lastFetchedOn': now}, {silent: true});              
+              }
+            }
+            
+//            _.each(ms, function(m) {
+//              m.set({'_lastFetchedOn': now}, {silent: true});
+//            });
+//            
 //            self.trigger('endOfList');
             success([], status, xhr);
             return;

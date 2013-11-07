@@ -446,7 +446,17 @@ define('router', [
 
       var params = U.getHashParams();
 //      var list =  (mode &&  mode == G.LISTMODES.CHOOSER &&  (params['$more'] || params['$less'])) ? null : C.getResourceList(model, query);
-      var list =  (mode &&  mode == G.LISTMODES.CHOOSER &&  (params['$more'] || params['$less'])) ? null : C.getResourceList(model, query);
+      var list;
+      if (mode &&  mode == G.LISTMODES.CHOOSER &&  (params['$more'] || params['$less']))
+        list = null;
+      else {
+        if (cachedView)
+          list = cachedView.collection;
+        else {
+          var filtered = U.filterObj(params, function(key) { return !/^-/.test(key) });
+          list = C.getResourceList(model, U.getQueryString(filtered, {sort: true}));
+        }
+      }
 //      if (list && !list._lastFetchedOn)
 //        list = null;
       
@@ -1002,7 +1012,7 @@ define('router', [
 //        }
 //      }
       
-      res = C.getResource(uri);
+      res = cachedView ? cachedView.resource : C.getResource(uri);
       if (res && !res.loaded)
         res = null;
 
@@ -1510,7 +1520,10 @@ define('router', [
         activated = true;
         view.render();
 //        view.onload(function() {          
-          view.$el.attr('data-role', 'page'); //.attr('data-fullscreen', 'true');
+          view.$el.attr({
+            id: 'page' + G.nextId(),
+            'data-role': 'page'
+          }); //.attr('data-fullscreen', 'true');
 //        });
       }
 

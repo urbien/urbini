@@ -525,12 +525,12 @@ define('app', [
   }
   
 //  function setupScrollMonitor() {
-//    Events.on('scrollState', function(state) {
-//      if (G.SCROLL_STATES.indexOf(state) == -1)
-//        throw "Illegal scroll state: " + state;
-//      
-//      G._scrollState = state;
-////      console.log('SCROLL STATE', state);
+//    Events.on('scrollVelocity', function(velocity) {
+//      G._setScrollVelocity(velocity || 0);
+//    });
+//
+//    Events.on('viewportDestination', function(x, y, timeToDestination) {
+//      G._setViewportDestination(x, y, timeToDestination || 0);
 //    });
 //  }
   

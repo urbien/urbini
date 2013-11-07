@@ -82,13 +82,13 @@ define('views/ControlPanel', [
           prop = this.vocModel.properties[shortName],
           setLinkTo = prop.setLinkTo;
 
-      this.log("Recording step for tour: selector = 'data-shortname'; value = '" + shortName + "'");
+//      this.log("Recording step for tour: selector = 'data-shortname'; value = '" + shortName + "'");
       if (setLinkTo) {
         shortName = setLinkTo;
         prop = this.vocModel.properties[shortName];
       }
       
-      G.log(this.TAG, "Recording step for tour: selector = 'data-shortname'; value = '" + shortName + "'");
+//      G.log(this.TAG, "Recording step for tour: selector = 'data-shortname'; value = '" + shortName + "'");
 
       Voc.getModels(prop.range).done(function() {
         var pModel = U.getModel(prop.range);

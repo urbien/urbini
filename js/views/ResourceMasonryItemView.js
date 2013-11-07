@@ -109,7 +109,7 @@ define('views/ResourceMasonryItemView', [
           Events.trigger('chooser:' + U.getQueryParams().$prop, this.model);
         }
       }
-      G.log(this.TAG, "Recording step for tour: selector = 'href'; value = '" + e.target.href);
+//      G.log(this.TAG, "Recording step for tour: selector = 'href'; value = '" + e.target.href);
     },
     
     doRender: function(options, data) {

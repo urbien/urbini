@@ -12,7 +12,8 @@ define('views/BasicView', [
       viewProps = ['pageView', 'parentView', 'model', 'resource', 'collection'],
       backboneOn = Backbone.View.prototype.on,
       $wnd = $(window),
-      baseTemplateData = function() {};
+      baseTemplateData = function() {},
+      HTML = U.HTML;
 
   baseTemplateData.prototype = {
     G: G,
@@ -114,7 +115,123 @@ define('views/BasicView', [
 //      G.log(this.TAG, 'new view', this.getPageTitle());
       return this;
     },
+    
+    _configure: function(options) {
+      options = options || {};
+      options.attributes = options.attributes || {};
+      options.attributes['data-viewid'] = this.cid;
+      return Backbone.View.prototype._configure.call(this, options);
+    },
+    
+    renderHtml: function(html) {
+      var tag = HTML.tag(this.tagName, html, this.attributes);
+      return HTML.toHTML(tag);
+    },
 
+    /**
+     * doesn't change a thing, only remembers this view's dimensions
+     */
+    setDimensions: function(width, height) {
+      var dim = this._dimensions = this._dimensions || {};
+      dim.width = width;
+      dim.height = height;
+    },
+    
+    /**
+     * @return the last data passed in to setDimensions (doesn't access DOM so may not be up to date)
+     */
+    getDimensions: function() {
+      return this._dimensions;
+    },
+    
+    /**
+     * doesn't change a thing, only remembers this view's position
+     */
+    setPosition: function(x, y, z) {
+      if (arguments.length == 1)
+        this._position = arguments[0];
+      else {
+        var loc = this._position = this._position || {};
+        loc.x = x;
+        loc.y = y;
+        loc.z = z;
+      }
+    },
+
+    /**
+     * @return the last data passed in to setPosition (doesn't access DOM so may not be up to date)
+     */
+    getPosition: function() {
+      return this._position;
+    },
+
+    /**
+     * doesn't change a thing, only remembers this view's offset from its parent
+     */
+    setParentOffset: function(x, y, z) {
+      if (arguments.length == 1)
+        this._parentOffset = arguments[0];
+      else {
+        var loc = this._parentOffset = this._parentOffset || {};
+        loc.x = x;
+        loc.y = y;
+        loc.z = z;
+      }
+    },
+
+    /**
+     * @return the last data passed in to setParentOffset (doesn't access DOM so may not be up to date)
+     */
+    getParentOffset: function() {
+      return this._parentOffset;
+    },
+
+    /**
+     * @return true if this element is at least partially in the viewport
+     */
+    isInViewport: function() {
+      var loc = this._position,
+          dim = this._dimensions,
+          myWidth = dim && dim.width || 0,
+          myHeight = dim && dim.height || 0,
+          viewport;
+      
+      if (!loc)
+        return false;
+      
+      viewport = G.viewport;
+      return loc.x >= viewport.width - myWidth && 
+             loc.x <= viewport.width + myWidth &&
+             loc.y >= viewport.width - myHeight && 
+             loc.y <= viewport.height + myHeight;
+    },
+    
+//    calculateGeography: function() {
+//      if (!this._offsetParent)
+//        this._offsetParent = this.$el.offsetParent();
+//      
+//      if (!this._parentPosition)
+//        this._parentPosition = this.parentView.getPosition();
+//      
+//      var el = this.el,
+//          width = el.offsetWidth,
+//          height = el.offsetHeight,
+//          parentPosition = this._parentPosition || this.,
+//          offsetParent,
+//          x,
+//          y;
+//
+//      
+//      
+//      this.setDimensions(width, height);
+//      while (parent = parent.parentView) {
+//        var parentPos = parent.getPosition();
+//        
+//      }
+//      
+//      self.setChildPosition(child);
+//    },
+//
 //    setElement: function(el) {
 //      this._hammer = Hammer(el instanceof $ ? el[0] : el, {
 //        prevent_default: true,
@@ -265,6 +382,7 @@ define('views/BasicView', [
       Events.trigger('viewDestroyed:' + this.cid, this);
       
       this.stopListening();
+      this.unobserveMutations();
       this.$el.remove();
 //      Q.start(this.$el.remove, this.$el);
       
@@ -406,8 +524,7 @@ define('views/BasicView', [
     },
     
     atBottom: function() {
-      var $w = $(window);
-      return this.pageView.$el.height() - $w.height() - $w.scrollTop() < 20;
+      return this.pageView.$el.height() - $wnd.height() - $wnd.scrollTop() < 20;
     },
     
 //    onInactive: function(callback) {
@@ -700,31 +817,31 @@ define('views/BasicView', [
         return "Unknown";
     },
     
-    isInViewport: function() {
-      return this.el && U.isInViewport(this.el);
-    },
-
-    isAtLeastPartiallyInViewport: function() {
-      return this.el && U.isAtLeastPartiallyInViewport(this.el);
-    },
-
-    // <debug>
-    logVisibility: function() {      
-      var numVisible = 0,
-          numPartiallyVisible = 0,
-          numInvisible = 0;
-      
-      _.each(this.children, function(child) {
-        child.logVisibility();
-        var isVisible = child.isInViewport(),
-            isPartiallyVisible = child.isAtLeastPartiallyInViewport();
-        
-        isVisible ? numVisible++ && numPartiallyVisible++ : numInvisible++;
-        child.log('visibility', '"{0}" is {1}visible'.format(child.getTitle(), isVisible ? '' : 
-                                                                                 isPartiallyVisible ? 'partially ' : 'in'));
-      });
-    },
-    // </debug>
+//    isInViewport: function() {
+//      return this.el && U.isInViewport(this.el);
+//    },
+//
+//    isAtLeastPartiallyInViewport: function() {
+//      return this.el && U.isAtLeastPartiallyInViewport(this.el);
+//    },
+//
+//    // <debug>
+//    logVisibility: function() {      
+//      var numVisible = 0,
+//          numPartiallyVisible = 0,
+//          numInvisible = 0;
+//      
+//      _.each(this.children, function(child) {
+//        child.logVisibility();
+//        var isVisible = child.isInViewport(),
+//            isPartiallyVisible = child.isAtLeastPartiallyInViewport();
+//        
+//        isVisible ? numVisible++ && numPartiallyVisible++ : numInvisible++;
+//        child.log('visibility', '"{0}" is {1}visible'.format(child.getTitle(), isVisible ? '' : 
+//                                                                                 isPartiallyVisible ? 'partially ' : 'in'));
+//      });
+//    },
+//    // </debug>
   
     getPreviousHash: function() {
       return this.getPageView().source;
@@ -796,6 +913,32 @@ define('views/BasicView', [
     doesModelImplement: function(iface) {
       var interfaces = this['implements'];
       return !!(interfaces && ~interfaces.indexOf(iface));
+    },
+    
+    unobserveMutations: function() {
+      if (this._mutationObserver) {
+        this._mutationObserver.disconnect();
+      } else {
+        this.el.removeEventListener('DOMSubtreeModified', this._mutationObserverCallback, true);
+      }
+    },
+
+    observeMutations: function(options, callback) {
+      this._mutationObserverCallback = callback;
+      if (!this._mutationObserver) { // reuse disconnected instance if available
+        if (window.MutationObserver)
+          this._mutationObserver = new MutationObserver(callback);
+      }
+
+      if (this._mutationObserver) {
+        this._mutationObserver.observe(this.$el, _.defaults(options || {}, {
+          childList: true,
+          characterData: true,
+          subtree: true
+        }));
+      } else {
+        this.el.addEventListener('DOMSubtreeModified', callback, true);
+      }      
     }
   }, {
     displayName: 'BasicView',

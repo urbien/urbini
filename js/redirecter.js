@@ -733,7 +733,6 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
         merged = getEditableProps(editableProps),
         props = {};
     
-    debugger;
     props[propName] = _.pluck(checked, 'value').join(',');
     props[propName + '.displayName'] = _.pluck(checked, 'name').join(',');
     if (merged && merged.length == 1) {

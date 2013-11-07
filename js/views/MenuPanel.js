@@ -56,7 +56,7 @@ define('views/MenuPanel', [
     },
     logout: function(e) {
       Events.stopEvent(e);
-      G.log(this.TAG, "Recording step for tour: selector: #logout");
+//      G.log(this.TAG, "Recording step for tour: selector: #logout");
       Events.trigger('logout');
       return;
     },
@@ -67,7 +67,7 @@ define('views/MenuPanel', [
       while (t.tagName.toLowerCase() != 'li') 
         t = t.parentNode;
       
-      G.log(this.TAG, "Recording step for tour: selector = 'id'; value = '" + t.id + "'");
+//      G.log(this.TAG, "Recording step for tour: selector = 'id'; value = '" + t.id + "'");
       if (t.id == 'home123') 
         window.location.href = here.slice(0, here.indexOf('#'));
       else 

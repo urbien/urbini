@@ -452,6 +452,7 @@ define('globals', function() {
     // requestAnimationFrame polyfill by Erik M�ller & Paul Irish et. al., adjusted by David DeSandro https://gist.github.com/desandro/1866474
     window.AudioContext = window.AudioContext || window.webkitAudioContext; // keep in mind, firefox doesn't have AudioContext.createMediaStreamSource
     window.MediaStream = window.webkitMediaStream || window.MediaStream;
+    window.MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.webkitMutationObserver || window.mozMutationObserver;
     window.URL = window.URL || window.webkitURL;
     (function( window ) {
       'use strict';
@@ -1329,7 +1330,7 @@ define('globals', function() {
     getWidgetLibrary: function() {
       return G._widgetLibrary;
     },
-    lazyImgSrcAttr: 'data-frz-src',
+    lazyImgSrcAttr: 'data-lazy-src',
     blankImgDataUrl: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
     emptyFn: function() {},
     falseFn: function() { return false; },
@@ -1937,15 +1938,6 @@ define('globals', function() {
     crossBrowser: {
       css: {}
     },
-//    SCROLL_STATES: ['idle', 'dragging', 'flinging', 'snapping', 'touching', 'clicking'],
-//    _scrollState: 'idle',
-//    getScrollState: function() {
-//      return G._scrollState;
-//    },
-//    isScrolling: function() {
-//      var state = this.getScrollState();
-//      return state != 'clicking' && state != 'idle';
-//    },
     _clickDisabled: false,
     enableClick: function() {
       this.log('events', 'CLICK MONITOR', 'ENABLED CLICK');

@@ -144,7 +144,7 @@ define('lib/fastdom', ['globals'], function(G) {
 //    
 //    return this._nextFramePromise;
 //  };
-  
+
   /**
    * Removes a job from the queue
    *

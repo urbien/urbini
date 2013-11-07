@@ -23,7 +23,7 @@ define('views/MenuButton', [
     },
     menu: function(e) {
       Events.stopEvent(e);
-      G.log(this.TAG, "Recording step for tour: selector = 'id'; value = 'menuBtn'");
+//      G.log(this.TAG, "Recording step for tour: selector = 'id'; value = 'menuBtn'");
       U.require('views/MenuPanel', function(MenuPanel) {
         var p = $('#' + this.viewId);
         // HACK

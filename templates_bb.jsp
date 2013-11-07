@@ -102,7 +102,7 @@
 <li data-viewid="{{= viewId }}">
   <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }}><p>{{= name }}</p> {{= obj.gridCols ? '<br/>' + gridCols : '' }}
     {{ if (obj.img) { }}
-      <img src="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
+      <img data-lazy-src="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
       {{ if (obj.width) { }}  
       style="max-height:none;max-width:none;
         height:{{= height }}px;
@@ -110,7 +110,8 @@
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
       {{ } }}
       
-      data-for="{{= U.getImageAttribute(resource, imageProperty) }}" />
+      data-for="{{= U.getImageAttribute(resource, imageProperty) }}"
+      class="lazyImage" />
     {{ } }}
   </a>
   {{ if (typeof comment != 'undefined') { }}
@@ -206,7 +207,7 @@
   {{ if (obj.v_submitToTournament) { }}
     <div style="padding:.7em 10px 0 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
   {{ } }}
-    <img {{= typeof image != 'undefined' ? 'src="' + (image.indexOf('/Image') == 0 ? image.slice(6) : image) + '"' : 'src="' + G.blankImgDataUrl + '" style="position:absolute;left:0px"'}}" 
+    <img data-lazy-src="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : G.blankImgDataUrl }}" style="position:absolute;left:0px"'}}" 
     {{ if (obj.right) { }}  
       style="position:absolute;
         left:-{{= left }}px; top:-{{= top }}px;
@@ -215,7 +216,8 @@
     {{ if (!obj.right && obj.image) { }}
       style="max-height: 80px;position:absolute;max-height: 80px;max-width: 80px;margin-left:-90px; margin-top:-0.7em"
     {{ } }}  
-    data-for="{{= U.getImageAttribute(this.resource, this.imageProperty) }}" />
+    data-for="{{= U.getImageAttribute(this.resource, this.imageProperty) }}"
+    class="lazyImage" />
     {{= viewCols }}
   </div>
   </div>

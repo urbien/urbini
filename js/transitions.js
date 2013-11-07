@@ -1,9 +1,8 @@
 define('transitions', ['globals', 'utils', 'lib/fastdom'], function(G, U, Q) {  
-  var cssIndentityTransform = 'matrix(1, 0, 0, 1, 0, 0)';
-  var cssNoTranslation = 'translate(0px, 0px) translateZ(0px)';
   var identityMatrix;
   var vendorPrefixes = ['', '-moz-', '-ms-', '-o-', '-webkit-'];
   var CSS = U.CSS;
+  var cssNoTranslation = CSS.getTranslationString(0, 0);
   var transitions = {
 		none: {
       fromPageTransition: function(fromView) {

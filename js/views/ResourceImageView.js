@@ -163,14 +163,22 @@ define('views/ResourceImageView', [
     },
     
     render: function(options) {
+      if (this.renderHelper.apply(this, arguments)) {
+//        this.observeMutations({
+//          
+//        });
+      }
+    },
+    
+    renderHelper: function(options) {
       if (!this.isImage && !this.isVideo && !this.isAudio)
-        return this;
+        return false;
       
       var self = this;
       var res = this.resource;
       var meta = this.vocModel.properties;
       if (!meta)
-        return this;
+        return false;
 
       var self = this;
       if (this.isVideo) {
@@ -206,8 +214,9 @@ define('views/ResourceImageView', [
       if (typeof image == 'undefined') 
         return this;
       
-      var winW = $(window).width(); // - 3;
-      var winH = $(window).height();
+      var viewport = G.viewport;
+      var winW = viewport.width; // - 3;
+      var winH = viewport.height;
       
       /*
       var props = U.getCloneOf(this.vocModel, 'ImageResource.bigImage');
@@ -224,8 +233,6 @@ define('views/ResourceImageView', [
         return this;
       */
 
-      var winW = $(window).width(); // - 3;
-      var winH = $(window).height();
       var oWidth, oHeight, metaW, metaH, metaDim;
       var isIntersection = U.isA(this.vocModel, 'Intersection');
       

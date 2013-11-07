@@ -1,4 +1,6 @@
-define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils', 'hammer'], function(G, _, Backbone, Events, U) {  
+define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils', 'hammer'], function(G, _, Backbone, Events, U) {
+  var $wnd = $(window);
+
   (function(_, Backbone) {
     Backbone.hammerOptions = {
 //      prevent_default: true,
@@ -86,7 +88,8 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         var hammer = this.$el.hammer(options);
         if (!this._hammered) {
           this._hammered = true;
-          hammer.on(hammer_events, this._debug.bind(this));
+//          if (G.DEBUG)
+//            hammer.on(hammer_events, this._debug.bind(this));
         }
         
         return hammer;
@@ -109,7 +112,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       _.defaults(to, from);                
       _.defaults(to.events, namespaceEvents(from.events, namespace, true));
       _.defaults(to.pageEvents, namespaceEvents(from.pageEvents, namespace, true));
-      _.defaults(to.windowEvents, namespaceEvents(from.windowEvents, namespace));
+      _.defaults(to.windowEvents, namespaceEvents(from.windowEvents, namespace, true));
       _.defaults(to.globalEvents, namespaceEvents(from.globalEvents, namespace));
       _.defaults(to.myEvents, namespaceEvents(from.myEvents, namespace));
 //      _.defaults(to.events, from.events);
@@ -210,12 +213,11 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       }
       
       if (windowEvents) {
-        var subscribeFn = window.addEventListener || window.attachEvent; 
         for (var name in windowEvents) {
           var fnName = windowEvents[name],
               fn = this[fnName];
   
-          subscribeFn.call(window, name, fn, false);
+          $wnd.on(name, fn);
         }
       }
       
@@ -248,9 +250,8 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       this.stopListening();
 
       if (windowEvents) {
-        var unsubscribeFn = window.removeEventListener || window.deattachEvent; 
         for (var name in windowEvents) {
-          unsubscribeFn.call(window, name, this[windowEvents[name]]);
+          $wnd.off(name, this[windowEvents[name]]);
         }
       }
       

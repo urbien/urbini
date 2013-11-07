@@ -1,4 +1,4 @@
-define('@widgets', ['globals', '../styles/styles.css', '../styles/common-template-m.css'].concat(Lablz._widgetsLib), function(G, css1, css2, $w) {
+define('@widgets', ['globals', '../styles/styles.css', '../styles/common-template-m.css'].concat(Lablz._widgetsLib), function(G, css1, css2) {
   var $doc = $(document);  
   $doc.on('click','.closeparent', function(e) {
     e.preventDefault();
@@ -27,28 +27,34 @@ define('@widgets', ['globals', '../styles/styles.css', '../styles/common-templat
     });
   };
 
-  if (G.isJQM())
-    return $.mobile;
-  
-  return {
-    scrollTo: function() {
-      debugger;
-    },
-    
-    silentScroll: function() {
-      debugger;
-    },
-    
-    loading: function() {
-      debugger;
-    },
-    
-    showPageLoadingMsg: function() {
-      debugger;
-    },
-    
-    hidePageLoadingMsg: function() {
-      debugger;
+  var $w;
+  if (G.isJQM()) {
+    $w = $.mobile;
+  }
+  else {
+    $w = {
+      scrollTo: function() {
+        debugger;
+      },
+      
+      silentScroll: function() {
+        debugger;
+      },
+      
+      loading: function() {
+        debugger;
+      },
+      
+      showPageLoadingMsg: function() {
+        debugger;
+      },
+      
+      hidePageLoadingMsg: function() {
+        debugger;
+      }
     }
   }
+  
+//  $w._urbienTemplates = ;
+  return $w;
 });
