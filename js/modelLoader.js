@@ -7,8 +7,9 @@ define('modelLoader', [
   'collections/ResourceList', 
   'apiAdapter', 
   'indexedDB',
-  'lib/fastdom'
-], function(G, _, Events, U, Resource, ResourceList, API, IndexedDBModule, Q) {
+  'lib/fastdom',
+  'cache'
+], function(G, _, Events, U, Resource, ResourceList, API, IndexedDBModule, Q, C) {
   var MODEL_CACHE = [],
       MODEL_PREFIX = 'model:',
       ENUMERATIONS_KEY = 'enumerations',
