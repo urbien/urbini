@@ -119,8 +119,7 @@ define('views/HorizontalListView', [
       if (!this._visible) {
         this._visible = true;
         this.el.dataset.viewid = this.cid;
-        this.$el.removeClass("hidden")
-                .trigger("create");
+        this.$el.trigger("create");
       }
     }
   }, {

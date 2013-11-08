@@ -336,14 +336,9 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
           if (info.src != DUMMY_IMG)
             continue;
           
-//          if (!this._started)
-//            this._start();
-          
-          if (!info.realSrc)
-            continue;
-
-          if (info.realSrc == DUMMY_IMG) {
+          if (!info.realSrc || info.realSrc == DUMMY_IMG) {
             cleanImage(img);
+            img.classList.remove("lazyImage"); // this image doesn't need to be lazy (now or in the future)
             continue;
           }
           

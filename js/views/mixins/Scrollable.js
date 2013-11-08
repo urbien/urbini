@@ -160,7 +160,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     initialize: function(options) {
       _.bindAll(this, '_initScroller', '_resetScroller', '_snapScroller', '_flingScroller', '_scrollTo', '_calculateScrollerSize', '_onSizeInvalidated', '_onScrollerClick', '_onScrollerActive', '_onScrollerInactive',
                       '_onScrollerMouseOut', '_onScrollerTouch', '_onScrollerDragStart', '_onScrollerDragEnd', '_onScrollerDrag', '_onScrollerSwipe', '_onKeyDown', '_onKeyUp', '_updateScrollPositionAndReset',
-                      '_onNativeScroll'); //, '_onScrollerRelease');
+                      '_onNativeScroll', '_checkIfScrolledToHead'); //, '_onScrollerRelease');
       
       this.onload(this._initScroller.bind(this));
       this.$el.addClass('scrollable');
@@ -202,7 +202,24 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       'drag': '_onScrollerDrag',
       'swipe': '_onScrollerSwipe',
       'dragstart': '_onScrollerDragStart',
-      'dragend': '_onScrollerDragEnd'
+      'dragend': '_onScrollerDragEnd',
+      'scrollo': '_checkIfScrolledToHead'
+    },
+    
+    /**
+     * on mobile devices, we want to trigger a native scroll event when the user reaches the top of the page so that the navbar shows
+     */
+    _checkIfScrolledToHead: function(e, info) {
+      if (this._getScrollAxis() == 'Y') {
+        if (!this._scrolledToHead && info.scrollTop == 0) { // && !this._scrollerProps._snapping) { // not sure we want to trigger this event if we're snapping 
+          this._scrolledToHead = true;
+          info._scrollo = true;
+          var scrollEvent = $.Event('scroll', info);
+          $(window).trigger(scrollEvent);
+        }
+        else
+          this._scrolledToHead = false;
+      }
     },
 
 //    myEvents: {
@@ -230,8 +247,10 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     _onNativeScroll: function(e) {
-      // Native scroll was prevented but we recorded the desired scroll location, now we scroll the scroller there manually 
-      this._scrollTo(SCROLL_OFFSET.X, SCROLL_OFFSET.Y);
+      if (!e._scrollo && this.isPageView()) {
+      // Native scroll was prevented but we recorded the desired scroll location, now we scroll the scroller there manually
+        this._scrollTo(SCROLL_OFFSET.X, SCROLL_OFFSET.Y);
+      }
     },
     
     _onScrollerActive: function() {
@@ -510,6 +529,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       if (jump)
         time = Math.min(time, maxJumpTime);
       
+      e.preventDefault();
       this._scrollTo(newPos.X, newPos.Y, time, ease);
     },
     
@@ -522,6 +542,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         return;
 
 //      this.log('KEYING UP', U.getKeyEventCode(e));
+      e.preventDefault();
       this._updateScrollPositionAndReset();
     },
 
@@ -895,8 +916,11 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         }
         
         this._queueScrollTimeout(function() {
+          var destination = _.clone(pos);
+          destination[axis] += distance;
           self._setScrollVelocity(0);
           self._updateScrollPosition(x, y);
+          self._triggerScrollEvent('scroll', scrollPosToOffset(destination));
           self._resetScroller();
           U.recycle(pingPos);
         }, time);
@@ -927,7 +951,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         transform: CSS.getTranslationString(x, y)
       });
       
-      this._triggerScrollEvent('scroll');
+//      this._triggerScrollEvent('scroll');
     },
 
     _getScrollPosition: function() {

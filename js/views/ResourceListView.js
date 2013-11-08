@@ -139,7 +139,7 @@ define('views/ResourceListView', [
       this._slidingWindowInsideBuffer = pageHeight * pages / 2; // how far away the viewport is from the closest border of the sliding window before we start to fetch more resources
       this._slidingWindowOutsideBuffer = pageHeight * pages / 4; // how far away the viewport is from the closest border of the sliding window before we need to adjust the window
 //      _slidingWindowBuffer: 800, // px, should depend on size of visible area of the list, speed of device, RAM
-      if (G.browser.mobile && dim < 500)
+      if (G.browser.mobile && pageHeight < 500)
         this._elementsPerPage = 5;
       else
         this._elementsPerPage = 10;

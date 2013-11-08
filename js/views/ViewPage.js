@@ -159,6 +159,7 @@ define('views/ViewPage', [
               this.friends.fetch({
                 success: function() {
                   if (this.friends.size()) {
+                    self.el.querySelector('#photogrid').classList.remove('hidden');
                     this.photogrid = new HorizontalListView({
                       model: this.friends, 
                       parentView: this, 
