@@ -407,11 +407,6 @@ define('lib/fastdom', ['globals', 'underscore'], function(G, _) {
         originalImmediate = immediate;
     
     return function debounced() {
-      if (!context && !args) {
-        context = this;
-        args = arguments;
-      }
-      
       if (immediate) {
         immediate = false;
         fn.apply(context, args);
@@ -419,7 +414,10 @@ define('lib/fastdom', ['globals', 'underscore'], function(G, _) {
       }
       
       if (!timeoutId) {
-        timeoutId = self.setTimeout(debounced, time);
+        timeoutId = self.setTimeout(function() {
+          debounced.apply(context, args);
+        }, time);
+        
         return;
       }
       
@@ -454,6 +452,7 @@ define('lib/fastdom', ['globals', 'underscore'], function(G, _) {
    * @return promise object that gets resolved after "frames" frames
    */
   FastDom.prototype.setTimeout = function(fn, ms /*, args... */) {
+    ms = ms || 0;
     var args = arguments[2];
     var task = FrameWatch.subscribe(function wrapped() {
       task._timeLeft -= FrameWatch.lastFrameDuration();

@@ -87,6 +87,7 @@ define('views/MasonryListView', [
     reloadMasonry: function(e) {
       if (!this.rendered) 
         return;
+      
       var ww = G.viewport.width;
       var brickW = (G.viewport.height > ww  &&  ww < 420) ? 272 : 205;
       var w = $(this.$el.find('.nab')).attr('width');
