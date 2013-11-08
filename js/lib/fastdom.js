@@ -402,11 +402,12 @@ define('lib/fastdom', ['globals', 'underscore'], function(G, _) {
   FastDom.prototype.debounce = function(fn, time, immediate) {
     var self = this,
         timeoutId,
-        context,
-        args,
         originalImmediate = immediate;
     
     return function debounced() {
+      var context = this,
+          args = arguments;
+      
       if (immediate) {
         immediate = false;
         fn.apply(context, args);
@@ -415,7 +416,7 @@ define('lib/fastdom', ['globals', 'underscore'], function(G, _) {
       
       if (!timeoutId) {
         timeoutId = self.setTimeout(function() {
-          debounced.apply(context, args);
+          fn.apply(context, args);
         }, time);
         
         return;
