@@ -152,7 +152,7 @@ define('views/ResourceListView', [
         this.refresh();
     },
     
-    onScroll: _.throttle(function(e, info) {
+    onScroll: Q.throttle(function(e, info) {
       if ((this.el == e.target || e.currentTarget.contains(this.el)) && this.isActive()) {
 //        console.log("SCROLL EVENT: ", info.scrollTop);
         this._updateViewport(info);
@@ -246,12 +246,18 @@ define('views/ResourceListView', [
       }
     },
 
-    dimension: function($el, value) {
-      var method = this._horizontal ? 'width' : 'height';
-      if (arguments.length == 2 && $el.hasClass('dummy'))
-        this.log('setting dummy {0} to {1}'.format(method, value));
+    setDimension: function($el, value) {
+      if ($el == this.dummies.head)
+        this.dummies.headDimension = value;
+      else if ($el == this.dummies.tail)
+        this.dummies.tailDimension = value;
       
-      return arguments.length == 1 ? $el[method]() : $el[method](value);
+      $el[0].style[this._horizontal ? 'width' : 'height'] = value + 'px';
+//      $el[this._horizontal ? 'width' : 'height'](value);
+    },
+    
+    getDimension: function($el) {
+      return $el[this._horizontal ? 'width' : 'height']();
     },
     
     /**
@@ -362,7 +368,9 @@ define('views/ResourceListView', [
       var dummies = this.$el.children('.dummy');
       return {
         head: dummies.filter('.head'),
-        tail: dummies.filter('.tail')
+        headDimension: 0,
+        tail: dummies.filter('.tail'),
+        tailDimension: 0
       }
     },
 
@@ -407,7 +415,6 @@ define('views/ResourceListView', [
     */
     addPages: function(n, atTheHead, force) {
 //      this.log('SLIDING WINDOW', 'adding pages' + (atTheHead ? ' at the head' : ''));
-//      console.log("ADDING", n, "PAGES");
       n = n || 1;
       var self = this,
           col = this.collection,
@@ -462,27 +469,49 @@ define('views/ResourceListView', [
       else
         return this._addPages(n, atTheHead, info);
     },
+
+    _getDummy: function(head) {
+      return this.dummies[head ? 'head' : 'tail'];
+    },
+
+    _getDummyDimension: function(head) {
+      return this.dummies[(head ? 'head' : 'tail') + 'Dimension']
+    },
     
     _addPages: function(n, atTheHead, info) {
+      this.log("PAGER", "ADDING", n, "PAGES");
       var self = this,
           pageTag = this.getPageTag(),
-          pageAttributes = this.getPageAttributes(),
+          pageAttributes,
           pageClasses = this.getWidgetLibClasses() || '',
     //      sizes = this._slidingWindowAddRemoveInfo,
           colRange = this._collectionRange = info.range,
           col = this.collection,
           numRendered = 0,
           numPagesRendered = 0,
-          pageStartTag = '<{0} class="listPage {1}" {2}>'.format(pageTag, pageClasses, pageAttributes),
+          pageStartTag,
           pageEndTag = '</{0}>'.format(pageTag),
           stop = false,
           dfd = $.Deferred(),
           promise = dfd.promise(),
-          $dummy = this.dummies[atTheHead ? 'head' : 'tail'], 
+          $dummy = this._getDummy(atTheHead),
+          dummyDim = this._getDummyDimension(atTheHead),
+          newDummyDim, 
           currentPageHtml = [],
-          dummyDim, pages, slidingWindowBefore, slidingWindowAfter, postRenderResult, finish;
+          pages, slidingWindowBefore, slidingWindowAfter, postRenderResult, finish;
       
-      finish = Q.nonDom.bind(Q, dfd.resolve);
+      function finish() {
+        if (newDummyDim != dummyDim) {
+//          Q.defer(1, 'write', function() {
+          Q.write(function() {
+            self.setDimension($dummy, newDummyDim);
+            dfd.resolve();
+          });
+        }
+        else
+          dfd.resolve();
+      };
+      
       label(promise);
       dfd.done(function() {
         self._pagesCurrentlyInSlidingWindow += n;
@@ -496,7 +525,7 @@ define('views/ResourceListView', [
 
         if (isFirst) {
           currentPageHtml.length = 0;
-          currentPageHtml[currentPageHtml.length] = pageStartTag;
+          currentPageHtml[currentPageHtml.length] = '<{0} class="listPage {1}" {2}>'.format(pageTag, pageClasses, this.getPageAttributes());
         }
         
         if (liView !== false) {
@@ -506,9 +535,9 @@ define('views/ResourceListView', [
         }
         
         if (isLast) {
-          if (currentPageHtml != pageStartTag) {
+          if (currentPageHtml.length > 1) {
             currentPageHtml[currentPageHtml.length] = pageEndTag;
-            info.html[info.html.length] = currentPageHtml;
+            info.html[info.html.length] = currentPageHtml.join("");
             numPagesRendered++;
           }
         }
@@ -536,25 +565,12 @@ define('views/ResourceListView', [
           return;
         }
         
-        dummyDim = self.dimension($dummy) || 0;
         slidingWindowBefore = self.getSlidingWindow();
         Q.write(function insertPage() {
-//          console.log("PAGER", "ADDING PAGE, FRAME", window.fastdom.frameNum);
-//          page.append(frag);
-          for (var i = 0; i < numPagesRendered; i++) {
-            info.html[i] = info.html[i].join("");
-          }
-          
+//          self.log("PAGER", "ADDING PAGE, FRAME", window.fastdom.frameNum);
           info.page = pages = $($.parseHTML(info.html.join(""), doc));
-//          var imgs = info.page[0].getElementsByTagName('img'),
           var lis = info.page[0].getElementsByTagName('li'),
-              newDummyDim = dummyDim, // default
-              childViews = [],
-              parentPosition = self.parentView.getPosition();
-          
-//          for (var i = 0; i < imgs.length; i++) {
-//            imgs[i].classList.add('lazyImage');
-//          }
+              childViews = [];
           
           for (var i = 0; i < lis.length; i++) {
             var li = lis[i],
@@ -574,25 +590,14 @@ define('views/ResourceListView', [
           self._pages[atTheHead ? 'unshift' : 'push'].apply(self._pages, pages.map(function() { return $(this) } ));
           pages[atTheHead ? 'insertAfter' : 'insertBefore']($dummy);
           postRenderResult = self.postRender(info);
-//          for (var i = 0, len = childViews.length; i < len; i++) {
-////            self.updateChildGeography(childViews[i]);
-//            var child = childViews[i],
-//                el = child.el,
-//                offsetX = el.offsetLeft,
-//                offsetY = el.offsetTop;
-//            
-////            child.setParentOffset(parentPosition);
-////            console.log("CHILD OFFEST", childViews[i].el.offsetTop);
-//          }
           
-          // on next frame
+          // if dummy dimension changed, we will use it on the next frame (in the "finish" function)
           if (colRange.from == 0)
             newDummyDim = 0;
           else if (dummyDim > 0)
-            newDummyDim = Math.max(dummyDim - self.dimension(pages), 0);
-          
-          if (newDummyDim != dummyDim)
-            self.dimension($dummy, newDummyDim);
+            newDummyDim = Math.max(dummyDim - self.getDimension(pages), 0);
+          else
+            newDummyDim = dummyDim;
           
           if (_.isPromise(postRenderResult))
             postRenderResult.always(finish);
@@ -679,24 +684,29 @@ define('views/ResourceListView', [
      * @return offsets on all sides of the sliding window
      */
     getSlidingWindow: function() {
-      var children = this.getListItems(),
-          first = children[0],
-          last = _.last(children);
+//      var children = this.getListItems(),
+//          first = children[0],
+//          last = _.last(children);
+//      
+//      if (first) {
+//        first = $(first);
+//        last = $(last);
+//        return {
+//          head: this.getHeadPosition(first),
+//          tail: this.getHeadPosition(last) + this.dimension(last)
+//        };
+//      }
+//      else {
+//        var head = this.getHeadPosition(this.$el);
+//        return {
+//          head: head,
+//          tail: head
+//        }
+//      }
       
-      if (first) {
-        first = $(first);
-        last = $(last);
-        return {
-          head: this.getHeadPosition(first),
-          tail: this.getHeadPosition(last) + this.dimension(last)
-        };
-      }
-      else {
-        var head = this.getHeadPosition(this.$el);
-        return {
-          head: head,
-          tail: head
-        }
+      return {
+        head: this.getHeadPosition(this.dummies.head) + this.dummies.headDimension,
+        tail: this.getHeadPosition(this.dummies.tail)
       }
     },
 
@@ -705,7 +715,7 @@ define('views/ResourceListView', [
      * @return a promise
      */
     _growSlidingWindow: function(n, head) {
-//      this.log('SLIDING WINDOW', 'growing sliding window');
+      this.log('PAGER', 'GROWING SLIDING WINDOW');
       n = n || 1;
       var self = this;
 //      this.calcAddRemoveSize(n, true, head);
@@ -718,6 +728,7 @@ define('views/ResourceListView', [
         
         promise.done(function() {
           self._pagesInSlidingWindow = Math.max(self._pagesCurrentlyInSlidingWindow, self._pagesInSlidingWindow);
+          console.log("GREW SLIDING WINDOW TO", self._pagesCurrentlyInSlidingWindow);
           self.getNewSize();
           defer.resolve();
         }).fail(defer.reject);
@@ -789,7 +800,7 @@ define('views/ResourceListView', [
      * The reason we keep dummy divs on both sides of the sliding window and not just at the top is to preserve the integrity of the scroll bar, which would otherwise revert back to 0 if you scrolled back up to the top of the page
      */
     removePages: function(n, fromTheHead) {
-//      this.log('SLIDING WINDOW', 'removing pages');
+      this.log("PAGER", "REMOVING", n, "PAGES");
       var self = this,
           removedViews = [],
           removedPages,
@@ -798,8 +809,6 @@ define('views/ResourceListView', [
           head,
           tail,
           splitIdx,
-          $dummy,
-          dummyDim,
           removedPageDim,
 //          ,
 //      var sizes = this._slidingWindowAddRemoveInfo,
@@ -818,11 +827,10 @@ define('views/ResourceListView', [
       splitIdx = fromTheHead ? n : this._pages.length - n;
       removedPages = fromTheHead ? this._pages.slice(0, splitIdx) : this._pages.slice(splitIdx);
       this._pages = fromTheHead ? this._pages.slice(splitIdx) : this._pages.slice(0, splitIdx);      
-      $dummy = this.dummies[fromTheHead ? 'head' : 'tail'];
       Q.read(function() {
         for (var i = 0, len = removedPages.length; i < len; i++) {
           var $page = removedPages[i],
-              children = $page.find('[data-viewid]');
+              children = $page[0].childNodes;
           
           for (var j = 0, numChildren = children.length; j < numChildren; j++) {
             var child = children[j],
@@ -837,31 +845,42 @@ define('views/ResourceListView', [
           }
         }
 
-        dummyDim = self.dimension($dummy) || 0;        
         removedPageDim = _.reduceRight(removedPages, function(memo, page) { 
-          return memo + self.dimension(page); 
+          return memo + self.getDimension(page); 
         }, 0);
       });
 
       Q.write(function removePagesFromDOM() {
-//        console.log("PAGER", "REMOVING PAGES, FRAME", window.fastdom.frameNum);
         for (var i = 0, len = removedPages.length; i < len; i++) {
-          removedPages[i].remove();
+          removedPages[i].remove(); //detach().empty();
         }
-        
-//        this.dimension($dummy, sizes[fromTheHead ? 'head' : 'tail'] + sizes.removedPageSize);
-//        console.log("PAGER", "UPDATING {0} DUMMY SIZE".format(fromTheHead ? "HEAD" : "TAIL"));
-        self.dimension($dummy, dummyDim + removedPageDim);
-        Q.nonDom(dfd.resolve);
-      });
 
-      Q.defer(5, 'nonDom', function destroyChildren() {
         for (var i = 0, len = removedViews.length; i < len; i++) {
           var view = removedViews[i];
           self.stopListening(view.resource);
-          Q.defer(i + 1, 'nonDom', view.destroy, view); // destroy uses animationQueue
+          view.destroy();
         }
+        
+//        this.dimension($dummy, sizes[fromTheHead ? 'head' : 'tail'] + sizes.removedPageSize);
+        self.log("PAGER", "UPDATING {0} DUMMY SIZE".format(fromTheHead ? "HEAD" : "TAIL"));
+//        Q.defer(1, 'write', function() {
+          self.setDimension(self._getDummy(fromTheHead), self._getDummyDimension(fromTheHead) + removedPageDim);
+          dfd.resolve();
+//        });
       });
+
+//      Q.defer(5, 'nonDom', function destroyChildren() {
+//        for (var i = 0, len = removedPages.length; i < len; i++) {
+//          removedPages[i].empty();
+//        }
+//        
+//        for (var i = 0, len = removedViews.length; i < len; i++) {
+//          var view = removedViews[i];
+//          self.stopListening(view.resource);
+//          view.destroy();
+////          Q.defer(i + 1, 'nonDom', view.destroy, view); // destroy uses animationQueue
+//        }
+//      });
       
       return dfd.promise();
     },
@@ -875,7 +894,7 @@ define('views/ResourceListView', [
       }
     },
 
-//    getNextPage: function(numResourcesToFetch) {
+//    getFakeNextPage: function(numResourcesToFetch) {
 //      if (this._isPaging)
 //        return this._pagingPromise;
 //      

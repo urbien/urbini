@@ -81,7 +81,7 @@ define('resourceManager', [
       });
     },
 
-    cleanDatabaseAndReopen: _.debounce(function(del) {
+    cleanDatabaseAndReopen: Q.debounce(function(del) {
       return RM.cleanDatabase(del).then(RM.openDB, RM.openDB);
     }, 2000, true),
 

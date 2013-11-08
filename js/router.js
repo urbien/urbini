@@ -105,7 +105,7 @@ define('router', [
       });
 
       Events.once('pageChange', this.loadTourGuide.bind(this));
-      Events.on('back', _.debounce(function(ifNoHistory) {
+      Events.on('back', Q.debounce(function(ifNoHistory) {
 //        var now = +new Date();
 //        if (self.lastBackClick && now - self.lastBackClick < 100)
 //          debugger;

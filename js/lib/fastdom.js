@@ -9,7 +9,7 @@
  * @author Wilson Page <wilsonpage@me.com>
  */
 
-define('lib/fastdom', ['globals'], function(G) {
+define('lib/fastdom', ['globals', 'underscore'], function(G, _) {
   'use strict';
   var raf = window.raf,
       caf = window.caf,
@@ -18,7 +18,8 @@ define('lib/fastdom', ['globals'], function(G) {
       FRAME_END = 14,
       modeOrder = ['nonDom', 'read', 'write'],
       numModes = modeOrder.length,
-      BYPASS = false;
+      BYPASS = false,
+      TIMER_RESOLUTION = 20;
   
   /**
    * Creates a fresh
@@ -80,35 +81,71 @@ define('lib/fastdom', ['globals'], function(G) {
   }
   
   var FrameWatch = window.FrameWatch = (function() {
-    var listeners = [],
+    var taskCounter = 0,
+        listeners = {},
+        lastFrameStart,
+        lastFrameDuration,
         frameId;
     
-    function subscribe(callback) {
-      listeners.push(callback);
-      if (frameId === undefined)
-        frameId = raf(publish);
+    function invoke(listener) {
+      if (listener.length == 1)
+        return listener[0]();
+      else if (listener.length == 2)
+        listener[0].call(listener[1]);
+      else
+        listener[0].apply(listener[1], listener[2]);        
     }
     
-    function unsubscribe(callback) {
-      Array.remove(listeners, callback);
-      if (!listeners.length && frameId !== undefined) {
-        caf(frameId);
-        frameId = undefined;
+    function subscribe(fn /*, ctx, args */) {
+      var id = taskCounter++;
+      listeners[id] = arguments;
+      arguments._taskId = id;
+      if (frameId === undefined) {
+        frameId = raf(publish);
+        lastFrameStart = _.now();
+      }
+      
+      return arguments;
+    }
+    
+    function unsubscribe(id) {
+      try {
+        if (listeners[id]) {
+          delete listeners[id];
+          return true;
+        }
+      } finally {
+        if (!_.size(listeners) && frameId !== undefined) {
+          caf(frameId);
+          frameId = undefined;
+        }
       }
     }
 
     function publish() {
+      var now = _.now();
+      lastFrameDuration = now - lastFrameStart;
+      lastFrameStart = now;
       frameId = raf(publish);
-      for (var i = listeners.length - 1; i > -1; i--) {
-        listeners[i]();
+      for (var id in listeners) {
+        invoke(listeners[id]);
       }
     }
     
     return {
+      _getRawTasks: function() {
+        return listeners;
+      },
       subscribe: subscribe,
       unsubscribe: unsubscribe,
+      lastFrameDuration: function() {
+        return lastFrameDuration;
+      },
       isRunning: function() {
         return frameId !== undefined;
+      },
+      getTask: function(id) {
+        return listeners[id];
       }
     }
   })();
@@ -132,18 +169,6 @@ define('lib/fastdom', ['globals'], function(G) {
     G.log.apply(G, args);
 //    console.log.apply(console, args);
   };
-
-//  FastDom.prototype.nextFramePromise = function() {
-//    if (this.mode == null && !this.pending)
-//      return G.getResolvedPromise();
-//      
-//    if (!this._nextFramePromise || this._nextFramePromise.state() != 'pending') {
-//      this._nextFrameDeferred = $.Deferred();
-//      this._nextFramePromise = this._nextFrameDeferred.promise();
-//    }
-//    
-//    return this._nextFramePromise;
-//  };
 
   /**
    * Removes a job from the queue
@@ -229,7 +254,10 @@ define('lib/fastdom', ['globals'], function(G) {
     }
     
     this.pending = true;
-    raf(this.frame);
+    var task = FrameWatch.subscribe(function() {
+      FrameWatch.unsubscribe(task._taskId);
+      this.frame();
+    }, this);
   };
 
   FastDom.prototype.startFrame = function() {
@@ -305,8 +333,6 @@ define('lib/fastdom', ['globals'], function(G) {
    */
   FastDom.prototype.frame = function() {
     var postponed = false;
-//    if (this._nextFrameDeferred)
-//      this._nextFrameDeferred.resolve();
     
     // Set the pending flag to
     // false so that any new requests
@@ -338,16 +364,17 @@ define('lib/fastdom', ['globals'], function(G) {
    */
   FastDom.prototype.wait = function(frames) {
     var dfd = $.Deferred(),
-        promise = dfd.promise();
+        promise = dfd.promise(),
+        task;
     
 //    waiting.push(promise);
 //    promise.done(function() {
 //      Array.remove(waiting, promise);
 //    });
     
-    FrameWatch.subscribe(function wrapped() {
+    task = FrameWatch.subscribe(function wrapped() {
       if (!(frames--)) {
-        FrameWatch.unsubscribe(wrapped);
+        FrameWatch.unsubscribe(task._taskId);
         dfd.resolve();
         return;
       }
@@ -355,7 +382,94 @@ define('lib/fastdom', ['globals'], function(G) {
     
     return promise;
   };
+
+  FastDom.prototype.throttle = function(fn, time) {
+    var self = this,
+        timeoutId;
+    
+    function reset() {
+      timeoutId = null;
+    }
+    
+    return function throttled() {
+      if (!timeoutId || !self.resetTimeout(timeoutId)) { // if we couldn't reset the timeout, it means it expired already
+        timeoutId = self.setTimeout(reset, time);
+        fn.apply(this, arguments);
+      }
+    };
+  };
+
+  FastDom.prototype.debounce = function(fn, time, immediate) {
+    var self = this,
+        timeoutId,
+        originalImmediate = immediate;
+    
+    return function debounced() {
+      var context = this, 
+          args = arguments;
+      
+      if (immediate) {
+        immediate = false;
+        fn.apply(context, args);
+        return;
+      }
+      
+      if (!timeoutId) {
+        timeoutId = self.setTimeout(debounced, time);
+        return;
+      }
+      
+      if (self.resetTimeout(timeoutId)) // if we managed to reset the timeout, it means it hasn't expired yet
+        return;
+
+      // reset to initial conditions and call fn
+      timeoutId = null;
+      immediate = originalImmediate; 
+      fn.apply(context, args);
+    };
+  };
+
+  /**
+   * Starts the timeout over, less expensive than setting a new timeout (when debouncing for instance)
+   * @return true if the timer was successfully reset, false otherwise
+   */
+  FastDom.prototype.resetTimeout = function(id) {
+    if (typeof id == 'undefined')
+      return false;
+    
+    var task = FrameWatch.getTask(id);
+    if (task) {
+      task._timeLeft = task._timeout;
+      return true;
+    }
+    else
+      return false;
+  };
+
+  /**
+   * @return promise object that gets resolved after "frames" frames
+   */
+  FastDom.prototype.setTimeout = function(fn, ms /*, args... */) {
+    var args = arguments[2];
+    var task = FrameWatch.subscribe(function wrapped() {
+      task._timeLeft -= FrameWatch.lastFrameDuration();
+      if (task._timeLeft < TIMER_RESOLUTION) {
+        FrameWatch.unsubscribe(task._taskId); // important to unsubscribe first, otherwise if resetTimeout is called inside fn, it will give the illusion of resetting the timer without actually resetting it
+        if (args)
+          fn.apply(null, args);
+        else
+          fn();
+      }
+    });
+    
+    task._timeout = task._timeLeft = ms;
+    return task._taskId;
+  };
   
+  FastDom.prototype.clearTimeout = function(id) {
+    return FrameWatch.unsubscribe(id);
+  };
+
   FastDom.prototype.waitOne = function() {
     return this.wait(1);
   };
@@ -379,9 +493,9 @@ define('lib/fastdom', ['globals'], function(G) {
     var self = this;
     var job = this.add('defer', this[type].bind(this, fn, ctx, args, options)); // use regular queueing mechanism
     
-    FrameWatch.subscribe(function wrapped() {
+    var task = FrameWatch.subscribe(function wrapped() {
       if (!(frames--)) {
-        FrameWatch.unsubscribe(wrapped);
+        FrameWatch.unsubscribe(task._taskId);
         self.run(job);
         job = null; // prevent circular ref in case job has a property that points to this (like ctx) 
         return;
@@ -487,5 +601,10 @@ define('lib/fastdom', ['globals'], function(G) {
     return job;
   }
   
-  return window.fastdom = new FastDom();
+  var fastdom = new FastDom();
+  window.setTimeout = fastdom.setTimeout;
+  window.clearTimeout = fastdom.clearTimeout;
+  window.resetTimeout = fastdom.resetTimeout;
+  window.fastdom = fastdom;
+  return fastdom;
 })

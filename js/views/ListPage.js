@@ -206,7 +206,7 @@ define('views/ListPage', [
       this.$filter.focus();
     },
     
-    onFilter: _.debounce(function(e, data) {
+    onFilter: Q.debounce(function(e, data) {
       var filtered = this.filteredCollection,
           collection = this.collection,
           value = e.target.value,

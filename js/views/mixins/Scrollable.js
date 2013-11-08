@@ -524,8 +524,12 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       newPos = this._limitToBounds(newPos);
       if (_.isEqual(newPos, pos))
         return;
-            
-      time = time ? Math.abs(time) : this._calcAnimationTime(pos, newPos);
+      
+      if (distance > s.metrics.container[axis == 'X' ? 'width' : 'height'])
+        time = time ? Math.abs(time) : this._calcAnimationTime(pos, newPos);
+      else
+        time = 0;
+      
       if (jump)
         time = Math.min(time, maxJumpTime);
       
@@ -607,7 +611,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         });
       } else {
         var self = this;
-        frame[domMethod]('DOMSubtreeModified', _.debounce(function (e) {
+        frame[domMethod]('DOMSubtreeModified', Q.debounce(function (e) {
           // Ignore changes to nested FT Scrollers - even updating a transform style
           // can trigger a DOMSubtreeModified in IE, causing nested scrollers to always
           // favour the deepest scroller as parent scrollers 'resize'/end scrolling.
@@ -639,10 +643,15 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
           period = this._sizeInvalidatedDebouncePeriod;
       
       this._sizeInvalidatedTime = now;
-      clearTimeout(this._sizeInvalidatedTimer);
       if (now - lastInvalidated < period) {
-        this._sizeInvalidatedTimer = setTimeout(this._onSizeInvalidated, period);
-        return;
+        if (this._sizeInvalidatedTimer) {
+          if (Q.resetTimeout(this._sizeInvalidatedTimer)) // if we were able to reset it, it means the timer hasn't expired yet
+            return;
+        }
+        else {
+          this._sizeInvalidatedTimer = setTimeout(this._onSizeInvalidated, period);
+          return;
+        }
       }
       
 //      if (!this.isPageView()) {
@@ -937,6 +946,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       else {
         this._updateScrollPosition(x, y);
         this._setViewportDestination(x, y, 0);
+        this._triggerScrollEvent('scroll');
       }
       
       Q.write(this._setScrollerCSS, this, [x, y, time, ease], {
@@ -1072,7 +1082,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     
     _setViewportDestination: function(x, y, timeToDestination) {
       this.trigger('viewportDestination', x, y, timeToDestination);
-      this.log(this.TAG, "VIEWPORT DESTINATION:", x, y, "IN", timeToDestination, "MILLIS");
+//      this.log("VIEWPORT DESTINATION:", x, y, "IN", timeToDestination, "MILLIS");
       this._viewportDestination.X = x;
       this._viewportDestination.Y = y;
       this._viewportArrivalTime = _.now() + timeToDestination;

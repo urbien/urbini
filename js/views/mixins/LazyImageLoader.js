@@ -85,7 +85,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     },
     
     initialize: function() {
-      _.bindAll(this, '_showImages', '_queueImageLoad', '_queueImageFetch', '_queueImageUpdate', '_showAndHideImages');
+      _.bindAll(this, '_showImages', /*'_queueImageLoad', */'_queueImageFetch', '_queueImageUpdate', '_showAndHideImages');
     },
 
     _queueImagesJob: function() {
@@ -110,10 +110,8 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     },
     
     _start: function() { 
-      if (!this._started) {
-  //      this._lazyImages = getDummyImages(this.$el);
+      if (!this._started)
         this._showImages();
-      }
     },
 
     _stop: function() {
@@ -181,28 +179,28 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
         this._loadImages(this._lazyImages);
     },
     
-    _queueImageLoad: function(e) {
-      this._loadQueue.push(e.target);
-      this._processImageLoadQueue();
-    },
-    
-    _processImageLoadQueue: function() {
-      if (this.isActive())
-        this._doProcessImageLoadQueue();
-    },
-
-    _doProcessImageLoadQueue: _.debounce(function() {
-      var loadQueue = U.clone(this._loadQueue);
-      this._loadQueue.length = 0;
-      this._loadImages(loadQueue).always(U.recycle.bind(U, loadQueue));
-    }, 100),
+//    _queueImageLoad: function(e) {
+//      this._loadQueue.push(e.target);
+//      this._processImageLoadQueue();
+//    },
+//    
+//    _processImageLoadQueue: function() {
+//      if (this.isActive())
+//        this._doProcessImageLoadQueue();
+//    },
+//
+//    _doProcessImageLoadQueue: Q.debounce(function() {
+//      var loadQueue = U.clone(this._loadQueue);
+//      this._loadQueue.length = 0;
+//      this._loadImages(loadQueue).always(U.recycle.bind(U, loadQueue));
+//    }, 100),
 
     _queueImageFetch: function(img) {
       this._fetchQueue.push(img);
       this._processImageFetchQueue();
     },
     
-    _processImageFetchQueue: _.debounce(function() {
+    _processImageFetchQueue: Q.debounce(function() {
       this._fetchImages(this._fetchQueue);
     }, 100),
 
@@ -211,53 +209,53 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
       this._processImageUpdateQueue();
     },
     
-    _processImageUpdateQueue: _.debounce(function() {
+    _processImageUpdateQueue: Q.debounce(function() {
       this._updateImages(this._updateQueue);
       this._updateQueue.length = 0;
     }, 100),
 
-    _delayImage: function(img) {
-      var idx = this._delayedImages.indexOf(img);
-      if (~idx) {
-        var count = this._delayedImagesCounts[idx];
-        if (count > 3) {
-          this._delayedImages.splice(idx, 1);
-          this._delayedImagesCounts.splice(idx, 1);
-        }
-        else
-          this._delayedImagesCounts[idx]++;
-      }
-      else {
-        this._delayedImages.push(img)
-        this._delayedImagesCounts.push(0);
-        this._loadDelayedImages();
-      }
-    },
-    
-    _loadDelayedImages: _.debounce(function() {
-      if (!this._delayedImages.length)
-        return;
-      
-      var self = this,
-          counts = U.clone(this._delayedImagesCounts),
-          delayedImages = U.clone(this._delayedImages),
-          newCounts;
-      
-      this._delayedImages.length = 0;
-      this._loadImages(delayedImages).always(function() {
-        U.recycle(delayedImages);
-        newCounts = self._delayedImagesCounts;
-        for (var i = counts.length - 1; i >= 0; i--) {
-          if (counts[i] == newCounts[i]) {
-            self._delayedImages.splice(i, 1);
-            self._delayedImagesCounts.splice(i, 1); 
-          }
-        }
-        
-        if (self._delayedImages.length)
-          self._loadDelayedImages();
-      });
-    }, 100),
+//    _delayImage: function(img) {
+//      var idx = this._delayedImages.indexOf(img);
+//      if (~idx) {
+//        var count = this._delayedImagesCounts[idx];
+//        if (count > 3) {
+//          this._delayedImages.splice(idx, 1);
+//          this._delayedImagesCounts.splice(idx, 1);
+//        }
+//        else
+//          this._delayedImagesCounts[idx]++;
+//      }
+//      else {
+//        this._delayedImages.push(img)
+//        this._delayedImagesCounts.push(0);
+//        this._loadDelayedImages();
+//      }
+//    },
+//    
+//    _loadDelayedImages: Q.debounce(function() {
+//      if (!this._delayedImages.length)
+//        return;
+//      
+//      var self = this,
+//          counts = U.clone(this._delayedImagesCounts),
+//          delayedImages = U.clone(this._delayedImages),
+//          newCounts;
+//      
+//      this._delayedImages.length = 0;
+//      this._loadImages(delayedImages).always(function() {
+//        U.recycle(delayedImages);
+//        newCounts = self._delayedImagesCounts;
+//        for (var i = counts.length - 1; i >= 0; i--) {
+//          if (counts[i] == newCounts[i]) {
+//            self._delayedImages.splice(i, 1);
+//            self._delayedImagesCounts.splice(i, 1); 
+//          }
+//        }
+//        
+//        if (self._delayedImages.length)
+//          self._loadDelayedImages();
+//      });
+//    }, 100),
     
     _getViewportAdjustmentForDestination: function() {
       var viewportDestination = this._getViewportDestination(),
@@ -308,8 +306,14 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
       return infos;
     },
     
+    log: function() {
+      var args = _.toArray(arguments);
+      args.unshift('LazyImageLoader', 'events');
+      G.log.apply(G, args);
+    },
+    
     _loadImages: function(imgs) {
-      console.log("LOADING LAZY IMAGES");
+//      this.log("LOADING LAZY IMAGES");
       if (!imgs.length)
         return G.getRejectedPromise();
       
@@ -337,8 +341,11 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
             continue;
           
           if (!info.realSrc || info.realSrc == DUMMY_IMG) {
-            cleanImage(img);
-            img.classList.remove("lazyImage"); // this image doesn't need to be lazy (now or in the future)
+            Q.write(function() {              
+              cleanImage(img);
+              img.classList.remove("lazyImage"); // this image doesn't need to be lazy (now or in the future)
+            });
+            
             continue;
           }
           
@@ -372,59 +379,63 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     },
 
     _updateImages: function(imagesData) {
-      for (var i = 0, num = imagesData.length; i < num; i++) {
-        this._updateImage.apply(this, imagesData[i]);
-      }
-    },
-
-    _updateImage: function(img, info) {
-      var self = this;
-      var imgJobId = Q.write(function() {        
+      var self = this,
+          imgJobId;
+      
+      imgJobId = Q.write(function() {        
         if (!self._hasImageJob(imgJobId))
           return;
         
-  //      this.log('imageLoad', 'lazy loading image: ' + info.realSrc);
-        cleanImage(img);
-        img.classList.remove('lazyImage');
-        img.classList.add('wasLazyImage');
-        if (_.has(info, 'width'))
-          img.style.width = info.width;
-        if (_.has(info, 'height'))
-          img.style.height = info.height;
-//        if (info.onerror)
-//          img.onerror = info.onerror;
-        if (info.data) {
-          var src = URL.createObjectURL(info.data); // blob or file
-          var onload = info.onload;
-          img.onload = function() {
-            try {
-              return onload && onload.apply(this, arguments);
-            } finally {
-              URL.revokeObjectURL(src);
-            }
-          };
-          
-          img.src = src;
-          if (info.realSrc)
-            img.setAttribute(LAZY_DATA_ATTR, info.realSrc);
+        for (var i = 0, num = imagesData.length; i < num; i++) {
+          self._updateImage.apply(self, imagesData[i]);
         }
-        else if (info.realSrc) {
-          if (info.onload)
-            img.onload = info.onload; // probably store img in local filesystem
-          img.src = info.realSrc;
-        }
-        
-        _.wipe(info); // just in case it gets leaked...yea, that sounds bad
       });
       
       this._addImageJob(imgJobId);
+    },
+
+    _updateImage: function(img, info) {
+      cleanImage(img);
+      img.classList.remove('lazyImage');
+      img.classList.add('wasLazyImage');
+      if (_.has(info, 'width'))
+        img.style.width = info.width;
+      if (_.has(info, 'height'))
+        img.style.height = info.height;
+//        if (info.onerror)
+//          img.onerror = info.onerror;
+      if (info.data) {
+        var src = URL.createObjectURL(info.data); // blob or file
+        var onload = info.onload;
+        img.onload = function() {
+          try {
+            return onload && onload.apply(this, arguments);
+          } finally {
+            URL.revokeObjectURL(src);
+          }
+        };
+        
+        img.src = src;
+        if (info.realSrc)
+          img.setAttribute(LAZY_DATA_ATTR, info.realSrc);
+      }
+      else if (info.realSrc) {
+        if (info.onload)
+          img.onload = info.onload; // probably store img in local filesystem
+        img.src = info.realSrc;
+      }
+      
+      _.wipe(info); // just in case it gets leaked...yea, that sounds bad      
     },
     
     _fetchImages: function(imgs, infos) {
       // do all DOM reads first, then writes
       imgs = imgs.slice();
-      var self = this;
-      var imgJobId = Q.read(function() {
+      var self = this,
+          toUpdate = [],
+          imgJobId;
+      
+      imgJobId = Q.read(function() {
         if (!self._hasImageJob(imgJobId))
           return;
         
@@ -433,9 +444,11 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
           var img = imgs[i],
               info = infos[i];
           
-          this._fetchImage(imgs[i], infos[i]);
+          if (this._fetchImage(img, info))
+            toUpdate[toUpdate.length] = [img, info];
         }
         
+        this._updateImages(toUpdate);
         this._fetchQueue.length = 0;
       }, this);
       
@@ -443,15 +456,16 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     },
 
     _fetchImage: function(img, info) {
-      var imgInfo, // { cid: {String} resource cid for the resource to which this image belongs, prop: {String} property name }
+      var self = this,
+          imgInfo, // { cid: {String} resource cid for the resource to which this image belongs, prop: {String} property name }
           res,
           prop,
           imgUri;
       
       Array.remove(this._lazyImages, img);      
       if (info.data) {
-        this._queueImageUpdate(img, info);
-        return;
+//        this._queueImageUpdate(img, info);
+        return true;
       }
       
       if (!(imgInfo = info['for'])) {
@@ -474,20 +488,22 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
           res.unset(dataProp, { silent: true }); // don't keep the file/blob in memory
           if (typeof data == 'string') {
             info.src = data;
-            this._queueImageUpdate(img, info);
+//            this._queueImageUpdate(img, info);
+            return true;
   //            img.src = data;
           }
           else if (isBlob || isFile) {
             img[isBlob ? 'blob' : 'file'] = info.data = data; // do keep file/blob on the image
-            this._queueImageUpdate(img, info);
+//            this._queueImageUpdate(img, info);
+            return true;
           }
           else if (data._filePath) {
             U.require('fileSystem').done(function(FS) {
               FS.readAsFile(data._filePath, data._contentType).done(function(file) {
                 img.file = info.data = file; // do keep file/blob on the image
-                this._queueImageUpdate(img, info);
-              }.bind(this));
-            }.bind(this));
+                self._queueImageUpdate(img, info);
+              });
+            });
           }
           
           return;
@@ -530,7 +546,8 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
         };
       }
       
-      this._queueImageUpdate(img, info);
+//      this._queueImageUpdate(img, info);
+      return true;
     }
   }, {
     displayName: 'LazyImageLoader'

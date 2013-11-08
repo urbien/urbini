@@ -381,9 +381,16 @@ define('views/BasicView', [
       Events.trigger('viewDestroyed', this);
       Events.trigger('viewDestroyed:' + this.cid, this);
       
-      this.stopListening();
+      this.undelegateEvents();
+//      this.stopListening();
       this.unobserveMutations();
       this.$el.remove();
+      
+//      if (document.documentElement.contains(this.el)) {
+//        this.el.parentNode.removeChild(this.el);
+//      }
+//        this.$el.remove();
+      
 //      Q.start(this.$el.remove, this.$el);
       
 //      for (var i in viewProps) {

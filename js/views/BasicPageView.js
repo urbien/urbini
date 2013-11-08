@@ -7,9 +7,10 @@ define('views/BasicPageView', [
   'views/BasicView',
   'views/mixins/LazyImageLoader',
   'views/mixins/Scrollable',
+  'lib/fastdom',
   '@widgets',
   'jqueryImagesLoaded'
-], function(G, _, U, Events, BasicView, LazyImageLoader, Scrollable, $m) {
+], function(G, _, U, Events, BasicView, LazyImageLoader, Scrollable, Q, $m) {
   var MESSAGE_BAR_TYPES = ['info', 'error', 'tip', 'countdown'],
       pageEvents = ['page_show', 'page_hide', 'page_beforeshow'],
       viewportEvents = ['resize', 'orientationchange'],
@@ -27,13 +28,8 @@ define('views/BasicPageView', [
   }
   
   saveViewportSize();  
-  window.addEventListener('resize', _.debounce(function() {
-    saveViewportSize();
-  }, 20));
-
-  window.addEventListener('orientationchange', function() {
-    saveViewportSize();
-  }); 
+  window.addEventListener('resize', Q.debounce(saveViewportSize, 20));
+  window.addEventListener('orientationchange', saveViewportSize); 
 
   function isInsideDraggableElement(element) {
     return !!$(element).parents('[draggable=true]').length;
@@ -245,7 +241,7 @@ define('views/BasicPageView', [
 //      }
 //    }, 100),
 
-    _onViewportDimensionsChanged: _.debounce(function(e) {
+    _onViewportDimensionsChanged: Q.debounce(function(e) {
       if (this.$el)
         this.$el.triggerHandler(e.type);
       
