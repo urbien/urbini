@@ -13,7 +13,16 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       SCROLL_OFFSET = {
         X: 0,
         Y: 0
+      },
+      axisToDim= {
+        X: 'width',
+        Y: 'height'
+      },
+      dimToAxis= {
+        width: 'X',
+        height: 'Y'
       };
+
 
   var originalScroll = window.onscroll;
   window.onscroll = function(e) {
@@ -292,7 +301,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
 
     _updateScrollPositionAndReset: function() {
-      console.log("UPDATING SCROLL POSITION AND RESETTING");
+//      console.log("UPDATING SCROLL POSITION AND RESETTING");
       this._updateScrollPosition(); // parse from CSS
       this._triggerScrollEvent('scroll');
       this._stopScroller();
@@ -399,7 +408,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       var touch = e.gesture.touches[0],
           pos = s.position,
           axis = this._getScrollAxis(),
-          coordProp = axis == 'X' ? 'pageX' : 'pageY',
+          coordProp = 'page' + axis,
           distance = touch[coordProp] - s._start[coordProp],
           now = _.now(),
           time = now - s._startTime,
@@ -525,7 +534,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       if (_.isEqual(newPos, pos))
         return;
       
-      if (distance > s.metrics.container[axis == 'X' ? 'width' : 'height'])
+      if (distance > s.metrics.container[axisToDim[axis]])
         time = time ? Math.abs(time) : this._calcAnimationTime(pos, newPos);
       else
         time = 0;
@@ -645,7 +654,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       this._sizeInvalidatedTime = now;
       if (now - lastInvalidated < period) {
         if (this._sizeInvalidatedTimer) {
-          if (Q.resetTimeout(this._sizeInvalidatedTimer)) // if we were able to reset it, it means the timer hasn't expired yet
+          if (resetTimeout(this._sizeInvalidatedTimer)) // if we were able to reset it, it means the timer hasn't expired yet
             return;
         }
         else {
@@ -694,9 +703,9 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
           containerWidth = frame.offsetWidth,
           containerHeight = frame.offsetHeight,
           axis = this._getScrollAxis(),
-          scrollDim = axis == 'X' ? scrollWidth : scrollHeight,
-          containerDim = axis == 'X' ? containerWidth : containerHeight,
           scrollX = axis == 'X',
+          scrollDim = scrollX ? scrollWidth : scrollHeight,
+          containerDim = scrollX ? containerWidth : containerHeight,
           metrics = s.metrics,
           container,
           content,
@@ -705,6 +714,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
           scrollBounds,
           bounceBounds,
           gutter = s.MAX_OUT_OF_BOUNDS,
+          scrollInfo,
           containerSizeChanged = contentSizeChanged = true;
       
       if (!scrollDim || !containerDim)
@@ -758,12 +768,20 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       scrollBounds.Y.min = Math.min(!scrollX ? containerHeight - scrollHeight : 0, 0);
       bounceBounds.X.min = Math.min(scrollX ? containerWidth - scrollWidth - gutter : 0, 0);
       bounceBounds.Y.min = Math.min(!scrollX ? containerHeight - scrollHeight - gutter : 0, 0); 
-            
-      if (containerSizeChanged)
-        this.$el.trigger('scrollosize', this.getScrollInfo());
-      
-      if (contentSizeChanged)
-        this.$el.trigger('scrollocontent', this.getScrollInfo());        
+        
+      if (containerSizeChanged || contentSizeChanged) {
+        var scrollInfo = scrollInfo = this.getScrollInfo(),
+            dim = axisToDim[axis];
+        
+        if (containerSizeChanged)
+          this.$el.trigger('scrollosize', scrollInfo);
+        
+        if (contentSizeChanged)
+          this.$el.trigger('scrollocontent', scrollInfo);
+        
+        if (content[dim] > container[dim])
+          this.$el.trigger('scrolloable', scrollInfo);
+      }
       
       this.setDimensions(content.width, content.height);
     },
@@ -795,11 +813,6 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         transition: null
       });
     },
-    
-//    _clearTouchHistory: function() {
-//      var s = this._scrollerProps;
-//      s.touchHistory.length = s.distanceTraveled = s.timeTraveled = 0;
-//    },
     
     _clearScrollTimeouts: function() {
       var timeouts = this._scrollerProps.timeouts;
@@ -887,7 +900,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       if (time) {
         var self = this,
             axis = this._getScrollAxis(),
-            viewportDim = G.viewport[axis == 'X' ? 'width' : 'height'],
+            viewportDim = G.viewport[axisToDim[axis]],
             axisIdx = axis == 'X' ? 0 : 1,
             newCoord = arguments[axisIdx],
             distance = newCoord - pos[axis],

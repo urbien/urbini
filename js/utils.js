@@ -22,7 +22,8 @@ define('utils', [
       RECYCLED_OBJECTS = [],
       RECYCLED_ARRAYS = [],
       FRAGMENT_SEPARATOR = HAS_PUSH_STATE ? '/' : '#',
-      isFF = G.browser.firefox;
+      isFF = G.browser.firefox,
+      LAZY_DATA_ATTR = G.lazyImgSrcAttr;
 
   setInterval(function() { // TODO: make this less stupid
     for (var templateName in compiledTemplates) {
@@ -110,8 +111,6 @@ define('utils', [
         html[html.length] = "</" + element.name + ">";
         return html.join("");
       }
-      
-      return pieces.join("");
     },
   
     _replacements: [[/&/g, "&amp;"], [/"/g, "&quot;"], [/</g, "&lt;"], [/>/g, "&gt;"]],
@@ -128,6 +127,70 @@ define('utils', [
       return text;
     },
 
+    unlazifyImagesInHTML: function(html) {
+      return Templates.unlazifyImagesInHTML(html);
+    },
+    
+    /**
+     * @param img {HTMLElement}
+     * @param info {Object}
+     *    Example: {
+     *      width: 100,
+     *      height: 100,
+     *      onload: function() {},
+     *      onerror: function() {},
+     *      data: {File or Blob},
+     *      realSrc: src of the actual image
+     *    } 
+     */
+    unlazifyImage: function(img, info) {
+      img.onload = null;
+      img.onerror = null;
+      img.removeAttribute(LAZY_DATA_ATTR);
+      img.classList.remove('lazyImage');
+      img.classList.add('wasLazyImage');
+      if (!info)
+        return;
+      
+      if (_.has(info, 'width'))
+        img.style.width = info.width;
+      if (_.has(info, 'height'))
+        img.style.height = info.height;
+      if (info.data) {
+        var src = URL.createObjectURL(info.data), // blob or file
+            onload = info.onload,
+            onerror = info.onerror;
+        
+        img.onload = function() {
+          try {
+            return onload && onload.apply(this, arguments);
+          } finally {
+            URL.revokeObjectURL(src);
+          }
+        };
+
+        img.onerror = function() {
+          try {
+            return onerror && onerror.apply(this, arguments);
+          } finally {
+            URL.revokeObjectURL(src);
+          }          
+        }
+
+        img.src = src;
+        if (info.realSrc)
+          img.setAttribute(LAZY_DATA_ATTR, info.realSrc);
+      }
+      else if (info.realSrc) {
+        if (info.onload)
+          img.onload = info.onload; // probably store img in local filesystem
+        if (info.onerror)
+          img.onerror = info.onerror;
+        
+        img.src = info.realSrc;
+      }
+    },
+    
     lazifyImage: function(img) {
       U.HTML.lazifyImages([img]);
       return img;
@@ -136,7 +199,7 @@ define('utils', [
     lazifyImages: function(images) {
       var infos = [],
           lazyImgAttr = G.lazyImgSrcAttr,
-          blankImg = G.blankImgDataUrl,
+          blankImg = G.getBlankImgSrc(),
           img,
           src,
           realSrc,
@@ -151,7 +214,7 @@ define('utils', [
           
           if (realSrc && src == blankImg) {
             infos.push(null); // already lazy
-            debugger;
+//            debugger;
           }
           else {
             infos.push({
@@ -204,6 +267,18 @@ define('utils', [
         read();
         write();
         return images;
+      }
+    },
+    
+    before: function(elem, before) {
+      if ( before.parentNode ) {
+        before.parentNode.insertBefore( elem, before );
+      }
+    },
+
+    after: function(elem, after) {
+      if ( after.parentNode ) {
+        after.parentNode.insertBefore( elem, after.nextSibling );
       }
     }
   };

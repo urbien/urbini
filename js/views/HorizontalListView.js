@@ -53,7 +53,9 @@ define('views/HorizontalListView', [
     },
 
     getPageAttributes: function() {
-      return 'style="display:inline-block;"';
+      return {
+        style: "display:inline-block;"
+      };
     },
 
     _updateConstraints: function() {

@@ -141,7 +141,7 @@ define('views/MasonryListView', [
     postRender: function(info) {
       var self = this,
 //          appended = info.appended,
-          appended = info.page,
+          appended = info.pages,
           updated = info.updated;
       
       if (this.rendered) {

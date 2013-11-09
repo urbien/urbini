@@ -158,7 +158,7 @@ define('transitions', ['globals', 'utils', 'lib/fastdom'], function(G, U, Q) {
         });        
       }
     
-      console.log("TO PAGE:", $to.width());
+//      console.log("TO PAGE:", $to.width());
       CSS.setStylePropertyValues(to.style, {
         transition: ease,
         transform: transition.toPageTransition(toView)

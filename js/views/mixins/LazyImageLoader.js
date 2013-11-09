@@ -3,34 +3,22 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
       docEl = doc.documentElement,
       LAZY_DATA_ATTR = G.lazyImgSrcAttr,
       LAZY_ATTR = LAZY_DATA_ATTR.slice(5),
-      DUMMY_IMG = G.blankImgDataUrl,
+      HTML = U.HTML,
+      DUMMY_IMG,
 //      WIN_HEIGHT,
       // Vertical offset in px. Used for preloading images while scrolling
       IMG_OFFSET = 200;
 
+  Events.once('startingApp', function() {
+    if (window.URL)
+      G._blankImgSrc = window.URL.createObjectURL(U.dataURLToBlob(G._blankImgSrc));
+    
+    DUMMY_IMG = G.getBlankImgSrc();
+  });
+  
   Events.on('viewportResize', function(viewport) {
     IMG_OFFSET = viewport.height * 2;
   });
-  
-//  function getImageInfo(offset, img) {
-//    var resInfoStr = img.getAttribute('data-for'),
-//        resInfo = resInfoStr && U.parseImageAttribute(resInfoStr),
-//        rect = img.getBoundingClientRect(),
-//        viewportDestination = G._getViewportDestination(),
-//        viewpoer
-//        info  = {
-//          src: img.src,
-//          realSrc: img.getAttribute(LAZY_DATA_ATTR),
-//          inBounds: U.isRectPartiallyInViewport(rect, IMG_OFFSET),
-//          inDoc: docEl.contains(img),
-//          data: img.file || img.blob
-//        };
-//        
-//    if (resInfo)
-//      info['for'] = resInfo;
-//    
-//    return info;
-//  }
   
   function inBounds(rect, viewport, adjustment) {
     return rect.bottom - adjustment.Y + IMG_OFFSET >= 0 
@@ -39,14 +27,14 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
         && rect.left - adjustment.X - IMG_OFFSET <= viewport.width;
   }
   
-  function cleanImage(img) {
-    img.onload = null;
-    img.removeAttribute('onload');
-    // in IE < 8 we get an onerror event instead of an onload event
-    img.onerror = null;
-    img.removeAttribute('onerror');
-    img.removeAttribute(LAZY_DATA_ATTR);
-  };
+//  function cleanImage(img) {
+//    img.onload = null;
+//    img.removeAttribute('onload');
+//    // in IE < 8 we get an onerror event instead of an onload event
+//    img.onerror = null;
+//    img.removeAttribute('onerror');
+//    img.removeAttribute(LAZY_DATA_ATTR);
+//  };
   
   // Override image element .getAttribute globally so that we give the real src
   // does not works for ie < 8: http://perfectionkills.com/whats-wrong-with-extending-the-dom/
@@ -75,7 +63,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     _updateQueue: [],
     events: {
 //      'imageOnload': '_queueImageLoad',
-      'page_show': '_start',
+      'page_show': '_queueImagesJob',
       'page_hide': '_stop',
       'scrollocontent': '_queueImagesJob'
     },
@@ -89,30 +77,26 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     },
 
     _queueImagesJob: function() {
-      if (this._showHideImagesTimer)
-        clearTimeout(this._showHideImagesTimer);
+      if (this._showHideImagesTimer) {
+        if (resetTimeout(this._showHideImagesTimer))
+          return;
+        else
+          clearTimeout(this._showHideImagesTimer);
+      }
       
       // debounce by at least 50 ms, otherwise scrolling will cause a flurry of calculations
       this._showHideImagesTimer = setTimeout(this._showAndHideImages, 50);      
     },
-    
-//    _onNewViewportDestination: function(x, y, timeToDestination) {
-//      if (this._viewportArrivalTimer)
-//        clearTimeout(this._viewportArrivalTimer);
-//      
-//      // debounce by at least 50 ms, otherwise scrolling will cause a flurry of calculations
-//      this._viewportArrivalTimer = setTimeout(this._showAndHideImages, 50);
-//    },
     
     _showAndHideImages: function() {
       this._showImages();
       this._hideOffscreenImages();
     },
     
-    _start: function() { 
-      if (!this._started)
-        this._showImages();
-    },
+//    _start: function() { 
+//      if (!this._started)
+//        this._showImages();
+//    },
 
     _stop: function() {
       this._started = false;
@@ -173,7 +157,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
 
     _showImages: function() {
       this._clearImageJobs();
-      this._started = true;
+//      this._started = true;
       this._lazyImages = this._getLazyImages();
       if (this._lazyImages.length)
         this._loadImages(this._lazyImages);
@@ -342,8 +326,8 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
           
           if (!info.realSrc || info.realSrc == DUMMY_IMG) {
             Q.write(function() {              
-              cleanImage(img);
-              img.classList.remove("lazyImage"); // this image doesn't need to be lazy (now or in the future)
+              HTML.unlazifyImage(img);
+//              img.classList.remove("lazyImage"); // this image doesn't need to be lazy (now or in the future)
             });
             
             continue;
@@ -395,36 +379,47 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     },
 
     _updateImage: function(img, info) {
-      cleanImage(img);
-      img.classList.remove('lazyImage');
-      img.classList.add('wasLazyImage');
-      if (_.has(info, 'width'))
-        img.style.width = info.width;
-      if (_.has(info, 'height'))
-        img.style.height = info.height;
+//      cleanImage(img);
+//      img.classList.remove('lazyImage');
+//      img.classList.add('wasLazyImage');
+//      if (_.has(info, 'width'))
+//        img.style.width = info.width;
+//      if (_.has(info, 'height'))
+//        img.style.height = info.height;
+//      if (info.data) {
+//        var src = URL.createObjectURL(info.data), // blob or file
+//            onload = info.onload,
+//            onerror = info.onerror;
+//        
+//        img.onload = function() {
+//          try {
+//            return onload && onload.apply(this, arguments);
+//          } finally {
+//            URL.revokeObjectURL(src);
+//          }
+//        };
+//
+//        img.onerror = function() {
+//          try {
+//            return onerror && onerror.apply(this, arguments);
+//          } finally {
+//            URL.revokeObjectURL(src);
+//          }          
+//        }
+//
+//        img.src = src;
+//        if (info.realSrc)
+//          img.setAttribute(LAZY_DATA_ATTR, info.realSrc);
+//      }
+//      else if (info.realSrc) {
+//        if (info.onload)
+//          img.onload = info.onload; // probably store img in local filesystem
 //        if (info.onerror)
 //          img.onerror = info.onerror;
-      if (info.data) {
-        var src = URL.createObjectURL(info.data); // blob or file
-        var onload = info.onload;
-        img.onload = function() {
-          try {
-            return onload && onload.apply(this, arguments);
-          } finally {
-            URL.revokeObjectURL(src);
-          }
-        };
-        
-        img.src = src;
-        if (info.realSrc)
-          img.setAttribute(LAZY_DATA_ATTR, info.realSrc);
-      }
-      else if (info.realSrc) {
-        if (info.onload)
-          img.onload = info.onload; // probably store img in local filesystem
-        img.src = info.realSrc;
-      }
-      
+//        
+//        img.src = info.realSrc;
+//      }
+      HTML.unlazifyImage(img, info);
       _.wipe(info); // just in case it gets leaked...yea, that sounds bad      
     },
     

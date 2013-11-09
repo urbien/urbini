@@ -535,6 +535,7 @@ define('app', [
 //  }
   
   function doPreStartTasks() {
+    Events.trigger('startingApp');
 //    setupHashMonitor();
 //    setupScrollMonitor();
     setupWidgetLibrary();

@@ -14,9 +14,20 @@ define('templates', [
   };
   
   var lazyImgSrcAttr = G.lazyImgSrcAttr,
-      blankImgDataUrl = G.blankImgDataUrl,
-      lazyReplacement = 'src="{0}" {1}'.format(blankImgDataUrl, lazyImgSrcAttr);
-
+      blankImgSrc,
+      lazyReplacement,
+      lazyRegex,
+      lazyClassRegex = /(class="?'?[^"']*)lazyImage([^"']*"?'?)/ig;
+  
+  function initBlankImg() {
+    if (!blankImgSrc) {
+      blankImgSrc = G.getBlankImgSrc();
+      lazyReplacement = 'src="{0}" {1}'.format(blankImgSrc, lazyImgSrcAttr);
+      lazyRegex = new RegExp('src="{0}" {1}=\"?\'?([^\"\']+)\"?\'?'.format(blankImgSrc, lazyImgSrcAttr), 'ig');
+    }
+  }
+  
+  Events.once('appStart', initBlankImg);
   window.onimageload = function onimageload() {
 //    var $this = $(this);
 //    Q.defer(Math.random() * 5 | 0, 'read', $this.trigger.bind($this, 'imageOnload'));
@@ -30,12 +41,13 @@ define('templates', [
   };
   
   function prepTemplate(text) {
+    initBlankImg();
     return text.trim().replace(lazyImgSrcAttr, lazyReplacement);
 //    return text.trim();
-//    return text.trim().replace('<img src=', '<img src="{0}" onload="window.onimageload.call(this);" onerror="window.onimageerror.call(this);" {1}='.format(blankImgDataUrl, lazyImgSrcAttr));
-//    return text.trim().replace('<img src=', '<img src="{0}" {1}='.format(blankImgDataUrl, lazyImgSrcAttr));
+//    return text.trim().replace('<img src=', '<img src="{0}" onload="window.onimageload.call(this);" onerror="window.onimageerror.call(this);" {1}='.format(blankImgSrc, lazyImgSrcAttr));
+//    return text.trim().replace('<img src=', '<img src="{0}" {1}='.format(blankImgSrc, lazyImgSrcAttr));
     
-//    return text.trim().replace('<img src=', '<img src="{0}" onload="lzld(this);" onerror="lzld(this)" {1}='.format(blankImgDataUrl, lazyImgSrcAttr));
+//    return text.trim().replace('<img src=', '<img src="{0}" onload="lzld(this);" onerror="lzld(this)" {1}='.format(blankImgSrc, lazyImgSrcAttr));
   };
   
   var Templates = {
@@ -190,6 +202,10 @@ define('templates', [
         text = text || Templates.__DEFAULT_TEMPLATE;
         t.set({templateText: text});
       }
+    },
+    
+    unlazifyImagesInHTML: function(html) {
+      return html.replace(lazyRegex, 'src="$1"').replace(lazyClassRegex, '$1 wasLazyImage $2');
     }
   };
   

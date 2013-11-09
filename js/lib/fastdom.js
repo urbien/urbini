@@ -19,7 +19,8 @@ define('lib/fastdom', ['globals', 'underscore'], function(G, _) {
       modeOrder = ['nonDom', 'read', 'write'],
       numModes = modeOrder.length,
       BYPASS = false,
-      TIMER_RESOLUTION = 20;
+      TIMER_RESOLUTION = 20,
+      hasRAF = G.hasRequestAnimationFrame;
   
   /**
    * Creates a fresh
@@ -93,7 +94,7 @@ define('lib/fastdom', ['globals', 'underscore'], function(G, _) {
       else if (listener.length == 2)
         listener[0].call(listener[1]);
       else
-        listener[0].apply(listener[1], listener[2]);        
+        listener[0].apply(listener[1], listener[2]);
     }
     
     function subscribe(fn /*, ctx, args */) {
@@ -383,7 +384,7 @@ define('lib/fastdom', ['globals', 'underscore'], function(G, _) {
     return promise;
   };
 
-  FastDom.prototype.throttle = function(fn, time) {
+  FastDom.prototype.throttle = !hasRAF ? _.debounce : function(fn, time) {
     var self = this,
         timeoutId;
     
@@ -392,88 +393,13 @@ define('lib/fastdom', ['globals', 'underscore'], function(G, _) {
     }
     
     return function throttled() {
-      if (!timeoutId || !self.resetTimeout(timeoutId)) { // if we couldn't reset the timeout, it means it expired already
-        timeoutId = self.setTimeout(reset, time);
+      if (!timeoutId || !resetTimeout(timeoutId)) { // if we couldn't reset the timeout, it means it expired already
+        timeoutId = setTimeout(reset, time);
         fn.apply(this, arguments);
       }
     };
   };
-
-  FastDom.prototype.debounce = function(fn, time, immediate) {
-    var self = this,
-        timeoutId,
-        originalImmediate = immediate;
-    
-    return function debounced() {
-      var context = this,
-          args = arguments;
-      
-      if (immediate) {
-        immediate = false;
-        fn.apply(context, args);
-        return;
-      }
-      
-      if (!timeoutId) {
-        timeoutId = self.setTimeout(function() {
-          fn.apply(context, args);
-        }, time);
-        
-        return;
-      }
-      
-      if (self.resetTimeout(timeoutId)) // if we managed to reset the timeout, it means it hasn't expired yet
-        return;
-
-      // reset to initial conditions and call fn
-      timeoutId = null;
-      immediate = originalImmediate; 
-      fn.apply(context, args);
-    };
-  };
-
-  /**
-   * Starts the timeout over, less expensive than setting a new timeout (when debouncing for instance)
-   * @return true if the timer was successfully reset, false otherwise
-   */
-  FastDom.prototype.resetTimeout = function(id) {
-    if (typeof id == 'undefined')
-      return false;
-    
-    var task = FrameWatch.getTask(id);
-    if (task) {
-      task._timeLeft = task._timeout;
-      return true;
-    }
-    else
-      return false;
-  };
-
-  /**
-   * @return promise object that gets resolved after "frames" frames
-   */
-  FastDom.prototype.setTimeout = function(fn, ms /*, args... */) {
-    ms = ms || 0;
-    var args = arguments[2];
-    var task = FrameWatch.subscribe(function wrapped() {
-      task._timeLeft -= FrameWatch.lastFrameDuration();
-      if (task._timeLeft < TIMER_RESOLUTION) {
-        FrameWatch.unsubscribe(task._taskId); // important to unsubscribe first, otherwise if resetTimeout is called inside fn, it will give the illusion of resetting the timer without actually resetting it
-        if (args)
-          fn.apply(null, args);
-        else
-          fn();
-      }
-    });
-    
-    task._timeout = task._timeLeft = ms;
-    return task._taskId;
-  };
   
-  FastDom.prototype.clearTimeout = function(id) {
-    return FrameWatch.unsubscribe(id);
-  };
-
   FastDom.prototype.waitOne = function() {
     return this.wait(1);
   };
@@ -606,9 +532,92 @@ define('lib/fastdom', ['globals', 'underscore'], function(G, _) {
   }
   
   var fastdom = new FastDom();
-  window.setTimeout = fastdom.setTimeout;
-  window.clearTimeout = fastdom.clearTimeout;
-  window.resetTimeout = fastdom.resetTimeout;
+  if (hasRAF) {
+    FastDom.prototype.debounce = function(fn, time, immediate) {
+      var self = this,
+          timeoutId,
+          originalImmediate = immediate;
+      
+      return function debounced() {
+        var context = this,
+            args = arguments;
+        
+        if (immediate) {
+          immediate = false;
+          fn.apply(context, args);
+          return;
+        }
+        
+        if (!timeoutId) {
+          timeoutId = self.setTimeout(function() {
+            fn.apply(context, args);
+          }, time);
+          
+          return;
+        }
+        
+        if (self.resetTimeout(timeoutId)) // if we managed to reset the timeout, it means it hasn't expired yet
+          return;
+  
+        // reset to initial conditions and call fn
+        timeoutId = null;
+        immediate = originalImmediate; 
+        fn.apply(context, args);
+      };
+    };
+  
+    /**
+     * Starts the timeout over, less expensive than setting a new timeout (when debouncing for instance)
+     * @return true if the timer was successfully reset, false otherwise
+     */
+    FastDom.prototype.resetTimeout = function(id) {
+      if (typeof id == 'undefined')
+        return false;
+      
+      var task = FrameWatch.getTask(id);
+      if (task) {
+        task._timeLeft = task._timeout;
+        return true;
+      }
+      else
+        return false;
+    };
+  
+    /**
+     * @return promise object that gets resolved after "frames" frames
+     */
+    FastDom.prototype.setTimeout = function(fn, ms /*, args... */) {
+      ms = ms || 0;
+      var args = arguments[2];
+      var task = FrameWatch.subscribe(function wrapped() {
+        task._timeLeft -= FrameWatch.lastFrameDuration();
+        if (task._timeLeft < TIMER_RESOLUTION) {
+          FrameWatch.unsubscribe(task._taskId); // important to unsubscribe first, otherwise if resetTimeout is called inside fn, it will give the illusion of resetting the timer without actually resetting it
+          if (args)
+            fn.apply(null, args);
+          else
+            fn();
+        }
+      });
+      
+      task._timeout = task._timeLeft = ms;
+      return task._taskId;
+    };
+    
+    FastDom.prototype.clearTimeout = function(id) {
+      return FrameWatch.unsubscribe(id);
+    };
+    
+    window.setTimeout = fastdom.setTimeout;
+    window.clearTimeout = fastdom.clearTimeout;
+    window.resetTimeout = fastdom.resetTimeout;
+  }
+  else {
+    FastDom.prototype.debounce = _.debounce;
+    FastDom.prototype.throttle = _.throttle;
+    window.resetTimeout = function() { return false };
+  }
+  
   window.fastdom = fastdom;
   return fastdom;
 })

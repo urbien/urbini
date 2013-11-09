@@ -498,33 +498,6 @@ define('globals', function() {
       window.raf = window.requestAnimationFrame = requestAnimationFrame;
       window.caf = window.cancelAnimationFrame = cancelAnimationFrame;
       
-      window.viaRAF = function(fn, ctx, returnsPromise) {
-//        return function() {
-//          return fn.apply(ctx || this, arguments);
-//        };
-        
-        return function() {
-          if (!ctx)
-            ctx = this;
-          
-          var dfd, args = arguments;
-          if (returnsPromise)
-            dfd = $.Deferred();
-          
-          window.raf(function() {
-            var result = fn.apply(ctx, args);
-            if (returnsPromise)
-              result.done(dfd.resolve).fail(dfd.reject);
-            else
-              return result;
-          });
-          
-          if (returnsPromise)
-            return dfd.promise();
-        }
-      };
-      
-//      loadModule = window.viaRAF(loadModule, null, true);
     })( window );
   }
   
@@ -1331,7 +1304,10 @@ define('globals', function() {
       return G._widgetLibrary;
     },
     lazyImgSrcAttr: 'data-lazy-src',
-    blankImgDataUrl: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+    _blankImgSrc: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+    getBlankImgSrc: function() {
+      return this._blankImgSrc;
+    },
     emptyFn: function() {},
     falseFn: function() { return false; },
     trueFn: function() { return true; },
