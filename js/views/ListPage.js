@@ -132,8 +132,8 @@ define('views/ListPage', [
         add: showAddButton,
 //        aroundMe: isGeo,
         mapIt: isGeo,
-        menu: true,
-        rightMenu: !G.currentUser.guest,
+//        menu: true,
+        rightMenu: true, //!G.currentUser.guest,
         login: G.currentUser.guest
       };
 

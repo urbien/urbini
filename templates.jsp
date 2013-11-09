@@ -6,7 +6,7 @@
 <!-- Templates -->
 <script type="text/template" id="resource-list">
   <!-- Resource list page -->
-  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div> 
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
@@ -40,7 +40,7 @@
  
 <script type="text/template" id="resource">
   <!-- Single resource view -->  
-  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div>
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div>
   <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
 
   <!-- div id="headerMessageBar"></div -->
@@ -601,7 +601,7 @@
 </script>
 
 <script type="text/template" id="imagePT">
-  <img data-lazy-src="{{= value }}" class="lazyImage" data-for="{{= this.resource ? U.getImageAttribute(this.resource, prop.shortName) : '' }}"></img>
+  <img data-lazysrc="{{= value }}" class="lazyImage" data-for="{{= this.resource ? U.getImageAttribute(this.resource, prop.shortName) : '' }}"></img>
 </script>
 
 
@@ -622,7 +622,7 @@
   {{ if (obj.v_submitToTournament) { }}
     <div class="ui-btn-text" style="padding:0em 10px 0 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
   {{ } }}
-    <img data-lazy-src="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : G.blankImgDataUrl}}" 
+    <img data-lazysrc="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : G.blankImgDataUrl}}" 
     {{ if (obj.right) { }}  
       class="lazyImage" style="
         left:-{{= left }}px; top:-{{= top }}px;
@@ -785,7 +785,7 @@
   
   <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }}>{{= name }} {{= obj.gridCols ? '<br/>' + gridCols : '' }}
     {{ if (obj.img) { }}
-      <img data-lazy-src="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
+      <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
       {{ if (obj.width) { }}  
       style="max-height:none;max-width:none;
         height:{{= height }}px;
@@ -1200,7 +1200,7 @@
   <div class="anab" data-viewid="{{= viewId }}">
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img data-lazy-src="{{= obj.resourceMediumImage || G.blankImgDataUrl }}" border="0" 
+        <img data-lazysrc="{{= obj.resourceMediumImage || G.blankImgDataUrl }}" border="0" 
         {{ if (typeof imgWidth != 'undefined') { }} 
          style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"
          {{ } }}
@@ -1214,7 +1214,7 @@
     <tr>
       <td class="urbien" width="55px">
         <a href="{{= modifiedBy }}">
-          <img data-lazy-src="{{= obj.v_modifiedByPhoto || G.blankImgDataUrl }}" class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, 'v_modifiedByPhoto') }}" border="0" />
+          <img data-lazysrc="{{= obj.v_modifiedByPhoto || G.blankImgDataUrl }}" class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, 'v_modifiedByPhoto') }}" border="0" />
         </a>
       </td>
       <td>
@@ -1276,7 +1276,7 @@
   <div class="anab" data-viewid="{{= viewId }}">
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img data-lazy-src="{{= obj.resourceMediumImage || G.blankImgDataUrl }}" class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}"
+        <img data-lazysrc="{{= obj.resourceMediumImage || G.blankImgDataUrl }}" class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}"
          {{ if (obj.imgWidth) { }}
            {{ if (!obj.top) { }}
              <!-- style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;" -->
@@ -1349,7 +1349,7 @@
   <a href="{{= target }}">
   </a> 
     {{ if (obj.image) { }}
-      <img data-lazy-src="{{= image }}" class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" 
+      <img data-lazysrc="{{= image }}" class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" 
       {{ if (obj.right) { }}  
           style="position:absolute; left:-{{= left }}px; top:-{{= top }}px;
           clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
@@ -1387,7 +1387,7 @@
       <li style="{{= (item.width ? ';width:' + item.width : '') + (item.height ? ';height:' + item.height : '') + (item.margin ? ';margin:' + item.margin : '') }}">
         <a href="{{= item.target }}">
           {{ if (item.image) { }}
-            <img data-lazy-src="{{= item.image }}" class="lazyImage" data-for="{{= U.getImageAttribute(item, item.imageProperty) }}" />    
+            <img data-lazysrc="{{= item.image }}" class="lazyImage" data-for="{{= U.getImageAttribute(item, item.imageProperty) }}" />    
           {{ }              }}
 
           {{= item.title ? '<h3>{0}</h3>'.format(item.title) : '' }}

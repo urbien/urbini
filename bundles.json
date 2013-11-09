@@ -7,7 +7,7 @@
  	  '../templates.jsp'
   ],
   post: [
- 		'views/MessageBar.js', 'tourGuide.js', 'views/ResourceView.js', 'views/ControlPanel.js', 'views/Header.js', 'views/BackButton.js', 'views/MapItButton.js', 'views/AddButton.js', 'views/RightMenuButton.js', 'views/MenuButton.js', 'views/LoginButton.js', 'views/ToggleButton.js', 'views/ResourceImageView.js', 
+ 		'views/MessageBar.js', 'tourGuide.js', 'views/ResourceView.js', 'views/ControlPanel.js', 'views/Header.js', 'views/BackButton.js', 'views/MapItButton.js', 'views/AddButton.js', 'views/RightMenuButton.js', 'views/LoginButton.js', 'views/ToggleButton.js', 'views/ResourceImageView.js', 
 	  'views/EditPage.js', 'views/EditView.js', 'views/ResourceListItemView.js', 'views/ResourceListView.js', 'views/MasonryListView.js', 'views/CommentListView.js', 'views/ResourceMasonryItemView.js', 'views/CommentListItemView.js', 'views/ListPage.js', 'views/ViewPage.js', 'views/MenuPanel.js',
 	  'views/RightMenuPanel.js', 'views/PublishButton.js', 'lib/mobiscroll-datetime-min.js', 'mobiscroll-duration.js', 'views/IntersectionListView.js', 'views/IntersectionListItemView.js', 'views/HorizontalListView.js', 'views/HorizontalListItemView.js', 'views/ChatPage.js', 'views/VideoButton.js', 
 	  'views/ToggleButton1.js', 'views/ChatButton.js', 'views/CallInProgressHeader.js', 'chrome.js', 'firefox.js',

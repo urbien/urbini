@@ -89,6 +89,9 @@ define('views/RightMenuButton', [
     },
     
     rightMenu: function(e) {
+      if (G.currentUser.guest)
+        return;
+      
       var self = this;
       Events.stopEvent(e);
       if (RightMenuPanel)

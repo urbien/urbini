@@ -108,7 +108,7 @@ define('globals', function() {
 
     browser.chrome = browser.webkit && !!window.chrome;
     browser.safari = browser.webkit && !window.chrome;
-    browser.ios = navigator.userAgent.match(/iPad|iPhone|iPod/i);
+    browser.ios = navigator.userAgent.match(/(iPad|iPhone|iPod)/i);
     var mobile = browser.ios || navigator.userAgent.match(/(Android|webOS|BlackBerry|IEMobile|Opera Mini|Opera Mobi)/);
     if (mobile) {
       browser.mobile = true;
@@ -1303,7 +1303,7 @@ define('globals', function() {
     getWidgetLibrary: function() {
       return G._widgetLibrary;
     },
-    lazyImgSrcAttr: 'data-lazy-src',
+    lazyImgSrcAttr: 'data-lazysrc',
     _blankImgSrc: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
     getBlankImgSrc: function() {
       return this._blankImgSrc;

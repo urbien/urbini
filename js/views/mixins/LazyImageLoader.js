@@ -115,7 +115,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
      */
     _getLazyImages: function() {
       return _.filter(this.el.getElementsByClassName('lazyImage'), function(d) {
-        return d.dataset[LAZY_ATTR] != DUMMY_IMG;
+        return d.getAttribute(LAZY_DATA_ATTR) != DUMMY_IMG;
       });
     },
     

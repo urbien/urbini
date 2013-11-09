@@ -6,7 +6,7 @@
 <!-- Templates -->
 <script type="text/template" id="resource-list">
   <!-- Resource list page -->
-  <section id="{{= viewId }}" data-type="sidebar" style="visibility:hidden;z-index:10001"></section>
+  <section id="{{= viewId }}" data-type="sidebar" data-position="right" style="left:auto;right:0;visibility:hidden;z-index:10001"></section>
   <section id="{{= viewId + 'r' }}" data-type="sidebar" data-position="right" style="left:auto;right:0;visibility:hidden;z-index:10001"></section> 
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
@@ -102,7 +102,7 @@
 <li data-viewid="{{= viewId }}">
   <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }}><p>{{= name }}</p> {{= obj.gridCols ? '<br/>' + gridCols : '' }}
     {{ if (obj.img) { }}
-      <img data-lazy-src="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
+      <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
       {{ if (obj.width) { }}  
       style="max-height:none;max-width:none;
         height:{{= height }}px;
@@ -206,7 +206,7 @@
   {{ if (obj.v_submitToTournament) { }}
     <div style="padding-left: 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
   {{ } }}
-    <img data-lazy-src="{{= obj.image ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : G.blankImgDataUrl }}" style="position:absolute;left:0px" 
+    <img data-lazysrc="{{= obj.image ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : G.blankImgDataUrl }}" style="position:absolute;left:0px" 
     {{ if (obj.right) { }}  
       style="position:absolute;
         left:-{{= left }}px; top:-{{= top }}px;

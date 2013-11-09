@@ -28,8 +28,8 @@ define('views/ViewPage', [
       var commonTypes = G.commonTypes;
       this.headerButtons = {
         back: true,
-        menu: true,
-        rightMenu: !G.currentUser.guest,
+//        menu: true,
+        rightMenu: true, //!G.currentUser.guest,
         login: G.currentUser.guest,
         chat: res.isA("ChatRoom")
       };
