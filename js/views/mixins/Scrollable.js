@@ -1048,7 +1048,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
           axis = this._getScrollAxis(),
           otherAxis = oppositeDir(axis),
           deceleration = velocity < 0 ? s.deceleration : -s.deceleration,
-          distance = (-(velocity * velocity) / (2 * deceleration)) | 0,
+          distance = (-(velocity * velocity) / (2 * deceleration)) / 2 | 0,  // divide by two is a hack to account for the fling accelerating first before decelerating 
           newPos = {},
           pastDestination,
           timeToDestination,

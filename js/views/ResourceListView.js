@@ -37,7 +37,7 @@ define('views/ResourceListView', [
     _horizontal: false,
 
     initialize: function(options) {
-      _.bindAll(this, 'render', 'getNextPage', 'refresh', 'onScroll', 'adjustSlidingWindow', 'setMode', 'appendPages', 'onResourceChanged', 'getNewSize', '_onScrollerSizeChanged'); //, 'onScrollerSizeChanged');
+      _.bindAll(this, 'render', 'getNextPage', 'refresh', 'onScroll', 'adjustSlidingWindow', 'setMode', 'appendPages', 'onResourceChanged', 'getNewSize', '_onScrollerSizeChanged', '_queueSlidingWindowCheck'); //, 'onScrollerSizeChanged');
       BasicView.prototype.initialize.call(this, options);
       options = options || {};
       if (options.axis)
@@ -150,6 +150,11 @@ define('views/ResourceListView', [
       }
       else if (this.rendered)
         this.refresh();
+    },
+    
+    _queueSlidingWindowCheck: function() {
+//      resetTimeout(this._slidingWindowTimeout) || (this._slidingWindowTimeout = setTimeout(this.adjustSlidingWindow));
+      setTimeout(this.adjustSlidingWindow); // async so that the first pages can be displayed before we add more
     },
     
     onScroll: Q.throttle(function(e, info) {
@@ -332,12 +337,12 @@ define('views/ResourceListView', [
         }
         
 //        n = Math.ceil((this._minSlidingWindowDimension - slidingWindowDim) / viewportDim);
-        return this._growSlidingWindow(n, growAtTheHead).done(this.adjustSlidingWindow); // n==1. Always grow by one page at a time (so the user doesn't have to wait to see the first few pages)
+        return this._growSlidingWindow(n, growAtTheHead).done(this._queueSlidingWindowCheck); // n==1. Always grow by one page at a time (so the user doesn't have to wait to see the first few pages)
       }
       else if (tailDiff < this._slidingWindowInsideBuffer) {
         n = Math.ceil((this._slidingWindowInsideBuffer - tailDiff) / viewportDim);
         if (tailDiff < this._slidingWindowOutsideBuffer)
-          return this.page(n).done(this.adjustSlidingWindow);
+          return this.page(n).done(this._queueSlidingWindowCheck);
         else if (this.collection.length - this._collectionRange.to < this._elementsPerPage * 2)
           return this.getNextPage();
         else
@@ -346,7 +351,7 @@ define('views/ResourceListView', [
       else if (this._pageOffset && headDiff < this._slidingWindowOutsideBuffer) {
 //        diff = diff < 0 ? -diff + this._slidingWindowOutsideBuffer : diff;
         n = Math.ceil((this._slidingWindowInsideBuffer - headDiff) / viewportDim);
-        return this.page(n, true).done(this.adjustSlidingWindow);
+        return this.page(n, true).done(this._queueSlidingWindowCheck);
       }
 //      else if (this._pageOffset && (diff = viewport.head - slidingWindow.head) < this._slidingWindowInsideBuffer) {
 //        return this.scrollVisibility
@@ -481,6 +486,7 @@ define('views/ResourceListView', [
     _addPages: function(n, atTheHead, info) {
       this.log("PAGER", "ADDING", n, "PAGES");
       var self = this,
+          childTagName = this._preinitializedItem.prototype.tagName || 'div',
           pageTag = this.getPageTag(),
           pageAttributes,
           pageClasses = this.getWidgetLibClasses() || '',
@@ -569,7 +575,7 @@ define('views/ResourceListView', [
         Q.write(function insertPage() {
 //          self.log("PAGER", "ADDING PAGE, FRAME", window.fastdom.frameNum);
           info.page = pages = $($.parseHTML(info.html.join(""), doc));
-          var lis = info.page[0].getElementsByTagName('li'),
+          var lis = info.page[0].getElementsByTagName(childTagName),
               childViews = [];
           
           for (var i = 0; i < lis.length; i++) {
