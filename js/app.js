@@ -880,9 +880,7 @@ define('app', [
       $(document.body).append(popupHtml);
       var $popup = $('#login_popup');
       if (onDismiss) {
-        $popup.find('[data-cancel]').click(function() {
-          onDismiss();
-        });
+        $popup.find('[data-cancel]').click(onDismiss);
       }
 //      if (!G.currentApp.widgetLibrary  ||  G.currentApp.widgetLibrary == 'Jquery Mobile') {
       if (G.isJQM()) {

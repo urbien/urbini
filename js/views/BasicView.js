@@ -371,9 +371,9 @@ define('views/BasicView', [
         this.children[cid].destroy();
       }
       
-      if (this.parentView)
-        delete this.parentView.children[this.cid];
-      
+//      if (this.parentView)
+//        delete this.parentView.children[this.cid];
+//      
 //      for (var i = 0; i < viewportEvents.length; i++) {
 //        window.removeEventListener(viewportEvents[i], this._onViewportDimensionsChanged);          
 //      }
@@ -550,15 +550,16 @@ define('views/BasicView', [
       this.children[view.cid] = view;
       view.parentView = view.parentView || this;
       view.pageView = this.getPageView() || view.pageView;
-//      view.once('destroyed', function() {
-//        if (self.children)
-//          delete self.children[view.cid];
-//        
-//        for (var prop in self) {
-//          if (self[prop] === view)
-//            self[prop] = null;
-//        }
-//      });
+      view.on('destroyed', function onDestroyed() {
+        view.off('destroyed', onDestroyed);
+        if (self.children)
+          delete self.children[view.cid];
+        
+        for (var prop in self) {
+          if (self[prop] === view)
+            self[prop] = null;
+        }
+      });
       
       return view;
     },

@@ -3712,7 +3712,7 @@ define('utils', [
       $dialog.trigger('create');
       $dialog.popup().popup("open");
       if (options.onok)
-        $dialog.find('[data-cancel]').click(options.onok);
+        $dialog.find('[data-cancel]').click(options.oncancel);
       if (options.onok)
         $dialog.find('[data-ok]').click(options.onok);
       

@@ -189,10 +189,13 @@ define('views/EditView', [
             self.stopListening(self.CameraPopup);
           }
           
-          self.CameraPopup = new CameraPopup({model: self.model, parentView: self, prop: link.data('prop')});
-          self.CameraPopup.render();
-          self.listenTo(self.CameraPopup, 'image', self.capturedImage);
-          self.listenTo(self.CameraPopup, 'video', self.capturedVideo);
+          self.cameraPopup = new CameraPopup({model: self.model, parentView: self, prop: link.data('prop')});
+          self.cameraPopup.render();
+          self.listenTo(self.cameraPopup, 'image', self.capturedImage);
+          self.listenTo(self.cameraPopup, 'video', self.capturedVideo);
+          self.cameraPopup.onload(function() {            
+            self.addChild(self.cameraPopup);
+          });
         });        
       }
       

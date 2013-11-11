@@ -37,8 +37,17 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       originalScroll.apply(this, arguments);
   };
   
-//  window.addEventListener('scroll', function(e) {
-//  }, true);
+//  // IE9, Chrome, Safari, Opera
+//  window.addEventListener("mousewheel", mouseWheelHandler, true);
+//  // Firefox
+//  window.addEventListener("DOMMouseScroll", mouseWheelHandler, true);
+//  
+//  function mouseWheelHandler(e) {
+//    var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+//    
+//    debugger;
+//  }
+  
   
   for (var bezier in beziers) {
     var curve = beziers[bezier];
@@ -169,7 +178,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     initialize: function(options) {
       _.bindAll(this, '_initScroller', '_resetScroller', '_snapScroller', '_flingScroller', '_scrollTo', '_calculateScrollerSize', '_onSizeInvalidated', '_onScrollerClick', '_onScrollerActive', '_onScrollerInactive',
                       '_onScrollerMouseOut', '_onScrollerTouch', '_onScrollerDragStart', '_onScrollerDragEnd', '_onScrollerDrag', '_onScrollerSwipe', '_onKeyDown', '_onKeyUp', '_updateScrollPositionAndReset',
-                      '_onNativeScroll', '_checkIfScrolledToHead'); //, '_onScrollerRelease');
+                      '_onNativeScroll', '_onMouseWheel', '_checkIfScrolledToHead', '_stopScroller'); //, '_onScrollerRelease');
       
       this.onload(this._initScroller.bind(this));
       this.$el.addClass('scrollable');
@@ -256,10 +265,30 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     _onNativeScroll: function(e) {
-      if (!e._scrollo && this.isPageView()) {
+      if (this._scrollerInitialized && !e._scrollo && this.isPageView()) {
       // Native scroll was prevented but we recorded the desired scroll location, now we scroll the scroller there manually
         this._scrollTo(SCROLL_OFFSET.X, SCROLL_OFFSET.Y);
       }
+    },
+    
+    _onMouseWheel: function(e) {
+      if (!this._scrollerInitialized)
+        return;
+      
+//      var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail))),
+      this._resetScroller();
+      var self = this,
+          s = this._scrollerProps,
+          delta = e.wheelDelta,
+          bound = delta > 0 ? 'max' : 'min',
+          bounds = s.scrollBounds,    
+          x = bounds.X[bound],
+          y = bounds.Y[bound],
+          time = Math.abs(delta * 20);
+
+      s._flinging = true;
+      this._queueScrollTimeout(this._updateScrollPositionAndReset, 200);
+      this._scrollTo(x, y, time, beziers.easeIn);
     },
     
     _onScrollerActive: function() {
@@ -593,8 +622,17 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         doc[domMethod]('keyup', this._onKeyUp, true);
       }
       
-      if (!G.browser.touch)
+      if (!G.browser.touch) {
         doc[domMethod]('mouseout', this._onScrollerMouseOut);
+        if (G.browser.firefox) {
+          // Firefox
+          frame[domMethod]("DOMMouseScroll", this._onMouseWheel, true);
+        }
+        else {
+          // IE9, Chrome, Safari, Opera
+          frame[domMethod]("mousewheel", this._onMouseWheel, true);
+        }
+      }
       
       if (!enable) {
         if (this._mutationObserver) {
@@ -876,6 +914,16 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     _triggerScrollEvent: function(type, scroll) {
+      var s = this._scrollerProps,
+          axis = this._getScrollAxis(),
+          pos = s.position,
+          prevPos = s.prevPosition;
+      
+      if (prevPos && Math.abs(pos[axis] - prevPos[axis]) < 20)
+        return;
+      
+      console.debug("SCROLL FROM: ", prevPos, pos);
+      s.prevPosition = _.clone(pos); 
       this.$el.trigger(type.replace('scroll', 'scrollo'), this.getScrollInfo(scroll));
     },
     

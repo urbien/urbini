@@ -188,6 +188,7 @@ define('views/CameraPopup', [
       
       var doc = document;
       $('#cameraPopup').remove();
+      this.$('[data-cancel]').click(this.destroy);
       $(doc.body).append(this.el);
       this.$popup = $('#cameraPopup');
       this.setElement(this.$popup[0]);

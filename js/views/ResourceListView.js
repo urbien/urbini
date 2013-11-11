@@ -479,7 +479,8 @@ define('views/ResourceListView', [
         range: colRange,
 //        total: colRange.to - colRange.from,
         appended: [],
-        html: []
+        html: [],
+        pages: []
       };
       
 //      page = $('<div class="listPage" id="{0}" />'.format(G.nextId())); // style="visibility:hidden;" ?
@@ -571,10 +572,7 @@ define('views/ResourceListView', [
             if (!self._scrollable)
               html = HTML.unlazifyImagesInHTML(html);
               
-            currentPageEl.innerHTML = html;
-            if (!info.pages)
-              info.pages = [];
-            
+            currentPageEl.innerHTML = html;            
             info.pages.push(currentPageEl);
 //            info.html[info.html.length] = html;
             numPagesRendered++;
