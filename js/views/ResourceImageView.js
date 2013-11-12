@@ -45,7 +45,7 @@ define('views/ResourceImageView', [
       this.resource.on('change', this.refresh, this);
       return this;
     },
-    events: {
+    windowEvents: {
       'orientationchange': 'resizeVideo',
       'resize': 'resizeVideo'
     },

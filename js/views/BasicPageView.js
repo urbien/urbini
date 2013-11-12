@@ -13,7 +13,7 @@ define('views/BasicPageView', [
 ], function(G, _, U, Events, BasicView, LazyImageLoader, Scrollable, Q, $m) {
   var MESSAGE_BAR_TYPES = ['info', 'error', 'tip', 'countdown'],
       pageEvents = ['page_show', 'page_hide', 'page_beforeshow'],
-      viewportEvents = ['resize', 'orientationchange'],
+//      viewportEvents = ['resize', 'orientationchange'],
       doc = document,
       $wnd = $(window);
 
@@ -41,7 +41,7 @@ define('views/BasicPageView', [
     initialize: function(options) {
       var self = this;
       BasicView.prototype.initialize.apply(this, arguments);
-      _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft', /*'scroll', '_onScroll',*/ '_onViewportDimensionsChanged'); //, 'onpage_show', 'onpage_hide');            
+      _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft'/*, 'scroll', '_onScroll', '_onViewportDimensionsChanged'*/); //, 'onpage_show', 'onpage_hide');            
       
 //      this._subscribeToImageEvents();
 //      
@@ -89,10 +89,10 @@ define('views/BasicPageView', [
 //      }
     },
     
-    windowEvents: {
-      'resize.default': '_onViewportDimensionsChanged',
-      'orientationchange.default': '_onViewportDimensionsChanged'
-    },
+//    windowEvents: {
+//      'resize.default': '_onViewportDimensionsChanged',
+//      'orientationchange.default': '_onViewportDimensionsChanged'
+//    },
     
     events: {
       'scrollstart.page': 'reverseBubbleEvent',
@@ -240,16 +240,16 @@ define('views/BasicPageView', [
 //        // </debug>
 //      }
 //    }, 100),
-
-    _onViewportDimensionsChanged: Q.debounce(function(e) {
-      if (this.$el)
-        this.$el.triggerHandler(e.type);
-      
-      var children = this.children;
-      for (var cid in children) {
-        children[cid].$el.triggerHandler(e.type, e);
-      }
-    }, 50),
+//
+//    _onViewportDimensionsChanged: Q.debounce(function(e) {
+//      if (this.$el)
+//        this.$el.triggerHandler(e.type);
+//      
+//      var children = this.children;
+//      for (var cid in children) {
+//        children[cid].$el.triggerHandler(e.type, e);
+//      }
+//    }, 50),
 
     onTourStep: function(step) {
       if (this.isActive())
@@ -292,9 +292,9 @@ define('views/BasicPageView', [
       var nonHintClasses = _.filter(($el.attr("class") || '').split(" "), function(item) {
         return !item.startsWith("hint--");
       });
-      this.$el.off('resize', function() {
-        
-      });
+//      this.$el.off('resize', function() {
+//        
+//      });
       $el.attr("class", nonHintClasses.join(" "));
     },
     
@@ -442,13 +442,13 @@ define('views/BasicPageView', [
       }
     },
     
-    _onDestroyed: function() {
-      for (var i = 0; i < viewportEvents.length; i++) {
-        window.removeEventListener(viewportEvents[i], this._onViewportDimensionsChanged);          
-      }
-      
-      return BasicView.prototype._onDestroyed.apply(this, arguments);
-    },
+//    _onDestroyed: function() {
+//      for (var i = 0; i < viewportEvents.length; i++) {
+//        window.removeEventListener(viewportEvents[i], this._onViewportDimensionsChanged);          
+//      }
+//      
+//      return BasicView.prototype._onDestroyed.apply(this, arguments);
+//    },
 
     _checkAutoClose: function() {
       var self = this,

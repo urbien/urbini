@@ -299,14 +299,18 @@ define('views/BasicView', [
 //    },
     
     _refresh: function(rOptions) {
-      var force = rOptions && rOptions.force;
+      rOptions = rOptions || {};
+      var force = rOptions.force;
       if (!force && !this.rendered)
         return this;
       
 //      this.log('refresh', 'page title:', this.getPageTitle());
 //      this._queueTask(this._doRefresh, this, arguments);
-      if (this.isActive())
+      if (this.isActive()) {
         this._doRefresh.apply(this, arguments);
+        if (rOptions.delegateEvents !== false)
+          this.delegateEvents();
+      }
       else
         this._refreshArgs = arguments;
       
@@ -329,10 +333,13 @@ define('views/BasicView', [
 
     _render: function(rOptions) {
   //    this.log('render', 'page title:', this.getPageTitle());
-      if (rOptions && rOptions.force || this.isActive()) {
+      rOptions = rOptions || {};
+      if (rOptions.force || this.isActive()) {
         var result = this._doRender.apply(this, arguments);
         if (this.autoFinish !== false)
-          this.finish();
+          this.finish(rOptions);
+        else if (rOptions.delegateEvents !== false)
+          this.delegateEvents(); // bind what events we can at the moment
         
         if (G.browser.mobile)
           disableHover(this.$el);
@@ -384,8 +391,19 @@ define('views/BasicView', [
       this.undelegateEvents();
 //      this.stopListening();
       this.unobserveMutations();
-      this.$el.remove();
       
+      if (this.parentView) {
+        this.parentView.removeChild(this);
+        delete this.parentView;
+      }
+
+      if (this.pageView)
+        delete this.pageView;
+      
+      this.el.parentNode.removeChild(this.el);
+      this.$el = this.el = this._hammer = this._hammered = null;
+//      this.$el.remove();
+//      
 //      if (document.documentElement.contains(this.el)) {
 //        this.el.parentNode.removeChild(this.el);
 //      }
@@ -433,8 +451,10 @@ define('views/BasicView', [
 //      return promise;
 //    },
     
-    finish: function() {
+    finish: function(options) {      
       this._loadingDfd.resolve();
+      if (!options || options.delegateEvents !== false)
+        this.delegateEvents();
     },
     
     _queueTask: function(fn, scope, args) {
@@ -549,34 +569,33 @@ define('views/BasicView', [
       
       this.children[view.cid] = view;
       view.parentView = view.parentView || this;
-      view.pageView = this.getPageView() || view.pageView;
-      view.on('destroyed', function onDestroyed() {
-        view.off('destroyed', onDestroyed);
-        if (self.children)
-          delete self.children[view.cid];
-        
-        for (var prop in self) {
-          if (self[prop] === view)
-            self[prop] = null;
-        }
-      });
-      
+      view.pageView = this.getPageView() || view.pageView;      
       return view;
+    },
+    
+    removeChild: function(view) {
+      if (this.children)
+        delete this.children[view.cid];
+      
+//      for (var prop in this) {
+//        if (this[prop] === view)
+//          this[prop] = null;
+//      }
     },
     
     getChildViews: function() {
       return this.children;
     },
 
-    empty: function() {
-//      _.wipe(this.children);
-      this.$el.empty();
-    },
-
-    html: function(html) {
-//      _.wipe(this.children);
-      this.$el.html(html);
-    },
+//    empty: function() {
+////      _.wipe(this.children);
+//      this.$el.empty();
+//    },
+//
+//    html: function(html) {
+////      _.wipe(this.children);
+//      this.$el.html(html);
+//    },
     
     getDescendants: function() {
       if (!this.children)

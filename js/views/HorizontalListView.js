@@ -21,6 +21,9 @@ define('views/HorizontalListView', [
     className: 'thumbnail-gallery',
     events: {
       'orientationchange': 'refresh',
+    },
+    
+    windowEvents: {
       'resize': 'refresh',
       'refresh': 'refresh'
     },
@@ -52,10 +55,8 @@ define('views/HorizontalListView', [
       return 'div';
     },
 
-    getPageAttributes: function() {
-      return {
-        style: "display:inline-block;"
-      };
+    setPageAttributes: function(el) {
+      el.style.display = 'inline-block';
     },
 
     _updateConstraints: function() {

@@ -13,21 +13,25 @@ define('views/MasonryListView', [
       ITEM_SELECTOR = '.nab';
   
   return ResourceListView.extend({
+    autoFinish: false, // we want to say we finished rendering after the masonry is done doing its magic, which may happen async
     type: 'masonry',
     _elementsPerPage: Math.round(window.innerWidth / 100 * window.innerHeight / 100) + 3,
     events: {
       'orientationchange': 'reloadMasonry',
-      'refresh': 'refresh',
-      'resize': 'reloadMasonry'
+      'refresh': 'refresh'
 //        ,
 //      'page_show': 'reloadMasonry'
     },
 
+    windowEvents: {
+      'resize': 'reloadMasonry',
+      'orientationChange': 'reloadMasonry'
+    },
+    
     initialize: function(options) {
       var self = this;
       _.bindAll(this, 'reloadMasonry');
       ResourceListView.prototype.initialize.apply(this, arguments);
-      this.autoFinish = false; // we want to say we finished rendering after the masonry is done doing its magic, which may happen async
 //      this.listenTo(Events, 'pageChange', function(prev, current) {
 //        if (self.pageView == current && self.rendered) {
 ////          self.$el.imagesLoaded(function() {

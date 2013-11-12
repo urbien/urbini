@@ -1201,7 +1201,7 @@ define('globals', function() {
   var requireConfig = {
     paths: {
       '@widgets': 'widgetsLibAdapter',
-      hammer: 'lib/jquery.hammer',
+      hammer: 'lib/hammer',
       mobiscroll: 'lib/mobiscroll-datetime-min',
       simplewebrtc: 'lib/simplewebrtc',
       jqmConfig: 'jqm-config',

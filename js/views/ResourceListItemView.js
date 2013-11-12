@@ -10,16 +10,17 @@ define('views/ResourceListItemView', [
 ], function(G, _, Events, Errors, U, BasicView, Voc) {
   var RLIV = BasicView.extend({
     tagName: "li",
+    attributes: {
+      'class': G.isTopcoat() ? "topcoat-list__item" : ""
+    },
 //    tagName: "div",
 //    className: "ui-li ui-li-static ui-btn-up-c ui-first-child",
     isCommonTemplate: true,
     initialize: function(options) {
       _.bindAll(this, 'render', 'click', /*'recipeShoppingListHack',*/ 'remove'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);
-      var elAttrs = {
-        "data-icon": "false"
-      };
-
+      var elAttrs = this.attributes;
+      elAttrs["data-icon"] = "false";
       if (options.imageProperty)
         this.imageProperty = options.imageProperty;
       
@@ -65,7 +66,6 @@ define('views/ResourceListItemView', [
       // resourceListView will call render on this element
   //    this.model.on('change', this.render, this);
 
-      this.$el.attr(elAttrs);
       return this;
     },
     events: {
@@ -270,7 +270,7 @@ define('views/ResourceListItemView', [
     doRender: function(options, data) {
       var html = this.template(data);
       if (options && options.renderToHtml)
-        this._html = this.renderHtml(html); //"<{0}>{1}</{0}>".format(this.tagName, html);
+        this._html = this.renderHtml(html);
       else 
         this.$el.html(html);
       

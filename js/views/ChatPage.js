@@ -59,11 +59,12 @@ define('views/ChatPage', [
   };
 
   return BasicPageView.extend({
+    autoFinish: false,
     initialize: function(options) {
       _.bindAll(this, 'render', 'toggleChat', 'videoFadeIn', 'videoFadeOut', 'chatFadeIn', 'chatFadeOut', 'resize', 'restyleGoodies', 'pagehide', 'enableChat', 'disableChat',
                       'onMediaAdded', 'onMediaRemoved', 'onDataChannelOpened', 'onDataChannelClosed', 'onDataChannelMessage', 'onDataChannelError', 'shareLocation', 
                       'setUserId', 'requestLocation', 'onclose', '_switchToApp'); // fixes loss of context for 'this' within methods
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicPageView.prototype.initialize.apply(this, arguments);
       options = options || {};      
       this.headerButtons = {
         back: true,
@@ -332,7 +333,6 @@ define('views/ChatPage', [
       }
       
       this.listenTo(Events, 'hangUp', this.endChat);
-      this.autoFinish = false;
     },
     
     events: {
@@ -345,10 +345,14 @@ define('views/ChatPage', [
       'click #chatReqLocBtn'              : 'requestLocation',
       'click #chatShareLocBtn'            : 'shareLocation',
       'click #chatCaptureBtn'             : 'takeSnapshot',
-      'resize'                             : 'resize',
-      'orientationchange'                  : 'resize',
       'page_hide'                           : 'pagehide' 
     },
+    
+    windowEvents: {
+      'resize'                             : 'resize',
+      'orientationchange'                  : 'resize'
+    },
+    
     pagehide: function(e, data) {
       G.log('Changing to page:' + window.location.href);
     },

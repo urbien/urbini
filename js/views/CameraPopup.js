@@ -16,15 +16,20 @@ define('views/CameraPopup', [
   return BasicView.extend({
     template: 'cameraPopupTemplate',
     tagName: 'li',
+    autoFinish: false,
     events: {
 //      'click #camVideo'         : 'stop',
 //      'click canvas'            : 'start',
       'click #cameraSubmitBtn'  : 'submit',
       'click #cameraShootBtn'   : 'startOrStop',
-      'click #cameraCancelBtn'  : 'destroy',
+      'click #cameraCancelBtn'  : 'destroy'
+    },
+    
+    windowEvents: {
       'resize'                   : 'onresize',
       'orientationchange'        : 'onorientationchange'
     },
+    
     initialize: function(options) {
       _.bindAll(this, 'render', 'start', 'stop', 'reset', 'drawVideoFrame_', 'checkVideoSize');
       this.constructor.__super__.initialize.apply(this, arguments);
@@ -70,7 +75,6 @@ define('views/CameraPopup', [
           this.destroy();
       }, this);
       
-      this.autoFinish = false;
       return this;
     },
     destroy: function() {
@@ -174,10 +178,12 @@ define('views/CameraPopup', [
       this.setstate('reviewing');
     },
     render: function() {
-      var args = arguments;
+      var self = this,
+          args = arguments;
+      
       this.ready.done(function() {
-        this.renderHelper.apply(this, arguments);
-      }.bind(this));
+        self.renderHelper.apply(self, arguments);
+      });
     },
     renderHelper: function(options) {    
       this.$el.html(this.template({

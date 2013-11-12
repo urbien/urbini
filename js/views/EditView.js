@@ -21,6 +21,7 @@ define('views/EditView', [
   
   var scrollerTypes = ['date', 'duration'];
   return BasicView.extend({
+    autoFinish: false,
     initialize: function(options) {
       var self = this;
       _.each(scrollerTypes, function(s) {
@@ -92,7 +93,6 @@ define('views/EditView', [
         this._submitted = false;
       }.bind(this));
       
-      this.autoFinish = false;
       return this;
     },
     events: {
@@ -1186,13 +1186,15 @@ define('views/EditView', [
      * @return select list, checkbox, radio button, all other non-text and non-resource-ranged property inputs
      */
     render: function() {
-      var args = arguments;
+      var self = this,
+          args = arguments;
+      
       this.ready.done(function() {
         G.showSpinner(spinner);
-        this.renderHelper.apply(this, args);
+        self.renderHelper.apply(self, args);
         G.hideSpinner(spinner);
-        this.finish();
-      }.bind(this));
+        self.finish();
+      });
     },
     renderHelper: function(options) {
       var self = this;

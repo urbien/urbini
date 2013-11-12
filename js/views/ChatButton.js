@@ -11,7 +11,7 @@ define('views/ChatButton', [
     id: 'chat',
     initialize: function(options) {
       _.bindAll(this, 'render'); //, 'chat');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      ToggleButton.prototype.initialize.apply(this, arguments);
       this.makeTemplate(this.templateName, 'template', this.modelType);
       return this;
     },

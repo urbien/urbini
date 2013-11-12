@@ -15,6 +15,7 @@ define('views/ResourceView', [
   };
 
   return BasicView.extend({
+    autoFinish: false,
     initialize: function(options) {
       _.bindAll(this, 'render', 'refresh'); // fixes loss of context for 'this' within methods
       this.constructor.__super__.initialize.apply(this, arguments);
@@ -53,7 +54,6 @@ define('views/ResourceView', [
         this.purchasesBacklinkProp = this.vocModel.properties[options.purchasesBLProp];
       }
       
-      this.autoFinish = false;
       return this;
     },
     events: {

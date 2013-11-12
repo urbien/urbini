@@ -102,7 +102,10 @@ define('views/MenuPanel', [
 //      href = hashIdx == -1 ? href : href.slice(hashIdx + 1);
           
       if (href.indexOf("Alert?") != -1) 
-        G.currentUser.newAlertsCount = 0;      
+        G.currentUser.newAlertsCount = 0;
+      
+      Events.stopEvent(e);
+      Events.trigger('navigate', href);
     },
 //    tap: Events.defaultTapHandler,
     render:function (eventName) {

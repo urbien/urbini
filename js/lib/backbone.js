@@ -984,7 +984,7 @@
   var View = Backbone.View = function(options) {
     this.cid = _.uniqueId('view');
     this._configure(options || {});
-    this._ensureElement();
+    this._ensureElement(options);
     this.initialize.apply(this, arguments);
     if (options.delegateEvents !== false)
       this.delegateEvents();

@@ -16,9 +16,10 @@ define('views/ListPage', [
   return BasicPageView.extend({
     template: 'resource-list',
     clicked: false,
+    autoFinish: false,
     initialize: function(options) {
       _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'setMode', 'orientationchange', 'onFilter');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicPageView.prototype.initialize.apply(this, arguments);
       this.mode = options.mode || G.LISTMODES.DEFAULT;
 //      this.options = _.pick(options, 'checked', 'props');
       this.viewId = options.viewId;
@@ -195,10 +196,13 @@ define('views/ListPage', [
 //      'click #nextPage'  : 'getNextPage',
       'click #homeBtn'   : 'home',
       'submit'            : 'submit',
-      'orientationchange' : 'orientationchange',
-      'resize'            : 'orientationchange',
       'click #filter'    : 'focusFilter',
       'change #filter'    : 'onFilter'
+    },
+    
+    windowEvents: {
+      'orientationchange' : 'orientationchange',
+      'resize'            : 'orientationchange'
     },
     
     focusFilter: function(e) {

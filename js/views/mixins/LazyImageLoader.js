@@ -5,9 +5,13 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
       LAZY_ATTR = LAZY_DATA_ATTR.slice(5),
       HTML = U.HTML,
       DUMMY_IMG,
+      AXIS_INDEX = {
+        X: 0,
+        Y: 1
+      },
 //      WIN_HEIGHT,
       // Vertical offset in px. Used for preloading images while scrolling
-      IMG_OFFSET = 200;
+      IMG_OFFSET = 1000;
 
   Events.once('startingApp', function() {
     if (window.URL)
@@ -17,7 +21,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
   });
   
   Events.on('viewportResize', function(viewport) {
-    IMG_OFFSET = viewport.height * 2;
+    IMG_OFFSET = viewport.height * 3;
   });
   
   function inBounds(rect, viewport, adjustment) {
@@ -26,34 +30,18 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
         && rect.right - adjustment.X + IMG_OFFSET >= 0 
         && rect.left - adjustment.X - IMG_OFFSET <= viewport.width;
   }
-  
-//  function cleanImage(img) {
-//    img.onload = null;
-//    img.removeAttribute('onload');
-//    // in IE < 8 we get an onerror event instead of an onload event
-//    img.onerror = null;
-//    img.removeAttribute('onerror');
-//    img.removeAttribute(LAZY_DATA_ATTR);
-//  };
-  
-  // Override image element .getAttribute globally so that we give the real src
-  // does not works for ie < 8: http://perfectionkills.com/whats-wrong-with-extending-the-dom/
-  // Internet Explorer 7 (and below) [...] does not expose global Node, Element, HTMLElement, HTMLParagraphElement
-//  window['HTMLImageElement'] && overrideGetattribute();
-//  function overrideGetattribute() {
-//    var original = HTMLImageElement.prototype.getAttribute;
-//    HTMLImageElement.prototype.getAttribute = function(name) {
-//      if (name === 'src') {
-//        var realSrc = original.call(this, LAZY_DATA_ATTR);
-//        return realSrc || original.call(this, name);
-//      } else {
-//        // our own lazyloader will go through theses lines
-//        // because we use getAttribute(LAZY_DATA_ATTR)
-//        return original.call(this, name);
-//      }
+
+//  function distance(rect, viewport, adjustment, axis) {
+//    if (axis == 'X') {
+//      var distance = rect.right - adjustment.X;
+//      return distance > 0 ? distance : rect.left - adjustment.X;
+//    }
+//    else {
+//      var distance = rect.bottom - adjustment.Y;
+//      return distance >= 0 ? distance : rect.top - adjustment.Y; 
 //    }
 //  }
-    
+
   return Backbone.Mixin.extend({
     _delayedImages: [],
     _delayedImagesCounts: [],
@@ -63,29 +51,70 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     _updateQueue: [],
     events: {
 //      'imageOnload': '_queueImageLoad',
-      'page_show': '_queueImagesJob',
-      'page_hide': '_stop',
-      'scrollocontent': '_queueImagesJob'
+      'page_show': '_onpageshow',
+      'page_hide': '_stop'
+//        ,
+//      'scrollocontent': '_queueImagesJob'
     },
     
     myEvents: {
-      'viewportDestination': '_queueImagesJob'
+      'viewportDestination': '_onViewportDestinationChanged'
     },
     
     initialize: function() {
-      _.bindAll(this, '_showImages', /*'_queueImageLoad', */'_queueImageFetch', '_queueImageUpdate', '_showAndHideImages');
+      _.bindAll(this, '_showImages', /*'_queueImageLoad', */'_queueImageFetch', '_queueImageUpdate', '_showAndHideImages', '_updateBasedOnViewportDestination', '_onpageshow', '_stop');
     },
 
-    _queueImagesJob: function() {
-      if (this._showHideImagesTimer) {
-        if (resetTimeout(this._showHideImagesTimer))
+    _lazyImagesTimeout: function(fn, timeout) {
+      if (this._lazyImagesTimer) {
+        if (resetTimeout(this._lazyImagesTimer))
           return;
         else
-          clearTimeout(this._showHideImagesTimer);
+          clearTimeout(this._lazyImagesTimer);
       }
       
-      // debounce by at least 50 ms, otherwise scrolling will cause a flurry of calculations
-      this._showHideImagesTimer = setTimeout(this._showAndHideImages, 50);      
+      this._lazyImagesTimer = setTimeout(fn, timeout);
+    },
+    
+    _onViewportDestinationChanged: function(x, y, timeToDestination) {
+      this._lazyImagesTimeout(this._updateBasedOnViewportDestination, Math.min(timeToDestination, 300));
+    },
+    
+    _updateBasedOnViewportDestination: function() {
+      var prevDest = this._lastImagesJobCoords,
+          axis = this._getScrollAxis(),
+          dest = this._getViewportDestination();
+      
+      if (prevDest) {
+        if (Math.abs(dest[axis] - prevDest[axis]) < IMG_OFFSET * 2 / 3) {
+          // we load images within IMG_OFFSET of out current viewport position but we trigger a load when we're 1/3 of an IMG_OFFSET away from the lazy/loaded border
+          // For example, if IMG_OFFSET is viewport.height * 3, we will load images as far as IMG_OFFSET AWAY, but then we won't load more until we are viewport.height away from the closest unloaded image
+          return;
+        }
+      }
+      else
+        prevDest = this._lastImagesJobCoords = {};
+        
+      _.extend(prevDest, dest);
+      this._queueImagesJob();
+    },
+    
+    _onpageshow: function() {
+      var info = this.getScrollInfo() || {
+        scrollTop: 0,
+        scrollLeft: 0
+      };
+      
+      this._lastImagesJobCoords = {
+        X: info.scrollLeft,
+        Y: info.scrollTop
+      };
+      
+      this._queueImagesJob();
+    },
+    
+    _queueImagesJob: function() {
+      this._lazyImagesTimeout(this._showAndHideImages, 50);      
     },
     
     _showAndHideImages: function() {
@@ -271,6 +300,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
             realSrc: realSrc,
             inDoc: docEl.contains(img),
             data: img.file || img.blob,
+//            distance: distance(rect, viewport, adjustment),
             inBounds: inBounds(rect, viewport, adjustment)
           }
               
@@ -297,7 +327,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     },
     
     _loadImages: function(imgs) {
-//      this.log("LOADING LAZY IMAGES");
+      this.log("LOADING LAZY IMAGES");
       if (!imgs.length)
         return G.getRejectedPromise();
       
@@ -379,47 +409,8 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     },
 
     _updateImage: function(img, info) {
-//      cleanImage(img);
-//      img.classList.remove('lazyImage');
-//      img.classList.add('wasLazyImage');
-//      if (_.has(info, 'width'))
-//        img.style.width = info.width;
-//      if (_.has(info, 'height'))
-//        img.style.height = info.height;
-//      if (info.data) {
-//        var src = URL.createObjectURL(info.data), // blob or file
-//            onload = info.onload,
-//            onerror = info.onerror;
-//        
-//        img.onload = function() {
-//          try {
-//            return onload && onload.apply(this, arguments);
-//          } finally {
-//            URL.revokeObjectURL(src);
-//          }
-//        };
-//
-//        img.onerror = function() {
-//          try {
-//            return onerror && onerror.apply(this, arguments);
-//          } finally {
-//            URL.revokeObjectURL(src);
-//          }          
-//        }
-//
-//        img.src = src;
-//        if (info.realSrc)
-//          img.setAttribute(LAZY_DATA_ATTR, info.realSrc);
-//      }
-//      else if (info.realSrc) {
-//        if (info.onload)
-//          img.onload = info.onload; // probably store img in local filesystem
-//        if (info.onerror)
-//          img.onerror = info.onerror;
-//        
-//        img.src = info.realSrc;
-//      }
       HTML.unlazifyImage(img, info);
+//      this._distanceToFarthestImage = Math.max(this._distanceToFarthestImage || 0, info.distance);
       _.wipe(info); // just in case it gets leaked...yea, that sounds bad      
     },
     

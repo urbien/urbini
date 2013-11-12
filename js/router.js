@@ -30,10 +30,10 @@ define('router', [
     G.log.apply(G, args);
   };
 
-  $doc.on('click', '[data-href]', function(e) {
-    e.preventDefault();
-    Events.trigger('navigate', this.dataset.href);
-  });
+//  $doc.on('click', '[data-href]', function(e) {
+//    e.preventDefault();
+//    Events.trigger('navigate', this.dataset.href);
+//  });
 
   var Router = Backbone.Router.extend({
     TAG: 'Router',

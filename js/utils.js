@@ -25,7 +25,7 @@ define('utils', [
       isFF = G.browser.firefox,
       LAZY_DATA_ATTR = G.lazyImgSrcAttr;
 
-  setInterval(function() { // TODO: make this less stupid
+  window._setInterval(function() { // TODO: make this less stupid
     for (var templateName in compiledTemplates) {
       _.wipe(compiledTemplates[templateName]);
     }

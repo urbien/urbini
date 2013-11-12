@@ -184,10 +184,13 @@ define('transitions', ['globals', 'utils', 'lib/fastdom'], function(G, U, Q) {
     
     promise.done(function() {
       Q.waitOne().done(function() {
-        if (from)      
-          $from.trigger('page_hide');
+        if (from) {
+          from.dispatchEvent(new Event('page_hide'));
+//          $from.trigger('page_hide');
+        }
                   
-        $to.trigger('page_show');
+//        $to.trigger('page_show');
+        to.dispatchEvent(new Event('page_show'));
       });
     });
     

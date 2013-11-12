@@ -379,7 +379,7 @@ define('collections/ResourceList', [
 
     disablePaging: function() {
       this._outOfData = true;
-      setTimeout(this.enablePaging, 3 * 60000);
+      window._setTimeout(this.enablePaging, 3 * 60000);
     },
 
     enablePaging: function() {

@@ -10,7 +10,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       viewCache = ViewCache(),
       // codemirror editors
       codemirrors = {},
-      MAX_VIEWS_TO_CACHE = 6,
+      MAX_VIEWS_TO_CACHE = 2,
       AP = Array.prototype;
 
 //  function CacheEntry(obj, permanent) {

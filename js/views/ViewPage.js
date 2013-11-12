@@ -70,7 +70,7 @@ define('views/ViewPage', [
       this.ready = this.readyDfd.promise();
       if (viewType) {
         U.require(viewType, function(viewMod) {
-          self.imageView = new viewMod(_.extend({el: $(this.imgDiv, self.el), arrows: false}, commonParams));
+          self.imageView = new viewMod(_.extend({el: $(this.imgDiv, self.el)[0], arrows: false}, commonParams));
           self.addChild(self.imageView);
           self.readyDfd.resolve();
   //        renderDfd.done(self.imageView.finalize);
@@ -258,10 +258,6 @@ define('views/ViewPage', [
     },
 
     render: function() {
-      Q.write(this.renderHelper, this, arguments);
-    },
-
-    renderHelper: function() {
       var res = this.resource;
 //      var json = res.toJSON();
       var json = this.getBaseTemplateData();
@@ -320,14 +316,14 @@ define('views/ViewPage', [
         this.assign(this.imgDiv, this.imageView);
       }.bind(this));
       
-      this.onload(Q.write.bind(Q, function() {          
+//      this.onload(Q.write.bind(Q, function() {          
         if (!this.isAbout) {
           if (G.currentUser.guest) {
             this.$('#edit').hide();
           }
         }       
         
-        if (!this.$el.parentNode) 
+        if (!this.el.parentNode) 
           $('body').append(this.$el);
       
         this.$el.attr("data-theme", G.theme.swatch);
@@ -335,7 +331,7 @@ define('views/ViewPage', [
           this.$('#resourceViewHolder').css('background-image', 'url(' + G.theme.backgroundImage +')');
   
         this.$('#chatbox').css("display", "none");      
-      }, this));
+//      }, this));
 //      renderDfd.resolve();
 //      this.restyle();
       

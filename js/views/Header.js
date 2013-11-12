@@ -17,6 +17,7 @@ define('views/Header', [
   var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate', 'installApp'];
   var commonTypes = G.commonTypes;
   return BasicView.extend({
+    autoFinish: false,
     template: 'headerTemplate',
     initialize: function(options) {
       _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload'); //, '_updateInfoErrorBar', 'checkErrorList', 'sendToCall');
@@ -38,6 +39,11 @@ define('views/Header', [
       if (this.buttons)
         this.getButtonViews();
       
+      var self = this;
+      this.on('destroyed', function() {
+        self.buttonViews = {};
+      });
+      
 ////      this.calcTitle();
 //      this.makeTemplate('errorListTemplate', 'errorListTemplate', this.modelType);
 //      this.makeTemplate('callInProgressHeaderTemplate', 'callInProgressHeaderTemplate', this.modelType);
@@ -48,7 +54,6 @@ define('views/Header', [
 //        Events.on(event, handler);
 //      }.bind(this));
 
-      this.autoFinish = false;
       return this;
     },
     

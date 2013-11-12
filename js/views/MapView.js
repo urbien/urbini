@@ -42,10 +42,14 @@ define('views/MapView', [
 //      'click': 'click',
       'swipe'             : 'onSwipe',
       'swiperight'        : 'onSwipe',
-      'swipeleft'         : 'onSwipe',
+      'swipeleft'         : 'onSwipe'
+    },
+    
+    windowEvents: {
       'orientationchange' : 'resize',
       'resize'            : 'resize'
     },
+    
     resize: function() {
       if (!this.mapper)
         return;

@@ -516,6 +516,7 @@ define('lib/fastdom', ['globals', 'underscore'], function(G, _) {
     var args = job.args,
         ctx = job.ctx;
   
+//    console.debug('running job', job.fn);
     if (args) {
       if (_.isArray(args))
         job.fn.apply(ctx, args);
@@ -608,6 +609,10 @@ define('lib/fastdom', ['globals', 'underscore'], function(G, _) {
       return FrameWatch.unsubscribe(id);
     };
     
+    window._setTimeout = window.setTimeout;
+    window._setInterval = window.setInterval;
+    window._clearTimeout = window.clearTimeout;
+    window._clearInterval = window.clearInterval;
     window.setTimeout = fastdom.setTimeout;
     window.clearTimeout = fastdom.clearTimeout;
     window.resetTimeout = fastdom.resetTimeout;

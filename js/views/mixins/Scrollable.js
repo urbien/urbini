@@ -7,9 +7,14 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         easeIn: [0.420, 0.000, 1.000, 1.000]
       },      
       NUM_PRECALCED_DISTANCES = 20,
+      SCROLL_EVENT_DISTANCE_THRESH = 50,
       bezierStep = 1 / NUM_PRECALCED_DISTANCES,
       doc = document,
       CSS = U.CSS,
+      AXIS_INDEX = {
+        X: 0,
+        Y: 1
+      },
       SCROLL_OFFSET = {
         X: 0,
         Y: 0
@@ -113,7 +118,14 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       scrollTop: -pos.Y
     }
   }
-  
+
+  function scrollOffsetToPos(offset) {
+    return {
+      X: -offset.X,
+      Y: -offset.Y
+    }
+  }
+
   function oppositeDir(dir) {
     return dir == 'X' ? 'Y' : 'X';
   }
@@ -161,18 +173,54 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     return limited;
   }
   
-  var initScrollerProps = {
-    axis: 'Y',
-    SCROLL_EVENT_TIME_PERIOD: 200,
-    SCROLL_EVENT_DISTANCE_PERIOD: 200,
-    MAX_COAST_TIME: 2500,
-    MAX_VELOCITY: 7,
-    MAX_OUT_OF_BOUNDS: 50,
-    deceleration: 0.0035,
-    keyboard: true,
-    momentum: true,
-    timeouts: []
+  var initCoord = {
+    X: 0,
+    Y: 0
   };
+  
+  var initDimensions = {
+    width: 0,
+    height: 0
+  }
+  
+  function getInitBounds() {
+    return {
+      X: {
+        min: 0,
+        max: 0
+      },
+      Y: {
+        min: 0,
+        max: 0
+      }
+    };
+  }
+
+  function getInitScrollerProps() {
+    return {
+      axis: 'Y',
+      SCROLL_EVENT_TIME_PERIOD: 200,
+      SCROLL_EVENT_DISTANCE_PERIOD: 200,
+      MAX_COAST_TIME: 2500,
+      MAX_VELOCITY: 7,
+      MAX_OUT_OF_BOUNDS: 50,
+      deceleration: 0.0035,
+      keyboard: true,
+      momentum: true,
+      timeouts: [],
+      viewportDestination: _.clone(initCoord),
+      prevViewportDestination: null,
+      position: _.clone(initCoord),
+      prevPosition: null,
+      scrollBounds: getInitBounds(),
+      bounceBounds: getInitBounds(),
+      metrics: {
+        snapGrid: _.clone(initCoord),
+        container: _.clone(initDimensions),
+        content: _.clone(initDimensions)
+      }
+    };
+  }
   
   var Scrollable = Backbone.Mixin.extend({
     initialize: function(options) {
@@ -181,15 +229,15 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
                       '_onNativeScroll', '_onMouseWheel', '_checkIfScrolledToHead', '_stopScroller'); //, '_onScrollerRelease');
       
       this.onload(this._initScroller.bind(this));
-      this.$el.addClass('scrollable');
+      this.el.classList.add('scrollable');
     },
     
     render: function() {
-      this.$el.addClass('scrollable');
+      this.el.classList.add('scrollable');
     },
     
     _initScroller: function(options) {
-      this._scrollerProps = _.deepExtend({}, initScrollerProps, this._scrollableOptions, options);
+      this._scrollerProps = _.deepExtend({}, getInitScrollerProps(), this._scrollableOptions, options);
       var self = this;
       var el = this.el;
       var s = this._scrollerProps;
@@ -212,9 +260,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
 //      'release': '_onScrollerDragEnd',
 //      'touchend': '_onScrollerClick',
       'touch': '_onScrollerTouch',
-      'release': '_onScrollerRelease',
-      'resize': '_onSizeInvalidated',
-      'orientationchange': '_onSizeInvalidated',
+//      'release': '_onScrollerRelease',
       'page_show': '_onScrollerActive',      
       'page_beforehide': '_onScrollerInactive',
       'drag': '_onScrollerDrag',
@@ -227,7 +273,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     /**
      * on mobile devices, we want to trigger a native scroll event when the user reaches the top of the page so that the navbar shows
      */
-    _checkIfScrolledToHead: function(e, info) {
+    _checkIfScrolledToHead: function(e) {
+      var info = e.detail;
       if (this._getScrollAxis() == 'Y') {
         if (!this._scrolledToHead && info.scrollTop == 0) { // && !this._scrollerProps._snapping) { // not sure we want to trigger this event if we're snapping 
           this._scrolledToHead = true;
@@ -245,7 +292,9 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
 //    },
 
     windowEvents: {
-      'scroll': '_onNativeScroll'
+      'scroll': '_onNativeScroll',
+      'resize': '_onSizeInvalidated',
+      'orientationchange': '_onSizeInvalidated'
     },
 
     /**
@@ -294,6 +343,12 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     _onScrollerActive: function() {
       if (this._scrollerInitialized)
         this._toggleScrollEventHandlers(true);
+      
+      if (this._scrollerSizeRecalcQueued) {
+        debugger;
+        this._scrollerSizeRecalcQueued = false;
+        this._onSizeInvalidated();
+      }
     },
 
     _onScrollerInactive: function() {
@@ -308,7 +363,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       }
     },
 
-    _onScrollerRelease: function(e) {
+//    _onScrollerRelease: function(e) {
 //      PREVENT_CLICK = false;
 //      var s = this._scrollerProps;
 //      if (G.getScrollState() != 'idle') {
@@ -327,7 +382,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
 //        e.stopImmediatePropagation();
 //        return false;
 //      }
-    },
+//    },
 
     _updateScrollPositionAndReset: function() {
 //      console.log("UPDATING SCROLL POSITION AND RESETTING");
@@ -353,8 +408,12 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       
       if (!from || from.nodeName == "HTML") {
         if (s._dragging) {
-          var e = $.Event( "mouseup", { which: 1 });
-          this.$el.trigger(e);
+          this.el.dispatchEvent(new MouseEvent('mouseup', {
+            view: this.el,
+            cancelable: true,
+            bubbles: true
+          }));
+          
 //          e.type = 'mouseup';
 //          e.target = this.el;
 //          this.el.dispatchEvent(e);
@@ -499,11 +558,15 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
             offset = s.position[axis],
             tooBig = offset > s.scrollBounds[axis].max;
           
-        if ((tooBig && velocity < 0) || (!tooBig && velocity > 0))
+        if ((tooBig && velocity < 0) || (!tooBig && velocity > 0)) {
+          e.gesture.stopDetect();
           this._flingScroller(velocity);
+        }
       }
-      else if (Math.abs(velocity) > 0.5)
+      else if (Math.abs(velocity) > 0.5) {
+        e.gesture.stopDetect();
         this._flingScroller(velocity);
+      }
     },
 
     _onKeyDown: function(e) {
@@ -685,7 +748,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
 //      if (!this.isActive())
 //        return;
       
-      var now = _.now(),
+      var self = this,
+          now = _.now(),
           lastInvalidated = this._sizeInvalidatedTime || now, // debounce first too
           period = this._sizeInvalidatedDebouncePeriod;
       
@@ -715,15 +779,17 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
           return;
         
         this._scrollerSizeRecalcQueued = true;
-        this.pageView.$el.one('page_show', this._onSizeInvalidated);
-        return;
+//        this.pageView.el.addEventListener('page_show', function onpageshow() {
+//          self.pageView.el.removeEventListener('page_show', onpageshow);
+//          self._onSizeInvalidated();
+//        });
       }
       
 //      if (e && e.type == 'load' && e.target && e.target.tagName == 'IMG')
 //        return;
       
       this.log("RECALCULATING SCROLLER SIZE", e && e.type);
-      this._scrollerSizeRecalcQueued = false;
+//      this._scrollerSizeRecalcQueued = false;
 //      this.log('invalidated size');
       Q.read(function() {
         this._calculateScrollerSize();
@@ -759,41 +825,12 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         return false;
       
       this._scrollerInitialized = true;
-      if (!metrics) {
-        metrics = s.metrics = {
-          snapGrid: {},
-          container: {},
-          content: {}
-        };
-        
-        container = metrics.container;
-        content = metrics.content;
-        s.scrollBounds = {
-          X: {
-            min: 0,
-            max: 0
-          },
-          Y: {
-            min: 0,
-            max: 0
-          }
-        };
-        
-        s.bounceBounds = _.deepExtend({}, s.scrollBounds);
-        s.position = {
-          X: 0,
-          Y: 0
-        };
-      }
-      else {
-        content = metrics.content;
-        container = metrics.container;
-        containerSizeChanged = container.width != containerWidth || container.height != containerHeight;
-        contentSizeChanged = content.width != scrollWidth || content.height != scrollHeight;
-        if (!containerSizeChanged && !contentSizeChanged) { 
-          return;
-        }
-      }
+      content = metrics.content;
+      container = metrics.container;
+      containerSizeChanged = container.width != containerWidth || container.height != containerHeight;
+      contentSizeChanged = content.width != scrollWidth || content.height != scrollHeight;
+      if (!containerSizeChanged && !contentSizeChanged) 
+        return;
       
       snapGrid = metrics.snapGrid;
       scrollBounds = s.scrollBounds;
@@ -812,13 +849,13 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
             dim = axisToDim[axis];
         
         if (containerSizeChanged)
-          this.$el.trigger('scrollosize', scrollInfo);
+          this.el.dispatchEvent(new CustomEvent('scrollosize', {detail: scrollInfo}));
         
         if (contentSizeChanged)
-          this.$el.trigger('scrollocontent', scrollInfo);
+          this.el.dispatchEvent(new CustomEvent('scrollocontent', {detail: scrollInfo}));
         
         if (content[dim] > container[dim])
-          this.$el.trigger('scrolloable', scrollInfo);
+          this.el.dispatchEvent(new CustomEvent('scrolloable', {detail: scrollInfo}));
       }
       
       this.setDimensions(content.width, content.height);
@@ -910,21 +947,22 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
 //      }
 //      
 //      this._resetScroller();
+      
       Q.read(this._calculateScrollerSize, this);
     },
     
     _triggerScrollEvent: function(type, scroll) {
       var s = this._scrollerProps,
           axis = this._getScrollAxis(),
-          pos = s.position,
+          pos = scroll ? scrollOffsetToPos(scroll) : s.position,
           prevPos = s.prevPosition;
       
-      if (prevPos && Math.abs(pos[axis] - prevPos[axis]) < 20)
+      if (prevPos && Math.abs(pos[axis] - prevPos[axis]) < SCROLL_EVENT_DISTANCE_THRESH)
         return;
       
-      console.debug("SCROLL FROM: ", prevPos, pos);
+//      this.log("SCROLL FROM: ", prevPos[axis], pos[axis]);
       s.prevPosition = _.clone(pos); 
-      this.$el.trigger(type.replace('scroll', 'scrollo'), this.getScrollInfo(scroll));
+      this.el.dispatchEvent(new CustomEvent(type.replace('scroll', 'scrollo'), {detail: this.getScrollInfo(scroll)}));
     },
     
     getScrollInfo: function(scroll) {
@@ -974,6 +1012,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
             percentDistanceTraveled = distanceMultipliers[(percentTimeTraveled * NUM_PRECALCED_DISTANCES) | 0];
             self._setScrollVelocity(avgVelocity * (percentDistanceTraveled - prevPercentDist) / (percentTimeTraveled - prevPercentTime));
             pingPos[axis] = pos[axis] + distanceTraveled;
+//            self._updateScrollPosition(pingPos.X, pingPos.Y);
             if (!alertedAboutDestinationProximity && Math.abs(distance - distanceTraveled) < viewportDim * 3) {
 //              console.log("SENDING VIEWPORT DESTINATION ALERT", x, y, time - percentTimeTraveled * time);
               alertedAboutDestinationProximity = true;
@@ -1142,19 +1181,29 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     _setViewportDestination: function(x, y, timeToDestination) {
+      var s = this._scrollerProps,
+          axis = this._getScrollAxis(),
+          prevDest = s.prevViewportDestination;
+      
+      if (prevDest && Math.abs(arguments[AXIS_INDEX[axis]] - prevDest[axis]) < SCROLL_EVENT_DISTANCE_THRESH)
+        return;
+
+      if (!prevDest)
+        s.prevViewportDestination = {};
+      
+      s.viewportDestination.X = s.prevViewportDestination.X = x;
+      s.viewportDestination.Y = s.prevViewportDestination.Y = y;
+      s.viewportArrivalTime = _.now() + timeToDestination;
       this.trigger('viewportDestination', x, y, timeToDestination);
 //      this.log("VIEWPORT DESTINATION:", x, y, "IN", timeToDestination, "MILLIS");
-      this._viewportDestination.X = x;
-      this._viewportDestination.Y = y;
-      this._viewportArrivalTime = _.now() + timeToDestination;
     },
     
     _getViewportDestination: function() {
-      return this._viewportDestination;
+      return this._scrollerProps.viewportDestination;
     },
     
     _isViewportAtDestination: function() {
-      return this._viewportArrivalTime < _.now();
+      return this._scrollerProps.viewportArrivalTime < _.now();
     }
   }, {
     displayName: 'Scrollable'    

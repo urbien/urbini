@@ -9,7 +9,9 @@ define('views/ToggleButton', [
       _.bindAll(this, 'setStyle', 'toggleStyle', 'setStyle', 'isOn', 'reset', 'resetStyle');
       BasicView.prototype.initialize.apply(this, arguments);
       this._isOn = this._onByDefault = !!(options || {}).isOn || this.isOn();
-      this.listenTo(Events, "pageChange", this.reset);
+    },
+    globalEvents: {
+      'pageChange': 'reset'
     },
     isOn: function() {
 //      return this.$('a').hasClass('ui-btn-active');
