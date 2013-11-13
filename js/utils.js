@@ -280,6 +280,11 @@ define('utils', [
       if ( after.parentNode ) {
         after.parentNode.insertBefore( elem, after.nextSibling );
       }
+    },
+    
+    removeElement: function(el) {
+      if (el.parentNode)
+        el.parentNode.removeChild(el);
     }
   };
 

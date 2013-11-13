@@ -357,8 +357,8 @@ define('views/ResourceListItemView', [
         }
       }
       if (!this.isCommonTemplate) {
-        if (this.imageProperty)
-          this.$el.addClass("image_fitted");
+//        if (this.imageProperty)
+//          this.$el.addClass("image_fitted");
         
         return this.doRender(options, json);
       }
@@ -420,7 +420,7 @@ define('views/ResourceListItemView', [
       }
       
       if (oW  &&  oH  &&  (typeof atts[oW] != 'undefined' &&  typeof  atts[oH] != 'undefined')) {
-        this.$el.addClass("image_fitted");
+//        this.$el.addClass("image_fitted");
         
         var clip = U.clipToFrame(80, 80, m.get(oW), m.get(oH), maxDim, 80);
         if (clip) {
@@ -763,7 +763,7 @@ define('views/ResourceListItemView', [
         h = atts[oH];
       }
       if (img  &&  !this.isCommonTemplate) {
-        this.$el.addClass("image_fitted");
+//        this.$el.addClass("image_fitted");
 //        this.$el.html(this.template(json));
 //        return this;
         return this.doRender(options, json);

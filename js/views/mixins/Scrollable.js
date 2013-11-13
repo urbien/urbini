@@ -345,7 +345,6 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         this._toggleScrollEventHandlers(true);
       
       if (this._scrollerSizeRecalcQueued) {
-        debugger;
         this._scrollerSizeRecalcQueued = false;
         this._onSizeInvalidated();
       }

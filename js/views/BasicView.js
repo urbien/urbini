@@ -400,7 +400,7 @@ define('views/BasicView', [
       if (this.pageView)
         delete this.pageView;
       
-      this.el.parentNode.removeChild(this.el);
+      HTML.removeElement(this.el);
       this.$el = this.el = this._hammer = this._hammered = null;
 //      this.$el.remove();
 //      

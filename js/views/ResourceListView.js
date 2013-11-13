@@ -856,10 +856,11 @@ define('views/ResourceListView', [
 
       Q.write(function removePagesFromDOM() {
         for (var i = 0, len = removedPages.length; i < len; i++) {
-          if (!document.documentElement.contains(removedPages[i]))
-            debugger;
-          
-          removedPages[i].remove(); //detach().empty();
+//          if (!document.documentElement.contains(removedPages[i]))
+//            debugger;
+//          
+//          removedPages[i].remove(); //detach().empty();
+          HTML.removeElement(removedPages[i]);
         }
 
         for (var i = 0, len = removedViews.length; i < len; i++) {

@@ -27,15 +27,15 @@ define('views/RightMenuButton', [
         return;
       
       if (this.leftMenuPanel) {
-        this.leftMenuPanel.destroy();
-        this.$leftMenuEl[0].style.visibility = 'hidden';
-        this.leftMenuPanel = null;
+//        this.leftMenuPanel.destroy();
+        this.leftMenuEl.style.visibility = 'hidden';
+//        this.leftMenuPanel = null;
       }
       
       if (this.rightMenuPanel) {
-        this.rightMenuPanel.destroy();
-        this.$rightMenuEl[0].style.visibility = 'hidden';
-        this.rightMenuPanel = null;
+//        this.rightMenuPanel.destroy();
+        this.rightMenuEl.style.visibility = 'hidden';
+//        this.rightMenuPanel = null;
       }
     },
     
@@ -49,15 +49,19 @@ define('views/RightMenuButton', [
     },
     
     _leftMenu: function(e) {
-      var p = this.$leftMenuEl; //$('#' + this.viewId);
+      var p = this.leftMenuEl; //$('#' + this.viewId);
       // HACK
-      var tagName = (p  &&  p[0].tagName.toLowerCase() == 'section') ? 'nav' : 'div'; 
+      var tagName = (p  &&  p.tagName.toLowerCase() == 'section') ? 'nav' : 'div'; 
 
 //      if (!this.initialLeftMenuStyle)
 //        this.initialLeftMenuStyle = p[0].style;
+      if (this.leftMenuPanel)
+        this.leftMenuEl.style.visibility = 'visible';
+      else {
+        this.leftMenuPanel = new MenuPanel({viewId: this.viewId, model: this.model, tagName: tagName, parentView: this.getPageView()});
+        this.leftMenuPanel.render();
+      }
       
-      this.leftMenuPanel = new MenuPanel({viewId: this.viewId, model: this.model, tagName: tagName, parentView: this.getPageView()});
-      this.leftMenuPanel.render();
       return this;
     },
     
@@ -77,15 +81,19 @@ define('views/RightMenuButton', [
     },
     
     _rightMenu: function(e) {
-      var p = this.$rightMenuEl; //$('#' + this.viewId + 'r');
+      var p = this.rightMenuEl; //$('#' + this.viewId + 'r');
       // HACK
-      var tagName = (p  &&  p[0].tagName.toLowerCase() == 'section') ? 'nav' : 'div'; 
+      var tagName = (p && p.tagName.toLowerCase() == 'section') ? 'nav' : 'div'; 
 
 //      if (!this.initialRightMenuStyle)
 //        this.initialRightMenuStyle = p[0].style;
-      
-      this.rightMenuPanel = new RightMenuPanel({viewId: this.viewId, model: this.model, tagName: tagName, parentView: this.getPageView()});
-      this.rightMenuPanel.render();        
+
+      if (this.rightMenuPanel)
+        this.rightMenuEl.style.visibility = 'visible';
+      else {
+        this.rightMenuPanel = new RightMenuPanel({viewId: this.viewId, model: this.model, tagName: tagName, parentView: this.getPageView()});
+        this.rightMenuPanel.render();
+      }
     },
     
     rightMenu: function(e) {
@@ -118,8 +126,8 @@ define('views/RightMenuButton', [
     render: function(options) {
       this.$el.html(this.template({viewId: this.viewId}));
       if (!this.rendered) {
-        this.$leftMenuEl = this.pageView.$('#' + this.viewId);
-        this.$rightMenuEl = this.pageView.$('#' + this.viewId + 'r');
+        this.leftMenuEl = this.pageView.el.querySelector('#' + this.viewId);
+        this.rightMenuEl = this.pageView.el.querySelector('#' + this.viewId + 'r');
       }
       
       this.finish();

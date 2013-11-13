@@ -502,8 +502,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
 
       _delegateEvents: function(events, hammer, delegated) {
         var defaultEls = [hammer.element],
-            options = this.hammerOptions,
-            hammer;
+            options = this.hammerOptions;
             
         for(var key in events) {
           if (delegated[key])
@@ -521,12 +520,11 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
                 i = els.length;
             
             while (i--) {
-              hammer = this._getHammer(els[i], options, true); // create if Hammer doesn't exist
-              hammer.on(eventName, method);
+              this._getHammer(els[i], options, true).on(eventName, method); // create if Hammer doesn't exist
             }
           }
           else
-            hammer.on(eventName, method);
+            hammer.on(eventName, method); // use view's hammer (for view element)
         }
       },
       
@@ -598,15 +596,14 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
             i = els.length;
             while (i--) {
               var _el = els[i],
-                  hammer = this._getHammer(_el);
+                  h = this._getHammer(_el);
               
-              if (hammer)
-                hammer.off(eventName, method);
+              if (h)
+                h.off(eventName, method);
             }
           }
-          else {
+          else
             hammer.off(eventName, method);
-          }
           
           delete delegated[key];
         }

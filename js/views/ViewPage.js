@@ -316,7 +316,7 @@ define('views/ViewPage', [
         this.assign(this.imgDiv, this.imageView);
       }.bind(this));
       
-//      this.onload(Q.write.bind(Q, function() {          
+      this.onload(Q.write.bind(Q, function() {          
         if (!this.isAbout) {
           if (G.currentUser.guest) {
             this.$('#edit').hide();
@@ -331,7 +331,7 @@ define('views/ViewPage', [
           this.$('#resourceViewHolder').css('background-image', 'url(' + G.theme.backgroundImage +')');
   
         this.$('#chatbox').css("display", "none");      
-//      }, this));
+      }, this));
 //      renderDfd.resolve();
 //      this.restyle();
       
