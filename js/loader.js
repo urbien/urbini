@@ -1261,10 +1261,12 @@ define('globals', function() {
           
         return map;
       })() : {},
-      $head = $('head'),
-      head = $head[0],
-      $body = $('body'),
-      body = $body[0],
+      head = doc.getElementsByTagName('head')[0],
+      body = doc.getElementsByTagName('body')[0],
+//      $head = $('head'),
+//      head = $head[0],
+//      $body = $('body'),
+//      body = $body[0],
       
       // XHR
       PROG_IDS = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'],
@@ -1433,8 +1435,12 @@ define('globals', function() {
       
       var style = ' style="z-index:1000;' + (color ? color + ';' : '') + '"';
       var innerHTML = '<div id="spinner_container"><div id="spinner"' + style + '>' + (options.content || '<i class="ui-icon-spinner icon-spin" style="font-size: 64px;"></i>') + '</div></div>';
-      var $spinner = $('<div id="' + id + '" class="' + cl + '">' + innerHTML + '</div>');
-      $body.append($spinner);
+      var spinner = doc.createElement('div');
+      spinner.id = id;
+      spinner.setAttribute('class', cl);
+      spinner.innerHTML = innerHTML;
+//      var spinner = '<div id="' + id + '" class="' + cl + '">' + innerHTML + '</div>';
+      body.appendChild(spinner);
       if (options.timeout) {
         setTimeout(function() {
           G.hideSpinner(options.name);
@@ -1442,7 +1448,12 @@ define('globals', function() {
       }
     },
     hideSpinner: function(name) {
-      $('#' + getSpinnerId(name)).remove();
+      var spinners = doc.querySelectorAll('#' + getSpinnerId(name));
+      var i = spinners.length;
+      while (i--) {
+        var spinner = spinners[i];
+        spinner.parentNode.removeChild(spinner);
+      }
     },
     getVersion: function(old) {
       if (!old && G.VERSION)
@@ -1740,14 +1751,14 @@ define('globals', function() {
 //      link.setAttribute("rel", "stylesheet")
 //      link.setAttribute("type", "text/css")
 //      link.setAttribute("href", url);
-      $head.append(link);
+      head.appendChild(link);
     },
 
     appendCSS: function(text) {
       var style = doc.createElement('style');
       style.type = 'text/css';
       style.textContent = text; // iphone 2g gave innerhtml and appendchild the no_modification_allowed_err 
-      $head.append(style);
+      head.appendChild(style);
     },
     
 //    removeHoverStyles: function() {

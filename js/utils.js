@@ -3495,7 +3495,7 @@ define('utils', [
         template = templateName;
 
 //      return subCache[typeKey] = template;
-      return subCache[typeKey] = function(json) {
+      return subCache[typeKey] = function(json, unlazifyImages) {
         if (_.any(U._reservedTemplatedKeywords, _.has.bind(_, json)))
           throw "Invalid data for template, keywords [{0}] are reserved".format(U._reservedTemplateKeywords.join(', '));
         
@@ -3505,7 +3505,8 @@ define('utils', [
         json.$ = $;
         json.loc = G.localize;
         
-        return template.call(this, json);
+        var html = template.call(this, json);
+        return unlazifyImages ? HTML.unlazifyImagesInHTML(html) : html;
       };
     },
     
