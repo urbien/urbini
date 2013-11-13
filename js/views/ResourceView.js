@@ -400,8 +400,15 @@ define('views/ResourceView', [
 //
 //          highlightText(text, highlight);
 //        }.bind(this));
-        this.$('textarea[data-code]').each(function() {
-          var mode = this.dataset.code;
+        
+        var textareas = this.$('textarea[data-code]'),
+            textarea,
+            editor,
+            i = textareas.length;
+        
+        while (i--) {
+          textarea = textareas[i];
+          var mode = textarea.dataset.code;
           switch (mode) {
             case 'html':
               mode = 'text/html';
@@ -419,7 +426,7 @@ define('views/ResourceView', [
             }
           }
           
-          var editor = CodeMirror.fromTextArea(this, {
+          editor = CodeMirror.fromTextArea(textarea, {
             mode: mode,
             tabMode: 'indent',
             lineNumbers: true,
@@ -428,13 +435,11 @@ define('views/ResourceView', [
             readOnly: true
           });
           
-          setTimeout(function() {
-            // sometimes the textarea will have invisible letters, or be of a tiny size until you type in it. This is a preventative measure that seems to work
-            editor.refresh.apply(editor); 
-          }, 50);
+          // sometimes the textarea will have invisible letters, or be of a tiny size until you type in it. This is a preventative measure that seems to work
+          setTimeout(editor.refresh.bind(editor), 50);
 //          $(".Codemirror").focus();
 //          var $this = $(this);
-        });
+        }
       }
 
       return this;

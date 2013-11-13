@@ -11,7 +11,8 @@ define('views/ListPage', [
   'lib/fastdom'
 ], function(G, Events, U, Errors, Voc, BasicPageView, ResourceListView, Header, Q) {
   var MapView,
-      SPECIAL_INTERSECTIONS = [G.commonTypes.Handler, G.commonTypes.Friend, U.getLongUri1('model/social/NominationForConnection') /*, commonTypes.FriendApp*/];
+      SPECIAL_INTERSECTIONS = [G.commonTypes.Handler, G.commonTypes.Friend, U.getLongUri1('model/social/NominationForConnection') /*, commonTypes.FriendApp*/],
+      CSS = U.CSS;
   
   return BasicPageView.extend({
     template: 'resource-list',
@@ -207,7 +208,7 @@ define('views/ListPage', [
     
     focusFilter: function(e) {
       // HACK - JQM does sth weird to prevent focus when we're not using their listfilter widget
-      this.$filter.focus();
+      this.filter.focus();
     },
     
     onFilter: Q.debounce(function(e, data) {
@@ -362,7 +363,7 @@ define('views/ListPage', [
       
 //      this.$el.attr("data-scrollable", "true");
       tmpl_data.isMasonry = this.isMasonry;
-      this.$el.html(this.template(tmpl_data));
+      this.html(this.template(tmpl_data));
       
       views[this.listContainer] = this.listView;
       this.assign(views);
@@ -371,29 +372,33 @@ define('views/ListPage', [
         this.assign('#mapHolder', this.mapView);  
       }.bind(this));
       
-      if (!this.$el.parentNode)  
-        $('body').append(this.$el);
+      if (!this.el.parentNode)  
+        document.body.appendChild(this.el);
       if (!this.isMV)
-        this.$('#mv').hide();
+        CSS.hide(this.$('#mv'));
       if (!this.isEdit)
-        this.$('#editRlForm').hide();
+        CSS.hide(this.$('#editRlForm'));
 //      if (this.isSpecialIntersection) {
 //        this.listView.$el.addClass('grid-listview');
 //        this.listView.$el.find('ul').removeClass('grid-listview');
 //      }
-      this.$('#sidebarDiv').css('clear', 'both');
+      CSS.set(this.$('#sidebarDiv'), 'clear', 'both');
       if (G.theme.backgroundImage) { 
-        this.$('#sidebarDiv').css('background-image', 'url(' + G.theme.backgroundImage +')');
+        CSS.set(this.$('#sidebarDiv'), 'background-image', 'url(' + G.theme.backgroundImage +')');
       }
       if (!this.isMasonry)
-        this.$('#sidebarDiv').css('overflow-x', 'visible');
+        CSS.set(this.$('#sidebarDiv'), 'overflow-x', 'visible');
 
-      this.$filter = this.$('#filter');
-      filter = this.$filter[0];
-      document.addEventListener('keydown', function(e) {
-        if (filter == e.target)
-          self.$filter.change();
-      });
+      this.filter = this.$('#filter')[0];
+      if (this.filter) {
+        this.filter.addEventListener('keydown', function(e) {
+          self.filter.dispatchEvent(new Event('change', {
+            view: self.filter,
+            bubbles: false,
+            cancelable: true
+          }));
+        });
+      }
       
       this.finish();
       return this;

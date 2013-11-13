@@ -18,6 +18,12 @@ define('views/ResourceListView', [
   }
   
   return BasicView.extend({
+    _itemRenderOptions: {
+      force: true,
+      renderToHtml: true,
+      delegateEvents: false // delegate when we issue setElement
+    },
+
 //    _listItemViews: [],
 //    _pageReqNum: 0,
 //    _itemView: ResourceListItemView,
@@ -32,10 +38,10 @@ define('views/ResourceListView', [
     _maxPagesInSlidingWindow: 12,
     _pagesCurrentlyInSlidingWindow: 0,
     _elementsPerPage: 10,
-    _displayedCollectionRange: {
-      from: 0,
-      to: 0
-    },
+//    _displayedCollectionRange: {
+//      from: 0,
+//      to: 0
+//    },
     _horizontal: false,
     _scrollable: false, // set to true when the content is bigger than the container
 
@@ -85,8 +91,18 @@ define('views/ResourceListView', [
 //          self.refresh(options);
 //        });
 //      });
+      
+      
+      var viewport = G.viewport;
+      this._viewport = {};
+      this._onScrollerSizeChanged({
+        content: viewport,
+        container: viewport,
+        scrollTop: 0,
+        scrollLeft: 0
+      });
 
-      return this;    
+      return this;
     },
 
     pageEvents: {
@@ -104,7 +120,7 @@ define('views/ResourceListView', [
       this._pages.length = 0;
       this._pageOffset = 0;
       this._pagesCurrentlyInSlidingWindow = 0;
-      this._displayedCollectionRange.from = this._displayedCollectionRange = 0;
+//      this._displayedCollectionRange.from = this._displayedCollectionRange.to = 0;
       this.$('.listPage').remove();
       this.adjustSlidingWindow();
     },
@@ -118,9 +134,8 @@ define('views/ResourceListView', [
           top = info.scrollTop,
           left = info.scrollLeft;
           
-      if (!this._viewport)
-        this._viewport = {};
-      
+//      if (!this._viewport)
+//        this._viewport = {};
       
       this._viewport.head = this._horizontal ? left : top;
       this._viewport.tail = this._horizontal ? left + width : top + height;
@@ -135,7 +150,7 @@ define('views/ResourceListView', [
     },
 
     _onScrollerSizeChanged: function(e) {
-      var info = e.detail,
+      var info = e.detail || e,
           dimProp = this._horizontal ? 'width' : 'height',
           pageHeight = info.container[dimProp],
           pages = this._maxPagesInSlidingWindow;
@@ -1041,15 +1056,7 @@ define('views/ResourceListView', [
         liView = new preinitializedItem(options);
       }
       
-      this.addChild(liView, prepend);
-      if (!this._itemRenderOptions) {
-        this._itemRenderOptions = {
-          force: true,
-          renderToHtml: true,
-          delegateEvents: false // delegate when we issue setElement
-        };
-      }
-      
+      this.addChild(liView, prepend);      
       liView.render(this._itemRenderOptions);
       return liView;
     },

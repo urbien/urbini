@@ -185,30 +185,31 @@ define('views/PublishButton', [
     },
 
     render: function(options) {
+      var self = this;
+      this.empty();
       if (options) {
-        var btns = _.keys(_.pick(options, SPECIAL_BUTTONS));
-        _.each(btns, function(btnName) {
-          var bOptions = {};
-          if (options.enterTournament) {
-            var params = _.getParamMap(window.location.href);
-            bOptions.name = params['-tournamentName'];
-          }
-          
-          this.$el.html(this['{0}BtnTemplate'.format(btnName)]());
-//          var html = this['{0}BtnTemplate'.format(btnName)]();
-//          this.setElement($(html));
-          this.$el.trigger('create');
-        }.bind(this));
+        var params = this.hashParams,
+            btns = _.keys(_.pick(options, SPECIAL_BUTTONS)),
+            html = '';
+        
+        btns.forEach(function(btnName) {
+          html += self['{0}BtnTemplate'.format(btnName)]();
+        });
+
+        this.html(html);
+        this.$el.trigger('create');
       }
       else if (this.template) {
-        this.$el.html(this.template({wasPublished: !!this.resource.get('lastPublished')}));
+        this.html(this.template({wasPublished: !!this.resource.get('lastPublished')}));
         this.$el.trigger('create');
       }
       
       // TODO: figure out why click on Try button doesn't arrive in handler without this hack
-      _.each(SPECIAL_BUTTONS, function(bName) {        
-        this.$('#{0}'.format(bName)).click(this[bName]);
-      }.bind(this));
+      SPECIAL_BUTTONS.forEach(function(bName) {
+        var btn = self.el.querySelector('#{0}'.format(bName));
+        if (btn)
+          btn.addEventListener('click', self[bName]);
+      });
       
       return this;
     }

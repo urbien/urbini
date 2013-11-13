@@ -67,23 +67,26 @@ define('views/MessageBar', [
     },
 
     renderList: function(messages) {
-      var self = this;
+      var self = this,
+          messageBars;
       
       messages = _.map(messages, function(msg) {
         return _.has(msg, 'id') ? msg : _.extend({id: 'messageBarComponent' + G.nextId()}, msg);
       });
       
-      this.$el.html(this.messageListTemplate({
+      this.html(this.messageListTemplate({
         'class': this.type + 'MessageBar',
         messages: messages
       }));
       
-      this.$('.headerMessageBar').each(function() {
-        var id = this.id,
+      messageBars = this.$('.headerMessageBar');
+      _.each(messageBars, function(bar) {
+        var id = bar.id,
             events = _.find(messages, function(msg) { return msg.id == id }).events;
         
         if (events) {
-          var $this = $(this),
+          debugger;
+          var $bar = $(bar),
               onremove = events.remove;
           
           events.remove = function(e) {
@@ -93,7 +96,7 @@ define('views/MessageBar', [
           };
 
           for (var event in events) {
-            $this.on(event, events[event]);
+            $bar.on(event, events[event]);
           }
         }
       });

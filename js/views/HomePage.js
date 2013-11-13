@@ -6,6 +6,8 @@ define('views/HomePage', [
   'utils',
   'views/BasicPageView'
 ], function(G, Events, Jas, U, BasicPageView) {
+  var HTML = U.HTML;
+  
   return BasicPageView.extend({
     TAG: 'HomePage',
     first: true,
@@ -80,7 +82,7 @@ define('views/HomePage', [
       
       if (!this.rendered) {
 //      this.$el.trigger('page_beforeshow');
-        this.$el.css('display', 'block');
+        this.el.style.display = 'block';
       }
 //      var item = $('#homePage');
 //      item.css('display', 'block');
@@ -113,7 +115,7 @@ define('views/HomePage', [
     },
     
     removeInstallBtn: function() {
-      this.$('#installApp').remove();
+      HTML.remove(this.$('#installApp'));
     }
   }, {
     displayName: 'HomePage'

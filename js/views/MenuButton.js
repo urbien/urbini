@@ -25,7 +25,7 @@ define('views/MenuButton', [
       Events.stopEvent(e);
 //      G.log(this.TAG, "Recording step for tour: selector = 'id'; value = 'menuBtn'");
       U.require('views/MenuPanel', function(MenuPanel) {
-        var p = $('#' + this.viewId);
+        var p = this.$('#' + this.viewId);
         // HACK
         var tagName = (p  &&  p[0].tagName.toLowerCase() == 'section') ? 'nav' : 'div'; 
 
@@ -38,17 +38,18 @@ define('views/MenuButton', [
 
     refresh: function() {
       var num = G.currentUser.newAlertsCount;
-      var $menuBadge = this.$('.menuBadge');
-      $menuBadge.html(num || '');
-      $menuBadge[num ? 'show' : 'hide']();
+      var menuBadge = this.$('.menuBadge')[0];
+      menuBadge.innerHTML = num || '';
+      menuBadge.style.display = num ? '' : 'none';
     },
 
     render: function(options) {
-      this.$el.html(this.template({viewId: this.viewId}));
+      this.html(this.template({viewId: this.viewId}));
       this.finish();
       this.refresh();
       if (options.width)
-        this.$el.css('style', 'width:' + options.width + '%');
+        this.css('width', options.width + '%');
+      
       // when user profile gets updated, call this.refresh 
       return this;
     }

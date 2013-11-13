@@ -58,7 +58,37 @@ define('utils', [
 //    return this.length ? this[this.length - 1] : null;
 //  };
 
+  function getElementArray(els) {
+    return _.isArray(els) || els instanceof NodeList ? els : els && [els];
+  };
+
   var HTML = {
+    empty: function(els) {
+      els = getElementArray(els);
+      if (els) {
+        var i = els.length;
+//      while (node.hasChildNodes()) {
+//      while (node.firstChild) {
+//        node.removeChild(node.lastChild);
+//      }
+        while (i--) {
+          els[i].innerHTML = '';
+        }
+      }
+    },
+    remove: function(els) {
+      els = getElementArray(els);
+      if (els) {
+        var i = els.length,
+            el;
+        
+        while (i--) {
+          el = els[i];
+          if (el.parentNode)
+            el.parentNode.removeChild(el);
+        }
+      }
+    },
     tag: function(name, content, attributes) {
       return {
         name: name, 
@@ -285,6 +315,20 @@ define('utils', [
     removeElement: function(el) {
       if (el.parentNode)
         el.parentNode.removeChild(el);
+    },
+    
+    attr: function(el /*, (key, value) or key value map*/) {
+      var attrs;
+      if (arguments.length == 3) {
+        attrs = {};
+        attrs[arguments[1]] = arguments[2];
+      }
+      else
+        attrs = arguments[1];
+  
+      for (var name in attrs) {
+        el.setAttribute(name, attrs[name]);
+      }
     }
   };
 
@@ -296,6 +340,113 @@ define('utils', [
 
   var vendorPrefixes = ['', '-moz-', '-ms-', '-o-', '-webkit-'];
   var CSS = {
+    unhide: function(els) {
+      return this.hide(els, true);
+    },
+    hide: function(els, unhide) {
+      els = getElementArray(els);
+      if (els) {
+        var i = els.length,
+            display,
+            style,
+            el;
+        
+        while (i--) {
+          el = els[i];
+          style = el.style;
+          display = style.display;
+          if (unhide) {
+            if (display == 'none')
+              style.display = '';
+          }
+          else
+            style.display = 'none';
+        }
+      }
+    },
+    hasClass: function(el, cl) {
+      return el && el.classList.contains(cl);
+    },
+    addClass: function(els /*, classes */) {
+      els = getElementArray(els);
+      if (els) {
+        var i = els.length,
+            j = arguments.length,
+            el;
+        
+        while (i--) {
+          el = els[i];
+          while (j-- > 1) {
+            el.classList.add(arguments[j]);
+          }
+        }
+      }
+    },
+    removeClass: function(els /*, classes */) {
+      els = getElementArray(els);
+      if (els) {
+        var i = els.length,
+            j = arguments.length,
+            el;
+        
+        while (i--) {
+          el = els[i];
+          while (j-- > 1) {
+            el.classList.remove(arguments[j]);
+          }
+        }
+      }
+    },
+    replaceClass: function(els, classStr) {
+      els = getElementArray(els);
+      if (els) {
+        var i = els.length,
+            el;
+        
+        while (i--) {
+          el = els[i];
+          el.classList.length = 0;
+          el.setAttribute('class', classStr);
+        }
+      }
+    },
+    css: function(els) {
+      if (arguments.length < 3 && arguments[1] && typeof arguments[1] !== 'object')
+        return this.get.apply(this, arguments);
+      
+      return this.set.apply(this.arguments);
+    },
+    
+    set: function(els /*, (key, value) or key value map*/) {
+      els = getElementArray(els);
+      if (!els)
+        return;
+      
+      var i = els.length,
+          propMap,
+          el,
+          style;
+      
+      if (arguments.length == 3) {
+        propMap = {};
+        propMap[arguments[1]] = arguments[2];
+      }
+      else
+        propMap = arguments[1];      
+
+      while (i--) {
+        el = els[i];
+        style = el.style;
+        for (var prop in propMap) {
+          style[prop] = propMap[prop];
+        }
+      }
+    },
+    
+    get: function(el) {
+      throw "not implemented yet";
+    },
+      
     getBezierCoordinate: function(p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y, percentComplete) {
       percentComplete = Math.max(0, Math.min(percentComplete, 1));
       var percent = 1 - percentComplete;

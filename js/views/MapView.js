@@ -6,6 +6,7 @@ define('views/MapView', [
   'utils',
   'views/BasicView'
 ], function(G, _, Events, U, BasicView) {
+  var CSS = U.CSS;
   var MapView = BasicView.extend({
 //    css: [
 //      'leaflet.css', 
@@ -55,9 +56,9 @@ define('views/MapView', [
         return;
       
       if (window.innerWidth > window.innerHeight) // landscape
-        this.$('#map').height(window.innerHeight * 0.6);
+        CSS.set(this.$('#map'), 'height', window.innerHeight * 0.6);
       else
-        this.$('#map').height(window.innerHeight * 0.4);
+        CSS.set(this.$('#map'), 'height', window.innerHeight * 0.4);
       
       this.resetMap();
     },
@@ -147,7 +148,7 @@ define('views/MapView', [
       map.finish();
       
       Events.trigger('mapReady', res);
-      this.$el.append(frag);
+      this.el.appendChild(frag);
       this.hide();
       this.resize();
       return this;
@@ -166,12 +167,12 @@ define('views/MapView', [
     },
     
     show: function() {
-      this.$el.show();
+      CSS.unhide(this.el);
       return this;
     },
     
     hide: function() {
-      this.$el.hide();
+      CSS.hide(this.el);
       return this;    
     },
     getMapItemHTML: function(res) {

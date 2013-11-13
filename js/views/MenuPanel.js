@@ -35,7 +35,8 @@ define('views/MenuPanel', [
       'click #logout'    : 'logout',
       'click #home123'   : 'home',
       'click #urbien123' : 'home',
-      'click'            : 'click'
+      'click'            : 'click',
+      'click [data-href]': BasicView.clickDataHref
     },
     
     pageEvents: {
@@ -109,9 +110,9 @@ define('views/MenuPanel', [
     },
 //    tap: Events.defaultTapHandler,
     render:function (eventName) {
-      var menu = $('#' + this.viewId);
-      var mi = menu.find('#menuItems');
-      if (mi  &&  mi.length != 0) {
+      var menu = document.getElementById(this.viewId);
+      var mi = menu.querySelector('#menuItems');
+      if (mi) {
 //        $('#' + this.viewId).panel().panel("open");
         menu.panel("open");
         return;
@@ -121,11 +122,11 @@ define('views/MenuPanel', [
       var json = this.resource && res.toJSON();
       
       if (!res)
-        this.$el.html(this.template({}));      
+        this.html(this.template({}));      
       else
-        this.$el.html(this.template(json));      
+        this.html(this.template(json));      
 
-      var ul = this.$('#menuItems');
+      var ul = this.$('#menuItems')[0];
       var frag = document.createDocumentFragment();
 
       if (!G.currentUser.guest) {
@@ -234,14 +235,14 @@ define('views/MenuPanel', [
         U.addToFrag(frag, this.menuItemTemplate({title: this.loc("urbienHome"), icon: 'repeat', id: 'urbien123', mobileUrl: '#home/'}));
       }
       
-      ul.append(frag);      
-      var p = $('#' + this.viewId);
-      p.append(this.$el);
-      if (p  &&  p[0].tagName.toLowerCase() == 'section') 
-        p.css('visibility', 'visible');
+      ul.appendChild(frag);      
+      var p = document.getElementById(this.viewId);
+      p.appendChild(this.el);
+      if (p.tagName.toLowerCase() == 'section') 
+        p.style.visibility = 'visible';
       else {
-        p.panel().panel("open");
-        this.$('#menuItems').listview();
+        $(p).panel().panel("open");
+        $(this.$('#menuItems')).listview();
       }
 //      p.panel().panel("open");
 //      this.$('#menuItems').listview();

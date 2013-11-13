@@ -10,8 +10,13 @@ define('views/ResourceListItemView', [
 ], function(G, _, Events, Errors, U, BasicView, Voc) {
   var RLIV = BasicView.extend({
     tagName: "li",
+    className: G.isTopcoat() ? "topcoat-list__item" : "",
     attributes: {
-      'class': G.isTopcoat() ? "topcoat-list__item" : ""
+      'data-blah': 'blah',
+      hello: 'goodbye'
+    },
+    style: {
+      display: 'block'
     },
 //    tagName: "div",
 //    className: "ui-li ui-li-static ui-btn-up-c ui-first-child",
@@ -19,7 +24,9 @@ define('views/ResourceListItemView', [
     initialize: function(options) {
       _.bindAll(this, 'render', 'click', /*'recipeShoppingListHack',*/ 'remove'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);
-      var elAttrs = this.attributes;
+      var elAttrs = this.attributes,
+          classes = this.className;
+      
       elAttrs["data-icon"] = "false";
       if (options.imageProperty)
         this.imageProperty = options.imageProperty;
@@ -46,16 +53,17 @@ define('views/ResourceListItemView', [
 //          this.imageProperty = options.imageProperty;
           this.makeTemplate('listItemTemplate', 'template');
           if (options.swatch)
-            elAttrs["class"] = "ui-li-up-" + options.swatch;
+            classes += " ui-li-up-" + options.swatch;
           else
-            elAttrs["class"] = "image_fitted ui-btn ui-li ui-li-has-thumb ui-li-static";
+            classes += "image_fitted ui-btn ui-li ui-li-has-thumb ui-li-static";
         }
         else {
           this.makeTemplate('listItemTemplateNoImage', 'template', this.vocModel.type);
-          elAttrs['class'] = 'u-noimg';
+          classes += 'u-noimg';
         }
       }
       
+      this.className = classes;
       if (options.swatch)
         elAttrs["data-theme"] = options.swatch;
 //      if (this.resource.isA("Buyable"))
@@ -272,7 +280,7 @@ define('views/ResourceListItemView', [
       if (options && options.renderToHtml)
         this._html = this.renderHtml(html);
       else 
-        this.$el.html(html);
+        this.html(html);
       
       return this;
     },

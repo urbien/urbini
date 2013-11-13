@@ -33,7 +33,8 @@ define('views/RightMenuPanel', [
       'click #subscribe'         : 'subscribe',
       'click .chattee'           : 'chat',
       'click #urbien123'         : 'home',
-      'click #login'             : 'login'
+      'click #login'             : 'login',
+      'click [data-href]'        : BasicView.clickDataHref
 //        ,
 //      'click'                    : 'click'
 //      'click #logout': 'logout',
@@ -42,7 +43,7 @@ define('views/RightMenuPanel', [
       Events.stopEvent(e);
       window.location.href = G.serverName + '/app/UrbienApp';
     },
-
+    
 //    click: function(e) {
 //      var t = e.target,
 //          $t;
@@ -163,7 +164,7 @@ define('views/RightMenuPanel', [
 //      this.router.navigate(href, {trigger: true});
 //    },
     refresh: function() {
-      this.$el.empty();
+      this.empty();
       this.render();
     },
     
@@ -192,10 +193,11 @@ define('views/RightMenuPanel', [
     },
     
     renderChatParticipants: function() {
-      var p = $('#' + this.viewId);
+      this.empty();
+      var p = document.getElementById(this.viewId);
       p.empty();
       
-      this.$el.html(this.template());
+      this.html(this.template());
       var frag = document.createDocumentFragment();
       U.addToFrag(frag, this.groupHeaderTemplate({value: this.loc("whosHere") }));
       
@@ -210,7 +212,8 @@ define('views/RightMenuPanel', [
 //        icon: me.thumb
 //      };
       
-      _.each(participants, function(info, userid) {
+      for (var userid in participants) {
+        var info = participants[userid];
         var uri = info.uri;
         if (!uri)
           return;
@@ -238,7 +241,7 @@ define('views/RightMenuPanel', [
           var oH = info.oH;
           if (oW  &&  oH) {
             
-            this.$el.addClass("menu_image_fitted");
+            this.el.classList.add("menu_image_fitted");
             
             var dim = U.fitToFrame(44, 44, oW / oH)
             width = dim.w;
@@ -252,21 +255,20 @@ define('views/RightMenuPanel', [
           else
             U.addToFrag(frag, this.menuItemTemplate(_.extend({image: img}, common)));
         }
-        
-      }.bind(this));
+      }
       
-      var ul = this.$('#rightMenuItems');
-      ul.append(frag);
-      var p = $('#' + this.viewId);
-      p.append(this.$el);
+      var ul = this.$('#rightMenuItems')[0];
+      ul.appendChild(frag);
+      var p = document.getElementById(this.viewId);
+      p.appendChild(this.el);
       
-      if (p  &&  p[0].tagName.toLowerCase() == 'section') 
-        p.css('visibility', 'visible');
+      if (p.tagName.toLowerCase() == 'section') 
+        p.style.visibility = 'visible';
       else {
 
 //        p.panel().panel("open");
-        p.panel("open");
-        ul.listview();
+        $(p).panel("open");
+        $(ul).listview();
       }
     },
     
@@ -276,9 +278,10 @@ define('views/RightMenuPanel', [
         return;
       }
       
-      var mi = $('#' + this.viewId).find('ul#rightMenuItems');
-      if (mi  &&  mi.length != 0) {
-        $('#' + this.viewId).panel("open");
+      var menu = document.getElementById(this.viewId);
+      var mi = menu.querySelector('ul#rightMenuItems');
+      if (mi) {
+        $(mi).panel("open");
 //        $('#' + this.viewId).panel().panel("open");
         return;
       }
@@ -292,7 +295,7 @@ define('views/RightMenuPanel', [
         var commentVerb = this.loc('commentVerb'),
             likeVerb = this.loc('likeVerb');
         
-        this.$el.html(this.template({}));      
+        this.html(this.template({}));      
         frag = document.createDocumentFragment();
         uri = U.makePageUrl('make', 'aspects/tags/Vote', {votable: G.currentApp._uri, '-makeId': G.nextId, $title: U.makeHeaderTitle(likeVerb, G.currentApp.davDisplayName)});
         U.addToFrag(frag, this.menuItemTemplate({title: likeVerb, pageUrl: uri, icon: 'heart', homePage: 'y'}));
@@ -329,7 +332,7 @@ define('views/RightMenuPanel', [
       else {
         var json = this.resource && res.toJSON();
   //      var isSuperUser = isCreatorOrAdmin(res);
-        this.$el.html(this.template(json));      
+        this.html(this.template(json));      
         
         frag = document.createDocumentFragment();
 
@@ -401,18 +404,18 @@ define('views/RightMenuPanel', [
         }
       }
 
-      var ul = this.$('#rightMenuItems');
-      ul.append(frag);
-      var p = $('#' + this.viewId);
-      p.append(this.$el);
+      var ul = this.$('#rightMenuItems')[0];
+      ul.appendChild(frag);
+      var p = document.getElementById(this.viewId);
+      p.appendChild(this.el);
       
-      if (p  &&  p[0].tagName.toLowerCase() == 'section') 
-        p.css('visibility', 'visible');
+      if (p.tagName.toLowerCase() == 'section') 
+        p.style.visibility = 'visible';
       else {
 
-        p.panel().panel("open");
+        $(p).panel().panel("open");
 //      p.panel().panel("open");
-        ul.listview();
+        $(ul).listview();
 //      p.trigger("updatelayout")
       }
       return this;

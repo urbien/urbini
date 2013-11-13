@@ -761,7 +761,7 @@ define('views/BasicView', [
         return;
 
       for (var selector in selectors) {
-        selectors[selector].setElement(this.$(selector)).render(renderOptions);
+        selectors[selector].setElement(this.$(selector)[0]).render(renderOptions);
       }
       
 //      Q.read(function() {
@@ -830,10 +830,10 @@ define('views/BasicView', [
       return this.getOrientation() == 'landscape';
     },
 
-    getOffset: function(css) {
-//      var computedStyle = window.getComputedStyle()
-      return this.$el.offset();
-    },
+//    getOffset: function(css) {
+////      var computedStyle = window.getComputedStyle()
+//      return this.$el.offset();
+//    },
     
     getTitle: function() {
       if (this.resource)
@@ -1029,7 +1029,11 @@ define('views/BasicView', [
       }
       
       return this.extend(preinit);
-    }    
+    },
+    
+    clickDataHref: function(e) {
+      Events.trigger('navigate', e.currentTarget.dataset.href);
+    }
   });
 
   return BasicView; 

@@ -19,11 +19,8 @@ define('views/HorizontalListView', [
     _visible: false,
     _elementsPerPage: 6,
     className: 'thumbnail-gallery',
-    events: {
-      'orientationchange': 'refresh',
-    },
-    
     windowEvents: {
+      'orientationchange': 'refresh',
       'resize': 'refresh',
       'refresh': 'refresh'
     },

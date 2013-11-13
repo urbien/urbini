@@ -27,7 +27,7 @@ define('views/AroundMeButton', [
       this._isOn = this._onByDefault;  
     },
     render: function(options) {
-      this.$el.html(this.template());
+      this.html(this.template());
       this.setStyle();
       return this;
     },

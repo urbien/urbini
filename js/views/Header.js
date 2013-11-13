@@ -16,6 +16,7 @@ define('views/Header', [
 ], function(G, Events, U, Voc, BasicView/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
   var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate', 'installApp'];
   var commonTypes = G.commonTypes;
+  var CSS = U.CSS;
   return BasicView.extend({
     autoFinish: false,
     template: 'headerTemplate',
@@ -251,7 +252,7 @@ define('views/Header', [
 
     refreshTitle: function() {
       this.calcTitle();
-      this.$('#pageTitle').html(this.title);
+      this.$('#pageTitle')[0].innerHTML = this.title;
 //      $('title').text(this.title);
       this.pageView.trigger('titleChanged', this._title);
     },
@@ -309,27 +310,32 @@ define('views/Header', [
       if (this.isEdit || this.isChat)
         return;
       
-      _.each(SPECIAL_BUTTONS, function(btn) {
-        this.$('#{0}Btn'.format(btn)).html("").hide();
-      }.bind(this));
+      var self = this;
+      SPECIAL_BUTTONS.forEach(function(btn) {
+        var el = self.$('#{0}Btn'.format(btn));
+        if (el) {
+          el.innerHTML = "";
+          CSS.hide(el);
+        }
+      });
       
       var pBtn = this.buttonViews.publish;
       if (this.publish) {
         this.assign('#publishBtn', pBtn);
-        this.$('#publishBtn').show();
+        CSS.unhide(this.$('#publishBtn'));
       }
       else if (pBtn) {
-        this.$('#publishBtn').hide();
-        var options = _.filter(SPECIAL_BUTTONS, _['!='].bind(_, 'publish')); _.filter(SPECIAL_BUTTONS, function(btn) { return btn != 'publish' })
-        _.each(options, function(option) {
+        CSS.hide(this.$('#publishBtn'));
+        var options = _.filter(SPECIAL_BUTTONS, _['!='].bind(_, 'publish'));  // equivalent to _.filter(SPECIAL_BUTTONS, function(btn) { return btn != 'publish' })
+        options.forEach(function(option) {
           var method = 'hide';
-          if (this[option]) {
-            this.assign('#{0}Btn'.format(option), pBtn, _.pick(this, option));
-            method = 'show';
+          if (self[option]) {
+            self.assign('#{0}Btn'.format(option), pBtn, _.pick(self, option));
+            method = 'unhide';
           }
           
-          this.$('#{0}Btn'.format(option))[method]();
-        }.bind(this));
+          CSS[method](self.$('#{0}Btn'.format(option)));
+        });
       }
       
       var hash = window.location.hash;
@@ -443,7 +449,8 @@ define('views/Header', [
         btnNames.push('rightMenu');
       else
         btnNames.splice(1, 0, 'rightMenu');
-      _.each(btnNames, function(btnName) {
+      
+      btnNames.forEach(function(btnName) {
         var btn = btns[btnName];
         if (!btn)
           return;
@@ -451,64 +458,68 @@ define('views/Header', [
         var btnOptions = {};
         if (btnName === 'mapIt') {
 //          this.isGeo = this.isGeo && this.collection && _.any(this.collection.models, function(m) {  return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'));  });
-          if (!this.isGeo)
+          if (!self.isGeo)
             return;
           
           btnOptions.toggleable = isMapItToggleable;
         }
-        btn.$el.css('width', btnWidth + '%');
+        
+        CSS.set(btn.el, 'width', btnWidth + '%');
         frag.appendChild(btn.render(_.extend({force: true}, btnOptions)).el);
-      }.bind(this));      
+      });      
       
-      var $ul = this.$('#headerUl');
-      $ul.html(frag);
+      var ul = this.$('#headerUl')[0];
+      ul.innerHTML = "";        
+      ul.appendChild(frag);
       
 //      this.renderError();
       this.renderSpecialButtons();
       
       this.$el.trigger('create');
       if (this.isEdit  ||  this.isChat  ||  this.noButtons) {
-        this.$el.find('#headerButtons').attr('class', 'hidden');
-//        
+        CSS.addClass(this.$('#headerButtons'), 'hidden');
       }
       if (isJQM) {
         if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges) {
-          this.$el.find('#name').removeClass('resTitle');
+          CSS.removeClass(this.$('#name'), 'resTitle');
           if (this.resource  &&  !this.isEdit) {
-            var pt = this.$el.find('#pageTitle');
-            if (pt) {
-              pt.css('padding-bottom', '4px');
-              pt.css('border-bottom', '1px solid rgba(255,255,255,0.5)');
+            var pt = this.$('#pageTitle');
+            if (pt.length) {
+              CSS.set(pt, {
+                'padding-bottom': '4px',
+                'border-bottom': '1px solid rgba(255,255,255,0.5)'
+              });
             }
           }
           // this.$el.find('#pageTitle').css('margin-bottom', '0px'); 
         }
       }      
       if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges  &&  !this.isEdit) {
-        this.$el.find('#name.resTitle').css('padding-bottom', '0px');
+        CSS.set(this.$('#name.resTitle'), 'padding-bottom', '0px');
       }
 //      var wl = G.currentApp.widgetLibrary;
       if (isJQM) {
         if (this.noButtons) 
-          this.$el.find('h4').css('margin-top', '10px');
+          CSS.set(this.$('h4'), 'margin-top', '10px');
         else
-          this.$el.find('h4').css('margin-top', '4px');
+          CSS.set(this.$('h4'), 'margin-top', '4px');
       }
+      
       for (var btn in btns) {
-        var badge = btns[btn].$el.find('.menuBadge');
-        if (badge  &&  badge.length) {
+        var badge = btns[btn].$('.menuBadge');
+        if (badge.length) {
           if (G.currentApp.widgetLibrary  &&  G.currentApp.widgetLibrary == 'Topcoat')
-            badge.css('left', '50%');
+            CSS.set(badge, 'left', '50%');
           else
-            badge.css('left', Math.floor(btnWidth/2) + '%');
+            CSS.set(badge, 'left', Math.floor(btnWidth/2) + '%');
         }
       }
       // HACK
       // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view 
-      var header = this.$('.ui-header');
+      var header = this.$('.ui-header')[0];
       var barClass = 'ui-bar-{0}'.format(G.theme.header);
-      if (!header.hasClass(barClass))
-        header.addClass(barClass);
+      if (!CSS.hasClass(header, barClass))
+        CSS.addClass(header, barClass);
       
       // END HACK
       
@@ -516,7 +527,7 @@ define('views/Header', [
       if (isJQM)
         this.restyleNavbar();
       if (G.isTopcoat())
-        this.$el.find('li').attr('class', 'topcoat-button-bar__item');
+        CSS.replaceClass(this.$('li'), 'topcoat-button-bar__item');
       
       this.finish();      
       return this;

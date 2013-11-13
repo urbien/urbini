@@ -24,7 +24,7 @@ define('views/BackButton', [
       return this;
     },
     render: function(options) {
-      this.$el.html(this.template());      
+      this.html(this.template());      
       return this;
     }
   }, {

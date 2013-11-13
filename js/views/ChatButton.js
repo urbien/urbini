@@ -5,6 +5,8 @@ define('views/ChatButton', [
   'events', 
   'views/ToggleButton' 
 ], function(_, U, Events, ToggleButton) {
+  var CSS = U.CSS;
+  
   return ToggleButton.extend({
     templateName: 'chatButtonTemplate',
     tagName: 'li',
@@ -29,9 +31,9 @@ define('views/ChatButton', [
         }))[0];
         
         var unread = cachedChatView && cachedChatView.getNumUnread();
-        this.$menuBadge = this.$('.menuBadge').
-                               html(unread || '')
-                               [unread ? 'show' : 'hide']();
+        this.menuBadge = this.$('.menuBadge')[0];
+        this.menuBadge.innerHTML = unread || '';
+        CSS[unread ? 'unhide' : 'hide'](this.menuBadge);
       }
     },
     

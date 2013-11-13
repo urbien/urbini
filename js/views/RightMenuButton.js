@@ -18,29 +18,36 @@ define('views/RightMenuButton', [
       'hold': 'rightMenu'
     },
     
-    windowEvents: {
-      'click': 'clickElsewhere'
+    pageEvents: {
+      'click': 'hidePanels'
+    },
+
+    hideLeftPanel: function() {
+      if (this.leftMenuPanel) {
+//      this.leftMenuPanel.destroy();
+        this.leftMenuEl.style.visibility = 'hidden';
+//      this.leftMenuPanel = null;
+      }
+    },
+
+    hideRightPanel: function() {
+      if (this.rightMenuPanel) {
+//      this.rightMenuPanel.destroy();
+        this.rightMenuEl.style.visibility = 'hidden';
+  //      this.rightMenuPanel = null;
+      }
     },
     
-    clickElsewhere: function(e) {
-      if (e.currentTarget == this.el)
-        return;
+    hidePanels: function(e) {
+//      if (e && e.currentTarget == this.el)
+//        return;
       
-      if (this.leftMenuPanel) {
-//        this.leftMenuPanel.destroy();
-        this.leftMenuEl.style.visibility = 'hidden';
-//        this.leftMenuPanel = null;
-      }
-      
-      if (this.rightMenuPanel) {
-//        this.rightMenuPanel.destroy();
-        this.rightMenuEl.style.visibility = 'hidden';
-//        this.rightMenuPanel = null;
-      }
+      this.hideLeftPanel();
+      this.hideRightPanel();
     },
     
     initialize: function(options) {
-      _.bindAll(this, 'render', 'leftMenu', 'rightMenu', 'clickElsewhere');
+      _.bindAll(this, 'render', 'leftMenu', 'rightMenu', 'hidePanels');
       this.constructor.__super__.initialize.apply(this, arguments);
       this.makeTemplate(this.templateName, 'template', this.modelType);
       this.viewId = options.viewId;
@@ -49,6 +56,7 @@ define('views/RightMenuButton', [
     },
     
     _leftMenu: function(e) {
+      var self = this;
       var p = this.leftMenuEl; //$('#' + this.viewId);
       // HACK
       var tagName = (p  &&  p.tagName.toLowerCase() == 'section') ? 'nav' : 'div'; 
@@ -60,6 +68,11 @@ define('views/RightMenuButton', [
       else {
         this.leftMenuPanel = new MenuPanel({viewId: this.viewId, model: this.model, tagName: tagName, parentView: this.getPageView()});
         this.leftMenuPanel.render();
+        this.leftMenuPanel.on('destroyed', function del() {
+          self.leftMenuPanel.off('destroyed', del);
+          self.hideLeftPanel();
+          delete self.leftMenuPanel;
+        });
       }
       
       return this;
@@ -81,6 +94,7 @@ define('views/RightMenuButton', [
     },
     
     _rightMenu: function(e) {
+      var self = this;
       var p = this.rightMenuEl; //$('#' + this.viewId + 'r');
       // HACK
       var tagName = (p && p.tagName.toLowerCase() == 'section') ? 'nav' : 'div'; 
@@ -93,6 +107,11 @@ define('views/RightMenuButton', [
       else {
         this.rightMenuPanel = new RightMenuPanel({viewId: this.viewId, model: this.model, tagName: tagName, parentView: this.getPageView()});
         this.rightMenuPanel.render();
+        this.rightMenuPanel.on('destroyed', function del() {
+          self.rightMenuPanel.off('destroyed', del);
+          self.hideRightPanel();
+          delete self.rightMenuPanel;
+        });
       }
     },
     
@@ -117,14 +136,14 @@ define('views/RightMenuButton', [
     refresh: function() {
       if (this.isChat) {
         var num = this.pageView.getNumParticipants();
-        var $menuBadge = this.$('.menuBadge');
-        $menuBadge.html(num || '');
-        $menuBadge[num ? 'show' : 'hide']();
+        this.menuBadge.innerHTML = num || '';
+        this.menuBadge.style.display = num ? '' : 'none';
       }
     },
     
     render: function(options) {
-      this.$el.html(this.template({viewId: this.viewId}));
+      this.html(this.template({viewId: this.viewId}));
+      this.menuBadge = this.$('.menuBadge')[0];
       if (!this.rendered) {
         this.leftMenuEl = this.pageView.el.querySelector('#' + this.viewId);
         this.rightMenuEl = this.pageView.el.querySelector('#' + this.viewId + 'r');
@@ -137,9 +156,8 @@ define('views/RightMenuButton', [
         this.pageView.on('chat:participantLeft', this.refresh, this);
         this.refresh();
       }
-      else {
-        this.$('.menuBadge').hide();
-      }
+      else
+        this.menuBadge.style.display = 'none';
       
       return this;
     }

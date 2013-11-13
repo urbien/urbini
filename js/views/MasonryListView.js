@@ -22,7 +22,7 @@ define('views/MasonryListView', [
 //        ,
 //      'page_show': 'reloadMasonry'
     },
-
+    
     windowEvents: {
       'resize': 'reloadMasonry',
       'orientationChange': 'reloadMasonry'
@@ -79,12 +79,7 @@ define('views/MasonryListView', [
         resource: res
       }));
       
-      liView.render({
-        force: true,
-        renderToHtml: true
-      });
-      
-      
+      liView.render(this._itemRenderOptions);
       return liView;
     },
     

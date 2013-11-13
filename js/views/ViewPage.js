@@ -9,6 +9,8 @@ define('views/ViewPage', [
   'views/ControlPanel',
   'lib/fastdom'
 ], function(G, U, Events, BasicPageView, Header, ResourceView, ControlPanel, Q) {
+  var CSS = U.CSS;
+  
   return BasicPageView.extend({
     clicked: false,
     initialize: function(options) {
@@ -70,7 +72,7 @@ define('views/ViewPage', [
       this.ready = this.readyDfd.promise();
       if (viewType) {
         U.require(viewType, function(viewMod) {
-          self.imageView = new viewMod(_.extend({el: $(this.imgDiv, self.el)[0], arrows: false}, commonParams));
+          self.imageView = new viewMod(_.extend({el: this.$(this.imgDiv)[0], arrows: false}, commonParams));
           self.addChild(self.imageView);
           self.readyDfd.resolve();
   //        renderDfd.done(self.imageView.finalize);
@@ -262,7 +264,7 @@ define('views/ViewPage', [
 //      var json = res.toJSON();
       var json = this.getBaseTemplateData();
 //      json.viewId = this.cid;
-      this.$el.html(this.template(json));      
+      this.html(this.template(json));      
       var self = this;
       this.photogridPromise.done(function() {        
         var pHeader = self.$('#photogridHeader');
@@ -319,18 +321,18 @@ define('views/ViewPage', [
       this.onload(Q.write.bind(Q, function() {          
         if (!this.isAbout) {
           if (G.currentUser.guest) {
-            this.$('#edit').hide();
+            CSS.hide(this.$('#edit'));
           }
         }       
         
         if (!this.el.parentNode) 
-          $('body').append(this.$el);
+          document.body.appendChild(this.el);
       
         this.$el.attr("data-theme", G.theme.swatch);
         if (G.theme.backgroundImage) 
-          this.$('#resourceViewHolder').css('background-image', 'url(' + G.theme.backgroundImage +')');
+          CSS.set(this.$('#resourceViewHolder'), 'background-image', 'url(' + G.theme.backgroundImage +')');
   
-        this.$('#chatbox').css("display", "none");      
+        CSS.set(this.$('#chatbox'), "display", "none");      
       }, this));
 //      renderDfd.resolve();
 //      this.restyle();

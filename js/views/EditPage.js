@@ -42,7 +42,7 @@ define('views/EditPage', [
       var isGeo = this.isGeo();
       this.buttons = {
         back: true,
-        menu: true,
+//        menu: true,
         rightMenu: !G.currentUser.guest,
         login: G.currentUser.guest
       };

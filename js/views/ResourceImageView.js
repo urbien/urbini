@@ -117,7 +117,7 @@ define('views/ResourceImageView', [
         };
         
         info.poster = res.get('ImageResource.bigImage') || res.get('ImageResource.originalImage');
-        this.$el.html(this.template(info));
+        this.html(this.template(info));
       }
       else {
         var videoHtml5Prop = U.getCloneOf(this.vocModel, "VideoResource.videoHtml5");
@@ -130,7 +130,7 @@ define('views/ResourceImageView', [
           var frag = document.createDocumentFragment();
           var video = '<div class="video-container" align="center">' + v + '</div>';
           U.addToFrag(frag, video);
-          this.$el.html(frag);
+          this.html(frag);
         }
       }
       
@@ -192,7 +192,7 @@ define('views/ResourceImageView', [
         if (audio) {
           this.template = this.makeTemplate('audioPlayerTemplate', 'template', this.modelType);
 //          return imgUri == null ? null : 'http://' + serverName + imgUri.substring(imgUri.indexOf('Image') + 5);
-          this.$el.html(this.template({
+          this.html(this.template({
             sources: [U.getExternalFileUrl(audio)]
           }));
           
