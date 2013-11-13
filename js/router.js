@@ -22,7 +22,8 @@ define('router', [
 ], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth, Redirecter, Transitioner, Q /*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
   var Modules = {},
-      $doc = $(document);
+      doc = document,
+      $doc = $(doc);
   
   function log() {
     var args = [].slice.call(arguments);
@@ -347,8 +348,8 @@ define('router', [
           delete G.homePage;
         }
         
-        var homePageEl = $('#homePage');
-        if (!homePageEl.length)
+        var homePageEl = doc.querySelector('#homePage');
+        if (!homePageEl)
           debugger;
         
         homePage = new HomePage({el: homePageEl });

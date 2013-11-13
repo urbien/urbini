@@ -1437,7 +1437,9 @@ define('globals', function() {
       var innerHTML = '<div id="spinner_container"><div id="spinner"' + style + '>' + (options.content || '<i class="ui-icon-spinner icon-spin" style="font-size: 64px;"></i>') + '</div></div>';
       var spinner = doc.createElement('div');
       spinner.id = id;
-      spinner.setAttribute('class', cl);
+      if (cl)
+        spinner.classList.add(cl);
+      
       spinner.innerHTML = innerHTML;
 //      var spinner = '<div id="' + id + '" class="' + cl + '">' + innerHTML + '</div>';
       body.appendChild(spinner);
