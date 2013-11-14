@@ -21,12 +21,8 @@ define('views/CommentListView', [
       return 'tr';
     },
     
-    getDummies: function() {
-      var dummies = this.$('.dummy');
-      return {
-        head: dummies.filter('.head'),
-        tail: dummies.filter('.tail')
-      }
+    preinitializeItem: function(res) {
+      return CommentListItemView;
     },
 
     renderItem: function(res, prepend) {
@@ -35,11 +31,7 @@ define('views/CommentListView', [
       }));
       
       this.addChild(liView, prepend);
-      liView.render({
-        force: true,
-        renderToHtml: true
-      });
-      
+      liView.render(this._itemRenderOptions);
       return liView;
     },
     

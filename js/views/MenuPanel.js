@@ -90,6 +90,9 @@ define('views/MenuPanel', [
         return;
       }
 
+      if (!href)
+        return;
+            
       debugger; // we should really get rid of this block
       if (href.indexOf("Alert?") != -1) 
         G.currentUser.newAlertsCount = 0;

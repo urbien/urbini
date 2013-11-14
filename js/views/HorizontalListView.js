@@ -79,7 +79,7 @@ define('views/HorizontalListView', [
 
     preinitializeItem: function(res) {
       var source = this.parentView.resource;
-      this._preinitializedItem = HorizontalListItemView.preinitialize({
+      return HorizontalListItemView.preinitialize({
         vocModel: this.vocModel,
         parentView: this,
         source: source && source.getUri()
@@ -107,11 +107,7 @@ define('views/HorizontalListView', [
         resource: res
       });
       
-      var rendered = liView.render({
-        force: true,
-        renderToHtml: true
-      });
-      
+      var rendered = liView.render(this._itemRenderOptions);
       if (rendered === false)
         return false;
             

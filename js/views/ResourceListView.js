@@ -1010,7 +1010,8 @@ define('views/ResourceListView', [
             parentView: this,
             vocModel: vocModel
           },
-          preinitializer = this.constructor._itemView;
+          preinitializer = this.constructor._itemView,
+          view;
           
 //      while (preinitializer && !preinitializer.preinitialize) {
 //        preinitializer = preinitializer.__super__.constructor;
@@ -1019,19 +1020,21 @@ define('views/ResourceListView', [
       if (this.isEdit) {
         params.editCols = this.hashParams['$editCols']; 
         params.edit = true;
-        this._preinitializedItem = preinitializer.preinitialize(params);
+        view = preinitializer.preinitialize(params);
       }
       else if (this.isMultiValueChooser) {
         params.mv = true;
         params.tagName = 'div';
         params.className = "ui-controlgroup-controls";
         params.mvProp = this.mvProp;
-        this._preinitializedItem = preinitializer.preinitialize(params);
+        view = preinitializer.preinitialize(params);
       }
       else {
         this._defaultSwatch = G.theme  &&  (G.theme.list  ||  G.theme.swatch);
-        this._preinitializedItem = preinitializer.preinitialize(params);
+        view =preinitializer.preinitialize(params);
       }
+      
+      return view;
     },
     
     /**
@@ -1078,7 +1081,7 @@ define('views/ResourceListView', [
       var vocModel = first.vocModel;
       var meta = vocModel.properties;
       if (!this._preinitializedItem)
-        this.preinitializeItem(first);
+        this._preinitializedItem = this.preinitializeItem(first);
       
       if (U.isA(vocModel, 'Intersection')) {
         var ab = U.getCloneOf(vocModel, 'Intersection.a', 'Intersection.b'),

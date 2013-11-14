@@ -67,7 +67,7 @@ define('views/MasonryListView', [
     },
 
     preinitializeItem: function(res) {
-      this._preinitializedItem = ResourceMasonryItemView.preinitialize({
+      return ResourceMasonryItemView.preinitialize({
         vocModel: this.vocModel,
         className: 'nab nabBoard',
         parentView: this

@@ -80,8 +80,6 @@ define('views/RightMenuButton', [
     
     leftMenu: function(e) {
       Events.stopEvent(e);
-//      e.gesture.stopPropagation();
-//      e.gesture.stopDetect();
       var self = this;
       if (MenuPanel)
         return this._leftMenu(e);
@@ -149,6 +147,11 @@ define('views/RightMenuButton', [
       if (!this.rendered) {
         this.leftMenuEl = this.pageView.el.querySelector('#' + this.viewId);
         this.rightMenuEl = this.pageView.el.querySelector('#' + this.viewId + 'r');
+
+//        // only allow tap and hold events, click muddies the waters
+//        this.el.addEventListener('click', function(e) {
+//          e.preventDefault();
+//        });
       }
       
       this.finish();
