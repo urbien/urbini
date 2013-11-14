@@ -302,7 +302,7 @@
 
 <script type="text/template" id="rightMenuButtonTemplate">
   <!-- button that toggles the object properties panel -->
-  <a target="#" href="#{{= viewId }}"><i class="ui-icon-indent-right"></i></a>{{= '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}
+  <a target="#" href="#{{= viewId }}"><i class="ui-icon-reorder"></i></a>{{= '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}
   </a>
 </script>
 

@@ -444,11 +444,28 @@ define('modelLoader', [
     return makeModelsPromise(_.pluck(models, 'type'));
   };
 
-  function loadModel(m) {
-    Q.whenIdle('nonDom', _loadModel.bind(null, m));
+  function loadModel(m, sync) {
+    if (sync)
+      _loadModel(m);
+    else
+      Q.whenIdle('nonDom', _loadModel.bind(null, m));
   }
   
   function _loadModel(m) {
+    if (m.enumeration)
+      m = loadEnumModel(m);
+    else
+      m = loadNonEnumModel(m);
+    
+    Events.trigger('newModel', m);
+    gotModel(m);
+  };
+
+  function loadEnumModel(m) {
+    return m;
+  }
+  
+  function loadNonEnumModel(m) {
     if (!m.prototype)
       m = Resource.extend({}, m);
     
@@ -503,7 +520,6 @@ define('modelLoader', [
     var type = m.type = U.getTypeUri(m.type),
         isCustomModel = U.isAnAppClass(type);
     
-    Events.trigger('newModel', m);
     if (isCustomModel && !m.enumeration && !m.alwaysInlined) {
       var meta = m.properties;
       for (var p in meta) {
@@ -544,9 +560,9 @@ define('modelLoader', [
       Events.trigger('initPlugs', type);
     });
     
-    gotModel(m);
-  };
-
+    return m;
+  }
+  
   function getInit() {
     var self = this;
     return function() { 
@@ -562,7 +578,7 @@ define('modelLoader', [
     ENUMS = JSON.parse(enums);
     for (var type in ENUMS) {
       makeModelPromise(type);
-      loadModel(Backbone.Model.extend({}, ENUMS[type]));
+      loadModel(ENUMS[type], true); // load enums synchronously
     }
   };
 

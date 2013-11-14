@@ -1345,7 +1345,7 @@ define('views/EditView', [
             else
               self.$ul1.trigger('create');
           
-            self.redelegateDOMEvents();
+            self.redelegateEvents();
 //            var checkboxes = self.form.querySelectorAll('input[type="checkbox"]'),
 //                checkbox,
 //                i = checkboxes.length;

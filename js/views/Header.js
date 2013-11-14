@@ -16,6 +16,7 @@ define('views/Header', [
 //  'views/PublishButton'
 ], function(G, Events, U, DOM, Voc, BasicView/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
   var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate', 'installApp'];
+  var REGULAR_BUTTONS = ['back', 'mapIt', 'add', 'video', 'chat', 'login', 'rightMenu'];
   var commonTypes = G.commonTypes;
   return BasicView.extend({
     autoFinish: false,
@@ -446,24 +447,19 @@ define('views/Header', [
       pageData.theme = G.theme.list;
       var frag = document.createDocumentFragment();
       var btns = this.buttonViews;
-      var numBtns = _.size(btns);
-      
-      var cols = btns['publish'] ? numBtns - 1 : numBtns;
-      var btnWidth = Math.round(100 * (100/cols))/100;
-
       var isMapItToggleable = !!this.collection;
-      var btnNames = ['menu', 'back', 'mapIt', 'aroundMe', 'add', 'video', 'chat', 'login'];
-      if (numBtns < 6)
-        btnNames.push('rightMenu');
-      else
-        btnNames.splice(1, 0, 'rightMenu');
       
-      btnNames.forEach(function(btnName) {
+//      var numBtns = _.size(btns);
+      var paintedBtns = [];      
+      REGULAR_BUTTONS.forEach(function(btnName) {
         var btn = btns[btnName];
         if (!btn)
           return;
         
-        var btnOptions = {};
+        var btnOptions = {
+          force: true
+        };
+        
         if (btnName === 'mapIt') {
 //          this.isGeo = this.isGeo && this.collection && _.any(this.collection.models, function(m) {  return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'));  });
           if (!self.isGeo)
@@ -472,9 +468,14 @@ define('views/Header', [
           btnOptions.toggleable = isMapItToggleable;
         }
         
-        DOM.set(btn.el, 'width', btnWidth + '%');
-        frag.appendChild(btn.render(_.extend({force: true}, btnOptions)).el);
+        paintedBtns.push(btn.el);
+        frag.appendChild(btn.render(btnOptions).el);
       });      
+      
+      numBtns = paintedBtns.length;
+      var cols = btns['publish'] ? numBtns - 1 : numBtns;
+      var btnWidth = Math.round(100 * (100/cols))/100;
+      DOM.set(paintedBtns, 'width', btnWidth + '%');
       
       var ul = this.$('#headerUl')[0];
       ul.innerHTML = "";        

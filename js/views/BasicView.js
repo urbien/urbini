@@ -310,7 +310,7 @@ define('views/BasicView', [
       if (this.isActive()) {
         this._doRefresh.apply(this, arguments);
         if (rOptions.delegateEvents !== false)
-          this.delegateDOMEvents();
+          this.redelegateEvents();
       }
       else
         this._refreshArgs = arguments;
@@ -340,7 +340,7 @@ define('views/BasicView', [
         if (this.autoFinish !== false)
           this.finish(rOptions);
         else if (rOptions.delegateEvents !== false)
-          this.delegateDOMEvents(); // bind what events we can at the moment
+          this.redelegateEvents(); // bind what events we can at the moment
         
         if (G.browser.mobile)
           disableHover(this.$el);

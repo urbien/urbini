@@ -11,7 +11,7 @@ define('views/MenuPanel', [
 //    id: 'menuPanel',
 //    theme: 'd',
     initialize: function(options) {
-      _.bindAll(this, 'render','click', 'edit', 'hide');
+      _.bindAll(this, 'render','click', 'hide');
       BasicView.prototype.initialize.apply(this, arguments);
   //    this.resource.on('change', this.render, this);
       this.tagName = options.tagName;
@@ -28,7 +28,7 @@ define('views/MenuPanel', [
     },
     tabs: {},
     events: {
-      'click #edit'      : 'edit',
+//      'click #edit'      : 'edit',
 //      'click #add': 'add',
 //      'click #delete': 'delete',
 //      'click #subscribe': 'subscribe',
@@ -50,11 +50,11 @@ define('views/MenuPanel', [
 //        this.$el.css('visibility', 'visible');
     },
     
-    edit: function(e) {
-      Events.stopEvent(e);
-      this.router.navigate(U.makeMobileUrl('edit', this.resource.getUri()), {trigger: true, replace: true});
-      return this;
-    },
+//    edit: function(e) {
+//      Events.stopEvent(e);
+//      this.router.navigate(U.makeMobileUrl('edit', this.resource.getUri()), {trigger: true, replace: true});
+//      return this;
+//    },
     logout: function(e) {
       Events.stopEvent(e);
 //      G.log(this.TAG, "Recording step for tour: selector: #logout");
@@ -84,24 +84,13 @@ define('views/MenuPanel', [
           text = U.removeHTML(t.innerHTML).trim();
       
       this.hide();
-      if (href = this.tabs[text]) {
+      if ((href = this.tabs[text]) != null) {
         e.originalEvent.preventDefault();
         Events.trigger('navigate', U.replaceParam(href, '$title', text));
         return;
       }
-      
-      if (t  &&  t.nodeName != 'A'  &&  !t.dataset.href) {
-        $t = $(t).closest('[data-href]');
-        t = $t[0];
-      }
-      
-      if (typeof t === 'undefined' || !t)
-        return;
 
-      href = t.href || t.dataset.href;      
-//      var hashIdx = href.lastIndexOf('#');
-//      href = hashIdx == -1 ? href : href.slice(hashIdx + 1);
-          
+      debugger; // we should really get rid of this block
       if (href.indexOf("Alert?") != -1) 
         G.currentUser.newAlertsCount = 0;
       

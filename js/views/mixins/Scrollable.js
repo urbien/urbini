@@ -222,16 +222,13 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
   }
   
   var Scrollable = Backbone.Mixin.extend({
+    className: 'scrollable',
     initialize: function(options) {
       _.bindAll(this, '_initScroller', '_resetScroller', '_snapScroller', '_flingScroller', '_scrollTo', '_calculateScrollerSize', '_onSizeInvalidated', '_onScrollerClick', '_onScrollerActive', '_onScrollerInactive',
                       '_onScrollerMouseOut', '_onScrollerTouch', '_onScrollerDragStart', '_onScrollerDragEnd', '_onScrollerDrag', '_onScrollerSwipe', '_onKeyDown', '_onKeyUp', '_updateScrollPositionAndReset',
                       '_onNativeScroll', '_onMouseWheel', '_checkIfScrolledToHead', '_stopScroller'); //, '_onScrollerRelease');
       
       this.onload(this._initScroller.bind(this));
-    },
-    
-    render: function() {
-      this.el.classList.add('scrollable');
     },
     
     _initScroller: function(options) {

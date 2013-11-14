@@ -538,6 +538,7 @@ define('app', [
     Events.trigger('startingApp');
 //    setupHashMonitor();
 //    setupScrollMonitor();
+    ModelLoader.loadEnums();
     setupWidgetLibrary();
     setupPackagedApp();
     setupUser();
@@ -561,7 +562,6 @@ define('app', [
     setupNetworkEvents();
 //    if (G.browser.mobile)
 //      G.removeHoverStyles();
-    ModelLoader.loadEnums();
     
     return $.whenAll(modelsViewsTemplatesAndDB, localized, require(['@widgets', 'router']).done(function($w, r) {
       Router = r;
