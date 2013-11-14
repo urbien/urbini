@@ -38,6 +38,22 @@ define('views/BasicPageView', [
   var PageView = BasicView.extend({
 //    mixins: [Scrollable],
     mixins: [LazyImageLoader, Scrollable],
+//    constructor: function(options) {
+//      options = options || {};
+//      var atts = options.attributes = options.attributes || {};
+//      atts.id = 'page' + G.nextId();
+//      atts['data-role'] = 'page';
+//      return BasicView.call(this, options);
+//    },
+    
+    _configure: function() {
+//      var atts = options.attributes = options.attributes || {};
+      var atts = this.attributes = this.attributes || {};
+      atts['id'] = 'page' + G.nextId();      
+      atts['data-role'] = 'page';
+      return BasicView.prototype._configure.apply(this, arguments);
+    },
+
     initialize: function(options) {
       var self = this;
       BasicView.prototype.initialize.apply(this, arguments);

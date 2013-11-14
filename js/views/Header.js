@@ -3,6 +3,7 @@ define('views/Header', [
   'globals',
   'events', 
   'utils',
+  'domUtils',
   'vocManager',
   'views/BasicView'
 //  ,
@@ -13,16 +14,15 @@ define('views/Header', [
 //  'views/AroundMeButton',
 //  'views/MenuButton',
 //  'views/PublishButton'
-], function(G, Events, U, Voc, BasicView/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
+], function(G, Events, U, DOM, Voc, BasicView/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
   var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate', 'installApp'];
   var commonTypes = G.commonTypes;
-  var CSS = U.CSS;
   return BasicView.extend({
     autoFinish: false,
     template: 'headerTemplate',
     initialize: function(options) {
       _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload'); //, '_updateInfoErrorBar', 'checkErrorList', 'sendToCall');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
       options = options || {};
       _.extend(this, options);
       this.viewId = options.viewId;
@@ -63,6 +63,7 @@ define('views/Header', [
       var vocModel = this.vocModel;
       var type = vocModel && vocModel.type;
       this.calcSpecialButtons();
+      this.isGeo = this._isGeo();
 //      _.extend(this, options);
       this.makeTemplate(this.template, 'template', type);
       this.makeTemplate('fileUpload', 'fileUploadTemplate', type);
@@ -235,11 +236,15 @@ define('views/Header', [
       return this;
     },
     
+    _isGeo: function() {
+      return !!_.size(_.pick(this.buttons, 'mapIt', 'aroundMe'));
+    },
+    
     render: function(options) {
       options = options || {};
       if (!this.buttons || options.buttons) {
         this.buttons = options.buttons;
-        this.isGeo = _.size(_.pick(this.buttons, 'mapIt', 'aroundMe'));
+        this.isGeo = this._isGeo();
         this.getButtonViews();
       }
         
@@ -315,17 +320,17 @@ define('views/Header', [
         var el = self.$('#{0}Btn'.format(btn));
         if (el) {
           el.innerHTML = "";
-          CSS.hide(el);
+          DOM.hide(el);
         }
       });
       
       var pBtn = this.buttonViews.publish;
       if (this.publish) {
         this.assign('#publishBtn', pBtn);
-        CSS.unhide(this.$('#publishBtn'));
+        DOM.unhide(this.$('#publishBtn'));
       }
       else if (pBtn) {
-        CSS.hide(this.$('#publishBtn'));
+        DOM.hide(this.$('#publishBtn'));
         var options = _.filter(SPECIAL_BUTTONS, _['!='].bind(_, 'publish'));  // equivalent to _.filter(SPECIAL_BUTTONS, function(btn) { return btn != 'publish' })
         options.forEach(function(option) {
           var method = 'hide';
@@ -334,7 +339,7 @@ define('views/Header', [
             method = 'unhide';
           }
           
-          CSS[method](self.$('#{0}Btn'.format(option)));
+          DOM[method](self.$('#{0}Btn'.format(option)));
         });
       }
       
@@ -376,14 +381,16 @@ define('views/Header', [
     },
     
     restyleNavbar: function() {
-      this.$('[data-role="navbar"]').navbar();
-      this.$('[data-role="navbar"]').removeClass('ui-mini');
+      var navbar = this.$('[data-role="navbar"]')[0];
+      $(navbar).navbar();
+      navbar.classList.remove('ui-mini');
     },
     
     renderHelper: function() {
       if (window.location.hash.indexOf("#menu") != -1)
         return this;
 
+      var self = this;
       var isJQM = G.isJQM(); //!wl  ||  wl == 'Jquery Mobile';
       var res = this.resource; // undefined, if this is a header for a collection view
       var error = res && res.get('_error');
@@ -434,8 +441,9 @@ define('views/Header', [
       this.refreshTitle();
 //      this.$el.prevObject.attr('data-title', this.pageTitle);
 //      this.$el.prevObject.attr('data-theme', G.theme.list);
-      this.pageView.$el.attr('data-title', this.pageTitle);
-      this.pageView.$el.attr('data-theme', G.theme.list);
+      var pageData = this.pageView.el.dataset;
+      pageData.title = this.pageTitle;
+      pageData.theme = G.theme.list;
       var frag = document.createDocumentFragment();
       var btns = this.buttonViews;
       var numBtns = _.size(btns);
@@ -464,7 +472,7 @@ define('views/Header', [
           btnOptions.toggleable = isMapItToggleable;
         }
         
-        CSS.set(btn.el, 'width', btnWidth + '%');
+        DOM.set(btn.el, 'width', btnWidth + '%');
         frag.appendChild(btn.render(_.extend({force: true}, btnOptions)).el);
       });      
       
@@ -477,15 +485,15 @@ define('views/Header', [
       
       this.$el.trigger('create');
       if (this.isEdit  ||  this.isChat  ||  this.noButtons) {
-        CSS.addClass(this.$('#headerButtons'), 'hidden');
+        DOM.addClass(this.$('#headerButtons'), 'hidden');
       }
       if (isJQM) {
         if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges) {
-          CSS.removeClass(this.$('#name'), 'resTitle');
+          DOM.removeClass(this.$('#name'), 'resTitle');
           if (this.resource  &&  !this.isEdit) {
             var pt = this.$('#pageTitle');
             if (pt.length) {
-              CSS.set(pt, {
+              DOM.set(pt, {
                 'padding-bottom': '4px',
                 'border-bottom': '1px solid rgba(255,255,255,0.5)'
               });
@@ -495,31 +503,31 @@ define('views/Header', [
         }
       }      
       if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges  &&  !this.isEdit) {
-        CSS.set(this.$('#name.resTitle'), 'padding-bottom', '0px');
+        DOM.set(this.$('#name.resTitle'), 'padding-bottom', '0px');
       }
 //      var wl = G.currentApp.widgetLibrary;
       if (isJQM) {
         if (this.noButtons) 
-          CSS.set(this.$('h4'), 'margin-top', '10px');
+          DOM.set(this.$('h4'), 'margin-top', '10px');
         else
-          CSS.set(this.$('h4'), 'margin-top', '4px');
+          DOM.set(this.$('h4'), 'margin-top', '4px');
       }
       
       for (var btn in btns) {
         var badge = btns[btn].$('.menuBadge');
         if (badge.length) {
           if (G.currentApp.widgetLibrary  &&  G.currentApp.widgetLibrary == 'Topcoat')
-            CSS.set(badge, 'left', '50%');
+            DOM.set(badge, 'left', '50%');
           else
-            CSS.set(badge, 'left', Math.floor(btnWidth/2) + '%');
+            DOM.set(badge, 'left', Math.floor(btnWidth/2) + '%');
         }
       }
       // HACK
       // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view 
       var header = this.$('.ui-header')[0];
       var barClass = 'ui-bar-{0}'.format(G.theme.header);
-      if (!CSS.hasClass(header, barClass))
-        CSS.addClass(header, barClass);
+      if (!DOM.hasClass(header, barClass))
+        DOM.addClass(header, barClass);
       
       // END HACK
       
@@ -527,7 +535,7 @@ define('views/Header', [
       if (isJQM)
         this.restyleNavbar();
       if (G.isTopcoat())
-        CSS.replaceClass(this.$('li'), 'topcoat-button-bar__item');
+        DOM.replaceClass(this.$('li'), 'topcoat-button-bar__item');
       
       this.finish();      
       return this;

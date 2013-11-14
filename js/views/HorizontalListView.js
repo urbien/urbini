@@ -19,10 +19,16 @@ define('views/HorizontalListView', [
     _visible: false,
     _elementsPerPage: 6,
     className: 'thumbnail-gallery',
-    windowEvents: {
-      'orientationchange': 'refresh',
-      'resize': 'refresh',
-      'refresh': 'refresh'
+
+    events: {
+      'scrollo.horizontalListView': 'onScroll',
+      'scrollosize.horizontalListView': '_onScrollerSizeChanged',
+      'scrolloable.horizontalListView': '_onScrollerScrollable'
+    },
+    
+    _onScrollerSizeChanged: function(e) {
+      if (e.target == this.el)
+        ResourceListView.prototype._onScrollerSizeChanged.apply(this, arguments);
     },
 
     initialize: function(options) {
@@ -31,6 +37,11 @@ define('views/HorizontalListView', [
       _.extend(this, options);
     },
 
+    refresh: function() {
+      this._renderedIntersectionUris.length = 0;
+      return ResourceListView.prototype.refresh.apply(this, arguments);
+    },
+    
     preRender: function() {
       try {
         if (!this._prerendered) {

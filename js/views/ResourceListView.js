@@ -2,16 +2,16 @@
 define('views/ResourceListView', [
   'globals',
   'utils',
+  'domUtils',
   'events',
   'views/BasicView',
   'views/ResourceListItemView',
   'collections/ResourceList',
   'lib/fastdom',
   'vocManager'
-], function(G, U, Events, BasicView, ResourceListItemView, ResourceList, Q, Voc) {
+], function(G, U, DOM, Events, BasicView, ResourceListItemView, ResourceList, Q, Voc) {
   var $wnd = $(window),
-      doc = document,
-      HTML = U.HTML;
+      doc = document;
 
   function label(item) {
     item._label = item._label || _.uniqueId('label');
@@ -96,6 +96,7 @@ define('views/ResourceListView', [
       var viewport = G.viewport;
       this._viewport = {};
       this._onScrollerSizeChanged({
+        target: this.el,
         content: viewport,
         container: viewport,
         scrollTop: 0,
@@ -217,13 +218,13 @@ define('views/ResourceListView', [
       this.imageProperty = U.getImageProperty(this.collection);
       this.dummies = this.getDummies();
       if (!this.dummies.length) {
-        this.$el.html(this.makeDummies());
+        this.html(this.makeDummies());
         this.dummies = this.getDummies();
       }
       
       if (this._horizontal) {
-        this.dummies.head.css('display', 'inline-block');
-        this.dummies.tail.css('display', 'inline-block');
+        this.dummies.head.style.display = 'inline-block';
+        this.dummies.tail.style.display = 'inline-block';
       }
       
       this.adjustSlidingWindow();
@@ -239,12 +240,16 @@ define('views/ResourceListView', [
       
       var self = this,
           pages = this._pagesCurrentlyInSlidingWindow;
+
+      if (!pages)
+        return;
       
       this._refreshing = true;
+      this._previousPagingOp = null;
       return this.removePages(this._pagesCurrentlyInSlidingWindow)
                         .then(function() {
                           self._pagesCurrentlyInSlidingWindow = 0;
-                          return self.appendPages(pages);
+                          return self.addPages(pages, false, true);
                         })
                         .done(function() {
                           self._refreshing = false;
@@ -593,6 +598,7 @@ define('views/ResourceListView', [
         if (liView !== false) {
           this.postRenderItem(liView._html, info);
           currentPageHtml[currentPageHtml.length] = liView._html;
+          delete liView._html;
           numRendered++;
         }
         
@@ -600,7 +606,7 @@ define('views/ResourceListView', [
 //          currentPageHtml[currentPageHtml.length] = pageEndTag;
           var html = currentPageHtml.join("");
           if (!self._scrollable)
-            html = HTML.unlazifyImagesInHTML(html);
+            html = DOM.unlazifyImagesInHTML(html);
             
           currentPageEl.innerHTML = html;            
           info.pages.push(currentPageEl);
@@ -660,7 +666,7 @@ define('views/ResourceListView', [
           
           for (var i = 0; i < pages.length; i++) {
             var page = pages[i];
-            HTML[atTheHead ? 'after' : 'before'](page, after);
+            DOM[atTheHead ? 'after' : 'before'](page, after);
             if (atTheHead)
               after = page;
           }
@@ -783,11 +789,8 @@ define('views/ResourceListView', [
      * @return a promise
      */
     _growSlidingWindow: function(n, head) {
-      if (this._outOfData)
+      if (this._outOfData || this._pagesCurrentlyInSlidingWindow + n > this._maxPagesInSlidingWindow)
         return G.getRejectedPromise();
-      
-      if (this._pagesCurrentlyInSlidingWindow + n > this._maxPagesInSlidingWindow)
-        debugger;
       
       this.log('PAGER', 'GROWING SLIDING WINDOW');
       n = n || 1;
@@ -875,7 +878,7 @@ define('views/ResourceListView', [
 //            debugger;
 //          
 //          removedPages[i].remove(); //detach().empty();
-          HTML.removeElement(removedPages[i]);
+          DOM.removeElement(removedPages[i]);
         }
 
         for (var i = 0, len = removedViews.length; i < len; i++) {
@@ -1039,7 +1042,7 @@ define('views/ResourceListView', [
           liView,
           preinitializedItem = this._preinitializedItem,
           options = {
-            ensureElement: false,
+//            createElement: false,
             delegateEvents: false,
             resource: res
           };

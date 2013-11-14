@@ -1,13 +1,13 @@
-define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils', 'hammer'], function(G, _, Backbone, Events, U, Hammer) {
-  (function(doc, _, Backbone, HTML, CSS) {
+define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils', 'domUtils', 'hammer'], function(G, _, Backbone, Events, U, DOM, Hammer) {
+  (function(doc, _, Backbone, DOM) {
     Backbone.hammerOptions = {
 //      prevent_default: true,
 //      tap_always: false
     };
     
     var delegateEventSplitter = /^(\.[^\s]*\s*)?(\S+)\s*(.*)$/;
-    var viewOptions = ['hammerEvents', 'hammerOptions'];
-
+    var viewOptions = ['hammerEvents', 'hammerOptions', 'pageView', 'model', 'resource', 'collection', 'source', 'parentView', 'returnUri'];
+    
     var View = Backbone.View;
     var delegateEvents = View.prototype.delegateEvents;
     var undelegateEvents = View.prototype.undelegateEvents;
@@ -42,65 +42,66 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       return match;
     }
     
-    function proxyViewFunctionTo(viewProto, to /*, function name list */) {
-      for (var i = 2; i < arguments.length; i++) {
-        _proxyViewFunctionTo(viewProto, to, arguments[i]);
-      }
-    };
-    
-    function _proxyViewFunctionTo(viewProto, to, fnName) {
-      viewProto[fnName] = function() {
-        if (this.el) {
-          var args = _.toArray(arguments);
-          args.unshift(this.el);
-          to[fnName].apply(to, args);
-        }
-      };      
-    };
+//    function proxyViewFunctionTo(viewProto, to /*, function name list */) {
+//      for (var i = 2; i < arguments.length; i++) {
+//        _proxyViewFunctionTo(viewProto, to, arguments[i]);
+//      }
+//    };
+//    
+//    function _proxyViewFunctionTo(viewProto, to, fnName) {
+//      viewProto[fnName] = function() {
+//        if (this.el) {
+//          var args = _.toArray(arguments);
+//          args.unshift(this.el);
+//          to[fnName].apply(to, args);
+//        }
+//      };      
+//    };
 
     Backbone.View = View.extend({
+      tagName: null,
+      defaultTagName: 'div',
       constructor: function(options){
         options = options || {};
 //        if (!_.has(options, 'delegateEvents') && this.autoFinish !== false)
 //          options.delegateEvents = false;
         
         _.extend(this, _.pick(options, viewOptions));
+
+        this.autocreate = !!( !this.parentView || this.tagName || options.createElement );
+        // don't autocreate elements for subviews unless:
+        //   this view has the tagName property OR
+        //   the "createElement" option has been specified
+
+        this.pageView = this.getPageView();
+        this.delegateNonDOMEvents();
         return View.apply(this, arguments);
       },
 
-      _ensureElement: function(options) {
-        if (options && options.ensureElement == false)
-          return;
+      isPageView: function(view) {
+        return false;
+      },
+      
+      getPageView: function() {
+        if (this.pageView)
+          return this.pageView;
         
+        var parent = this;
+        while (parent.parentView) {
+          parent = parent.parentView;
+          if (parent.isPageView())
+            return parent;
+        }
+      },
+      
+      _ensureElement: function(options) {
+        options = options || {};
         if (!this.el) {
-          var attrs = _.extend({}, _.result(this, 'attributes')),
-              classes,
-              style,
-              el;
+//          if (!this.autocreate)
+//            return;
           
-          el = doc.createElement(_.result(this, 'tagName'));          
-          this.setElement(el, false);
-          
-          if (this.classes) 
-            classes = _.result(this, 'classes');
-          else if (this.className) 
-            classes = _.result(this, 'className');
-          
-          if (classes && !_.isArray(classes))
-            classes = classes.split(' ');
-          
-          if (this.style) { 
-            style = _.result(this, 'style');
-            if (style)
-              this.css(style);
-          }
-          
-          if (this.id) 
-            attrs.id = _.result(this, 'id');
-          
-          this.attr(attrs);
-          if (classes)
-            this.addClass.apply(this, classes);
+          var el = doc.createElement(_.result(this, 'tagName') || this.defaultTagName);          
+          this.setElement(el, false);          
         } else {
           this.setElement(_.result(this, 'el'), false);
         }
@@ -113,19 +114,44 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       },
       
       setElement: function(element, delegate) {
-        var $element = element instanceof $ ? element : $(element);
+        var $element = element instanceof $ ? element : $(element),
+            attrs,
+            classes,
+            style;
+        
         element = $element[0];
         this.$el = $element; // may not be set yet even if this.el is
         if (this.el) {
           if (this.el == element)
-            return;
+            return this;
         
-          this.undelegateEvents();
+          this.undelegateDOMEvents();
         }
         
         this.el = element;
+        if (this.classes) 
+          classes = _.result(this, 'classes');
+        else if (this.className) 
+          classes = _.result(this, 'className');
+        
+        if (classes && _.isArray(classes))
+          classes = classes.join(' '); //classes.split(' ');
+        
+        if (this.style) { 
+          style = _.result(this, 'style');
+          if (style)
+            this.css(style);
+        }
+        
+        attrs = _.extend({}, _.result(this, 'attributes'));
+        if (this.id) 
+          attrs.id = _.result(this, 'id');
+        if (classes)
+          attrs['class'] = classes;
+        
+        this.attr(attrs);
         if (delegate !== false) 
-          this.delegateEvents();
+          this.delegateDOMEvents();
         
         return this;
       },
@@ -138,11 +164,17 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
 //        for (var i = 0; i < els.length; i++) {
 //          this.el.appendChild(els[i]);
 //        }
-        this.el.innerHTML += html;
-        this.redelegateDOMEvents();
+        
+//        this.undelegateDOMEvents();
+//        this.el.innerHTML += html;
+//        this.delegateDOMEvents();
+        this.html(this.el.innerHTML + html);
       },
       
       html: function(html) {
+        if (!this.el)
+          throw "can't set HTML for a view with no element";
+        
         this.undelegateDOMEvents();
         this.el.innerHTML = html;
         this.delegateDOMEvents();
@@ -169,9 +201,10 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         }
       },
 
-      _delegateEvents: function(events, hammer, delegated) {
+      _delegateDOMEvents: function(events, hammer, delegated) {
         var defaultEls = [hammer.element],
-            options = this.hammerOptions;
+            options = this.hammerOptions,
+            gutless = !hammer.element.childNodes.length;
             
         for(var key in events) {
           if (delegated[key])
@@ -185,23 +218,21 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
           delegated[key] = method;
 
           if (eventInfo.selector) {
-            var els = this.el.querySelectorAll(eventInfo.selector),
-                i = els.length;
-            
-            while (i--) {
-              this._getHammer(els[i], options, true).on(eventName, method); // create if Hammer doesn't exist
+            if (!gutless) {
+              var els = this.$(eventInfo.selector),
+                  i = els.length;
+              
+              while (i--) {
+                this._getHammer(els[i], options, true).on(eventName, method); // create if Hammer doesn't exist
+              }
             }
           }
           else
             hammer.on(eventName, method); // use view's hammer (for view element)
         }
       },
-      
-      delegateEvents: function() {
-        if (!this.el)
-          return;
-        
-        this.redelegateDOMEvents();
+
+      delegateNonDOMEvents: function() {
         var globalEvents = this.globalEvents,
             windowEvents = this.windowEvents,
             myEvents = this.myEvents;
@@ -244,7 +275,13 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
             }
           }
         }
+      },
 
+      delegateEvents: function() {
+        if (this.el)
+          this.delegateDOMEvents();
+        
+        this.delegateNonDOMEvents();
         return this;
       },
 
@@ -253,7 +290,8 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
           return;
         
         var el = hammer.element,
-            defaultEls = [el];
+            defaultEls = [el],
+            gutless = !el.childNodes.length;
         
         for (var key in delegated) {
           var method = delegated[key],
@@ -261,14 +299,16 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
               eventName = eventInfo.eventName;
           
           if (eventInfo.selector) {
-            els = el.querySelectorAll(eventInfo.selector);
-            i = els.length;
-            while (i--) {
-              var _el = els[i],
-                  h = this._getHammer(_el);
-              
-              if (h)
-                h.off(eventName, method);
+            if (!gutless) {
+              els = el.querySelectorAll(eventInfo.selector);
+              i = els.length;
+              while (i--) {
+                var _el = els[i],
+                    h = this._getHammer(_el);
+                
+                if (h)
+                  h.off(eventName, method);
+              }
             }
           }
           else
@@ -278,15 +318,11 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         }
       },
 
-      undelegateEvents: function() {
-        if (!this.el)
-          return;
-        
+      undelegateNonDOMEvents: function() {        
         var globalEvents = this._delegatedGlobalEvents,
             myEvents = this._delegatedMyEvents,
             windowEvents = this._delegatedWindowEvents;
         
-        this.undelegateDOMEvents();
         if (globalEvents) {
           for (var key in globalEvents) {
             var fn = globalEvents[key];
@@ -307,18 +343,24 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
             window.removeEventListener(getEventInfo(key).eventName, fn);
           }
         }
-
+      },
+      
+      undelegateEvents: function() {
+        if (this.el)
+          this.undelegateDOMEvents();
+        
+        this.undelegateNonDOMEvents();
         return this;
       },
       
       delegateDOMEvents: function() {
-        if (!this.rendered)
-          return;
+//        if (!this.rendered)
+//          return;
         
         if (this.events)
-          this._delegateEvents(this.events, this.hammer(), this._delegatedEvents = this._delegatedEvents || {});
+          this._delegateDOMEvents(this.events, this.hammer(), this._delegatedEvents = this._delegatedEvents || {});
         if (this.pageEvents && this.pageView)
-          this._delegateEvents(this.pageEvents, this.pageView.hammer(), this._delegatedPageEvents = this._delegatedPageEvents || {});
+          this._delegateDOMEvents(this.pageEvents, this.pageView.hammer(), this._delegatedPageEvents = this._delegatedPageEvents || {});
       },
       
       undelegateDOMEvents: function() {
@@ -333,7 +375,8 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       },
       
       hammer: function(options){
-        if (!this._hammered && this.el) {
+        if ((!this._hammered && this.el) || 
+            (this._hammered && this.el !== this._hammer.element)) {
           this._hammered = true;
           this._hammer = new Hammer(this.el, this.hammerOptions || {}, Backbone.hammerOptions);
 //          this._hammer.on(hammer_events, this._debug.bind(this));
@@ -349,9 +392,22 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       }
     });
     
-    proxyViewFunctionTo(Backbone.View.prototype, CSS, 'addClass', 'removeClass', 'css');
-    proxyViewFunctionTo(Backbone.View.prototype, HTML, 'attr');
-  })(document, _, Backbone, U.HTML, U.CSS);
+//    proxyViewFunctionTo(Backbone.View.prototype, DOM, 'addClass', 'removeClass', 'css', 'attr');
+    var ViewProto = Backbone.View.prototype,
+        proxyFns = ['addClass', 'removeClass', 'css', 'attr'],
+        i = proxyFns.length;
+    
+    _.each(proxyFns, function(fnName) {
+      ViewProto[fnName] = function() {
+        if (this.el) {
+          var args = _.toArray(arguments);
+          args.unshift(this.el);
+          DOM[fnName].apply(DOM, args);
+        }
+      };
+    });
+    
+  })(document, _, Backbone, DOM);
   
   var eventObjs = ['events', 'myEvents', 'globalEvents', 'pageEvents', 'windowEvents'];
   

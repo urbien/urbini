@@ -108,35 +108,6 @@ define('views/MasonryListView', [
       this.centerMasonry(this);
     },
     
-//    postRender: function(info) {
-//      var self = this,
-//          appended = info.appended,
-//          updated = info.updated;
-//      
-//      if (this.rendered) {
-//        if (_.size(appended) || _.size(updated)) {
-//          this.$el.imagesLoaded(function() {
-//            if (_.size(appended))
-//              self.masonry('appended', $(appended));
-//            if (_.size(updated))
-//              self.masonry('reload');
-//            
-//            self.trigger('refreshed');
-//          });
-//        }
-//      }
-//      else {
-//        this.$el.imagesLoaded(function() {
-//          self.masonry({
-//            itemSelector: ITEM_SELECTOR
-//          });
-//   
-//          self.centerMasonry(self);
-//          self.$el.on('page_show', self.reloadMasonry.bind(self));
-//          self.finish();
-//        });
-//      }
-//    },
     postRender: function(info) {
       var self = this,
 //          appended = info.appended,
@@ -162,31 +133,34 @@ define('views/MasonryListView', [
           });
    
           self.centerMasonry(self);
-          self.$el.on('page_show', self.reloadMasonry.bind(self));
+//          self.pageView.el.addEventListener('page_show', function reload() {
+//            self.pageView.el.removeEventListener('page_show', reload);
+//            self.reloadMasonry();
+//          });
           self.finish();
         });
       }
     },
     
     centerMasonry: function(list) {
-//      var l = _.filter(list.$el.find('.nab'), function(a) {
-//          return $(a).css('top') == '0px';
-//        }),
-//        len = l.length;
-//      
-//      if (len) {
-//        var w = $(l[0]).css('width');
-//        w = w.substring(0, w.length - 2);
-//        len = l.length * w;
-////        len += l.length * 18;
-//        var d = (($(window).width() - len) / 2) - 10;
-//        var style = list.$el.attr('style'); 
-//        var left = list.$el.css('left');
-//        if (left)
-//          list.$el.css('left', d + 'px');
-//        else
-//          list.$el.attr('style', style + 'left: ' + d + 'px;');
-//      }
+      var l = _.filter(list.$el.find('.nab'), function(a) {
+          return $(a).css('top') == '0px';
+        }),
+        len = l.length;
+      
+      if (len) {
+        var w = $(l[0]).css('width');
+        w = w.substring(0, w.length - 2);
+        len = l.length * w;
+//        len += l.length * 18;
+        var d = (($(window).width() - len) / 2) - 10;
+        var style = list.$el.attr('style'); 
+        var left = list.$el.css('left');
+        if (left)
+          list.$el.css('left', d + 'px');
+        else
+          list.$el.attr('style', style + 'left: ' + d + 'px;');
+      }
     }
   }, {
     displayName: "MasonryListView",
