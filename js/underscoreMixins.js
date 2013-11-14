@@ -294,7 +294,7 @@ define('underscoreMixins', ['_underscore'], function(_) {
     },
     
     decode: function(str) {
-      return decodeURIComponent(str); //.replace(/\+/g, ' ');
+      return decodeURIComponent(str.replace(/\+/g, '%20'));
     },
 
     pushUniq: function(arr) {
