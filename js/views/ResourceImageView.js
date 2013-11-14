@@ -3,9 +3,10 @@ define('views/ResourceImageView', [
   'globals',
   'underscore', 
   'utils',
+  'domUtils',
   'events',
   'views/BasicView'
-], function(G, _, U, Events, BasicView) {
+], function(G, _, U, DOM, Events, BasicView) {
 
 //  $(function() {
 //    var $allVideos = $("iframe[src^='http://player.vimeo.com'], iframe[src^='http://www.youtube.com'], object, embed"),
@@ -304,7 +305,7 @@ define('views/ResourceImageView', [
           h = oHeight;
         }
       }
-      var imgAtts = U.HTML.lazifyImage({
+      var imgAtts = DOM.lazifyImage({
         src: image,
         'data-for': U.getImageAttribute(res, imagePropName)
       });
@@ -324,8 +325,8 @@ define('views/ResourceImageView', [
         if (h) imgAtts.height = h;
       }
       
-      var imgTag = U.HTML.tag('img', null, imgAtts);
-      var iTemplate = U.HTML.toHTML(imgTag);
+      var imgTag = DOM.tag('img', null, imgAtts);
+      var iTemplate = DOM.toHTML(imgTag);
       
 //      var iTemplate = w ? "<img data-frz-src='" + image +"' width='" + w + "'" + (h ? " height='" + h : '') + "' />"
 //                        : "<img data-frz-src='" + image +"' />";

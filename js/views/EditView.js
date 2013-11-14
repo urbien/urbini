@@ -4,17 +4,17 @@ define('views/EditView', [
   'events', 
   'error', 
   'utils',
+  'domUtils',
   'cache',
   'vocManager',
   'views/BasicView',
-  '@widgets'
-], function(G, Events, Errors, U, C, Voc, BasicView, $m) {
+  '@widgets',
+  'lib/fastdom'
+], function(G, Events, Errors, U, DOM, C, Voc, BasicView, $m, Q) {
   var spinner = 'loading edit view',
       scrollerClass = 'i-txt',
       switchClass = 'boolean',
-      secs = [/* week seconds */604800, /* day seconds */ 86400, /* hour seconds */ 3600, /* minute seconds */ 60, /* second seconds */ 1],
-      HTML = U.HTML,
-      CSS = U.CSS;
+      secs = [/* week seconds */604800, /* day seconds */ 86400, /* hour seconds */ 3600, /* minute seconds */ 60, /* second seconds */ 1];
       
   function isHidden(prop, currentAtts, reqParams) {
     var p = prop.shortName; 
@@ -24,7 +24,7 @@ define('views/EditView', [
   function getRemoveErrorLabelsFunction(el) {
     var parent = el.parentNode;
     return function() {
-      HTML.remove(parent.querySelectorAll('label.error'));
+      DOM.remove(parent.querySelectorAll('label.error'));
     };
   };
 
@@ -631,7 +631,7 @@ define('views/EditView', [
       
       var badInputs = [];
       var errDiv = this.form.querySelectorAll('div[name="errors"]');
-      HTML.empty(errDiv);
+      DOM.empty(errDiv);
       errDiv = errDiv[0];
 //      errDiv.empty();
       var inputs = this.getInputs(),
@@ -771,13 +771,19 @@ define('views/EditView', [
       
       this._submitted = true;
       var inputs = U.isAssignableFrom(this.vocModel, "Intersection") ? this.getInputs() : this.inputs;
-      inputs.attr('disabled', true);
-      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceProperties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case 
+      DOM.attr(inputs, 'disabled', true);
+      inputs = _.filter(inputs, function(input) { 
+        return !input.classList.contains(scrollerClass) && 
+               !input.classList.contains(switchClass) && 
+               input.dataset.name != 'interfaceProperties'; 
+      });
+      
+//      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceProperties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case 
 //      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceClass.properties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case 
       var self = this,
           action = this.action, 
           url = G.apiUrl, 
-          form = this.$form, 
+          form = this.form, 
           vocModel = this.vocModel,
           meta = vocModel.properties;
       
@@ -1384,7 +1390,7 @@ define('views/EditView', [
           numReqd = reqd.length;
       
       while (numReqd--) {
-        CSS.addClass(form.querySelectorAll('label[for="{0}"]'.format(reqd[numReqd].id)), 'req');
+        DOM.addClass(form.querySelectorAll('label[for="{0}"]'.format(reqd[numReqd].id)), 'req');
       }
       
       var selects = form.querySelectorAll('select'),
@@ -1425,7 +1431,7 @@ define('views/EditView', [
         if (prop && prop.cameraOnly) {
           var span = document.createElement('span');
           span.innerHTML = '<i> (only live photo allowed)</i>';
-          HTML.after(span, resProp.querySelector('label'));
+          DOM.after(span, resProp.querySelector('label'));
           
           resProp.addEventListener('click', function(e) {
             Events.stopEvent(e);
@@ -1496,7 +1502,7 @@ define('views/EditView', [
     
     attachCodeMirror: function() {
       this.makeTemplate('resetTemplateBtnTemplate', 'resetTemplate', this.vocModel.type);
-      var form = this.$form;
+      var form = this.form;
       var view = this;
       var res = this.resource;
       var meta = this.vocModel.properties;
@@ -1543,7 +1549,7 @@ define('views/EditView', [
         
         var changeHandler;
         if (defaultText) {
-          var reset = $.parseHTML(view.resetTemplate());
+          var reset = $.parseHTML(view.resetTemplate())[0];
           var resetText = reset.innerText;
           var didReset = false;
           var prevValue = defaultText;
@@ -1566,7 +1572,7 @@ define('views/EditView', [
               editor.on('change', resetHandler);
           });
           
-          HTML.after(reset, textarea.nextSibling);
+          DOM.after(reset, textarea.nextSibling);
           if (reset.button)
             reset.button();
           

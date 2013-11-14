@@ -3,16 +3,16 @@ define('views/ListPage', [
   'globals',
   'events', 
   'utils',
+  'domUtils',
   'error',
   'vocManager',
   'views/BasicPageView',
   'views/ResourceListView', 
   'views/Header',
   'lib/fastdom'
-], function(G, Events, U, Errors, Voc, BasicPageView, ResourceListView, Header, Q) {
+], function(G, Events, U, DOM, Errors, Voc, BasicPageView, ResourceListView, Header, Q) {
   var MapView,
-      SPECIAL_INTERSECTIONS = [G.commonTypes.Handler, G.commonTypes.Friend, U.getLongUri1('model/social/NominationForConnection') /*, commonTypes.FriendApp*/],
-      CSS = U.CSS;
+      SPECIAL_INTERSECTIONS = [G.commonTypes.Handler, G.commonTypes.Friend, U.getLongUri1('model/social/NominationForConnection') /*, commonTypes.FriendApp*/];
   
   return BasicPageView.extend({
     template: 'resource-list',
@@ -375,19 +375,19 @@ define('views/ListPage', [
       if (!this.el.parentNode)  
         document.body.appendChild(this.el);
       if (!this.isMV)
-        CSS.hide(this.$('#mv'));
+        DOM.hide(this.$('#mv'));
       if (!this.isEdit)
-        CSS.hide(this.$('#editRlForm'));
+        DOM.hide(this.$('#editRlForm'));
 //      if (this.isSpecialIntersection) {
 //        this.listView.$el.addClass('grid-listview');
 //        this.listView.$el.find('ul').removeClass('grid-listview');
 //      }
-      CSS.set(this.$('#sidebarDiv'), 'clear', 'both');
+      DOM.set(this.$('#sidebarDiv'), 'clear', 'both');
       if (G.theme.backgroundImage) { 
-        CSS.set(this.$('#sidebarDiv'), 'background-image', 'url(' + G.theme.backgroundImage +')');
+        DOM.set(this.$('#sidebarDiv'), 'background-image', 'url(' + G.theme.backgroundImage +')');
       }
       if (!this.isMasonry)
-        CSS.set(this.$('#sidebarDiv'), 'overflow-x', 'visible');
+        DOM.set(this.$('#sidebarDiv'), 'overflow-x', 'visible');
 
       this.filter = this.$('#filter')[0];
       if (this.filter) {

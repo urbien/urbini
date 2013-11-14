@@ -3,6 +3,7 @@ define('views/EditPage', [
   'globals',
   'underscore',
   'utils',
+  'domUtils',
   'events',
   'vocManager',
   'cache',
@@ -13,8 +14,8 @@ define('views/EditPage', [
   'views/ResourceImageView',
   'views/ResourceListView',
   'views/ControlPanel'
-], function(G, _, U, Events, Voc, C, ResourceList, BasicPageView, Header, EditView, ResourceImageView, ResourceListView, ControlPanel) {
-  var editParams = ['action', 'viewId'];//, 'backlinkResource'];
+], function(G, _, U, DOM, Events, Voc, C, ResourceList, BasicPageView, Header, EditView, ResourceImageView, ResourceListView, ControlPanel) {
+  var editParams = ['action', 'viewId'];
   return BasicPageView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'edit', 'home', 'set', 'resetForm');
@@ -29,15 +30,13 @@ define('views/EditPage', [
       var res = this.resource;
   //    var json = res.toJSON();
   //    json.viewId = this.cid;
-      var settings = {viewId: this.cid}
+      this.settings = {viewId: this.cid};
       if (U.isAssignableFrom(res, "AppInstall")) {
         settings.submit = this.loc('allow');
         settings.cancel = this.loc('deny');
         this.editOptions.saveOnBack = false;
 //        settings.noCancel = true;
       }
-      
-      this.$el.html(this.template(settings));
       
       var isGeo = this.isGeo();
       this.buttons = {
@@ -111,6 +110,7 @@ define('views/EditPage', [
     },
 
     render: function() {
+      this.$el.html(this.template(this.settings));
       var views = {
         '#resourceEditView': this.editView,
         '#headerDiv'       : this.header
@@ -121,10 +121,10 @@ define('views/EditPage', [
 
       this.assign(views);      
 
-      if (!this.$el.parentNode) 
-        $('body').append(this.$el);
+      if (!this.el.parentNode) 
+        document.body.appendChild(this.el);
       if (G.theme.backgroundImage) 
-        this.$('#resourceEditView').css('background-image', 'url(' + G.theme.backgroundImage +')');
+        DOM.set(this.$('#resourceEditView'), 'background-image', 'url(' + G.theme.backgroundImage +')');
 
       // Comments inline
       var isComment = U.isAssignableFrom(this.vocModel, U.getLongUri1("model/portal/Comment"));
@@ -148,7 +148,7 @@ define('views/EditPage', [
 //              if (inlineList.size() && !res._settingInlineList) && !currentlyInlined[name]) {
 //                res.setInlineList(name, inlineList);
 //              }
-            self.commentsView = new ResourceListView({model: inlineList, parentView: self, el: $('#comments', self.el)[0]});
+            self.commentsView = new ResourceListView({model: inlineList, parentView: self, el: this.$('#comments')[0]});
             self.addChild(self.commentsView);
             self.assign('#comments', self.commentsView);
               

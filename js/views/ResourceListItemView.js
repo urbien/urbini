@@ -55,11 +55,11 @@ define('views/ResourceListItemView', [
           if (options.swatch)
             classes += " ui-li-up-" + options.swatch;
           else
-            classes += "image_fitted ui-btn ui-li ui-li-has-thumb ui-li-static";
+            classes += " image_fitted ui-btn ui-li ui-li-has-thumb ui-li-static";
         }
         else {
           this.makeTemplate('listItemTemplateNoImage', 'template', this.vocModel.type);
-          classes += 'u-noimg';
+          classes += ' u-noimg';
         }
       }
       

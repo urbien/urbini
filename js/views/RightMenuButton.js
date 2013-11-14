@@ -79,14 +79,16 @@ define('views/RightMenuButton', [
     },
     
     leftMenu: function(e) {
-      var self = this;
       Events.stopEvent(e);
+//      e.gesture.stopPropagation();
+//      e.gesture.stopDetect();
+      var self = this;
       if (MenuPanel)
-        return this._leftMenu.apply(this, arguments);
+        return this._leftMenu(e);
       else {
         U.require('views/MenuPanel', function(mp) {
           MenuPanel = mp;
-          self.leftMenu(e);
+          self._leftMenu(e);
         });
       }
       
@@ -94,7 +96,6 @@ define('views/RightMenuButton', [
     },
     
     _rightMenu: function(e) {
-      var self = this;
       var p = this.rightMenuEl; //$('#' + this.viewId + 'r');
       // HACK
       var tagName = (p && p.tagName.toLowerCase() == 'section') ? 'nav' : 'div'; 
@@ -105,6 +106,7 @@ define('views/RightMenuButton', [
       if (this.rightMenuPanel)
         this.rightMenuEl.style.visibility = 'visible';
       else {
+        var self = this;
         this.rightMenuPanel = new RightMenuPanel({viewId: this.viewId, model: this.model, tagName: tagName, parentView: this.getPageView()});
         this.rightMenuPanel.render();
         this.rightMenuPanel.on('destroyed', function del() {
@@ -116,17 +118,17 @@ define('views/RightMenuButton', [
     },
     
     rightMenu: function(e) {
+      Events.stopEvent(e);
       if (G.currentUser.guest)
         return;
       
-      var self = this;
-      Events.stopEvent(e);
       if (RightMenuPanel)
-        return this._rightMenu.apply(this, arguments);
+        return this._rightMenu(e);
       else {
+        var self = this;
         U.require('views/RightMenuPanel', function(rmp) {
           RightMenuPanel = rmp;
-          self.rightMenu(e);
+          self._rightMenu(e);
         });
       }
       
