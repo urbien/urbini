@@ -200,11 +200,11 @@ define('views/MapView', [
             height = Math.round(height / imgOffset);
           }
           
-          medImg = this.getBaseTemplateData();
-          medImg.value = _.decode(medImg);
-          width && (medImg.width = width);
-          height && (medImg.height = height);
-          data.image = this.makeTemplate("imagePT", "imagePT")(medImg);
+          var tmpl_data = this.getBaseTemplateData();
+          tmpl_data.value = _.decode(medImg);
+          width && (tmpl_data.width = width);
+          height && (tmpl_data.height = height);
+          data.image = this.makeTemplate("imagePT", "imagePT")(tmpl_data);
 //          _.extend(data, {U: U, G: G});
           return this.makeTemplate("mapItemTemplate", "mapItemTemplate")(data);
         }

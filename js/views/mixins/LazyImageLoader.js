@@ -354,11 +354,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
             continue;
           
           if (!info.realSrc || info.realSrc == DUMMY_IMG) {
-            Q.write(function() {              
-              DOM.unlazifyImage(img);
-//              img.classList.remove("lazyImage"); // this image doesn't need to be lazy (now or in the future)
-            });
-            
+            Q.write(DOM.unlazifyImage.bind(DOM, img)); // this image doesn't need to be lazy (now or in the future)
             continue;
           }
           

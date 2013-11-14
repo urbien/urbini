@@ -423,11 +423,21 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
     
     _.each(proxyFns, function(fnName) {
       ViewProto[fnName] = function() {
-        if (this.el) {
-          var args = _.toArray(arguments);
+        var arg = arguments[0],
+            args;
+        
+        if (!(arg instanceof HTMLElement) && !(arg instanceof NodeList)) { 
+          args = _.toArray(arguments);
           args.unshift(this.el);
-          DOM[fnName].apply(DOM, args);
         }
+        else {
+          if (!this.el)
+            throw "this view currently has no HTML element, can't perform " + fnName;
+          
+          args = arguments;
+        }
+        
+        DOM[fnName].apply(DOM, args);
       };
     });
     
