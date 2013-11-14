@@ -118,8 +118,8 @@ define('views/BasicView', [
 //      options.attributes['data-viewid'] = this.cid;
       var atts = this.attributes = this.attributes || {};
       atts['data-viewid'] = this.cid;
-      if (!_.has(atts, 'id'))
-        atts['id'] = 'view' + G.nextId();
+//      if (!_.has(atts, 'id'))
+//        atts['id'] = 'view' + G.nextId();
       
       return Backbone.View.prototype._configure.apply(this, arguments);
     },

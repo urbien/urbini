@@ -334,13 +334,15 @@ define('views/Header', [
         DOM.hide(this.$('#publishBtn'));
         var options = _.filter(SPECIAL_BUTTONS, _['!='].bind(_, 'publish'));  // equivalent to _.filter(SPECIAL_BUTTONS, function(btn) { return btn != 'publish' })
         options.forEach(function(option) {
-          var method = 'hide';
+          var method = 'hide',
+              selector = '#{0}Btn'.format(option);
+          
           if (self[option]) {
-            self.assign('#{0}Btn'.format(option), pBtn, _.pick(self, option));
+            self.assign(selector, pBtn, _.pick(self, option));
             method = 'unhide';
           }
           
-          DOM[method](self.$('#{0}Btn'.format(option)));
+          DOM[method](self.$(selector));
         });
       }
       
@@ -473,7 +475,8 @@ define('views/Header', [
       });      
       
       numBtns = paintedBtns.length;
-      var cols = btns['publish'] ? numBtns - 1 : numBtns;
+//      var cols = btns['publish'] ? numBtns - 1 : numBtns;
+      var cols = numBtns;
       var btnWidth = Math.round(100 * (100/cols))/100;
       DOM.set(paintedBtns, 'width', btnWidth + '%');
       
