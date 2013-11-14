@@ -1,4 +1,4 @@
-define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', 'lib/fastdom', 'hammer'], function(G, _, U, Events, Q) {
+define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils', 'events', 'lib/fastdom', 'hammer'], function(G, _, U, DOM, Events, Q) {
   var AXES = ['X', 'Y'],
       beziers = {
         fling: [0.103, 0.389, 0.307, 0.966], // cubic-bezier(0.33, 0.66, 0.66, 1)
@@ -10,7 +10,6 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       SCROLL_EVENT_DISTANCE_THRESH = 50,
       bezierStep = 1 / NUM_PRECALCED_DISTANCES,
       doc = document,
-      CSS = U.CSS,
       AXIS_INDEX = {
         X: 0,
         Y: 1
@@ -63,7 +62,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     var d = curve.distanceMultipliers = [];
     for (var i = 0; i < NUM_PRECALCED_DISTANCES; i++) {
       percentTime += bezierStep;
-      percentComplete = CSS.getBezierPercentComplete(curve[0], curve[1], curve[2], curve[3], percentTime, 0.01);
+      percentComplete = DOM.getBezierPercentComplete(curve[0], curve[1], curve[2], curve[3], percentTime, 0.01);
       d.push(percentComplete);
     }
     
@@ -229,7 +228,6 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
                       '_onNativeScroll', '_onMouseWheel', '_checkIfScrolledToHead', '_stopScroller'); //, '_onScrollerRelease');
       
       this.onload(this._initScroller.bind(this));
-      this.el.classList.add('scrollable');
     },
     
     render: function() {
@@ -287,9 +285,9 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       }
     },
 
-//    myEvents: {
-//      'invalidateSize': '_onSizeInvalidated'
-//    },
+    myEvents: {
+      'destroyed': '_toggleScrollEventHandlers'
+    },
 
     windowEvents: {
       'scroll': '_onNativeScroll',
@@ -826,8 +824,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       this._scrollerInitialized = true;
       content = metrics.content;
       container = metrics.container;
-      containerSizeChanged = container.width != containerWidth || container.height != containerHeight;
-      contentSizeChanged = content.width != scrollWidth || content.height != scrollHeight;
+      containerSizeChanged = scrollX ? container.width != containerWidth : container.height != containerHeight;
+      contentSizeChanged = scrollX ? content.width != scrollWidth : content.height != scrollHeight;
       if (!containerSizeChanged && !contentSizeChanged) 
         return;
       
@@ -883,7 +881,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     
     _clearScrollerTransitionStyle: function() {
 //      this.log("clearing scroller transition style");
-      CSS.setStylePropertyValues(this.el.style, {
+      DOM.setStylePropertyValues(this.el.style, {
         transition: null
       });
     },
@@ -909,7 +907,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
         }
       }
       else {
-        _.extend(pos, CSS.getTranslation(this.el));
+        _.extend(pos, DOM.getTranslation(this.el));
       }
       
 //      pos.X += SCROLL_OFFSET.X;
@@ -961,7 +959,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
       
 //      this.log("SCROLL FROM: ", prevPos[axis], pos[axis]);
       s.prevPosition = _.clone(pos); 
-      this.el.dispatchEvent(new CustomEvent(type.replace('scroll', 'scrollo'), {detail: this.getScrollInfo(scroll)}));
+      this.el.dispatchEvent(new CustomEvent(type.replace('scroll', 'scrollo'), { detail: this.getScrollInfo(scroll) }));
     },
     
     getScrollInfo: function(scroll) {
@@ -1055,9 +1053,9 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'events', '
     },
     
     _setScrollerCSS: function (x, y, time, ease) {
-      CSS.setStylePropertyValues(this.el.style, {
+      DOM.setStylePropertyValues(this.el.style, {
         transition: 'all {0}ms {1}'.format(time, time == 0 ? '' : ease.transform),
-        transform: CSS.getTranslationString(x, y)
+        transform: DOM.getTranslationString(x, y)
       });
       
 //      this._triggerScrollEvent('scroll');

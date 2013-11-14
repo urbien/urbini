@@ -2,6 +2,7 @@
 define('router', [
   'globals',
   'utils', 
+  'domUtils',
   'events', 
   'error',
   'models/Resource', 
@@ -19,7 +20,7 @@ define('router', [
 //  'views/ListPage', 
 //  'views/ViewPage'
 //  'views/EditPage' 
-], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth, Redirecter, Transitioner, Q /*, ListPage, ViewPage*/) {
+], function(G, U, DOM, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth, Redirecter, Transitioner, Q /*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
   var Modules = {},
       doc = document,
@@ -353,7 +354,6 @@ define('router', [
           debugger;
         
         homePage = new HomePage({el: homePageEl });
-        homePage.render();
       }
       
       this.changePage(homePage);
@@ -1294,7 +1294,7 @@ define('router', [
       } catch( e ) {}
       
       Transitioner[options && options.reverse ? 'right' : 'left'](fromView, toView, null, this.firstPage ? 0 : 400).done(function() {
-        $m.activePage = toView.$el;
+        G.activePage = $m.activePage = toView.$el;
       });
     },
     
@@ -1303,6 +1303,7 @@ define('router', [
         $m.initializePage(toView.$el);
       
       $m.changePage(toView.$el, options);
+      G.activePage = toView.$el;
     },
 
 //    $changePage: function(toPage, options) {
@@ -1521,10 +1522,10 @@ define('router', [
         activated = true;
         view.render();
 //        view.onload(function() {          
-          view.$el.attr({
-            id: 'page' + G.nextId(),
-            'data-role': 'page'
-          }); //.attr('data-fullscreen', 'true');
+//          view.$el.attr({
+//            id: 'page' + G.nextId(),
+//            'data-role': 'page'
+//          }); //.attr('data-fullscreen', 'true');
 //        });
       }
 
@@ -1550,7 +1551,16 @@ define('router', [
       this.checkBackClick();
       // perform transition
 //      view.onload(function() {
-        $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
+      
+      var activePage = document.querySelector('div.ui-page-active');
+      if (activePage) {
+        var headerUl = activePage.querySelector('#headerUl');
+        if (headerUl) {
+          DOM.removeClass(headerUl.querySelectorAll('.ui-btn-active'), 'ui-btn-active');
+        }
+      }
+      
+//        $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
         
 //        if (G.isJQM()) 
         this.$changePage({changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});        

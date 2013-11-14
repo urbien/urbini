@@ -2,15 +2,14 @@
 define('views/ViewPage', [
   'globals',
   'utils',
+  'domUtils',
   'events',
   'views/BasicPageView',
   'views/Header',
   'views/ResourceView',
   'views/ControlPanel',
   'lib/fastdom'
-], function(G, U, Events, BasicPageView, Header, ResourceView, ControlPanel, Q) {
-  var CSS = U.CSS;
-  
+], function(G, U, DOM, Events, BasicPageView, Header, ResourceView, ControlPanel, Q) {
   return BasicPageView.extend({
     clicked: false,
     initialize: function(options) {
@@ -20,9 +19,9 @@ define('views/ViewPage', [
       var self = this,
           res = this.resource;
       
-      this.$el.on('page_show', function() {
-        setTimeout(self.pageChange, 1000);
-      });
+//      this.$el.on('page_show', function() {
+//        setTimeout(self.pageChange, 1000);
+//      });
       
       this.makeTemplate('resource', 'template', this.vocModel.type);
       this.viewId = options.viewId;
@@ -150,7 +149,7 @@ define('views/ViewPage', [
             Voc.getModels(friendType).done(function() {
               var friendProps = {};
               friendProps[friend1] = friendProps[friend2] = uri;
-              this.friends = new ResourceList(null, {
+              self.friends = new ResourceList(null, {
                 params: {
                   $or: U.getQueryString(friendProps, {delimiter: '||'})
                 },
@@ -158,28 +157,29 @@ define('views/ViewPage', [
                 title: title //U.getDisplayName(res) + "'s " + U.getPlural(friendName)
               });
               
-              this.friends.fetch({
+              self.friends.fetch({
                 success: function() {
-                  if (this.friends.size()) {
-                    self.el.querySelector('#photogrid').classList.remove('hidden');
-                    this.photogrid = new HorizontalListView({
-                      model: this.friends, 
-                      parentView: this, 
-                      source: uri, 
-                      swipeable: true 
+                  if (self.friends.size()) {
+                    var photogridEl = self.el.querySelector('#photogrid');
+                    photogridEl.classList.remove('hidden');
+                    self.photogrid = new HorizontalListView({
+                      el: photogridEl,
+                      model: self.friends, 
+                      parentView: self, 
+                      source: uri
                     });
                     
 //                    self.photogrid = new PhotogridView({model: self.friends, parentView: self, source: uri, swipeable: true});
-                    this.addChild(this.photogrid);
-                    this.photogridDfd.resolve();
+                    self.addChild(self.photogrid);
+                    self.photogridDfd.resolve();
     //                var header = $('<div data-role="footer" data-theme="{0}"><h3>{1}</h3>'.format(G.theme.photogrid, friends.title));
     //                header.insertBefore(self.photogrid.el);
                   }
-                }.bind(this)
+                }
               });
-            }.bind(this));        
-          }.bind(this));
-        }.bind(this));
+            });        
+          });
+        });
       }
       
       this.listenTo(Events, "mapReady", this.showMapButton);
@@ -225,6 +225,7 @@ define('views/ViewPage', [
 //      });
 //    },
     events: {
+      'page_show': function() { setTimeout(this.pageChange, 1000) },
       'click #edit': 'edit',
 //      'click': 'click',
       'click #homeBtn': 'home',
@@ -267,10 +268,12 @@ define('views/ViewPage', [
       this.html(this.template(json));      
       var self = this;
       this.photogridPromise.done(function() {        
-        var pHeader = self.$('#photogridHeader');
-        var h3 = pHeader.find('h3');
-        $(h3[0]).html(self.friends.title);
-        pHeader.removeClass('hidden');
+        var pHeader = self.$('#photogridHeader')[0];
+        var h3 = pHeader.querySelector('h3');
+        if (h3)
+          h3.innerHTML = self.friends.title;
+        
+        pHeader.classList.remove('hidden');
         self.assign({
           '#photogrid': self.photogrid
         });
@@ -321,18 +324,18 @@ define('views/ViewPage', [
       this.onload(Q.write.bind(Q, function() {          
         if (!this.isAbout) {
           if (G.currentUser.guest) {
-            CSS.hide(this.$('#edit'));
+            DOM.hide(this.$('#edit'));
           }
         }       
         
         if (!this.el.parentNode) 
           document.body.appendChild(this.el);
       
-        this.$el.attr("data-theme", G.theme.swatch);
+        this.el.dataset.theme = G.theme.swatch;
         if (G.theme.backgroundImage) 
-          CSS.set(this.$('#resourceViewHolder'), 'background-image', 'url(' + G.theme.backgroundImage +')');
+          DOM.set(this.$('#resourceViewHolder'), 'background-image', 'url(' + G.theme.backgroundImage +')');
   
-        CSS.set(this.$('#chatbox'), "display", "none");      
+        DOM.set(this.$('#chatbox'), "display", "none");      
       }, this));
 //      renderDfd.resolve();
 //      this.restyle();

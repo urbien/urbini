@@ -476,16 +476,12 @@ define('jqueryIndexedDB', ['globals', 'indexedDBShim'], function(G) {
           return $.Deferred(function(dfd) {
             var idbTransaction;
             dfd.promise().always(function() {
-//              delete pendingTrans[transName];
               finishedTransaction(idbTransaction);
             });
             
             dbPromise.then(function(db, e) {
               try {
-                
                 idbTransaction = db.transaction(storeNames, mode);
-                idbTransaction._blahblah = storeNames;
-                idbTransaction._dfd = dfd;
 								startedTransaction(idbTransaction);
                 
                 idbTransaction.onabort = idbTransaction.onerror = function(e) {

@@ -1,8 +1,7 @@
-define('transitions', ['globals', 'utils', 'lib/fastdom'], function(G, U, Q) {  
+define('transitions', ['globals', 'utils', 'domUtils', 'lib/fastdom'], function(G, U, DOM, Q) {  
   var identityMatrix;
   var vendorPrefixes = ['', '-moz-', '-ms-', '-o-', '-webkit-'];
-  var CSS = U.CSS;
-  var cssNoTranslation = CSS.getTranslationString(0, 0);
+  var cssNoTranslation = DOM.getTranslationString(0, 0);
   var transitions = {
 		none: {
       fromPageTransition: function(fromView) {
@@ -107,7 +106,7 @@ define('transitions', ['globals', 'utils', 'lib/fastdom'], function(G, U, Q) {
   	    currentX = pos && pos.X || 0,
         currentY = pos && pos.Y || 0;
         
-	  return CSS.getTranslationString(currentX + (x || 0), currentY + (y || 0));
+	  return DOM.getTranslationString(currentX + (x || 0), currentY + (y || 0));
 	}
 	
   function defaultToPageTransition(view) {
@@ -139,7 +138,7 @@ define('transitions', ['globals', 'utils', 'lib/fastdom'], function(G, U, Q) {
     $to.trigger('page_beforeshow');
     Q.write(function() {
       if (fromView) {
-        CSS.setStylePropertyValues(to.style, {
+        DOM.setStylePropertyValues(to.style, {
           transform: transition.toPageBeforeTransition(toView),
           transition: null
         });
@@ -152,14 +151,14 @@ define('transitions', ['globals', 'utils', 'lib/fastdom'], function(G, U, Q) {
     Q.defer(1, 'write', function() {
       if (from) {
         console.log("FROM PAGE:", $from.width());
-        CSS.setStylePropertyValues(from.style, {
+        DOM.setStylePropertyValues(from.style, {
           transition: ease,
           transform: transition.fromPageTransition(fromView)
         });        
       }
     
 //      console.log("TO PAGE:", $to.width());
-      CSS.setStylePropertyValues(to.style, {
+      DOM.setStylePropertyValues(to.style, {
         transition: ease,
         transform: transition.toPageTransition(toView)
       });

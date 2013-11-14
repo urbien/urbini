@@ -1,9 +1,8 @@
-define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'events', 'lib/fastdom'], function(G, _, U, Events, Q) {
+define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUtils', 'events', 'lib/fastdom'], function(G, _, U, DOM, Events, Q) {
   var doc = document,
       docEl = doc.documentElement,
       LAZY_DATA_ATTR = G.lazyImgSrcAttr,
       LAZY_ATTR = LAZY_DATA_ATTR.slice(5),
-      HTML = U.HTML,
       DUMMY_IMG,
       AXIS_INDEX = {
         X: 0,
@@ -161,7 +160,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
       }
           
       if (offscreenImgs.length)
-        U.HTML.lazifyImages(offscreenImgs);
+        DOM.lazifyImages(offscreenImgs);
     },
 
     _imageJobIds: [],
@@ -272,7 +271,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     
     _getViewportAdjustmentForDestination: function() {
       var viewportDestination = this._getViewportDestination(),
-          position = U.CSS.getTranslation(this.el);
+          position = DOM.getTranslation(this.el);
       
       return {
         X: position.X - viewportDestination.X,
@@ -356,7 +355,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
           
           if (!info.realSrc || info.realSrc == DUMMY_IMG) {
             Q.write(function() {              
-              HTML.unlazifyImage(img);
+              DOM.unlazifyImage(img);
 //              img.classList.remove("lazyImage"); // this image doesn't need to be lazy (now or in the future)
             });
             
@@ -409,7 +408,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'event
     },
 
     _updateImage: function(img, info) {
-      HTML.unlazifyImage(img, info);
+      DOM.unlazifyImage(img, info);
 //      this._distanceToFarthestImage = Math.max(this._distanceToFarthestImage || 0, info.distance);
       _.wipe(info); // just in case it gets leaked...yea, that sounds bad      
     },

@@ -28,17 +28,17 @@ define('templates', [
   }
   
   Events.once('appStart', initBlankImg);
-  window.onimageload = function onimageload() {
-//    var $this = $(this);
-//    Q.defer(Math.random() * 5 | 0, 'read', $this.trigger.bind($this, 'imageOnload'));
-    $(this).trigger('imageOnload');
-    return false;
-  };
-  
-  window.onimageerror = function onimageerror() {
-    $(this).trigger('imageOnerror');
-    return false;
-  };
+//  window.onimageload = function onimageload() {
+////    var $this = $(this);
+////    Q.defer(Math.random() * 5 | 0, 'read', $this.trigger.bind($this, 'imageOnload'));
+//    $(this).trigger('imageOnload');
+//    return false;
+//  };
+//  
+//  window.onimageerror = function onimageerror() {
+//    $(this).trigger('imageOnerror');
+//    return false;
+//  };
   
   function prepTemplate(text) {
     initBlankImg();

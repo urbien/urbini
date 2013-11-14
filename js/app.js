@@ -12,10 +12,10 @@ define('app', [
  'modelLoader',
  'vocManager',
  'resourceManager',
- 'router',
  'collections/ResourceList'
- ], function(G, _, Backbone, __bbMxns__, Templates, U, Events, Errors, C, ModelLoader, Voc, ResourceManager, Router, ResourceList) {
+ ], function(G, _, Backbone, __bbMxns__, Templates, U, Events, Errors, C, ModelLoader, Voc, ResourceManager, ResourceList) {
 //  var Chrome;
+  var Router;
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
   var pushEndpointType = G.commonTypes.PushEndpoint,
@@ -510,8 +510,8 @@ define('app', [
           $doc = $(document);
       
       function fwdEvent(page_event) {
-        return function() {
-          $(this).trigger(page_event);
+        return function(e) {
+          e.target.dispatchEvent(new Event(page_event));
         }
       }
       
@@ -563,7 +563,9 @@ define('app', [
 //      G.removeHoverStyles();
     ModelLoader.loadEnums();
     
-    return $.whenAll.apply($, [modelsViewsTemplatesAndDB, localized]);
+    return $.whenAll(modelsViewsTemplatesAndDB, localized, require(['@widgets', 'router']).done(function($w, r) {
+      Router = r;
+    }));
   };
   
   
@@ -695,7 +697,11 @@ define('app', [
         window.location.hash = '';
       }
 
-      $('head').append(G.globalCss);
+      if (G.globalCss) {
+        G.appendCSS(G.globalCss);
+        delete G.globalCss;
+      }
+      
       App.router = new Router();
 //      if (G.support.pushState) {
 //        Backbone.history.start({

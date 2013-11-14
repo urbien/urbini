@@ -4,16 +4,15 @@ define('views/HomePage', [
   'events',
   'jqueryAnyStretch',
   'utils',
+  'domUtils',
   'views/BasicPageView'
-], function(G, Events, Jas, U, BasicPageView) {
-  var HTML = U.HTML;
-  
+], function(G, Events, Jas, U, DOM, BasicPageView) {
   return BasicPageView.extend({
     TAG: 'HomePage',
     first: true,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'click', 'pagehide', 'pagebeforeshow');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      _.bindAll(this, 'render', 'click'); //, 'pagehide', 'pagebeforeshow');
+      BasicPageView.prototype.initialize.apply(this, arguments);
       
 //      Events.on('pagehide', this.pagehide);
 //      $(document).on('page_hide',       this.pagehide);
@@ -21,14 +20,14 @@ define('views/HomePage', [
 //      $(div[data-role="page"]).on
       return this;
     },
-    pagebeforechange: function(e) {
-//      if (this.first)
-//        Events.stopEvent(e);
-    
-    },
+//    pagebeforechange: function(e) {
+////      if (this.first)
+////        Events.stopEvent(e);
+//    
+//    },
     events: {
-      'page_hide'            : 'pagehide',
-      'page_beforeshow'      : 'pagebeforeshow',
+//      'page_hide'            : 'pagehide',
+//      'page_beforeshow'      : 'pagebeforeshow',
       'click'              : 'click',
       'click #installApp'  : 'installApp'
     },
@@ -42,15 +41,15 @@ define('views/HomePage', [
       }
     },
     
-    pagehide: function(e) {
-//      this.$el.hide();
-      return BasicPageView.prototype.onpageevent.apply(this, arguments);
-    },
-    
-    pagebeforeshow: function(e) {
-//      this.$el.show();
-      return BasicPageView.prototype.onpageevent.apply(this, arguments);
-    },
+//    pagehide: function(e) {
+////      this.$el.hide();
+//      return BasicPageView.prototype.onpageevent.apply(this, arguments);
+//    },
+//    
+//    pagebeforeshow: function(e) {
+////      this.$el.show();
+//      return BasicPageView.prototype.onpageevent.apply(this, arguments);
+//    },
     
     click: function(e) {
       var id = e.target.id,
@@ -115,7 +114,7 @@ define('views/HomePage', [
     },
     
     removeInstallBtn: function() {
-      HTML.remove(this.$('#installApp'));
+      DOM.remove(this.$('#installApp'));
     }
   }, {
     displayName: 'HomePage'

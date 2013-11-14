@@ -20,8 +20,16 @@ window.onload = function() {
 
   var hash = window.location.hash;
   if (!hash || /\#home/.test(hash)) {
-    var body = document.body;
-    body.innerHTML = body.innerHTML + ls.getItem('homePage');
+    var body = document.body,
+        head = document.head,
+        hp = ls.getItem('homePage'),
+        css = ls.getItem('homePageCss');
+    
+    body.innerHTML = body.innerHTML + hp;
+    var style = d.createElement('style');
+    style.type = 'text/css';
+    style.textContent = css; 
+    head.appendChild(style);
   }
   
   new Function("d", g.boot)(document);

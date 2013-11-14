@@ -4,16 +4,23 @@
 DOMReady.add( function () {
   'use strict';
   var l = Lablz,
-      head = d.getElementsByTagName('head')[0];
+      head = d.head;
   
-  if (localStorage  &&  localStorage.getItem)
+  if (localStorage  &&  localStorage.getItem) {
     localStorage.setItem('homePage', l.homePage);
-   
+    localStorage.setItem('homePageCss', l.globalCss);
+  }
   
   var hash = window.location.hash;
   if (!hash || /\#home/.test(hash)) {
     d.body.innerHTML = d.body.innerHTML + l.homePage;
     delete l.homePage;
+    var style = d.createElement('style');
+    style.type = 'text/css';
+    style.textContent = l.globalCss; 
+    head.appendChild(style);
+    delete l.globalCss;
+
     var scripts = d.body.getElementsByTagName('script');
 /*  console.log('scripts: ' + scripts.length); */ 
 

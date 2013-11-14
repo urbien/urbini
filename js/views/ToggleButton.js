@@ -43,10 +43,10 @@ define('views/ToggleButton', [
 //        link.addClass(persistCl);
       
       var activeCl = 'ui-btn-active';
-      if (on && !el.classList.contains(activeCl))
+      if (on && !link.classList.contains(activeCl))
         link.classList.add(activeCl);
       else
-        link.classList.remove(link, activeCl);
+        link.classList.remove(activeCl);
     },
     render: function(options) {
       this.html(this.template());

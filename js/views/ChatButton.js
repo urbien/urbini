@@ -2,11 +2,10 @@
 define('views/ChatButton', [
   'underscore', 
   'utils',
+  'domUtils',
   'events', 
   'views/ToggleButton' 
-], function(_, U, Events, ToggleButton) {
-  var CSS = U.CSS;
-  
+], function(_, U, DOM, Events, ToggleButton) {
   return ToggleButton.extend({
     templateName: 'chatButtonTemplate',
     tagName: 'li',
@@ -33,7 +32,7 @@ define('views/ChatButton', [
         var unread = cachedChatView && cachedChatView.getNumUnread();
         this.menuBadge = this.$('.menuBadge')[0];
         this.menuBadge.innerHTML = unread || '';
-        CSS[unread ? 'unhide' : 'hide'](this.menuBadge);
+        DOM[unread ? 'unhide' : 'hide'](this.menuBadge);
       }
     },
     
@@ -57,7 +56,7 @@ define('views/ChatButton', [
         url = U.makePageUrl('chat', uri);
       }
       
-      this.$el.html(this.template({
+      this.html(this.template({
         url: url
       }));
       

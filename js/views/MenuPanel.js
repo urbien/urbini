@@ -12,7 +12,7 @@ define('views/MenuPanel', [
 //    theme: 'd',
     initialize: function(options) {
       _.bindAll(this, 'render','click', 'edit', 'hide');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
   //    this.resource.on('change', this.render, this);
       this.tagName = options.tagName;
       var type = this.modelType;
