@@ -1940,7 +1940,12 @@ define('globals', function() {
       return !this._clickDisabled;
     }
   });
-  
+
+  if (G.globalCss) {
+    G.appendCSS(G.globalCss);
+    delete G.globalCss;
+  }  
+
   determineMinificationMode();
   G.skipModules = G.skipModules || [];
   G.DEBUG = !G.minify;

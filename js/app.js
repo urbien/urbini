@@ -697,11 +697,6 @@ define('app', [
         window.location.hash = '';
       }
 
-      if (G.globalCss) {
-        G.appendCSS(G.globalCss);
-        delete G.globalCss;
-      }
-      
       App.router = new Router();
 //      if (G.support.pushState) {
 //        Backbone.history.start({
