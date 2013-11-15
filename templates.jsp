@@ -998,15 +998,6 @@
     </a>
 
     {{ }); }}
-
-    <!--h5>Login by Email</h5>
-    <form id="loginForm" action="j_security_check" method="POST" onsubmit="return hash(this, 'j_security_check')" autocomplete="off">
-      <table>
-        <tr><td>Email: </td><td><input name="j_username" /></td></tr>
-        <tr><td>Password: </td><td><input type="password" name="j_password" /></td></tr>
-        <tr><td colspan="2"><input type="submit" value="Submit" /></td></tr>
-      </table>
-    </form-->
   </div>
 </script>
 

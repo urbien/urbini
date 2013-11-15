@@ -1230,6 +1230,9 @@ define('globals', function() {
         deps: ['underscore'],
         exports: 'Backbone'
       },
+      '../styles/bb_styles.css': ['../styles/styles.css', '../styles/common-template-m.css'],
+      '../styles/topcoat_styles.css': ['../styles/styles.css', '../styles/common-template-m.css'],
+      '../styles/jqm_styles.css': ['../styles/styles.css', '../styles/common-template-m.css'],
       leafletMarkerCluster: ['leaflet'],
       mobiscroll: ['../styles/mobiscroll.datetime.min.css'],
       codemirrorJSMode: ['codemirror', 'codemirrorCss'],

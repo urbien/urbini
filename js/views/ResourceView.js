@@ -104,9 +104,9 @@ define('views/ResourceView', [
         var ul = $(t.parentElement).find('ul');
         var cl = ul.attr('class');
         if (!cl  ||  cl.indexOf('hidden') == -1)
-          ul.addClass('hidden');
+          ul.classList.add('hidden');
         else
-          ul.removeClass('hidden');
+          ul.classList.remove('hidden');
         return;
       }
     },
@@ -161,8 +161,8 @@ define('views/ResourceView', [
       var isAbout = (isApp  &&  !!params['$about']  &&  !!res.get('description')) || !!params['$fs'];
 //      var isAbout = isApp  &&  !!params['$about']  &&  !!res.get('description');
       if (isAbout  &&  isApp) {
-        this.$el.removeClass('hidden');
-        this.$el.html(res.get('description'));
+        this.el.classList.remove('hidden');
+        this.el.$html(res.get('description'));
         this.$el.trigger('create');      
         return this;
       }
@@ -176,7 +176,7 @@ define('views/ResourceView', [
       var currentAppProps = U.getCurrentAppProps(meta);
       var propGroups;
       if (this.isBuyGroup) {
-        this.$el.css({
+        this.el.$css({
           'float': "right",
           width: "45%",
           'min-width': "130"
@@ -224,10 +224,10 @@ define('views/ResourceView', [
           if (val) {
 //            var val = U.makeProp({resource: res, propName: d, prop: meta[p], value: res.get(d)});
 //            U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
-            this.$el.removeClass('hidden');
+            this.el.classList.remove('hidden');
             U.addToFrag(frag, '<div id="Description">' + val + '</div>');
             this.$el.html(frag);      
-            if (this.$el.hasClass('ui-listview')) {
+            if (this.el.$hasClass('ui-listview')) {
               this.$el.trigger('create');      
               this.$el.listview('refresh');
             }
@@ -366,15 +366,15 @@ define('views/ResourceView', [
       
   //    var j = {"props": json};
   //    this.$el.html(html);
-      this.$el.html(frag);
-      if (this.$el.hasClass('ui-listview')) {
+      this.el.$html(frag);
+      if (this.el.$hasClass('ui-listview')) {
         this.$el.trigger('create');      
         this.$el.listview('refresh');
       }
       else
         this.$el.trigger('create');      
       if (!_.size(displayedProps))
-        this.$el.css('display', 'none');
+        this.el.$hide();
 
       if (this.isCode && CodeMirror) {
 //        var doc = document;

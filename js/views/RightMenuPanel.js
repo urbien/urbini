@@ -164,7 +164,7 @@ define('views/RightMenuPanel', [
 //      this.router.navigate(href, {trigger: true});
 //    },
     refresh: function() {
-      this.empty();
+      this.el.$empty();
       this.render();
     },
     
@@ -193,9 +193,9 @@ define('views/RightMenuPanel', [
     },
     
     renderChatParticipants: function() {
-      this.empty();
+      this.el.$empty();
       var p = document.getElementById(this.viewId);
-      p.empty();
+      p.$empty();
       
       this.html(this.template());
       var frag = document.createDocumentFragment();

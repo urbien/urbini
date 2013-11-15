@@ -401,7 +401,7 @@ define('views/BasicView', [
       if (this.pageView)
         delete this.pageView;
       
-      DOM.removeElement(this.el);
+      this.el.$remove();
       this.$el = this.el = this._hammer = this._hammered = null;
 //      this.$el.remove();
 //      

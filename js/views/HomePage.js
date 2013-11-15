@@ -4,9 +4,8 @@ define('views/HomePage', [
   'events',
   'jqueryAnyStretch',
   'utils',
-  'domUtils',
   'views/BasicPageView'
-], function(G, Events, Jas, U, DOM, BasicPageView) {
+], function(G, Events, Jas, U, BasicPageView) {
   return BasicPageView.extend({
     TAG: 'HomePage',
     first: true,
@@ -114,7 +113,7 @@ define('views/HomePage', [
     },
     
     removeInstallBtn: function() {
-      this.$('#installApp').remove();
+      this.$('#installApp').$remove();
     }
   }, {
     displayName: 'HomePage'

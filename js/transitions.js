@@ -144,8 +144,10 @@ define('transitions', ['globals', 'utils', 'domUtils', 'lib/fastdom'], function(
         });
       }
       
-      if (isJQM)
-        $to.addClass('ui-page-active').page();
+      if (isJQM) {
+        to.classList.add('ui-page-active');
+        $to.page();
+      }
     });
       
     Q.defer(1, 'write', function() {

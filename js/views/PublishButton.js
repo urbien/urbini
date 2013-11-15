@@ -186,7 +186,7 @@ define('views/PublishButton', [
 
     render: function(options) {
       var self = this;
-      this.empty();
+      this.el.$empty();
       if (options) {
         var params = this.hashParams,
             btns = _.keys(_.pick(options, SPECIAL_BUTTONS)),

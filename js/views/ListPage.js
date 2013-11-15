@@ -3,14 +3,13 @@ define('views/ListPage', [
   'globals',
   'events', 
   'utils',
-  'domUtils',
   'error',
   'vocManager',
   'views/BasicPageView',
   'views/ResourceListView', 
   'views/Header',
   'lib/fastdom'
-], function(G, Events, U, DOM, Errors, Voc, BasicPageView, ResourceListView, Header, Q) {
+], function(G, Events, U, Errors, Voc, BasicPageView, ResourceListView, Header, Q) {
   var MapView,
       SPECIAL_INTERSECTIONS = [G.commonTypes.Handler, G.commonTypes.Friend, U.getLongUri1('model/social/NominationForConnection') /*, commonTypes.FriendApp*/];
   
@@ -375,23 +374,23 @@ define('views/ListPage', [
       if (!this.el.parentNode)  
         document.body.appendChild(this.el);
       if (!this.isMV)
-        DOM.hide(this.$('#mv'));
+        this.$('#mv').$hide();
       if (!this.isEdit)
-        DOM.hide(this.$('#editRlForm'));
+        this.$('#editRlForm').$hide();
 //      if (this.isSpecialIntersection) {
 //        this.listView.$el.addClass('grid-listview');
 //        this.listView.$el.find('ul').removeClass('grid-listview');
 //      }
-      DOM.set(this.$('#sidebarDiv'), 'clear', 'both');
+      this.$('#sidebarDiv').$css('clear', 'both');
       if (G.theme.backgroundImage) { 
-        DOM.set(this.$('#sidebarDiv'), 'background-image', 'url(' + G.theme.backgroundImage +')');
+        this.$('#sidebarDiv').$css('background-image', 'url(' + G.theme.backgroundImage +')');
       }
       if (!this.isMasonry)
-        DOM.set(this.$('#sidebarDiv'), 'overflow-x', 'visible');
+        this.$('#sidebarDiv').$css('overflow-x', 'visible');
 
       this.filter = this.$('#filter')[0];
       if (this.filter) {
-        this.filter.addEventListener('keydown', function(e) {
+        this.filter.on('keydown', function(e) {
           self.filter.dispatchEvent(new Event('change', {
             view: self.filter,
             bubbles: false,

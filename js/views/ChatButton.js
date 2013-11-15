@@ -2,10 +2,9 @@
 define('views/ChatButton', [
   'underscore', 
   'utils',
-  'domUtils',
   'events', 
   'views/ToggleButton' 
-], function(_, U, DOM, Events, ToggleButton) {
+], function(_, U, Events, ToggleButton) {
   return ToggleButton.extend({
     templateName: 'chatButtonTemplate',
     tagName: 'li',
@@ -32,7 +31,7 @@ define('views/ChatButton', [
         var unread = cachedChatView && cachedChatView.getNumUnread();
         this.menuBadge = this.$('.menuBadge')[0];
         this.menuBadge.innerHTML = unread || '';
-        DOM[unread ? 'unhide' : 'hide'](this.menuBadge);
+        this.menuBadge[unread ? '$unhide' : '$hide']();
       }
     },
     
@@ -62,7 +61,7 @@ define('views/ChatButton', [
       
       this.finish();
       if (this.isChat)
-        this.$menuBadge.hide();
+        this.$menuBadge.$hide();
       else
         this.refresh();
       

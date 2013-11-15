@@ -86,7 +86,7 @@ define('views/ResourceImageView', [
     
     refresh: function() {
       G.log(this.TAG, "info", "refresh resource");
-      this.$el.empty();
+      this.el.$empty();
       this.render();
       return this;
     },

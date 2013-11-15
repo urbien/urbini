@@ -65,7 +65,7 @@ define('views/ToggleButton1', [
     },
     toggle: function(e) {
       Events.stopEvent(e);
-      if (this.$('a').hasClass('ui-btn-active'))
+      if (this.$('a').$hasClass('ui-btn-active'))
         (this.released.target || this.pageView).trigger(this.released.event);
       else
         (this.depressed.target || this.pageView).trigger(this.depressed.event);

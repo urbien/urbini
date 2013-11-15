@@ -1,5 +1,5 @@
-define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils', 'domUtils', 'hammer'], function(G, _, Backbone, Events, U, DOM, Hammer) {
-  (function(doc, _, Backbone, DOM) {
+define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils', 'hammer'], function(G, _, Backbone, Events, U, Hammer) {
+  (function(doc, _, Backbone) {
     Backbone.hammerOptions = {
 //      prevent_default: true,
 //      tap_always: false
@@ -153,7 +153,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         if (this.style) { 
           style = _.result(this, 'style');
           if (style)
-            this.el.css(style);
+            this.el.$css(style);
         }
         
         attrs = _.extend({}, _.result(this, 'attributes'));
@@ -162,7 +162,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         if (classes)
           attrs['class'] = classes;
         
-        this.el.attr(attrs);
+        this.el.$attr(attrs);
         if (delegate !== false) 
           this.delegateEvents();
         
@@ -404,8 +404,9 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
        */
       undelegateEvents: function() {
         if (this.el) {
-          this._undelegateDOMEvents(this._delegatedEvents, this.hammer());
-          if (this.pageView)
+          if (this.events)
+            this._undelegateDOMEvents(this._delegatedEvents, this.hammer());
+          if (this.pageEvents && this.pageView)
             this._undelegateDOMEvents(this._delegatedPageEvents, this.pageView.hammer());
         }
         
@@ -457,7 +458,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
 //      };
 //    });
     
-  })(document, _, Backbone, DOM);
+  })(document, _, Backbone);
   
   var eventObjs = ['events', 'myEvents', 'globalEvents', 'pageEvents', 'windowEvents'];
   

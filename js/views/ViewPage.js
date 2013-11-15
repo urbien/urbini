@@ -2,14 +2,13 @@
 define('views/ViewPage', [
   'globals',
   'utils',
-  'domUtils',
   'events',
   'views/BasicPageView',
   'views/Header',
   'views/ResourceView',
   'views/ControlPanel',
   'lib/fastdom'
-], function(G, U, DOM, Events, BasicPageView, Header, ResourceView, ControlPanel, Q) {
+], function(G, U, Events, BasicPageView, Header, ResourceView, ControlPanel, Q) {
   return BasicPageView.extend({
     clicked: false,
     initialize: function(options) {
@@ -238,12 +237,13 @@ define('views/ViewPage', [
       if (this.hashParams.$tour) {
         var selector = '[' + this.hashParams.$tourSelector + ']';
         
-        var elm = this.$el.find(selector);
+        var elm = this.$(selector);
         var direction = this.hashParams.$tourD;
         if (!direction)
           direction = 'left';
-        elm.addClass('hint--' + direction + ' hint--always');
-        elm.attr('data-hint', this.hashParams.$tourM);
+        
+        elm.classList.add('hint--' + direction + ' hint--always');
+        elm.dataset.hint = this.hashParams.$tourM;
       }
     },
 
@@ -324,7 +324,7 @@ define('views/ViewPage', [
       this.onload(Q.write.bind(Q, function() {          
         if (!this.isAbout) {
           if (G.currentUser.guest) {
-            DOM.hide(this.$('#edit'));
+            this.$('#edit').$hide();
           }
         }       
         
@@ -333,9 +333,9 @@ define('views/ViewPage', [
       
         this.el.dataset.theme = G.theme.swatch;
         if (G.theme.backgroundImage) 
-          DOM.set(this.$('#resourceViewHolder'), 'background-image', 'url(' + G.theme.backgroundImage +')');
+          this.$('#resourceViewHolder').$css('background-image', 'url(' + G.theme.backgroundImage +')');
   
-        DOM.set(this.$('#chatbox'), "display", "none");      
+        this.$('#chatbox').$hide();      
       }, this));
 //      renderDfd.resolve();
 //      this.restyle();

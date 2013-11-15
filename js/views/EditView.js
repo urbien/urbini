@@ -4,13 +4,12 @@ define('views/EditView', [
   'events', 
   'error', 
   'utils',
-  'domUtils',
   'cache',
   'vocManager',
   'views/BasicView',
   '@widgets',
   'lib/fastdom'
-], function(G, Events, Errors, U, DOM, C, Voc, BasicView, $m, Q) {
+], function(G, Events, Errors, U, C, Voc, BasicView, $m, Q) {
   var spinner = 'loading edit view',
       scrollerClass = 'i-txt',
       switchClass = 'boolean',
@@ -24,7 +23,7 @@ define('views/EditView', [
   function getRemoveErrorLabelsFunction(el) {
     var parent = el.parentNode;
     return function() {
-      DOM.remove(parent.querySelectorAll('label.error'));
+      parent.querySelectorAll('label.error').$remove();
     };
   };
 
@@ -603,13 +602,13 @@ define('views/EditView', [
       _.extend(this, params);
     },
     resetForm: function() {
-      $('form').clearForm();      
+      $(this.$('form')).clearForm();      
     },
     getInputs: function() {
-      return this.form.querySelectorAll('[data-formEl]');
+      return this.form.$('[data-formEl]');
     },
     getScrollers: function() {
-      return this.form.querySelectorAll('.' + scrollerClass);
+      return this.form.$('.' + scrollerClass);
     },
     
     refreshScrollers: function() {
@@ -625,7 +624,7 @@ define('views/EditView', [
     },
     isScroller: function(input) {
       input = input instanceof $ ? input : $(input);
-      return input.hasClass(scrollerClass);
+      return input.$hasClass(scrollerClass);
     },
     fieldError: function(resource, errors) {
       if (arguments.length === 1)
@@ -633,7 +632,7 @@ define('views/EditView', [
       
       var badInputs = [];
       var errDiv = this.form.querySelectorAll('div[name="errors"]');
-      DOM.empty(errDiv);
+      errDiv.$empty();
       errDiv = errDiv[0];
 //      errDiv.empty();
       var inputs = this.getInputs(),
@@ -773,7 +772,7 @@ define('views/EditView', [
       
       this._submitted = true;
       var inputs = U.isAssignableFrom(this.vocModel, "Intersection") ? this.getInputs() : this.inputs;
-      DOM.attr(inputs, 'disabled', true);
+      inputs.$attr('disabled', true);
       inputs = _.filter(inputs, function(input) { 
         return !input.classList.contains(scrollerClass) && 
                !input.classList.contains(switchClass) && 
@@ -853,7 +852,7 @@ define('views/EditView', [
       if (typeof errors === 'undefined') {
         this.setValues(atts, {skipValidation: true});
         this.onsuccess();
-        self.getInputs().attr('disabled', false);
+        self.getInputs().$attr('disabled', false);
       }
       else
         this.onerror(errors);
@@ -879,7 +878,7 @@ define('views/EditView', [
         resource = null;
       }
       
-      this.getInputs().attr('disabled', false);
+      this.getInputs().$attr('disabled', false);
       var code = xhr ? xhr.code || xhr.status : 0;
       if (!code || xhr.statusText === 'error') {
         Errors.errDialog({msg: 'There was en error with your request, please try again', delay: 100});
@@ -950,7 +949,7 @@ define('views/EditView', [
       res.save(props, {
         sync: sync,
         success: function(resource, response, options) {
-          self.getInputs().attr('disabled', false);
+          self.getInputs().$attr('disabled', false);
           res.lastFetchOrigin = null;
           self.disable('Changes submitted');
 //          self.redirect();
@@ -1392,7 +1391,7 @@ define('views/EditView', [
           numReqd = reqd.length;
       
       while (numReqd--) {
-        DOM.addClass(form.querySelectorAll('label[for="{0}"]'.format(reqd[numReqd].id)), 'req');
+        form.querySelectorAll('label[for="{0}"]'.format(reqd[numReqd].id)).$addClass('req');
       }
       
       var selects = form.querySelectorAll('select'),
@@ -1433,7 +1432,7 @@ define('views/EditView', [
         if (prop && prop.cameraOnly) {
           var span = document.createElement('span');
           span.innerHTML = '<i> (only live photo allowed)</i>';
-          DOM.after(span, resProp.querySelector('label'));
+          span.$after(resProp.querySelector('label'));
           
           resProp.addEventListener('click', function(e) {
             Events.stopEvent(e);
@@ -1476,7 +1475,7 @@ define('views/EditView', [
             if (this.isCameraRequired() && this.isActive()) { // have to check again, because it's only required when the props are not set yet
               $m.silentScroll(0);
               setTimeout(function() {
-                DOM.trigger(this.$('a.cameraCapture')[0], 'click');
+                this.$('a.cameraCapture').trigger('click');
               }.bind(this), 100);
             }
           }.bind(this));
@@ -1574,7 +1573,7 @@ define('views/EditView', [
               editor.on('change', resetHandler);
           });
           
-          DOM.after(reset, textarea.nextSibling);
+          reset.$after(textarea.nextSibling);
           if (reset.button)
             reset.button();
           

@@ -9734,31 +9734,30 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
       var dfd = moduleMap[url];
       if (!dfd) {
         dfd = moduleMap[url] = $.Deferred();
-        require.load(name).then(function() {
-          if (dfd.state() === 'resolved')
-            return;
+        var shim = config.shim && config.shim[name],
+            deps = shim && (shim.deps || shim),
+            exports = shim && shim.exports;
           
-          if (arguments.length) {
-            return dfd.resolve.apply(dfd, arguments);
-          }
-          
-          var shim = config.shim && config.shim[name],
-              deps = shim && (shim.deps || shim),
-              exports = shim && shim.exports;
-            
-          if (shim) { // non AMD
-            require(deps, function() {
+        if (shim) {// non AMD
+          require(deps).done(function() {
+            require.load(name).done(function() {
               if (exports)
                 dfd.resolve(root[exports]);
               else
                 dfd.resolve();
-            });
-          }
-          else if (!defineMap[name]) { // non AMD, no deps
-            dfd.resolve();
-          }
-          
-        }, dfd.reject);        
+            }).fail(dfd.reject);
+          }).fail(dfd.reject);
+        }
+        else {
+          require.load(name).done(function() {
+            if (dfd.state() == 'pending') {
+              if (arguments.length) 
+                dfd.resolve.apply(dfd, arguments);
+              else if (!defineMap[name]) // will be resolved via define
+                dfd.resolve();
+            }
+          }).fail(dfd.reject);
+        }
       }
 
       var prereq = dfd.promise();

@@ -209,14 +209,14 @@ define('views/ControlPanel', [
       var isHorizontal;      
       if (this.isMainGroup && !this.dontStyle) {
         if (!U.isA(this.vocModel, 'ImageResource')  &&  !U.isA(this.vocModel, 'Intersection')) {
-          this.$el.css("float", "left");
-          this.$el.css("width", "100%");
+          this.el.$css("float", "left");
+          this.el.$css("width", "100%");
           isHorizontal = true;
         }
         else {
-          this.$el.css("float", "right");
-          this.$el.css("max-width", "220px");
-          this.$el.css("min-width", "130px");
+          this.el.$css("float", "right");
+          this.el.$css("max-width", "220px");
+          this.el.$css("min-width", "130px");
         }
       }
       var isChat = window.location.hash.indexOf('#chat') == 0; 
@@ -584,7 +584,7 @@ define('views/ControlPanel', [
 //      });
       
       this.$el.trigger('create');
-      if (this.rendered && this.$el.hasClass('ui-listview'))
+      if (this.rendered && this.el.$hasClass('ui-listview'))
         this.$el.listview('refresh');
 
       return this;

@@ -3352,17 +3352,6 @@ define('utils', [
       $dialog.popup().popup("open");
     },
     
-    removeClasses: function(element, pattern) {
-      element = element instanceof $ ? element : $(element); 
-      var classes = element.attr('class').split(/\s+/);
-      for(var i = 0; i < classes.length; i++){
-        var className = classes[i];
-
-        if(className.match(pattern)){
-          element.removeClass(className);
-        }
-      }
-    },
     getPath: function(uri) {
       var path = uri.match(/(hudsonfog\.com|urbien\.com)\/voc\/([^\?]*)/)[2]; // starting from hudsonfog.com/voc/
       var params = _.getParamMap(uri);

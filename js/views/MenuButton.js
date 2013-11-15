@@ -48,7 +48,7 @@ define('views/MenuButton', [
       this.finish();
       this.refresh();
       if (options.width)
-        this.css('width', options.width + '%');
+        this.el.$css('width', options.width + '%');
       
       // when user profile gets updated, call this.refresh 
       return this;

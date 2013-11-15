@@ -3,7 +3,6 @@ define('views/EditPage', [
   'globals',
   'underscore',
   'utils',
-  'domUtils',
   'events',
   'vocManager',
   'cache',
@@ -14,7 +13,7 @@ define('views/EditPage', [
   'views/ResourceImageView',
   'views/ResourceListView',
   'views/ControlPanel'
-], function(G, _, U, DOM, Events, Voc, C, ResourceList, BasicPageView, Header, EditView, ResourceImageView, ResourceListView, ControlPanel) {
+], function(G, _, U, Events, Voc, C, ResourceList, BasicPageView, Header, EditView, ResourceImageView, ResourceListView, ControlPanel) {
   var editParams = ['action', 'viewId'];
   return BasicPageView.extend({
     initialize: function(options) {
@@ -124,7 +123,7 @@ define('views/EditPage', [
       if (!this.el.parentNode) 
         document.body.appendChild(this.el);
       if (G.theme.backgroundImage) 
-        DOM.set(this.$('#resourceEditView'), 'background-image', 'url(' + G.theme.backgroundImage +')');
+        this.$('#resourceEditView').$css('background-image', 'url(' + G.theme.backgroundImage +')');
 
       // Comments inline
       var isComment = U.isAssignableFrom(this.vocModel, U.getLongUri1("model/portal/Comment"));

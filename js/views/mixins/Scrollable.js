@@ -403,7 +403,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
       if (!from || from.nodeName == "HTML") {
         if (s._dragging) {
           this.el.dispatchEvent(new MouseEvent('mouseup', {
-            view: this.el,
+//            view: this.el,
             cancelable: true,
             bubbles: true
           }));

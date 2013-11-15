@@ -2,7 +2,6 @@
 define('router', [
   'globals',
   'utils', 
-  'domUtils',
   'events', 
   'error',
   'models/Resource', 
@@ -20,7 +19,7 @@ define('router', [
 //  'views/ListPage', 
 //  'views/ViewPage'
 //  'views/EditPage' 
-], function(G, U, DOM, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth, Redirecter, Transitioner, Q /*, ListPage, ViewPage*/) {
+], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth, Redirecter, Transitioner, Q /*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
   var Modules = {},
       doc = document,
@@ -1556,7 +1555,7 @@ define('router', [
       if (activePage) {
         var headerUl = activePage.querySelector('#headerUl');
         if (headerUl) {
-          DOM.removeClass(headerUl.querySelectorAll('.ui-btn-active'), 'ui-btn-active');
+          headerUl.$('.ui-btn-active').$removeClass('ui-btn-active');
         }
       }
       

@@ -122,7 +122,7 @@ define('views/ResourceListView', [
       this._pageOffset = 0;
       this._pagesCurrentlyInSlidingWindow = 0;
 //      this._displayedCollectionRange.from = this._displayedCollectionRange.to = 0;
-      this.$('.listPage').remove();
+      this.$('.listPage').$remove();
       this.adjustSlidingWindow();
     },
     
@@ -666,7 +666,7 @@ define('views/ResourceListView', [
           
           for (var i = 0; i < pages.length; i++) {
             var page = pages[i];
-            DOM[atTheHead ? 'after' : 'before'](page, after);
+            page[atTheHead ? '$after' : '$before'](after);
             if (atTheHead)
               after = page;
           }
@@ -878,7 +878,7 @@ define('views/ResourceListView', [
 //            debugger;
 //          
 //          removedPages[i].remove(); //detach().empty();
-          DOM.removeElement(removedPages[i]);
+          removedPages[i].$remove();
         }
 
         for (var i = 0, len = removedViews.length; i < len; i++) {

@@ -288,7 +288,7 @@ define('views/CameraPopup', [
         return;
       }
       
-      this.shootBtn.removeClass('ui-disabled');
+      this.shootBtn.classList.remove('ui-disabled');
       this.adjustPopup();
     },
     
@@ -306,7 +306,7 @@ define('views/CameraPopup', [
       this.audioInput = this.realAudioInput;
       this.audioInput.connect(this.inputPoint);
       this.audioRecorder = new Recorder(this.inputPoint);
-      this.shootBtn.removeClass('ui-disabled');
+      this.shootBtn.classList.remove('ui-disabled');
     },
 
     adjustPopup: function() {
@@ -397,14 +397,14 @@ define('views/CameraPopup', [
         }
         
         _.each([camCl, repeatCl, stopCl, 'red', 'black'], function(cl) {          
-          shootBtnGuts = shootBtnGuts && shootBtnGuts.length ? shootBtnGuts : this.shootBtn.find('.' + cl);
-          shootBtnGuts.removeClass(cl);
+          shootBtnGuts = shootBtnGuts && shootBtnGuts.length ? shootBtnGuts : this.shootBtn.$('.' + cl);
+          shootBtnGuts.classList.remove(cl);
         }.bind(this));
         
         $(this.shootBtn).button();
-        shootBtnGuts.addClass(shootAddCl);
-        this.submitBtn[videoOn ? 'addClass' : 'removeClass']('ui-disabled');
-        this.shootBtn.removeClass('ui-disabled');
+        shootBtnGuts.classList.add(shootAddCl);
+        this.submitBtn[videoOn ? '$addClass' : '$removeClass']('ui-disabled');
+        this.shootBtn.classList.remove('ui-disabled');
       }
 
 //      if (shootBtnGuts && colorCl)
@@ -417,15 +417,15 @@ define('views/CameraPopup', [
             this.video.pause();
             this.embedVideoPreview();
           	this.exportAudioForDownload();
-            this.canvas.hide();
-            this.video.hide();
+            this.canvas.$hide();
+            this.video.$hide();
           }
           else
             this.exportAudioForDownload();
         }
         else {
           if (this.isVideo) {
-            this.previewDiv.hide();
+            this.previewDiv.$hide();
             this.video.play();
           }
         }
@@ -539,7 +539,7 @@ define('views/CameraPopup', [
       var style = this.previewDiv.style;
       style.width = this.videoWidth;
       style.height = this.videoHeight;
-      this.previewDiv.show();
+      this.previewDiv.$unhide();
     },
 
     drawVideoFrame_: function(time) {

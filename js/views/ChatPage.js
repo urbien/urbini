@@ -274,13 +274,13 @@ define('views/ChatPage', [
 
       var self = this;
       this.on('active', function() {
-        self.localMedia && self.localMedia.show();
-        self.remoteMedia && self.remoteMedia.show();
+        self.localMedia && self.localMedia.$unhide();
+        self.remoteMedia && self.remoteMedia.$unhide();
       });
       
       this.on('inactive', function() {
-        self.localMedia && self.localMedia.hide();
-        self.remoteMedia && self.remoteMedia.hide();
+        self.localMedia && self.localMedia.$hide();
+        self.remoteMedia && self.remoteMedia.$hide();
       });
 
       this.listenTo(Events, 'localVideoMonitor:on', function() {
@@ -384,7 +384,7 @@ define('views/ChatPage', [
       if (this._chatSolid)
         this.chatFadeOut();
       
-      this.videoChat.fadeTo(600, 1, this.restyleGoodies).css('z-index', 1001); // jquery mobile footer is z-index 1000
+      this.videoChat.fadeTo(1, 600, this.restyleGoodies).$css('z-index', 1001); // jquery mobile footer is z-index 1000
     },
 
     videoFadeOut: function(e) {
@@ -395,7 +395,7 @@ define('views/ChatPage', [
       if (!this._chatSolid)
         this.chatFadeIn();
       
-      this.videoChat.fadeTo(600, 0.1, this.restyleGoodies).css('z-index', 1); // jquery mobile footer is z-index 1000
+      this.videoChat.fadeTo(0.1, 600, this.restyleGoodies).$css('z-index', 1); // jquery mobile footer is z-index 1000
     },
 
     chatFadeIn: function(e) {
@@ -406,8 +406,8 @@ define('views/ChatPage', [
       if (this._videoSolid)
         this.videoFadeOut();
       
-      this.textChat.fadeTo(600, 1).css('z-index', 1001);
-      this.videoChat.css('z-index', 0);
+      this.textChat.fadeTo(1, 600).$css('z-index', 1001);
+      this.videoChat.$css('z-index', 0);
     },
 
     chatFadeOut: function(e) {
@@ -418,7 +418,7 @@ define('views/ChatPage', [
       if (!this._videoSolid && this._videoOn)
         this.videoFadeIn();
       
-      this.textChat.fadeTo(600, 0.1).css('z-index', 1);
+      this.textChat.fadeTo(0.1, 600).$css('z-index', 1);
     },
     
     render: function() {      
@@ -461,7 +461,7 @@ define('views/ChatPage', [
       this.videoChat         = this.$('#videoChat')[0];
       this.textChat          = this.$('#textChat')[0];
       
-      this.localMedia.hide();
+      this.localMedia.$hide();
       if (this.resource && this.isPrivate) {
         this.paintInChatBacklinks();
         this.paintConcentricStats('inChatStats', _.extend({animate: true}, this.getStats()));
@@ -496,7 +496,7 @@ define('views/ChatPage', [
       if (!this.el.parentNode) 
         document.body.appendChild(this.el);
 
-      this.$('#header').css({
+      this.$('#header').$css({
         'z-index': 1000,
         'opacity': 0.7
       });
@@ -507,7 +507,7 @@ define('views/ChatPage', [
     enableChat: function() {
       this.$sendMessageBtn.button().button('enable');
       if (this.chatInput) {
-        this.chatInput.removeClass('ui-disabled');
+        this.chatInput.classList.remove('ui-disabled');
       }
       
       this.disabled = false;
@@ -516,10 +516,10 @@ define('views/ChatPage', [
     disableChat: function() {
       this.$sendMessageBtn.button().button('disable');
       if (this.chatInput) {
-        this.chatInput.addClass('ui-disabled');
+        this.chatInput.classList.add('ui-disabled');
       }
       
-      this.remoteMedia && this.remoteMedia.empty();
+      this.remoteMedia && this.remoteMedia.$empty();
       this.disabled = true;
     },
 
@@ -528,11 +528,11 @@ define('views/ChatPage', [
         return;
       
       this.$snapshotBtn.button().button('enable');
-      this.$('canvas').remove();
+      this.$('canvas').$remove();
       var vid = this.el.getElementsByTagName('video')[0];
       if (vid) {
-        vid.removeEventListener('play', this._addCanvasForVideo); // just in case
-        vid.addEventListener('play', this._addCanvasForVideo);
+        vid.$off('play', this._addCanvasForVideo); // just in case
+        vid.$on('play', this._addCanvasForVideo);
       }
     },    
 
@@ -541,7 +541,7 @@ define('views/ChatPage', [
         return;
       
       this.$snapshotBtn.button().button('disable');
-      this.$('canvas').remove();
+      this.$('canvas').$remove();
     },
 
     _addCanvasForVideo: function(e) {
@@ -597,7 +597,7 @@ define('views/ChatPage', [
     },
     
     paintInChatBacklinks: function() {
-      this.$('#inChatBacklinks').empty();
+      this.$('#inChatBacklinks').$empty();
       var self = this;
       if (window.location.hash.startsWith("#chatLobby")  &&  !G.currentUser.guest) {
         var res = U.getResource(G.currentUser._uri);
@@ -672,7 +672,7 @@ define('views/ChatPage', [
         $video = $(this.$('#localMedia video'));
       
       if ($video.length) {
-        var vChatZ = this.videoChat.css('z-index');
+        var vChatZ = this.videoChat.$css('z-index');
         vChatZ = isNaN(vChatZ) ? 1 : parseInt(vChatZ);
 //        var extraOffset = vChatZ < 1000 ? this.pageView.$('[data-role="header"]').height() : 0;
         var extraOffset = 0;
@@ -727,9 +727,9 @@ define('views/ChatPage', [
 //      this.$ringtone.find('audio').each(function() {
 //        this.pause();
 //        this.src = null;
-//      }).remove();
+//      }).$remove();
       if (this.ringtone)
-        this.ringtone.remove();
+        this.ringtone.$remove();
     },
     
     isDisabled: function() {
@@ -827,7 +827,7 @@ define('views/ChatPage', [
       this.messages.append(this.messageTemplate(info));
       if (atBottom || true) {
         this.el.addEventListener('scrollocontent', function snap() { // wait for Scrollable to recalc the size of the page and the current position
-          self.el.removeEventListener('scrollocontent', snap);
+          self.el.off('scrollocontent', snap);
           self.snapScrollerToTail(true); // true == immediate snap          
         }); 
       }
@@ -1372,7 +1372,7 @@ define('views/ChatPage', [
         while (i--) {
           var v = local[i];
           if (v !== video)
-            v.remove();
+            v.$remove();
         }
       }
 
@@ -1380,8 +1380,8 @@ define('views/ChatPage', [
         video.muted = true;
         video.controls = false;
         video.play();
-        video.addClass('localVideo');
-        this.localMedia.show();
+        video.classList.add('localVideo');
+        this.localMedia.$unhide();
 //      });
         
       if (!this.isWaitingRoom)
@@ -1416,13 +1416,13 @@ define('views/ChatPage', [
       });
       
       if (videoIds.length) {
-        this.$(videoIds.join(',')).forEach(function() {
+        this.$(videoIds.join(',')).forEach(function(vid) {
           if (browser.mozilla)
-            this.mozSrcObject = null;
+            vid.mozSrcObject = null;
           else
-            this.src = null;
+            vid.src = null;
           
-          this.remove();
+          vid.$remove();
         });
       }
       
@@ -1433,10 +1433,10 @@ define('views/ChatPage', [
       });
       
       media.controls = false;
-      this.remoteMedia.show();
+      this.remoteMedia.$unhide();
       if (media.tagName === 'VIDEO') {
         this.checkVideoSize(media);
-        media.addClass('remoteVideo');
+        media.classList.add('remoteVideo');
         this.restyleVideos();
         this.monitorVideoHealth(media);
         this.restyleGoodies();
@@ -1464,7 +1464,7 @@ define('views/ChatPage', [
         if (info.stream)
           Events.trigger('endRTCCall', this.rtcCall);
         
-        this.$('canvas#' + info.media.id).remove();
+        this.$('canvas#' + info.media.id).$remove();
         this.restyleVideos();
       }
     },
@@ -1491,17 +1491,17 @@ define('views/ChatPage', [
     endChat: function(onclose) {
       this.leave();
       this.chat = null;
-      this.localMedia && this.localMedia.empty();
-      this.remoteMedia && this.remoteMedia.empty();
+      this.localMedia && this.localMedia.$empty();
+      this.remoteMedia && this.remoteMedia.$empty();
       if (this.hasVideo) {
         this._videoOn = false;
         var vids = this.el.getElementsByTagName('video');
-        vids.forEach(function() {
-          self.unbindVideoEvents(this);
-          this.pause();
+        vids.forEach(function(vid) {
+          self.unbindVideoEvents(vid);
+          vid.pause();
         });
         
-        vids.remove();
+        vids.$remove();
         this.localStream && this.localStream.stop();
       }
       
@@ -1513,21 +1513,21 @@ define('views/ChatPage', [
     takeSnapshot: function() {
       var self = this;
           snapshots = [];
-      this.$('canvas').forEach(function() {
+      this.$('canvas').forEach(function(canvas) {
 //        var $this = $(this);
-        var video = self.$('video#' + this.dataset['for']);
+        var video = self.$('video#' + canvas.dataset['for']);
         if (!video.length)
           return;
         
         var w = video.videoWidth,
             h = video.videoHeight;
         
-        this.width = w;
-        this.height = h;
-        this.getContext('2d').drawImage(video[0], 0, 0, w, h);
-        var url = this.toDataURL('image/webp', 1);
-        this.width = '100%';
-        this.height = 0;
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(video[0], 0, 0, w, h);
+        var url = canvas.toDataURL('image/webp', 1);
+        canvas.width = '100%';
+        canvas.height = 0;
         snapshots.push(url);
   //      var img = new Image();
   //      img.src = url;
@@ -1550,7 +1550,7 @@ define('views/ChatPage', [
     unbindVideoEvents: function(video) {
       var i = videoEvents.length;
       while (i--) {
-        video.removeEventListener(videoEvents[i], this._onVideoEvent);
+        video.off(videoEvents[i], this._onVideoEvent);
       }
     },
 
@@ -1584,9 +1584,9 @@ define('views/ChatPage', [
       var locals = this.localMedia;
       var numRemotes = this.remoteMedia.getElementsByTagName('video').length;
       if (numRemotes == 1)
-        locals.addClass('myVideo-overlay');
+        locals.$addClass('myVideo-overlay');
       else
-        locals.removeClass('myVideo-overlay');
+        locals.$removeClass('myVideo-overlay');
     },
     
     engageClient: function(data) {
@@ -1646,7 +1646,7 @@ define('views/ChatPage', [
           
       return $popup;
       
-//      $('#' + id).remove();
+//      $('#' + id).$remove();
 //      
   //    $('.ui-page-active[data-role="page"]').find('div[data-role="content"]').append(popupHtml);
 //      this.$el.append(popupHtml);

@@ -1,12 +1,4 @@
-define('@widgets', ['globals', '../styles/styles.css', '../styles/common-template-m.css'].concat(Lablz._widgetsLib), function(G, css1, css2) {
-//  var $doc = $(document);  
-//  $doc.on('click','.closeparent', function(e) {
-//    e.preventDefault();
-//    $(this).parent().fadeTo(300, 0, function() {
-//      $(this).remove();
-//    });
-//  });
-  
+define('@widgets', ['globals'].concat(Lablz._widgetsLib), function(G) {
   $.fn.clearForm = function() {
     return this.each(function() {
       var type = this.type, tag = this.tagName.toLowerCase();
