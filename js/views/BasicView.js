@@ -748,7 +748,8 @@ define('views/BasicView', [
         return;
 
       for (var selector in selectors) {
-        selectors[selector].setElement(this.$(selector)[0]).render(renderOptions);
+        var el = this.$(selector);
+        selectors[selector].setElement(el instanceof NodeList ? el[0] : el).render(renderOptions);
       }
       
 //      Q.read(function() {

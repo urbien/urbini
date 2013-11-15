@@ -258,7 +258,7 @@ define('views/Header', [
 
     refreshTitle: function() {
       this.calcTitle();
-      this.$('#pageTitle')[0].innerHTML = this.title;
+      this.$('#pageTitle').innerHTML = this.title;
 //      $('title').text(this.title);
       this.pageView.trigger('titleChanged', this._title);
     },
@@ -539,7 +539,7 @@ define('views/Header', [
       if (isJQM)
         this.restyleNavbar();
       if (G.isTopcoat())
-        DOM.replaceClass(this.$('li'), 'topcoat-button-bar__item');
+        this.$('li').attr('class', 'topcoat-button-bar__item');
       
       this.finish();      
       return this;

@@ -1,12 +1,15 @@
-define('domUtils', ['globals', 'templates', 'lib/fastdom'], function(G, Templates, Q) {
+define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G, Templates, Q, Events) {
   var doc = document,
       LAZY_DATA_ATTR = G.lazyImgSrcAttr,
       LAZY_ATTR = LAZY_DATA_ATTR.slice(5),
       isFF = G.browser.firefox,
-      vendorPrefixes = ['', '-moz-', '-ms-', '-o-', '-webkit-'];
+      vendorPrefixes = ['', '-moz-', '-ms-', '-o-', '-webkit-'],
+      ArrayProto = Array.prototype;
 
   function getElementArray(els) {
-    return _.isArray(els) || els instanceof NodeList ? els : els && [els];
+    return els instanceof Array ||
+           els instanceof NodeList || 
+           els instanceof HTMLCollection ? els : els && [els];
   };
 
   // Bezier functions
@@ -15,7 +18,208 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom'], function(G, Template
   function B3(t) { return 3*t*(1-t)*(1-t) }
   function B4(t) { return (1-t)*(1-t)*(1-t) }
 
-//  var DOM = {
+  var nodeProto = Node.prototype;
+  var nodeListProto = NodeList.prototype;
+  var NodeAug = {
+    once: function(event, handler, capture) {
+      var self = this; 
+      this.addEventListener(event, function proxy() {
+        self.removeEventListener(proxy);
+        handler();
+      }, capture);
+    },
+    find: function() {
+      return this.querySelectorAll.apply(this, arguments);
+    },
+    trigger: function(event, data) {
+      if (typeof event == 'string')
+        event = data ? new Event(event, data) : new Event(event);
+      
+      this.dispatchEvent(event);
+      return this;
+    },
+    css: function() {
+      switch (arguments.length) {
+      case 0:
+        return window.getComputedStyle(this);
+      case 1:
+        var arg0 = arguments[0];
+        if (typeof arg0 == 'string')
+          return this.style[arg0];
+        else
+          _.extend(this.style, arg0);
+        
+        break;
+      case 2:
+        this.style[arguments[0]] = arguments[1];
+        break;
+      default:
+        throw "invalid arguments to style method of Node";
+      };
+      
+      return this;
+    },
+    
+    attr: function() {
+      var arg0 = arguments[0];
+      switch (arguments.length) {
+      case 1:
+        if (typeof arg == 'string') // get
+          return this.getAttribute(arg0);
+        
+        for (var prop in arg0) { // set
+          this.setAttribute(prop, arg0[prop]);
+        }
+        
+        break;
+      case 2:
+        this.setAttribute(arguments[0], arguments[1]);
+        break;
+      default:
+        throw "invalid arguments to style method of Node";
+      };
+      
+      return this;
+    },
+    
+    remove: function() {
+      if (this.parentNode)
+        this.parentNode.removeChild(this);
+      
+      return this;
+    },
+    
+    before: function(before) {
+      if (this.parentNode)
+        this.parentNode.insertBefore(before, this);
+      
+      return this;
+    },
+
+    after: function(after) {
+      if (after.parentNode)
+        after.parentNode.insertBefore(before, this.nextSibling );
+      
+      return this;
+    },
+    
+    hide: function() {
+      this.style.display = 'none';
+      return this;
+    },
+    
+    show: function() {
+      if (this.style.display)
+        this.style.display = "";
+      
+      return this;
+    },
+    
+    hasClass: function(cl) {
+      return this.classList.contains(cl);
+    },
+    
+    addClass: function() {
+      var i = arguments.length;
+      while (i--) this.classList.add(arguments[i]);
+      return this;
+    },
+    
+    removeClass: function() {
+      var i = arguments.length;
+      while (i--) this.classList.remove(arguments[i]);
+      return this;
+    },
+    
+    empty: function() {
+      this.innerHTML = "";
+      return this;
+    },
+    
+    html: function(htmlOrFrag) {
+      if (typeof htmlOrFrag == 'string')
+        this.innerHTML = htmlOrFrag;
+      else if (htmlOrFrag instanceof DocumentFragment) {
+        this.innerHTML = "";
+        this.appendChild(htmlOrFrag);
+      }
+      else
+        throw "only HTML string or DocumentFragment are supported";
+      
+      return this;
+    },
+    
+    append: function(htmlOrFrag) {
+      if (typeof htmlOrFrag == 'string')
+        this.innerHTML += htmlOrFrag;
+      else if (htmlOrFrag instanceof DocumentFragment)
+        this.appendChild(htmlOrFrag);
+      else
+        throw "only HTML string or DocumentFragment are supported";
+      
+      return this;
+    },
+    
+    fadeTo: function(targetOpacity, time) {
+      targetOpacity = targetOpacity || 0;
+      var self = this,
+          opacityInterval = 0.1,
+          timeInterval = 40,
+          opacity,
+          diff;
+      
+      (function fader() {        
+        opacity = self.opacity;
+        if (time <= 0 || opacity - targetOpacity <= opacityInterval) {
+          self.opacity = targetOpacity;
+          if (targetOpacity == 0)
+            self.display = "none";
+        }
+        else {
+          self.opacity -= opacityInterval;
+          setTimeout(fader, time -= timeInterval);
+        }
+      })();
+      
+      return this;
+    }
+  };
+  
+  var arrayMethods = Object.getOwnPropertyNames( ArrayProto );
+  arrayMethods.forEach(function(methodName) {
+    if (typeof ArrayProto[methodName] == 'function' && !nodeListProto[methodName])
+      nodeListProto[methodName] = ArrayProto[methodName];
+  });
+  
+  function extendNodeList(fnName) {
+    var nodeFn = nodeProto[fnName];
+    if (nodeFn) {
+      nodeListProto[fnName] = function() {
+        var args = arguments,
+            result;
+        
+        this.forEach(function(node) {
+          nodeFn.apply(node, args);
+        });
+        
+        return this;
+      }
+    }
+  };
+  
+  for (var prop in NodeAug) {
+    if (!nodeProto[prop])
+      nodeProto[prop] = NodeAug[prop];
+  }
+  
+  var nodeListProxyMethods = ['trigger', 'css', 'attr', 'addClass', 'removeClass', 'empty', 'remove', 'show', 'hide', 'append'];
+  var nlpm = nodeListProxyMethods.length;
+  while (nlpm--) {
+    var method = nodeListProxyMethods[nlpm];
+    if (!nodeListProto[method])
+      extendNodeList(method);
+  }
+    
   return {
     unhide: function(els) {
       return this.hide(els, true);
@@ -587,6 +791,18 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom'], function(G, Template
     removeElement: function(el) {
       if (el.parentNode)
         el.parentNode.removeChild(el);
+    },
+    
+    trigger: function(els, event) {
+      els = getElementArray(els);
+      if (els) {
+        var i = els.length,
+            el;
+        
+        while (i--) {
+          els[i].dispatchEvent(new Event(Events.getEventName(event)));
+        }
+      }
     }
   };
 });

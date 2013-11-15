@@ -112,7 +112,7 @@ define('views/EditView', [
       'click input[data-date]'            :'scrollDate',
 //      'click select[data-enum]': 'scrollEnum',
       'click .cameraCapture'              :'cameraCapture',
-      'change .cameraCapture'              :'cameraCapture',
+      'change .cameraCapture'             :'cameraCapture',
       'click #check-all'                  :'checkAll',
       'click #uncheck-all'                :'uncheckAll',
       'keydown input'                     :'onKeyDownInInput',
@@ -258,7 +258,7 @@ define('views/EditView', [
 
         if (isImage || G.browser.chrome) {
           makeCameraPopup();
-          return;
+          return false;
         }
       }
       
@@ -272,6 +272,8 @@ define('views/EditView', [
       else if (e.type === 'change') {
         loadFile();
       }
+      
+      return false;
     },
     
     disable: function(msg) {
@@ -1474,7 +1476,7 @@ define('views/EditView', [
             if (this.isCameraRequired() && this.isActive()) { // have to check again, because it's only required when the props are not set yet
               $m.silentScroll(0);
               setTimeout(function() {
-                $(this.$('a.cameraCapture')[0]).trigger('click');
+                DOM.trigger(this.$('a.cameraCapture')[0], 'click');
               }.bind(this), 100);
             }
           }.bind(this));

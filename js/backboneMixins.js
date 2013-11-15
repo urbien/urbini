@@ -103,9 +103,27 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       },
       
       $: function(selector) {
-        return this.el ? this.el.querySelectorAll(selector) : [];
-//        var result = this.el ? this.el.querySelectorAll(selector) : [];
-//        return /\#[^\.\s]+$/.test(selector) ? result[0] : result; // for #id based selectors, return the first match
+        // simple version
+        // return this.el ? this.el.querySelectorAll(selector) : [];
+        
+        // version with parsing
+//        if (/^\#[^\.\s,]+$/.test(selector)) {
+          // id selector
+//          return this.el ? this.el.querySelector(selector) : null; // for #id based selectors, return the first match
+//          return this.el ? this.el.querySelectorAll(selector) : []; // for #id based selectors, return the first match
+//        }
+        if (/^\.[^\.\s\#,]+$/.test(selector)) {
+          // class selector
+          return this.el ? this.el.getElementsByClassName(selector.slice(1)) : []; // for class based selectors, use getElementsByClassName, which is faster
+        }
+        else if (/^[a-zA-Z0-9]+$/.test(selector)) {
+          // tag selector
+          return this.el ? this.el.getElementsByTagName(selector) : []; // for tag selectors, use getElementsByTagName, which is faster
+        }
+        else {
+          // generic selector
+          return this.el ? this.el.querySelectorAll(selector) : [];
+        }
       },
       
       setElement: function(element, delegate) {
@@ -135,7 +153,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         if (this.style) { 
           style = _.result(this, 'style');
           if (style)
-            this.css(style);
+            this.el.css(style);
         }
         
         attrs = _.extend({}, _.result(this, 'attributes'));
@@ -144,7 +162,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         if (classes)
           attrs['class'] = classes;
         
-        this.attr(attrs);
+        this.el.attr(attrs);
         if (delegate !== false) 
           this.delegateEvents();
         
@@ -257,9 +275,9 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
           for (var key in windowEvents) {
             if (!_.has(delegated, key)) {
               var eventName = getEventName(key),
-                  fn = getFunction.call(this, windowEvents, key);
+                  fn = getFunction.call(this, windowEvents, key).bind(this);
               
-              delegated[key] = fn.bind(this);
+              delegated[key] = fn;
               window.addEventListener(eventName, fn);
             }
           }
@@ -417,29 +435,27 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       }
     });
     
-    var ViewProto = Backbone.View.prototype,
-        proxyFns = ['addClass', 'removeClass', 'css', 'attr'],
-        i = proxyFns.length;
-    
-    _.each(proxyFns, function(fnName) {
-      ViewProto[fnName] = function() {
-        var arg = arguments[0],
-            args;
-        
-        if (!(arg instanceof HTMLElement) && !(arg instanceof NodeList)) { 
-          args = _.toArray(arguments);
-          args.unshift(this.el);
-        }
-        else {
-          if (!this.el)
-            throw "this view currently has no HTML element, can't perform " + fnName;
-          
-          args = arguments;
-        }
-        
-        DOM[fnName].apply(DOM, args);
-      };
-    });
+//    var ViewProto = Backbone.View.prototype,
+//        proxyFns = ['addClass', 'removeClass', 'css', 'attr'],
+//        i = proxyFns.length;
+//    
+//    _.each(proxyFns, function(fnName) {
+//      ViewProto[fnName] = function() {
+//        var context = this.el,
+//            arg = arguments[0],
+//            args = arguments;
+//        
+//        if (arg instanceof Node || arg instanceof NodeList) { 
+//          context = arg;
+//          args = _.rest(arguments);
+//        }
+//        
+//        if (!context)
+//          throw "no HTML element provided to " + fnName;
+//          
+//        return context[fnName].apply(context, args);
+//      };
+//    });
     
   })(document, _, Backbone, DOM);
   

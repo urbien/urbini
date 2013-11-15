@@ -1198,6 +1198,32 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
     
     _isViewportAtDestination: function() {
       return this._scrollerProps.viewportArrivalTime < _.now();
+    },
+    
+    isScrolledToHead: function() {
+      var s = this._scrollerProps,
+          axis = this._getScrollAxis(),
+          bounds = s.scrollBounds;
+      
+      return s.position[axis] == bounds[axis].max;
+    },
+    
+    isScrolledToTail: function() {
+      var s = this._scrollerProps,
+          axis = this._getScrollAxis(),
+          bounds = s.scrollBounds;
+      
+      return s.position[axis] == bounds[axis].min;
+    },
+    
+    snapScrollerToTail: function(immediate) {
+      var axis = this._getScrollAxis();
+      this._snapScrollerTo(axis, 'min', immediate);
+    },
+    
+    snapScrollerToHead: function(immediate) {
+      var axis = this._getScrollAxis();
+      this._snapScrollerTo(axis, 'max', immediate);
     }
   }, {
     displayName: 'Scrollable'    

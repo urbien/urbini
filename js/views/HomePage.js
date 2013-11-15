@@ -114,7 +114,7 @@ define('views/HomePage', [
     },
     
     removeInstallBtn: function() {
-      DOM.remove(this.$('#installApp'));
+      this.$('#installApp').remove();
     }
   }, {
     displayName: 'HomePage'

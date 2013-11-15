@@ -226,12 +226,6 @@ define('views/BasicPageView', [
       $m.silentScroll(position || 0);
     },
 
-    scrollToBottom: function() {
-      $('html, body').animate({
-        scrollTop: this.pageView.$el.height()
-      }, 200);
-    },
-
     getPageView: function() {
       return this;
     },
@@ -360,7 +354,7 @@ define('views/BasicPageView', [
     
     getPageTitle: function() {
       var title = this.$('#pageTitle');
-      return title.length ? title.text() : this.hashParams.$title || G.currentApp.title;
+      return title.length ? title[0].innerText : this.hashParams.$title || G.currentApp.title;
     },
     
     isActive: function() {

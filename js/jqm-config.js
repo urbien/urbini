@@ -6,6 +6,8 @@ define('jqmConfig', function() {
   $(document).bind("mobileinit", function () {
       var $m = $.mobile;
 //      console.log('mobileinit');
+      $m.document.off("scroll");
+      $m.window.off("scroll");
       $m.ajaxEnabled = false;
       for (var i = 0; i < block.length; i++) {
         delete $.event.special[block[i]];

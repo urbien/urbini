@@ -5779,6 +5779,8 @@ var attachEvents = function() {
 	attachEvents = null;
 };
 
+attachEvents = null;
+
 //links in bars, or those with  data-role become buttons
 //auto self-init widgets
 $.mobile.document.bind( "pagecreate create", function( e ) {
