@@ -186,7 +186,7 @@ define('views/CameraPopup', [
       });
     },
     renderHelper: function(options) {    
-      this.$el.html(this.template({
+      this.html(this.template({
         video: this.isVideo,
         audio: this.isAudio,
         image: this.isImage
@@ -194,7 +194,7 @@ define('views/CameraPopup', [
       
       var doc = document;
       $('#cameraPopup').remove();
-      this.$('[data-cancel]').click(this.destroy);
+      this.$('#cameraCancelBtn')[0].addEventListener('click', this.destroy);
       $(doc.body).append(this.el);
       this.$popup = $('#cameraPopup');
       this.setElement(this.$popup[0]);
@@ -221,7 +221,7 @@ define('views/CameraPopup', [
       this.$submitBtn   = this.$('#cameraSubmitBtn');
       this.rafId        = null;
       this.frames       = null;
-      this.initialShootBtnText = this.initialShootBtnText || this.$shootBtn.find('.ui-btn-text').text();
+      this.initialShootBtnText = this.initialShootBtnText || this.$shootBtn[0].querySelector('.ui-btn-text').innerText;
         
       // audio
       if (this.hasAudio) {

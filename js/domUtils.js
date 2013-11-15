@@ -15,7 +15,8 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom'], function(G, Template
   function B3(t) { return 3*t*(1-t)*(1-t) }
   function B4(t) { return (1-t)*(1-t)*(1-t) }
 
-  var DOM = {
+//  var DOM = {
+  return {
     unhide: function(els) {
       return this.hide(els, true);
     },
@@ -145,9 +146,10 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom'], function(G, Template
     },
         
     getBezierPercentComplete: function(x1, y1, x2, y2, xTarget, xTolerance) {
+      var self = this;
       xTolerance = xTolerance || 0.01; //adjust as you please
       var myBezier = function(t) {
-        return DOM.getBezierCoordinate(0, 0, x1, y1, x2, y2, 1, 1, t);
+        return self.getBezierCoordinate(0, 0, x1, y1, x2, y2, 1, 1, t);
       };
   
       //we could do something less stupid, but since the x is monotonic
@@ -372,7 +374,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom'], function(G, Template
       var result = [];
       if (attributes) {
         for (var name in attributes) { 
-          result.push(" " + name + "=\"" + DOM.escape(attributes[name]) + "\"");
+          result.push(" " + name + "=\"" + self.escape(attributes[name]) + "\"");
         }
       }
       
@@ -396,16 +398,16 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom'], function(G, Template
       }
       // Empty tag
       else if (!element.content || element.content.length == 0) {
-        return "<" + element.name + DOM.toAttributesString(element.attributes) + "/>";
+        return "<" + element.name + this.toAttributesString(element.attributes) + "/>";
       }
       // Tag with content
       else {
-        var html = ["<", element.name, DOM.toAttributesString(element.attributes), ">"],
+        var html = ["<", element.name, this.toAttributesString(element.attributes), ">"],
             content = element.content,
             len = content.length;
         
         for (var i = 0; i < len; i++) {
-          html[html.length] = DOM.toHTML(content[i]);
+          html[html.length] = this.toHTML(content[i]);
         }
         
         html[html.length] = "</" + element.name + ">";
@@ -418,7 +420,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom'], function(G, Template
       if (typeof text !== 'string')
         text = '' + text;
       
-      var replacements = DOM._replacements;
+      var replacements = this._replacements;
       for (var i = 0; i < replacements.length; i++) {
         var replace = replacements[i];
         text = text.replace(replace[0], replace[1]);
@@ -587,6 +589,4 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom'], function(G, Template
         el.parentNode.removeChild(el);
     }
   };
-  
-  return DOM;
 });
