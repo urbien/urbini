@@ -13,7 +13,7 @@ define('views/ControlPanel', [
     tagName: "tr",
     initialize: function(options) {
       _.bindAll(this, 'render', 'refresh', 'add', 'update'); // fixes loss of context for 'this' within methods
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
       this.makeTemplate('inlineListItemTemplate', 'inlineListItemTemplate', type);
@@ -326,12 +326,14 @@ define('views/ControlPanel', [
                 if (n)
                   params.name = n;
                 params.img = iRes.get('bThumb');
+                params.imageProperty = 'bThumb';
               }
               else {
                 var n = iRes.get(a + '.displayName');
                 if (n)
                   params.name = n;
                 params.img = iRes.get('aThumb');
+                params.imageProperty = 'aThumb';
               }
               if (grid) {
                 var gridCols = '';
