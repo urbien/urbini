@@ -610,7 +610,7 @@ define('views/ChatPage', [
         }
       }
       
-      U.require(['views/ControlPanel', 'jqueryDraggable']).done(function(ControlPanel) {
+      U.require(['views/ControlPanel', 'lib/jquery.draggable']).done(function(ControlPanel) {
         var $bl = $(self.$("#inChatBacklinks"));
         $bl.drags();
         self.backlinks = new ControlPanel({

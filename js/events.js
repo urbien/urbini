@@ -4,10 +4,6 @@ define('events', [
   'underscore',
   'backbone'
 ], function(G, _, Backbone) {
-  var hammerMap = {
-    click: 'tap'
-  }
-  
   var Events = _.extend({
 //    REQUEST_LOGIN: 'req-login',
 //    LOGOUT: 'logout',
@@ -20,6 +16,11 @@ define('events', [
 //      if (!G.browser.touch)
 //        return event;
       
+      if (event == 'resize')
+        return 'debouncedresize';
+      if (event == 'orientationchange')
+        return 'debouncedorientationchange';
+      
       var match = event.match(/^(dbl)?click/),
           newEvent;
       
@@ -30,7 +31,6 @@ define('events', [
       }
       
       return event;
-//      return hammerMap[event] || event;
     }
   }, Backbone.Events);
 

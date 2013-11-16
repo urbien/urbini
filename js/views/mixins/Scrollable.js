@@ -451,26 +451,28 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
     },
 
     _onScrollerDragEnd: function(e) {
-      if (!this._canScroll(e))
-        return;
+//      console.log("DRAG END, flinging: " + this._scrollerProps.flinging);
+//      if (!this._canScroll(e))
+//        return;
       
-      e.gesture.preventDefault();
-      var s = this._scrollerProps,
-          pos;
-//          axis;
-      
-      if (!s._start)
-        return;
-      
-      pos = s.position;
-//      axis = this._getScrollAxis();
-      s._start = s._startTime = null;
-      if (!s._flinging) {
-        if (!this._isInBounds(pos, false /* don't include bounce gutter */))
-          this._snapScroller(); //To(axis, pos[axis] < s.scrollBounds[axis].min ? 'min' : 'max');
-        else
-          this._resetScroller();
-      }
+      return this._onScrollerSwipe(e);
+//      e.gesture.preventDefault();
+//      var s = this._scrollerProps,
+//          pos;
+////          axis;
+//      
+//      if (!s._start)
+//        return;
+//      
+//      pos = s.position;
+////      axis = this._getScrollAxis();
+//      s._start = s._startTime = null;
+//      if (!s._flinging) {
+//        if (!this._isInBounds(pos, false /* don't include bounce gutter */))
+//          this._snapScroller(); //To(axis, pos[axis] < s.scrollBounds[axis].min ? 'min' : 'max');
+//        else
+//          this._resetScroller();
+//      }
     },
 
     _onScrollerDrag: function(e) {
@@ -515,18 +517,19 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
     },
 
     _canScroll: function(e) {
-      if (!this._scrollerInitialized || !e || !e.gesture)
-        return false;
-      
-      var axis = this._getScrollAxis(),
-          dir = e.gesture.direction;
-      
-      if ((axis == 'X' && !isVertical(dir)) || 
-          (axis == 'Y' && isVertical(dir))) {
-        return true;
-      }
-      else
-        return false;
+      return this._scrollerInitialized && e && e.gesture;
+//      if (!this._scrollerInitialized || !e || !e.gesture)
+//        return false;
+//      
+//      var axis = this._getScrollAxis(),
+//          dir = e.gesture.direction;
+//      
+//      if ((axis == 'X' && !isVertical(dir)) || 
+//          (axis == 'Y' && isVertical(dir))) {
+//        return true;
+//      }
+//      else
+//        return false;
     },
     
     _onScrollerSwipe: function(e) {
@@ -553,12 +556,14 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
             tooBig = offset > s.scrollBounds[axis].max;
           
         if ((tooBig && velocity < 0) || (!tooBig && velocity > 0)) {
-          e.gesture.stopDetect();
+//          e.gesture.stopDetect();
           this._flingScroller(velocity);
         }
+        else
+          this._snapScroller();
       }
-      else if (Math.abs(velocity) > 0.5) {
-        e.gesture.stopDetect();
+      else { //if (Math.abs(velocity) > 0.5) {
+//        e.gesture.stopDetect();
         this._flingScroller(velocity);
       }
     },
@@ -779,7 +784,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
       var s = this._scrollerProps,
           frame = s.frame,
           scrollWidth = this.el.scrollWidth || this.el.offsetWidth,
-          scrollHeight = this.el.offsetHeight,
+          scrollHeight = this.el.scrollHeight || this.el.offsetHeight,
           containerWidth = frame.offsetWidth,
           containerHeight = frame.offsetHeight,
           axis = this._getScrollAxis(),
@@ -936,7 +941,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
       if (prevPos && Math.abs(pos[axis] - prevPos[axis]) < SCROLL_EVENT_DISTANCE_THRESH)
         return;
       
-//      this.log("SCROLL FROM: ", prevPos[axis], pos[axis]);
+//      if (prevPos)
+//        this.log("SCROLL FROM: ", prevPos[axis], pos[axis]);
       s.prevPosition = _.clone(pos); 
       this.el.dispatchEvent(new CustomEvent(type.replace('scroll', 'scrollo'), { detail: this.getScrollInfo(scroll) }));
     },

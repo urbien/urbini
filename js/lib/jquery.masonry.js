@@ -19,7 +19,7 @@
    * smartresize: debounced resize event for jQuery
    *
    * latest version and complete README available on Github:
-   * https://github.com/louisremi/jquery.smartresize.js
+   * https://github.com/louisremi/jquery-smartresize.js
    *
    * Copyright 2011 @louis_remi
    * Licensed under the MIT license.
@@ -27,47 +27,46 @@
 
   var $event = $.event,
       resizeTimeout;
-
-  $event.special.smartresize = {
-    setup: function() {
-      $(this).bind( "resize", $event.special.smartresize.handler );
-    },
-    teardown: function() {
-      $(this).unbind( "resize", $event.special.smartresize.handler );
-    },
-    handler: function( event, execAsap ) {
-      // Save the context
-      var context = this,
-          args = arguments;
-
-      // set correct event type
-      event.type = "smartresize";
-
-      if ( resizeTimeout ) { clearTimeout( resizeTimeout ); }
-      resizeTimeout = setTimeout(function() {
-        $.event[$.event.handle ? "handle" : "trigger"].apply( context, args );
-      }, execAsap === "execAsap"? 0 : 100 );
-    }
-  };
-
-  $.fn.smartresize = function( fn ) {
-    return fn ? this.bind( "smartresize", fn ) : this.trigger( "smartresize", ["execAsap"] );
-  };
+  
+//  $event.special.smartresize = {
+//    setup: function() {
+//      $(this).bind( "resize", $event.special.smartresize.handler );
+//    },
+//    teardown: function() {
+//      $(this).unbind( "resize", $event.special.smartresize.handler );
+//    },
+//    handler: function( event, execAsap ) {
+//      // Save the context
+//      var context = this,
+//          args = arguments;
+//
+//      // set correct event type
+//      event.type = "smartresize";
+//
+//      if ( resizeTimeout ) { clearTimeout( resizeTimeout ); }
+//      resizeTimeout = setTimeout(function() {
+//        $.event[$.event.handle ? "handle" : "trigger"].apply( context, args );
+//      }, execAsap === "execAsap"? 0 : 100 );
+//    }
+//  };
+//
+//  $.fn.smartresize = function( fn ) {
+//    return fn ? this.bind( "smartresize", fn ) : this.trigger( "smartresize", ["execAsap"] );
+//  };
 
 
 
 // ========================= Masonry ===============================
-
+  
 
   // our "Widget" object constructor
-  $.Mason = function( options, element ){
-    this.element = $( element );
-
+  function Mason( options, element ){
+    this.element = element;
     this._create( options );
     this._init();
   };
 
-  $.Mason.settings = {
+  Mason.settings = {
     isResizable: true,
     isAnimated: false,
     animationOptions: {
@@ -82,30 +81,90 @@
     }
   };
 
-  $.Mason.prototype = {
-
+  Mason.prototype = {
+//    bindWindow: function(event, handler) {
+//      if (!this._boundToWindow) {
+//        var bound = this._boundToWindow[event] = this._boundToWindow[event] || [];
+//        bound.push(handler);
+//      }
+//      
+//      window.addEventListener(event, handler);
+//    },
+//    unbindWindow: function(event, handler) {
+//      if (!this._boundToWindow)
+//        return;
+//      
+//      switch (arguments.length) {
+//      case 0: 
+//        for (var event in this._boundToWindow) {
+//          this.unbindWindow(event);
+//        }
+//        
+//        break;
+//      case 1:
+//        var handlers = this._boundToWindow[event],
+//            i = handlers.length;
+//    
+//        while (i--) {
+//          window.removeEventListener(event, handlers[i]);
+//        }
+//        
+//        handlers.length = 0;
+//        break;
+//      case 2: 
+//        window.removeEventListener(event, handler);
+//        break;
+//      }
+//    },
     _filterFindBricks: function( $elems ) {
       var selector = this.options.itemSelector;
       // if there is a selector
       // filter/find appropriate item elements
-      return !selector ? $elems : $elems.filter( selector ).add( $elems.find( selector ) );
+      if (!selector)
+        return $elems;
+      
+      var matches = [],
+          i = $elems.length;
+      
+      while (i--) {
+        var el = $elems[i];
+        if (el.$matches(selector))
+          matches.push(el);
+      }
+      
+      i = $elems.length;
+      while (i--) {
+        $elems[i].$(selector).$forEach(function(innerMatch) {
+          matches.push(innerMatch);
+        });
+      }
+      
+      return matches;
     },
 
     _getBricks: function( $elems ) {
-      var $bricks = this._filterFindBricks( $elems )
-        .css({ position: 'absolute' })
-        .addClass('masonry-brick');
-      return $bricks;
+      var $bricks = this._filterFindBricks( $elems );
+      nodeListProto.$css.call($bricks, { position: 'absolute' });
+      nodeListProto.$addClass.call($bricks, 'masonry-brick');
+//      ,
+//          i = bricks.length;
+//      
+//      while (i--) {
+//        bricks[i].$css()
+//                 .$addClass('masonry-brick');
+//      }
+        
+      return bricks;
     },
     
     // sets up widget
     _create : function( options ) {
       
-      this.options = $.extend( true, {}, $.Mason.settings, options );
+      this.options = $.extend(true, {}, Mason.settings, options);
       this.styleQueue = [];
 
       // get original styles in case we re-apply them in .destroy()
-      var elemStyle = this.element[0].style;
+      var elemStyle = this.element.style;
       this.originalStyle = {
         // get height
         height: elemStyle.height || ''
@@ -116,12 +175,12 @@
         this.originalStyle[ prop ] = elemStyle[ prop ] || '';
       }
 
-      this.element.css( containerStyle );
+      this.element.$css( containerStyle );
 
       this.horizontalDirection = this.options.isRTL ? 'right' : 'left';
 
-      var x = this.element.css( 'padding-' + this.horizontalDirection );
-      var y = this.element.css( 'padding-top' );
+      var x = this.element.$css( 'padding-' + this.horizontalDirection );
+      var y = this.element.$css( 'padding-top' );
       this.offset = {
         x: x ? parseInt( x, 10 ) : 0,
         y: y ? parseInt( y, 10 ) : 0
@@ -131,13 +190,13 @@
 
       // add masonry class first time around
       var instance = this;
-      setTimeout( function() {
-        instance.element.addClass('masonry');
-      }, 0 );
+      setTimeout(function() {
+        instance.element.$addClass('masonry');
+      }, 0);
       
       // bind resize method
       if ( this.options.isResizable ) {
-        $(window).bind( 'smartresize.masonry', function() { 
+        this.bind(window, 'debouncedresize', function() { 
           instance.resize();
         });
       }
@@ -145,7 +204,6 @@
 
       // need to get bricks
       this.reloadItems();
-
     },
   
     // _init fires when instance is first created
@@ -228,7 +286,7 @@
                     // if not, how about the explicitly set option?
                     this.options.columnWidth ||
                     // or use the size of the first item
-                    this.$bricks.outerWidth(true) ||
+                    $(this.$bricks).outerWidth(true) ||
                     // if there's no items, use size of container
                     containerWidth;
 
@@ -285,7 +343,7 @@
       };
       // position.left or position.right
       position[ this.horizontalDirection ] = this.columnWidth * shortCol + this.offset.x;
-      this.styleQueue.push({ $el: $brick, style: position });
+      this.styleQueue.push({ $el: brick, style: position });
 
       // apply setHeight to necessary columns
       var setHeight = minimumY + $brick.outerHeight(true),
@@ -323,7 +381,7 @@
     
     // goes through all children again and gets bricks in proper order
     reloadItems : function() {
-      this.$bricks = this._getBricks( this.element.children() );
+      this.$bricks = this._getBricks( this.element.childNodes );
     },
     
     
@@ -350,25 +408,25 @@
     _appended : function( $content, callback ) {
       var $newBricks = this._getBricks( $content );
       // add new bricks to brick pool
-      this.$bricks = this.$bricks.add( $newBricks );
+      this.$bricks = this.$bricks.concat( $newBricks );
       this.layout( $newBricks, callback );
     },
     
     // removes elements from Masonry widget
     remove : function( $content ) {
-      this.$bricks = this.$bricks.not( $content );
-      $content.remove();
+      this.$bricks = _.difference(this.$bricks, $content);
+      $content.$remove();
     },
     
     // destroys widget, returns elements and container back (close) to original style
     destroy : function() {
 
       this.$bricks
-        .removeClass('masonry-brick')
-        .each(function(){
-          this.style.position = '';
-          this.style.top = '';
-          this.style.left = '';
+        .$removeClass('masonry-brick')
+        .$forEach(function(brick) {
+          brick.style.position = '';
+          brick.style.top = '';
+          brick.style.left = '';
         });
       
       // re-apply saved container styles
@@ -378,11 +436,11 @@
       }
 
       this.element
-        .unbind('.masonry')
-        .removeClass('masonry')
-        .removeData('masonry');
+//        .unbind('.masonry')
+        .$removeClass('masonry');
+//        .$removeData('masonry');
       
-      $(window).unbind('.masonry');
+//      $(window).unbind('.masonry');
 
     }
     

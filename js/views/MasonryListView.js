@@ -6,27 +6,28 @@ define('views/MasonryListView', [
   'views/ResourceListView',
   'views/ResourceMasonryItemView',
   'collections/ResourceList',
+  'views/mixins/Masonry',
   '@widgets',
   'jqueryImagesLoaded'
-], function(G, U, Events, ResourceListView, ResourceMasonryItemView, ResourceList, $m) {
+], function(G, U, Events, ResourceListView, ResourceMasonryItemView, ResourceList, Masonry, $m) {
   var MASONRY_FN = 'masonry', // in case we decide to switch to Packery or some other plugin
       ITEM_SELECTOR = '.nab';
-  
+
   return ResourceListView.extend({
+    mixins: [Masonry],
     autoFinish: false, // we want to say we finished rendering after the masonry is done doing its magic, which may happen async
     type: 'masonry',
     _elementsPerPage: Math.round(window.innerWidth / 100 * window.innerHeight / 100) + 3,
     events: {
-      'orientationchange': 'reloadMasonry',
       'refresh': 'refresh'
 //        ,
 //      'page_show': 'reloadMasonry'
     },
     
-    windowEvents: {
-      'resize': 'reloadMasonry',
-      'orientationChange': 'reloadMasonry'
-    },
+//    windowEvents: {
+//      'resize': 'reloadMasonry',
+//      'orientationchange': 'reloadMasonry'
+//    },
     
     initialize: function(options) {
       var self = this;
@@ -51,12 +52,12 @@ define('views/MasonryListView', [
       }
     },    
 
-    masonry: function() {
-      this.$el[MASONRY_FN].apply(this.$el, arguments);
-      this.trigger('invalidateSize');
-      this.pageView.trigger('invalidateSize');
-    },
-    
+//    masonry: function() {
+//      this.$el[MASONRY_FN].apply(this.$el, arguments);
+//      this.trigger('invalidateSize');
+//      this.pageView.trigger('invalidateSize');
+//    },
+//    
 //    getListItems: function() {
 //      return this.$(ITEM_SELECTOR);
 //      return this.$el.children();
@@ -103,25 +104,37 @@ define('views/MasonryListView', [
       }
       if (w < brickW  ||  w > brickW + 20) 
         this.refresh({orientation: true});
-      else 
-        this.masonry('reload');
+      else
+        this._reloadMasonry();
+//        this.masonry('reload');
       this.centerMasonry(this);
     },
+
+    postRemove: function(info) {
+      if (info.removed.length)
+        this._dirty = true;
+    },
     
+    getElementsPerPage: function() {
+      var dimensions = this._pageDimensions;
+      return dimensions.width * dimensions.height / (150 * 150) | 0; 
+    },
+
     postRender: function(info) {
       var self = this,
-//          appended = info.appended,
-          appended = info.pages,
-          updated = info.updated;
+          dirty = this._dirty || info.removed.length,
+          appended = info.added.slice(),
+          updated = info.updated.slice();
       
       if (this.rendered) {
-        if (appended || _.size(updated)) {
+        if (appended.length || _.size(updated)) {
           this.$el.imagesLoaded(function() {
-            if (appended) 
-              self.masonry('appended', appended);
-            if (_.size(updated))
-              self.masonry('reload');
+            if (!dirty && appended.length) 
+              self.appendedBricks(appended);
+            if (dirty || _.size(updated))
+              self.reloadMasonry();
             
+            self._dirty = false;
             self.trigger('refreshed');
           });
         }
@@ -139,6 +152,16 @@ define('views/MasonryListView', [
 //          });
           self.finish();
         });
+      }
+    },
+
+    refresh: function() {
+      var refreshResult = ResourceListView.prototype.refresh.apply(this, arguments);
+      if (_.isPromise(refreshResult))
+        return refreshResult.then(this.reloadMasonry);
+      else {
+        this.reloadMasonry();
+        return refreshResult;
       }
     },
     

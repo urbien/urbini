@@ -18,7 +18,7 @@ define('views/ListPage', [
     clicked: false,
     autoFinish: false,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'setMode', 'orientationchange', 'onFilter');
+      _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'setMode', /*'orientationchange',*/ 'onFilter');
       BasicPageView.prototype.initialize.apply(this, arguments);
       this.mode = options.mode || G.LISTMODES.DEFAULT;
 //      this.options = _.pick(options, 'checked', 'props');
@@ -200,10 +200,10 @@ define('views/ListPage', [
       'change #filter'    : 'onFilter'
     },
     
-    windowEvents: {
-      'orientationchange' : 'orientationchange',
-      'resize'            : 'orientationchange'
-    },
+//    windowEvents: {
+//      'orientationchange' : 'orientationchange',
+//      'resize'            : 'orientationchange'
+//    },
     
     focusFilter: function(e) {
       // HACK - JQM does sth weird to prevent focus when we're not using their listfilter widget
@@ -247,14 +247,14 @@ define('views/ListPage', [
       }            
     }, 50),
 
-    orientationchange: function(e) {
-//      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
-//      var isMasonry = this.isMasonry = !isChooser  &&  U.isMasonryModel(this.vocModel); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
-      if (this.isMasonry) {
-        Events.stopEvent(e);
-        Events.trigger('refresh', {model: this.model}); //, checked: checked});
-      } 
-    },
+//    orientationchange: function(e) {
+////      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
+////      var isMasonry = this.isMasonry = !isChooser  &&  U.isMasonryModel(this.vocModel); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
+//      if (this.isMasonry) {
+//        Events.stopEvent(e);
+//        Events.trigger('refresh', {model: this.model}); //, checked: checked});
+//      } 
+//    },
     submit: function(e) {
 //      Events.stopEvent(e);
 //      var isEdit = (this.action === 'edit');

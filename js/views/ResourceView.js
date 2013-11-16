@@ -101,12 +101,7 @@ define('views/ResourceView', [
       var wl = G.currentApp.widgetLibrary
       if (wl  &&  wl != 'Jquery Mobile') {
         Events.stopEvent(e);
-        var ul = $(t.parentElement).find('ul');
-        var cl = ul.attr('class');
-        if (!cl  ||  cl.indexOf('hidden') == -1)
-          ul.classList.add('hidden');
-        else
-          ul.classList.remove('hidden');
+        t.parentNode.$('ul').$toggleClass('hidden');        
         return;
       }
     },

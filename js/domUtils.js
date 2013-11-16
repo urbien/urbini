@@ -4,7 +4,34 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       LAZY_ATTR = LAZY_DATA_ATTR.slice(5),
       isFF = G.browser.firefox,
       vendorPrefixes = ['', '-moz-', '-ms-', '-o-', '-webkit-'],
-      ArrayProto = Array.prototype;
+      ArrayProto = Array.prototype,
+      resizeTimeout;
+
+  window.addEventListener('resize', function() {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(fireResizeEvent, 100);
+  });
+
+  window.addEventListener('debouncedresize', function() {
+    console.log("debounced resize event");
+  });
+
+  function fireResizeEvent() {
+    window.dispatchEvent(new Event('debouncedresize'));
+  };
+  
+  window.addEventListener('orientationchange', function() {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(fireOrientationchangeEvent, 100);
+  });
+
+  window.addEventListener('debouncedorientationchange', function() {
+    console.log("debounced orientationchange event");
+  });
+
+  function fireOrientationchangeEvent() {
+    window.dispatchEvent(new Event('debouncedorientationchange'));
+  };
 
   function getElementArray(els) {
     return els instanceof Array ||
@@ -21,13 +48,14 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
   var nodeProto = Node.prototype;
   var nodeListProto = NodeList.prototype;
   var htmlCollectionProto = HTMLCollection.prototype;
-  var NodeAug = {
+  var elementProto = Element.prototype;
+  var $matches = elementProto.matches || elementProto.webkitMatchesSelector || elementProto.mozMatchesSelector || elementProto.msMatchesSelector;
+  
+  var NodeAndNodeListAug = {
 //    $not: function(selector) {
 //      return 
 //    },
-    $: function(selector) {
-      return this.querySelectorAll(selector);
-    },
+    $matches: $matches,
     $on: function(event, handler, capture) {
       this.addEventListener(event, handler, capture);
       return this;
@@ -100,21 +128,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       
       return this;
     },
-    
-    $before: function(before) {
-      if (before.parentNode)
-        before.parentNode.insertBefore(this, before);
-      
-      return this;
-    },
 
-    $after: function(after) {
-      if (after.parentNode)
-        after.parentNode.insertBefore(this, after.nextSibling );
-      
-      return this;
-    },
-    
     $hide: function() {
       this.style.display = 'none';
       return this;
@@ -127,10 +141,6 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       return this;
     },
     
-    $hasClass: function(cl) {
-      return this.classList.contains(cl);
-    },
-    
     $addClass: function() {
       var i = arguments.length;
       while (i--) this.classList.add(arguments[i]);
@@ -141,6 +151,13 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       var i = arguments.length;
       while (i--) this.classList.remove(arguments[i]);
       return this;
+    },
+    
+    $toggleClass: function(cl) {
+      if (this.$hasClass(cl))
+        this.$removeClass(cl);
+      else
+        this.$addClass(cl);
     },
     
     $empty: function() {
@@ -159,6 +176,30 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
         throw "only HTML string or DocumentFragment are supported";
       
       return this;
+    }
+  };
+  
+  var NodeAug = {
+    $: function(selector) {
+      return this.querySelectorAll(selector);
+    },
+  
+    $before: function(before) {
+      if (before.parentNode)
+        before.parentNode.insertBefore(this, before);
+      
+      return this;
+    },
+  
+    $after: function(after) {
+      if (after.parentNode)
+        after.parentNode.insertBefore(this, after.nextSibling );
+      
+      return this;
+    },
+    
+    $hasClass: function(cl) {
+      return this.classList.contains(cl);
     },
     
     $append: function(htmlOrFrag) {
@@ -198,7 +239,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       
       return this;
     }
-  };
+  }
   
   var arrayMethods = Object.getOwnPropertyNames( ArrayProto );
   arrayMethods.forEach(function(methodName) {
@@ -230,16 +271,27 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     if (!nodeProto[prop])
       nodeProto[prop] = NodeAug[prop];
   }
-  
-  var nodeListProxyMethods = ['$trigger', '$css', '$attr', '$addClass', '$removeClass', '$empty', '$remove', '$show', '$hide', '$append', '$on', '$off', '$once'];
-  var nlpm = nodeListProxyMethods.length;
-  while (nlpm--) {
-    var method = nodeListProxyMethods[nlpm];
-    if (!nodeListProto[method])
-      extendCollection(nodeListProto, method);
-    if (!htmlCollectionProto[method])
-      extendCollection(htmlCollectionProto, method);
+
+  for (var prop in NodeAndNodeListAug) {
+    var method = NodeAndNodeListAug[prop];
+    if (!nodeProto[prop])
+      nodeProto[prop] = method;
+    if (!nodeListProto[prop])
+      extendCollection(nodeListProto, prop);
+    if (!htmlCollectionProto[prop])
+      extendCollection(htmlCollectionProto, prop);
   }
+  
+//  nodeListProto.$filter = function(selector) {
+//    var frag = document.createDocumentFragment();
+//    var nodeList = frag.querySelectorAll();
+//    this.$forEach(function(node) {
+//      if (node.$matches(selector))
+//        nodeList[nodeList.length] = node;
+//    });
+//    
+//    return nodeList;
+//  };
     
   return {
 //    unhide: function(els) {

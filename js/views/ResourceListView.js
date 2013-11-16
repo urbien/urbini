@@ -95,6 +95,18 @@ define('views/ResourceListView', [
       
       var viewport = G.viewport;
       this._viewport = {};
+      this._slidingWindowOpInfo = {
+        isFirstPage: false,
+        html: [],
+        added: [],
+        updated: [],
+        removed: [],
+        range: {
+          from: 0,
+          to: 0
+        }
+      };
+      
       this._onScrollerSizeChanged({
         target: this.el,
         content: viewport,
@@ -150,32 +162,43 @@ define('views/ResourceListView', [
       this._scrollable = true;
     },
 
+    getPageDimension: function() {
+      return this._pageDimensions[this._horizontal ? 'width' : 'height'];
+    },
+    
+    getElementsPerPage: function() {
+      return this.getPageDimension() / 50 | 0;
+    },
+    
     _onScrollerSizeChanged: function(e) {
       var info = e.detail || e,
           dimProp = this._horizontal ? 'width' : 'height',
-          pageHeight = info.container[dimProp],
-          pages = this._maxPagesInSlidingWindow;
+          pages = this._maxPagesInSlidingWindow,
+          pageDimension;
       
       if (!this._scrollerContainer)
         this._scrollerContainer = {};
       
       _.extend(this._scrollerContainer, info.container);
+      this._pageDimensions = _.clone(info.container);
+      pageDimension = this._pageDimensions[dimProp];
       this._updateViewport(info);
-      this._minSlidingWindowDimension = pageHeight * pages; // px, should depend on size of visible area of the list, speed of device, RAM
+      this._minSlidingWindowDimension = pageDimension * pages; // px, should depend on size of visible area of the list, speed of device, RAM
       this._slidingWindowInsideBuffer = this._minSlidingWindowDimension / 3; // how far away the viewport is from the closest border of the sliding window before we start to fetch more resources
-      this._slidingWindowOutsideBuffer = Math.max(this._minSlidingWindowDimension / 5, 2 * pageHeight); // how far away the viewport is from the closest border of the sliding window before we need to adjust the window
+      this._slidingWindowOutsideBuffer = Math.max(this._minSlidingWindowDimension / 5, 2 * pageDimension); // how far away the viewport is from the closest border of the sliding window before we need to adjust the window
 //      _slidingWindowBuffer: 800, // px, should depend on size of visible area of the list, speed of device, RAM
-      if (G.browser.mobile && pageHeight < 500)
-        this._elementsPerPage = 5;
-      else
-        this._elementsPerPage = 10;
+//      if (G.browser.mobile && pageHeight < 500)
+//        this._elementsPerPage = 5;
+//      else
+//        this._elementsPerPage = 10;
       
+      this._elementsPerPage = this.getElementsPerPage();
       if (this._initSlidingWindowTimer) {
         clearTimeout(this._initSlidingWindowTimer);
         this.adjustSlidingWindow();
       }
-      else if (this.rendered)
-        this.refresh();
+//      else if (this.rendered)
+//        this.refresh();
     },
     
     _queueSlidingWindowCheck: function() {
@@ -235,26 +258,26 @@ define('views/ResourceListView', [
      */
     refresh: function() {
       // TODO: remove all the elements in the sliding window and repaint them
-      if (this._refreshing)
-        return;
-      
-      var self = this,
-          pages = this._pagesCurrentlyInSlidingWindow;
-
-      if (!pages)
-        return;
-      
-      this._refreshing = true;
-      this._previousPagingOp = null;
-      return this.removePages(this._pagesCurrentlyInSlidingWindow)
-                        .then(function() {
-                          self._pagesCurrentlyInSlidingWindow = 0;
-                          return self.addPages(pages, false, true);
-                        })
-                        .done(function() {
-                          self._refreshing = false;
-                          self.adjustSlidingWindow();
-                        });
+//      if (this._refreshing)
+//        return;
+//      
+//      var self = this,
+//          pages = this._pagesCurrentlyInSlidingWindow;
+//
+//      if (!pages)
+//        return;
+//      
+//      this._refreshing = true;
+//      this._previousPagingOp = null;
+//      return this.removePages(this._pagesCurrentlyInSlidingWindow)
+//                        .then(function() {
+//                          self._pagesCurrentlyInSlidingWindow = 0;
+//                          return self.addPages(pages, false, true);
+//                        })
+//                        .done(function() {
+//                          self._refreshing = false;
+//                          self.adjustSlidingWindow();
+//                        });
     },
     
     getDimensionDiff: function(from, to) {
@@ -317,6 +340,7 @@ define('views/ResourceListView', [
       
       label(result);
       this._slidingWindowPromise.always(function() {
+        self._cleanSlidingWindowOpInfo();
         if (self._adjustmentQueued) {
           self._adjustmentQueued = false;
           setTimeout(self.adjustSlidingWindow, 0);
@@ -324,6 +348,17 @@ define('views/ResourceListView', [
       });
       
       return this._slidingWindowPromise;
+    },
+    
+    _cleanSlidingWindowOpInfo: function() {
+      var info = this._slidingWindowOpInfo;
+      for (var prop in info) {
+        var val = info[prop];
+        if (_.isArray(val))
+          val.length = 0;
+        else if (_.getObjectType(val) == '[object Object]')
+          _.wipe(val);
+      }
     },
     
     /**
@@ -349,7 +384,10 @@ define('views/ResourceListView', [
         this._initSlidingWindowTimer = setTimeout(this.adjustSlidingWindow, 50);
         return false;
       }
-        
+      
+      if (!this._slidingWindowOpInfo)
+        this._slidingWindowOpInfo = {};
+      
       viewportDim = viewport && viewport.tail - viewport.head;
       slidingWindow = this.getSlidingWindow(); // should be relative to this view, i.e. head==0 means we're at the top/left of the page
       slidingWindowDim = slidingWindow.tail - slidingWindow.head;
@@ -513,16 +551,16 @@ define('views/ResourceListView', [
       if (colRange.from >= colRange.to)
         return G.getRejectedPromise();
             
-//      frag = doc.createDocumentFragment();
-      info = {
-        isFirstPage: !this._pagesCurrentlyInSlidingWindow, 
-//        frag: frag,
-        range: colRange,
-//        total: colRange.to - colRange.from,
-        appended: [],
-        html: [],
-        pages: []
-      };
+//      info = {
+//        isFirstPage: !this._pagesCurrentlyInSlidingWindow, 
+//        range: colRange,
+//        html: [],
+//        pages: []
+//      };
+      
+      var info = this._slidingWindowOpInfo;
+      info.isFirstPage = !this._pagesCurrentlyInSlidingWindow; 
+      info.range = colRange;
       
 //      page = $('<div class="listPage" id="{0}" />'.format(G.nextId())); // style="visibility:hidden;" ?
 //      this._pages[atTheHead ? 'unshift' : 'push'](page);
@@ -609,7 +647,7 @@ define('views/ResourceListView', [
             html = DOM.unlazifyImagesInHTML(html);
             
           currentPageEl.innerHTML = html;            
-          info.pages.push(currentPageEl);
+          info.added.push(currentPageEl);
 //            info.html[info.html.length] = html;
           numPagesRendered++;
         }
@@ -639,9 +677,9 @@ define('views/ResourceListView', [
         
         Q.write(function insertPage() {
 //          self.log("PAGER", "ADDING PAGE, FRAME", window.fastdom.frameNum);
-//          var pages = info.pages = $($.parseHTML(info.html.join(""), doc));
+//          var pages = info.added = $($.parseHTML(info.html.join(""), doc));
           var after = dummy;
-          var pages = info.pages;
+          var pages = info.added;
           self._pages[atTheHead ? 'unshift' : 'push'].apply(self._pages, pages);
           for (var i = 0; i < pages.length; i++) {
             var page = pages[i],
@@ -819,8 +857,8 @@ define('views/ResourceListView', [
     removePages: function(n, fromTheHead) {
       this.log("PAGER", "REMOVING", n, "PAGES");
       var self = this,
+          info = this._slidingWindowOpInfo,
           removedViews = [],
-          removedPages,
           first,
           last,
           head,
@@ -842,7 +880,7 @@ define('views/ResourceListView', [
       });
 
       splitIdx = fromTheHead ? n : this._pages.length - n;
-      removedPages = fromTheHead ? this._pages.slice(0, splitIdx) : this._pages.slice(splitIdx);
+      info.removed = fromTheHead ? this._pages.slice(0, splitIdx) : this._pages.slice(splitIdx);
       this._pages = fromTheHead ? this._pages.slice(splitIdx) : this._pages.slice(0, splitIdx);      
 //      if (fromTheHead)
 //        Array.removeFromTo(this._pages, 0, splitIdx);
@@ -850,8 +888,8 @@ define('views/ResourceListView', [
 //        this._pages.length = splitIdx;
       
       Q.read(function() {
-        for (var i = 0, len = removedPages.length; i < len; i++) {
-          var page = removedPages[i],
+        for (var i = 0, len = info.removed.length; i < len; i++) {
+          var page = info.removed[i],
               children = page.childNodes;
           
           for (var j = 0, numChildren = children.length; j < numChildren; j++) {
@@ -867,18 +905,18 @@ define('views/ResourceListView', [
           }
         }
 
-        removedPageDim = _.reduceRight(removedPages, function(memo, page) { 
+        removedPageDim = _.reduceRight(info.removed, function(memo, page) { 
           return memo + self.getDimension(page); 
         }, 0);
       });
 
       Q.write(function removePagesFromDOM() {
-        for (var i = 0, len = removedPages.length; i < len; i++) {
+        for (var i = 0, len = info.removed.length; i < len; i++) {
 //          if (!document.documentElement.contains(removedPages[i]))
 //            debugger;
 //          
 //          removedPages[i].remove(); //detach().empty();
-          removedPages[i].$remove();
+          info.removed[i].$remove();
         }
 
         for (var i = 0, len = removedViews.length; i < len; i++) {
@@ -887,6 +925,9 @@ define('views/ResourceListView', [
           view.destroy();
         }
         
+        if (self.postRemove)
+          self.postRemove(info);
+//        
 //        this.dimension($dummy, sizes[fromTheHead ? 'head' : 'tail'] + sizes.removedPageSize);
         self.log("PAGER", "UPDATING {0} DUMMY SIZE".format(fromTheHead ? "HEAD" : "TAIL"));
 //        Q.defer(1, 'write', function() {
