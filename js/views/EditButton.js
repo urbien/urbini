@@ -11,7 +11,7 @@ define('views/EditButton', [
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'edit');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
       this.makeTemplate(this.template, 'template', this.vocModel.type);
       return this;
     },
