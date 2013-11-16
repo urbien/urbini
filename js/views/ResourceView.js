@@ -18,7 +18,7 @@ define('views/ResourceView', [
     autoFinish: false,
     initialize: function(options) {
       _.bindAll(this, 'render', 'refresh'); // fixes loss of context for 'this' within methods
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
       _.each(['propRowTemplate', 'propRowTemplate2', 'propGroupsDividerTemplate', 'priceTemplate', 'buyTemplate', 'sellTemplate'], function(t) {
         this.makeTemplate(t, t, this.vocModel.type);
       }.bind(this));
@@ -327,8 +327,10 @@ define('views/ResourceView', [
             otherLi = '<li data-role="collapsible" id="other" data-inset="false" style="border:0px;' + (G.theme.backgroundImage ? 'background-image: url(' + G.theme.backgroundImage + ')' : '') + '" data-content-theme="' + G.theme.list + '"  data-theme="' + G.theme.list + '"><h3 style="margin:0px;">Other</h3><ul data-inset="true" data-role="listview" style="margin: -10px 0px;">';
           else if (isBB)
             otherLi = '<section id="other"><header style="margin:0px;cursor:pointer;"><i class="ui-icon-plus-sign"></i>&#160;Other</header><ul class="other hidden">';
-          else 
+          else if (G.isTopcoat())
             otherLi = '<li id="other" class="topcoat-list__item"><h3><i class="ui-icon-plus-sign"></i>&#160;Other</h3><ul class="topcoat-list__container hidden">';
+          else if (G.isBootstrap())
+            otherLi = '<li id="other"><h3 style="font-size:18px;"><i class="ui-icon-plus-sign"></i>&#160;Other</h3><ul class="list-group-container hidden">';
   //        this.$el.append('<li data-role="collapsible" data-content-theme="c" id="other"><h2>Other</h2><ul data-role="listview">'); 
           groupNameDisplayed = true;
         }
