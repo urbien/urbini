@@ -66,8 +66,11 @@ define('views/ListPage', [
         });
       }      
 
+      var params = hash ? _.getParamMap(hash) : null;
+      var isMV = this.isMV = params  &&  params['$multiValue'] != null;
+
       var showAddButton;
-      if (!this.vocModel.adapter) {
+      if (!this.vocModel.adapter  &&  !isChooser  &&  !isMV) {
         var isMessage = U.isA(this.vocModel, 'GenericMessage');
         if (!isMessage) {
           if (!isChooser  ||  this.vocModel['skipAccessControl']) {
@@ -149,8 +152,6 @@ define('views/ListPage', [
       var meta = vocModel.properties;
       var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, U.getLongUri1('model/portal/Comment'));
 
-      var params = hash ? _.getParamMap(hash) : null;
-      var isMV = this.isMV = params  &&  params['$multiValue'] != null;
       this.isEdit = (params  &&  params['$editList'] != null); // || U.isAssignableFrom(vocModel, G.commonTypes.CloneOfProperty);
       this.listContainer = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : (this.isEdit ? '#editRlList' : '#sidebar'));
       var listViewType;
@@ -315,6 +316,16 @@ define('views/ListPage', [
       this.clicked = true;
       var buyLink;
       var tryLink;
+      
+//      var tId = e.target.id;
+//      if (tId && tId == 'mvSubmit') {
+//        var form = $(e.target).closest('form');
+//        if (form) {
+//          Events.stopEvent(e);
+//          form.submit();
+//          return true;
+//        }
+//      }
       if (!U.isA(this.vocModel, 'Buyable') || ((buyLink = $(e.target).closest($('#buyLink'))).length == 0  &&  (tryLink = $(e.target).closest($('#tryLink'))).length == 0)) {
 //        Events.defaultClickHandler(e);
         return true;
