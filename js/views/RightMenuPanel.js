@@ -4,8 +4,9 @@ define('views/RightMenuPanel', [
   'utils',
   'events',
   'vocManager',
+  'lib/blur',
   'views/BasicView'
-], function(G, U, Events, Voc, BasicView) {
+], function(G, U, Events, Voc, Blur, BasicView) {
   function isCreatorOrAdmin(res) {
     return (G.currentUser._uri == G.currentApp.creator  ||  U.isUserInRole(U.getUserRole(), 'admin', res));
   };
@@ -13,7 +14,7 @@ define('views/RightMenuPanel', [
   return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'grab', 'release', 'chat');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
   //    this.resource.on('change', this.render, this);
       var type = this.modelType;
       this.makeTemplate('rightMenuP', 'template', type);
@@ -262,10 +263,9 @@ define('views/RightMenuPanel', [
       var p = document.getElementById(this.viewId);
       p.appendChild(this.el);
       
-      if (p.tagName.toLowerCase() == 'section') 
+      if (!G.isJQM()) 
         p.style.visibility = 'visible';
       else {
-
 //        p.panel().panel("open");
         $(p).panel("open");
         $(ul).listview();
@@ -336,7 +336,7 @@ define('views/RightMenuPanel', [
         
         frag = document.createDocumentFragment();
 
-        var title = this.loc(this.resource ? 'objProps' : 'listProps');
+        var title = '<div class="gradientEllipsis">' + this.loc(this.resource ? 'objProps' : 'listProps') + '</div>';
         U.addToFrag(frag, this.headerTemplate({title: title, icon: 'gear'}));
         var isItemListing = res.isA("ItemListing");
         var isBuyable = res.isA("Buyable");
@@ -409,7 +409,7 @@ define('views/RightMenuPanel', [
       var p = document.getElementById(this.viewId);
       p.appendChild(this.el);
       
-      if (p.tagName.toLowerCase() == 'section') 
+      if (!G.isJQM()) 
         p.style.visibility = 'visible';
       else {
 
@@ -418,6 +418,8 @@ define('views/RightMenuPanel', [
         $(ul).listview();
 //      p.trigger("updatelayout")
       }
+//      if (!window.location.hash  ||  window.location.hash == '#')
+//        $(this.el.parentElement).blurjs({source: '#homePage', radius: 10, overlay: 'rgba(48, 46, 46, 0.5)'});
       return this;
     },
 
@@ -638,7 +640,9 @@ define('views/RightMenuPanel', [
       var m = this.resource;
       var user = G.currentUser;
       var edit = m.get('edit');
-      if (!user.guest  &&  (!edit  ||  user.totalMojo > edit)) {
+      var isMakeOrEditRequest =  window.location.hash.indexOf('#edit') != -1  ||  window.location.hash.indexOf('#make') != -1;
+      
+      if (!user.guest  &&  !isMakeOrEditRequest  &&  (!edit  ||  user.totalMojo > edit)) {
         var paintAdd;
         var paintEdit;
         if (!U.isAssignableFrom(this.vocModel, 'Contact')) 
