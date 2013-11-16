@@ -467,6 +467,8 @@ define('views/ResourceListView', [
       var base = ['listPage'];
       if (G.isTopcoat())
         base.push('topcoat-list__container');
+      else if (G.isBootstrap())
+        base.push('list-group');
       
       return this._widgetLibClasses = base.join(" ");
     },
@@ -664,7 +666,7 @@ define('views/ResourceListView', [
             }
           }
           
-          for (var i = 0; i < pages.length; i++) {
+          for (var i = 0; pages  &&  i < pages.length; i++) {
             var page = pages[i];
             page[atTheHead ? '$after' : '$before'](after);
             if (atTheHead)
@@ -1024,7 +1026,8 @@ define('views/ResourceListView', [
       }
       else if (this.isMultiValueChooser) {
         params.mv = true;
-        params.tagName = 'div';
+        if (G.isJQM())
+          params.tagName = 'div';
         params.className = "ui-controlgroup-controls";
         params.mvProp = this.mvProp;
         view = preinitializer.preinitialize(params);
