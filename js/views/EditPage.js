@@ -18,7 +18,7 @@ define('views/EditPage', [
   return BasicPageView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'edit', 'home', 'set', 'resetForm');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicPageView.prototype.initialize.apply(this, arguments);
       
   //    this.resource.on('change', this.render, this);
       this.makeTemplate('resourceEdit', 'template', this.vocModel.type);
