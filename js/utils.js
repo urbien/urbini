@@ -4084,5 +4084,8 @@ define('utils', [
     i['float'] = i['double'] = common + ' number';
   })();
 
+  if (window.URL)
+    G._blankImgSrc = window.URL.createObjectURL(U.dataURLToBlob(G._blankImgSrc));
+
   return (Lablz.U = U);
 });

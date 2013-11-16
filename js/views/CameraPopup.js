@@ -539,7 +539,7 @@ define('views/CameraPopup', [
       var style = this.previewDiv.style;
       style.width = this.videoWidth;
       style.height = this.videoHeight;
-      this.previewDiv.$unhide();
+      this.previewDiv.$show();
     },
 
     drawVideoFrame_: function(time) {

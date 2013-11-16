@@ -3,6 +3,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
       docEl = doc.documentElement,
       LAZY_DATA_ATTR = G.lazyImgSrcAttr,
       LAZY_ATTR = LAZY_DATA_ATTR.slice(5),
+      DUMMY_IMG = G.getBlankImgSrc(),
       DUMMY_IMG,
       AXIS_INDEX = {
         X: 0,
@@ -12,12 +13,9 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
       // Vertical offset in px. Used for preloading images while scrolling
       IMG_OFFSET = 1000;
 
-  Events.once('startingApp', function() {
-    if (window.URL)
-      G._blankImgSrc = window.URL.createObjectURL(U.dataURLToBlob(G._blankImgSrc));
-    
-    DUMMY_IMG = G.getBlankImgSrc();
-  });
+//  Events.once('startingApp', function() {    
+//    DUMMY_IMG = G.getBlankImgSrc();
+//  });
   
   Events.on('viewportResize', function(viewport) {
     IMG_OFFSET = viewport.height * 3;

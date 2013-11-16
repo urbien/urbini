@@ -37,6 +37,7 @@ define('views/BasicPageView', [
   
   var PageView = BasicView.extend({
 //    mixins: [Scrollable],
+    viaHammer: true,
     mixins: [LazyImageLoader, Scrollable],
 //    constructor: function(options) {
 //      options = options || {};

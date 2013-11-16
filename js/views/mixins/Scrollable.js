@@ -655,25 +655,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
       var domMethod = enable ? 'addEventListener' : 'removeEventListener';
       var frame = s.frame;
 //      var observer = frame;//doc;
-      var hammer = this.hammer();
-      var hammerMethod = enable ? 'on' : 'off';
-//      var dragEvents = horizontal ? 'dragright dragleft' : 'dragup dragdown';
-//      var swipeEvents = horizontal ? 'swiperight swipeleft' : 'swipeup swipedown';
-      
       this._scrollingEnabled = enable;
-//      frame[domMethod]('load', this._onSizeInvalidated, true);
-//      this.el[domMethod]('click', this._onScrollerClick, true); // we want clicks on capture phase
-//      hammer[hammerMethod]('tap', this._onScrollerClick, true);
-//      hammer[hammerMethod]('click', this._onScrollerClick, true);
-//      this.el[domMethod]('tap', this._onScrollerClick, true); // we want clicks on capture phase
-//      hammer[hammerMethod]('tap', this._onScrollerClick);
-////      hammer[hammerMethod]('release', this._onScrollerRelease);
-//      this.hammer({ drag_block_horizontal:true, drag_block_vertical:true })
-//        [hammerMethod](dragEvents, this._onScrollerDrag)
-//        [hammerMethod](swipeEvents, this._onScrollerSwipe);
-//        [hammerMethod]('dragstart', this._onScrollerDragStart)
-//        [hammerMethod]('dragend', this._onScrollerDragEnd);
-      
       if (s.keyboard) {
         doc[domMethod]('keydown', this._onKeyDown, true);
         doc[domMethod]('keyup', this._onKeyUp, true);

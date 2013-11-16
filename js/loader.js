@@ -1222,7 +1222,6 @@ define('globals', function() {
       leafletMarkerCluster: 'lib/leaflet.markercluster',
       jqueryImagesLoaded: 'lib/jquery.imagesloaded',
       jqueryMasonry: 'lib/jquery.masonry',
-      jqueryDraggable: 'lib/jquery.draggable',
       jqueryAnyStretch: 'lib/jquery.anystretch'
     },
     shim: {

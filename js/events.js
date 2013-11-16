@@ -17,8 +17,8 @@ define('events', [
       e.stopImmediatePropagation();
     },
     getEventName: function(event) {
-      if (!G.browser.touch)
-        return event;
+//      if (!G.browser.touch)
+//        return event;
       
       var match = event.match(/^(dbl)?click/),
           newEvent;

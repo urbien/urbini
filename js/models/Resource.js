@@ -825,7 +825,7 @@ define('models/Resource', [
       var props = this.attributes;
       for (var p in props) {
         var prop = meta[p];
-        if (U.isResourceProp(prop)) {
+        if (prop && U.isResourceProp(prop)) {
 //        if (prop && (prop.containerMember || prop.notifyContainer)) { // let's just notify all, it's cheap
           var val = props[p];
           if (!val) // might have gotten unset

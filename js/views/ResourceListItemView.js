@@ -565,7 +565,8 @@ define('views/ResourceListItemView', [
     
     setCollaborationPointData: function(tmpl_data, atts) {
       var cloned = this.clonedProperties,
-          cpProps = cloned.CollaborationPoint;
+          cpProps = cloned.CollaborationPoint,
+          meta = this.vocModel.properties;
       
       if (cpProps) {
         var comments = cpProps.comments;

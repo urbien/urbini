@@ -31,7 +31,7 @@ define('views/ChatButton', [
         var unread = cachedChatView && cachedChatView.getNumUnread();
         this.menuBadge = this.$('.menuBadge')[0];
         this.menuBadge.innerHTML = unread || '';
-        this.menuBadge[unread ? '$unhide' : '$hide']();
+        this.menuBadge[unread ? '$show' : '$hide']();
       }
     },
     

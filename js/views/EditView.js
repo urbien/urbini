@@ -19,7 +19,7 @@ define('views/EditView', [
     var p = prop.shortName; 
     return prop.required  &&  currentAtts[p]  &&  prop.containerMember && (isEdit || reqParams[p]);
   };
-
+  
   function getRemoveErrorLabelsFunction(el) {
     var parent = el.parentNode;
     return function() {
@@ -615,16 +615,12 @@ define('views/EditView', [
       if (this.loadedScrollers) {
         var meta = this.vocModel.properties;
         var self = this;
-        this.getScrollers().each(function() {
+        this.getScrollers().$forEach(function() {
           $(this).mobiscroll('destroy');
           var prop = meta[this.name];
           self.getScroller(prop, this);
         });
       }
-    },
-    isScroller: function(input) {
-      input = input instanceof $ ? input : $(input);
-      return input.$hasClass(scrollerClass);
     },
     fieldError: function(resource, errors) {
       if (arguments.length === 1)
@@ -899,7 +895,7 @@ define('views/EditView', [
 //            successUrl: G.serverName + '/' + G.pageRoot + '#aspects%2fcommerce%2fTransaction?transactionType=Deposit&$orderBy=dateSubmitted&$asc=0'
           };
           
-          window.location.href = G.serverName + '/' + G.pageRoot + '#make/aspects%2fcommerce%2fTransaction?' + $.param(params);
+          Events.trigger('navigate', 'make/aspects%2fcommerce%2fTransaction?' + $.param(params));
         }, 2000);
         return;
       }
@@ -980,7 +976,7 @@ define('views/EditView', [
           return this;
       }
       
-      this.getScrollers().each(function() {
+      this.getScrollers().$forEach(function() {
         $(this).mobiscroll('destroy');        
       });
       
@@ -1040,7 +1036,7 @@ define('views/EditView', [
         atts[t.name] = this.getValue(t);
       }
 
-      this.setValues(atts, {onValidationError: this.fieldError, onValidated: getRemoveErrorLabelsFunction(this)});
+      this.setValues(atts, {onValidationError: this.fieldError, onValidated: getRemoveErrorLabelsFunction(input)});
     },
     
     setValues: function(key, val, options) {
@@ -1364,7 +1360,7 @@ define('views/EditView', [
       var inputs = this.inputs = this.getInputs(); //form.find('input');
       var initInputs = function(inputs) {
         _.each(inputs, function(input) {
-          if (self.isScroller(input))
+          if (input.$hasClass(scrollerClass))
             return;
           
           var validated = getRemoveErrorLabelsFunction(input);
@@ -1387,14 +1383,14 @@ define('views/EditView', [
       };
 
       initInputs(inputs);        
-      var reqd = form.querySelectorAll('[required]'),
+      var reqd = form.$('[required]'),
           numReqd = reqd.length;
       
       while (numReqd--) {
-        form.querySelectorAll('label[for="{0}"]'.format(reqd[numReqd].id)).$addClass('req');
+        form.$('label[for="{0}"]'.format(reqd[numReqd].id)).$addClass('req');
       }
       
-      var selects = form.querySelectorAll('select'),
+      var selects = form.getElementsByTagName('select'),
           select,
           numSelects = selects.length;
 
@@ -1409,22 +1405,13 @@ define('views/EditView', [
         if (_.isUndefined(res.get(name)) || this.isForInterfaceImplementor)
           return;
         
-        if (value = select.value)
+        if ((value = select.value) != null)
           this.setValues(name, value);
       }
       
-      var inputs = form.querySelectorAll('input'),
-          input,
-          numInputs = inputs.length;
-      
-      while (numInputs--) {
-        input = inputs[numInputs];
-        input.addEventListener('keydown', this._onKeyDownInInput); // end of function
-      }
-      
+      form.getElementsByTagName('input').$on('keydown', this._onKeyDownInInput); // end of function
       var edits = res.getUnsavedChanges();
-      var resProps = form.querySelectorAll('.resourceProp');
-      _.each(resProps, function(resProp) {
+      form.querySelectorAll('.resourceProp').$forEach(function(resProp) {
         // TODO: disable resource chooser buttons for image range properties that have cameraOnly annotation      
         var name = resProp.name;
         var prop = meta[name];
@@ -1494,7 +1481,7 @@ define('views/EditView', [
         }
       });
       
-//      form.find('fieldset input[type="checkbox"]').each(function() {
+//      form.find('fieldset input[type="checkbox"]').$forEach(function() {
 //        form.find('label[for="{0}"]'.format(this.id)).addClass('req');
 //      });
 

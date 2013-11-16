@@ -79,7 +79,7 @@ define('views/MessageBar', [
         messages: messages
       }));
       
-      this.$('.headerMessageBar').forEach(function(bar) {
+      this.$('.headerMessageBar').$forEach(function(bar) {
         var id = bar.id,
             events = _.find(messages, function(msg) { return msg.id == id }).events;
         

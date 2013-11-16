@@ -257,7 +257,7 @@ define('views/Header', [
 
     refreshTitle: function() {
       this.calcTitle();
-      this.$('#pageTitle').innerHTML = this.title;
+      this.$('#pageTitle')[0].innerHTML = this.title;
 //      $('title').text(this.title);
       this.pageView.trigger('titleChanged', this._title);
     },
@@ -327,7 +327,7 @@ define('views/Header', [
       var pBtn = this.buttonViews.publish;
       if (this.publish) {
         this.assign('#publishBtn', pBtn);
-        this.$('#publishBtn').$unhide();
+        this.$('#publishBtn').$show();
       }
       else if (pBtn) {
         this.$('#publishBtn').$hide();
@@ -338,7 +338,7 @@ define('views/Header', [
           
           if (self[option]) {
             self.assign(selector, pBtn, _.pick(self, option));
-            method = '$unhide';
+            method = '$show';
           }
           
           self.$(selector)[method]();
@@ -481,9 +481,7 @@ define('views/Header', [
         paintedBtns[i].$css('width', btnWidth + '%');
       }
       
-      var ul = this.$('#headerUl')[0];
-      ul.innerHTML = "";        
-      ul.appendChild(frag);
+      this.$('#headerUl')[0].$html(frag);
       
 //      this.renderError();
       this.renderSpecialButtons();
@@ -531,7 +529,7 @@ define('views/Header', [
       // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view 
       var header = this.$('.ui-header')[0];
       var barClass = 'ui-bar-{0}'.format(G.theme.header);
-      if (!header.classList.contains(barClass))
+      if (header && !header.classList.contains(barClass))
         header.classList.add(barClass);
       
       // END HACK

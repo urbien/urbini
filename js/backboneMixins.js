@@ -46,6 +46,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
     Backbone.View = View.extend({
       tagName: null,
       defaultTagName: 'div',
+      viaHammer: false,
       constructor: function(options){
         options = options || {};
 //        if (!_.has(options, 'delegateEvents') && this.autoFinish !== false)
@@ -163,6 +164,8 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
           attrs['class'] = classes;
         
         this.el.$attr(attrs);
+        if (this.viaHammer)
+          this.hammer();
         if (delegate !== false) 
           this.delegateEvents();
         
@@ -188,9 +191,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         if (!this.el)
           throw "can't set HTML for a view with no element";
         
-//        this.undelegateEvents();
         this.el.innerHTML = html; // it's the responsibility of the dev to call view.redelegateEvents();
-//        this.delegateEvents();
       },
       
       empty: function() {
@@ -199,25 +200,26 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       },
       
       _hammered: false,
-      _getHammer: function(el, options, create) {
-        var hammers = this._hammers = this._hammers || [];
-        for (var i = 0; i < hammers.length; i++) {
-          var hammer = hammers[i];
-          if (hammer.element == el)
-            return hammer;
-        }
-        
-        if (create) {
-          var hammer = new Hammer(el, options);
-          hammers.push(hammer);
-          return hammer;
-        }
-      },
+//      _getHammer: function(el, options, create) {
+//        var hammers = this._hammers = this._hammers || [];
+//        for (var i = 0; i < hammers.length; i++) {
+//          var hammer = hammers[i];
+//          if (hammer.element == el)
+//            return hammer;
+//        }
+//        
+//        if (create) {
+//          var hammer = new Hammer(el, options);
+//          hammers.push(hammer);
+//          return hammer;
+//        }
+//      },
 
-      _delegateDOMEvents: function(events, hammer, delegated) {
-        var defaultEls = [hammer.element],
+      _delegateDOMEvents: function(events, view, delegated) {
+        var el = view.el,
+            hammer = view._hammer,
             options = this.hammerOptions,
-            gutless = !hammer.element.childNodes.length,
+            gutless = !el.childNodes.length,
             method,
             eventInfo,
             eventName;
@@ -240,11 +242,16 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
                 i = els.length;
             
             while (i--) {
-              this._getHammer(els[i], options, true).on(eventName, method); // create if Hammer doesn't exist
+              els[i].$on(eventName, method);
             }
+            
           }
-          else
-            hammer.on(eventName, method); // use view's hammer (for view element)
+          else {
+            if (hammer)
+              hammer.on(eventName, method); // use view's hammer (for view element)
+            else
+              el.$on(eventName, method);
+          }
         }
       },
 
@@ -306,12 +313,12 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         return this;        
       },
       
-      _undelegateDOMEvents: function(delegated, hammer) {
-        if (!delegated || !hammer)
+      _undelegateDOMEvents: function(delegated, view) {
+        if (!delegated || !view.el)
           return;
         
-        var el = hammer.element,
-            defaultEls = [el],
+        var el = view.el,
+            hammer = view._hammer,
             gutless = !el.childNodes.length,
             eventInfo,
             eventName,
@@ -328,15 +335,15 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
             els = el.querySelectorAll(eventInfo.selector);
             i = els.length;
             while (i--) {
-              var _el = els[i],
-                  h = this._getHammer(_el);
-              
-              if (h)
-                h.off(eventName, method);
+              els[i].$off(eventName, method);
             }
           }
-          else
-            hammer.off(eventName, method);
+          else {
+            if (hammer)
+              hammer.off(eventName, method);
+            else
+              el.$off(eventName, method);
+          }
           
           delete delegated[key];
         }
@@ -391,9 +398,9 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
   //          return;
           
           if (this.events)
-            this._delegateDOMEvents(this.events, this.hammer(), this._delegatedEvents = this._delegatedEvents || {});
+            this._delegateDOMEvents(this.events, this, this._delegatedEvents = this._delegatedEvents || {});
           if (this.pageEvents && this.pageView)
-            this._delegateDOMEvents(this.pageEvents, this.pageView.hammer(), this._delegatedPageEvents = this._delegatedPageEvents || {});
+            this._delegateDOMEvents(this.pageEvents, this.pageView, this._delegatedPageEvents = this._delegatedPageEvents || {});
         }
         
         return this;
@@ -405,9 +412,9 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       undelegateEvents: function() {
         if (this.el) {
           if (this.events)
-            this._undelegateDOMEvents(this._delegatedEvents, this.hammer());
+            this._undelegateDOMEvents(this._delegatedEvents, this);
           if (this.pageEvents && this.pageView)
-            this._undelegateDOMEvents(this._delegatedPageEvents, this.pageView.hammer());
+            this._undelegateDOMEvents(this._delegatedPageEvents, this.pageView);
         }
         
         return this;
@@ -418,7 +425,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         this.delegateEvents();
       },
       
-      hammer: function(options){
+      hammer: function(options) {
         if ((!this._hammered && this.el) || 
             (this._hammered && this.el !== this._hammer.element)) {
           this._hammered = true;

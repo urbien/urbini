@@ -535,7 +535,6 @@ define('app', [
 //  }
   
   function doPreStartTasks() {
-    Events.trigger('startingApp');
 //    setupHashMonitor();
 //    setupScrollMonitor();
     ModelLoader.loadEnums();
@@ -681,6 +680,7 @@ define('app', [
   };
   
   function startApp() {
+    Events.trigger('startingApp');
     return $.Deferred(function(dfd) {        
       if (App.started)
         return dfd.resolve();

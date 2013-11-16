@@ -274,8 +274,8 @@ define('views/ChatPage', [
 
       var self = this;
       this.on('active', function() {
-        self.localMedia && self.localMedia.$unhide();
-        self.remoteMedia && self.remoteMedia.$unhide();
+        self.localMedia && self.localMedia.$show();
+        self.remoteMedia && self.remoteMedia.$show();
       });
       
       this.on('inactive', function() {
@@ -384,7 +384,7 @@ define('views/ChatPage', [
       if (this._chatSolid)
         this.chatFadeOut();
       
-      this.videoChat.fadeTo(1, 600, this.restyleGoodies).$css('z-index', 1001); // jquery mobile footer is z-index 1000
+      this.videoChat.$fadeTo(1, 600, this.restyleGoodies).$css('z-index', 1001); // jquery mobile footer is z-index 1000
     },
 
     videoFadeOut: function(e) {
@@ -395,7 +395,7 @@ define('views/ChatPage', [
       if (!this._chatSolid)
         this.chatFadeIn();
       
-      this.videoChat.fadeTo(0.1, 600, this.restyleGoodies).$css('z-index', 1); // jquery mobile footer is z-index 1000
+      this.videoChat.$fadeTo(0.1, 600, this.restyleGoodies).$css('z-index', 1); // jquery mobile footer is z-index 1000
     },
 
     chatFadeIn: function(e) {
@@ -406,7 +406,7 @@ define('views/ChatPage', [
       if (this._videoSolid)
         this.videoFadeOut();
       
-      this.textChat.fadeTo(1, 600).$css('z-index', 1001);
+      this.textChat.$fadeTo(1, 600).$css('z-index', 1001);
       this.videoChat.$css('z-index', 0);
     },
 
@@ -418,7 +418,7 @@ define('views/ChatPage', [
       if (!this._videoSolid && this._videoOn)
         this.videoFadeIn();
       
-      this.textChat.fadeTo(0.1, 600).$css('z-index', 1);
+      this.textChat.$fadeTo(0.1, 600).$css('z-index', 1);
     },
     
     render: function() {      
@@ -824,7 +824,7 @@ define('views/ChatPage', [
 //      info.time = getTimeString(info.time || +new Date());
       var height = $(doc).height();
       var atBottom = this.isScrolledToTail();
-      this.messages.append(this.messageTemplate(info));
+      this.messages.$append(this.messageTemplate(info));
       if (atBottom || true) {
         this.el.addEventListener('scrollocontent', function snap() { // wait for Scrollable to recalc the size of the page and the current position
           self.el.off('scrollocontent', snap);
@@ -1381,7 +1381,7 @@ define('views/ChatPage', [
         video.controls = false;
         video.play();
         video.classList.add('localVideo');
-        this.localMedia.$unhide();
+        this.localMedia.$show();
 //      });
         
       if (!this.isWaitingRoom)
@@ -1416,7 +1416,7 @@ define('views/ChatPage', [
       });
       
       if (videoIds.length) {
-        this.$(videoIds.join(',')).forEach(function(vid) {
+        this.$(videoIds.join(',')).$forEach(function(vid) {
           if (browser.mozilla)
             vid.mozSrcObject = null;
           else
@@ -1433,7 +1433,7 @@ define('views/ChatPage', [
       });
       
       media.controls = false;
-      this.remoteMedia.$unhide();
+      this.remoteMedia.$show();
       if (media.tagName === 'VIDEO') {
         this.checkVideoSize(media);
         media.classList.add('remoteVideo');
@@ -1496,7 +1496,7 @@ define('views/ChatPage', [
       if (this.hasVideo) {
         this._videoOn = false;
         var vids = this.el.getElementsByTagName('video');
-        vids.forEach(function(vid) {
+        vids.$forEach(function(vid) {
           self.unbindVideoEvents(vid);
           vid.pause();
         });
@@ -1513,7 +1513,7 @@ define('views/ChatPage', [
     takeSnapshot: function() {
       var self = this;
           snapshots = [];
-      this.$('canvas').forEach(function(canvas) {
+      this.$('canvas').$forEach(function(canvas) {
 //        var $this = $(this);
         var video = self.$('video#' + canvas.dataset['for']);
         if (!video.length)
