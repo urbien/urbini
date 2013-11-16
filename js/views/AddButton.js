@@ -15,7 +15,7 @@ define('views/AddButton', [
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'add');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
       this.makeTemplate(this.template, 'template', this.vocModel.type);
       return this;
     },
