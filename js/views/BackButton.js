@@ -3,8 +3,9 @@ define('views/BackButton', [
   'underscore', 
   'utils',
   'events', 
+  'globals',
   'views/BasicView' 
-], function(_, U, Events, BasicView) {
+], function(_, U, Events, G, BasicView) {
   return BasicView.extend({
     templateName: 'backButtonTemplate',
     tagName: 'li',
@@ -14,7 +15,7 @@ define('views/BackButton', [
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'back');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
       this.makeTemplate(this.templateName, 'template', this.modelType);
       return this;
     },
