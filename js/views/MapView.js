@@ -15,7 +15,7 @@ define('views/MapView', [
     loadedCSS: false,
     initialize: function (options) {
       _.bindAll(this, 'render', 'show', 'hide','toggleMap', 'resetMap', 'onSwipe', 'resize');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
       this.listenTo(Events, "mapIt", this.toggleMap);
 //      this.listenTo(Events, "pageChange", this.resetMap);
       
