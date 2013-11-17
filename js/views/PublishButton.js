@@ -21,7 +21,7 @@ define('views/PublishButton', [
 //    },
     initialize: function(options) {
       _.bindAll.apply(_, [this, 'render'].concat(SPECIAL_BUTTONS));
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
       var type = this.vocModel.type;
       this.makeTemplate(this.template, 'template', type);
       
