@@ -28,7 +28,7 @@ define('views/LoginButton', [
 //    },
     initialize: function(options) {
       _.bindAll(this, 'render', 'showPopup'); //, 'logout');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
 //      this.popupTemplate = this.makeTemplate(this.popupTemplate);
 //      this.makeTemplate(this.loginTemplate, 'loginTemplate');
 //      this.logoutTemplate = this.makeTemplate(this.logoutTemplate);
