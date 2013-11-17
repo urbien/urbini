@@ -176,6 +176,8 @@ define('globals', function() {
       return G.isTopcoat();
     case '../templates_bb.jsp':
       return G.isBB();
+    case '../templates_bootstrap.jsp':
+      return G.isBootstrap();
     case 'lib/IndexedDBShim':
       return G.dbType == 'shim';
     case 'lib/whammy':
@@ -251,8 +253,9 @@ define('globals', function() {
         default:
           if (browser.msie) 
             text += '/*\n'; // see http://bugs.jquery.com/ticket/13274#comment:6
-          if (G.minify)
-            text += '\n//@ sourceMappingURL=' + url.match(/\/([^\/]*)\.js$/)[1] + '.min.js.map';
+//          temp commment out as profiler says sourceMappingURL slows down app load          
+//          if (G.minify)
+//            text += '\n//@ sourceMappingURL=' + url.match(/\/([^\/]*)\.js$/)[1] + '.min.js.map';
           
           text += '\n//@ sourceURL=' + url;
           if (browser.msie) 
@@ -1303,6 +1306,9 @@ define('globals', function() {
     },
     isTopcoat: function() {
       return G.getWidgetLibrary().toLowerCase() == 'topcoat';
+    },
+    isBootstrap: function() {
+      return G.getWidgetLibrary().toLowerCase() == 'bootstrap';
     },
     getWidgetLibrary: function() {
       return G._widgetLibrary;
