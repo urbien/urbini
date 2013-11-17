@@ -10,7 +10,7 @@ define('views/HomePage', [
     TAG: 'HomePage',
     first: true,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'click'); //, 'pagehide', 'pagebeforeshow');
+      _.bindAll(this, 'render', 'rightMenu', 'leftMenu'); //, 'pagehide', 'pagebeforeshow');
       BasicPageView.prototype.initialize.apply(this, arguments);
       
 //      Events.on('pagehide', this.pagehide);
@@ -27,7 +27,8 @@ define('views/HomePage', [
     events: {
 //      'page_hide'            : 'pagehide',
 //      'page_beforeshow'      : 'pagebeforeshow',
-      'click'              : 'click',
+      'click'              : 'leftMenu',
+      'hold'              : 'rightMenu',
       'click #installApp'  : 'installApp'
     },
     
@@ -50,29 +51,43 @@ define('views/HomePage', [
 //      return BasicPageView.prototype.onpageevent.apply(this, arguments);
 //    },
     
-    click: function(e) {
+    rightMenu: function(e) {
       var id = e.target.id,
           self = this;
       
       if (!id)
         return;
-      if (id.startsWith('hpRightPanel')) {
-        Events.stopEvent(e);
-        U.require(["views/RightMenuPanel"]).done(function(MP) {
-          self.menuPanel = new MP({
-            viewId: 'viewHome'
-          });
-          
-          self.addChild(self.menuPanel);
-          self.menuPanel.render();
+      if (!id.startsWith('hpRightPanel'))
+        return;
+      Events.stopEvent(e);
+      U.require(["views/RightMenuPanel"]).done(function(MP) {
+        self.menuPanel = new MP({
+          viewId: 'viewHome'
         });
-      }
-      if (id.startsWith('hpLeftPanel')) {
-        Events.stopEvent(e);
-        U.require(["views/MenuPanel"]).done(function(MP) {
-          self.menuPanel = new MP({viewId: 'viewHome'}).render();
-        });
-      }
+        
+        self.addChild(self.menuPanel);
+        self.menuPanel.render();
+      });
+    },
+    leftMenu: function(e) {
+      var id = e.target.id,
+          self = this;
+      
+      if (!id)
+        return;
+      if (!id.startsWith('hpRightPanel'))
+        return;
+      if (!$('#hpLeftPanel')) 
+        return this.rightMenu(e);
+      if (!this.$('#' + this.viewId).length)
+        return;
+      
+      Events.stopEvent(e);
+      U.require(["views/MenuPanel"]).done(function(MP) {
+        self.menuPanel = new MP({viewId: 'viewHome'});
+      });
+      self.addChild(self.menuPanel);
+      self.menuPanel.render();
     },
     
     render: function(options) {
