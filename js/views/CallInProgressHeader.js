@@ -8,7 +8,7 @@ define('views/CallInProgressHeader', [
   return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'backToCall', 'hangUp', 'sendToCall');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
       options = options || {};
     
       var self = this;
