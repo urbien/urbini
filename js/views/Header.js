@@ -95,10 +95,12 @@ define('views/Header', [
       this.readyDfd = $.Deferred();
       this.ready = this.readyDfd.promise();
       U.require(reqdButtons, function() {
-        var btns = arguments;
         var i = 0;
         for (var btn in buttons) {
           var model = arguments[i++];
+          if (G.isBootstrap())
+            model = model.extend({tagName: 'div'}, {}); 
+
           this.buttonViews[btn] = this.buttonViews[btn] || this.addChild(new model(btnOptions));
         }
         
@@ -144,8 +146,8 @@ define('views/Header', [
             }
             else {
               if (!U.isAssignableFrom(this.vocModel, "Contact"))
-                titleHTML = U.makeHeaderTitle(this.vocModel['displayName'], title);
-//              this.pageTitle = this.vocModel['displayName'] + ": " + this.pageTitle;
+//                titleHTML = U.makeHeaderTitle(encodeURIComponent(this.vocModel['displayName']), title);
+              this.pageTitle = this.vocModel['displayName'] + ": " + title;
             }
           }
         }
@@ -252,6 +254,10 @@ define('views/Header', [
       this.ready.done(function() {
         this.renderHelper.apply(this, args);
         this.finish();
+        if (G.isBootstrap()) {
+          var lis = this.$el.find('#headerUl div');
+          lis.attr('class', 'navbar-header');
+        }
       }.bind(this));
     },
 
@@ -519,10 +525,10 @@ define('views/Header', [
       for (var btn in btns) {
         var badge = btns[btn].$('.menuBadge');
         if (badge.length) {
-          if (G.currentApp.widgetLibrary  &&  G.currentApp.widgetLibrary == 'Topcoat')
-            badge.$css('left', '50%');
-          else
+          if (G.isJQM())
             badge.$css('left', Math.floor(btnWidth/2) + '%');
+          else
+            badge.$css('left', '50%');
         }
       }
       // HACK
