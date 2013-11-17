@@ -11,7 +11,7 @@ define('views/CommentListItemView', [
     className: 'commentList',
     initialize: function(options) {
       _.bindAll(this, 'render', "like"); // fixes loss of context for 'this' within methods
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
       this.makeTemplate('comment-item', 'template', this.vocModel.type);
       
       // resourceListView will call render on this element

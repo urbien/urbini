@@ -8,7 +8,7 @@ define('views/MessageBar', [
   return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'checkMessageList');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
       
       options = options || {};
       _.extend(this, options);

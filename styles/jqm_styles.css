@@ -406,7 +406,10 @@
   padding-left: 0; 
   cursor: pointer;
 }
-
+.ui-btn-corner-all {
+  border-radius: 1.4em;
+  -webkit-border-radius: 1.4em;
+}
 .menuItems .ui-li-static.ui-li-has-thumb {
   min-height: 26px;
 }
@@ -450,6 +453,6 @@
   top: -3px;
 }
 #photogridHeader h3 {
-  font-size: 1.8rem;
-  margin: 1rem;
+  font-size: 18px;
+  margin: 10px;
 }

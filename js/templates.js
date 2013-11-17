@@ -5,8 +5,9 @@ define('templates', [
   'events', 
   '../templates.jsp',
   '../templates_bb.jsp',
-  '../templates_topcoat.jsp'
-], function(G,_, Events, HTML, HTML_bb, HTML_topcoat) {
+  '../templates_topcoat.jsp',
+  '../templates_bootstrap.jsp'
+], function(G,_, Events, HTML, HTML_bb, HTML_topcoat, HTML_bootstrap) {
   _.templateSettings = {
     evaluate:    /\{\{(.+?)\}\}/g,
     interpolate: /\{\{=(.+?)\}\}/g
@@ -113,6 +114,10 @@ define('templates', [
       if (HTML_topcoat) {
         HTML += HTML_topcoat;
         HTML_topcoat = null; // in case loadTemplates is ever called again;
+      }
+      if (HTML_bootstrap) {
+        HTML += HTML_bootstrap;
+        HTML_bootstrap = null; // in case loadTemplates is ever called again;
       }
       
       var elts = $('script[type="text/template"]', $(HTML));

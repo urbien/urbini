@@ -680,7 +680,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       var result = [];
       if (attributes) {
         for (var name in attributes) { 
-          result.push(" " + name + "=\"" + self.escape(attributes[name]) + "\"");
+          result.push(" " + name + "=\"" + this.escape(attributes[name]) + "\"");
         }
       }
       

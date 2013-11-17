@@ -34,7 +34,7 @@ define('views/ResourceImageView', [
   return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'resizeVideo'); // fixes loss of context for 'this' within methods
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
       options = options || {};
       this.twin = options.twin;
       
@@ -354,10 +354,18 @@ define('views/ResourceImageView', [
           li = '<div style="height:' + h + 'px">{0}</div>'.format(iTemplate);
       }
       U.addToFrag(frag, li);
-      this.$el[this.isAudio ? 'append' : 'html'](frag);
+//      this.$el[this.isAudio ? 'append' : 'html'](frag);
+//      this[this.isAudio ? 'append' : 'html'](frag);
+      if (this.isAudio)
+        this.el.appendChild(frag);
+      else {
+        this.el.innerHTML = "";
+        this.el.appendChild(frag);
+      }
+        
       if (l) {
         var h = t ? b - t : b;
-        this.$el.attr('style', 'height: ' + h + 'px;');
+        this.el.style.height = h + 'px';
       }
       return this;
     }

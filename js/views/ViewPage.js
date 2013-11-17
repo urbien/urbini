@@ -13,7 +13,7 @@ define('views/ViewPage', [
     clicked: false,
     initialize: function(options) {
       _.bindAll(this, 'render', 'home', 'edit', 'pageChange');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicPageView.prototype.initialize.apply(this, arguments);
 //      this.resource.on('change', this.render, this);
       var self = this,
           res = this.resource;

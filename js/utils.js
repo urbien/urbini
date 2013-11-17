@@ -1621,9 +1621,9 @@ define('utils', [
       var hasImgs;
 //      var isIntersection = !hasImgs  &&  this.isA(vocModel, 'Intersection'); 
       var isIntersection = this.isA(vocModel, 'Intersection'); 
-      var isView = window.location.hash  &&  window.location.hash.indexOf('#view/') == 0;
+      var isResourceView = window.location.hash  &&  (window.location.hash.indexOf('#view/') == 0  ||  window.location.hash.indexOf('#edit/') == 0);
       if (isIntersection) {
-        if (isView) {
+        if (isResourceView) {
           aCloneOf = U.getCloneOf(vocModel, 'Intersection.aFeatured')[0]  ||  U.getCloneOf(vocModel, 'Intersection.aThumb')[0];
           bCloneOf = U.getCloneOf(vocModel, 'Intersection.bFeatured')[0]  ||  U.getCloneOf(vocModel, 'Intersection.bThumb')[0];
         }
@@ -1638,9 +1638,9 @@ define('utils', [
       }
       
       if (U.isA(vocModel, 'ImageResource')) {
-        var isMasonry = !isView  &&  U.isMasonry(vocModel)  &&  U.isMasonryModel(vocModel);
+        var isMasonry = !isResourceView  &&  U.isMasonry(vocModel)  &&  U.isMasonryModel(vocModel);
         var cloneOfTmp = isMasonry ? U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0]  ||  U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0] 
-                                   : (isView  ?  U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0] || U.getCloneOf(vocModel, 'ImageResource.bigImage')[0] : U.getCloneOf(vocModel, 'ImageResource.smallImage')[0] || U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0]);
+                                   : (isResourceView  ?  U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0] || U.getCloneOf(vocModel, 'ImageResource.bigImage')[0] : U.getCloneOf(vocModel, 'ImageResource.smallImage')[0] || U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0]);
         if (cloneOfTmp) {
           if (isMasonry) {
             var viewport = G.viewport;
@@ -1660,7 +1660,7 @@ define('utils', [
                 cloneOf = U.getCloneOf(vocModel, 'ImageResource.masonry680_h')[0];
             }
           }
-          else if (isView) {
+          else if (isResourceView) {
             var ww = $(window).width();
             if (ww < $(window).height()) {
               if (ww <= 340) 
@@ -2396,12 +2396,12 @@ define('utils', [
         if (minDim  &&  minDim >= frmWidth) {
           if (oWidth <= oHeight) {
             mdW = minDim; 
-            var r = maxDim /oWidth;
+            var r = minDim /oWidth;
             mdH = Math.floor(oHeight * r); 
           }
           else {
             mdH = minDim; 
-            var r = maxDim /oHeight;
+            var r = minDim /oHeight;
             mdW = Math.floor(oWidth * r); 
           }
         }
@@ -2409,7 +2409,12 @@ define('utils', [
           if (oWidth >= oHeight) {
             mdW = maxDim; 
             var r = maxDim /oWidth;
-            mdH = Math.floor(oHeight * r); 
+            mdH = Math.floor(oHeight * r);
+            if (mdH < frmHeight  &&  mdH < oHeight) {
+              mdH = frmHeight;
+              var r = frmHeight /oHeight;
+              mdW = Math.floor(oWidth * r); 
+            }
           }
           else {
             mdH = maxDim; 

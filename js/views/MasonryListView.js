@@ -103,7 +103,7 @@ define('views/MasonryListView', [
         if (w)
           w = w.substring(0, w.length - 2);
       }
-
+      
       var imgP = U.getImageProperty(this.collection);
       if (imgP) {
         var prop = this.vocModel.properties[imgP];
@@ -192,24 +192,24 @@ define('views/MasonryListView', [
     },
     
     centerMasonry: function(list) {
-      var l = _.filter(list.$el.find('.nab'), function(a) {
-          return $(a).css('top') == '0px';
-        }),
-        len = l.length;
-      
-      if (len) {
-        var w = $(l[0]).css('width');
-        w = w.substring(0, w.length - 2);
-        len = l.length * w;
-//        len += l.length * 18;
-        var d = (($(window).width() - len) / 2) - 10;
-        var style = list.$el.attr('style'); 
-        var left = list.$el.css('left');
-        if (left)
-          list.$el.css('left', d + 'px');
-        else
-          list.$el.attr('style', style + 'left: ' + d + 'px;');
-      }
+//      var l = _.filter(list.$el.find('.nab'), function(a) {
+//          return $(a).css('top') == '0px';
+//        }),
+//        len = l.length;
+//      
+//      if (len) {
+//        var w = $(l[0]).css('width');
+//        w = w.substring(0, w.length - 2);
+//        len = l.length * w;
+////        len += l.length * 18;
+//        var d = (($(window).width() - len) / 2) - 10;
+//        var style = list.$el.attr('style'); 
+//        var left = list.$el.css('left');
+//        if (left)
+//          list.$el.css('left', d + 'px');
+//        else
+//          list.$el.attr('style', style + 'left: ' + d + 'px;');
+//      }
     }
   }, {
     displayName: "MasonryListView",

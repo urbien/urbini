@@ -31,7 +31,7 @@ define('views/CameraPopup', [
     
     initialize: function(options) {
       _.bindAll(this, 'render', 'start', 'stop', 'reset', 'drawVideoFrame_', 'checkVideoSize');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
       this.makeTemplate(this.template, 'template', this.vocModel.type);
       this.prop = options.prop;
       var prop = this.vocModel.properties[this.prop],

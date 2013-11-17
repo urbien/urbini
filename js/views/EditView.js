@@ -23,7 +23,7 @@ define('views/EditView', [
   function getRemoveErrorLabelsFunction(el) {
     var parent = el.parentNode;
     return function() {
-      parent.querySelectorAll('label.error').$remove();
+      parent.$('label.error').$remove();
     };
   };
 
@@ -42,7 +42,7 @@ define('views/EditView', [
                       'onSelected', 'setValues', 'getInputs', 'getScrollers', 'getValue', 'addProp', 
                       'scrollDate', 'scrollDuration', 'capturedImage', 'onerror', 'onsuccess', 'onSaveError',
                       'checkAll', 'uncheckAll'); // fixes loss of context for 'this' within methods
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
       this.makeTemplate('editRowTemplate', 'editRowTemplate', type);

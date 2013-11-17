@@ -4,8 +4,9 @@ define('views/MenuPanel', [
   'utils',
   'events',
   'vocManager',
+  'lib/blur.js',
   'views/BasicView'
-], function(G, U, Events, Voc, BasicView) {
+], function(G, U, Events, Voc, Blur, BasicView) {
   return BasicView.extend({
 //    role: 'data-panel',
 //    id: 'menuPanel',
@@ -103,8 +104,8 @@ define('views/MenuPanel', [
 //    tap: Events.defaultTapHandler,
     render:function (eventName) {
       var menu = document.getElementById(this.viewId);
-      var mi = menu.querySelector('#menuItems');
-      if (mi) {
+      var mi = menu && menu.querySelector('#menuItems');
+      if (mi && G.isJQM()) {
 //        $('#' + this.viewId).panel().panel("open");
         menu.panel("open");
         return;
@@ -230,7 +231,7 @@ define('views/MenuPanel', [
       ul.appendChild(frag);      
       var p = document.getElementById(this.viewId);
       p.appendChild(this.el);
-      if (p.tagName.toLowerCase() == 'section') 
+      if (!G.isJQM()) 
         p.style.visibility = 'visible';
       else {
         $(p).panel().panel("open");
@@ -238,6 +239,8 @@ define('views/MenuPanel', [
       }
 //      p.panel().panel("open");
 //      this.$('#menuItems').listview();
+//      if (U.isMasonry(this.vocModel))
+//        this.$el.blurjs({source: '#nabs_grid', radius: 5});
       
       return this;
     }

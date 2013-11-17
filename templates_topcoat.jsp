@@ -35,7 +35,11 @@
     <table class="table-stroke" width="100%" style="display:none" id="comments">
     </table>
     <form data-ajax="false" id="mv" action="#">
-      <input type="submit" id="mvSubmit" value="{{= loc('submit') }}" />
+      <div style="width:100%;padding-top:1rem;text-align:center">
+      <button type="submit" class="topcoat-button--large--cta" style="width:90%;" id="mvSubmit">
+        {{= loc('submit') }}
+       </button>
+      </div>
       <div data-role="fieldcontain">
         <fieldset data-role="controlgroup" id="mvChooser">
         </fieldset>
@@ -43,7 +47,7 @@
     </form>  
     <form data-ajax="false" id="editRlForm" action="#">
       <input type="submit" id="editRlSubmit" value="Submit" />
-      <ul data-role="listview" data-theme="{{= G.theme.list }}" id="editRlList" class="action-list" data-inset="true">
+      <ul id="editRlList">
       </ul>
     </form>  
   </div>
@@ -76,7 +80,12 @@
     </div>
     <br/>
     {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
-       <div style="padding:10px;"><a data-role="button" class="{{= 'ui-btn-hover-' + G.theme.swatch }}" data-icon="heart" data-theme="{{= G.theme.swatch }}" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></div>
+       <div style="text-align:center;width:100%;padding-bottom:0.5rem">
+       <button class="topcoat-button--cta" style="width:80%;font-size:1.8rem; padding:0.5rem 0; font-weight:bold;">
+         <a href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}
+         </a>
+       </button>
+       </div>
     {{ } }}
     
     <ul data-theme="{{= G.theme.list }}" class="topcoat-list__container" id="resourceView">
@@ -206,15 +215,15 @@
   {{ if (obj.v_submitToTournament) { }}
     <div style="padding-left: 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
   {{ } }}
-    <img data-lazysrc="{{= obj.image ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : G.blankImgDataUrl }}" style="position:absolute;left:0px" 
+    <img data-lazysrc="{{= obj.image ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : G.blankImgDataUrl }}"  
     {{ if (obj.right) { }}  
       style="position:absolute;
         left:-{{= left }}px; top:-{{= top }}px;
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px); {{= obj.mH ? 'max-height:' + mH + 'px;' : '' }} {{= obj.mW ? 'max-width:' + mW + 'px;' : '' }}"
     {{ } }}
     {{ if (!obj.right && obj.image) { }}
-      style="max-height: 80px;position:absolute;max-height: 80px;max-width: 80px;margin-left:-90px; margin-top:-0.7em"
-    {{ } }} 
+      style="max-height: 80px;position:absolute;max-height: 80px;max-width: 80px;left:0px; margin-top:-0.7em"
+    {{ } }} s
     class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, this.imageProperty) }}" />
     {{= viewCols }}
   </div>
@@ -299,18 +308,21 @@
 
 <script type="text/template" id="menuButtonTemplate">
   <!-- button that toggles the menu panel -->
-    <button class="topcoat-button-bar__button">
+  <button class="topcoat-button-bar__button">
   <a target="#" href="#{{= viewId }}"><i class="ui-icon-reorder"></i>
     {{= '<span class="menuBadge" style="top:1rem">{0}</span>'.format(obj.newAlerts || '') }}
   </a>
+  <span style="position: absolute;"><i class="ui-icon-sort"></i></span>
   </button>
 </script>
 
 <script type="text/template" id="rightMenuButtonTemplate">
   <!-- button that toggles the object properties panel -->
     <button class="topcoat-button-bar__button">
-  <a target="#" href="#{{= viewId }}"><i class="ui-icon-reorder"></i></a>{{= '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}
+  <a target="#" href="#{{= viewId }}"><i class="ui-icon-indent-right"></i></a><!--{{= '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}-->
+    {{= '<span class="topcoat-notification">{0}</span>'.format(obj.newAlerts || '') }}
   </a>
+  <span style="position: absolute;font-size:14px;top:-0.2rem;margin-left:1.3rem;"><i class="ui-icon-sort"></i></span>
   </button>
 </script>
 
@@ -324,27 +336,24 @@
 <script type="text/template" id="loginPopupTemplate">
   <!-- login popup with various social network based logins -->
   {{ var canDismiss = typeof dismissible === 'undefined' || dismissible == true; }}
-  <section id="login_popup" role="region" style="position:absolute; top:15%; padding-top:0.5rem; border:1px solid #aaa; border-radius:1rem; z-index:1000000; background:#cccccc;width:auto;">
-  <ul class="compact">
+  <section id="login_popup" style="position:absolute; top:15%; border:1px solid #aaa; border-radius:1rem; z-index:1000000; background:#d2d2d2;width:auto;">
+  <div style="padding:0 1rem 1rem 1rem;">
     <h4 style="margin:10px 0;color:#757575;" id="loginMsg">{{= msg }}</h4>
-    <!--a href="#" data-cancel="cancel" data-rel="back" data-role="button" data-theme="{{= G.theme.menu }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a-->
-    
     {{ _.forEach(nets, function(net) { }} 
-<li style="padding:0;border-bottom:none;">
-    <a role="button" href="{{= net.url }}" style="text-align:center;border-radius:1rem;width:85%;font-weight:bold;" {{= net.name == 'Facebook' ? ' target="_top"' : '' }}>
-        <i style="padding-top:0.7rem" class="big_symbol 
-      {{ if(net.name == "Facebook") { }} ui-icon-facebook-sign {{ } }}
-      {{ if(net.name == "Google") { }} ui-icon-google-plus-sign {{ } }}
-      {{ if(net.name == "Twitter") { }} ui-icon-twitter-sign {{ } }}
-      {{ if(net.name == "LinkedIn") { }} ui-icon-linkedin-sign {{ } }}
-      {{ if(net.name == "Live") { }} ui-icon-live-sign {{ } }}
-        ">
+    <button class="topcoat-button-bar__button" style="width:100%;margin-top:1rem;padding:0.5rem;">
+      <a href="{{= net.url }}" style="text-align:center;border-radius:1rem;width:85%;font-weight:bold;" {{= net.name == 'Facebook' ? ' target="_top"' : '' }}>
+        <i style="padding-top:0.3rem;margin-left:0.5rem;" class="big_symbol 
+        {{ if(net.name == "Facebook") { }} ui-icon-facebook-sign {{ } }}
+        {{ if(net.name == "Google") { }} ui-icon-google-plus-sign {{ } }}
+        {{ if(net.name == "Twitter") { }} ui-icon-twitter-sign {{ } }}
+        {{ if(net.name == "LinkedIn") { }} ui-icon-linkedin-sign {{ } }}
+        {{ if(net.name == "Live") { }} ui-icon-live-sign {{ } }}
+          ">
        </i>
-     {{= net.name }}
-    </a>
-</li>
+       {{= net.name }}
+      </a>
+    </button><br/sw>
     {{ }); }}
-</ul>
     <!--h5>Login by Email</h5>
     <form id="loginForm" action="j_security_check" method="POST" onsubmit="return hash(this, 'j_security_check')" autocomplete="off">
       <table>
@@ -469,17 +478,17 @@
   <li style="{{= obj.image ? 'padding-top: 0;padding-right:0px;padding-bottom: 7px;' : 'padding-bottom:0px;' }}"  id="{{= obj.id ? obj.id : G.nextId() }}" class="topcoat-list__item{{= obj.cssClass ? ' ' + cssClass : '' }}" 
       {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl) + '"' : '' }} >
     
-    <!-- {{ if (!obj.homePage) { }} -->   
-    <img src="{{= obj.image || 'icons/blank.png'}}" class="thumb" 
-    {{ if (typeof obj.width != 'undefined'  &&  obj.width.length) { }}  
-      style="
-        width:{{= width }}px; height:{{= height }}px;
-        left:-{{= left }}px; top:-{{= top }}px;
-        clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
+    {{ if (obj.image) { }}   
+      <img src="{{= obj.image || 'icons/blank.png'}}" class="thumb" 
+      {{ if (typeof obj.width != 'undefined'  &&  obj.width.length) { }}  
+        style="
+          width:{{= width }}px; height:{{= height }}px;
+          left:-{{= left }}px; top:-{{= top }}px;
+          clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
+      {{ } }}
+      /> 
     {{ } }}
-    /> 
-    <!-- {{ } }} -->
-    <div style="min-height:38px;max-width:100%;font-size:18px;margin-left:15px;{{= obj.image ? 'padding-top:10px;' : '' }}" 
+    <div style="min-height:38px;max-width:100%;padding-top:10px;font-size:18px;margin-left:15px;" 
       {{ if (obj.data) {                              }}
       {{   for (var d in data) {                      }}
       {{=    ' data-{0}="{1}"'.format(d, data[d])     }}
@@ -495,7 +504,7 @@
     </div>
     
     {{ if (obj.icon  &&  !obj.homePage) { }}
-      <i style="position:absolute;right:1.5rem;font-size:2rem;" class="ui-icon-{{= icon }} home"></i>
+      <i style="position:absolute;right:1.5rem;top:1rem;font-size:2rem;" class="ui-icon-{{= icon }} home"></i>
     {{ }               }}
   </li>
 </script>
@@ -504,7 +513,7 @@
   <!-- Notifications item on the left-side slide-out menu panel -->
   <li class="topcoat-list__item{{= typeof cssClass == 'undefined' ? '' : ' ' + cssClass }}" data-href="{{= pageUrl }}">
     <div style="margin-top:15px;min-height:38px;max-width:100%;font-size:18px;margin-left:15px;position:relative;"  id="{{= typeof id === 'undefined' ? G.nextId() : id}}">
-      {{= title }}   <span class="acounter">{{= newAlerts }}</span> 
+      {{= title }}   <span class="topcoat-notification">{{= newAlerts }}</span> 
     </div>
   </li>
 </script>
@@ -526,7 +535,7 @@
 
 <script type="text/template" id="propRowTemplate2">
   <!-- wrapper for one row on a list page (long) -->
-  <li data-shortname="{{= shortName }}" class="topcoat-list__item" {{= obj.rules || '' }}><div>{{= name }}<div style="margin-left:1.5rem;font-weight: normal;">{{= value }}</div></div></li>
+  <li data-shortname="{{= shortName }}" class="topcoat-list__item" {{= obj.rules || '' }}>{{= name }}<div style="display:inline-block;margin-left:1.5rem;font-weight: normal;">{{= value }}</div></li>
 </script>
 
 <script type="text/template" id="menuHeaderTemplate">
@@ -541,16 +550,14 @@
 <script type="text/template" id="resourceEdit">
 <!-- the edit page for any particular resource -->
   <section id="{{= viewId }}" data-type="sidebar" style="left:auto;right:0;visibility:hidden;z-index:10001"></section>
-  <section id="{{= viewId + 'r' }}" data-type="sidebar" data-position="right" style="left:auto;right:0;visibility:hidden;z-index:10001"></section> 
+  <section id="{{= viewId + 'r' }}" data-type="sidebar" style="left:auto;right:0;visibility:hidden;z-index:10001"></section> 
 <!--div id="headerMessageBar"></div-->
   <div id="headerDiv"></div>
   <div id="resourceEditView">
   <div id="resourceImage"></div>
   <form data-ajax="false" id="{{= viewId + '_editForm'}}" action="#">
-  <section data-type="list">
-    <ul id="fieldsList" class="editList">
-    </ul>
-  </section>
+  <ul id="fieldsList" class="editList topcoat-list__container">
+  </ul>
     <div name="errors" style="float:left"></div>
     {{ if (this.resource.isAssignableFrom("InterfaceImplementor")) }}
     <div data-role="fieldcontain" id="ip">
@@ -565,8 +572,8 @@
     
     <div>
       <fieldset id= "submitBtns">
-        <div><button type="cancel" id="cancel">{{= obj.cancel || loc('cancel') }}</button></div>
-        <div><button type="submit" id="submit">{{= obj.submit || loc('submit') }}</button></div>
+        <div><button class="topcoat-button--large" type="cancel" id="cancel">{{= obj.cancel || loc('cancel') }}</button></div>
+        <div><button class="topcoat-button--large" type="submit" id="submit">{{= obj.submit || loc('submit') }}</button></div>
       </fieldset>
     </div>
 
@@ -579,6 +586,21 @@
 </div>
 </script>
 
+<!--script type="text/template" id="mvListItem">
+ <input type="checkbox" name="Attachments" id="28" value="http://urbien.com/sql/www.hudsonfog.com/voc/system/designer/BacklinkProperty?id=55173">
+  <div class="topcoat-checkbox__checkmark"></div>
+  <label for="28" class="topcoat-checkbox" style="font-size: 1.6rem;"></label>
+</script-->
+
+<script type="text/template" id="mvListItem">
+  <!-- a multivalue input for edit forms -->
+  {{ var id = G.nextId() }}
+  
+  <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}" value="{{= _uri }}" {{= obj._checked ? 'checked="checked"' : '' }} />
+  <div class="topcoat-checkbox__checkmark"></div>
+  <label for="{{= id }}" class="topcoat-checkbox">{{= davDisplayName }} <!-- {{= obj._thumb ? '<img src="' + _thumb + '" style="float:right;max-height:40px;" />' : '' }}--></label>
+</script>
+
 <script type="text/template" id="editRowTemplate">
   <!-- one property row in edit mode -->
   <li data-role="fieldcontain">{{= value }}</li>
@@ -588,11 +610,11 @@
   {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 100; }}
   {{ if (name) { }}
     <label for="{{= id }}" class="ui-input-text" {{= isInput ? '' : 'style="vertical-align:top"' }}>{{= name }}</label>
-    <{{= isInput ? 'input type="text"' : 'textarea rows="3" cols="20" ' }} name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}  class="ui-input-text">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
+    <{{= isInput ? 'input type="text"' : 'textarea rows="3" cols="20" ' }} name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}  class="ui-input-text topcoat-text-input">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   {{ } }} 
   {{ if (!name) { }}
   <div> 
-    <{{= isInput ? 'input type="text"' : 'textarea  rows="10"' }} name="{{= shortName }}" id="{{= id }}"  value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}>{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
+    <{{= isInput ? 'input type="text"' : 'textarea  rows="10"' }} name="{{= shortName }}" id="{{= id }}"  value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }} class="topcoat-text-input">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   </div>
   {{ } }} 
 </script>
@@ -602,19 +624,17 @@
     <label for="{{= id }}">{{= name }}</label>
     {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }} 
   {{ } }}
-  <section>
-  <label class="pack-switch" style="right: 3rem;top:-1rem;left:auto;position:absolute;">
-    <input type="checkbox" name="{{= shortName }}" id="{{= id }}" class="formElement boolean" />
-    <span></span>
+  <label class="topcoat-switch" style="z-index:10001;float:right;">
+    <input type="checkbox" name="{{= shortName }}" id="{{= id }}" class="formElement topcoat-switch__input" />
+    <div class="topcoat-switch__toggle"></div>
   </label>
-  </section>
 <!--  {{= typeof comment == 'undefined' ? '' : '<span class="comment">' + comment + '</span>' }} -->
 </script>
 
 <script type="text/template" id="resourcePET">
   {{ if (prop.range && ((isImage && prop.camera) || isVideo || isAudio)) { }}
     <a href="#cameraPopup" class="cameraCapture" target="#" data-prop="video">
-      <i class="{{= isVideo ? 'ui-icon-facetime-video' : isAudio ? 'ui-icon-circle' : 'ui-icon-camera' }}" style="position:absolute;right:4px;font-size:2.3rem;top:2rem;overflow:hidden"></i>
+      <i class="{{= isVideo ? 'ui-icon-facetime-video' : isAudio ? 'ui-icon-circle' : 'ui-icon-camera' }}" style="position:absolute;right:1rem;font-size:2.3rem;top:0;overflow:hidden"></i>
     </a>
     {{ if (!G.canWebcam) { }}
       <input data-role="none" type="file" class="cameraCapture" accept="{{= isVideo ? 'video/*' : isAudio ? 'audio/*' : 'image/*' }};capture=camera;" style="visibility:hidden; display:none;" data-prop="{{= shortName }}" />
@@ -647,16 +667,16 @@
 </script>
 <script type="text/template" id="telPET">
   <label for="{{= id }}" class="ui-input-text">{{= name }}</label>
-  <input type="tel" name="{{= shortName }}" id="{{= id }}" class="ui-input-text" value="{{= typeof value === 'undefined' ? '' : value }}" />
+  <input type="tel" name="{{= shortName }}" id="{{= id }}" class="ui-input-text topcoat-text-input" value="{{= typeof value === 'undefined' ? '' : value }}" />
 </script>
 
 <script type="text/template" id="emailPET">
   <label for="{{= id }}" class="ui-input-text">{{= name }}</label>
-  <input type="email" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= 'formElement ' }}ui-input-text" {{= rules }} />
+  <input type="email" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= 'formElement ' }}ui-input-text topcoat-text-input" {{= rules }} />
 </script>
 
 <script type="text/template" id="hiddenPET">
-  <input type="hidden" name="{{= shortName }}" id="{{= id }}" value="{{= value }}" class="{{= 'formElement ' }}ui-input-text" {{= rules }} />
+  <input type="hidden" name="{{= shortName }}" id="{{= id }}" value="{{= value }}" class="{{= 'formElement ' }}ui-input-text topcoat-text-input" {{= rules }} />
 </script>
 
 </div>

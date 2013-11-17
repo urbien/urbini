@@ -117,19 +117,21 @@ define('lib/fastdom', ['globals', 'underscore'], function(G, _) {
         }
       } finally {
         if (!_.size(listeners) && frameId !== undefined) {
-          caf(frameId);
+//          caf(frameId);
           frameId = undefined;
         }
       }
     }
 
     function publish() {
-      var now = _.now();
-      lastFrameDuration = now - lastFrameStart;
-      lastFrameStart = now;
-      frameId = raf(publish);
-      for (var id in listeners) {
-        invoke(listeners[id]);
+      if (typeof frameId != 'undefined') {
+        var now = _.now();
+        lastFrameDuration = now - lastFrameStart;
+        lastFrameStart = now;
+        frameId = raf(publish);
+        for (var id in listeners) {
+          invoke(listeners[id]);
+        }
       }
     }
     
@@ -279,6 +281,7 @@ define('lib/fastdom', ['globals', 'underscore'], function(G, _) {
   };
 
   FastDom.prototype.isOutOfTime = function() {
+//    return false;
     return (this._frameTime = _.last(this.timestamps) - this.frameStart) >= FRAME_END;
   };
   

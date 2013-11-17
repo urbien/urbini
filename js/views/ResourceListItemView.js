@@ -10,7 +10,7 @@ define('views/ResourceListItemView', [
 ], function(G, _, Events, Errors, U, BasicView, Voc) {
   var RLIV = BasicView.extend({
     tagName: "li",
-    className: G.isTopcoat() ? "topcoat-list__item" : "",
+    className: G.isTopcoat() ? "topcoat-list__item" : (G.isBootstrap() ? "list-group-item" : ""),
     style: {
       display: 'block'
     },
@@ -48,10 +48,12 @@ define('views/ResourceListItemView', [
         else if (this.imageProperty) {
 //          this.imageProperty = options.imageProperty;
           this.makeTemplate('listItemTemplate', 'template');
-          if (options.swatch)
-            classes += " ui-li-up-" + options.swatch;
-          else
-            classes += " image_fitted ui-btn ui-li ui-li-has-thumb ui-li-static";
+          if (G.isJQM()) {
+            if (options.swatch)
+              classes += " ui-li-up-" + options.swatch;
+            else
+              classes += " image_fitted ui-btn ui-li ui-li-has-thumb ui-li-static";
+          }
         }
         else {
           this.makeTemplate('listItemTemplateNoImage', 'template', this.vocModel.type);
@@ -62,6 +64,7 @@ define('views/ResourceListItemView', [
       this.className = classes;
       if (options.swatch)
         elAttrs["data-theme"] = options.swatch;
+      elAttrs['class'] = classes;
 //      if (this.resource.isA("Buyable"))
 //      else
 //        this.$el.attr("data-icon", "chevron-right");
@@ -69,7 +72,7 @@ define('views/ResourceListItemView', [
    //      this.$el.attr("class", "image_fitted ui-btn ui-li-has-arrow ui-li ui-li-has-thumb ui-first-child ui-btn-up-c");
       // resourceListView will call render on this element
   //    this.model.on('change', this.render, this);
-
+      this.className = classes;
       return this;
     },
     events: {
@@ -362,7 +365,7 @@ define('views/ResourceListItemView', [
       }
       if (!this.isCommonTemplate) {
 //        if (this.imageProperty)
-//          this.$el.addClass("image_fitted");
+//          this.el.classList.add("image_fitted");
         
         return this.doRender(options, json);
       }
@@ -406,6 +409,7 @@ define('views/ResourceListItemView', [
       var oW = clonedIR.originalWidth;
       var oH = clonedIR.originalHeight;
       var maxDim = this.maxImageDimension;
+      var minDim = this.minImageDimension;
       var w, h;
       if (!oH  &&  !oW  &&  this.imageProperty) {
         var img = atts[this.imageProperty];
@@ -424,9 +428,9 @@ define('views/ResourceListItemView', [
       }
       
       if (oW  &&  oH  &&  (typeof atts[oW] != 'undefined' &&  typeof  atts[oH] != 'undefined')) {
-//        this.$el.addClass("image_fitted");
+//        this.el.classList.add("image_fitted");
         
-        var clip = U.clipToFrame(80, 80, m.get(oW), m.get(oH), maxDim, 80);
+        var clip = U.clipToFrame(80, 80, m.get(oW), m.get(oH), maxDim, minDim);
         if (clip) {
           json.top = clip.clip_top;
           json.right = clip.clip_right;

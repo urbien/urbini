@@ -16,7 +16,7 @@ define('views/MenuButton', [
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'menu');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
       this.makeTemplate(this.templateName, 'template', this.modelType);
       this.viewId = options.viewId;
       return this;
@@ -30,7 +30,7 @@ define('views/MenuButton', [
         var tagName = (p  &&  p[0].tagName.toLowerCase() == 'section') ? 'nav' : 'div'; 
 
         var menuPanel = new MenuPanel({viewId: this.viewId, model: this.model, tagName: tagName, parentView: this.getPageView()});
-        menuPanel.render();        
+        menuPanel.render();
       }.bind(this));
 
       return this;
