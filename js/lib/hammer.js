@@ -539,6 +539,10 @@ Hammer.PointerEvent = {
 
 
 Hammer.utils = {
+    falsy: function() {
+      return false;
+    },
+    
     /**
      * extend method,
      * also used for cloning when dest is an empty object
@@ -738,9 +742,7 @@ Hammer.utils = {
         
         // and disable ondragstart
         if(css_props.userDrag == 'none') {
-            element.ondragstart = function() {
-                return false;
-            };
+            element.ondragstart = this.falsy;
         }
     }
 };

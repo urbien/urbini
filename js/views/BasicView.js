@@ -23,8 +23,8 @@ define('views/BasicView', [
   };
   
   baseTemplateData = new baseTemplateData();
-  function disableHover($el) {
-    $el.bind('mouseover', function() {
+  function disableHover(el) {
+    el.addEventListener('mouseover', function() {
       return false;
     });
   }
@@ -36,7 +36,6 @@ define('views/BasicView', [
       _.bindAll(this, 'reverseBubbleEvent', 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_render',  '_refresh');      
       this.TAG = this.TAG || this.constructor.displayName;
 //      this.log('newView', ++this.constructor._instanceCounter);
-      
       var superCtor = this.constructor;
       while (superCtor.__super__) {
         var superDuperCtor = superCtor.__super__.constructor;
@@ -75,7 +74,7 @@ define('views/BasicView', [
       this._taskQueue = [];      
       this._templates = [];
       this._templateMap = {};
-      
+
       var res = this.data = this.model = this.model || options.resource || options.collection;
       if (res) {
         if (this.model instanceof Backbone.Collection) {
@@ -342,8 +341,8 @@ define('views/BasicView', [
         else if (rOptions.delegateEvents !== false)
           this.redelegateEvents(); // bind what events we can at the moment
         
-        if (G.browser.mobile)
-          disableHover(this.$el);
+        if (this.el && G.browser.mobile) // TODO disable hover when el appears
+          disableHover(this.el);
         
         return result;
       }

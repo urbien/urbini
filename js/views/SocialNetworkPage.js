@@ -14,7 +14,7 @@ define('views/SocialNetworkPage', [
     _netUrls: {},
     initialize: function(options) {
       _.bindAll(this, 'click');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicPageView.prototype.initialize.apply(this, arguments);
       
       var self = this;
       Voc.getModels(accessType).done(function() {
