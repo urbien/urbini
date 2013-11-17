@@ -189,7 +189,8 @@ define('views/ResourceMasonryItemView', [
       if (!meta)
         return this;
       
-      this.IMG_MAX_WIDTH = meta[imgP].imageWidth  ||  this.maxImageDimension;
+      var imgWidth = meta[imgP].imageWidth;
+      this.IMG_MAX_WIDTH = imgWidth ||  this.maxImageDimension;
       var rUri = m.getUri();
       if (!rUri) {
         // <debug>
@@ -256,7 +257,11 @@ define('views/ResourceMasonryItemView', [
               ratio = this.IMG_MAX_WIDTH / oWidth;
           }
           else {
-            if (oHeight > this.IMG_MAX_WIDTH) 
+            if (imgWidth) {
+              if (oWidth > this.IMG_MAX_WIDTH)
+                ratio = this.IMG_MAX_WIDTH / oWidth;
+            }
+            else if (oHeight > this.IMG_MAX_WIDTH) 
               ratio = this.IMG_MAX_WIDTH / oHeight;
           }
           var iW = Math.floor(oWidth * ratio);
