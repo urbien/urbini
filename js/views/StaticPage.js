@@ -9,7 +9,7 @@ define('views/StaticPage', [
   return BasicPageView.extend({
     initialize: function(options) {
       options = options || {};
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicPageView.prototype.initialize.apply(this, arguments);
 
       if (options.header) {
         this.headerButtons = {
