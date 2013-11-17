@@ -192,7 +192,7 @@
 
 <script type="text/template" id="chatPageTemplate">
   <!-- Chat page -->
-  <div id="{{= viewId }}" data-role="panel" data-display="overlay" style="z-index: 3000;" data-theme="{{= G.theme.menu}}"></div> 
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" style="z-index: 3000;" data-theme="{{= G.theme.menu}}" data-position="right"></div> 
   <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" style="z-index: 3001;" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
   <div id="videoChat" class="videoChat">
@@ -326,7 +326,7 @@
 
 <script type="text/template" id="socialNetworkPageTemplate">
 <!-- View where the user can connect various social networks -->  
-  <div id="{{= this.cid }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div>
+  <div id="{{= this.cid }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div>
   <div id="{{= this.cid + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
   <div id="socialButtons" style="min-width:200px; margin: 0 auto;"></div>
@@ -506,6 +506,7 @@
   <!-- Right-side slide-out menu panel -->
   <ul data-role="none" data-theme="{{= G.theme.menu }}" id="rightMenuItems" class="menuItems">
   </ul>
+  
 </script>  
 
 <script type="text/template" id="stringPT">
@@ -954,7 +955,8 @@
 
 <script type="text/template" id="rightMenuButtonTemplate">
   <!-- button that toggles the object properties panel -->
-  <a target="#" href="#{{= viewId }}" data-icon="reorder">{{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}
+  <a target="#" href="#{{= viewId }}" data-icon="reorder"><!--{{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}-->
+    {{= '<span class="menuBadge">{0}</span>'.format(obj.newAlerts || '') }}
   </a>
 </script>
 
@@ -1265,16 +1267,15 @@
   <!-- a masonry item brick -->
   
   <div class="anab" data-viewid="{{= viewId }}">
-    <div class="galleryItem_css3">
-      <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img data-lazysrc="{{= obj.resourceMediumImage || G.blankImgDataUrl }}" class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}"
+    <div class="galleryItem_css3"
          {{ if (obj.imgWidth) { }}
            {{ if (!obj.top) { }}
-             <!-- style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;" -->
              style="height:{{= imgHeight }}px;"
            {{ } }}
         {{ } }}
-        ></img>
+    >
+      <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
+        <img data-lazysrc="{{= obj.resourceMediumImage || G.blankImgDataUrl }}" class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" />
       </a>
     </div>
     <!-- {{= typeof friendsCount == 'undefined' ? '' : '<div class="appBadge">' + friendsCount + '</div>' }} -->
@@ -1426,8 +1427,8 @@
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">
 <!-- the edit page for any particular resource -->
-<div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div> 
-<div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu }}" data-position="right"></div> 
+<div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
+<div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu ? G.theme.propertiesMenu : G.theme.menu }}" data-position="right"></div> 
 <!--div id="headerMessageBar"></div-->
 <div id="headerDiv"></div>
 <div id="resourceEditView">

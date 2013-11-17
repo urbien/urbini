@@ -5,6 +5,7 @@ html {
 li {
   position: relative;
 }
+#categories {font-size:20px;}f
 #headerUl .topcoat-button-bar__button--large {
   border-radius: 0;
 }
@@ -19,27 +20,23 @@ li {
   padding-bottom: 3px;
 }
 #menuItems, #rightMenuItems {
-  background: #eee;
+  background: #2d2d2d;
   position: absolute;
   top:0;
   width: 21rem;
   z-index:1000000;
   height:100%;
-}
-#rightMenuItems {
   right: 0;
 }
-#menuItems {
-  left: 0;
+#menuItems .topcoat-list__header, #rightMenuItems .topcoat-list__header {
+  color: #2d2d2d;
 }
 #menuItems li, #rightMenuItems li {
   padding: 0;
+  color: #ccc;
+  border: 1px solid #000;
 }
 
-.acounter {
-  position:absolute;
-  right: 1.5rem;
-}
 #mainGroup .topcoat-button--cta {
   line-height: 6rem;
   text-align: left;
@@ -117,6 +114,19 @@ a {
   margin: 0.3rem;
   font-size: 1.4rem;
 }
+#menuItems .topcoat-notification, #rightMenuItems .topcoat-notification {
+  font-size: 1.4rem;
+  float: right;
+  margin-right: 1rem;
+  background-color: #ccc;
+  color: #2d2d2d;
+}
+#headerDiv .topcoat-notification {
+  margin-left:-4.5rem;
+  top:0.5rem;
+  font-size:1.6rem;
+  padding:0 0.15rem;
+}
 #name h4 {
   font-weight:normal;
   margin-bottom: 7px;
@@ -125,4 +135,99 @@ a {
 }
 #name.resTitle {
   padding: 7px;
+}
+
+@media all and (min-width:420px) {
+  .editList select {
+    width: 76%;
+    border: 1px solid #bbb;
+    padding: 0.5rem;
+    font-size: 1.6rem;
+  }
+  li label.ui-input-text, li label.select {
+    display: inline-block;
+    width: 18%;
+  }
+  div.ui-input-text, input.ui-input-text, textarea {
+    display: inline-block;
+    width: 75%;
+  }
+}
+.editList li {
+  padding: 0.5rem 1.5rem; 
+  min-height: 3rem;
+  font-size: 1.6rem;
+  border-bottom: 1px solid #ccc;
+}
+
+.editList select {
+  border: 1px solid #bbb;
+  padding: 0.5rem;
+  font-size: 1.6rem;
+  width: 100%;
+}
+
+fieldset div {
+  margin: 1rem -.5px 0 -.5rem;
+} 
+#mvChooser {
+  border: none;
+}
+
+fieldset#submitBtns div {
+  width:50%;
+  display:inline-block;
+}
+
+fieldset#submitBtns div:first-child {
+  float:left;
+}
+
+fieldset#submitBtns div:nth-child(2) {
+  float:right;
+}
+#mvChooser .listPage li > div:nth-child(2) {
+  clear: both;
+  float: left;
+}
+
+fieldset#submitBtns div:first-child button {
+  width:100%;
+}
+fieldset#submitBtns div:nth-child(2) button {
+  color: #fff;
+  background: #333;
+  width:100%;
+}
+fieldset#submitBtns {
+  border: none;
+}
+.editList a {
+  display:block;
+  cursor: pointer;
+}
+fieldset .listPage .topcoat-list__container {
+  border: none;
+}
+.topcoat-checkbox {
+  line-height: 3rem;
+  left: 1rem;
+  font-size: 1.5rem;
+}
+.topcoat-checkbox__checkmark, .topcoat-checkbox__checkmark:before {
+  width: 3rem;
+  height: 3rem;
+}
+input[type="checkbox"] {
+  width: 3rem;
+  height: 3rem;
+}
+#mvChooser ul {
+  margin-left: -0.5rem;
+}
+#mvSubmit {
+  font-size: 2.4rem;
+}
+.topcoat-switch__toggle:after, .topcoat-switch__toggle:before {
+  padding-left:1.4rem;
 }

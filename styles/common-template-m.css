@@ -1,4 +1,19 @@
-body { -webkit-text-size-adjust: none; }
+body { 
+    -webkit-text-size-adjust: none; 
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+input {
+    -webkit-touch-callout: auto;
+    -webkit-user-select: auto;
+    -moz-user-select: auto;
+    -ms-user-select: auto;
+    user-select: auto;
+}
 
 html { height: 100%; }
 
@@ -986,7 +1001,7 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 .thumb-inner a {
   height: 100%;
   width: 100%;
-  z-index: 10001;
+/*  z-index: 10001; */
   position:absolute;
 }
 .phOverlay h3 {
