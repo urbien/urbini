@@ -11,10 +11,6 @@ define('views/ResourceListItemView', [
   var RLIV = BasicView.extend({
     tagName: "li",
     className: G.isTopcoat() ? "topcoat-list__item" : "",
-    attributes: {
-      'data-blah': 'blah',
-      hello: 'goodbye'
-    },
     style: {
       display: 'block'
     },

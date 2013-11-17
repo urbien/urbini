@@ -14,6 +14,7 @@ define('views/ResourceMasonryItemView', [
 //    tagName: 'li',
     
     TAG: "ResourceMasonryItemView",
+    style: {},
     initialize: function(options) {
       _.bindAll(this, 'render', 'like', 'click'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);

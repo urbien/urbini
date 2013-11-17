@@ -106,6 +106,7 @@ define('globals', function() {
       browser.version = browserMatch.version;
     }
 
+    browser.opera = window.opera && Object.prototype.toString.call(window.opera) === '[object Opera]';
     browser.chrome = browser.webkit && !!window.chrome;
     browser.safari = browser.webkit && !window.chrome;
     browser.ios = navigator.userAgent.match(/(iPad|iPhone|iPod)/i);
@@ -119,6 +120,11 @@ define('globals', function() {
     browser.touch = 'ontouchstart' in window;
     browser.firefox = browser.mozilla;
     browser.name = browser.chrome ? 'chrome' : browser.firefox ? 'firefox' : browser.safari ? 'safari' : 'unknown';
+    browser.prefix = browser.webkit ? 'webkit' : 
+                      browser.mozilla ? 'moz' : 
+                        browser.opera ? 'o' : 
+                          browser.ms ? 'ms' : '';
+    
     return browser;
   };
   
@@ -420,30 +426,30 @@ define('globals', function() {
     }  
 
 //    css.transform = (function() {
-      var prefix, stylePropertyPrefix, transformLookup;
+      var prefix, stylePropertyPrefix, transformLookup, docEl = document.documentElement;
       if (document.createElement('div').style.transform !== undefined) {
-        prefix = '';
+//        prefix = '';
         stylePropertyPrefix = '';
         transformLookup = 'transform';
-      } else if (window.opera && Object.prototype.toString.call(window.opera) === '[object Opera]') {
-        prefix = '-o-';
+      } else if (browser.opera) {
+//        prefix = '-o-';
         stylePropertyPrefix = 'O';
         transformLookup = 'OTransform';
-      } else if (document.documentElement.style.MozTransform !== undefined) {
-        prefix = '-moz-';
+      } else if (docEl.style.MozTransform !== undefined) {
+//        prefix = '-moz-';
         stylePropertyPrefix = 'Moz';
         transformLookup = 'MozTransform';
-      } else if (document.documentElement.style.webkitTransform !== undefined) {
-        prefix = '-webkit-';
+      } else if (docEl.style.webkitTransform !== undefined) {
+//        prefix = '-webkit-';
         stylePropertyPrefix = 'webkit';
         transformLookup = '-webkit-transform';
       } else if (typeof navigator.cpuClass === 'string') {
-        prefix = '-ms-';
+//        prefix = '-ms-';
         stylePropertyPrefix = 'ms';
         transformLookup = '-ms-transform';
       }
       
-      css.prefix = prefix;
+      css.prefix = browser.prefix ? '-' + browser.prefix + '-' : '';
       css.stylePropertyPrefix = stylePropertyPrefix;
       css.transformLookup = transformLookup;
   };

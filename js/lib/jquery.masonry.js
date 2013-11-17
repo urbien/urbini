@@ -11,50 +11,9 @@
 /*jshint browser: true, curly: true, eqeqeq: true, forin: false, immed: false, newcap: true, noempty: true, strict: true, undef: true */
 /*global jQuery: false */
 
-(function( window, $, undefined ){
+define('lib/jquery.masonry', function() {
 
   'use strict';
-
-  /*
-   * smartresize: debounced resize event for jQuery
-   *
-   * latest version and complete README available on Github:
-   * https://github.com/louisremi/jquery-smartresize.js
-   *
-   * Copyright 2011 @louis_remi
-   * Licensed under the MIT license.
-   */
-
-  var $event = $.event,
-      resizeTimeout;
-  
-//  $event.special.smartresize = {
-//    setup: function() {
-//      $(this).bind( "resize", $event.special.smartresize.handler );
-//    },
-//    teardown: function() {
-//      $(this).unbind( "resize", $event.special.smartresize.handler );
-//    },
-//    handler: function( event, execAsap ) {
-//      // Save the context
-//      var context = this,
-//          args = arguments;
-//
-//      // set correct event type
-//      event.type = "smartresize";
-//
-//      if ( resizeTimeout ) { clearTimeout( resizeTimeout ); }
-//      resizeTimeout = setTimeout(function() {
-//        $.event[$.event.handle ? "handle" : "trigger"].apply( context, args );
-//      }, execAsap === "execAsap"? 0 : 100 );
-//    }
-//  };
-//
-//  $.fn.smartresize = function( fn ) {
-//    return fn ? this.bind( "smartresize", fn ) : this.trigger( "smartresize", ["execAsap"] );
-//  };
-
-
 
 // ========================= Masonry ===============================
   
@@ -82,40 +41,28 @@
   };
 
   Mason.prototype = {
-//    bindWindow: function(event, handler) {
-//      if (!this._boundToWindow) {
-//        var bound = this._boundToWindow[event] = this._boundToWindow[event] || [];
-//        bound.push(handler);
-//      }
+//    bindDOMEvent: function(el, event, fn) {
+//      if (!this._domEventHandlers)
+//        this._domEventHandlers = [];
 //      
-//      window.addEventListener(event, handler);
+//      el.addEventListener(event, fn);
+//      this._domEventHandlers.push(arguments);
 //    },
-//    unbindWindow: function(event, handler) {
-//      if (!this._boundToWindow)
+//    
+//    unbindDOMEvents: function() {
+//      var handlers = this._eventHandlers;
+//      if (!handlers)
 //        return;
 //      
-//      switch (arguments.length) {
-//      case 0: 
-//        for (var event in this._boundToWindow) {
-//          this.unbindWindow(event);
-//        }
-//        
-//        break;
-//      case 1:
-//        var handlers = this._boundToWindow[event],
-//            i = handlers.length;
-//    
-//        while (i--) {
-//          window.removeEventListener(event, handlers[i]);
-//        }
-//        
-//        handlers.length = 0;
-//        break;
-//      case 2: 
-//        window.removeEventListener(event, handler);
-//        break;
+//      var i = handlers.length,
+//          handler;
+//      
+//      while (i--) {
+//        handler = handlers[i];
+//        handler[0].removeEventListener(handler[1], handler[2]);
 //      }
 //    },
+    
     _filterFindBricks: function( $elems ) {
       var selector = this.options.itemSelector;
       // if there is a selector
@@ -143,23 +90,23 @@
     },
 
     _getBricks: function( $elems ) {
-      var $bricks = this._filterFindBricks( $elems );
-      nodeListProto.$css.call($bricks, { position: 'absolute' });
-      nodeListProto.$addClass.call($bricks, 'masonry-brick');
-//      ,
-//          i = bricks.length;
-//      
-//      while (i--) {
-//        bricks[i].$css()
+      var $bricks = this._filterFindBricks( $elems ),
+//          brick,
+          i = $bricks.length;
+      
+      while (i--) {
+        $bricks[i].$css({ position: 'absolute' })
+                 .$addClass('masonry-brick');
+//        brick = $bricks[i];
+//        brick.$css({ position: 'absolute' });
 //                 .$addClass('masonry-brick');
-//      }
+      }
         
-      return bricks;
+      return $bricks;
     },
     
     // sets up widget
-    _create : function( options ) {
-      
+    _create : function( options ) {      
       this.options = $.extend(true, {}, Mason.settings, options);
       this.styleQueue = [];
 
@@ -196,9 +143,9 @@
       
       // bind resize method
       if ( this.options.isResizable ) {
-        this.bind(window, 'debouncedresize', function() { 
-          instance.resize();
-        });
+        this._resizeEventHandler = this.resize.bind(this);
+        window.addEventListener('debouncedresize', this._resizeEventHandler);
+//        this.bindDOMEvent(window, 'debouncedresize', );
       }
 
 
@@ -252,16 +199,17 @@
 
       // are we animating the layout arrangement?
       // use plugin-ish syntax for css or animate
-      var styleFn = !this.isLaidOut ? 'css' : (
-            this.options.isAnimated ? 'animate' : 'css'
-          ),
-          animOpts = this.options.animationOptions;
+      var animated = !this.isLaidOut && this.options.isAnimated;
+      var animOpts = this.options.animationOptions;
 
       // process styleQueue
       var obj;
       for (i=0, len = this.styleQueue.length; i < len; i++) {
         obj = this.styleQueue[i];
-        obj.$el[ styleFn ]( obj.style, animOpts );
+        if (animated)
+          obj.$el.$animate(obj.style, animOpts);
+        else
+          obj.$el.$css(obj.style);
       }
 
       // clear out queue for next time
@@ -278,15 +226,15 @@
     // calculates number of columns
     // i.e. this.columnWidth = 200
     _getColumns : function() {
-      var container = this.options.isFitWidth ? this.element.parent() : this.element,
-          containerWidth = container.width();
+      var container = this.options.isFitWidth ? this.element.parentNode : this.element,
+          containerWidth = container.offsetWidth;
 
                          // use fluid columnWidth function if there
       this.columnWidth = this.isFluid ? this.options.columnWidth( containerWidth ) :
                     // if not, how about the explicitly set option?
                     this.options.columnWidth ||
                     // or use the size of the first item
-                    $(this.$bricks).outerWidth(true) ||
+                    this._getOuterWidth(this.$bricks[0]) ||
                     // if there's no items, use size of container
                     containerWidth;
 
@@ -297,13 +245,28 @@
 
     },
 
+    _getOuterHeight: function( brick ) {
+      var offsetHeight = brick.offsetHeight;
+      if (!this.hasOwnProperty('_brickExtraHeight'))
+        this._brickExtraHeight = $(brick).outerHeight(true) - offsetHeight;
+      
+      return offsetHeight + this._brickExtraHeight; 
+    },
+
+    _getOuterWidth: function( brick ) {
+      var offsetWidth = brick.offsetWidth;
+      if (!this.hasOwnProperty('_brickExtraWidth'))
+        this._brickExtraWidth = $(brick).outerWidth(true) - offsetWidth;
+      
+      return offsetWidth + this._brickExtraWidth; 
+    },
+
     // layout logic
     _placeBrick: function( brick ) {
-      var $brick = $(brick),
-          colSpan, groupCount, groupY, groupColY, j;
+      var colSpan, groupCount, groupY, groupColY, j;
 
       //how many columns does this brick span
-      colSpan = Math.ceil( $brick.outerWidth(true) / this.columnWidth );
+      colSpan = Math.ceil( this._getOuterWidth(brick) / this.columnWidth );
       colSpan = Math.min( colSpan, this.cols );
 
       if ( colSpan === 1 ) {
@@ -339,15 +302,16 @@
 
       // position the brick
       var position = {
-        top: minimumY + this.offset.y
+        top: minimumY + this.offset.y + 'px'
       };
       // position.left or position.right
-      position[ this.horizontalDirection ] = this.columnWidth * shortCol + this.offset.x;
+      position[ this.horizontalDirection ] = this.columnWidth * shortCol + this.offset.x + 'px';
       this.styleQueue.push({ $el: brick, style: position });
 
       // apply setHeight to necessary columns
-      var setHeight = minimumY + $brick.outerHeight(true),
+      var setHeight = minimumY + this._getOuterHeight(brick), //.outerHeight(true),
           setSpan = this.cols + 1 - len;
+      
       for ( i=0; i < setSpan; i++ ) {
         this.colYs[ shortCol + i ] = setHeight;
       }
@@ -367,6 +331,9 @@
     
     
     _reLayout : function( callback ) {
+      delete this._brickExtraWidth;
+      delete this._brickExtraHeight;
+      
       // reset columns
       var i = this.cols;
       this.colYs = [];
@@ -420,82 +387,32 @@
     
     // destroys widget, returns elements and container back (close) to original style
     destroy : function() {
-
-      this.$bricks
-        .$removeClass('masonry-brick')
-        .$forEach(function(brick) {
-          brick.style.position = '';
-          brick.style.top = '';
-          brick.style.left = '';
-        });
+      var bricks = this.$bricks,
+          brick,
+          style,
+          i = bricks.length;
+      
+      debugger;
+      while (i--) {
+        brick = bricks[i];
+        style = brick.style;
+        brick.classList.remove('masonry-brick');
+        style.position = style.top = style.left = '';
+      }
       
       // re-apply saved container styles
-      var elemStyle = this.element[0].style;
+      var elemStyle = this.element.style;
       for ( var prop in this.originalStyle ) {
         elemStyle[ prop ] = this.originalStyle[ prop ];
       }
 
       this.element
-//        .unbind('.masonry')
         .$removeClass('masonry');
-//        .$removeData('masonry');
       
-//      $(window).unbind('.masonry');
-
+      window.removeEventListener('debouncedresize', this._resizeEventHandler);
     }
     
-  };
-    
-  // helper function for logging errors
-  // $.error breaks jQuery chaining
-  var logError = function( message ) {
-    if ( window.console ) {
-      window.console.error( message );
-    }
   };
   
-  // =======================  Plugin bridge  ===============================
-  // leverages data method to either create or return $.Mason constructor
-  // A bit from jQuery UI
-  //   https://github.com/jquery/jquery-ui/blob/master/ui/jquery.ui.widget.js
-  // A bit from jcarousel 
-  //   https://github.com/jsor/jcarousel/blob/master/lib/jquery.jcarousel.js
-
-  $.fn.masonry = function( options ) {
-    if ( typeof options === 'string' ) {
-      // call method
-      var args = Array.prototype.slice.call( arguments, 1 );
-
-      this.each(function(){
-        var instance = $.data( this, 'masonry' );
-        if ( !instance ) {
-          logError( "cannot call methods on masonry prior to initialization; " +
-            "attempted to call method '" + options + "'" );
-          return;
-        }
-        if ( !$.isFunction( instance[options] ) || options.charAt(0) === "_" ) {
-          logError( "no such method '" + options + "' for masonry instance" );
-          return;
-        }
-        // apply method
-        instance[ options ].apply( instance, args );
-      });
-    } else {
-      this.each(function() {
-        var instance = $.data( this, 'masonry' );
-        // note: check if bricks are still in masonry
-        // instance.$bricks.parent().length
-        if ( instance && instance.$bricks.parent().length) {
-          // apply options & init
-          instance.option( options || {} );
-          instance._init();
-        } else {
-          // initialize new instance
-          $.data( this, 'masonry', new $.Mason( options, this ) );
-        }
-      });
-    }
-    return this;
-  };
-
-})( window, jQuery );
+  return Mason;  
+});

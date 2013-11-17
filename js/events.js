@@ -15,11 +15,10 @@ define('events', [
     getEventName: function(event) {
 //      if (!G.browser.touch)
 //        return event;
-      
-      if (event == 'resize')
-        return 'debouncedresize';
-      if (event == 'orientationchange')
-        return 'debouncedorientationchange';
+//      if (event == 'resize')
+//        return 'debouncedresize';
+//      if (event == 'orientationchange')
+//        return 'debouncedorientationchange';
       
       var match = event.match(/^(dbl)?click/),
           newEvent;

@@ -35,11 +35,14 @@ define('views/mixins/Masonry', [
     itemSelector: '.nab'
   };
   
+  var slice = Array.prototype.slice;
+  
   var Masonry = Backbone.Mixin.extend({
     className: 'masonry',
     windowEvents: {
       'resize': 'resizeMasonry'
     },
+    
     initialize: function(options) {
       this.options = $.extend(true, {}, DEFAULT_SETTINGS, options);
       _.bindAll(this, 'resizeMasonry');
@@ -118,12 +121,6 @@ define('views/mixins/Masonry', [
       
       this.isFluid = this.options.columnWidth && typeof this.options.columnWidth === 'function';
 
-      // add masonry class first time around
-//      var instance = this;
-//      setTimeout(function() {
-//        instance.el.$addClass('masonry');
-//      }, 0);
-      
       // need to get bricks
       this.reloadBricks();
     },
@@ -331,7 +328,7 @@ define('views/mixins/Masonry', [
     _appendedBricks: function( content, callback ) {
       var $newBricks = this._getBricks( content );
       // add new bricks to brick pool
-      this.bricks = Array.prototype.slice.call(this.bricks).concat($newBricks);
+      this.bricks = slice.call(this.bricks).concat($newBricks);
       this.layoutMasonry( $newBricks, callback );
     },
     
@@ -344,31 +341,6 @@ define('views/mixins/Masonry', [
       content.$remove();
       this.removedContent(content);
     }
-//    ,
-//    
-//    // destroys widget, returns elements and container back (close) to original style
-//    destroy : function() {
-//      this.$bricks
-//        .$removeClass('masonry-brick')
-//        .$forEach(function(brick) {
-//          brick.style.position = '';
-//          brick.style.top = '';
-//          brick.style.left = '';
-//        });
-//      
-//      // re-apply saved container styles
-//      var elemStyle = this.element[0].style;
-//      for ( var prop in this.originalStyle ) {
-//        elemStyle[ prop ] = this.originalStyle[ prop ];
-//      }
-//
-//      this.element
-//        .unbind('.masonry')
-//        .removeClass('masonry');
-//        .removeData('masonry');
-//       
-//      $(window).unbind('.masonry');
-//    }
   });
   
   return Masonry;
