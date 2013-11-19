@@ -3619,11 +3619,18 @@ define('utils', [
 
     isMasonryModel: function(vocModel) {
       var type = vocModel.type;
-      return type.startsWith(G.defaultVocPath) && _.any(['Tournament', 'Theme', 'Goal', 'Coupon', 'VideoResource', 'Movie', 'App', 'ThirtyDayTrial'], function(className) {
+      return type.startsWith(G.defaultVocPath) && _.any(['Tournament', 'Theme', 'Goal', 'Coupon', 'VideoResource', 'Movie', 'App', 'ThirtyDayTrial', 'Urbien'], function(className) {
         return type.endsWith('/' + className);
       });
     },
     
+    isIntersecting: function(rectA, rectB) {
+      return rectA.bottom >= rectB.top 
+          && rectA.top    <= rectB.bottom 
+          && rectA.right  >= rectB.left 
+          && rectA.left   <= rectB.right;
+    },
+
     isRectPartiallyInViewport: function(rect, fuzz) {
       var viewport = G.viewport;
       fuzz = fuzz || 0; 

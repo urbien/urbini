@@ -569,7 +569,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
     },
 
     _onKeyDown: function(e) {
-      if (!this._scrollerInitialized)
+      if (!this._scrollerInitialized || !this.isActive())
         return;
       
       var s = this._scrollerProps;
@@ -638,7 +638,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
     },
     
     _onKeyUp: function(e) {
-      if (!this._scrollerInitialized)
+      if (!this._scrollerInitialized || !this.isActive())
         return;
       
       var s = this._scrollerProps;

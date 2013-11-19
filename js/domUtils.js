@@ -3,7 +3,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       LAZY_DATA_ATTR = G.lazyImgSrcAttr,
       LAZY_ATTR = LAZY_DATA_ATTR.slice(5),
       isFF = G.browser.firefox,
-      vendorPrefixes = ['', '-moz-', '-ms-', '-o-', '-webkit-'],
+      vendorPrefixes = ['-moz-', '-ms-', '-o-', '-webkit-'],
       ArrayProto = Array.prototype,
       resizeTimeout;
 
@@ -548,7 +548,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       if (transformStr == 'none')
         return this.getNewIdentityMatrix(4);
       
-      var split = transformStr.split(', '),
+      var split = transformStr.slice(transformStr.indexOf('(') + 1).split(', '),
           xIdx = split.length == 6 ? 4 : 12,
           yIdx = xIdx + 1; 
 
@@ -592,10 +592,20 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
 //          return 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, {0}, {1}, 0, 1)'.format(x || 0, y || 0);
     },
     
+    _zeroTranslation: {
+      X:0,
+      Y:0,
+      Z:0
+    },
+    
     /**
      * @return { X: x-offset, Y: y-offset }
      */
     parseTranslation: function(transformStr) {
+      transformStr = transformStr.trim();
+      if (!transformStr || transformStr == 'none')
+        return _.clone(this._zeroTranslation);
+      
       if (/matrix/.test(transformStr)) {
         var matrix = this.parseTransform(transformStr);
         return {
@@ -606,10 +616,13 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       
       if (/translate/.test(transformStr)) {
         var xyz = transformStr.match(/(\d)+/g);
+        if (!xyz)
+          return _.clone(this._zeroTranslation);
+
         return {
-          X: xyz && parseInt(xyz[0], 10) || 0,
-          Y: xyz && parseInt(xyz[1], 10) || 0,
-          Z: xyz && parseInt(xyz[2], 10) || 0
+          X: parseFloat(xyz[0] || 0, 10),
+          Y: parseFloat(xyz[1] || 0, 10),
+          Z: parseFloat(xyz[2] || 9, 10)
         }
       }
       
@@ -665,6 +678,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
         var value = propMap[prop],
             vendorSpecific = G.crossBrowser.css;
         
+        style[prop] = value;
         if (vendorSpecific) {
           style[vendorSpecific.prefix + prop] = value;
         }
@@ -799,10 +813,10 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       img.onerror = null;
       img.removeAttribute(LAZY_DATA_ATTR);
       img.classList.remove('lazyImage');
-      img.classList.add('wasLazyImage');
       if (!info)
         return;
       
+      img.classList.add('wasLazyImage');
       if (_.has(info, 'width'))
         img.style.width = info.width;
       if (_.has(info, 'height'))

@@ -27,9 +27,9 @@ define('views/HomePage', [
     events: {
 //      'page_hide'            : 'pagehide',
 //      'page_beforeshow'      : 'pagebeforeshow',
-      'click'              : 'leftMenu',
-      'hold'              : 'rightMenu',
-      'click #installApp'  : 'installApp'
+      'tap'                : 'leftMenu',
+      'hold'               : 'rightMenu',
+      'tap #installApp'    : 'installApp'
     },
     
     installApp: function(e) {
@@ -96,6 +96,11 @@ define('views/HomePage', [
       if (!this.rendered) {
 //      this.$el.trigger('page_beforeshow');
         this.el.style.display = 'block';
+        
+        // only allow tap and hold events, click muddies the waters
+        this.el.addEventListener('click', function(e) {
+          e.preventDefault();
+        });
       }
 //      var item = $('#homePage');
 //      item.css('display', 'block');

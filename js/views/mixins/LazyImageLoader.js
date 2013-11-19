@@ -11,35 +11,17 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
       },
 //      WIN_HEIGHT,
       // Vertical offset in px. Used for preloading images while scrolling
-      IMG_OFFSET = 1000;
+      IMG_OFFSET = 1000,
+      intersectTest = U.isIntersecting.bind(U);
 
 //  Events.once('startingApp', function() {    
 //    DUMMY_IMG = G.getBlankImgSrc();
 //  });
   
-  window.addEventListener('debouncedresizez', function(viewport) {
-    debugger;
-    IMG_OFFSET = viewport.height * 3;
+  window.addEventListener('debouncedresize', function(viewport) {
+    IMG_OFFSET = Math.max(viewport.height * 3, 500);
   });
   
-  function inBounds(rect, viewport, adjustment) {
-    return rect.bottom - adjustment.Y + IMG_OFFSET >= 0 
-        && rect.top - adjustment.Y - IMG_OFFSET <= viewport.height 
-        && rect.right - adjustment.X + IMG_OFFSET >= 0 
-        && rect.left - adjustment.X - IMG_OFFSET <= viewport.width;
-  }
-
-//  function distance(rect, viewport, adjustment, axis) {
-//    if (axis == 'X') {
-//      var distance = rect.right - adjustment.X;
-//      return distance > 0 ? distance : rect.left - adjustment.X;
-//    }
-//    else {
-//      var distance = rect.bottom - adjustment.Y;
-//      return distance >= 0 ? distance : rect.top - adjustment.Y; 
-//    }
-//  }
-
   return Backbone.Mixin.extend({
     _delayedImages: [],
     _delayedImagesCounts: [],
@@ -104,8 +86,8 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
       };
       
       this._lastImagesJobCoords = {
-        X: info.scrollLeft,
-        Y: info.scrollTop
+        X: -Infinity,
+        Y: -Infinity
       };
       
       this._queueImagesJob();
@@ -149,12 +131,11 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
     _hideOffscreenImages: function() {
 //      var offscreenImgs = this.el.querySelectorAll('img:not([src="{0}"])'.format(DUMMY_IMG));
       var offscreenImgs = this._getWasLazyImages(this.el),
-          viewport = G.viewport,
-          adjustment = this._getViewportAdjustmentForDestination();
+          viewport = this._getAdjustedViewport();
           
       if (this.isActive()) {
         offscreenImgs = _.filter(offscreenImgs, function(img) {
-          return !inBounds(img.getBoundingClientRect(), viewport, adjustment);
+          return !intersectTest(img.getBoundingClientRect(), viewport);
         });
       }
           
@@ -268,21 +249,25 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
 //      });
 //    }, 100),
     
-    _getViewportAdjustmentForDestination: function() {
-      var viewportDestination = this._getViewportDestination(),
-          position = DOM.getTranslation(this.el);
+    _getAdjustedViewport: function() {
+      var viewport = G.viewport,
+          viewportDestination = this._getViewportDestination(),
+          position = DOM.getTranslation(this.el),
+          xAdjustment = viewportDestination.X - position.X,
+          yAdjustment = viewportDestination.Y - position.Y,
+          adjustedViewport = {        
+            top: yAdjustment - IMG_OFFSET,
+            left: xAdjustment - IMG_OFFSET
+          };
       
-      return {
-        X: position.X - viewportDestination.X,
-        Y: position.Y - viewportDestination.Y
-      }
+      adjustedViewport.right = adjustedViewport.left + viewport.width + 2 * IMG_OFFSET;
+      adjustedViewport.bottom = adjustedViewport.top + viewport.height + 2 * IMG_OFFSET;
+      return adjustedViewport;
     },
     
     _getImageInfos: function(imgs) {
       var infos = [],
-          viewport = G.viewport,
-          adjustment = this._getViewportAdjustmentForDestination();
-
+          viewport = this._getAdjustedViewport();
       for (var i = 0; i < imgs.length; i++) {
         var img = imgs[i],
             resInfoStr = img.getAttribute('data-for'),
@@ -299,7 +284,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
             inDoc: docEl.contains(img),
             data: img.file || img.blob,
 //            distance: distance(rect, viewport, adjustment),
-            inBounds: inBounds(rect, viewport, adjustment)
+            inBounds: intersectTest(rect, viewport)
           }
               
           if (resInfo)
