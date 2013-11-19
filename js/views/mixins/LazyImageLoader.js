@@ -21,11 +21,19 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
   window.addEventListener('debouncedresize', function(viewport) {
     IMG_OFFSET = Math.max(viewport.height * 3, 500);
   });
+
+
+  function isSickLazyImage(img) {
+    var lazyVal = img.getAttribute(LAZY_DATA_ATTR);
+    return !lazyVal || !(lazyVal = lazyVal.trim()) || lazyVal == DUMMY_IMG;
+  }
   
+  var isHealthyLazyImage = _.negate(isSickLazyImage);
+      
   return Backbone.Mixin.extend({
-    _delayedImages: [],
-    _delayedImagesCounts: [],
-    _lazyImages: [],
+//    _delayedImages: [],
+//    _delayedImagesCounts: [],
+//    _lazyImages: [],
     _loadQueue: [],
     _fetchQueue: [],
     _updateQueue: [],
@@ -66,7 +74,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
           dest = this._getViewportDestination();
       
       if (prevDest) {
-        if (Math.abs(dest[axis] - prevDest[axis]) < IMG_OFFSET * 2 / 3) {
+        if (Math.abs(dest[axis] - prevDest[axis]) < 100) { //IMG_OFFSET * 2 / 3) {
           // we load images within IMG_OFFSET of out current viewport position but we trigger a load when we're 1/3 of an IMG_OFFSET away from the lazy/loaded border
           // For example, if IMG_OFFSET is viewport.height * 3, we will load images as far as IMG_OFFSET AWAY, but then we won't load more until we are viewport.height away from the closest unloaded image
           return;
@@ -123,9 +131,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
      * override this if you want to optimize it
      */
     _getLazyImages: function() {
-      return _.filter(this.el.getElementsByClassName('lazyImage'), function(d) {
-        return d.getAttribute(LAZY_DATA_ATTR) != DUMMY_IMG;
-      });
+      return this.el.getElementsByClassName('lazyImage');
     },
     
     _hideOffscreenImages: function() {
@@ -140,7 +146,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
       }
           
       if (offscreenImgs.length)
-        DOM.lazifyImages(offscreenImgs);
+        DOM.lazifyImages.apply(DOM, offscreenImgs);
     },
 
     _imageJobIds: [],
@@ -166,9 +172,21 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
     _showImages: function() {
       this._clearImageJobs();
 //      this._started = true;
-      this._lazyImages = this._getLazyImages();
-      if (this._lazyImages.length)
-        this._loadImages(this._lazyImages);
+      var lazy = this._getLazyImages()
+          bad = _.filter(lazy, isSickLazyImage);
+
+      if (lazy.length) {
+        var i = bad.length;
+        while (i--) {
+          DOM.unlazifyImage(bad[i]);
+        }
+        
+        if (lazy.length > bad.length) {
+          lazy = _.filter(lazy, isHealthyLazyImage);
+          if (lazy.length)
+            this._loadImages(lazy);
+        }
+      }
     },
     
 //    _queueImageLoad: function(e) {
@@ -427,7 +445,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
           prop,
           imgUri;
       
-      Array.remove(this._lazyImages, img);      
+//      Array.remove(this._lazyImages, img);      
       if (info.data) {
 //        this._queueImageUpdate(img, info);
         return true;

@@ -721,8 +721,8 @@ define('views/ResourceListView', [
             }
           }
 
-          if (atTheHead)
-            added.reverse();
+//          if (atTheHead)
+//            added.reverse();
           
           for (var i = 0; i < added.length; i++) {
             var page = added[i];
@@ -734,8 +734,13 @@ define('views/ResourceListView', [
               
               insertionPoint = page;
             }
-            else
+            else {              
               page[atTheHead ? '$before' : '$after'](insertionPoint);
+              if (page.previousSibling && parseInt(page.firstChild.style.top) > parseInt(page.previousSibling.firstChild.style.top))
+                debugger;
+              if (page.nextSibling && parseInt(page.firstChild.style.top) > parseInt(page.nextSibling.firstChild.style.top))
+                debugger;
+            }
             
             if (atTheHead)
               insertionPoint = page;

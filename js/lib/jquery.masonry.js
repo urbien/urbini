@@ -63,11 +63,16 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
       }
   
       i = matches.length;
-      while (i--) {
-        matches[i].$css({ position: 'absolute' })
-        .$addClass('masonry-brick');     
-      }
+      this._brickify.apply(this, matches);
       return matches;
+    },
+    
+    _brickify: function(/* brickWannabes */) {
+      var i = arguments.length;
+      while (i--) {
+        arguments[i].$css({ position: 'absolute' })
+                    .$addClass('masonry-brick')
+      }
     },
 
     // sets up widget
@@ -365,22 +370,27 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
       this.reLayout( callback );
     },
   
-    appended: function( content, callback ) {
-      var bricks = this._getBricks(content);
+    appended: function( content, callback, contentIsBricks ) {
       this.options.fromBottom = false;
-      this._appended(bricks, callback);    
+      this._appended.apply(this, arguments);    
     },
   
-    prepended: function(content, callback) {
-      var bricks = this._getBricks(content);
-      bricks.reverse(); 
+    prepended: function(content, callback, contentIsBricks) {
       this.options.fromBottom = true;
-      return this._appended(bricks, callback);
+      return this._appended.apply(this, arguments);
     },
   
     // convienence method for working with Infinite Scroll
-    _appended : function( newBricks, callback ) {
+    _appended : function( content, callback, contentIsBricks ) {
       // add new bricks to brick pool
+      var newBricks;
+      if (contentIsBricks) {
+        this._brickify.apply(this, content);
+        newBricks = content;
+      }
+      else
+        newBricks = this._getBricks(content);
+      
       this.bricks = this.options.fromBottom ? newBricks.concat(this.bricks) : this.bricks.concat( newBricks );
       this.layout( newBricks, callback );
     },

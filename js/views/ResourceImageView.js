@@ -305,7 +305,7 @@ define('views/ResourceImageView', [
           h = oHeight;
         }
       }
-      var imgAtts = DOM.lazifyImage({
+      var imgAtts = DOM.lazifyImages({
         src: image,
         'data-for': U.getImageAttribute(res, imagePropName)
       });

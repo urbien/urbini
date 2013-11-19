@@ -216,8 +216,17 @@ define('views/MasonryListView', [
           else {
             if (appended) 
               self.masonry.appended(appended);
-            if (prepended) 
-              self.masonry.prepended(prepended);
+            if (prepended) {
+              var bricks = [],
+                  i = prepended.length;
+              
+              while (i--) {
+                bricks.push.apply(bricks, prepended[i].childNodes);
+              }
+              
+              bricks.reverse();
+              self.masonry.prepended(bricks, null, true);
+            }
           }
           
           self.trigger('refreshed');

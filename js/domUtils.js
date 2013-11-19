@@ -856,13 +856,9 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       }
     },
     
-    lazifyImage: function(img) {
-      this.lazifyImages([img]);
-      return img;
-    },
-    
-    lazifyImages: function(images) {
-      var infos = [],
+    lazifyImages: function(/* images */) {
+      var images = arguments,
+          infos = [],
           lazyImgAttr = G.lazyImgSrcAttr,
           blankImg = G.getBlankImgSrc(),
           img,

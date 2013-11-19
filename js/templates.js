@@ -18,6 +18,7 @@ define('templates', [
       blankImgSrc,
       lazyReplacement,
       lazyRegex,
+      emptyLazyRegex,
       lazyClassRegex = /(class="?'?[^"']*)lazyImage([^"']*"?'?)/ig;
   
   function initBlankImg() {
@@ -25,6 +26,7 @@ define('templates', [
       blankImgSrc = G.getBlankImgSrc();
       lazyReplacement = 'src="{0}" {1}'.format(blankImgSrc, lazyImgSrcAttr);
       lazyRegex = new RegExp('src="{0}" {1}=\"?\'?([^\"\']+)\"?\'?'.format(blankImgSrc, lazyImgSrcAttr), 'ig');
+//      emptyLazyRegex = new RegExp('src="{0}" {1}=\"\s*"?\'?'.format(blankImgSrc, lazyImgSrcAttr), 'ig');
     }
   }
   
@@ -208,6 +210,10 @@ define('templates', [
         t.set({templateText: text});
       }
     },
+    
+//    removeEmptyLazyImagesInHTML: function(html) {
+//      return html.replace(emptyLazyRegex, 'src="$1"').replace(lazyClassRegex, '$1 $2'); // gave up. Replacing classes is tricky, don't know which ones to replace without more complex regex
+//    },
     
     unlazifyImagesInHTML: function(html) {
       return html.replace(lazyRegex, 'src="$1"').replace(lazyClassRegex, '$1 wasLazyImage $2');

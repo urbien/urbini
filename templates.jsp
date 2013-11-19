@@ -1268,10 +1268,8 @@
   <div class="anab" data-viewid="{{= viewId }}">
     <div class="galleryItem_css3"
          {{ if (obj.imgWidth) { }}
-           {{ if (!obj.top) { }}
-             style="height:{{= imgHeight }}px;"
-           {{ } }}
-        {{ } }}
+              style="{{= (obj.top ? '' : 'height:' + imgHeight + 'px;') + (obj.left ? '' : 'width:' + imgWidth + 'px;') }}"
+         {{ } }}
     >
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
         <img data-lazysrc="{{= obj.resourceMediumImage || G.blankImgDataUrl }}" class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" />
