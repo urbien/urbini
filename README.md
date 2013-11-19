@@ -84,3 +84,7 @@ Please join us in this amazing journey of making the Web open again.
 
 Gene, Ellen, Jacob, Mark, Simon, Alex and the rest of Urbien team.
 Visit <a href="http://urbien.com">Urbien</a> to learn more about us.
+
+License 
+======
+Urbini is licensed under <a href="http://www.gnu.org/licenses/lgpl.html">LGPL</a>. This means you can use it to build upon it both open source and commercial apps. You are welcome to fork Urbini and we would love you to submit Github pull requests to the team and/or open issues with requests for improvements.
