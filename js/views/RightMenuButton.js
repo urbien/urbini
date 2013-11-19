@@ -14,12 +14,12 @@ define('views/RightMenuButton', [
     id: 'rightMenuBtn',
     templateName: 'rightMenuButtonTemplate',
     events: {
-      'click': 'leftMenu',
+      'tap': 'leftMenu',
       'hold': 'rightMenu'
     },
     
     pageEvents: {
-      'click': 'hidePanels'
+      'tap': 'hidePanels'
     },
 
     hideLeftPanel: function() {
@@ -149,9 +149,9 @@ define('views/RightMenuButton', [
         this.rightMenuEl = this.pageView.el.querySelector('#' + this.viewId + 'r');
 
         // only allow tap and hold events, click muddies the waters
-//        this.el.addEventListener('click', function(e) {
-//          e.preventDefault();
-//        });
+        this.el.addEventListener('click', function(e) {
+          e.preventDefault();
+        });
       }
       
       this.finish();
