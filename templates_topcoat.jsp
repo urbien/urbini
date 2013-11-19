@@ -27,10 +27,7 @@
       <div class="dummy tail"></div>
    </div>
     </section>
-    <div id="nabs_grid" class="masonry">
-      <div class="dummy head"></div>
-      <div class="dummy tail"></div>
-    </div>
+    <div id="nabs_grid" class="masonry"></div>
     
     <table class="table-stroke" width="100%" style="display:none" id="comments">
     </table>

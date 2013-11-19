@@ -39,6 +39,11 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
            els instanceof HTMLCollection ? els : els && [els];
   };
 
+  function newNodeList() {
+    var frag = document.createDocumentFragment();
+    return frag.querySelectorAll("html");
+  }
+  
   // Bezier functions
   function B1(t) { return t*t*t }
   function B2(t) { return 3*t*t*(1-t) }
@@ -181,7 +186,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
   
   var NodeAug = {
     $: function(selector) {
-      return this.querySelectorAll(selector);
+      return this.nodeType == 1 ? this.querySelectorAll(selector) : newNodeList();
     },
   
     $before: function(before) {
@@ -201,7 +206,18 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     $hasClass: function(cl) {
       return this.classList.contains(cl);
     },
-    
+
+    $prepend: function(htmlOrFrag) {
+      if (!this.firstChild)
+        return this.$append(htmlOrFrag);
+      
+      if (typeof htmlOrFrag == 'string')
+        htmlOrFrag = $.parseHTML(htmlOrFrag);
+      
+      htmlOrFrag.$before(this.firstChild);
+      return this;
+    },
+
     $append: function(htmlOrFrag) {
       if (typeof htmlOrFrag == 'string')
         this.innerHTML += htmlOrFrag;

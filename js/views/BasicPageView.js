@@ -8,8 +8,9 @@ define('views/BasicPageView', [
   'views/mixins/LazyImageLoader',
   'views/mixins/Scrollable',
   'lib/fastdom',
-  '@widgets',
-  'jqueryImagesLoaded'
+  '@widgets'
+//  ,
+//  'jqueryImagesLoaded'
 ], function(G, _, U, Events, BasicView, LazyImageLoader, Scrollable, Q, $m) {
   var MESSAGE_BAR_TYPES = ['info', 'error', 'tip', 'countdown'],
       pageEvents = ['page_show', 'page_hide', 'page_beforeshow'],

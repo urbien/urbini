@@ -8,18 +8,26 @@ define('views/MasonryListView', [
   'collections/ResourceList',
 //  'views/mixins/Masonry',
   'jqueryMasonry',
-  '@widgets',
-  'jqueryImagesLoaded'
-], function(G, U, Events, ResourceListView, ResourceMasonryItemView, ResourceList, Masonry, $m) {
+  '@widgets'
+//  ,
+//  'jqueryImagesLoaded'
+], function(G, U, Events, ResourceListView, ResourceMasonryItemView, ResourceList, Mason, $m) {
   var MASONRY_FN = 'masonry', // in case we decide to switch to Packery or some other plugin
       ITEM_SELECTOR = '.nab';
 
+  function getTop(child) {
+    return parseInt(child.style.top, 10) || 0;
+  }
+
+  function getBottom(child) {
+    return getTop(child) + child.offsetHeight;
+  }
+  
   return ResourceListView.extend({
-//    mixins: [Masonry],
     className: 'masonry',
     autoFinish: false, // we want to say we finished rendering after the masonry is done doing its magic, which may happen async
     type: 'masonry',
-    _elementsPerPage: Math.round(window.innerWidth / 100 * window.innerHeight / 100) + 3,
+    _elementsPerPage: 10,
     events: {
       'refresh': 'refresh'
 //        ,
@@ -45,7 +53,8 @@ define('views/MasonryListView', [
     },
     
     resizeMasonry: function() {
-      this.masonry.resize();
+      if (this.masonry)
+        this.masonry.resize();
     },
     
     _updateConstraints: function() {
@@ -58,16 +67,30 @@ define('views/MasonryListView', [
       }
     },    
 
-    masonry: function() {
-//      this.$el[MASONRY_FN].apply(this.$el, arguments);
-      this.masonry[MASONRY_FN].apply(this.masonry, arguments);
-      this.trigger('invalidateSize');
-      this.pageView.trigger('invalidateSize');
+    getHeadDummyInfo: function() {
+      
+      var head = getTop(_.max(el.childNodes, getTop)); // get the top offset of the child closest to the bottom the screen in the first page       
     },
     
-//    getListItems: function() {
-//      return this.$(ITEM_SELECTOR);
-//      return this.$el.children();
+    setDummyDimension: function(el, value) {
+      // do nothing
+    },
+    
+//    getDimension: function(el) {
+//      var head = getTop(_.max(el.childNodes, getTop)); // get the top offset of the child closest to the bottom the screen in the first page 
+//      var tail = getBottom(_.min(el.childNodes, getBottom)); // get the top offset of the child closest to the top of the screen in the last page
+//      
+//      return tail - head;
+//    },
+//    
+//    _addPages: function(n, atTheHead, force) {
+//      var self = this,
+//          promise = ResourceListView.prototype._addPages.apply(this, arguments);
+//          
+//      if (atTheHead)
+//        promise.done(this.masonry.reload.bind(this.masonry));
+//      
+//      return promise;
 //    },
 
     getPageTag: function() {
@@ -118,64 +141,90 @@ define('views/MasonryListView', [
     },
 
     getElementsPerPage: function() {
+//      return 3;
       var dimensions = this._pageDimensions;
-      return dimensions.width * dimensions.height / (150 * 150) | 0; 
+      return Math.min(dimensions.width * dimensions.height / (200 * 200) | 0, 15); 
     },
 
     getSlidingWindow: function() {
-      var head = this.dummies.headPosition,
-          headDim = this.dummies.headDimension,
-          slidingWindow = {
-            head: head + headDim
-          };
-      
-      if (typeof head !== 'number')
-        head = this.dummies.headPosition = this.getHeadPosition(this.dummies.head);
-      
-      var lastPage = this.dummies.tail.previousSibling;
-      if (lastPage == this.dummies.head)
-        slidingWindow.tail = slidingWindow.head;
-      else {
-        slidingWindow.tail = _.max(lastPage.childNodes, function(child) {
-          return (parseInt(child.style.top, 10) || 0) + child.offsetHeight;
-        });
+      if (!this.masonry) {
+        return {
+          head: 0,
+          tail: 0
+        };
       }
       
-      return slidingWindow;      
+//      var slidingWindow = {},
+//          lastPage = this.el.lastChild,
+//          firstPage = this.el.firstChild;
+//      
+//      if (!firstPage || !firstPage.childElementCount)
+//        slidingWindow.head = slidingWindow.tail = 0;
+//      else {
+//        slidingWindow.head = getTop(_.max(firstPage.childNodes, getTop)); // get the top offset of the child closest to the bottom the screen in the first page 
+//        slidingWindow.tail = getBottom(_.min(lastPage.childNodes, getBottom)); // get the top offset of the child closest to the top of the screen in the last page
+//      }
+//      
+//      return slidingWindow;
+      var bounds = this.masonry.getBounds();
+      return {
+        head: bounds.min,
+        tail: bounds.max
+      };
+    },    
+   
+    isDummyPadded: function() {
+      return false;
     },
-    
+
+    doRemovePages: function(pages, fromTheHead) {
+      this.masonry.remove(pages);
+    },
+
     preRender: function() {
       return ResourceListView.prototype.preRender.apply(this, arguments);      
     },
     
     postRender: function(info) {
-      var self = this,
-          appended = info.added.slice(),
-          numAppended = appended.length,
-          updated = info.updated.slice(),
-          numUpdated = _.size(updated);
-      
-      if (this.rendered) {
-        if (numAppended || numUpdated) {
-          this.$el.imagesLoaded(function() {
-            if (numAppended) 
-              self.masonry.appended(appended);
-            if (numUpdated)
-              self.masonry.reload();
-            
-            self.trigger('refreshed');
-          });
-        }
-      }
-      else {
-        this.$el.imagesLoaded(function() {
-          self.masonry = new Masonry({
+      var self = this;
+      if (!this.rendered) {
+//        this.$el.imagesLoaded(function() {
+          self.masonry = new Mason({
             itemSelector: ITEM_SELECTOR
           }, self.el);
    
           self.centerMasonry(self);
           self.finish();
-        });
+//        });
+
+//        setTimeout(this._loadingDfd.resolve, 300);
+//        return this._loadPromise;
+          return;
+      }
+      
+//      var removedFromTop = info.removedFromTop.length && info.removedFromTop.slice(),      // need this while using imagesLoaded (async)    
+//          removedFromBottom = info.removedFromBottom.length && info.removedFromBottom.slice(),      // need this while using imagesLoaded (async)    
+      var prepended = info.prepended.length && info.prepended.slice(),// need this while using imagesLoaded (async)
+          appended = info.appended.length && info.appended.slice(),   // need this while using imagesLoaded (async)
+          hasUpdated = !!_.size(info.updated);
+      
+      if (hasUpdated || prepended || appended) {
+//        var dfd = $.Deferred();
+//        this.$el.imagesLoaded(function() {
+          if (hasUpdated)
+            self.masonry.reload();
+          else {
+            if (appended) 
+              self.masonry.appended(appended);
+            if (prepended) 
+              self.masonry.prepended(prepended);
+          }
+          
+          self.trigger('refreshed');
+//          dfd.resolve();
+//        });
+        
+//        return dfd.promise();
       }
     },
 

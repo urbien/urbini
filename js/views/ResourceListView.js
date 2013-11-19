@@ -28,21 +28,16 @@ define('views/ResourceListView', [
 //    _pageReqNum: 0,
 //    _itemView: ResourceListItemView,
     _outOfData: false,
-    _pages: [],
     _adjustmentQueued: false,
     _slidingWindowInsideBuffer: 1200, // px, should depend on size of visible area of the list, speed of device, RAM
     _slidingWindowOutsideBuffer: 800, // px, should depend on size of visible area of the list, speed of device, RAM
 //    _slidingWindowBuffer: 800, // px, should depend on size of visible area of the list, speed of device, RAM
     _minSlidingWindowDimension: 3000, // px, should depend on size of visible area of the list, speed of device, RAM
     _pageOffset: 0,
-    _maxPagesInSlidingWindow: 12,
+//    _maxPagesInSlidingWindow: 12,
     _minPagesInSlidingWindow: 6,
     _pagesCurrentlyInSlidingWindow: 0,
     _elementsPerPage: 10,
-    _displayedCollectionRange: {
-      from: 0,
-      to: 0
-    },
     _horizontal: false,
     _scrollable: false, // set to true when the content is bigger than the container
 
@@ -99,9 +94,11 @@ define('views/ResourceListView', [
       this._slidingWindowOpInfo = {
         isFirstPage: false,
         html: [],
-        added: [],
+        prepended: [],
+        appended: [],
         updated: [],
-        removed: [],
+        removedFromTop: [],
+        removedFromBottom: [],
         pageRange: {
           from: 0,
           to: 0
@@ -112,6 +109,12 @@ define('views/ResourceListView', [
         }
       };
       
+      this._pages = [];
+      this._displayedCollectionRange = {
+        from: 0,
+        to: 0
+      };
+
       this._onScrollerSizeChanged({
         target: this.el,
         content: viewport,
@@ -179,6 +182,8 @@ define('views/ResourceListView', [
       var info = e.detail || e,
           dimProp = this._horizontal ? 'width' : 'height',
           pages = Math.max(this._minPagesInSlidingWindow),
+          slidingWindow = this.getSlidingWindow(),
+          slidingWindowDim = Math.max(this._minSlidingWindowDimension, slidingWindow.tail - slidingWindow.head),
           pageDimension;
       
       if (!this._scrollerContainer)
@@ -189,8 +194,8 @@ define('views/ResourceListView', [
       pageDimension = this._pageDimensions[dimProp];
       this._updateViewport(info);
       this._minSlidingWindowDimension = pageDimension * pages; // px, should depend on size of visible area of the list, speed of device, RAM
-      this._slidingWindowInsideBuffer = this._minSlidingWindowDimension / 3; // how far away the viewport is from the closest border of the sliding window before we start to fetch more resources
-      this._slidingWindowOutsideBuffer = Math.max(this._minSlidingWindowDimension / 5, 2 * pageDimension); // how far away the viewport is from the closest border of the sliding window before we need to adjust the window
+      this._slidingWindowInsideBuffer = slidingWindowDim / 3; // how far away the viewport is from the closest border of the sliding window before we start to fetch more resources
+      this._slidingWindowOutsideBuffer = Math.max(slidingWindowDim / 5, this._slidingWindowInsideBuffer / 2); // how far away the viewport is from the closest border of the sliding window before we need to adjust the window
 //      _slidingWindowBuffer: 800, // px, should depend on size of visible area of the list, speed of device, RAM
 //      if (G.browser.mobile && pageHeight < 500)
 //        this._elementsPerPage = 5;
@@ -245,20 +250,27 @@ define('views/ResourceListView', [
       
 //      this._viewportSizeChanged();
       this.imageProperty = U.getImageProperty(this.collection);
-      this.dummies = this.getDummies();
-      if (!this.dummies.length) {
-        this.html(this.makeDummies());
+      this.empty();
+      if (this.isDummyPadded()) {
         this.dummies = this.getDummies();
-      }
-      
-      if (this._horizontal) {
-        this.dummies.head.style.display = 'inline-block';
-        this.dummies.tail.style.display = 'inline-block';
+        if (!this.dummies.length) {
+          this.html(this.makeDummies());
+          this.dummies = this.getDummies();
+        }
+        
+        if (this._horizontal) {
+          this.dummies.head.style.display = 'inline-block';
+          this.dummies.tail.style.display = 'inline-block';
+        }
       }
       
       this.adjustSlidingWindow();
     },
   
+    isDummyPadded: function() {
+      return true;
+    },
+    
     /**
      * re-render the elements in the sliding window
      */
@@ -315,14 +327,13 @@ define('views/ResourceListView', [
       }
     },
 
-    setDimension: function(el, value) {
+    setDummyDimension: function(el, value) {
       if (el == this.dummies.head)
         this.dummies.headDimension = value;
       else if (el == this.dummies.tail)
         this.dummies.tailDimension = value;
       
       el.style[this._horizontal ? 'width' : 'height'] = value + 'px';
-//      $el[this._horizontal ? 'width' : 'height'](value);
     },
     
     getDimension: function(el) {
@@ -430,7 +441,7 @@ define('views/ResourceListView', [
         else
           return G.getResolvedPromise();
       }
-      else if (this.dummies.headDimension && headDiff < this._slidingWindowOutsideBuffer) {
+      else if (this._displayedCollectionRange.from > 0 && headDiff < this._slidingWindowOutsideBuffer) {
 //        diff = diff < 0 ? -diff + this._slidingWindowOutsideBuffer : diff;
         n = Math.ceil((this._slidingWindowInsideBuffer - headDiff) / viewportDim);
         return this.page(n, true).done(this._queueSlidingWindowCheck);
@@ -543,12 +554,15 @@ define('views/ResourceListView', [
           pageRange = info.pageRange,
           preRenderPromise;
       
-      if (atTheHead)
+      if (atTheHead) {
+        colRange.to = displayed.from;
         colRange.from = Math.max(displayed.from - elementsToAdd, 0);
-      else
+      }
+      else {
         colRange.from = displayed.to;
+        colRange.to = colRange.from + elementsToAdd;
+      }
 
-      colRange.to = colRange.from + elementsToAdd;
       if (colRange.to > col.length) {
         if (force) {
           // settle for loading an incomplete page
@@ -574,7 +588,7 @@ define('views/ResourceListView', [
     },
 
     _getDummy: function(head) {
-      return this.dummies[head ? 'head' : 'tail'];
+      return this.dummies && this.dummies[head ? 'head' : 'tail'];
     },
 
     _getDummyDimension: function(head) {
@@ -590,6 +604,7 @@ define('views/ResourceListView', [
           displayed = this._displayedCollectionRange,
           colRange = info.range,
           col = this.collection,
+          added = info[atTheHead ? 'prepended' : 'appended'],
           numRendered = 0,
           numPagesRendered = 0,
           pageEndTag = '</{0}>'.format(pageTag),
@@ -597,7 +612,8 @@ define('views/ResourceListView', [
           dfd = $.Deferred(),
           promise = dfd.promise(),
           dummy = this._getDummy(atTheHead),
-          dummyDim = this._getDummyDimension(atTheHead),
+          dummyDim = dummy && this._getDummyDimension(atTheHead),
+          insertionPoint = this._pages.length && this._pages[atTheHead ? 0 : this._pages.length - 1],
           newDummyDim, 
           currentPageHtml = [],
           currentPageEl,
@@ -605,9 +621,9 @@ define('views/ResourceListView', [
           finish;
       
       function finish() {
-        if (newDummyDim != dummyDim) {
+        if (self.isDummyPadded() && newDummyDim != dummyDim) {
           Q.write(function() {
-            self.setDimension(dummy, newDummyDim);
+            self.setDummyDimension(dummy, newDummyDim);
             dfd.resolve();
           });
         }
@@ -630,6 +646,9 @@ define('views/ResourceListView', [
         var res = col.models[resNum],
             liView = this.renderItem(res, atTheHead);
 
+        if (atTheHead)
+          console.log("PREPENDING", U.getDisplayName(res));
+        
         if (isFirst) {
           currentPageEl = doc.createElement(pageTag);
           currentPageEl.setAttribute('class', pageClasses);
@@ -652,7 +671,7 @@ define('views/ResourceListView', [
             html = DOM.unlazifyImagesInHTML(html);
             
           currentPageEl.innerHTML = html;            
-          info.added.push(currentPageEl);
+          added.push(currentPageEl);
 //            info.html[info.html.length] = html;
           numPagesRendered++;
         }
@@ -682,13 +701,11 @@ define('views/ResourceListView', [
         Q.write(function insertPage() {
 //          self.log("PAGER", "ADDING PAGE, FRAME", window.fastdom.frameNum);
 //          var pages = info.added = $($.parseHTML(info.html.join(""), doc));
-          var after = dummy;
-          var pages = info.added;
-          self._pages[atTheHead ? 'unshift' : 'push'].apply(self._pages, pages);
-          for (var i = 0; i < pages.length; i++) {
-            var page = pages[i],
-                childEls = page.getElementsByTagName(childTagName),
-                childViews = [];
+          self._pages[atTheHead ? 'unshift' : 'push'].apply(self._pages, added);
+          var tagName = (self.tagName || 'DIV').toUpperCase();
+          for (var i = 0; i < added.length; i++) {
+            var page = added[i],
+                childEls = _.filter(page.childNodes, function(c) { return c.tagName == tagName });
             
             for (var j = 0; j < childEls.length; j++) {
               var childEl = childEls[j],
@@ -700,34 +717,48 @@ define('views/ResourceListView', [
               var child = self.children[viewId];
               self.listenTo(child.resource, 'change', self.onResourceChanged);
               child.setElement(childEl);
-              childViews.push(child);
               if (child.postRender)
                 child.postRender();
             }
           }
+
+          if (atTheHead)
+            added.reverse();
           
-          for (var i = 0; pages  &&  i < pages.length; i++) {
-            var page = pages[i];
-            page[atTheHead ? '$after' : '$before'](after);
+          for (var i = 0; i < added.length; i++) {
+            var page = added[i];
+            if (!insertionPoint) {
+              if (dummy)
+                page.$after(self.el.firstChild);
+              else
+                self.el.appendChild(page);
+              
+              insertionPoint = page;
+            }
+            else
+              page[atTheHead ? '$before' : '$after'](insertionPoint);
+            
             if (atTheHead)
-              after = page;
+              insertionPoint = page;
           }
           
 //          pages[atTheHead ? 'insertAfter' : 'insertBefore']($dummy);
           postRenderResult = self.postRender(info);
           
           // if dummy dimension changed, we will use it on the next frame (in the "finish" function)
-          if (colRange.from == 0)
-            newDummyDim = 0;
-//          else if (dummyDim > 0)
-//            newDummyDim = Math.max(dummyDim - self.getDimension(pages), 0);
-          else if (dummyDim > 0) {
-            newDummyDim = Math.max(dummyDim - _.reduceRight(pages, function(memo, page) { 
-              return memo + self.getDimension(page); 
-            }, 0), 0);
+          if (self.isDummyPadded()) {
+            if (colRange.from == 0)
+              newDummyDim = 0;
+  //          else if (dummyDim > 0)
+  //            newDummyDim = Math.max(dummyDim - self.getDimension(pages), 0);
+            else if (dummyDim > 0) {
+              newDummyDim = Math.max(dummyDim - _.reduceRight(added, function(memo, page) { 
+                return memo + self.getDimension(page); 
+              }, 0), 0);
+            }
+            else
+              newDummyDim = dummyDim;
           }
-          else
-            newDummyDim = dummyDim;
           
           if (_.isPromise(postRenderResult))
             postRenderResult.always(finish);
@@ -778,6 +809,13 @@ define('views/ResourceListView', [
      * @return offsets on all sides of the sliding window
      */
     getSlidingWindow: function() {
+      // override this if you're not using dummies
+      if (!this.isDummyPadded())
+        throw "not implemented yet, please override or implement";
+      
+      if (!this.rendered)
+        return {head: 0, tail: 0};
+      
       var head = this.dummies.headPosition;
       if (typeof head !== 'number')
         head = this.dummies.headPosition = this.getHeadPosition(this.dummies.head);
@@ -793,7 +831,7 @@ define('views/ResourceListView', [
      * @return a promise
      */
     _growSlidingWindow: function(n, head) {
-      if (this._outOfData || this._pagesCurrentlyInSlidingWindow + n > this._maxPagesInSlidingWindow)
+      if (!head && this._outOfData) //|| this._pagesCurrentlyInSlidingWindow + n > this._maxPagesInSlidingWindow)
         return G.getRejectedPromise();
       
       this.log('PAGER', 'GROWING SLIDING WINDOW');
@@ -825,8 +863,8 @@ define('views/ResourceListView', [
       var self = this,
           info = this._slidingWindowOpInfo,
           displayed = this._displayedCollectionRange,
-          numRemovedElements = 0,
           removedViews = [],
+          removedPages,
           first,
           last,
           head,
@@ -842,90 +880,56 @@ define('views/ResourceListView', [
       dfd.done(function() {
         self._pagesCurrentlyInSlidingWindow -= n;
         if (fromTheHead) {
-          if (numRemovedElements !== removedViews.length)
-            debugger;
-          displayed.from += numRemovedElements;
+          displayed.from += removedViews.length;
           self.log('PAGE OFFSET: ', this._pageOffset + n);
           self._pageOffset += n;
         }
         else
-          displayed.to -= numRemovedElements;
+          displayed.to -= removedViews.length;
       });
 
       splitIdx = fromTheHead ? n : this._pages.length - n;
-      info.removed = fromTheHead ? this._pages.slice(0, splitIdx) : this._pages.slice(splitIdx);
-      this._pages = fromTheHead ? this._pages.slice(splitIdx) : this._pages.slice(0, splitIdx);      
+      removedPages = info[fromTheHead ? 'removedFromTop' : 'removedFromBottom'] = fromTheHead ? this._pages.slice(0, splitIdx) : this._pages.slice(splitIdx); // optimize
+      this._pages = fromTheHead ? this._pages.slice(splitIdx) : this._pages.slice(0, splitIdx);  // optimize    
 //      if (fromTheHead)
 //        Array.removeFromTo(this._pages, 0, splitIdx);
 //      else
 //        this._pages.length = splitIdx;
       
       Q.read(function() {
-        for (var i = 0, len = info.removed.length; i < len; i++) {
-          var page = info.removed[i],
+        for (var i = 0, len = removedPages.length; i < len; i++) {
+          var page = removedPages[i],
               children = page.childNodes;
           
           for (var j = 0, numChildren = children.length; j < numChildren; j++) {
             var child = children[j],
-                cid = child.dataset.viewid,
-                childView;
+                childView = self.children[child.dataset.viewid];
             
-            if (cid) {
-              childView = self.children[cid];
-              if (childView)
-                removedViews.push(childView);
-              else
-                debugger;
-            }
+            removedViews.push(childView);
           }
         }
 
-        removedPageDim = _.reduceRight(info.removed, function(memo, page) { 
+        removedPageDim = _.reduceRight(removedPages, function(memo, page) { 
           return memo + self.getDimension(page); 
         }, 0);
       });
 
       Q.write(function removePagesFromDOM() {
-        for (var i = 0, len = info.removed.length; i < len; i++) {
-//          if (!document.documentElement.contains(removedPages[i]))
-//            debugger;
-//          
-          var page = info.removed[i];
-//          removedPages[i].remove(); //detach().empty();
-          numRemovedElements += page.childElementCount;
-          page.$remove();
-        }
-
+        self.doRemovePages(removedPages, fromTheHead);
         for (var i = 0, len = removedViews.length; i < len; i++) {
           var view = removedViews[i];
           self.stopListening(view.resource);
           view.destroy();
         }
         
-//        if (self.postRemove)
-//          self.postRemove(info);
-//        
-//        this.dimension($dummy, sizes[fromTheHead ? 'head' : 'tail'] + sizes.removedPageSize);
-        self.log("PAGER", "UPDATING {0} DUMMY SIZE".format(fromTheHead ? "HEAD" : "TAIL"));
-//        Q.defer(1, 'write', function() {
-          self.setDimension(self._getDummy(fromTheHead), self._getDummyDimension(fromTheHead) + removedPageDim);
-          dfd.resolve();
-//        });
+        if (self.isDummyPadded()) {
+          self.log("PAGER", "UPDATING {0} DUMMY SIZE".format(fromTheHead ? "HEAD" : "TAIL"));
+          self.setDummyDimension(self._getDummy(fromTheHead), self._getDummyDimension(fromTheHead) + removedPageDim);
+        }
+        
+        dfd.resolve();
       });
 
-//      Q.defer(5, 'nonDom', function destroyChildren() {
-//        for (var i = 0, len = removedPages.length; i < len; i++) {
-//          removedPages[i].empty();
-//        }
-//        
-//        for (var i = 0, len = removedViews.length; i < len; i++) {
-//          var view = removedViews[i];
-//          self.stopListening(view.resource);
-//          view.destroy();
-////          Q.defer(i + 1, 'nonDom', view.destroy, view); // destroy uses animationQueue
-//        }
-//      });
-      
       return dfd.promise();
     },
 
@@ -969,6 +973,13 @@ define('views/ResourceListView', [
 //      
 //      return this._pagingPromise;
 //    },
+
+    doRemovePages: function(pages) {
+      var i = pages.length;
+      while (i--) {
+        pages[i].$remove();
+      }
+    },
     
     getNextPage: function(numResourcesToFetch) {
       if (this._isPaging)

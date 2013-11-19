@@ -1229,7 +1229,7 @@ define('globals', function() {
       codemirrorCSSMode: 'lib/codemirrorCSSMode',
       leaflet: 'lib/leaflet',
       leafletMarkerCluster: 'lib/leaflet.markercluster',
-      jqueryImagesLoaded: 'lib/jquery.imagesloaded',
+//      jqueryImagesLoaded: 'lib/jquery.imagesloaded',
       jqueryMasonry: 'lib/jquery.masonry',
       jqueryAnyStretch: 'lib/jquery.anystretch'
     },

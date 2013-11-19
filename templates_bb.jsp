@@ -25,8 +25,7 @@
     <section  id="sidebar" data-type="list" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
    </div>
     </section>
-    <div id="nabs_grid" class="masonry">
-    </div>
+    <div id="nabs_grid" class="masonry"></div>
     
     <table class="table-stroke" width="100%" style="display:none" id="comments">
     </table>

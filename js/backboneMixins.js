@@ -136,7 +136,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         element = $element[0];
         this.$el = $element; // may not be set yet even if this.el is
         if (this.el) {
-          if (this.el == element)
+          if (this.el == element && this._delegatedEvents) // events have been delegated
             return this;
         
           this.undelegateEvents();
@@ -161,7 +161,8 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         if (this.id) 
           attrs.id = _.result(this, 'id');
         if (classes)
-          attrs['class'] = classes;
+          this.el.$addClass.apply(this.el, _.compact(classes.split(' ')));
+          //attrs['class'] = classes;
         
         this.el.$attr(attrs);
         if (this.viaHammer)
@@ -411,10 +412,14 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
        */
       undelegateEvents: function() {
         if (this.el) {
-          if (this.events)
+          if (this.events) {
             this._undelegateDOMEvents(this._delegatedEvents, this);
-          if (this.pageEvents && this.pageView)
+            delete this._delegatedEvents;
+          }
+          if (this.pageEvents && this.pageView) {
             this._undelegateDOMEvents(this._delegatedPageEvents, this.pageView);
+            delete this._delegatedPageEvents;
+          }
         }
         
         return this;

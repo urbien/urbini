@@ -1,6 +1,6 @@
 {
   pre: [
-	  'lib/underscore.js', 'underscoreMixins.js', 'lib/backbone.js', 'backboneMixins.js', 'taskQueue.js', 'lib/IndexedDBShim.js', 'lib/jquery-indexeddb.js', 'lib/queryIndexedDB.js', 'lib/jquery.imagesloaded.js', 'templates.js', 'cache.js', 'utils.js', 'domUtils.js', 'error.js', 'events.js', 'models/Resource.js', 
+	  'lib/underscore.js', 'underscoreMixins.js', 'lib/backbone.js', 'backboneMixins.js', 'taskQueue.js', 'lib/IndexedDBShim.js', 'lib/jquery-indexeddb.js', 'lib/queryIndexedDB.js', 'templates.js', 'cache.js', 'utils.js', 'domUtils.js', 'error.js', 'events.js', 'models/Resource.js', 
 	  'collections/ResourceList.js', 'lib/jquery.anystretch.js', 'views/HomePage.js', 'vocManager.js', 'modelLoader.js', 'plugManager.js', 'resourceManager.js', 'indexedDB.js', 'idbQueryBuilder.js', 'synchronizer.js', 'resourceSynchronizer.js', 'collectionSynchronizer.js', 'router.js', 
 	  'app.js', 'appAuth.js', 'apiAdapter.js', 'redirecter.js', 'views/BasicView.js', 'views/BasicPageView.js', 'lib/hammer.js', 'lib/fastdom.js', 'views/mixins/LazyImageLoader.js', 'views/mixins/Scrollable.js', 'transitions.js', 'lib/l20n.js', 'widgetsLibAdapter.js',
 	  {path: 'lib/jqm-icon-pack-3.0.0-fa.css', priority: 100}, '../styles/styles.css', '../styles/common-template-m.css',

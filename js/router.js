@@ -490,35 +490,36 @@ define('router', [
         rUri: oParams 
       });
       
-      var listView = new ListPage({model: list});
+      var listView = new ListPage({model: list, forceFetch: forceFetch, sync: true});
       listView.setMode(mode || G.LISTMODES.LIST);
       
-      list.fetch({
-//        update: true,
-        sync: true,
-//        params: {
-//          $select: '$viewCols,$gridCols,$images'
-//        },
-        forceFetch: forceFetch,
-        rUri: oParams,
-        success: _.once(function() {
-          self.changePage(listView);
-//          self.loadExtras(oParams);
-        }),
-//        error: Errors.getDefaultErrorHandler()
-        error: _.once(function(collection, resp, opts) {
-          var code = resp.code;
-          if (code === 204)
-            self.changePage(listView);
-          else {
-            if (code == 400)
-              Events.trigger('badList', list);
-            
-            Errors.getBackboneErrorHandler().apply(this, arguments);
-          }
-        })
-      });
+//      list.fetch({
+////        update: true,
+//        sync: true,
+////        params: {
+////          $select: '$viewCols,$gridCols,$images'
+////        },
+//        forceFetch: forceFetch,
+//        rUri: oParams,
+////        success: _.once(function() {
+////          self.changePage(listView);
+//////          self.loadExtras(oParams);
+////        }),
+//////        error: Errors.getDefaultErrorHandler()
+////        error: _.once(function(collection, resp, opts) {
+////          var code = resp.code;
+////          if (code === 204)
+////            self.changePage(listView);
+////          else {
+////            if (code == 400)
+////              Events.trigger('badList', list);
+////            
+////            Errors.getBackboneErrorHandler().apply(this, arguments);
+////          }
+////        })
+//      });
       
+      this.changePage(listView);
       this.monitorCollection(list);
       return this;
     },

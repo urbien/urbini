@@ -1403,7 +1403,7 @@ define('views/EditView', [
             value;
         
         if (_.isUndefined(res.get(name)) || this.isForInterfaceImplementor)
-          return;
+          continue;
         
         if ((value = select.value) != null)
           this.setValues(name, value);

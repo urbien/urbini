@@ -454,7 +454,7 @@ define('views/BasicView', [
     finish: function(options) {      
       this._loadingDfd.resolve();
       if (!options || options.delegateEvents !== false)
-        this.delegateEvents();
+        this.redelegateEvents();
     },
     
     _queueTask: function(fn, scope, args) {

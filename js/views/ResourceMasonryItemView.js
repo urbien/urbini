@@ -29,7 +29,7 @@ define('views/ResourceMasonryItemView', [
       
       this.isModification = this.doesModelSubclass('system/changeHistory/Modification'); //U.isAssignableFrom(this.vocModel, U.getLongUri1('system/changeHistory/Modification'));
       if (this.isModification)
-        this.makeTemplate('masonry-mod-list-item', 'modTemplate', type);
+        this.makeTemplate('masonry-mod-list-item', 'template', type);
       else
         this.makeTemplate('masonry-list-item', 'template', type);
 
