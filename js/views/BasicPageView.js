@@ -14,23 +14,8 @@ define('views/BasicPageView', [
 ], function(G, _, U, Events, BasicView, LazyImageLoader, Scrollable, Q, $m) {
   var MESSAGE_BAR_TYPES = ['info', 'error', 'tip', 'countdown'],
       pageEvents = ['page_show', 'page_hide', 'page_beforeshow'],
-//      viewportEvents = ['resize', 'orientationchange'],
       doc = document,
       $wnd = $(window);
-
-  function saveViewportSize() {
-    var viewport = G.viewport;
-    if (!viewport)
-      viewport = G.viewport = {};
-    
-    viewport.width = window.innerWidth;
-    viewport.height = window.innerHeight;
-    Events.trigger('viewportResize', viewport);
-  }
-  
-  saveViewportSize();  
-  window.addEventListener('resize', Q.debounce(saveViewportSize, 20));
-  window.addEventListener('orientationchange', saveViewportSize); 
 
   function isInsideDraggableElement(element) {
     return !!$(element).parents('[draggable=true]').length;

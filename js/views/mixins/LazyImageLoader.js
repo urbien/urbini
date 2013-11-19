@@ -17,7 +17,8 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
 //    DUMMY_IMG = G.getBlankImgSrc();
 //  });
   
-  Events.on('viewportResize', function(viewport) {
+  window.addEventListener('debouncedresizez', function(viewport) {
+    debugger;
     IMG_OFFSET = viewport.height * 3;
   });
   

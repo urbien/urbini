@@ -702,10 +702,9 @@ define('views/ResourceListView', [
 //          self.log("PAGER", "ADDING PAGE, FRAME", window.fastdom.frameNum);
 //          var pages = info.added = $($.parseHTML(info.html.join(""), doc));
           self._pages[atTheHead ? 'unshift' : 'push'].apply(self._pages, added);
-          var tagName = (self.tagName || 'DIV').toUpperCase();
           for (var i = 0; i < added.length; i++) {
             var page = added[i],
-                childEls = _.filter(page.childNodes, function(c) { return c.tagName == tagName });
+                childEls = page.childNodes.$filter(function(c) { return c.nodeType == 1 }); // filter out text nodes that creep in
             
             for (var j = 0; j < childEls.length; j++) {
               var childEl = childEls[j],

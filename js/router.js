@@ -14,12 +14,13 @@ define('router', [
   'appAuth',
   'redirecter',
   'transitions',
+  'domUtils',
   'lib/fastdom'
 //  , 
 //  'views/ListPage', 
 //  'views/ViewPage'
 //  'views/EditPage' 
-], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth, Redirecter, Transitioner, Q /*, ListPage, ViewPage*/) {
+], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth, Redirecter, Transitioner, DOM, Q /*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
   var Modules = {},
       doc = document,
@@ -31,6 +32,38 @@ define('router', [
     G.log.apply(G, args);
   };
 
+  var lastViewportWidth = G.viewport.width,
+      transformLookup = G.crossBrowser.css.transformLookup;
+  
+  window.addEventListener('resize', Q.debounce(function() {
+    if (!lastViewportWidth) {
+      lastViewportWidth = G.viewport.width;
+      return;
+    }
+    
+    var newWidth = window.innerWidth;
+    if (newWidth == lastViewportWidth)
+      return;
+
+    var pages = doc.querySelectorAll('[data-role="page"]'),
+        page,
+        translation,
+        x,
+        i = pages.length;
+    
+    while (i--) {
+      page = pages[i];
+      translation = DOM.parseTranslation(page.style[transformLookup]);
+      if (translation && (x = translation.X)) {
+        var sign = x < 0 ? -1 : 1;
+        DOM.setStylePropertyValues(page.style, {
+          transform: DOM.getTranslationString(newWidth * sign),
+          transition: null
+        });
+      }
+    }
+  }, 20));
+  
 //  $doc.on('click', '[data-href]', function(e) {
 //    e.preventDefault();
 //    Events.trigger('navigate', this.dataset.href);

@@ -33,6 +33,20 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     window.dispatchEvent(new Event('debouncedorientationchange'));
   };
 
+  function saveViewportSize() {
+    var viewport = G.viewport;
+    if (!viewport)
+      viewport = G.viewport = {};
+    
+    viewport.width = window.innerWidth;
+    viewport.height = window.innerHeight;
+//    Events.trigger('viewportResize', viewport);
+  }
+  
+  saveViewportSize();  
+  window.addEventListener('orientationchange', saveViewportSize); 
+  window.addEventListener('debouncedresize', saveViewportSize); 
+
   function getElementArray(els) {
     return els instanceof Array ||
            els instanceof NodeList || 
@@ -582,11 +596,24 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
      * @return { X: x-offset, Y: y-offset }
      */
     parseTranslation: function(transformStr) {
-      var matrix = this.parseTransform(transformStr);
-      return {
-        X: matrix[3][0],
-        Y: matrix[3][1]
+      if (/matrix/.test(transformStr)) {
+        var matrix = this.parseTransform(transformStr);
+        return {
+          X: matrix[3][0],
+          Y: matrix[3][1]
+        }
       }
+      
+      if (/translate/.test(transformStr)) {
+        var xyz = transformStr.match(/(\d)+/g);
+        return {
+          X: xyz && parseInt(xyz[0], 10) || 0,
+          Y: xyz && parseInt(xyz[1], 10) || 0,
+          Z: xyz && parseInt(xyz[2], 10) || 0
+        }
+      }
+      
+      throw "can't parse transform";
     },
 
 //        parseTransform: function(transformStr) {

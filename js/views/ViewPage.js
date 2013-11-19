@@ -65,14 +65,21 @@ define('views/ViewPage', [
         }        
       }
       
-      var self = this;        
-      this.readyDfd = $.Deferred();
-      this.ready = this.readyDfd.promise();
+      var self = this;
+//      var readyDfd = $.Deferred();
+//      this.ready = readyDfd.promise();
+//      this.resource.fetch({
+//        success: readyDfd.resolve,
+//        error: readyDfd.reject
+//      });
+      
+      this.imgReadyDfd = $.Deferred();
+      this.imgReady = this.imgReadyDfd.promise();
       if (viewType) {
         U.require(viewType, function(viewMod) {
           self.imageView = new viewMod(_.extend({el: this.$(this.imgDiv)[0], arrows: false}, commonParams));
           self.addChild(self.imageView);
-          self.readyDfd.resolve();
+          self.imgReadyDfd.resolve();
   //        renderDfd.done(self.imageView.finalize);
         });
       }
@@ -317,7 +324,7 @@ define('views/ViewPage', [
       
       this.assign('#headerDiv', this.header, {buttons: this.headerButtons});
       this.assign(views);
-      this.ready.done(function() {
+      this.imgReady.done(function() {
         this.assign(this.imgDiv, this.imageView);
       }.bind(this));
       
@@ -340,7 +347,7 @@ define('views/ViewPage', [
 //      renderDfd.resolve();
 //      this.restyle();
       
-      return this.ready;
+      return this;
     }
   }, {
     displayName: 'ViewPage'

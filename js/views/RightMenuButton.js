@@ -148,7 +148,7 @@ define('views/RightMenuButton', [
         this.leftMenuEl = this.pageView.el.querySelector('#' + this.viewId);
         this.rightMenuEl = this.pageView.el.querySelector('#' + this.viewId + 'r');
 
-//        // only allow tap and hold events, click muddies the waters
+        // only allow tap and hold events, click muddies the waters
 //        this.el.addEventListener('click', function(e) {
 //          e.preventDefault();
 //        });
