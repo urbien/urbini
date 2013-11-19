@@ -736,10 +736,10 @@ define('views/ResourceListView', [
             }
             else {              
               page[atTheHead ? '$before' : '$after'](insertionPoint);
-              if (page.previousSibling && parseInt(page.firstChild.style.top) > parseInt(page.previousSibling.firstChild.style.top))
-                debugger;
-              if (page.nextSibling && parseInt(page.firstChild.style.top) > parseInt(page.nextSibling.firstChild.style.top))
-                debugger;
+//              if (page.previousSibling && parseInt(page.firstChild.style.top) > parseInt(page.previousSibling.firstChild.style.top))
+//                debugger;
+//              if (page.nextSibling && parseInt(page.firstChild.style.top) > parseInt(page.nextSibling.firstChild.style.top))
+//                debugger;
             }
             
             if (atTheHead)
