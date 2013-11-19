@@ -998,7 +998,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
             if (!alertedAboutDestinationProximity && Math.abs(distance - distanceTraveled) < viewportDim * 3) {
 //              console.log("SENDING VIEWPORT DESTINATION ALERT", x, y, time - percentTimeTraveled * time);
               alertedAboutDestinationProximity = true;
-              self._setViewportDestination(x, y, time - percentTimeTraveled * time);
+              self._setViewportDestination(-x, -y, time - percentTimeTraveled * time);
             }
               
 //            console.log("DISTANCE LEFT: ", distance - distanceTraveled);
@@ -1023,11 +1023,11 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
           }
         }
         else
-          self._setViewportDestination(x, y, time);
+          self._setViewportDestination(-x, -y, time);
       }
       else {
         this._updateScrollPosition(x, y);
-        this._setViewportDestination(x, y, 0);
+        this._setViewportDestination(-x, -y, 0);
         this._triggerScrollEvent('scroll');
       }
       

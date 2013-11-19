@@ -22,7 +22,6 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
     IMG_OFFSET = Math.max(viewport.height * 3, 500);
   });
 
-
   function isSickLazyImage(img) {
     var lazyVal = img.getAttribute(LAZY_DATA_ATTR);
     return !lazyVal || !(lazyVal = lazyVal.trim()) || lazyVal == DUMMY_IMG;
@@ -270,9 +269,11 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
     _getAdjustedViewport: function() {
       var viewport = G.viewport,
           viewportDestination = this._getViewportDestination(),
-          position = DOM.getTranslation(this.el),
-          xAdjustment = viewportDestination.X - position.X,
-          yAdjustment = viewportDestination.Y - position.Y,
+          translation = DOM.getTranslation(this.el),
+          offsetX = -translation.X, // if we scroll the page down, we will be looking at elements with positive offset, like top:200px, 
+          offsetY = -translation.Y, // while translation will be negative, like translate(0px, -200px), meaning the top of the page is 200px submerged into the header
+          xAdjustment = viewportDestination.X - offsetX,
+          yAdjustment = viewportDestination.Y - offsetY,
           adjustedViewport = {        
             top: yAdjustment - IMG_OFFSET,
             left: xAdjustment - IMG_OFFSET
@@ -280,7 +281,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
       
       adjustedViewport.right = adjustedViewport.left + viewport.width + 2 * IMG_OFFSET;
       adjustedViewport.bottom = adjustedViewport.top + viewport.height + 2 * IMG_OFFSET;
-      return adjustedViewport;
+      return (this._adjustedViewport = adjustedViewport);
     },
     
     _getImageInfos: function(imgs) {
