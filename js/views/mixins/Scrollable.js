@@ -649,13 +649,16 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
       if (_.isEqual(newPos, pos))
         return;
       
-      if (distance > s.metrics.container[axisToDim[axis]])
-        time = time ? Math.abs(time) : this._calcAnimationTime(pos, newPos);
-      else
-        time = 0;
+//      if (Math.abs(distance) >= s.metrics.container[axisToDim[axis]])
+//        time = time ? Math.abs(time) : this._calcAnimationTime(pos, newPos);
+//      else
+//        time = 0;
       
-      if (jump)
+      time = this._calcAnimationTime(pos, newPos);
+      if (jump) {
         time = Math.min(time, maxJumpTime);
+        s._jumping = true;
+      }
       
       e.preventDefault();
       this._scrollTo(newPos.X, newPos.Y, time, ease);
@@ -666,7 +669,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
         return;
       
       var s = this._scrollerProps;
-      if (!s._keyHeld)
+      if (!s._keyHeld || s._jumping)
         return;
 
 //      this.log('KEYING UP', U.getKeyEventCode(e));
@@ -875,7 +878,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
       var s = this._scrollerProps;
       this._clearScrollTimeouts();
       if (this._isScrolling()) {
-        s._start = s._keyHeld = s._flinging = s._snapping = s._dragging = null;
+        s._start = s._keyHeld = s._flinging = s._snapping = s._dragging = s._jumping = null;
         Q.write(this._clearScrollerTransitionStyle, this, undefined, {
           throttle: true,
           last: true
@@ -958,7 +961,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
     _scrollTo: function(x, y, time, ease) {
       time = time || 0;
       ease = ease || beziers.fling;
-//      this.log('scrolling to:', x, ',', y, ', in ' + time + 'ms');
+      this.log('scrolling to:', x, ',', y, ', in ' + time + 'ms');
       var s = this._scrollerProps,
           pos = s.position,
           bounce = s.bounce;
