@@ -18,8 +18,8 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
 //    DUMMY_IMG = G.getBlankImgSrc();
 //  });
   
-  window.addEventListener('debouncedresize', function(viewport) {
-    IMG_OFFSET = Math.max(viewport.height * 3, 500);
+  window.addEventListener('debouncedresize', function() {
+    IMG_OFFSET = Math.max(G.viewport.height * 3, 500);
   });
 
   function isSickLazyImage(img) {
@@ -39,13 +39,16 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
     events: {
 //      'imageOnload': '_queueImageLoad',
       'page_show': '_onpageshow',
-      'page_hide': '_stop'
-//        ,
-//      'scrollocontent': '_queueImagesJob'
+      'page_hide': '_stop',
+      'scrollocontent': '_queueImagesJob'
     },
     
     myEvents: {
       'viewportDestination': '_onViewportDestinationChanged'
+    },
+    
+    windowEvents: {
+      'debouncedresize': '_queueImagesJob'
     },
     
     initialize: function() {
@@ -73,7 +76,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
           dest = this._getViewportDestination();
       
       if (prevDest) {
-        if (Math.abs(dest[axis] - prevDest[axis]) < 100) { //IMG_OFFSET * 2 / 3) {
+        if (Math.abs(dest[axis] - prevDest[axis]) < IMG_OFFSET * 2 / 3) {
           // we load images within IMG_OFFSET of out current viewport position but we trigger a load when we're 1/3 of an IMG_OFFSET away from the lazy/loaded border
           // For example, if IMG_OFFSET is viewport.height * 3, we will load images as far as IMG_OFFSET AWAY, but then we won't load more until we are viewport.height away from the closest unloaded image
           return;
@@ -270,17 +273,23 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
       var viewport = G.viewport,
           viewportDestination = this._getViewportDestination(),
           translation = DOM.getTranslation(this.el),
-          offsetX = -translation.X, // if we scroll the page down, we will be looking at elements with positive offset, like top:200px, 
-          offsetY = -translation.Y, // while translation will be negative, like translate(0px, -200px), meaning the top of the page is 200px submerged into the header
-          xAdjustment = viewportDestination.X - offsetX,
-          yAdjustment = viewportDestination.Y - offsetY,
+          viewportPositionX = -translation.X, // if we scroll the page down, we will be looking at elements with positive offset, like top:200px, 
+          viewportPositionY = -translation.Y, // while translation will be negative, like translate(0px, -200px), meaning the top of the page is 200px submerged into the header
+          xAdjustment = viewportDestination.X - viewportPositionX,
+          yAdjustment = viewportDestination.Y - viewportPositionY,
+//          favorX = xAdjustment > 0 ? 1 - xAdjustment / IMG_OFFSET : 1 + xAdjustment / IMG_OFFSET,
+//          favorY = yAdjustment > 0 ? 1 - yAdjustment / IMG_OFFSET : 1 + yAdjustment / IMG_OFFSET,
           adjustedViewport = {        
-            top: yAdjustment - IMG_OFFSET,
-            left: xAdjustment - IMG_OFFSET
+            top: yAdjustment - IMG_OFFSET, // * favorY, // favor the current scroll direction
+            left: xAdjustment - IMG_OFFSET // * favorX
           };
       
       adjustedViewport.right = adjustedViewport.left + viewport.width + 2 * IMG_OFFSET;
       adjustedViewport.bottom = adjustedViewport.top + viewport.height + 2 * IMG_OFFSET;
+//      console.log("Viewport Y", viewportPositionY);
+//      console.log("Viewport Destination Y", viewportDestination.Y);
+//      console.log("Y adjustment", yAdjustment);
+//      console.debug("Adjusted Viewport", adjustedViewport);
       return (this._adjustedViewport = adjustedViewport);
     },
     
@@ -329,7 +338,6 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
     },
     
     _loadImages: function(imgs) {
-      this.log("LOADING LAZY IMAGES");
       if (!imgs.length)
         return G.getRejectedPromise();
       
@@ -343,7 +351,9 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
         if (!self._hasImageJob(loadImageJobId))
           return;
         
+        self.log("LOADING LAZY IMAGES", _.now());
         var imgInfos = this._getImageInfos(imgs),
+//            outOfBounds = [],
             toFetch = [],
             toFetchInfos = [],
             delayed = [];
@@ -367,6 +377,8 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
               toFetchInfos.push(info);
               continue;
             }
+//            else
+//              outOfBounds.push(img, info);
             
 //            // wait till it's scrolled into the viewport
 //            if (!_.contains(this._lazyImages, img))
@@ -382,6 +394,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
         if (toFetch.length)
           this._fetchImages(toFetch, toFetchInfos);
         
+//        console.debug(outOfBounds);
         dfd.resolve();
 //        this._loadQueue.length = 0;
       }, this);
