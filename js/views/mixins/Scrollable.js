@@ -1124,6 +1124,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
     },
 
     _flingScroller: function(velocity) {
+      velocity *= 1.2;
       this._clearScrollTimeouts();
       var self = this,
           s = this._scrollerProps,

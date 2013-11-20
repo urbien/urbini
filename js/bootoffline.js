@@ -26,7 +26,7 @@ window.onload = function() {
         css = ls.getItem('homePageCss');
     
     body.innerHTML = body.innerHTML + hp;
-    var style = d.createElement('style');
+    var style = document.createElement('style');
     style.type = 'text/css';
     style.textContent = css; 
     head.appendChild(style);

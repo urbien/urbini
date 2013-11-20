@@ -100,7 +100,7 @@ define('views/MasonryListView', [
     preinitializeItem: function(res) {
       return ResourceMasonryItemView.preinitialize({
         vocModel: this.vocModel,
-        className: 'nab nabBoard',
+        className: 'nab', // nabBoard',
         parentView: this
       });
     },
@@ -178,7 +178,9 @@ define('views/MasonryListView', [
     },
 
     doRemovePages: function(pages, fromTheHead) {
+//      console.log("REMOVED", pages.length, "PAGES, id:", this._slidingWindowOpInfo.id);
       this.masonry.remove(pages);
+//      this._slidingWindowOpInfo.removed = true;
     },
 
     preRender: function() {
@@ -186,20 +188,14 @@ define('views/MasonryListView', [
     },
     
     postRender: function(info) {
-      var self = this;
       if (!this.rendered) {
-//        this.$el.imagesLoaded(function() {
-          self.masonry = new Mason({
-            itemSelector: ITEM_SELECTOR
-          }, self.el);
-   
-          self.centerMasonry(self);
-          self.finish();
-//        });
-
-//        setTimeout(this._loadingDfd.resolve, 300);
-//        return this._loadPromise;
-          return;
+        this.masonry = new Mason({
+          itemSelector: ITEM_SELECTOR
+        }, this.el);
+ 
+        this.centerMasonry(this);
+        this.finish();
+        return;
       }
       
 //      var removedFromTop = info.removedFromTop.length && info.removedFromTop.slice(),      // need this while using imagesLoaded (async)    
@@ -209,32 +205,31 @@ define('views/MasonryListView', [
           hasUpdated = !!_.size(info.updated);
       
       if (hasUpdated || prepended || appended) {
-//        var dfd = $.Deferred();
-//        this.$el.imagesLoaded(function() {
-          if (hasUpdated)
-            self.masonry.reload();
-          else {
-            if (appended) 
-              self.masonry.appended(appended);
-            if (prepended) {
-              var bricks = [],
-                  i = prepended.length;
-              
-              while (i--) {
-                bricks.push.apply(bricks, prepended[i].childNodes);
-              }
-              
-              bricks.reverse();
-              self.masonry.prepended(bricks, null, true);
-            }
+        if (hasUpdated)
+          this.masonry.reload();
+        else {
+          if (appended) { 
+//            console.log("APPENDED", appended.length, "PAGES, id:", this._slidingWindowOpInfo.id, _.pluck(appended, 'id').join(', '));
+            this.masonry.appended(appended);
           }
-          
-          self.trigger('refreshed');
-//          dfd.resolve();
-//        });
+          if (prepended) {
+            var bricks = [],
+                i = prepended.length;
+            
+            while (i--) {
+              bricks.push.apply(bricks, prepended[i].childNodes);
+            }
+            
+            bricks.reverse();
+//            console.log("PREPENDED", prepended.length, "PAGES, id:", this._slidingWindowOpInfo.id, _.pluck(appended, 'id').join(', '));
+            this.masonry.prepended(bricks, null, true);
+          }
+        }
         
-//        return dfd.promise();
+        this.trigger('refreshed');
       }
+      
+//      this._slidingWindowOpInfo.removed = false;
     },
 
     refresh: function() {

@@ -35,7 +35,7 @@ define('views/ResourceListView', [
     _minSlidingWindowDimension: 3000, // px, should depend on size of visible area of the list, speed of device, RAM
     _pageOffset: 0,
 //    _maxPagesInSlidingWindow: 12,
-    _minPagesInSlidingWindow: 6,
+    _minPagesInSlidingWindow: 12,
     _pagesCurrentlyInSlidingWindow: 0,
     _elementsPerPage: 10,
     _horizontal: false,
@@ -92,6 +92,7 @@ define('views/ResourceListView', [
       var viewport = G.viewport;
       this._viewport = {};
       this._slidingWindowOpInfo = {
+        id: G.nextId(),
         isFirstPage: false,
         html: [],
         prepended: [],
@@ -181,7 +182,7 @@ define('views/ResourceListView', [
     _onScrollerSizeChanged: function(e) {
       var info = e.detail || e,
           dimProp = this._horizontal ? 'width' : 'height',
-          pages = Math.max(this._minPagesInSlidingWindow),
+          pages = Math.max(this._minPagesInSlidingWindow, this._pagesCurrentlyInSlidingWindow),
           slidingWindow = this.getSlidingWindow(),
           slidingWindowDim = Math.max(this._minSlidingWindowDimension, slidingWindow.tail - slidingWindow.head),
           pageDimension;
@@ -194,7 +195,7 @@ define('views/ResourceListView', [
       pageDimension = this._pageDimensions[dimProp];
       this._updateViewport(info);
       this._minSlidingWindowDimension = pageDimension * pages; // px, should depend on size of visible area of the list, speed of device, RAM
-      this._slidingWindowInsideBuffer = slidingWindowDim / 3; // how far away the viewport is from the closest border of the sliding window before we start to fetch more resources
+      this._slidingWindowInsideBuffer = slidingWindowDim / 2; // how far away the viewport is from the closest border of the sliding window before we start to fetch more resources
       this._slidingWindowOutsideBuffer = Math.max(slidingWindowDim / 5, this._slidingWindowInsideBuffer / 2); // how far away the viewport is from the closest border of the sliding window before we need to adjust the window
 //      _slidingWindowBuffer: 800, // px, should depend on size of visible area of the list, speed of device, RAM
 //      if (G.browser.mobile && pageHeight < 500)
@@ -382,6 +383,8 @@ define('views/ResourceListView', [
         else if (_.getObjectType(val) == '[object Object]')
           _.wipe(val);
       }
+      
+      info.id = G.nextId();
     },
     
     /**
@@ -596,7 +599,7 @@ define('views/ResourceListView', [
     },
     
     _addPages: function(n, atTheHead, info) {
-      this.log("PAGER", "ADDING", n, "PAGES");
+      this.log("PAGER", "ADDING", n, "PAGES", atTheHead ? "AT THE HEAD" : "");
       var self = this,
           childTagName = this._preinitializedItem.prototype.tagName || 'div',
           pageTag = this.getPageTag(),
@@ -613,7 +616,6 @@ define('views/ResourceListView', [
           promise = dfd.promise(),
           dummy = this._getDummy(atTheHead),
           dummyDim = dummy && this._getDummyDimension(atTheHead),
-          insertionPoint = this._pages.length && this._pages[atTheHead ? 0 : this._pages.length - 1],
           newDummyDim, 
           currentPageHtml = [],
           currentPageEl,
@@ -646,8 +648,8 @@ define('views/ResourceListView', [
         var res = col.models[resNum],
             liView = this.renderItem(res, atTheHead);
 
-        if (atTheHead)
-          console.log("PREPENDING", U.getDisplayName(res));
+//        if (atTheHead)
+//          console.log("PREPENDING", U.getDisplayName(res));
         
         if (isFirst) {
           currentPageEl = doc.createElement(pageTag);
@@ -701,11 +703,20 @@ define('views/ResourceListView', [
         Q.write(function insertPage() {
 //          self.log("PAGER", "ADDING PAGE, FRAME", window.fastdom.frameNum);
 //          var pages = info.added = $($.parseHTML(info.html.join(""), doc));
+          var i = added.length,
+              el = self.el,
+              insertionPoint;
+          
+          if (atTheHead)
+            insertionPoint = self.isDummyPadded() ? el.firstChild.nextSibling : el.firstChild;
+          else
+            insertionPoint = self.isDummyPadded() ? el.lastChild : null; 
+          
           self._pages[atTheHead ? 'unshift' : 'push'].apply(self._pages, added);
-          for (var i = 0; i < added.length; i++) {
+          while (i--) {
             var page = added[i],
                 childEls = page.childNodes.$filter(function(c) { return c.nodeType == 1 }); // filter out text nodes that creep in
-            
+
             for (var j = 0; j < childEls.length; j++) {
               var childEl = childEls[j],
                   viewId = childEl.dataset.viewid;
@@ -719,31 +730,9 @@ define('views/ResourceListView', [
               if (child.postRender)
                 child.postRender();
             }
-          }
-
-//          if (atTheHead)
-//            added.reverse();
-          
-          for (var i = 0; i < added.length; i++) {
-            var page = added[i];
-            if (!insertionPoint) {
-              if (dummy)
-                page.$after(self.el.firstChild);
-              else
-                self.el.appendChild(page);
-              
-              insertionPoint = page;
-            }
-            else {              
-              page[atTheHead ? '$before' : '$after'](insertionPoint);
-//              if (page.previousSibling && parseInt(page.firstChild.style.top) > parseInt(page.previousSibling.firstChild.style.top))
-//                debugger;
-//              if (page.nextSibling && parseInt(page.firstChild.style.top) > parseInt(page.nextSibling.firstChild.style.top))
-//                debugger;
-            }
             
-            if (atTheHead)
-              insertionPoint = page;
+            el.insertBefore(page, insertionPoint);
+            insertionPoint = page;
           }
           
 //          pages[atTheHead ? 'insertAfter' : 'insertBefore']($dummy);
@@ -1057,9 +1046,14 @@ define('views/ResourceListView', [
       }
       else if (this.isMultiValueChooser) {
         params.mv = true;
-        if (G.isJQM())
+        if (G.isJQM()) {
           params.tagName = 'div';
-        params.className = "ui-controlgroup-controls";
+          params.className = "ui-controlgroup-controls";
+        }
+        else {
+          params.className = G.isTopcoat() ? "topcoat-list__item" : (G.isBootstrap() ? "list-group-item" : "");
+
+        }
         params.mvProp = this.mvProp;
         view = preinitializer.preinitialize(params);
       }
