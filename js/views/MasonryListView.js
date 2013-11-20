@@ -115,6 +115,16 @@ define('views/MasonryListView', [
       this.centerMasonry(this);
     },
 
+    _getSlidingWindowOffset: function(head) {
+      if (!this._pages.length)
+        return 0;
+
+      if (head)
+        return getTop(_.min(this._pages[0].childNodes, getTop));
+      else
+        return getBottom(_.max(this._pages[0].childNodes, getBottom));
+    },
+    
     getElementsPerPage: function() {
       if (this._pages.length) {
         this._optimizedElementsPerPage = true;

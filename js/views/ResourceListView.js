@@ -439,7 +439,7 @@ define('views/ResourceListView', [
       if (slidingWindowDim < this._minSlidingWindowDimension) {
         var growAtTheHead;
 //        if (this._pagesCurrentlyInSlidingWindow < this._maxPagesInSlidingWindow) {
-        if (this._getDummyDimension(true)) { // head dummy is of non-zero size
+        if (this._getSlidingWindowOffset(true)) { // head dummy is of non-zero size
           var headDiff = viewport.head - slidingWindow.head,
               tailDiff = slidingWindow.tail - viewport.tail;
           
@@ -608,7 +608,7 @@ define('views/ResourceListView', [
       return this.dummies && this.dummies[head ? 'head' : 'tail'];
     },
 
-    _getDummyDimension: function(head) {
+    _getSlidingWindowOffset: function(head) {
       return this.dummies[(head ? 'head' : 'tail') + 'Dimension']
     },
     
@@ -629,7 +629,7 @@ define('views/ResourceListView', [
           dfd = $.Deferred(),
           promise = dfd.promise(),
           dummy = this._getDummy(atTheHead),
-          dummyDim = dummy && this._getDummyDimension(atTheHead),
+          dummyDim = dummy && this._getSlidingWindowOffset(atTheHead),
           newDummyDim, 
           currentPageHtml = [],
           currentPageEl,
@@ -942,7 +942,7 @@ define('views/ResourceListView', [
         
         if (self.isDummyPadded()) {
           self.log("PAGER", "UPDATING {0} DUMMY SIZE".format(fromTheHead ? "HEAD" : "TAIL"));
-          self.setDummyDimension(self._getDummy(fromTheHead), self._getDummyDimension(fromTheHead) + removedPageDim);
+          self.setDummyDimension(self._getDummy(fromTheHead), self._getSlidingWindowOffset(fromTheHead) + removedPageDim);
         }
         
         dfd.resolve();
