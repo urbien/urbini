@@ -12,23 +12,12 @@ define('views/HomePage', [
     initialize: function(options) {
       _.bindAll(this, 'render', 'rightMenu', 'leftMenu'); //, 'pagehide', 'pagebeforeshow');
       BasicPageView.prototype.initialize.apply(this, arguments);
-      
-//      Events.on('pagehide', this.pagehide);
-//      $(document).on('page_hide',       this.pagehide);
-//      $(document).on('page_beforeshow', this.pagebeforeshow);
-//      $(div[data-role="page"]).on
       return this;
     },
-//    pagebeforechange: function(e) {
-////      if (this.first)
-////        Events.stopEvent(e);
-//    
-//    },
+
     events: {
-//      'page_hide'            : 'pagehide',
-//      'page_beforeshow'      : 'pagebeforeshow',
-      'tap'                : 'leftMenu',
-      'hold'               : 'rightMenu',
+      'tap #hpRightPanel'   : 'leftMenu',
+      'hold #hpRightPanel'  : 'rightMenu',
       'tap #installApp'    : 'installApp'
     },
     
@@ -40,16 +29,6 @@ define('views/HomePage', [
         });
       }
     },
-    
-//    pagehide: function(e) {
-////      this.$el.hide();
-//      return BasicPageView.prototype.onpageevent.apply(this, arguments);
-//    },
-//    
-//    pagebeforeshow: function(e) {
-////      this.$el.show();
-//      return BasicPageView.prototype.onpageevent.apply(this, arguments);
-//    },
     
     rightMenu: function(e) {
       var id = e.target.id,
@@ -98,7 +77,7 @@ define('views/HomePage', [
         this.el.style.display = 'block';
         
         // only allow tap and hold events, click muddies the waters
-        this.el.addEventListener('click', function(e) {
+        this.el.querySelector('#hpRightPanel').$on('click', function(e) {
           e.preventDefault();
         });
       }

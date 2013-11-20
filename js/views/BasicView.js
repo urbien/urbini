@@ -933,7 +933,7 @@ define('views/BasicView', [
       if (this._mutationObserver) {
         this._mutationObserver.disconnect();
       } else {
-        this.el.removeEventListener('DOMSubtreeModified', this._mutationObserverCallback, true);
+        this.el && this.el.removeEventListener('DOMSubtreeModified', this._mutationObserverCallback, true);
       }
     },
 

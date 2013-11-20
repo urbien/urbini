@@ -735,7 +735,6 @@ define('views/ResourceListView', [
             insertionPoint = page;
           }
           
-//          pages[atTheHead ? 'insertAfter' : 'insertBefore']($dummy);
           postRenderResult = self.postRender(info);
           
           // if dummy dimension changed, we will use it on the next frame (in the "finish" function)

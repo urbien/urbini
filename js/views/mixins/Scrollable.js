@@ -1158,11 +1158,6 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
       return this._scrollVelocity;
     },
 
-    _viewportDestination: {
-      X: 0,
-      Y: 0
-    },
-    
     _setViewportDestination: function(x, y, timeToDestination) {
       var s = this._scrollerProps,
           axis = this._getScrollAxis(),

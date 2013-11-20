@@ -6,11 +6,8 @@ define('views/MasonryListView', [
   'views/ResourceListView',
   'views/ResourceMasonryItemView',
   'collections/ResourceList',
-//  'views/mixins/Masonry',
   'jqueryMasonry',
   '@widgets'
-//  ,
-//  'jqueryImagesLoaded'
 ], function(G, U, Events, ResourceListView, ResourceMasonryItemView, ResourceList, Mason, $m) {
   var MASONRY_FN = 'masonry', // in case we decide to switch to Packery or some other plugin
       ITEM_SELECTOR = '.nab';

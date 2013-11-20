@@ -281,7 +281,7 @@ define('views/RightMenuPanel', [
       var menu = document.getElementById(this.viewId);
       var mi = menu.querySelector('ul#rightMenuItems');
       if (mi) {
-        $(mi).panel("open");
+        $(menu).panel("open");
 //        $('#' + this.viewId).panel().panel("open");
         return;
       }
