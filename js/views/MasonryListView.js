@@ -64,32 +64,10 @@ define('views/MasonryListView', [
       }
     },    
 
-    getHeadDummyInfo: function() {
-      
-      var head = getTop(_.max(el.childNodes, getTop)); // get the top offset of the child closest to the bottom the screen in the first page       
-    },
-    
     setDummyDimension: function(el, value) {
       // do nothing
     },
     
-//    getDimension: function(el) {
-//      var head = getTop(_.max(el.childNodes, getTop)); // get the top offset of the child closest to the bottom the screen in the first page 
-//      var tail = getBottom(_.min(el.childNodes, getBottom)); // get the top offset of the child closest to the top of the screen in the last page
-//      
-//      return tail - head;
-//    },
-//    
-//    _addPages: function(n, atTheHead, force) {
-//      var self = this,
-//          promise = ResourceListView.prototype._addPages.apply(this, arguments);
-//          
-//      if (atTheHead)
-//        promise.done(this.masonry.reload.bind(this.masonry));
-//      
-//      return promise;
-//    },
-
     getPageTag: function() {
       return 'div';
     },
@@ -138,9 +116,19 @@ define('views/MasonryListView', [
     },
 
     getElementsPerPage: function() {
-//      return 3;
-      var dimensions = this._pageDimensions;
-      return Math.min(dimensions.width * dimensions.height / (200 * 200) | 0, 15); 
+      if (this._pages.length) {
+        this._optimizedElementsPerPage = true;
+        var viewportDim = this.getViewport().height,
+            page = this._pages[0],
+            pageDim = getBottom(_.max(page.childNodes, getBottom)) - getTop(_.min(page.childNodes, getTop)),
+            numEls = page.childElementCount;
+
+        return Math.ceil(numEls * viewportDim / pageDim);
+      }
+      else {
+        var dimensions = this._pageDimensions;
+        return Math.min(dimensions.width * dimensions.height / (200 * 200) | 0, 15);
+      }
     },
 
     getSlidingWindow: function() {

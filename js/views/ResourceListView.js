@@ -24,16 +24,13 @@ define('views/ResourceListView', [
       delegateEvents: false // delegate when we issue setElement
     },
 
-//    _listItemViews: [],
-//    _pageReqNum: 0,
-//    _itemView: ResourceListItemView,
     _outOfData: false,
     _adjustmentQueued: false,
     _slidingWindowInsideBuffer: 1200, // px, should depend on size of visible area of the list, speed of device, RAM
     _slidingWindowOutsideBuffer: 800, // px, should depend on size of visible area of the list, speed of device, RAM
 //    _slidingWindowBuffer: 800, // px, should depend on size of visible area of the list, speed of device, RAM
     _minSlidingWindowDimension: 3000, // px, should depend on size of visible area of the list, speed of device, RAM
-    _pageOffset: 0,
+//    _pageOffset: 0,
 //    _maxPagesInSlidingWindow: 12,
     _minPagesInSlidingWindow: 12,
     _pagesCurrentlyInSlidingWindow: 0,
@@ -90,8 +87,11 @@ define('views/ResourceListView', [
       
       
       var viewport = G.viewport;
+      this._pages = [];
+      this._scrollerContainer = {};
       this._viewport = {};
-      this._slidingWindowOpInfo = {
+      this._cachedSlidingWindow = {}; // sliding window dimensions 
+      this._slidingWindowOpInfo = {   // can reuse this as sliding window operations never overlap
         id: G.nextId(),
         isFirstPage: false,
         html: [],
@@ -110,12 +110,25 @@ define('views/ResourceListView', [
         }
       };
       
-      this._pages = [];
       this._displayedCollectionRange = {
         from: 0,
         to: 0
       };
 
+      this.empty();
+      if (this.isDummyPadded()) {
+        this.dummies = this.getDummies();
+        if (!this.dummies.length) {
+          this.html(this.makeDummies());
+          this.dummies = this.getDummies();
+        }
+        
+        if (this._horizontal) {
+          this.dummies.head.style.display = 'inline-block';
+          this.dummies.tail.style.display = 'inline-block';
+        }
+      }
+      
       this._onScrollerSizeChanged({
         target: this.el,
         content: viewport,
@@ -140,7 +153,7 @@ define('views/ResourceListView', [
     _resetPaging: function() {
       this._outOfData = false;
       this._pages.length = 0;
-      this._pageOffset = 0;
+//      this._pageOffset = 0;
       this._pagesCurrentlyInSlidingWindow = 0;
       this._displayedCollectionRange.from = this._displayedCollectionRange.to = 0;
       this.$('.listPage').$remove();
@@ -161,6 +174,8 @@ define('views/ResourceListView', [
       
       this._viewport.head = this._horizontal ? left : top;
       this._viewport.tail = this._horizontal ? left + width : top + height;
+      this._viewport.width = width;
+      this._viewport.height = height;
     },
     
     getViewport: function() {
@@ -176,7 +191,18 @@ define('views/ResourceListView', [
     },
     
     getElementsPerPage: function() {
-      return this.getPageDimension() / 50 | 0;
+      if (this._pages.length) {
+        this._optimizedElementsPerPage = true;
+        
+        var viewportDim = this.getViewport()[this._horizontal ? 'width' : 'height'],
+            page = this._pages[0],
+            numEls = page.childElementCount,
+            pageDim = page[this._horizontal ? 'offsetWidth' : 'offsetHeight'];
+        
+        return Math.ceil(numEls * viewportDim / pageDim); 
+      }
+      else
+        return Math.min(this.getPageDimension() / 50 | 0, 10);
     },
     
     _onScrollerSizeChanged: function(e) {
@@ -186,9 +212,6 @@ define('views/ResourceListView', [
           slidingWindow = this.getSlidingWindow(),
           slidingWindowDim = Math.max(this._minSlidingWindowDimension, slidingWindow.tail - slidingWindow.head),
           pageDimension;
-      
-      if (!this._scrollerContainer)
-        this._scrollerContainer = {};
       
       _.extend(this._scrollerContainer, info.container);
       this._pageDimensions = _.clone(info.container);
@@ -251,20 +274,6 @@ define('views/ResourceListView', [
       
 //      this._viewportSizeChanged();
       this.imageProperty = U.getImageProperty(this.collection);
-      this.empty();
-      if (this.isDummyPadded()) {
-        this.dummies = this.getDummies();
-        if (!this.dummies.length) {
-          this.html(this.makeDummies());
-          this.dummies = this.getDummies();
-        }
-        
-        if (this._horizontal) {
-          this.dummies.head.style.display = 'inline-block';
-          this.dummies.tail.style.display = 'inline-block';
-        }
-      }
-      
       this.adjustSlidingWindow();
     },
   
@@ -381,7 +390,7 @@ define('views/ResourceListView', [
         if (_.isArray(val))
           val.length = 0;
         else if (_.getObjectType(val) == '[object Object]')
-          _.wipe(val);
+          _.clearProperties(val);
       }
       
       info.id = G.nextId();
@@ -411,9 +420,6 @@ define('views/ResourceListView', [
         return false;
       }
       
-      if (!this._slidingWindowOpInfo)
-        this._slidingWindowOpInfo = {};
-      
       if (this._pagesCurrentlyInSlidingWindow < this._minPagesInSlidingWindow)
         return this._growSlidingWindow(n).done(this._queueSlidingWindowCheck);
       
@@ -425,7 +431,7 @@ define('views/ResourceListView', [
       if (slidingWindowDim < this._minSlidingWindowDimension) {
         var growAtTheHead;
 //        if (this._pagesCurrentlyInSlidingWindow < this._maxPagesInSlidingWindow) {
-        if (this._pageOffset && this._pageOffset > this._pagesCurrentlyInSlidingWindow / 2) {
+        if (this._getDummyDimension(true)) { // head dummy is of non-zero size
           var headDiff = viewport.head - slidingWindow.head,
               tailDiff = slidingWindow.tail - viewport.tail;
           
@@ -635,9 +641,10 @@ define('views/ResourceListView', [
       
       label(promise);
       dfd.done(function() {
+        self._invalidateCachedSlidingWindow();
         self._pagesCurrentlyInSlidingWindow += n;
         if (atTheHead) {
-          self._pageOffset = Math.max(self._pageOffset - n, 0);
+//          self._pageOffset = Math.max(self._pageOffset - n, 0);
           displayed.from -= numRendered;
         }
         else
@@ -695,6 +702,9 @@ define('views/ResourceListView', [
 
       Q.read(function getDummyDim() {
         dfd.notify(numPagesRendered);
+        if (!self._optimizedElementsPerPage && self._pages.length)
+          self.getElementsPerPage();
+        
         if (!numRendered) {
           dfd.resolve();
           return;
@@ -801,6 +811,9 @@ define('views/ResourceListView', [
      * @return offsets on all sides of the sliding window
      */
     getSlidingWindow: function() {
+      if (_.size(this._cachedSlidingWindow)) // we don't create a new object when we invalidate, we just wipe the properties on it
+        return this._cachedSlidingWindow;
+      
       // override this if you're not using dummies
       if (!this.isDummyPadded())
         throw "not implemented yet, please override or implement";
@@ -812,12 +825,16 @@ define('views/ResourceListView', [
       if (typeof head !== 'number')
         head = this.dummies.headPosition = this.getHeadPosition(this.dummies.head);
       
-      return {
+      return (this._cachedSlidingWindow = {
         head: head + this.dummies.headDimension,
         tail: this.getHeadPosition(this.dummies.tail)
-      }
+      });
     },
 
+    _invalidateCachedSlidingWindow: function() {
+      _.wipe(this._cachedSlidingWindow, true);
+    },
+    
     /**
      * grows the sliding window by "n" pages, from the top/left if head==true, otherwise from the bottom/right
      * @return a promise
@@ -870,11 +887,12 @@ define('views/ResourceListView', [
           dfd = $.Deferred();
 
       dfd.done(function() {
+        self._invalidateCachedSlidingWindow();
         self._pagesCurrentlyInSlidingWindow -= n;
         if (fromTheHead) {
           displayed.from += removedViews.length;
-          self.log('PAGE OFFSET: ', this._pageOffset + n);
-          self._pageOffset += n;
+//          self.log('PAGE OFFSET: ', this._pageOffset + n);
+//          self._pageOffset += n;
         }
         else
           displayed.to -= removedViews.length;

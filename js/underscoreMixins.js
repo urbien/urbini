@@ -325,11 +325,18 @@ define('underscoreMixins', ['_underscore'], function(_) {
    
     wipe: function(obj) {
       for (var p in obj) {
-        if (_.has(obj, p))
+        if (obj.hasOwnProperty(p))
           delete obj[p];
       }
     },
-    
+
+    clearProperties: function(obj) {
+      for (var p in obj) {
+        if (obj.hasOwnProperty(p))
+          obj[p] = undefined;
+      }
+    },
+
     /** 
      * From http://eloquentjavascript.net/chapter6.html
      */
