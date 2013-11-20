@@ -1,19 +1,20 @@
 //'use strict';
 define('resourceManager', [
+  '__domReady__',
   'globals',
   'utils', 
   'events', 
   'cache',
   'vocManager',
   'collections/ResourceList',
-  '__domReady__'
-].concat(Lablz.dbType == 'none' ? [] : [
+  'lib/fastdom',
   'taskQueue', 
   'indexedDB', 
   'idbQueryBuilder',
   'synchronizer',
   'resourceSynchronizer', 
-  'collectionSynchronizer']), function(G, U, Events, C, Voc, ResourceList, __domReady__, TaskQueue, IndexedDBModule, QueryBuilder, Synchronizer, ResourceSynchronizer, CollectionSynchronizer) {
+  'collectionSynchronizer'
+], function(__domReady__, G, U, Events, C, Voc, ResourceList, Q, TaskQueue, IndexedDBModule, QueryBuilder, Synchronizer, ResourceSynchronizer, CollectionSynchronizer) {
       
   function getSynchronizer(method, data, options) {
     return U.isModel(data) ? new ResourceSynchronizer(method, data, options) : new CollectionSynchronizer(method, data, options);
@@ -80,14 +81,15 @@ define('resourceManager', [
       });
     },
 
-    cleanDatabaseAndReopen: _.debounce(function(del) {
+    cleanDatabaseAndReopen: Q.debounce(function(del) {
       return RM.cleanDatabase(del).then(RM.openDB, RM.openDB);
     }, 2000, true),
 
     cleanDatabase: function(del) {
       return IDB.onOpen().then(function() {
         IDB.wipe(function(storeName) {
-          return !_.contains([MODULE_STORE.name, MODEL_STORE.name], storeName);
+          return storeName != MODULE_STORE.name && 
+                 storeName != MODEL_STORE.name;
         }, del);
       });
     },
@@ -106,7 +108,7 @@ define('resourceManager', [
         return REJECTED_PROMISE;
       
       if (!IDB.isOpen())
-        return IDB.onOpen().then(_.partial(this.upgrade.bind(this), mk, del));
+        return IDB.onOpen().then(this.upgrade.bind(this, mk, del));
       
       mk = mk || [];
       del = del || [];
@@ -240,8 +242,8 @@ define('resourceManager', [
           data = options.data,
           props = data.vocModel.properties,
           temps = {},
-          dfd = $.Deferred(),
-          promise = dfd.promise(),
+          intermediateDfd,
+          REF_STORE,
           query;
       
       // no searching by composite keys like user.name
@@ -269,20 +271,22 @@ define('resourceManager', [
         query = QueryBuilder.buildQuery(data, filter);
         if (query) {
           return IDB.queryByIndex(query).getAll(type).then(function(results) {
-            return results;
+            return Q.wait(1).then(function() {  
+              return results;
+            });
           }, search);
         }
         else
           return search();
       }
       
-      var intermediateDfd = $.Deferred(),
-          REF_STORE = G.getRefStoreInfo();
+      intermediateDfd = $.Deferred();
+      REF_STORE = G.getRefStoreInfo();
 
       IDB.queryByIndex('_tempUri').oneof(_.values(temps)).getAll(REF_STORE.name).then(intermediateDfd.resolve, intermediateDfd.reject);
-      intermediateDfd.promise().done(function(results) {
+      return intermediateDfd.promise().then(function(results) {
         if (!results.length)
-          return dfd.reject();
+          return G.getRejectedPromise();
         
         var tempUriToRef = {};
         for (var i = 0; i < results.length; i++) {
@@ -300,10 +304,9 @@ define('resourceManager', [
           }
         }
         
-        RM.getItems(options).then(dfd.resolve, dfd.reject);
-      }).fail(dfd.reject);
-      
-      return promise;
+        debugger;
+        return RM.getItems(options).then(Q.waitOne);
+      });
     },
     
     restartDB: IDB.restart
@@ -314,7 +317,7 @@ define('resourceManager', [
   Events.on('updatedResources', function(resources) {
     if (resources.length) {
       G.whenNotRendering(function() {
-        RM.addItems(resources);
+        Q.nonDom(RM.addItems.bind(RM, resources));
       });
     }
   });
@@ -422,7 +425,7 @@ define('resourceManager', [
    *  resource: resource
    * }
    */
-  Events.on('inlineResources', function(baseResource, resInfos) {
+  Events.on('inlineResources', Q.defer.bind(Q, 5, 'nonDom', function(baseResource, resInfos) {
 //    if (arguments.length == 1)
 //      res = baseResource;
     
@@ -444,9 +447,9 @@ define('resourceManager', [
       
       baseResource.set(update);
     });
-  });
+  }));
 
-  Events.on('inlineBacklinks', function(baseResource, backlinkInfos) {
+  Events.on('inlineBacklinks', Q.defer.bind(Q, 5, 'nonDom', function(baseResource, backlinkInfos) {
     var typeToBLInfos = getTypeToInfoMap(backlinkInfos);
     Voc.getModels(_.keys(typeToBLInfos)).done(function() {
       for (var type in typeToBLInfos) {
@@ -478,7 +481,7 @@ define('resourceManager', [
         });
       }
     });    
-  });
+  }));
 
   Events.on('createObjectStores', function(stores, cb) {
     RM.upgrade(stores).then(cb);

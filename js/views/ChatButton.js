@@ -11,7 +11,7 @@ define('views/ChatButton', [
     id: 'chat',
     initialize: function(options) {
       _.bindAll(this, 'render'); //, 'chat');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      ToggleButton.prototype.initialize.apply(this, arguments);
       this.makeTemplate(this.templateName, 'template', this.modelType);
       return this;
     },
@@ -29,9 +29,9 @@ define('views/ChatButton', [
         }))[0];
         
         var unread = cachedChatView && cachedChatView.getNumUnread();
-        var $menuBadge = this.$('.menuBadge');
-        $menuBadge.html(unread || '');
-        $menuBadge[unread ? 'show' : 'hide']();
+        this.menuBadge = this.$('.menuBadge')[0];
+        this.menuBadge.innerHTML = unread || '';
+        this.menuBadge[unread ? '$show' : '$hide']();
       }
     },
     
@@ -55,13 +55,13 @@ define('views/ChatButton', [
         url = U.makePageUrl('chat', uri);
       }
       
-      this.$el.html(this.template({
+      this.html(this.template({
         url: url
       }));
       
       this.finish();
       if (this.isChat)
-        this.$('.menuBadge').hide();
+        this.$menuBadge.$hide();
       else
         this.refresh();
       

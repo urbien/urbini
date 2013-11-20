@@ -9,7 +9,9 @@ define('views/ToggleButton', [
       _.bindAll(this, 'setStyle', 'toggleStyle', 'setStyle', 'isOn', 'reset', 'resetStyle');
       BasicView.prototype.initialize.apply(this, arguments);
       this._isOn = this._onByDefault = !!(options || {}).isOn || this.isOn();
-      Events.on("pageChange", this.reset);
+    },
+    globalEvents: {
+      'pageChange': 'reset'
     },
     isOn: function() {
 //      return this.$('a').hasClass('ui-btn-active');
@@ -30,21 +32,24 @@ define('views/ToggleButton', [
       this.setStyle(!this._isOn);
       return this;
     },
-    setStyle: function(on) {
+    setStyle: function(on) {      
+      if (!this.rendered)
+        return;
+      
       on = _.isUndefined(on) ? this.isOn() : on;
-      var link = this.$('a');
+      var link = this.$('a')[0];
 //      var persistCl = 'ui-state-persist';
 //      if (!link.hasClass(persistCl))
 //        link.addClass(persistCl);
       
       var activeCl = 'ui-btn-active';
-      if (on && !link.hasClass(activeCl))
-        link.addClass(activeCl);
+      if (on && !link.classList.contains(activeCl))
+        link.classList.add(activeCl);
       else
-        link.removeClass(activeCl);
+        link.classList.remove(activeCl);
     },
     render: function(options) {
-      this.$el.html(this.template());
+      this.html(this.template());
       this.setStyle();
       return this;
     }

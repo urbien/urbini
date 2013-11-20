@@ -15,7 +15,7 @@ define('views/AddButton', [
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'add');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
       this.makeTemplate(this.template, 'template', this.vocModel.type);
       return this;
     },
@@ -72,13 +72,16 @@ define('views/AddButton', [
     render: function(options) {
       if (!this.template)
         return this;
-      
+
+      var tmpl_data = this.getBaseTemplateData();
       if (typeof options !== 'undefined' && options.append)
-        this.$el.append(this.template());
+        this.append(this.template());
       else if (this.collection.models.length)
-        this.$el.html(this.template());
-      else
-        this.$el.html(this.template({empty: true}));
+        this.html(this.template(tmpl_data));
+      else {
+        tmpl_data.empty = true;
+        this.html(this.template(tmpl_data));
+      }
 
       
       return this;

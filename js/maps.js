@@ -197,7 +197,7 @@
       };
     }
   
-    minResolution = 0.01;
+    var minResolution = 0.01;
     this.getLeafletMapTileColor = function(d) {
       'use strict';
       var minMax = this.currentLayerDensity;
@@ -214,9 +214,9 @@
       return color;
     };
   
-    percentiles = [0, 10, 20, 40, 66, 75, 90, 95];
+    var percentiles = [0, 10, 20, 40, 66, 75, 90, 95];
     
-    getColorForPercentile = function(percentile) {
+    function getColorForPercentile(percentile) {
       'use strict';
       var color =
         percentile > percentiles[7] ? '#800026' :
@@ -230,14 +230,14 @@
       return color;
     };
   
-    simpleDashedStyle = function(feature) {
+    function simpleDashedStyle(feature) {
       'use strict';
       var simple = simpleStyle(feature);
       simple['dashArray'] = '3';
       return simple;
     };
   
-    simpleStyle = function(feature) {
+    function simpleStyle(feature) {
       'use strict';
       return {
           fillColor: '#efefff',
@@ -581,7 +581,7 @@
       return layers;
     };
   
-    _getResetHighlight = function(gj) {
+    function _getResetHighlight(gj) {
       var self = this;
       return function(e) {
         gj.resetStyle(e.target);
@@ -725,7 +725,7 @@
       }
     };
 
-    extend = function(obj) {
+    function extend(obj) {
       var others = Array.prototype.slice.call(arguments, 1);
       for (var i = 0; i < others.length; i++) {
         var source = others[i];
@@ -737,7 +737,7 @@
       return obj;
     };
 
-    keys = Object.keys || function(obj) {
+    var keys = Object.keys || function(obj) {
       if (obj !== Object(obj)) throw new TypeError('Invalid object');
       var ks = [];
       for (var key in obj) 

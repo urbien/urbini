@@ -1,12 +1,13 @@
 //'use strict';
 define('templates', [
-  'globals',
-//  'fileCache!../templates.jsp',
+  'globals', 
+  'underscore', 
+  'events', 
   '../templates.jsp',
   '../templates_bb.jsp',
-  'underscore',
-  'events'
-], function(G, HTML, HTML_bb,_, Events) {
+  '../templates_topcoat.jsp',
+  '../templates_bootstrap.jsp'
+], function(G,_, Events, HTML, HTML_bb, HTML_topcoat, HTML_bootstrap) {
   _.templateSettings = {
     evaluate:    /\{\{(.+?)\}\}/g,
     interpolate: /\{\{=(.+?)\}\}/g
@@ -14,30 +15,42 @@ define('templates', [
   };
   
   var lazyImgSrcAttr = G.lazyImgSrcAttr,
-      blankImgDataUrl = G.blankImgDataUrl;
+      blankImgSrc,
+      lazyReplacement,
+      lazyRegex,
+      emptyLazyRegex,
+      lazyClassRegex = /(class="?'?[^"']*)lazyImage([^"']*"?'?)/ig;
   
-  window.onimageload = function onimageload() {
-    var self = this;
-    window.raf(function() {      
-      $(self).trigger('imageOnload');
-    });
-    
-    return false;
-  };
+  function initBlankImg() {
+    if (!blankImgSrc) {
+      blankImgSrc = G.getBlankImgSrc();
+      lazyReplacement = 'src="{0}" {1}'.format(blankImgSrc, lazyImgSrcAttr);
+      lazyRegex = new RegExp('src="{0}" {1}=\"?\'?([^\"\']+)\"?\'?'.format(blankImgSrc, lazyImgSrcAttr), 'ig');
+//      emptyLazyRegex = new RegExp('src="{0}" {1}=\"\s*"?\'?'.format(blankImgSrc, lazyImgSrcAttr), 'ig');
+    }
+  }
   
-  window.onimageerror = function onimageerror() {
-    var self = this;
-    window.raf(function() {      
-      $(self).trigger('imageOnerror');
-    });
-    
-    return false;
-  };
+  Events.once('appStart', initBlankImg);
+//  window.onimageload = function onimageload() {
+////    var $this = $(this);
+////    Q.defer(Math.random() * 5 | 0, 'read', $this.trigger.bind($this, 'imageOnload'));
+//    $(this).trigger('imageOnload');
+//    return false;
+//  };
+//  
+//  window.onimageerror = function onimageerror() {
+//    $(this).trigger('imageOnerror');
+//    return false;
+//  };
   
   function prepTemplate(text) {
+    initBlankImg();
+    return text.trim().replace(lazyImgSrcAttr, lazyReplacement);
 //    return text.trim();
-    return text.trim().replace('<img src=', '<img src="{0}" onload="window.onimageload.call(this);" onerror="window.onimageerror.call(this);" {1}='.format(blankImgDataUrl, lazyImgSrcAttr));
-//    return text.trim().replace('<img src=', '<img src="{0}" onload="lzld(this);" onerror="lzld(this)" {1}='.format(blankImgDataUrl, lazyImgSrcAttr));
+//    return text.trim().replace('<img src=', '<img src="{0}" onload="window.onimageload.call(this);" onerror="window.onimageerror.call(this);" {1}='.format(blankImgSrc, lazyImgSrcAttr));
+//    return text.trim().replace('<img src=', '<img src="{0}" {1}='.format(blankImgSrc, lazyImgSrcAttr));
+    
+//    return text.trim().replace('<img src=', '<img src="{0}" onload="lzld(this);" onerror="lzld(this)" {1}='.format(blankImgSrc, lazyImgSrcAttr));
   };
   
   var Templates = {
@@ -95,20 +108,26 @@ define('templates', [
     // This implementation should be changed in a production environment:
     // All the template files should be concatenated in a single file.
     loadTemplates: function() {
+      if (HTML_bb) {
+        HTML += HTML_bb;
+        HTML_bb = null; // in case loadTemplates is ever called again;
+      }
+      
+      if (HTML_topcoat) {
+        HTML += HTML_topcoat;
+        HTML_topcoat = null; // in case loadTemplates is ever called again;
+      }
+      if (HTML_bootstrap) {
+        HTML += HTML_bootstrap;
+        HTML_bootstrap = null; // in case loadTemplates is ever called again;
+      }
+      
       var elts = $('script[type="text/template"]', $(HTML));
       _.each(elts, function(elt) {
         this.templates[elt.id] = {
           'default': prepTemplate(elt.innerHTML)
         };
-      }.bind(this));
-      if (G.currentApp.widgetLibrary  && G.currentApp.widgetLibrary == 'Building Blocks') {
-        var elts = $('script[type="text/template"]', $(HTML_bb));
-        _.each(elts, function(elt) {
-          this.templates[elt.id] = {
-            'default': prepTemplate(elt.innerHTML)
-          };
-        }.bind(this));
-      }
+      }.bind(this));      
     },
  
     _treatTemplate: function(text) {
@@ -190,11 +209,17 @@ define('templates', [
         text = text || Templates.__DEFAULT_TEMPLATE;
         t.set({templateText: text});
       }
+    },
+    
+//    removeEmptyLazyImagesInHTML: function(html) {
+//      return html.replace(emptyLazyRegex, 'src="$1"').replace(lazyClassRegex, '$1 $2'); // gave up. Replacing classes is tricky, don't know which ones to replace without more complex regex
+//    },
+    
+    unlazifyImagesInHTML: function(html) {
+      return html.replace(lazyRegex, 'src="$1"').replace(lazyClassRegex, '$1 wasLazyImage $2');
     }
   };
   
-  Events.on('newResource', Templates.prepNewTemplate);
-  Events.on('newTemplate', Templates.prepNewTemplate);
-
+  Events.on('newResource:' + G.commonTypes.Jst, Templates.prepNewTemplate);
   return Templates;
 });

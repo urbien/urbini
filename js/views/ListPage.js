@@ -7,24 +7,30 @@ define('views/ListPage', [
   'vocManager',
   'views/BasicPageView',
   'views/ResourceListView', 
-  'views/Header' 
-], function(G, Events, U, Errors, Voc, BasicPageView, ResourceListView, Header) {
-  var MapView;
+  'views/Header',
+  'lib/fastdom'
+], function(G, Events, U, Errors, Voc, BasicPageView, ResourceListView, Header, Q) {
+  var MapView,
+      SPECIAL_INTERSECTIONS = [G.commonTypes.Handler, G.commonTypes.Friend, U.getLongUri1('model/social/NominationForConnection') /*, commonTypes.FriendApp*/];
+  
   return BasicPageView.extend({
     template: 'resource-list',
     clicked: false,
+    autoFinish: false,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'setMode', 'orientationchange');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'setMode', /*'orientationchange',*/ 'onFilter');
+      BasicPageView.prototype.initialize.apply(this, arguments);
       this.mode = options.mode || G.LISTMODES.DEFAULT;
 //      this.options = _.pick(options, 'checked', 'props');
       this.viewId = options.viewId;
       
-      var rl = this.collection;
       var self = this;
+      var rl = this.collection;
+      var filtered = this.filteredCollection = rl.clone();
+      var readyDfd = $.Deferred();
       
       var commonParams = {
-        model: rl,
+        model: filtered,
         parentView: this
       };
       
@@ -37,14 +43,14 @@ define('views/ListPage', [
       var isChooser = hash  &&  hash.indexOf('#chooser/') == 0;  
       var isMasonry = this.isMasonry = !isChooser  &&  U.isMasonryModel(vocModel); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
       var isOwner = !G.currentUser.guest  &&  G.currentUser._uri == G.currentApp.creator;
-      this.isPhotogrid = _.contains([G.commonTypes.Handler, G.commonTypes.Friend /*, commonTypes.FriendApp*/], type);
+      this.isSpecialIntersection = _.contains(SPECIAL_INTERSECTIONS, type);
       /*
-      if (!this.isPhotogrid) {
+      if (!this.isSpecialIntersection) {
         if (U.isA(this.vocModel, "Intersection")) {
           var af = U.getCloneOf(this.vocModel, 'Intersection.aFeatured');
           var bf = U.getCloneOf(this.vocModel, 'Intersection.bFeatured');
           if (af.length  &&  bf.length)
-            this.isPhotogrid = true;
+            this.isSpecialIntersection = true;
         }
       }
       */
@@ -54,77 +60,84 @@ define('views/ListPage', [
         this.mapReady = this.mapReadyDfd.promise();
         U.require('views/MapView', function(MV) {
           MapView = MV;
-          this.mapView = new MapView(commonParams);
-          this.addChild(this.mapView);
-          this.mapReadyDfd.resolve();
-        }.bind(this));
+          self.mapView = new MapView(commonParams);
+          self.addChild(self.mapView);
+          self.mapReadyDfd.resolve();
+        });
       }      
 
+      var params = hash ? _.getParamMap(hash) : null;
+      var isMV = this.isMV = params  &&  params['$multiValue'] != null;
+
       var showAddButton;
-      if (!this.vocModel.adapter) {
-        if (!isChooser  ||  this.vocModel['skipAccessControl']) {
-          showAddButton = type.endsWith('/App')                      || 
-                          U.isAnAppClass(type)                       ||
-                          vocModel.properties['autocreated']         ||
-                          vocModel.skipAccessControl                 ||
-                          U.isUserInRole(U.getUserRole(), 'siteOwner');
-          if (!showAddButton) {
-            var p = U.getContainerProperty(vocModel);
-            if (p && _.getParamMap[p])
-              showAddButton = true;
-          }
-        }
-  //                           (vocModel.skipAccessControl  &&  (isOwner  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'))));
-        if (showAddButton) { 
-          if (U.isA(this.vocModel, "Reference")  ||  U.isAssignableFrom(this.vocModel, "Assessment"))
-            showAddButton = false;
-        }
-        else if (isOwner  &&  !isChooser) {
-          Voc.getModels("model/social/App").done(function() {
-            var m = U.getModel("App");
-            var arr = U.getPropertiesWith(m.properties, [{name: "backLink"}, {name: 'range', values: type}], true);
-            if (arr  &&  arr.length  &&  !arr[0].readOnly /*&&  U.isPropEditable(null, arr[0], userRole)*/)  
-              showAddButton = true;
-          });
-        }
-        var idx;
-        if (!isChooser  &&  !showAddButton && hash  &&  (idx = hash.indexOf('?')) != -1) {
-          var s = hash.substring(idx + 1).split('&');
-          if (s && s.length > 0) {
-            for (var i=0; i<s.length; i++) {
-              var p = s[i].split('=');
-              var prop = vocModel.properties[p[0]];
-              if (!prop  ||  !prop.containerMember) 
-                continue;
-              var type = U.getLongUri1(prop.range);
-              var cM = U.getModel(type);
-              if (!cM) {
-                var rType = U.getTypeUri(decodeURIComponent(p[1]));
-                if (rType)
-                  cM = U.getModel(rType);
-                if (!cM)
-                  continue;
-              }
-              var blProps = U.getPropertiesWith(cM.properties, 'backLink');
-              var bl = [];
-              for (var p in blProps) {
-                var b = blProps[p];
-                if (!b.readOnly  &&  U.getLongUri1(b.range) == vocModel.type)
-                  bl.push(b);
-              }
-              if (bl.length > 0)
+      if (!this.vocModel.adapter  &&  !isChooser  &&  !isMV) {
+        var isMessage = U.isA(this.vocModel, 'GenericMessage');
+        if (!isMessage) {
+          if (!isChooser  ||  this.vocModel['skipAccessControl']) {
+            showAddButton = type.endsWith('/App')                      || 
+                            U.isAnAppClass(type)                       ||
+                            vocModel.properties['autocreated']         ||
+                            vocModel.skipAccessControl                 ||
+                            U.isUserInRole(U.getUserRole(), 'siteOwner');
+            if (!showAddButton) {
+              var p = U.getContainerProperty(vocModel);
+              if (p && _.getParamMap[p])
                 showAddButton = true;
+            }
+          }
+    //                           (vocModel.skipAccessControl  &&  (isOwner  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'))));
+          if (showAddButton) { 
+            if (U.isA(this.vocModel, "Reference")  ||  U.isAssignableFrom(this.vocModel, "Assessment"))
+              showAddButton = false;
+          }
+          else if (isOwner  &&  !isChooser) {
+            Voc.getModels("model/social/App").done(function() {
+              var m = U.getModel("App");
+              var arr = U.getPropertiesWith(m.properties, [{name: "backLink"}, {name: 'range', values: type}], true);
+              if (arr  &&  arr.length  &&  !arr[0].readOnly /*&&  U.isPropEditable(null, arr[0], userRole)*/)  
+                showAddButton = true;
+            });
+          }
+          var idx;
+          if (!isChooser  &&  !showAddButton  &&  hash  &&  (idx = hash.indexOf('?')) != -1) {
+            var s = hash.substring(idx + 1).split('&');
+            if (s && s.length > 0) {
+              for (var i=0; i<s.length; i++) {
+                var p = s[i].split('=');
+                var prop = vocModel.properties[p[0]];
+                if (!prop  ||  !prop.containerMember) 
+                  continue;
+                var type = U.getLongUri1(prop.range);
+                var cM = U.getModel(type);
+                if (!cM) {
+                  var rType = U.getTypeUri(decodeURIComponent(p[1]));
+                  if (rType)
+                    cM = U.getModel(rType);
+                  if (!cM)
+                    continue;
+                }
+                var blProps = U.getPropertiesWith(cM.properties, 'backLink');
+                var bl = [];
+                for (var p in blProps) {
+                  var b = blProps[p];
+                  if (!b.readOnly  &&  U.getLongUri1(b.range) == vocModel.type)
+                    bl.push(b);
+                }
+                if (bl.length > 0)
+                  showAddButton = true;
+              }
             }
           }
         }
       }
+      
       this.headerButtons = {
         back: true,
         add: showAddButton,
 //        aroundMe: isGeo,
         mapIt: isGeo,
-        menu: true,
-        rightMenu: !G.currentUser.guest,
+//        menu: true,
+        rightMenu: true, //!G.currentUser.guest,
         login: G.currentUser.guest
       };
 
@@ -135,20 +148,15 @@ define('views/ListPage', [
       
       this.addChild(this.header);
       
-      
-      var models = rl.models;
       var isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
-
       var meta = vocModel.properties;
       var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, U.getLongUri1('model/portal/Comment'));
 
-      var params = hash ? _.getParamMap(hash) : null;
-      var isMV = this.isMV = params  &&  params['$multiValue'] != null;
       this.isEdit = (params  &&  params['$editList'] != null); // || U.isAssignableFrom(vocModel, G.commonTypes.CloneOfProperty);
       this.listContainer = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : (this.isEdit ? '#editRlList' : '#sidebar'));
       var listViewType;
-      if (this.isPhotogrid)
-        listViewType = 'PhotogridListView';
+      if (this.isSpecialIntersection)
+        listViewType = 'IntersectionListView';
       else if (this.isComment)
         listViewType = 'CommentListView';
       else if (isMasonry || isModification)
@@ -156,25 +164,26 @@ define('views/ListPage', [
       else
         listViewType = 'ResourceListView';
       
-      var self = this,
-          readyDfd = $.Deferred();
-      
       this.ready = readyDfd.promise();
       U.require('views/' + listViewType).done(function(listViewCl) {
-        self.listView = new listViewCl(_.extend({mode: self.mode}, commonParams, self.options));
+        self.listView = new listViewCl(_.extend({mode: self.mode}, self.options, commonParams));
         self.addChild(self.listView);
         readyDfd.resolve();
       });
       
-      this.canSearch = !this.isPhotogrid; // for now - search + photogrid results in something HORRIBLE, try it if you're feeling brave
-      this.on('endOfList', function() {
-        this.$('#nextPage').hide();
-      }.bind(this));
+      this.collection.fetch(_.pick(options, 'forceFetch', 'sync'));
+      this.canSearch = !this.isSpecialIntersection; // for now - search + photogrid results in something HORRIBLE, try it if you're feeling brave
       
-      this.on('newList', function() {
-        this.$('#nextPage').show();
-      }.bind(this));
+      // setup filtering
+      this.listenTo(filtered, 'endOfList', function() {
+        self.pageView.trigger('endOfList');
+      });
+      
+      this.listenTo(filtered, 'reset', function() {
+        self.pageView.trigger('newList');
+      });      
     },
+    
     setMode: function(mode) {
       if (!G.LISTMODES[mode])
         throw new Error('this view doesn\'t have a mode ' + mode);
@@ -183,23 +192,71 @@ define('views/ListPage', [
       if (this.listView)
         this.listView.setMode(mode);
     },
+    
     events: {
       'click'            : 'click',
-      'click #nextPage'  : 'getNextPage',
+//      'click #nextPage'  : 'getNextPage',
       'click #homeBtn'   : 'home',
       'submit'            : 'submit',
-      'orientationchange' : 'orientationchange',
-      'resize'            : 'orientationchange'
+      'click #filter'    : 'focusFilter',
+      'change #filter'    : 'onFilter'
     },
+    
+//    windowEvents: {
+//      'orientationchange' : 'orientationchange',
+//      'resize'            : 'orientationchange'
+//    },
+    
+    focusFilter: function(e) {
+      // HACK - JQM does sth weird to prevent focus when we're not using their listfilter widget
+      this.filter.focus();
+    },
+    
+    onFilter: Q.debounce(function(e, data) {
+      var filtered = this.filteredCollection,
+          collection = this.collection,
+          value = e.target.value,
+          resourceMatches,
+          numResults;
+      
+      if (!value) {
+        filtered.reset(collection.models, {params: collection.params});
+        return;
+      }
+      
+      resourceMatches = _.filter(collection.models, function(res) {
+        var dn = U.getDisplayName(res);
+        return dn && dn.toLowerCase().indexOf(value.toLowerCase()) != -1;
+      });
 
-    orientationchange: function(e) {
-//      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
-//      var isMasonry = this.isMasonry = !isChooser  &&  U.isMasonryModel(this.vocModel); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
-      if (this.isMasonry) {
-        Events.stopEvent(e);
-        Events.trigger('refresh', {model: this.model}); //, checked: checked});
-      } 
-    },
+      filtered.reset(resourceMatches, {
+        params: _.extend({
+          '$like': 'davDisplayName,' + value
+        }, collection.params)
+      });
+      
+      numResults = filtered.size();
+      if (numResults < this.displayPerPage) {
+        var numOriginally = collection.size(),
+            indicatorId = this.showLoadingIndicator(3000), // 3 second timeout
+            hideIndicator = this.hideLoadingIndicator.bind(this, indicatorId);
+        
+        filtered.fetch({
+          forceFetch: true,
+          success: hideIndicator,
+          error: hideIndicator
+        });
+      }            
+    }, 50),
+
+//    orientationchange: function(e) {
+////      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
+////      var isMasonry = this.isMasonry = !isChooser  &&  U.isMasonryModel(this.vocModel); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
+//      if (this.isMasonry) {
+//        Events.stopEvent(e);
+//        Events.trigger('refresh', {model: this.model}); //, checked: checked});
+//      } 
+//    },
     submit: function(e) {
 //      Events.stopEvent(e);
 //      var isEdit = (this.action === 'edit');
@@ -246,18 +303,30 @@ define('views/ListPage', [
       window.location.href = here.slice(0, here.indexOf('#'));
       return this;
     },
-    getNextPage: function() {
-      if (this.isActive())
-        this.listView && this.listView.getNextPage();
-    },
+    
+//    getNextPage: function() {
+//      if (this.isActive())
+//        this.listView && this.listView.getNextPage();
+//    },
   //  nextPage: function(e) {
   //    Events.trigger('nextPage', this.resource);    
   //  },
 //    tap: Events.defaultTapHandler,
+    
     click: function(e) {
       this.clicked = true;
       var buyLink;
       var tryLink;
+      
+//      var tId = e.target.id;
+//      if (tId && tId == 'mvSubmit') {
+//        var form = $(e.target).closest('form');
+//        if (form) {
+//          Events.stopEvent(e);
+//          form.submit();
+//          return true;
+//        }
+//      }
       if (!U.isA(this.vocModel, 'Buyable') || ((buyLink = $(e.target).closest($('#buyLink'))).length == 0  &&  (tryLink = $(e.target).closest($('#tryLink'))).length == 0)) {
 //        Events.defaultClickHandler(e);
         return true;
@@ -287,22 +356,25 @@ define('views/ListPage', [
     },
 
     render: function() {
-      var args = arguments;
+      var args = arguments,
+          self = this;
+      
       this.ready.done(function() {
-        this.renderHelper.apply(this, args);
-        this.finish();
-      }.bind(this));
+        Q.write(self.renderHelper, self, args);
+      });
     },
 
     renderHelper: function() {
-      this.$el.html(this.template({
-        viewId: this.cid,
-        isMasonry: this.isMasonry
-      }));
+      var self = this,
+          tmpl_data = this.getBaseTemplateData(),
+          views = {
+            '#headerDiv': this.header
+          },
+          filter;
       
-      var views = {
-        '#headerDiv': this.header
-      };
+//      this.$el.attr("data-scrollable", "true");
+      tmpl_data.isMasonry = this.isMasonry;
+      this.html(this.template(tmpl_data));
       
       views[this.listContainer] = this.listView;
       this.assign(views);
@@ -311,22 +383,35 @@ define('views/ListPage', [
         this.assign('#mapHolder', this.mapView);  
       }.bind(this));
       
-      if (!this.$el.parentNode)  
-        $('body').append(this.$el);
+      if (!this.el.parentNode)  
+        document.body.appendChild(this.el);
       if (!this.isMV)
-        this.$('#mv').hide();
+        this.$('#mv').$hide();
       if (!this.isEdit)
-        this.$('#editRlForm').hide();
-      if (this.isPhotogrid) {
-        this.listView.$el.addClass('grid-listview');
+        this.$('#editRlForm').$hide();
+//      if (this.isSpecialIntersection) {
+//        this.listView.$el.addClass('grid-listview');
 //        this.listView.$el.find('ul').removeClass('grid-listview');
-      }
-      this.$('#sidebarDiv').css('clear', 'both');
+//      }
+      this.$('#sidebarDiv').$css('clear', 'both');
       if (G.theme.backgroundImage) { 
-        this.$('#sidebarDiv').css('background-image', 'url(' + G.theme.backgroundImage +')');
+        this.$('#sidebarDiv').$css('background-image', 'url(' + G.theme.backgroundImage +')');
       }
       if (!this.isMasonry)
-        this.$('#sidebarDiv').css('overflow-x', 'visible');
+        this.$('#sidebarDiv').$css('overflow-x', 'visible');
+
+      this.filter = this.$('#filter')[0];
+      if (this.filter) {
+        this.filter.on('keydown', function(e) {
+          self.filter.dispatchEvent(new Event('change', {
+            view: self.filter,
+            bubbles: false,
+            cancelable: true
+          }));
+        });
+      }
+      
+      this.finish();
       return this;
     }
   }, {

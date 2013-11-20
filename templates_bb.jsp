@@ -6,22 +6,33 @@
 <!-- Templates -->
 <script type="text/template" id="resource-list">
   <!-- Resource list page -->
-  <section id="{{= viewId }}" data-type="sidebar" style="visibility:hidden;z-index:10001"></section>
+  <section id="{{= viewId }}" data-type="sidebar" data-position="right" style="left:auto;right:0;visibility:hidden;z-index:10001"></section>
   <section id="{{= viewId + 'r' }}" data-type="sidebar" data-position="right" style="left:auto;right:0;visibility:hidden;z-index:10001"></section> 
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" role="main">
-    <section data-type="list" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
-      <ul id="sidebar"></ul>
+  <!--
+   {{ if (this.collection.models.length > 5) { }}
+    <form role="search">
+      <p>
+        <input type="text" placeholder="Search..." required="">
+        <button type="reset">Clear</button>
+      </p>
+    </form>
+   {{ } }}
+   -->
+    <section  id="sidebar" data-type="list" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
+   </div>
     </section>
-    <div id="nabs_grid" class="masonry">
-    </div>
+    <div id="nabs_grid" class="masonry"></div>
     
     <table class="table-stroke" width="100%" style="display:none" id="comments">
     </table>
     <form data-ajax="false" id="mv" action="#">
-      <input type="submit" id="mvSubmit" value="{{= loc('submit') }}" />
+      <div style="width:100%;padding-top:1rem;text-align:center">
+        <button type="submit" style="background-color:#eee; width:90%" id="mvSubmit">{{= loc('submit') }}</button>
+      </div>
       <div data-role="fieldcontain">
         <fieldset data-role="controlgroup" id="mvChooser">
         </fieldset>
@@ -37,27 +48,36 @@
  
 <script type="text/template" id="resource">
   <!-- Single resource view -->  
-  <section id="{{= viewId }}" data-type="sidebar" style="visibility:hidden;z-index:10001"></section>
-  <section id="{{= viewId + 'r' }}" data-type="sidebar" data-position="right" style="left:auto;right:0;visibility:hidden;z-index:10001"></section> 
+  <section id="{{= viewId }}" data-type="sidebar" style="left:auto;right:0;visibility:hidden;z-index:10001"></section>
+  <section id="{{= viewId + 'r' }}" data-type="sidebar" style="left:auto;right:0;visibility:hidden;z-index:10001"></section> 
 
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
   <div id="resourceViewHolder">
-    <div style="width: 100%;padding-right:10px;overflow:hidden">
+    <div style="width: 100%;position:relative;padding-right:10px;overflow:hidden">
       <div id="resourceImage" style="width:50%;float:left;margin:0; padding:0;"><!-- style="width:auto" --></div>
-      <div id="mainGroup"></div>
-      <div id="buyGroup" class="ui-block-b" style="width:50%; min-width: 130px"></div>
+      <div id="mainGroup" style="position:absolute;top:0;right:1.3rem;"></div>
+      <!--div id="buyGroup" class="ui-block-b" style="width:50%; min-width: 130px"></div-->
     </div>
     <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
-    <div id="photogridHeader" style="top: -3px;" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
-    <div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="grid-listview hidden"></div>
     
+    <div id="photogridHeader" class="hidden"><h3></h3></div>
+    <!--div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="grid-listview hidden">
+      <div class="dummy head"></div>
+      <div class="dummy tail"></div>
+    </div-->
+    
+    <div id="photogrid" data-inset="true" data-filter="false" class="thumb-gal hidden">
+      <div class="dummy head"></div>
+      <div class="dummy tail"></div>
+    </div>
+    <br/>
     {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
        <div style="padding:10px;"><a data-role="button" class="{{= 'ui-btn-hover-' + G.theme.swatch }}" data-icon="heart" data-theme="{{= G.theme.swatch }}" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></div>
     {{ } }}
     
     <section data-type="list" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
-      <ul style="padding: 10px;" data-theme="{{= G.theme.list }}" id="resourceView">
+      <ul data-theme="{{= G.theme.list }}" id="resourceView" style="padding:10px;">
       </ul>
     </section>
     <div id="about" class="hidden" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}"></div>
@@ -78,6 +98,29 @@
   <br/>
 </script>  
 
+<script type="text/template" id="inlineListItemTemplate">
+<!-- one row of an inline backlink in view mode -->
+<li data-viewid="{{= viewId }}">
+  <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }}><p>{{= name }}</p> {{= obj.gridCols ? '<br/>' + gridCols : '' }}
+    {{ if (obj.img) { }}
+      <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
+      {{ if (obj.width) { }}  
+      style="max-height:none;max-width:none;
+        height:{{= height }}px;
+        left:-{{= left }}px; top:-{{= top }}px;
+        clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
+      {{ } }}
+      
+      data-for="{{= U.getImageAttribute(resource, imageProperty) }}"
+      class="lazyImage" />
+    {{ } }}
+  </a>
+  {{ if (typeof comment != 'undefined') { }}
+    <p>{{= comment }}</p>
+  {{ } }}
+  </a>
+</li>
+</script>
 
 <script type="text/template" id="cpTemplate">
 <!-- readwrite backlink in resource view -->
@@ -87,15 +130,17 @@
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      
-   <a target="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp" style="position:absolute;top:4px;right:0px;font-size:22px;">
+   <a target="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp">
      <i class="ui-icon-plus-sign"></i>
    </a>
-     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}
-     <div style="display:inline;position:absolute;right:30px;font-size: 11px;float-right;border-radius:1rem;border: 1px solid #777;padding: 0.1rem 0.3rem;">{{= value }}</div>
-     {{ if (typeof comment != 'undefined') { }}
-       <p style="padding: 0;font-size:12px;color:#808080; line-height:1rem;">{{= comment }}</p>
-     {{ } }}
+<p>
+     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
      </a>
+     <div style="display:inline;position:absolute;right:4rem;font-size: 11px;top:1.5rem;border-radius:1rem;border: 1px solid #777;padding: 0.1rem 0.3rem;">{{= value }}</div>
+</p>     
+     {{ if (typeof comment != 'undefined') { }}
+       <br/><p style="padding-top: 0.7rem;font-size:1.3rem;color:#808080; line-height:1.5rem;">{{= comment }}</p>
+     {{ } }}
    </li>
 </script>
 
@@ -104,13 +149,15 @@
 <li data-propName="{{= shortName }}"
   {{= obj.inline ? ' data-theme="{0}">'.format(G.theme.activeButton) : '' }}
 >
+<p>
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
-     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}
+     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
      
-     <div style="display:inline;position:absolute;right:30px;font-size: 11px;float-right;border-radius:1rem;border: 1px solid #777;padding: 0.1rem 0.3rem;">{{= value }}</div>
      <!--span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="{{= G.theme.list }}" data-icon="chevron-right" data-iconshadow="false" class="cp" -->
      </a>
+     <div style="display:inline;position:absolute;right:4rem;top:1rem;font-size: 11px;border-radius:1rem;border: 1px solid #777;padding: 0.1rem 0.3rem;">{{= value }}</div>
+</p>     
    </li>
 </script>
 
@@ -125,7 +172,27 @@
  {{ } }}
  {{ if (obj.value != 'undefined' || chat) { }}  
    <a role="button" data-propName="{{= shortName }}" style="border:1px solid {{= borderColor }}; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
-     <span><i class="{{= icon }}"></i>&#160;{{= name }}</span>{{= obj.value ? '<span class="counter">' + value + '</span>' :  ''  }}
+     <span><i class="{{= icon }}"></i>&#160;{{= name }}</span>
+     
+     <!-- {{= obj.value ? '<span class="counter">' + value + '</span>' :  ''  }} -->
+     {{= obj.value ? '<div class="counter">' + value + '</div>' :  ''  }}
+   </a>
+ {{ } }}
+</script>
+
+<script type="text/template" id="cpMainGroupTemplateH">
+<!-- button for an important backlink on a resource on the resource's view page (horizontal mode) -->
+ {{ var params = {}; }}
+ {{ params[backlink] = _uri; }}
+ {{ if (!value) { }}  
+   <a role="button" data-shortName="{{= shortName }}" style="width:auto;margin:5px;text-align:left; border: 1px solid #ccc; min-width:115px; float:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="#" data-title="{{= title }}">
+      <span>{{= obj.icon ? '<i class="' + icon + '" style="margin-left:-5px;"></i>' : '' }} {{= name }}</span> 
+   </a>
+ {{ } }}
+ {{ if (typeof value != 'undefined') { }}  
+   <a role="button" data-propName="{{= shortName }}" style="width:auto;margin:5px;text-align:left; border: 1px solid #ccc; min-width:115px;float:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
+     <!-- {{= obj.icon ? '<i class="' + icon + '" style="font-size:20px;top:35%"></i>' : '' }} -->
+     <span>{{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="float: right;position:relative;margin: -17px;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}</span>
    </a>
  {{ } }}
 </script>
@@ -134,14 +201,14 @@
 <script type="text/template" id="listItemTemplate">
   <!-- bb one row on a list page -->
   {{ var action = action ? action : 'view' }}
-  <div style="cursor:pointer;" data-viewid="{{= viewId }}">
-  {{ if (typeof v_submitToTournament == 'undefined') { }}
+  <div style="margin:0" data-viewid="{{= viewId }}">
+  {{ if (!obj.v_submitToTournament) { }}
     <div style="padding:.7em 10px 10px 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
   {{ } }}
-  {{ if (typeof v_submitToTournament != 'undefined') { }}
+  {{ if (obj.v_submitToTournament) { }}
     <div style="padding:.7em 10px 0 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
   {{ } }}
-    <img {{= typeof image != 'undefined' ? 'src="' + (image.indexOf('/Image') == 0 ? image.slice(6) : image) + '"' : 'src="icons/blank.png" style="position:absolute;left:0px"'}}" 
+    <img data-lazysrc="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : G.blankImgDataUrl }}"  
     {{ if (obj.right) { }}  
       style="position:absolute;
         left:-{{= left }}px; top:-{{= top }}px;
@@ -150,7 +217,8 @@
     {{ if (!obj.right && obj.image) { }}
       style="max-height: 80px;position:absolute;max-height: 80px;max-width: 80px;margin-left:-90px; margin-top:-0.7em"
     {{ } }}  
-    data-for="{{= U.getImageAttribute(this.resource, this.imageProperty) }}" />
+    data-for="{{= U.getImageAttribute(this.resource, this.imageProperty) }}"
+    class="lazyImage" />
     {{= viewCols }}
   </div>
   </div>
@@ -164,8 +232,8 @@
     {{ if (obj.isJst) { }}
       style="padding: .7em 10px 10px 0px;"
     {{ } }}
-    {{ if (!obj.isJst  &&  obj._hasSubmittedBy) { }}
-      style="min-height:59px;"
+    {{ if (!obj.isJst  &&  (obj._hasSubmittedBy || !obj.v_submitToTournament)) { }}
+      style="padding-left: 1rem;min-height:59px"
     {{ } }}
   {{ } }}
   {{ if (obj.v_submitToTournament) { }}
@@ -188,7 +256,7 @@
   {{ } }}
   {{= obj.showCount ? '<span class="ui-li-count">' + obj[showCount].count + '</span>' : '' }} 
   {{ if (obj.comment) { }}
-    <p>{{= comment }}</p>
+    <p style="padding-top:0.5rem;">{{= comment }}</p>
   {{ } }}
   </div>
   </div>
@@ -235,13 +303,47 @@
 
 <script type="text/template" id="rightMenuButtonTemplate">
   <!-- button that toggles the object properties panel -->
-  <a target="#" href="#{{= viewId }}"><i class="ui-icon-indent-right"></i></a>{{= '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}
+  <a target="#" href="#{{= viewId }}"><i class="ui-icon-reorder"></i></a><!-- {{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }} -->
+    {{= '<span class="menuBadge">{0}</span>'.format(obj.newAlerts || '') }}
   </a>
 </script>
 
 <script type="text/template" id="loginButtonTemplate">
   <!-- button that summons the login popup -->
   <a target="#"><i class="ui-icon-signin"></i></a>
+</script>
+
+<script type="text/template" id="loginPopupTemplate">
+  <!-- login popup with various social network based logins -->
+  {{ var canDismiss = typeof dismissible === 'undefined' || dismissible == true; }}
+  <section id="login_popup" role="region" class="loginPopup">
+  <ul class="compact">
+    <h4 style="margin:10px 0;color:#757575;" id="loginMsg">{{= msg }}</h4>
+    {{ _.forEach(nets, function(net) { }} 
+<li>
+    <a role="button" href="{{= net.url }}" class="lpButton" {{= net.name == 'Facebook' ? ' target="_top"' : '' }}>
+      <i class="big_symbol 
+      {{ if(net.name == "Facebook") { }} ui-icon-facebook-sign {{ } }}
+      {{ if(net.name == "Google") { }} ui-icon-google-plus-sign {{ } }}
+      {{ if(net.name == "Twitter") { }} ui-icon-twitter-sign {{ } }}
+      {{ if(net.name == "LinkedIn") { }} ui-icon-linkedin-sign {{ } }}
+      {{ if(net.name == "Live") { }} ui-icon-live-sign {{ } }}
+        ">
+       </i>
+     <span>{{= net.name }}</span>
+    </a>
+</li>
+    {{ }); }}
+</ul>
+    <!--h5>Login by Email</h5>
+    <form id="loginForm" action="j_security_check" method="POST" onsubmit="return hash(this, 'j_security_check')" autocomplete="off">
+      <table>
+        <tr><td>Email: </td><td><input name="j_username" /></td></tr>
+        <tr><td>Password: </td><td><input type="password" name="j_password" /></td></tr>
+        <tr><td colspan="2"><input type="submit" value="Submit" /></td></tr>
+      </table>
+    </form-->
+  </section>
 </script>
 
 <script type="text/template" id="logoutButtonTemplate">
@@ -290,51 +392,55 @@
   <div id="callInProgress"></div>
   <div id="header" {{= obj.style ? style + ';z-index:1000;': 'style="z-index:1000;"' }} {{= obj.more || '' }} >
     <div class="hdr">
+    <section role="region">
+      <header>
       <ul id="headerUl">
       </ul>
+      </header>
+    </section>
     </div>
   </div>
   <div id="buttons">  
     {{= this.categories ? '<div style="margin:10px 0 0 10px; float:left"><a id="categories" href="#"><i class="ui-icon-tags"></i></a></div>' : '' }} 
     {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
-    <div id="name" class="resTitle" {{= this.categories ? 'style="width: 100%;"' : 'style="min-height: 20px"' }} align="center">
+    <div id="name" class="resTitle" {{= this.categories ? 'style="width: 100%;background:#757575;"' : 'style="min-height: 20px;background:#757575;"' }} align="center">
       <h4 id="pageTitle" style="font-weight:normal;">{{= this.title }}</h4>
-      <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} style="margin-top: -7px;" id="headerButtons">
-        <div style="max-width:200px; display: inline-block;" id="doTryBtn">
+      <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
+        <button style="max-width:200px; display: inline-block;" id="doTryBtn">
           {{ if (obj.tryApp) { }}
               {{= tryApp }}
           {{ } }}
-        </div>
-        <div style="max-width:200px; display: inline-block;" id="forkMeBtn">
+        </button>
+        <button style="max-width:200px; display: inline-block;" id="forkMeBtn">
           {{ if (obj.forkMeApp) { }}
               {{= forkMeApp }}
           {{ } }}
-        </div>
-        <div style="max-width:400px;" id="publishBtn" class="headerSpecialBtn">
+        </button>
+        <button style="max-width:400px;" id="publishBtn" class="headerSpecialBtn">
           {{ if (obj.publishApp) { }}
               {{= publish }}
           {{ } }}
-        </div>
-        <div style="max-width:200px;" id="testPlugBtn" class="headerSpecialBtn">
+        </button>
+        <button style="max-width:200px;" id="testPlugBtn" class="headerSpecialBtn">
           {{ if (obj.testPlug) { }}
               {{= testPlug }}
           {{ } }}
-        </div>
-        <div style="max-width:200px;" id="installAppBtn"  class="headerSpecialBtn">
+        </button>
+        <button style="max-width:200px;" id="installAppBtn"  class="headerSpecialBtn">
           {{ if (obj.installApp) { }}
             {{= installApp }}
           {{ } }}
-        </div>
-        <div style="max-width:320px;" id="enterTournamentBtn" class="headerSpecialBtn">
+        </button>
+        <button style="max-width:320px;" id="enterTournamentBtn" class="headerSpecialBtn">
           {{ if (obj.enterTournament) { }}
               {{= enterTournament }}
           {{ } }}
-        </div>
-        <div style="max-width:320px;" id="resetTemplateBtn" class="headerSpecialBtn">
+        </button>
+        <button style="max-width:320px;" id="resetTemplateBtn" class="headerSpecialBtn">
           {{ if (obj.resetTemplate) { }}
               {{= resetTemplate }}
           {{ } }}
-        </div>
+        </button>
       </div>
     </div>
   </div>
@@ -342,19 +448,19 @@
 
 <script type="text/template" id="menuP">
   <!-- Left-side slide-out menu panel -->
-  <ul class="menuItems panel" id="menuItems">
+  <ul class="menuItems" id="menuItems">
   </ul>
 </script>  
 
 <script type="text/template" id="rightMenuP">
   <!-- Right-side slide-out menu panel -->
-  <ul data-theme="{{= G.theme.menu }}" id="rightMenuItems" class="menuItems">
+  <ul id="rightMenuItems" class="menuItems">
   </ul>
 </script>  
 
 <script type="text/template" id="menuItemTemplate">
   <!-- one item on the left-side slide-out menu panel -->
-  <li style="cursor: pointer;min-height: 42px; {{= obj.image ? 'padding-top: 0;padding-right:0px;padding-bottom: 7px;' : 'padding-bottom:0px;' }}"  id="{{= obj.id ? obj.id : G.nextId() }}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
+  <li style="{{= obj.image ? 'padding-top: 0;padding-right:0px;padding-bottom: 7px;' : 'padding-bottom:0px;' }}"  id="{{= obj.id ? obj.id : G.nextId() }}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
       {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl) + '"' : '' }} >
     
     <!-- {{ if (!obj.homePage) { }} -->   
@@ -391,8 +497,8 @@
 <script type="text/template" id="menuItemNewAlertsTemplate">
   <!-- Notifications item on the left-side slide-out menu panel -->
   <li class="mi" {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }} data-href="{{= pageUrl }}">
-    <div style="margin:15px 0 0 15px;"  id="{{= typeof id === 'undefined' ? G.nextId() : id}}">
-      {{= title }}   <span class="acounter">{{= newAlerts }}</span> 
+    <div style="padding:15px 0 15px 15px;"  id="{{= typeof id === 'undefined' ? G.nextId() : id}}">
+      {{= title }}   {{= obj.newAlerts ? '<span class="acounter">' +  newAlerts + '</span>' : '' }} 
     </div>
   </li>
 </script>
@@ -400,7 +506,7 @@
 <script type="text/template" id="homeMenuItemTemplate">
   <!-- app home page menu item -->
   <li {{= obj.icon ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}  id="{{= typeof id == 'undefined' ? 'home123' : id }}">
-    <img src="{{= typeof image != 'undefined' ? image : 'icons/blank.png'}}" style="float: right;" /> 
+    <img src="{{= typeof image != 'undefined' ? image : G.blankImgDataUrl }}" style="float: right;" /> 
     <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} target="#">
       {{= title }}
     </a>
@@ -409,7 +515,12 @@
 
 <script type="text/template" id="propRowTemplate">
   <!-- wrapper for one row on a list page (short) -->
-  <li data-shortname="{{= shortName }}" {{= obj.rules || '' }}>{{= name }}<div style="float: right; font-weight: normal;">{{= value }}</div></li>
+  <li data-shortname="{{= shortName }}" {{= obj.rules || '' }}><p>{{= name }}<div style="position:absolute; right:1.5rem;top:1rem; font-weight: normal;">{{= value }}</div></p></li>
+</script>
+
+<script type="text/template" id="propRowTemplate2">
+  <!-- wrapper for one row on a list page (long) -->
+  <li data-shortname="{{= shortName }}" {{= obj.rules || '' }}><p>{{= name }}<div style="margin-left:1.5rem;font-weight: normal;">{{= value }}</div></p></li>
 </script>
 
 <script type="text/template" id="menuHeaderTemplate">
@@ -422,15 +533,17 @@
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">
 <!-- the edit page for any particular resource -->
-  <section id="{{= viewId }}" data-type="sidebar" style="visibility:hidden;z-index:10001"></section>
-  <section id="{{= viewId + 'r' }}" data-type="sidebar" data-position="right" style="left:auto;right:0;visibility:hidden;z-index:10001"></section> 
+  <section id="{{= viewId }}" data-type="sidebar" style="left:auto;right:0;visibility:hidden;z-index:10001"></section>
+  <section id="{{= viewId + 'r' }}" data-type="sidebar" style="left:auto;right:0;visibility:hidden;z-index:10001"></section> 
 <!--div id="headerMessageBar"></div-->
-<div id="headerDiv"></div>
-<div id="resourceEditView">
+  <div id="headerDiv"></div>
+  <div id="resourceEditView">
   <div id="resourceImage"></div>
   <form data-ajax="false" id="{{= viewId + '_editForm'}}" action="#">
-    <ul id="fieldsList" data-role="listview" data-theme="{{= G.theme.list }}" id="fieldsList" class="action-list" data-inset="true">
+  <section data-type="list">
+    <ul id="fieldsList" class="editList">
     </ul>
+  </section>
     <div name="errors" style="float:left"></div>
     {{ if (this.resource.isAssignableFrom("InterfaceImplementor")) }}
     <div data-role="fieldcontain" id="ip">
@@ -443,36 +556,113 @@
     </div>
     {{                                                             }}
     
-    <div class="ui-body ui-body-b">
-      <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><button type="cancel" id="cancel" data-theme="{{= G.theme.footer }}" class="cancel">{{= obj.cancel || loc('cancel') }}</button></div>
-        <div class="ui-block-b"><button type="submit" id="submit" data-theme="{{= G.theme.activeButton }}" class="submit">{{= obj.submit || loc('submit') }}</button></div>
+    <div>
+      <fieldset id= "submitBtns">
+        <div><button type="cancel" id="cancel">{{= obj.cancel || loc('cancel') }}</button></div>
+        <div><button type="submit" id="submit">{{= obj.submit || loc('submit') }}</button></div>
       </fieldset>
     </div>
 
   </form>
-  <br/>
+  
   {{ if (U.isAssignableFrom(this.vocModel, U.getLongUri1("model/portal/Comment"))) { }}
-    <table class="ui-btn-up-g" width="100%" style="padding: 5px" id="comments">
+    <br/><table class="ui-btn-up-g" width="100%" style="padding: 5px" id="comments">
     </table>
   {{ } }}
 </div>
+</script>
+
+<script type="text/template" id="mvListItem">
+  <!-- a multivalue input for edit forms -->
+  {{ var id = G.nextId() }}
+  <label class="pack-checkbox">
+    <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}"  class="pack-checkbox" value="{{= _uri }}" {{= obj._checked ? 'checked="checked"' : '' }} />
+    <span></span>
+  </label>
+  <label for="{{= id }}">{{= davDisplayName }}<!-- {{= obj._thumb ? '<img src="' + _thumb + '" style="float:right;max-height:40px;" />' : '' }}--></label>
+</script>
 
 
-  <!--div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
-     <a data-role="button" data-icon="repeat" id="homeBtn" target="#">Home</a>
-  </div-->
+<script type="text/template" id="editRowTemplate">
+  <!-- one property row in edit mode -->
+  <li data-role="fieldcontain">{{= value }}</li>
 </script>
 
 <script type="text/template" id="stringPET">
   {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 100; }}
   {{ if (name) { }}
-  <label for="{{= id }}" data-theme="{{= G.theme.list }}">{{= name }}</label>
-    <{{= isInput ? 'input type="text"' : 'textarea rows="10" cols="20" ' }} name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
+    <label for="{{= id }}" class="ui-input-text" {{= isInput ? '' : 'style="vertical-align:top"' }}>{{= name }}</label>
+    <{{= isInput ? 'input type="text"' : 'textarea rows="3" cols="20" ' }} name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}  class="ui-input-text">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   {{ } }} 
   {{ if (!name) { }}
-    <{{= isInput ? 'input type="text"' : 'textarea  style="width: 100%" rows="10"' }} name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
+  <div> 
+    <{{= isInput ? 'input type="text"' : 'textarea  rows="10"' }} name="{{= shortName }}" id="{{= id }}"  value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}>{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
+  </div>
   {{ } }} 
 </script>
 
+<script type="text/template" id="booleanPET">
+  {{ if (name && name.length > 0) { }}
+    <label for="{{= id }}">{{= name }}</label>
+    {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }} 
+  {{ } }}
+  <section>
+  <label class="pack-switch" style="right: 3rem;top:-1rem;left:auto;position:absolute;">
+    <input type="checkbox" name="{{= shortName }}" id="{{= id }}" class="formElement boolean" />
+    <span></span>
+  </label>
+  </section>
+<!--  {{= typeof comment == 'undefined' ? '' : '<span class="comment">' + comment + '</span>' }} -->
+</script>
+
+<script type="text/template" id="resourcePET">
+  {{ if (prop.range && ((isImage && prop.camera) || isVideo || isAudio)) { }}
+    <a href="#cameraPopup" class="cameraCapture" target="#" data-prop="video">
+      <i class="{{= isVideo ? 'ui-icon-facetime-video' : isAudio ? 'ui-icon-circle' : 'ui-icon-camera' }}" style="position:absolute;right:4px;font-size:2.3rem;top:2rem;overflow:hidden"></i>
+    </a>
+    {{ if (!G.canWebcam) { }}
+      <input data-role="none" type="file" class="cameraCapture" accept="{{= isVideo ? 'video/*' : isAudio ? 'audio/*' : 'image/*' }};capture=camera;" style="visibility:hidden; display:none;" data-prop="{{= shortName }}" />
+    {{ }                   }}
+  {{ }                                                                                                                                                                                        }}
+  <a target="#"  name="{{= shortName }}" style="font-size:1.6rem" class="resourceProp" id="{{= id }}" {{= rules }}> 
+    {{ if (obj.img) { }}    
+      <img name="{{= shortName }}" src="{{= img }}" style="
+      
+      {{ if (typeof obj.width != 'undefined') { }}  
+          height:{{= height }}px;
+          left:-{{= left }}px; top:-{{= top }}px;
+          clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);vertical-align:middle;"
+      {{ } }}
+      {{ if (typeof obj.width == 'undefined') { }}  
+          max-height: 50px;
+      {{ } }}
+      
+      "/>
+    {{ }              }}
+    
+    <label for="{{= id }}" style="font-weight:normal">{{= name }}</label>
+    {{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ||  value.length == 0 ? '' : value) : displayName }}
+    {{ if (!obj.value) { }}
+      {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
+    {{ } }} 
+  </a>
+  
+  <!-- {{= typeof multiValue === 'undefined' ? '' : value }} -->
+</script>
+<script type="text/template" id="telPET">
+  <label for="{{= id }}" class="ui-input-text">{{= name }}</label>
+  <input type="tel" name="{{= shortName }}" id="{{= id }}" class="ui-input-text" value="{{= typeof value === 'undefined' ? '' : value }}" />
+</script>
+
+<script type="text/template" id="emailPET">
+  <label for="{{= id }}" class="ui-input-text">{{= name }}</label>
+  <input type="email" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= 'formElement ' }}ui-input-text" {{= rules }} />
+</script>
+
+<script type="text/template" id="hiddenPET">
+  <input type="hidden" name="{{= shortName }}" id="{{= id }}" value="{{= value }}" class="{{= 'formElement ' }}ui-input-text" {{= rules }} />
+</script>
+
 </div>
+
+

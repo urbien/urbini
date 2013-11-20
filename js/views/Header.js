@@ -15,12 +15,14 @@ define('views/Header', [
 //  'views/PublishButton'
 ], function(G, Events, U, Voc, BasicView/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
   var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate', 'installApp'];
+  var REGULAR_BUTTONS = ['back', 'mapIt', 'add', 'video', 'chat', 'login', 'rightMenu'];
   var commonTypes = G.commonTypes;
   return BasicView.extend({
+    autoFinish: false,
     template: 'headerTemplate',
     initialize: function(options) {
       _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload'); //, '_updateInfoErrorBar', 'checkErrorList', 'sendToCall');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
       options = options || {};
       _.extend(this, options);
       this.viewId = options.viewId;
@@ -38,6 +40,11 @@ define('views/Header', [
       if (this.buttons)
         this.getButtonViews();
       
+      var self = this;
+      this.on('destroyed', function() {
+        self.buttonViews = {};
+      });
+      
 ////      this.calcTitle();
 //      this.makeTemplate('errorListTemplate', 'errorListTemplate', this.modelType);
 //      this.makeTemplate('callInProgressHeaderTemplate', 'callInProgressHeaderTemplate', this.modelType);
@@ -48,7 +55,6 @@ define('views/Header', [
 //        Events.on(event, handler);
 //      }.bind(this));
 
-      this.autoFinish = false;
       return this;
     },
     
@@ -57,6 +63,7 @@ define('views/Header', [
       var vocModel = this.vocModel;
       var type = vocModel && vocModel.type;
       this.calcSpecialButtons();
+      this.isGeo = this._isGeo();
 //      _.extend(this, options);
       this.makeTemplate(this.template, 'template', type);
       this.makeTemplate('fileUpload', 'fileUploadTemplate', type);
@@ -88,10 +95,12 @@ define('views/Header', [
       this.readyDfd = $.Deferred();
       this.ready = this.readyDfd.promise();
       U.require(reqdButtons, function() {
-        var btns = arguments;
         var i = 0;
         for (var btn in buttons) {
           var model = arguments[i++];
+          if (G.isBootstrap())
+            model = model.extend({tagName: 'div'}, {}); 
+
           this.buttonViews[btn] = this.buttonViews[btn] || this.addChild(new model(btnOptions));
         }
         
@@ -137,8 +146,8 @@ define('views/Header', [
             }
             else {
               if (!U.isAssignableFrom(this.vocModel, "Contact"))
-                titleHTML = U.makeHeaderTitle(this.vocModel['displayName'], title);
-//              this.pageTitle = this.vocModel['displayName'] + ": " + this.pageTitle;
+//                titleHTML = U.makeHeaderTitle(encodeURIComponent(this.vocModel['displayName']), title);
+              this.pageTitle = this.vocModel['displayName'] + ": " + title;
             }
           }
         }
@@ -229,11 +238,15 @@ define('views/Header', [
       return this;
     },
     
+    _isGeo: function() {
+      return !!_.size(_.pick(this.buttons, 'mapIt', 'aroundMe'));
+    },
+    
     render: function(options) {
       options = options || {};
       if (!this.buttons || options.buttons) {
         this.buttons = options.buttons;
-        this.isGeo = _.size(_.pick(this.buttons, 'mapIt', 'aroundMe'));
+        this.isGeo = this._isGeo();
         this.getButtonViews();
       }
         
@@ -241,12 +254,16 @@ define('views/Header', [
       this.ready.done(function() {
         this.renderHelper.apply(this, args);
         this.finish();
+        if (G.isBootstrap()) {
+          var lis = this.$el.find('#headerUl div');
+          lis.attr('class', 'navbar-header');
+        }
       }.bind(this));
     },
 
     refreshTitle: function() {
       this.calcTitle();
-      this.$('#pageTitle').html(this.title);
+      this.$('#pageTitle')[0].innerHTML = this.title;
 //      $('title').text(this.title);
       this.pageView.trigger('titleChanged', this._title);
     },
@@ -304,27 +321,34 @@ define('views/Header', [
       if (this.isEdit || this.isChat)
         return;
       
-      _.each(SPECIAL_BUTTONS, function(btn) {
-        this.$('#{0}Btn'.format(btn)).html("").hide();
-      }.bind(this));
+      var self = this;
+      SPECIAL_BUTTONS.forEach(function(btn) {
+        var el = self.$('#{0}Btn'.format(btn));
+        if (el) {
+          el.innerHTML = "";
+          el.$hide();
+        }
+      });
       
       var pBtn = this.buttonViews.publish;
       if (this.publish) {
         this.assign('#publishBtn', pBtn);
-        this.$('#publishBtn').show();
+        this.$('#publishBtn').$show();
       }
       else if (pBtn) {
-        this.$('#publishBtn').hide();
-        var options = _.filter(SPECIAL_BUTTONS, _.partial(_['!='], 'publish')); // eq: _.filter(SPECIAL_BUTTONS, function(btn) { return btn != 'publish' })
-        _.each(options, function(option) {
-          var method = 'hide';
-          if (this[option]) {
-            this.assign('#{0}Btn'.format(option), pBtn, _.pick(this, option));
-            method = 'show';
+        this.$('#publishBtn').$hide();
+        var options = _.filter(SPECIAL_BUTTONS, _['!='].bind(_, 'publish'));  // equivalent to _.filter(SPECIAL_BUTTONS, function(btn) { return btn != 'publish' })
+        options.forEach(function(option) {
+          var method = '$hide',
+              selector = '#{0}Btn'.format(option);
+          
+          if (self[option]) {
+            self.assign(selector, pBtn, _.pick(self, option));
+            method = '$show';
           }
           
-          this.$('#{0}Btn'.format(option))[method]();
-        }.bind(this));
+          self.$(selector)[method]();
+        });
       }
       
       var hash = window.location.hash;
@@ -365,13 +389,17 @@ define('views/Header', [
     },
     
     restyleNavbar: function() {
-      this.$('[data-role="navbar"]').navbar();
+      var navbar = this.$('[data-role="navbar"]')[0];
+      $(navbar).navbar();
+      navbar.classList.remove('ui-mini');
     },
     
     renderHelper: function() {
       if (window.location.hash.indexOf("#menu") != -1)
         return this;
 
+      var self = this;
+      var isJQM = G.isJQM(); //!wl  ||  wl == 'Jquery Mobile';
       var res = this.resource; // undefined, if this is a header for a collection view
       var error = res && res.get('_error');
       if (error)
@@ -381,7 +409,9 @@ define('views/Header', [
       if (this.rendered)
         this.html("");
       
-      if (!res && (U.isAssignableFrom(this.vocModel, G.commonTypes.App) || (U.isA(this.vocModel, 'Taggable')  &&  U.getCloneOf(this.vocModel, 'Taggable.tags').length/*  &&  U.isAssignableFrom(this.vocModel, 'Urbien')*/)))
+      var isTemplates = window.location.hash && window.location.hash.indexOf('#templates/') != -1; 
+      
+      if (!isTemplates  &&  !res && (U.isAssignableFrom(this.vocModel, G.commonTypes.App) || (U.isA(this.vocModel, 'Taggable')  &&  U.getCloneOf(this.vocModel, 'Taggable.tags').length/*  &&  U.isAssignableFrom(this.vocModel, 'Urbien')*/)))
         this.categories = true;
       else if (!res) {
         var hash = window.location.hash;
@@ -405,13 +435,13 @@ define('views/Header', [
         }
       }
 
-      var templateSettings = {};
+      var templateSettings = this.getBaseTemplateData();
       if (U.isChatPage()) {
 //        templateSettings.more = $.param({
 //          "data-position": "fixed"
 //        });
       }
-      if (!G.currentApp.widgetLibrary  || G.currentApp.widgetLibrary == 'Jquery Mobile') {
+      if (isJQM) {
         if (!this.publish  &&  this.doTry  &&  this.forkMe)
           templateSettings.className = 'ui-grid-b';
       }      
@@ -419,86 +449,103 @@ define('views/Header', [
       this.refreshTitle();
 //      this.$el.prevObject.attr('data-title', this.pageTitle);
 //      this.$el.prevObject.attr('data-theme', G.theme.list);
-      this.pageView.$el.attr('data-title', this.pageTitle);
-      this.pageView.$el.attr('data-theme', G.theme.list);
+      var pageData = this.pageView.el.dataset;
+      pageData.title = this.pageTitle;
+      pageData.theme = G.theme.list;
       var frag = document.createDocumentFragment();
       var btns = this.buttonViews;
-      var numBtns = _.size(btns);
-      
-      var cols = btns['publish'] ? numBtns - 1 : numBtns;
-      var btnWidth = Math.round(100 * (100/cols))/100;
-
       var isMapItToggleable = !!this.collection;
-      var btnNames = ['menu', 'back', 'mapIt', 'aroundMe', 'add', 'video', 'chat', 'login'];
-      if (numBtns < 6)
-        btnNames.push('rightMenu');
-      else
-        btnNames.splice(1, 0, 'rightMenu');
-      _.each(btnNames, function(btnName) {
+      
+//      var numBtns = _.size(btns);
+      var paintedBtns = [];      
+      REGULAR_BUTTONS.forEach(function(btnName) {
         var btn = btns[btnName];
         if (!btn)
           return;
         
-        var btnOptions = {};
+        var btnOptions = {
+          force: true
+        };
+        
         if (btnName === 'mapIt') {
 //          this.isGeo = this.isGeo && this.collection && _.any(this.collection.models, function(m) {  return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'));  });
-          if (!this.isGeo)
+          if (!self.isGeo)
             return;
           
           btnOptions.toggleable = isMapItToggleable;
         }
-        btn.$el.css('width', btnWidth + '%');
-        frag.appendChild(btn.render(_.extend({force: true}, btnOptions)).el);
-      }.bind(this));      
+        
+        paintedBtns.push(btn.el);
+        frag.appendChild(btn.render(btnOptions).el);
+      });      
       
-      var $ul = this.$('#headerUl');
-      $ul.html(frag);
+      numBtns = paintedBtns.length;
+//      var cols = btns['publish'] ? numBtns - 1 : numBtns;
+      var cols = numBtns;
+      var btnWidth = Math.round(100 * (100/cols))/100;
+      for (var i = 0; i < paintedBtns.length; i++) {
+        paintedBtns[i].$css('width', btnWidth + '%');
+      }
+      
+      this.$('#headerUl')[0].$html(frag);
       
 //      this.renderError();
       this.renderSpecialButtons();
       
       this.$el.trigger('create');
       if (this.isEdit  ||  this.isChat  ||  this.noButtons) {
-        this.$el.find('#headerButtons').attr('class', 'hidden');
-//        
+        this.$('#headerButtons').$addClass('hidden');
       }
-      /*
-      if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges) {
-        this.$el.find('#name').removeClass('resTitle');
-        if (this.resource  &&  !this.isEdit) {
-          var pt = this.$el.find('#pageTitle');
-          if (pt) {
-            pt.css('padding-bottom', '4px');
-            pt.css('border-bottom', '1px solid rgba(255,255,255,0.5)');
+      if (isJQM) {
+        if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges) {
+          this.$('#name').$removeClass('resTitle');
+          if (this.resource  &&  !this.isEdit) {
+            var pt = this.$('#pageTitle');
+            if (pt.length) {
+              pt.$css({
+                'padding-bottom': '4px',
+                'border-bottom': '1px solid rgba(255,255,255,0.5)'
+              });
+            }
           }
+          // this.$el.find('#pageTitle').css('margin-bottom', '0px'); 
         }
-        // this.$el.find('#pageTitle').css('margin-bottom', '0px'); 
+      }      
+      if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges  &&  !this.isEdit) {
+        this.$('#name.resTitle').$css('padding-bottom', '0px');
       }
-      */
-      if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges) {
-        this.$el.find('#name.resTitle').css('padding-bottom', '0px');
+//      var wl = G.currentApp.widgetLibrary;
+      if (isJQM) {
+        if (this.noButtons) 
+          this.$('h4').$css('margin-top', '10px');
+        else
+          this.$('h4').$css('margin-top', '4px');
       }
-      if (this.noButtons) 
-        this.$el.find('h4').css('margin-top', '10px');
-      else
-        this.$el.find('h4').css('margin-top', '4px');
-
+      
       for (var btn in btns) {
-        var badge = btns[btn].$el.find('.menuBadge');
-        if (badge  &&  badge.length)
-          badge.css('left', Math.floor(btnWidth/2) + '%');
+        var badge = btns[btn].$('.menuBadge');
+        if (badge.length) {
+          if (G.isJQM())
+            badge.$css('left', Math.floor(btnWidth/2) + '%');
+          else
+            badge.$css('left', '50%');
+        }
       }
       // HACK
       // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view 
-      var header = this.$('.ui-header');
+      var header = this.$('.ui-header')[0];
       var barClass = 'ui-bar-{0}'.format(G.theme.header);
-      if (!header.hasClass(barClass))
-        header.addClass(barClass);
+      if (header && !header.classList.contains(barClass))
+        header.classList.add(barClass);
       
       // END HACK
       
 //      this.refreshCallInProgressHeader();
-      this.restyleNavbar();
+      if (isJQM)
+        this.restyleNavbar();
+      if (G.isTopcoat())
+        this.$('li').$attr('class', 'topcoat-button-bar__item');
+      
       this.finish();      
       return this;
     }

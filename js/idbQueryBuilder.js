@@ -160,7 +160,7 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'indexedDB'], funct
       return false;
 
     var neededIndices = _.filter(_.union(_.keys(filter), _.pluck(orderBy, 'shortName')), function(p) {return /^[a-zA-Z]+/.test(p)});
-    if (!_.all(neededIndices, _.partial(_.contains, indexNames)))
+    if (!_.all(neededIndices, _.contains.bind(_, indexNames)))
       return false;
 
     if (orClause) {

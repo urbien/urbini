@@ -15,7 +15,7 @@ define('views/AroundMeButton', [
     },
     initialize: function(options) {      
       _.bindAll(this, 'render', 'toggleAroundMe', 'isOn');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      ToggleButton.prototype.initialize.apply(this, arguments);
       this.makeTemplate(this.templateName, 'template', this.vocModel.type);
       this._isOn = this._onByDefault = !!(options || {}).isOn || this.isOn();
       return this;
@@ -27,7 +27,7 @@ define('views/AroundMeButton', [
       this._isOn = this._onByDefault;  
     },
     render: function(options) {
-      this.$el.html(this.template());
+      this.html(this.template());
       this.setStyle();
       return this;
     },

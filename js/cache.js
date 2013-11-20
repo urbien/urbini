@@ -261,7 +261,8 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       entry = ViewCacheEntry(view, url, this);
       cache.push(entry);
       
-      clean();
+      // let the turn of the event loop that caused cache update to finish first
+      setTimeout(clean, 0);
     };
     
     function overCapacity() {
@@ -325,9 +326,28 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
     });
     
     Events.on('viewDestroyed', function(destroyedView) {
-      cache = _.filter(cache, function(entry) {
-        return entry.getView() !== destroyedView;
+      if (destroyedView.isPageView()) {
+        cache = _.filter(cache, function(entry) {
+          return entry.getView() !== destroyedView;
+        });
+      }
+      
+      var resOrList = destroyedView.model,
+          destroy = true;
+      
+      if (!resOrList || ((resOrList instanceof Backbone.Model) && resOrList.collection)) {
+        // don't destroy resources that are in live collections
+        return;
+      }
+
+      Events.once('saveModelFromUntimelyDeath.' + resOrList.cid, function() {
+        destroy = false;
       });
+      
+      Events.trigger('preparingModelForDestruction', resOrList);
+      Events.trigger('preparingModelForDestruction.' + resOrList.cid, resOrList);
+      if (destroy)
+        resOrList.selfDestruct();
     });
     
     return {
@@ -391,6 +411,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
 //    ENUMERATIONS_KEY: 'enumerations',
     getCachedView: viewCache.getCachedView.bind(viewCache),
     getModel: function(type) {
+      type = G.classMap[type] || type;
       return typeToModel[type] || shortNameToModel[type];
     },
     

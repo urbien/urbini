@@ -1,5 +1,6 @@
 (function(window, doc, undefined) {
-var __started = new Date();
+var __started = new Date(),
+    ArrayProto = Array.prototype;
 
 $.extend({
   RESOLVED_PROMISE: $.Deferred().resolve().promise(),
@@ -76,7 +77,7 @@ define('globals', function() {
   /**
    * @param constantTimeout: if specified, this will always be the timeout for this function, otherwise the first param of the returned async function will be the timeout
    */
-
+  
   // From jQuery.browser (deprecated in 1.3, removed in 1.9.1)
   // Use of jQuery.browser is frowned upon.
   // More details: http://docs.jquery.com/Utilities/jQuery.browser
@@ -104,18 +105,26 @@ define('globals', function() {
       browser[ browserMatch.browser ] = true;
       browser.version = browserMatch.version;
     }
-    
+
+    browser.opera = window.opera && Object.prototype.toString.call(window.opera) === '[object Opera]';
     browser.chrome = browser.webkit && !!window.chrome;
     browser.safari = browser.webkit && !window.chrome;
-    browser.ios = !!navigator.userAgent.match(/iPad|iPhone|iPod/i);
-    var mobile = browser.ios || navigator.userAgent.match(/(Android|webOS|BlackBerry|IEMobile|Opera Mini)/);
+    browser.ios = navigator.userAgent.match(/(iPad|iPhone|iPod)/i);
+    var mobile = browser.ios || navigator.userAgent.match(/(Android|webOS|BlackBerry|IEMobile|Opera Mini|Opera Mobi)/);
     if (mobile) {
       browser.mobile = true;
       browser[mobile[1].toLowerCase()] = true;
     }
 
+    browser.ios = !!browser.ios;
+    browser.touch = 'ontouchstart' in window;
     browser.firefox = browser.mozilla;
     browser.name = browser.chrome ? 'chrome' : browser.firefox ? 'firefox' : browser.safari ? 'safari' : 'unknown';
+    browser.prefix = browser.webkit ? 'webkit' : 
+                      browser.mozilla ? 'moz' : 
+                        browser.opera ? 'o' : 
+                          browser.ms ? 'ms' : '';
+    
     return browser;
   };
   
@@ -156,12 +165,36 @@ define('globals', function() {
   };
 
   function isModuleNeeded(name) {
-    if (name === 'lib/IndexedDBShim' && G.dbType !== 'shim')
+    if (~G.skipModules.indexOf(name))
       return false;
-    if (name === 'lib/whammy' && browser.firefox)
-      return false;
-      
-    return true;
+    
+//    var isBB = G.getWidgetLibrary() == 'Building Blocks';
+//    if (isBB && /jquery\.mobile/.test(name, 'ig'))
+//      return false;
+//    
+//    if (!isBB && /\/bb\/|templates_bb\.jsp|bb_styles\.css/.test(name))
+//      return false;
+    
+    switch (name) {
+//    case '@widgets':
+//      return !isBB;
+    case '../templates_topcoat.jsp':
+      return G.isTopcoat();
+    case '../templates_bb.jsp':
+      return G.isBB();
+    case '../templates_bootstrap.jsp':
+      return G.isBootstrap();
+    case 'lib/IndexedDBShim':
+      return G.dbType == 'shim';
+    case 'lib/whammy':
+      return browser.chrome;
+    case 'chrome':
+      return G.inWebview;
+    case 'firefox':
+      return G.hasFFApps;
+    default:
+      return true;
+    }
   };
   
   function addModule(text) {
@@ -190,24 +223,13 @@ define('globals', function() {
     var self = this;
     return function() {
       var args = arguments;
-      var timeout = constantTimeout || Array.prototype.shift.apply(args);
+      var timeout = constantTimeout || ArrayProto.shift.apply(args);
       setTimeout(function() {
         self.apply(self, args);
       }, timeout);
     }
   };
 
-  function needModule(name) {
-    switch (name) {
-    case 'chrome':
-      return G.inWebview;
-    case 'firefox':
-      return G.hasFFApps;
-    default:
-      return true;
-    }
-  };
-  
   // maybe we don't even need deferreds here, but if sth here ever becomes async with onload callbacks...
   function loadModule (name, url, text) {
     return $.Deferred(function(defer) {        
@@ -237,8 +259,9 @@ define('globals', function() {
         default:
           if (browser.msie) 
             text += '/*\n'; // see http://bugs.jquery.com/ticket/13274#comment:6
-          if (G.minify)
-            text += '\n//@ sourceMappingURL=' + url.match(/\/([^\/]*)\.js$/)[1] + '.min.js.map';
+//          temp commment out as profiler says sourceMappingURL slows down app load          
+//          if (G.minify)
+//            text += '\n//@ sourceMappingURL=' + url.match(/\/([^\/]*)\.js$/)[1] + '.min.js.map';
           
           text += '\n//@ sourceURL=' + url;
           if (browser.msie) 
@@ -252,7 +275,11 @@ define('globals', function() {
   };
 
   var orgLoad = require.load;
-  require.load = function (name) {
+  require.load = function(name) {
+    name = require.getRealName(name);
+    if (!isModuleNeeded(name))
+      return G.getResolvedPromise();
+    
     var url = G.getCanonicalPath(require.toUrl(name));
     var args = arguments,
         self = this;
@@ -335,7 +362,7 @@ define('globals', function() {
 
   function putCached(keyToData, options) {
     options = options || {};
-    var storage = options.storage || 'localStorage',
+    var storage = options.storage || G.getPreferredStorage(),
         store = options.store || 'modules',
         storeInfo = store === 'modules' ? G.getModulesStoreInfo() : G.getModelsStoreInfo(),
         keyPath = storeInfo.options.keyPath;        
@@ -377,7 +404,8 @@ define('globals', function() {
         devVoc = G.DEV_PACKAGE_PATH.replace('/', '\/'),
         regex = devVoc + appPath + '\/[^\/]*$',
         commonTypes = G.commonTypes, 
-        defaultVocPath = G.defaultVocPath;
+        defaultVocPath = G.defaultVocPath,
+        css = G.crossBrowser.css;
     
     G.serverNameHttp = G.serverName.replace(/^[a-zA-Z]+:\/\//, 'http://');
     $.extend(G, {
@@ -399,12 +427,41 @@ define('globals', function() {
     for (var type in commonTypes) {
       commonTypes[type] = defaultVocPath + commonTypes[type];
     }  
+
+//    css.transform = (function() {
+      var prefix, stylePropertyPrefix, transformLookup, docEl = document.documentElement;
+      if (document.createElement('div').style.transform !== undefined) {
+//        prefix = '';
+        stylePropertyPrefix = '';
+        transformLookup = 'transform';
+      } else if (browser.opera) {
+//        prefix = '-o-';
+        stylePropertyPrefix = 'O';
+        transformLookup = 'OTransform';
+      } else if (docEl.style.MozTransform !== undefined) {
+//        prefix = '-moz-';
+        stylePropertyPrefix = 'Moz';
+        transformLookup = 'MozTransform';
+      } else if (docEl.style.webkitTransform !== undefined) {
+//        prefix = '-webkit-';
+        stylePropertyPrefix = 'webkit';
+        transformLookup = '-webkit-transform';
+      } else if (typeof navigator.cpuClass === 'string') {
+//        prefix = '-ms-';
+        stylePropertyPrefix = 'ms';
+        transformLookup = '-ms-transform';
+      }
+      
+      css.prefix = browser.prefix ? '-' + browser.prefix + '-' : '';
+      css.stylePropertyPrefix = stylePropertyPrefix;
+      css.transformLookup = transformLookup;
   };
   
   function adjustForVendor() {
     // requestAnimationFrame polyfill by Erik M�ller & Paul Irish et. al., adjusted by David DeSandro https://gist.github.com/desandro/1866474
     window.AudioContext = window.AudioContext || window.webkitAudioContext; // keep in mind, firefox doesn't have AudioContext.createMediaStreamSource
     window.MediaStream = window.webkitMediaStream || window.MediaStream;
+    window.MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.webkitMutationObserver || window.mozMutationObserver;
     window.URL = window.URL || window.webkitURL;
     (function( window ) {
       'use strict';
@@ -450,33 +507,6 @@ define('globals', function() {
       window.raf = window.requestAnimationFrame = requestAnimationFrame;
       window.caf = window.cancelAnimationFrame = cancelAnimationFrame;
       
-      window.viaRAF = function(fn, ctx, returnsPromise) {
-//        return function() {
-//          return fn.apply(ctx || this, arguments);
-//        };
-        
-        return function() {
-          if (!ctx)
-            ctx = this;
-          
-          var dfd, args = arguments;
-          if (returnsPromise)
-            dfd = $.Deferred();
-          
-          window.raf(function() {
-            var result = fn.apply(ctx, args);
-            if (returnsPromise)
-              result.done(dfd.resolve).fail(dfd.reject);
-            else
-              return result;
-          });
-          
-          if (returnsPromise)
-            return dfd.promise();
-        }
-      };
-      
-//      loadModule = window.viaRAF(loadModule, null, true);
     })( window );
   }
   
@@ -558,7 +588,13 @@ define('globals', function() {
         value = Object.prototype.toString.call(value) === '[object String]' ? value : JSON.stringify(value);
         try {
   //        G.localStorage.del(key);
-          localStorage.setItem(key, value);
+          if (window.fastdom) {
+            window.fastdom.nonDom(function() {              
+              localStorage.setItem(key, value);
+            });
+          }
+          else
+            localStorage.setItem(key, value);
         } catch(e) {
           debugger;
           if (['QuotaExceededError', 'QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
@@ -664,6 +700,73 @@ define('globals', function() {
     G.localStorage.cleanAsync = G.localStorage.clean.async(100);
   };
 
+  function setupWidgetLibrary() {
+    var widgets = G._widgetsLib = [],
+        bundle = widgetsBundle;
+    
+    for (var i = 0, len = bundle.length; i < len; i++) {
+      widgets.push(bundle[i].name);
+    }
+    
+//    var req = window.require,
+//        def = window.define;
+//    
+//    window.require = function(modules, cb) {
+//      modules = modules ? ($.isArray(modules) ? modules : [modules]) : [];
+//      var idxW = modules.indexOf('@widgets'),
+//          idxL = modules.indexOf('@widgetsLib'),
+//          idx = ~idxW ? idxW : idxL;
+//      
+//      if (idxW == -1 && idxL == -1)
+//        return req.apply(this, arguments);
+//      
+//      modules.splice(idx, 1);
+//      var wBundleFiles = _.pluck(widgetsBundle, 'name');
+//      if (~idxW)
+//        wBundleFiles = wBundleFiles.concat('widgetLibAdapter');
+//      
+//      var newArgs = [];
+//      return req(modules.concat(wBundleFiles), function() {
+//        var lastArg = arguments[arguments.length - 1];
+//        if (!modules.length)
+//          return idxW ? lastArg : undefined;
+//        
+//        for (var i = 0; i < idx; i++) {
+//          newArgs.push(arguments[i]);
+//        }
+//        
+//        if (~idxW)
+//          newArgs.push(lastArg);
+//
+//        if (cb)
+//          cb.apply(window, newArgs);  
+//        
+//        if (newArgs.length)
+//          return newArgs;
+//      }).then(function() {
+//        if (newArgs.length)
+//          return newArgs;
+//      });
+//    };
+//
+//    window.define = function(name, deps, cb) {
+//      if (arguments.length != 3 || !/^@/.test(name))
+//        return def.apply(this, arguments);
+//      
+//      debugger;
+//    };
+//    
+//    for (var prop in req) {
+//      if (req.hasOwnProperty(prop))
+//        window.require[prop] = req[prop]; // copy over define.amd, and whatever else
+//    }
+//    
+//    for (var prop in def) {
+//      if (def.hasOwnProperty(prop))
+//        window.define[prop] = def[prop]; // copy over define.amd, and whatever else
+//    }
+  }
+  
   function load() {
     var spinner = 'app init',
         priorityModules = [];
@@ -704,28 +807,41 @@ define('globals', function() {
       loadRegular();
   };
   
-  function loadRegular() {
-    Bundler.loadBundle(preBundle).then(function() {
-//        preBundle._deferred.resolve();
-      G.finishedTask("loading pre-bundle");
-      
-      G.startedTask("loading modules");
-      var css = preBundle.css.slice();
-      for (var i = 0; i < css.length; i++) {
-        var cssObj = css[i];
-        css[i] = cssObj.name;
+  function getCSS(/* bundles */) {
+    var css = [];
+    for (var i = 0; i < arguments.length; i++) {
+      var bundle = arguments[i];
+      for (var j = 0, len = bundle.length; j < len; j++) {
+        var info = bundle[j];
+        if (/\.css$/.test(info.name))
+          css.push(info);
       }
-      
+    }
+    
+    css.sort(function(item) {
+      return item.order || 0;
+    });
+    
+    for (var i = 0, len = css.length; i < len; i++) {
+      css[i] = css[i].name;
+    }
+    
+    return css;
+  }
+  
+  function loadRegular() {
+    Bundler.loadBundle(preBundle.concat(widgetsBundle)).then(function() {
+      preBundle._deferred.resolve();
+      G.finishedTask("loading pre-bundle and widgets-bundle");
+      G.startedTask("loading modules");
+      var essential = getCSS(preBundle, widgetsBundle);
+      essential.unshift.call(essential, 'events', 'app', 'lib/l20n');
       return require('__domReady__').then(function() {
-        var essential = ['jqmConfig', 'events', 'app'];
-        if (G.modules['js/lib/l20n.js'])
-          essential.push('lib/l20n');
-        
-        essential = essential.concat(css)
         return require(essential);
       });
-    }).then(function(jqmConfig, Events, App) {
-      Events.on('appStart', APP_START_DFD.resolve);
+    }).then(function(Events, App) {
+      Events.once('dbOpen', DB_OPEN_DFD.resolve);
+      Events.once('appStart', APP_START_DFD.resolve);
       G.log(G.TAG, 'info', "Loaded pre-bundle: " + (new Date().getTime() - __started) + ' millis');
       G.finishedTask("loading modules");
       App.initialize();
@@ -738,7 +854,7 @@ define('globals', function() {
 
     G.onAppStart(function() {            
       G.startedTask('loading extras-bundle');
-      Bundler.loadBundle(extrasBundle, {source: G.dbType === 'none' ? 'localStorage' : 'indexedDB', async: true}).done(function() {
+      Bundler.loadBundle(extrasBundle, {async: true}).done(function() {
         G.startedTask('loading extras-bundle');
         extrasBundle._deferred.resolve();
       });
@@ -746,9 +862,20 @@ define('globals', function() {
   };
   
   var Bundler = {
+    pruneUnneededModules: function() {
+      var bundles = G.bundles;
+      for (var name in bundles) {
+        var bundle = bundles[name];
+        for (var i = bundle.length - 1; i >= 0; i--) {
+          if (!isModuleNeeded(bundle[i].name))
+            bundle.splice(i, 1);
+        }
+      }
+    },
+      
     pruneBundle: function(bundle, options) {
       options = options || {};
-      var source = options.source || 'localStorage';
+      var source = options.source || G.getPreferredStorage();
       var pruneDfd = $.Deferred();
       var prunePromise = pruneDfd.promise();
       var modules = [];
@@ -788,7 +915,7 @@ define('globals', function() {
 //              }
           }
           
-          if (!name || appcache[name] || !isModuleNeeded(name))
+          if (!name || appcache[name])
             continue;
           
 //            var inAppcache = !!appcache[name];
@@ -868,14 +995,26 @@ define('globals', function() {
       
       return prunePromise;
     },
+
+//    _queuedToLoad: [],
+//    queueLoadBundle: function(/* module names */) {
+//      var self = this;
+//      this._queuedToLoad.push.apply(this._queuedToLoad, arguments);
+//      if (this._bundleTimer) {
+//        clearTimeout(this._bundleTimer);
+//        debugger;
+//      }
+//      
+//      this._bundleTimer = setTimeout(function() {
+//        self.loadBundle(self._queuedToLoad);
+//      }, 50);
+//    },
     
     loadBundle: function(bundle, options) {
       var bundleDfd = $.Deferred(),
           bundlePromise = bundleDfd.promise(),
-          options = options || {
-            async: true
-          },
-          source = options.source = options.source || 'localStorage',
+          options = options || {},
+          source = options.source = options.source || G.getPreferredStorage(),
           useWorker = G.hasWebWorkers && options.async,
           worker;
 
@@ -981,17 +1120,11 @@ define('globals', function() {
         var bundle = bundles[when];
         bundle._deferred = $.Deferred();
         for (var type in bundle) {
-          var bt = bundle[type];
-          for (var i = bt.length - 1; i >= 0; i--) {
-            var info = bt[i];
-            if (!needModule(info.name))
-              bt.splice(i, 1);
-              
-            G.files[info.name] = info;
-            if (when === 'appcache') {
-    //        if ((type === 'js' && ALL_IN_APPCACHE && !/^lib/.test(info.name)) || when === 'appcache') {
-              G.files.appcache[info.name] = info;
-            }
+          var info = bundle[type];
+          G.files[info.name] = info;
+          if (when === 'appcache') {
+  //        if ((type === 'js' && ALL_IN_APPCACHE && !/^lib/.test(info.name)) || when === 'appcache') {
+            G.files.appcache[info.name] = info;
           }
         }
       }
@@ -999,8 +1132,8 @@ define('globals', function() {
     getFromAppcacheBundle: function(url) {
       var appcacheBundle = G.bundles.appcache;
       url = url.slice(url.indexOf('/') + 1);
-      if (/\.js$/.test(url)) 
-        url = url.slice(0, url.length - 3);
+//      if (/\.js$/.test(url)) 
+//        url = url.slice(0, url.length - 3);
       
       var info = G.files.appcache[url];
       return info ? info.fullName || info.name : null;
@@ -1057,7 +1190,7 @@ define('globals', function() {
         bg: '#DDD'
       },
       events: {
-        on: true,
+        on: false,
         color: '#baFF00',
         bg: '#555'
       },
@@ -1076,6 +1209,8 @@ define('globals', function() {
   
   var requireConfig = {
     paths: {
+      '@widgets': 'widgetsLibAdapter',
+      hammer: 'lib/hammer',
       mobiscroll: 'lib/mobiscroll-datetime-min',
       simplewebrtc: 'lib/simplewebrtc',
       jqmConfig: 'jqm-config',
@@ -1094,9 +1229,8 @@ define('globals', function() {
       codemirrorCSSMode: 'lib/codemirrorCSSMode',
       leaflet: 'lib/leaflet',
       leafletMarkerCluster: 'lib/leaflet.markercluster',
-      jqueryImagesLoaded: 'lib/jquery.imagesloaded',
+//      jqueryImagesLoaded: 'lib/jquery.imagesloaded',
       jqueryMasonry: 'lib/jquery.masonry',
-      jqueryDraggable: 'lib/jquery.draggable',
       jqueryAnyStretch: 'lib/jquery.anystretch'
     },
     shim: {
@@ -1104,6 +1238,9 @@ define('globals', function() {
         deps: ['underscore'],
         exports: 'Backbone'
       },
+      '../styles/bb_styles.css': ['../styles/styles.css', '../styles/common-template-m.css'],
+      '../styles/topcoat_styles.css': ['../styles/styles.css', '../styles/common-template-m.css'],
+      '../styles/jqm_styles.css': ['../styles/styles.css', '../styles/common-template-m.css'],
       leafletMarkerCluster: ['leaflet'],
       mobiscroll: ['../styles/mobiscroll.datetime.min.css'],
       codemirrorJSMode: ['codemirror', 'codemirrorCss'],
@@ -1116,6 +1253,7 @@ define('globals', function() {
 
   var G = window.Lablz,
       APP_START_DFD = $.Deferred(),
+      DB_OPEN_DFD = $.Deferred(),
       RESOLVED_PROMISE = $.Deferred().resolve().promise(),
       REJECTED_PROMISE = $.Deferred().reject().promise(),
       browser = G.browser = detectBrowser(),
@@ -1134,10 +1272,12 @@ define('globals', function() {
           
         return map;
       })() : {},
-      $head = $('head'),
-      head = $head[0],
-      $body = $('body'),
-      body = $body[0],
+      head = doc.getElementsByTagName('head')[0],
+      body = doc.getElementsByTagName('body')[0],
+//      $head = $('head'),
+//      head = $head[0],
+//      $body = $('body'),
+//      body = $body[0],
       
       // XHR
       PROG_IDS = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'],
@@ -1147,6 +1287,7 @@ define('globals', function() {
       
       // bundles
       bundles = G.bundles, // is part of initial globals
+      widgetsBundle = bundles.widgetsFramework,
       preBundle = bundles.pre,
       postBundle = bundles.post, 
       extrasBundle = bundles.extras;
@@ -1162,8 +1303,27 @@ define('globals', function() {
   }, false);
 
   $.extend(G, {
-    lazyImgSrcAttr: 'data-frz-src',
-    blankImgDataUrl: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+    _widgetLibrary: G.currentApp.widgetLibrary || 'JQuery Mobile',
+    isJQM: function() {
+      return G.getWidgetLibrary().toLowerCase() == 'jquery mobile';
+    },
+    isBB: function() {
+      return G.getWidgetLibrary().toLowerCase() == 'building blocks';
+    },
+    isTopcoat: function() {
+      return G.getWidgetLibrary().toLowerCase() == 'topcoat';
+    },
+    isBootstrap: function() {
+      return G.getWidgetLibrary().toLowerCase() == 'bootstrap';
+    },
+    getWidgetLibrary: function() {
+      return G._widgetLibrary;
+    },
+    lazyImgSrcAttr: 'data-lazysrc',
+    _blankImgSrc: 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==',
+    getBlankImgSrc: function() {
+      return this._blankImgSrc;
+    },
     emptyFn: function() {},
     falseFn: function() { return false; },
     trueFn: function() { return true; },
@@ -1225,21 +1385,34 @@ define('globals', function() {
         }
       }
       else {
-        var pre = G.bundles.pre.js,
-            shimIdx = pre.indexOf('lib/IndexedDBShim');
-        
-        if (shimIdx >= 0)
-          pre.splice(shimIdx, 1);
-        
+//        var pre = G.bundles.pre.js,
+//            shimIdx = pre.indexOf('lib/IndexedDBShim');
+//        
+//        if (shimIdx >= 0)
+//          pre.splice(shimIdx, 1);
+//        
 //        G.log(G.TAG, 'db', "don't need indexeddb shim");
         type = 'idb';
       }
-      
+
       return type;
     })(),
+    
+    _preferredStorageMedium: 'indexedDB',
+    getPreferredStorage: function() {
+      var type = this._preferredStorageMedium;
+      if (type == 'indexedDB') {
+        if (this.dbType == 'none' || DB_OPEN_DFD.state() != 'resolved') {
+          type = 'localStorage';
+        }
+      }
+      
+      return type;
+    },
     media_events: ["loadstart", "progress", "suspend", "abort", "error", "emptied", "stalled", 
                     "loadedmetadata", "loadeddata", "canplay", "canplaythrough", "playing", "waiting", 
                     "seeking", "seeked", "ended", "durationchange", "timeupdate", "play", "pause", "ratechange", "volumechange"],
+                    
     nukeAll: function(reload) {
       hasLocalStorage && localStorage.clear();
       if (G.ResourceManager) {
@@ -1276,8 +1449,14 @@ define('globals', function() {
       
       var style = ' style="z-index:1000;' + (color ? color + ';' : '') + '"';
       var innerHTML = '<div id="spinner_container"><div id="spinner"' + style + '>' + (options.content || '<i class="ui-icon-spinner icon-spin" style="font-size: 64px;"></i>') + '</div></div>';
-      var $spinner = $('<div id="' + id + '" class="' + cl + '">' + innerHTML + '</div>');
-      $body.append($spinner);
+      var spinner = doc.createElement('div');
+      spinner.id = id;
+      if (cl)
+        spinner.classList.add(cl);
+      
+      spinner.innerHTML = innerHTML;
+//      var spinner = '<div id="' + id + '" class="' + cl + '">' + innerHTML + '</div>';
+      body.appendChild(spinner);
       if (options.timeout) {
         setTimeout(function() {
           G.hideSpinner(options.name);
@@ -1285,7 +1464,12 @@ define('globals', function() {
       }
     },
     hideSpinner: function(name) {
-      $('#' + getSpinnerId(name)).remove();
+      var spinners = doc.querySelectorAll('#' + getSpinnerId(name));
+      var i = spinners.length;
+      while (i--) {
+        var spinner = spinners[i];
+        spinner.parentNode.removeChild(spinner);
+      }
     },
     getVersion: function(old) {
       if (!old && G.VERSION)
@@ -1325,38 +1509,32 @@ define('globals', function() {
           baseUrlLength = require.getConfig().baseUrl.length,
           modules = typeof modules === 'string' ? [modules] : modules;
       
-      _.each(modules, function(module) {
-        var found = false,
+      for (var i = 0, len = modules.length; i < len; i++) {
+        var module = modules[i],
+            found = false,
             fullName = require.toUrl(module).slice(baseUrlLength);
         
-        if (/\.js$/.test(fullName))
-          fullName = fullName.slice(0, fullName.length - 3);
+//        if (/\.js$/.test(fullName))
+//          fullName = fullName.slice(0, fullName.length - 3);
         
         for (var bName in G.bundles) {
           var bundle = G.bundles[bName];
-          for (var type in bundle) {
-            if (_.any(bundle[type], function(info) {
-              return info.name == fullName;
-            })) {
-              found = true;
-              if (bName !== 'pre') {                
-                bundlePromises.push(bundle._deferred.promise());
-              }
-              
-              break;
+          if (_.any(bundle, function(info) { return info.name == fullName; })) {
+            found = true;
+            if (bName !== 'pre') {
+              bundlePromises.push(bundle._deferred.promise());
             }
-          }
-          
-          if (found)
+            
             break;
+          }
         }
         
         if (!found)
           missing.push(fullName);
-      });
+      }
       
       if (missing.length) {
-        debugger; // should only happen when dynamically deciding which modules to load (like based on browser)
+        // should only happen when dynamically deciding which modules to load (like based on browser, or based on app settings)
         bundlePromises.push(Bundler.loadBundle(missing));
       }
       
@@ -1513,6 +1691,8 @@ define('globals', function() {
 //      if (options.raw && browser.chrome)
 //        xhr.responseType = 'blob';
       var params = options.data;
+      if (url == null || url.slice(url.length - 'null'.length) == 'null')
+        debugger;
       xhr.open(method, url, true);
       if (options.responseType)
         xhr.responseType = options.responseType;
@@ -1548,6 +1728,10 @@ define('globals', function() {
       xhr.send(params);
     },
     
+    debug: function() {
+      console.debug.apply(console, arguments);
+    },
+
     log: function(tag, type) {
       if (!G.DEBUG || !TRACE.ON || !console || !console.log || !type)
         return;
@@ -1562,7 +1746,7 @@ define('globals', function() {
         
         var b = G.browser;
         var css = b && ((b.mozilla && parseInt(b.version.slice(0,2))) > 4 || b.chrome && parseInt(b.version.slice(0,2)) >= 24);
-        var msg = Array.prototype.slice.call(arguments, 2);
+        var msg = ArrayProto.slice.call(arguments, 2);
         var msgStr = '';
         for (var i = 0; i < msg.length; i++) {
           msgStr += (typeof msg[i] === 'string' ? msg[i] : JSON.stringify(msg[i]));
@@ -1583,14 +1767,14 @@ define('globals', function() {
 //      link.setAttribute("rel", "stylesheet")
 //      link.setAttribute("type", "text/css")
 //      link.setAttribute("href", url);
-      $head.append(link);
+      head.appendChild(link);
     },
 
     appendCSS: function(text) {
       var style = doc.createElement('style');
       style.type = 'text/css';
       style.textContent = text; // iphone 2g gave innerhtml and appendchild the no_modification_allowed_err 
-      $head.append(style);
+      head.appendChild(style);
     },
     
 //    removeHoverStyles: function() {
@@ -1684,8 +1868,8 @@ define('globals', function() {
         if (G.workers.length)
           worker = G.workers.shift();
         else {
-          var xw = G.files.xhrWorker;
-          worker = new Worker(G.serverName + '/js/' + (xw.fullName || xw.name) + '.js');
+          var xw = G.files['xhrWorker.js'];
+          worker = new Worker(G.serverName + '/js/' + (xw.fullName || xw.name));
         }
         
         dfd.resolve(worker);
@@ -1753,18 +1937,40 @@ define('globals', function() {
         name: 'User is not logged in',
         message: 'Please log in'
       }
+    },
+    crossBrowser: {
+      css: {}
+    },
+    _clickDisabled: false,
+    enableClick: function() {
+      this.log('events', 'CLICK MONITOR', 'ENABLED CLICK');
+      this._clickDisabled = false;
+    },
+    disableClick: function() {
+      this.log('events', 'CLICK MONITOR', 'DISABLED CLICK');
+      this._clickDisabled = true;
+    },
+    canClick: function() {
+      return !this._clickDisabled;
     }
-
   });
-  
+
+  if (G.globalCss) {
+    G.appendCSS(G.globalCss);
+    delete G.globalCss;
+  }  
+
   determineMinificationMode();
+  G.skipModules = G.skipModules || [];
   G.DEBUG = !G.minify;
 
+  setupWidgetLibrary();
   setupLocalStorage();
   saveBootInfo();
   setMiscGlobals();
   adjustForVendor();
   testIfInsidePackagedApp();
+//  Bundler.pruneUnneededModules();
   Bundler.prepAppCacheBundle();
   require.config(requireConfig);   
   load();

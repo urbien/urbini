@@ -1,7 +1,19 @@
-define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resource', 'collections/ResourceList', 'apiAdapter', 'indexedDB'], function(G, _, Events, U, Resource, ResourceList, API, IndexedDBModule) {
+define('modelLoader', [
+  'globals', 
+  'underscore', 
+  'events', 
+  'utils', 
+  'models/Resource', 
+  'collections/ResourceList', 
+  'apiAdapter', 
+  'indexedDB',
+  'lib/fastdom',
+  'cache'
+], function(G, _, Events, U, Resource, ResourceList, API, IndexedDBModule, Q, C) {
   var MODEL_CACHE = [],
       MODEL_PREFIX = 'model:',
       ENUMERATIONS_KEY = 'enumerations',
+      ENUMS,
       MODEL_STORE,
       IDB,
       preferredStorage,
@@ -34,6 +46,14 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
       }
     }
     
+    for (var i = 0, len = models.length; i < len; i++) {
+      var uri = models[i],
+          mapped = G.classMap[uri];
+      
+      if (mapped)
+        models[i] = mapped;
+    }
+    
     return models;
   };
       
@@ -46,11 +66,23 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
     };
 
     this.appendRequest = function(models, options) {
-      delete options.wait;
       _.each(models, function(model) {
         _.pushUniq(collected, model);
       });
       
+      if (options.wait) {
+        delete options.wait;
+      }
+      
+      if (options.debounce) {
+        // debounce, fetch in bulk
+        if (this._fetchMoreModelsTimeout)
+          clearTimeout(this._fetchMoreModelsTimeout);
+        
+        this._fetchMoreModelsTimeout = setTimeout(this.execute, options.debounce);
+        delete options.debounce;
+      }
+
       return promise.then(function() {
         var resultDfd = $.Deferred();
         return resultDfd.resolve.apply(resultDfd, _.map(models, U.getModel));
@@ -58,7 +90,9 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
     };
     
     this.execute = function(options) {
-      delete options.go;
+      if (options)
+        delete options.go;
+      
       _getModels(collected, options);
       return makeModelsPromise(collected).done(dfd.resolve).fail(dfd.reject).always(this.reset);
     };
@@ -72,6 +106,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
       return collected.length;
     };
     
+    _.bindAll(this, 'execute');
     this.reset();
   };
 
@@ -156,14 +191,14 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
     };    
 
     _.each(types, function(type) {
-      var requireType = _.partial(require, type);
+      var requireType = require.bind(null, type);
       if (force) {
         requireType();
         return;
       }
       
-      var getMetadata = _.partial(getModelMetadataFromStorage, type, source),
-          getData = _.partial(getModelFromStorage, type, source),
+      var getMetadata = getModelMetadataFromStorage.bind(null, type, source),
+          getData = getModelFromStorage.bind(null, type, source),
           info = G.modelsMetadata[type] || G.linkedModelsMetadata[type] || {},
 //          modelDfd = $.Deferred(),
 //          modelPromise = modelDfd.promise();
@@ -230,7 +265,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
             url: G.modelsUrl, 
             data: {models: modelsCsv}, 
             type: 'POST'
-          }, _.pick(options, 'sync'));
+          });
       
       U.ajax(ajaxSettings, 'fetchModels').done(function(data, status, xhr) {
         if (xhr.status === 304)
@@ -257,7 +292,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
   
   function getModels(models, options) {
     options = options || {};
-    if (options.wait)
+    if (options.wait || options.debounce)
       return modelRequestCollector.appendRequest(models, options);
     else if (options.go)
       return modelRequestCollector.execute(options);
@@ -296,7 +331,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
           Events.once('online', function(online) {
             var infoClone = _.clone(modelsInfo);
             infoClone.have = [];
-            fetchAndLoadModels(infoClone, _.extend({}, options, {sync: false}));
+            fetchAndLoadModels(infoClone, _.extend({}, options));
           });
           
           var loading = _.union(modelsInfo.have || [], _.values(modelsInfo.mightBeStale.models));
@@ -377,14 +412,17 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
     var promise = loadModels(changedModels); 
 //      setTimeout(function() {
     G.whenNotRendering(function() {
-      storeModels(newModels);
+      Q.whenIdle('nonDom', storeModels.bind(null, newModels));
     });
 //      }, 100);
     
 //        Voc.setupPlugs(data.plugs);
     Events.trigger('newPlugs', data.plugs);
-    if (newModels.length)
-      Events.trigger('modelsChanged', _.pluck(newModels, 'type'));
+    if (newModels.length) {
+      promise.done(function() {        
+        Events.trigger('modelsChanged', _.pluck(newModels, 'type'));
+      });
+    }
     
     return promise;
   };
@@ -395,30 +433,58 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
       return a.enumeration ? -1 : 1;
     });
     
-    _.each(models, function(model) {
-      if (!preventOverwrite || !U.getModel(model.type))
+    for (var i = 0, len = models.length; i < len; i++) {
+      var model = models[i];
+      if (!preventOverwrite || !U.getModel(model.type)) {
+        G.log('modelLoader', 'events', 'modelLoad', model.type);
         loadModel(model);
-    });
-  };
-
-  function loadModel(m) {
-    m = Resource.extend({}, m);
-    if (m.interfaces) {
-      m.interfaces = _.map(m.interfaces, function(i) {
-        if (i.indexOf('/') == -1)
-          return 'http://www.hudsonfog.com/voc/system/fog/' + i;
-        else
-          return U.getLongUri1(i);
-      });
+      }
     }
     
+    return makeModelsPromise(_.pluck(models, 'type'));
+  };
+
+  function loadModel(m, sync) {
+    if (sync)
+      _loadModel(m);
+    else
+      Q.whenIdle('nonDom', _loadModel.bind(null, m));
+  }
+  
+  function _loadModel(m) {
+    if (m.enumeration)
+      m = loadEnumModel(m);
+    else
+      m = loadNonEnumModel(m);
+    
+    Events.trigger('newModel', m);
+    gotModel(m);
+  };
+
+  function loadEnumModel(m) {
+    return m;
+  }
+  
+  function loadNonEnumModel(m) {
+    if (!m.prototype)
+      m = Resource.extend({}, m);
+    
     if (m.adapter) {
+      var appProviderType = U.getLongUri1("model/social/AppProviderAccount"),
+          appConsumerType = U.getLongUri1("model/social/AppConsumerAccount");
+      
+      if (!U.getModel(appProviderType) || !U.getModel(appConsumerType)) {
+        // wait till those models (and the associated resource lists - app.js getAppAccounts()) are initialized 
+        ModelLoader.getModels([appProviderType, appConsumerType]).done(loadModel.bind(null, m));
+        return;
+      }
+      
       var currentApp = G.currentApp,
           consumers = currentApp.dataConsumerAccounts,
           providers = currentApp.dataProviders,
-          consumer = consumers && consumers.where({
+          consumer = consumers && _.where({ // consumers could be an array of json objects, or a resourcelist
             provider: m.app
-          }, true),
+          }),
           // HACK!!!!! //
 //          provider = providers && providers.where({
 //            app: m.app
@@ -441,12 +507,19 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
 //        throw new Error("This app is not configured to consume data from app '{0}'".format(provider.app));
       
     }
+
+    if (m.interfaces) {
+      m.interfaces = _.map(m.interfaces, function(i) {
+        if (i.indexOf('/') == -1)
+          return 'http://www.hudsonfog.com/voc/system/fog/' + i;
+        else
+          return U.getLongUri1(i);
+      });
+    }
     
     var type = m.type = U.getTypeUri(m.type),
         isCustomModel = U.isAnAppClass(type);
     
-    Events.trigger('newModel', m);
-
     if (isCustomModel && !m.enumeration && !m.alwaysInlined) {
       var meta = m.properties;
       for (var p in meta) {
@@ -470,7 +543,11 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
     
     m.prototype.parse = Resource.prototype.parse;
     m.prototype.validate = Resource.prototype.validate;
-    _.defaults(m.properties, Resource.properties);
+    if (!m.enumeration) {
+      _.defaults(m.properties, Resource.properties);
+      _.extend(m.properties, U.systemProps);
+    }
+    
     m.superClasses = _.map(m.superClasses, function(type) {
       if (/\//.test(type))
         return U.getLongUri1(type);
@@ -478,15 +555,14 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
         return G.defaultVocPath + 'system/fog/' + type;
     });
       
-    _.extend(m.properties, U.systemProps);
     m.prototype.initialize = getInit.call(m);
-    setTimeout(function() {
+    Q.whenIdle('nonDom', function triggerInitPlugs() {
       Events.trigger('initPlugs', type);
-    }, 1000);
+    });
     
-    gotModel(m);
-  };
-
+    return m;
+  }
+  
   function getInit() {
     var self = this;
     return function() { 
@@ -499,10 +575,10 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
     if (!enums)
       return;
     
-    enums = JSON.parse(enums);
-    for (var type in enums) {
+    ENUMS = JSON.parse(enums);
+    for (var type in ENUMS) {
       makeModelPromise(type);
-      loadModel(Backbone.Model.extend({}, enums[type]));
+      loadModel(ENUMS[type], true); // load enums synchronously
     }
   };
 
@@ -524,19 +600,23 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
     }
     
     var enumModels = {};
-    _.each(models, function(model) {
-      var modelJson = model; //U.toJSON(model);
-      if (model.enumeration)
-        enumModels[model.type] = modelJson;
+    for (var i = 0, len = models.length; i < len; i++) {
+      var modelJson = models[i];
+      if (modelJson.enumeration)
+        enumModels[modelJson.type] = modelJson;
       else
         storeModel(modelJson, storageType);
-    });
+    }
     
     if (_.size(enumModels)) {
-      var enums = getEnumsFromStorage();
-      enums = enums ? JSON.parse(enums) : {};
-      _.extend(enums, enumModels);
-      storeEnums(enums, storageType);
+//      var enums = getEnumsFromStorage();
+//      enums = enums ? JSON.parse(enums) : {};
+      if (!ENUMS)
+        ENUMS = enumModels;
+      else
+        _.extend(ENUMS, enumModels);
+      
+      storeEnums(ENUMS, storageType);
     }
   };
 
@@ -546,9 +626,7 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
   };
 
   function storeEnums(enums) {
-    setTimeout(function() {
-      G.localStorage.putAsync(ENUMERATIONS_KEY, JSON.stringify(enums));
-    }, 100);
+    G.localStorage.put(ENUMERATIONS_KEY, JSON.stringify(enums));
   };
 
   function deleteModelFromStorage(uri) {
@@ -653,6 +731,5 @@ define('modelLoader', ['globals', 'underscore', 'events', 'utils', 'models/Resou
   };
   
   _.extend(ModelLoader, Backbone.Events);
-  
   return ModelLoader;
 });

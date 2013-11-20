@@ -18,7 +18,8 @@ define('views/ChatPage', [
       browser = G.browser,
       D3Widgets,
       WebRTC,
-      webrtcMethods = ['joinRoom', 'leaveRoom', 'emit', '_emit', 'send', '_send', 'startLocalMedia'];
+      webrtcMethods = ['joinRoom', 'leaveRoom', 'emit', '_emit', 'send', '_send', 'startLocalMedia'],
+      videoEvents = ["abort", "error", "ended", "pause"];
 
   function getGuestName() {
     return 'Guest' + Math.round(Math.random() * 1000);
@@ -43,13 +44,6 @@ define('views/ChatPage', [
     return digit = digit < 10 ? '0' + digit : digit;
   };
 
-  function unbindVideoEvents(video) {
-    var $video = $(video);
-    _.each(G.media_events, function(e) {            
-      $video.unbind(e);
-    })
-  };
-  
   function getTimeString(date) {
     date = new Date(date);
     var hours = date.getHours();
@@ -59,11 +53,12 @@ define('views/ChatPage', [
   };
 
   return BasicPageView.extend({
+    autoFinish: false,
     initialize: function(options) {
       _.bindAll(this, 'render', 'toggleChat', 'videoFadeIn', 'videoFadeOut', 'chatFadeIn', 'chatFadeOut', 'resize', 'restyleGoodies', 'pagehide', 'enableChat', 'disableChat',
                       'onMediaAdded', 'onMediaRemoved', 'onDataChannelOpened', 'onDataChannelClosed', 'onDataChannelMessage', 'onDataChannelError', 'shareLocation', 
-                      'setUserId', 'requestLocation', 'onclose', '_switchToApp'); // fixes loss of context for 'this' within methods
-      this.constructor.__super__.initialize.apply(this, arguments);
+                      'setUserId', 'requestLocation', 'onclose', '_switchToApp', '_onVideoEvent'); // fixes loss of context for 'this' within methods
+      BasicPageView.prototype.initialize.apply(this, arguments);
       options = options || {};      
       this.headerButtons = {
         back: true,
@@ -279,27 +274,27 @@ define('views/ChatPage', [
 
       var self = this;
       this.on('active', function() {
-        self.$localMedia && self.$localMedia.show();
-        self.$remoteMedia && self.$remoteMedia.show();
+        self.localMedia && self.localMedia.$show();
+        self.remoteMedia && self.remoteMedia.$show();
       });
       
       this.on('inactive', function() {
-        self.$localMedia && self.$localMedia.hide();
-        self.$remoteMedia && self.$remoteMedia.hide();
+        self.localMedia && self.localMedia.$hide();
+        self.remoteMedia && self.remoteMedia.$hide();
       });
 
-      Events.on('localVideoMonitor:on', function() {
+      this.listenTo(Events, 'localVideoMonitor:on', function() {
         if (self.isActive()) {
           self.playRingtone();
         }
       });
 
-      Events.on('localVideoMonitor:off', function() {
+      this.listenTo(Events, 'localVideoMonitor:off', function() {
         self.stopRingtone();
       });
 
-      if (self.config.data !== false) {
-        Events.on('messageForCall:resource', function(resInfo) {
+      if (this.config.data !== false) {
+        this.listenTo(Events, 'messageForCall:resource', function(resInfo) {
           var msg = {
             message: {
               resource: resInfo
@@ -310,7 +305,7 @@ define('views/ChatPage', [
           self.addMessage(msg);
         });
 
-        Events.on('messageForCall:list', function(listInfo) {
+        this.listenTo(Events, 'messageForCall:list', function(listInfo) {
           var msg = {
             message: {
               list: listInfo
@@ -325,14 +320,13 @@ define('views/ChatPage', [
       if (!this.textOnly) {
         this.on('video:on', this.videoFadeIn, this);
         this.on('video:on', this.enableTakeSnapshot, this);
-        Events.on('newRTCCall', function() {
+        this.listenTo(Events, 'newRTCCall', function() {
           if (this.isActive())
             this.videoFadeIn();
         }, this);
       }
       
-      Events.on('hangUp', this.endChat, this);
-      this.autoFinish = false;
+      this.listenTo(Events, 'hangUp', this.endChat);
     },
     
     events: {
@@ -345,10 +339,14 @@ define('views/ChatPage', [
       'click #chatReqLocBtn'              : 'requestLocation',
       'click #chatShareLocBtn'            : 'shareLocation',
       'click #chatCaptureBtn'             : 'takeSnapshot',
-      'resize'                             : 'resize',
-      'orientationchange'                  : 'resize',
-      'pagehide'                           : 'pagehide' 
+      'page_hide'                           : 'pagehide' 
     },
+    
+    windowEvents: {
+      'resize'                             : 'resize',
+      'orientationchange'                  : 'resize'
+    },
+    
     pagehide: function(e, data) {
       G.log('Changing to page:' + window.location.href);
     },
@@ -370,7 +368,7 @@ define('views/ChatPage', [
 //        return;
       
       if (_.isUndefined(this._videoSolid))
-        this._videoSolid = this.$videoChat.css('opacity') == 1;
+        this._videoSolid = this.videoChat.style.opacity == 1;
       
       if (this._videoSolid)
         this.chatFadeIn();
@@ -386,7 +384,7 @@ define('views/ChatPage', [
       if (this._chatSolid)
         this.chatFadeOut();
       
-      this.$videoChat.fadeTo(600, 1, this.restyleGoodies).css('z-index', 1001); // jquery mobile footer is z-index 1000
+      this.videoChat.$fadeTo(1, 600, this.restyleGoodies).$css('z-index', 1001); // jquery mobile footer is z-index 1000
     },
 
     videoFadeOut: function(e) {
@@ -397,7 +395,7 @@ define('views/ChatPage', [
       if (!this._chatSolid)
         this.chatFadeIn();
       
-      this.$videoChat.fadeTo(600, 0.1, this.restyleGoodies).css('z-index', 1); // jquery mobile footer is z-index 1000
+      this.videoChat.$fadeTo(0.1, 600, this.restyleGoodies).$css('z-index', 1); // jquery mobile footer is z-index 1000
     },
 
     chatFadeIn: function(e) {
@@ -408,8 +406,8 @@ define('views/ChatPage', [
       if (this._videoSolid)
         this.videoFadeOut();
       
-      this.$textChat.fadeTo(600, 1).css('z-index', 1001);
-      this.$videoChat.css('z-index', 0);
+      this.textChat.$fadeTo(1, 600).$css('z-index', 1001);
+      this.videoChat.$css('z-index', 0);
     },
 
     chatFadeOut: function(e) {
@@ -420,18 +418,18 @@ define('views/ChatPage', [
       if (!this._videoSolid && this._videoOn)
         this.videoFadeIn();
       
-      this.$textChat.fadeTo(600, 0.1).css('z-index', 1);
+      this.textChat.$fadeTo(0.1, 600).$css('z-index', 1);
     },
     
     render: function() {      
       var self = this;
-      this.$el.html(this.template({
+      this.html(this.template({
         viewId: this.cid,
         video: this.hasVideo,
         audio: this.hasAudio
       }));
       
-//      Events.on('visible', _.debounce(function(visible) {
+//      this.listenTo(Events, 'visible', _.debounce(function(visible) {
 //        debugger;
 //        if (this.chat) {
 //          var webRTCEvent = visible ? 'wake' : 'sleep';
@@ -452,16 +450,18 @@ define('views/ChatPage', [
       });
 
 //      this.$ringtone          = this.$('div#ringtoneHolder');
-      this.$chatInput         = this.$('#chatMessageInput');
-      this.$messages          = this.$('#messages');
-      this.$sendMessageBtn    = this.$('#chatSendBtn');
-      this.$snapshotBtn       = this.$('#chatCaptureBtn');
-      this.$localMedia        = this.$('#localMedia');
-      this.$remoteMedia       = this.$('#remoteMedia');
-      this.$videoChat         = this.$('#videoChat');
-      this.$textChat          = this.$('#textChat');
+      this.chatInput         = this.$('#chatMessageInput')[0];
+      this.messages          = this.$('#messages')[0];
+      this.sendMessageBtn    = this.$('#chatSendBtn')[0];
+      this.$sendMessageBtn   = $(this.sendMessageBtn);
+      this.snapshotBtn       = this.$('#chatCaptureBtn')[0];
+      this.$snapshotBtn      = $(this.snapshotBtn);
+      this.localMedia        = this.$('#localMedia')[0];
+      this.remoteMedia       = this.$('#remoteMedia')[0];
+      this.videoChat         = this.$('#videoChat')[0];
+      this.textChat          = this.$('#textChat')[0];
       
-      this.$localMedia.hide();
+      this.localMedia.$hide();
       if (this.resource && this.isPrivate) {
         this.paintInChatBacklinks();
         this.paintConcentricStats('inChatStats', _.extend({animate: true}, this.getStats()));
@@ -482,21 +482,21 @@ define('views/ChatPage', [
 
       if (!this.rendered) { // only once
         this.disableTakeSnapshot();
-        this.$chatInput.bind("keydown", function(event) {
+        this.chatInput.addEventListener("keydown", function(event) {
           // track enter key
           var keycode = (event.keyCode ? event.keyCode : (event.which ? event.which : event.charCode));
           if (keycode == 13) { // keycode for enter key
-            self.$sendMessageBtn.trigger('click');
+            self.sendMessageBtn.$trigger('click');
           }
         });
         
         this.startChat();
       }
       
-      if (!this.$el.parentNode) 
-        $(doc.body).append(this.$el);
+      if (!this.el.parentNode) 
+        document.body.appendChild(this.el);
 
-      this.$('#header').css({
+      this.$('#header').$css({
         'z-index': 1000,
         'opacity': 0.7
       });
@@ -506,8 +506,8 @@ define('views/ChatPage', [
 
     enableChat: function() {
       this.$sendMessageBtn.button().button('enable');
-      if (this.$chatInput.length) {
-        this.$chatInput.removeClass('ui-disabled');
+      if (this.chatInput) {
+        this.chatInput.classList.remove('ui-disabled');
       }
       
       this.disabled = false;
@@ -515,11 +515,11 @@ define('views/ChatPage', [
 
     disableChat: function() {
       this.$sendMessageBtn.button().button('disable');
-      if (this.$chatInput.length) {
-        this.$chatInput.addClass('ui-disabled');
+      if (this.chatInput) {
+        this.chatInput.classList.add('ui-disabled');
       }
       
-      this.$remoteMedia && this.$remoteMedia.empty();
+      this.remoteMedia && this.remoteMedia.$empty();
       this.disabled = true;
     },
 
@@ -528,8 +528,12 @@ define('views/ChatPage', [
         return;
       
       this.$snapshotBtn.button().button('enable');
-      this.$('canvas').remove();
-      this.$('video').unbind('play', this._addCanvasForVideo).bind('play', this._addCanvasForVideo);
+      this.$('canvas').$remove();
+      var vid = this.el.getElementsByTagName('video')[0];
+      if (vid) {
+        vid.$off('play', this._addCanvasForVideo); // just in case
+        vid.$on('play', this._addCanvasForVideo);
+      }
     },    
 
     disableTakeSnapshot: function() {
@@ -537,7 +541,7 @@ define('views/ChatPage', [
         return;
       
       this.$snapshotBtn.button().button('disable');
-      this.$('canvas').remove();
+      this.$('canvas').$remove();
     },
 
     _addCanvasForVideo: function(e) {
@@ -593,7 +597,7 @@ define('views/ChatPage', [
     },
     
     paintInChatBacklinks: function() {
-      this.$('#inChatBacklinks').html("");
+      this.$('#inChatBacklinks').$empty();
       var self = this;
       if (window.location.hash.startsWith("#chatLobby")  &&  !G.currentUser.guest) {
         var res = U.getResource(G.currentUser._uri);
@@ -606,8 +610,8 @@ define('views/ChatPage', [
         }
       }
       
-      U.require(['views/ControlPanel', 'jqueryDraggable']).done(function(ControlPanel) {
-        var $bl = self.$("#inChatBacklinks");
+      U.require(['views/ControlPanel', 'lib/jquery.draggable']).done(function(ControlPanel) {
+        var $bl = $(self.$("#inChatBacklinks"));
         $bl.drags();
         self.backlinks = new ControlPanel({
           isMainGroup: true,
@@ -642,8 +646,8 @@ define('views/ChatPage', [
       if (!this.rendered)
         return;
       
-      var $goodies = this.$('#inChatGoodies'),
-          $video = this.$('#remoteMedia video');
+      var $goodies = $(this.$('#inChatGoodies')),
+          $video = $(this.$('#remoteMedia video'));
 //      ,
 //          $bl = $goodies.find('#inChatBacklinks'),
 //          $stats = $goodies.find('#inChatStats'),
@@ -665,10 +669,10 @@ define('views/ChatPage', [
 //      });
 
       if (!$video.length)
-        $video = this.$('#localMedia video');
+        $video = $(this.$('#localMedia video'));
       
       if ($video.length) {
-        var vChatZ = this.$videoChat.css('z-index');
+        var vChatZ = this.videoChat.$css('z-index');
         vChatZ = isNaN(vChatZ) ? 1 : parseInt(vChatZ);
 //        var extraOffset = vChatZ < 1000 ? this.pageView.$('[data-role="header"]').height() : 0;
         var extraOffset = 0;
@@ -705,7 +709,7 @@ define('views/ChatPage', [
     _paintConcentricStats: function(divId, options) {
       var self = this;
       D3Widgets.concentricCircles(this.$('#' + divId), options).done(function() {
-        self.$('#inChatStats svg').drags();
+        $(self.$('#inChatStats svg')).drags();
       });
     },
     
@@ -723,9 +727,9 @@ define('views/ChatPage', [
 //      this.$ringtone.find('audio').each(function() {
 //        this.pause();
 //        this.src = null;
-//      }).remove();
+//      }).$remove();
       if (this.ringtone)
-        this.ringtone.remove();
+        this.ringtone.$remove();
     },
     
     isDisabled: function() {
@@ -772,9 +776,9 @@ define('views/ChatPage', [
     _updateParticipants: function() {
       this.participants = _.keys(this.userIdToInfo);
       if (!this.getNumParticipants())
-        this.$chatInput.prop('placeholder', 'Chat room is empty...');
+        this.chatInput.placeholder = 'Chat room is empty...';
       else
-        this.$chatInput.prop('placeholder', '');
+        this.chatInput.placeholder = '';
     },
     
     sendUserInfo: function(options, to) {
@@ -790,7 +794,8 @@ define('views/ChatPage', [
     },
 
     addMessage: function(info) {
-      var message = info.message,
+      var self = this,
+          message = info.message,
           resource = message && message.resource,
           list = message && message.list;
 
@@ -818,10 +823,14 @@ define('views/ChatPage', [
       
 //      info.time = getTimeString(info.time || +new Date());
       var height = $(doc).height();
-      var atBottom = this.atBottom();
-      this.$messages.append(this.messageTemplate(info));
-      if (atBottom || true)
-        this.scrollToBottom();
+      var atBottom = this.isScrolledToTail();
+      this.messages.$append(this.messageTemplate(info));
+      if (atBottom || true) {
+        this.el.addEventListener('scrollocontent', function snap() { // wait for Scrollable to recalc the size of the page and the current position
+          self.el.off('scrollocontent', snap);
+          self.snapScrollerToTail(true); // true == immediate snap          
+        }); 
+      }
     },
 
     sendMessage: function() {
@@ -832,7 +841,7 @@ define('views/ChatPage', [
     
     _sendMessage: function(e) {
       e && Events.stopEvent(e);
-      var msg = this.$chatInput.val();
+      var msg = this.chatInput.value;
       if (!msg || !msg.length)
         return;
       
@@ -840,7 +849,7 @@ define('views/ChatPage', [
         message: msg
       });
 
-      this.$chatInput.val('');
+      this.chatInput.value = '';
       if (!this.chat || !_.size(this.chat.pcs))
         return;      
       
@@ -1079,12 +1088,12 @@ define('views/ChatPage', [
       if (this.hasVideo || this.hasAudio) {
         _.extend(this.config, {
           local: !vConfig.preview && !vConfig.send ? null : { // no such thing as local audio
-            _el: self.$localMedia[0],
+            _el: self.localMedia,
             autoplay: true,
             muted: true
           },
           remote: !vConfig.receive && !aConfig.receive ? null : {
-            _el: self.$remoteMedia[0],
+            _el: self.remoteMedia,
             autoplay: true
           },
           autoRequestMedia: (vConfig.preview || vConfig.send || aConfig.send) && !cachedStream
@@ -1356,12 +1365,14 @@ define('views/ChatPage', [
       var video = info.media;
       this.localStream = info.stream;
       this.checkVideoSize(video);
-      var $local = this.$localMedia.find('video');
-      if ($local.length > 1) { // HACK to get rid of accumulated local videos if such exist (they shouldn't)
-        for (var i = 0; i < $local.length; i++) {
-          var v = $local[i];
+      var local = this.localMedia.getElementsByTagName('video'),
+          i = local.length;
+      
+      if (i > 1) { // HACK to get rid of accumulated local videos if such exist (they shouldn't)
+        while (i--) {
+          var v = local[i];
           if (v !== video)
-            $(v).remove();
+            v.$remove();
         }
       }
 
@@ -1369,8 +1380,8 @@ define('views/ChatPage', [
         video.muted = true;
         video.controls = false;
         video.play();
-        $(video).addClass('localVideo');
-        this.$localMedia.show();
+        video.classList.add('localVideo');
+        this.localMedia.$show();
 //      });
         
       if (!this.isWaitingRoom)
@@ -1405,13 +1416,13 @@ define('views/ChatPage', [
       });
       
       if (videoIds.length) {
-        this.$(videoIds.join(',')).each(function() {
+        this.$(videoIds.join(',')).$forEach(function(vid) {
           if (browser.mozilla)
-            this.mozSrcObject = null;
+            vid.mozSrcObject = null;
           else
-            this.src = null;
+            vid.src = null;
           
-          $(this).remove();
+          vid.$remove();
         });
       }
       
@@ -1422,10 +1433,10 @@ define('views/ChatPage', [
       });
       
       media.controls = false;
-      this.$remoteMedia.show();
+      this.remoteMedia.$show();
       if (media.tagName === 'VIDEO') {
         this.checkVideoSize(media);
-        $(media).addClass('remoteVideo');
+        media.classList.add('remoteVideo');
         this.restyleVideos();
         this.monitorVideoHealth(media);
         this.restyleGoodies();
@@ -1453,7 +1464,7 @@ define('views/ChatPage', [
         if (info.stream)
           Events.trigger('endRTCCall', this.rtcCall);
         
-        this.$('canvas#' + info.media.id).remove();
+        this.$('canvas#' + info.media.id).$remove();
         this.restyleVideos();
       }
     },
@@ -1480,15 +1491,17 @@ define('views/ChatPage', [
     endChat: function(onclose) {
       this.leave();
       this.chat = null;
-      this.$localMedia && this.$localMedia.empty();
-      this.$remoteMedia && this.$remoteMedia.empty();
+      this.localMedia && this.localMedia.$empty();
+      this.remoteMedia && this.remoteMedia.$empty();
       if (this.hasVideo) {
         this._videoOn = false;
-        this.$('video').each(function() {
-          unbindVideoEvents(this);
-          this.pause();
-        }).remove();
+        var vids = this.el.getElementsByTagName('video');
+        vids.$forEach(function(vid) {
+          self.unbindVideoEvents(vid);
+          vid.pause();
+        });
         
+        vids.$remove();
         this.localStream && this.localStream.stop();
       }
       
@@ -1500,19 +1513,21 @@ define('views/ChatPage', [
     takeSnapshot: function() {
       var self = this;
           snapshots = [];
-      this.$('canvas').each(function() {
-        var $this = $(this);
-        var $video = self.$('video#' + $this.data('for'));
-        if (!$video.length)
+      this.$('canvas').$forEach(function(canvas) {
+//        var $this = $(this);
+        var video = self.$('video#' + canvas.dataset['for']);
+        if (!video.length)
           return;
         
-        var w = $video.width(),
-            h = $video.height();
+        var w = video.videoWidth,
+            h = video.videoHeight;
         
-        $this.prop('width', w).prop('height', h);
-        this.getContext('2d').drawImage($video[0], 0, 0, w, h);
-        var url = this.toDataURL('image/webp', 1);
-        $this.prop('width', '100%').prop('height', 0);
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext('2d').drawImage(video[0], 0, 0, w, h);
+        var url = canvas.toDataURL('image/webp', 1);
+        canvas.width = '100%';
+        canvas.height = 0;
         snapshots.push(url);
   //      var img = new Image();
   //      img.src = url;
@@ -1532,19 +1547,26 @@ define('views/ChatPage', [
       });
     },
     
+    unbindVideoEvents: function(video) {
+      var i = videoEvents.length;
+      while (i--) {
+        video.off(videoEvents[i], this._onVideoEvent);
+      }
+    },
+
+    _onVideoEvent: function(event) {
+//      if ((event.type || event) == "pause") {
+      if (event.type == 'pause') {
+        event.target.play();
+        return;
+      }
+    },
+    
     monitorVideoHealth: function(video) {
-      var $video = $(video);
-      _.each(["abort", "error", "ended", "pause"], function(event) {
-        $video.bind(event, function() {
-          if ((event.type || event) == "pause") {
-            video.play();
-            return;
-          }
-          
-  //        var isLocal = $video.parents('#localVideo');
-  //        $video.remove();
-        });
-      });
+      var i = videoEvents.length;
+      while (i--) {
+        video.addEventListener(videoEvents[i], this._onVideoEvent);
+      }
     },
     
     checkVideoSize: function(video) { // in Firefox, videoWidth is not available on any events...annoying
@@ -1559,12 +1581,12 @@ define('views/ChatPage', [
     },
     
     restyleVideos: function() {
-      var $locals = this.$localMedia;
-      var numRemotes = this.$remoteMedia.find('video').length;
+      var locals = this.localMedia;
+      var numRemotes = this.remoteMedia.getElementsByTagName('video').length;
       if (numRemotes == 1)
-        $locals.addClass('myVideo-overlay');
+        locals.$addClass('myVideo-overlay');
       else
-        $locals.removeClass('myVideo-overlay');
+        locals.$removeClass('myVideo-overlay');
     },
     
     engageClient: function(data) {
@@ -1624,7 +1646,7 @@ define('views/ChatPage', [
           
       return $popup;
       
-//      $('#' + id).remove();
+//      $('#' + id).$remove();
 //      
   //    $('.ui-page-active[data-role="page"]').find('div[data-role="content"]').append(popupHtml);
 //      this.$el.append(popupHtml);

@@ -9,84 +9,70 @@ define('views/ResourceListItemView', [
   'vocManager'
 ], function(G, _, Events, Errors, U, BasicView, Voc) {
   var RLIV = BasicView.extend({
-    tagName:"li",
+    tagName: "li",
+    className: G.isTopcoat() ? "topcoat-list__item" : (G.isBootstrap() ? "list-group-item" : ""),
+    style: {
+      display: 'block'
+    },
+//    tagName: "div",
+//    className: "ui-li ui-li-static ui-btn-up-c ui-first-child",
     isCommonTemplate: true,
     initialize: function(options) {
       _.bindAll(this, 'render', 'click', /*'recipeShoppingListHack',*/ 'remove'); // fixes loss of context for 'this' within methods
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
+      var elAttrs = this.attributes,
+          classes = this.className;
+      
+      elAttrs["data-icon"] = "false";
+      if (options.imageProperty)
+        this.imageProperty = options.imageProperty;
+      
       this.checked = options.checked;
       this.resource.on('remove', this.remove, this);
 //      this.resource.on('change', this.render, this);
-      var key = this.vocModel.shortName + '-list-item';
-      this.isEdit = options  &&  options.edit;
-      if (!this.isEdit) {
+      if (!this.isEdit)
         this.makeTemplate('listItemTemplate', 'template', this.vocModel.type, true); // don't fall back to default, we want to know if no template was found for this type
-      }
       
 //      this.makeTemplate('likesAndComments', 'likesAndComments', this.vocModel.type);
       if (this.template) 
         this.isCommonTemplate = false;
       else {
-        if (options.mv) {
+        if (this.mv) {
           this.makeTemplate('mvListItem', 'template');
-          this.$el.attr("data-role", "controlgroup");
-          this.mvProp = options.mvProp;
+//          this.mvProp = options.mvProp;
+          elAttrs["data-role"] = "controlgroup";
 //          this.mvVals = options.mvVals;
         }
         else if (this.isEdit)
           this.makeTemplate('editListItemTemplate', 'template');
-        else if (options.imageProperty) {
-          this.imageProperty = options.imageProperty;
+        else if (this.imageProperty) {
+//          this.imageProperty = options.imageProperty;
           this.makeTemplate('listItemTemplate', 'template');
-          this.$el.attr("class", "image_fitted ui-btn ui-li ui-li-has-thumb ui-li-static");
-          if (options.swatch)
-            this.$el.attr("class", "ui-li-up-" + options.swatch);
+          if (G.isJQM()) {
+            if (options.swatch)
+              classes += " ui-li-up-" + options.swatch;
+            else
+              classes += " image_fitted ui-btn ui-li ui-li-has-thumb ui-li-static";
+          }
         }
         else {
           this.makeTemplate('listItemTemplateNoImage', 'template', this.vocModel.type);
+          classes += ' u-noimg';
         }
       }
-      if (options.swatch) {
-        this.$el.attr("data-theme", options.swatch);
-      }
+      
+      this.className = classes;
+      if (options.swatch)
+        elAttrs["data-theme"] = options.swatch;
+      elAttrs['class'] = classes;
 //      if (this.resource.isA("Buyable"))
-        this.$el.attr("data-icon", "false");
 //      else
 //        this.$el.attr("data-icon", "chevron-right");
    
    //      this.$el.attr("class", "image_fitted ui-btn ui-li-has-arrow ui-li ui-li-has-thumb ui-first-child ui-btn-up-c");
       // resourceListView will call render on this element
   //    this.model.on('change', this.render, this);
-
-      this.gridCols = U.getColsMeta(this.vocModel, 'grid');
-      this.commonBlockProps = [];
-      if (this.gridCols) {
-        if (U.isA(this.vocModel, 'Submission')) {
-          var dateSubmittedCOf = U.getCloneOf(this.vocModel, 'Submission.dateSubmitted');
-          var dateSubmitted = (dateSubmittedCOf.length == 0) ? null : dateSubmittedCOf[0];
-          if (dateSubmitted) 
-            this.commonBlockProps.push(dateSubmitted);   
-          
-          var submittedByCOf = U.getCloneOf(this.vocModel, 'Submission.submittedBy');
-          var submittedBy = (submittedByCOf.length == 0) ? null : submittedByCOf[0];
-          if (submittedBy)
-            this.commonBlockProps.push(submittedBy);
-        }
-        if (this.commonBlockProps) {
-          var n = this.commonBlockProps.length; 
-          for (var i=0; i<n; i++) {
-            var p = this.commonBlockProps[i];
-            var idx = this.gridCols.indexOf(p);
-            if  (idx != -1) 
-              this.gridCols.splice(idx, 1);
-            else {
-              this.commonBlockProps.splice(i, 1);
-              n--;
-              i--
-            }
-          }
-        }
-      }
+      this.className = classes;
       return this;
     },
     events: {
@@ -106,65 +92,28 @@ define('views/ResourceListItemView', [
         }
       });
     },
-//    recipeShoppingListHack: function(e) {
-//      Events.stopEvent(e);
-//      var self = this;
-//      var args = arguments;
-//      var rslModel = U.getModel('RecipeShoppingList');
-//      if (!rslModel) {
-////        Voc.loadStoredModels({models: [G.defaultVocPath + 'commerce/urbien/RecipeShoppingList']});
-//        Voc.getModels('commerce/urbien/RecipeShoppingList', {sync: true}).done(function() {
-//          self.recipeShoppingListHack.apply(self, args);
-//        });
-//        
-//        return;
-//      }
-//        
-//      var a = $(e.target).parent('a');
-//      var href = a.attr('href') || a.attr('link');
-//      var params = U.getQueryParams(href);
-//      var recipeShoppingList = new rlsModel();
-//      var props = {};
-//      var shoppingList = props[params.backLink] = U.getLongUri1(decodeURIComponent(params.on));
-//      var recipe = props.recipe = U.getLongUri1(this.resource.get('recipe'));
-//      recipeShoppingList.save(props, {
-//        success: function(model, response, options) {
-//          self.router.navigate(encodeURIComponent('commerce/urbien/ShoppingListItem') + '?shoppingList=' + encodeURIComponent(shoppingList), {trigger: true, forceFetch: true});
-//        }, 
-//        error: function(model, xhr, options) {
-//          var json;
-//          try {
-//            json = JSON.parse(xhr.responseText).error;
-//          } catch (err) {
-//            G.log(self.TAG, 'error', 'couldn\'t create shopping list items, no error info from server');
-//            return;
-//          }
-//          
-//          Errors.errDialog({msg: json.details});
-//          G.log(self.TAG, 'error', 'couldn\'t create shopping list items');
-//        }
-//      });
-//    },
+
     click: function(e) {
 //      if (this.mvProp)
 //        Events.defaultClickHandler(e);  
-      var params = U.getQueryParams(),
+      var self = this,
+          params = U.getQueryParams(),
           parentView = this.parentView,
           type = params['$type'],
-          isWebCl = U.isAssignableFrom(this.vocModel, "WebClass"),
-          isImplementor = type && type.endsWith('system/designer/InterfaceImplementor');
+          isWebCl = this.doesModelSubclass(G.commonTypes.WebClass),
+          isImplementor = type && type.endsWith('system/designer/InterfaceImplementor'),
+          cloned = this.clonedProperties;
 
-      
       if (this.mvProp) 
         return;
-      if (U.isAssignableFrom(this.vocModel, U.getLongUri1('model/workflow/Alert'))) {
+      if (this.doesModelSubclass('model/workflow/Alert')) {
         Events.stopEvent(e);
         var atype = this.resource.get('alertType');
         var action = atype  &&  atype == 'SyncFail' ? 'edit' : 'view';   
         Events.trigger('navigate', U.makeMobileUrl(action, this.resource.get('forum'), {'-info': this.resource.get('davDisplayName')}));//, {trigger: true, forceFetch: true});
         return;
       }
-      if (U.isAssignableFrom(this.vocModel, 'model/study/QuizQuestion')) {
+      if (this.doesModelSubclass('model/social/QuizQuestion')) {
         var title = _.getParamMap(window.location.hash).$title;
         if (!title)
           title = U.makeHeaderTitle(this.resource.get('davDisplayName'), pModel.displayName);
@@ -186,14 +135,13 @@ define('views/ResourceListItemView', [
       // Setting values to TaWith does not work if this block is lower then next if()
       var p1 = params['$propA'];
       var p2 = params['$propB'];
-      var self = this;
       
       var t = type ? type : this.vocModel.type;
-      var self = this;
+//      var self = this;
       return $.Deferred(function(dfd) {
       Voc.getModels(t).done(function() {
         var type = t;
-        var isIntersection = type ? U.isAssignableFrom(U.getModel(type), 'Intersection') : false;
+        var isIntersection = type ? U.isA(U.getModel(type), 'Intersection') : false;
         if (!isImplementor && parentView && parentView.mode == G.LISTMODES.CHOOSER) {
           if (!isIntersection  &&  (!p1  &&  !p2)) {
             debugger;
@@ -217,7 +165,7 @@ define('views/ResourceListItemView', [
           }
           self.forResource = params['$forResource'];
           rParams.$title = self.resource.get('davDisplayName');
-          if (U.isAssignableFrom(self.vocModel, "WebClass")) {
+          if (self.doesModelSubclass(G.commonTypes.WebClass)) {
             if (type.endsWith('system/designer/InterfaceImplementor')) {
   //            Voc.getModels(type).done(function() {
                 var m = new (U.getModel('InterfaceImplementor'))();
@@ -245,17 +193,23 @@ define('views/ResourceListItemView', [
           
           Events.trigger('navigate', U.makeMobileUrl('make', type, rParams)); //, {trigger: true, forceFetch: true});
           return;
-  //        self.router.navigate('make/' + encodeURIComponent(type) + '?' + p2 + '=' + encodeURIComponent(this.resource.get('_uri')) + '&' + p1 + '=' + encodeURIComponent(params['$forResource']) + '&' + p2 + '.davClassUri=' + encodeURIComponent(this.resource.get('davClassUri')) +'&$title=' + encodeURIComponent(this.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
+  //        self.router.navigate('make/' + encodeURIComponent(type) + '?' + p2 + '=' + encodeURIComponent(self.resource.get('_uri')) + '&' + p1 + '=' + encodeURIComponent(params['$forResource']) + '&' + p2 + '.davClassUri=' + encodeURIComponent(self.resource.get('davClassUri')) +'&$title=' + encodeURIComponent(self.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
         }
         else if (isIntersection  &&  type.indexOf('/dev/') == -1) {
-          var a = U.getCloneOf(self.vocModel, 'Intersection.a');
-          var b = U.getCloneOf(self.vocModel, 'Intersection.b');
+          var clonedI = cloned.Intersection;
+          var a = clonedI.a;
+          var b = clonedI.b;
 
           if (a  &&  b) {
             if (self.hashParams[a]) 
               Events.trigger('navigate', U.makeMobileUrl('view', self.resource.get(b))); //, {trigger: true, forceFetch: true});
             else if (self.hashParams[b])
               Events.trigger('navigate', U.makeMobileUrl('view', self.resource.get(a))); //, {trigger: true, forceFetch: true});
+            else
+              dfd.reject();
+//            else
+//              Events.trigger('navigate', U.makeMobileUrl('view', self.resource.getUri())); //, {trigger: true, forceFetch: true});
+              
             return;
           } 
         }
@@ -280,13 +234,14 @@ define('views/ResourceListItemView', [
                   delete params[p];
               }
               params.$title = tt;
-    //          params['tagUses.tag.tag'] = '*' + this.resource.get('tag') + '*';
+    //          params['tagUses.tag.tag'] = '*' + self.resource.get('tag') + '*';
     //              params['tagUses.tag.application'] = app;
             }
             else { //if (tag  ||  tags) {
-              app = self.hash;
-              app = decodeURIComponent(app.substring(0, idx));
+              app = self._hashInfo.type;
+//              app = decodeURIComponent(app.substring(0, idx));
             }
+            
             if (app) {
               appModel = U.getModel(app);
               if (appModel) {
@@ -301,7 +256,7 @@ define('views/ResourceListItemView', [
             }
           }
           else if (U.isA(m, 'Reference')) {
-            var forResource = U.getCloneOf(m, 'Reference.forResource');
+            var forResource = U.getCloneOf(m, 'Reference.forResource')[0];
             var uri = forResource && self.resource.get(forResource);
             if (uri) {
               Events.trigger('navigate', U.makeMobileUrl('view', uri)); //, {trigger: true, forceFetch: true});
@@ -319,25 +274,40 @@ define('views/ResourceListItemView', [
       );
     },
     
+    doRender: function(options, data) {
+      var html = this.template(data);
+      if (options && options.renderToHtml)
+        this._html = this.renderHtml(html);
+      else 
+        this.html(html);
+      
+      return this;
+    },
+    
     render: function(options) {
       var m = this.resource,
           atts = m.attributes,
           vocModel = this.vocModel,
-          meta = vocModel.properties || m.properties;
+          meta = vocModel.properties || m.properties,
+          interfaces = this['implements'],
+          superclasses = this['extends'],
+          cloned = this.clonedProperties,
+          clonedIR = cloned.ImageResource || {};
       
       if (!meta)
         return this;
       
+      options = options || {};
       var json = this.getBaseTemplateData();
-      if (this.resource.isA('Buyable'))
+      if (this.doesModelImplement('Buyable'))
         json.price = this.resource.get('Buyable.price');
       
       if (this.mvProp) {  
         json['chkId'] = G.nextId() + '.' + this.mvProp;
         if (this.checked)
           json['_checked'] = 'checked';
-        if (U.isA(this.vocModel, 'ImageResource')) {
-          var thumb = U.getCloneOf(this.vocModel, 'ImageResource.smallImage');
+        if (this.doesModelImplement('ImageResource')) {
+          var thumb = clonedImageProps.smallImage;
           if (thumb  &&  thumb.length) {
             var img = atts[thumb[0]];
             if (img)
@@ -359,11 +329,12 @@ define('views/ResourceListItemView', [
 
 //      json.shortUri = U.getShortUri(json._uri, this.vocModel);
       var urbienType = G.commonTypes.Urbien;
-      if (!this.mvProp && m.isA('Intersection')) { // if it's a multivalue, we want the intersection resource values themselves
+      if (!this.mvProp && this.doesModelImplement('Intersection')) { // if it's a multivalue, we want the intersection resource values themselves
         var href = window.location.href;
         var qidx = href.indexOf('?');
-        var a = U.getCloneOf(this.vocModel, 'Intersection.a')[0];
-        var b = U.getCloneOf(this.vocModel, 'Intersection.b')[0];
+        var clonedI = cloned.Intersection;
+        var a = clonedI.a;
+        var b = clonedI.b;
 //        if (a && b && vocModel.type == G.commonTypes.Handler)
 //          return this.renderIntersectionItem(json, a, b);
           
@@ -380,28 +351,28 @@ define('views/ResourceListItemView', [
             isBContact = bModel  &&  U.isAssignableFrom(bModel, urbienType);
           }
           if (a  &&  qidx == -1) 
-            return this.renderIntersectionItem(json, a, 'Intersection.a');
+            return this.renderIntersectionItem(options, json, a, 'Intersection.a');
           var p = href.substring(qidx + 1).split('=')[0];
           if (a  &&  p == a)
-            return this.renderIntersectionItem(json, b, 'Intersection.b');
+            return this.renderIntersectionItem(options, json, b, 'Intersection.b');
           else if (b  &&  p == b)   
-            return this.renderIntersectionItem(json, a, 'Intersection.a');
+            return this.renderIntersectionItem(options, json, a, 'Intersection.a');
           if (isBContact)
-            return this.renderIntersectionItem(json, b, 'Intersection.b');
+            return this.renderIntersectionItem(options, json, b, 'Intersection.b');
           else          
-            return this.renderIntersectionItem(json, a, 'Intersection.a');
+            return this.renderIntersectionItem(options, json, a, 'Intersection.a');
         }
       }
       if (!this.isCommonTemplate) {
-        if (this.imageProperty)
-          this.$el.addClass("image_fitted");
-        this.$el.html(this.template(json));
-        return this;
+//        if (this.imageProperty)
+//          this.el.classList.add("image_fitted");
+        
+        return this.doRender(options, json);
       }
       var params = this.hashParams;
-      var isEdit = (params  &&  params['$edit'])  ||  U.isAssignableFrom(vocModel, G.commonTypes.WebProperty);
+      var isEdit = this.isEdit; //(params  &&  params['$edit'])  ||  U.isAssignableFrom(vocModel, G.commonTypes.WebProperty);
       var action = !isEdit ? 'view' : 'edit'; 
-      if (U.isAssignableFrom(vocModel, G.commonTypes.Jst)) {
+      if (this.doesModelSubclass(G.commonTypes.Jst)) {
         json.isJst = true;
         var text = atts.templateText;
         if (text) {
@@ -409,8 +380,10 @@ define('views/ResourceListItemView', [
           if (comments && comments.length)
             json.comment = comments[0].trim();
         }
+        
         if (params['modelName'])
           json.$title = U.makeHeaderTitle(params['modelName'], atts.templateName);
+        
         var detached = this.resource.detached;
         json.liUri = U.makePageUrl(detached ? 'make' : 'edit', detached ? this.vocModel.type : atts._uri, detached && {templateName: atts.templateName, modelDavClassUri: atts.modelDavClassUri, forResource: G.currentApp._uri, $title: json.$title})
       }
@@ -433,19 +406,31 @@ define('views/ResourceListItemView', [
 
       json.width = json.height = json.top = json.right = json.bottom = json.left = ""; 
       // fit image to frame
+      var oW = clonedIR.originalWidth;
+      var oH = clonedIR.originalHeight;
+      var maxDim = this.maxImageDimension;
+      var minDim = this.minImageDimension;
+      var w, h;
+      if (!oH  &&  !oW  &&  this.imageProperty) {
+        var img = atts[this.imageProperty];
+        if (img) {
+          var idx = img.lastIndexOf(".");
+          var dashIdx = img.indexOf('-', idx);
+          if (dashIdx) {
+            var u1 = img.indexOf('_', idx);
+            var u2 = img.indexOf('_', dashIdx);
+            if (u1  &&  u2) {
+              w = img.substring(u1 + 1, dashIdx);
+              h = img.substring(dashIdx + 1, u2);
+            }
+          }
+        }
+      }
       
-      var oW = U.getCloneOf(this.vocModel, 'ImageResource.originalWidth');
-      var oH;
-      if (oW)
-        oH = U.getCloneOf(this.vocModel, 'ImageResource.originalHeight');
-      
-      if (oW  &&  oH  &&  (typeof atts[oW] != 'undefined' &&
-          typeof  atts[oH] != 'undefined')) {
+      if (oW  &&  oH  &&  (typeof atts[oW] != 'undefined' &&  typeof  atts[oH] != 'undefined')) {
+//        this.el.classList.add("image_fitted");
         
-        this.$el.addClass("image_fitted");
-        
-        var maxDim = meta[this.imageProperty].maxImageDimension;
-        var clip = U.clipToFrame(80, 80, m.get(oW), m.get(oH), maxDim);
+        var clip = U.clipToFrame(80, 80, m.get(oW), m.get(oH), maxDim, minDim);
         if (clip) {
           json.top = clip.clip_top;
           json.right = clip.clip_right;
@@ -453,7 +438,7 @@ define('views/ResourceListItemView', [
           json.left = clip.clip_left;
         }
         else {
-          var dim = U.fitToFrame(80, 80, m.get(oW) / m.get(oH))
+          var dim = U.fitToFrame(80, 80, m.get(oW) / m.get(oH));
           json.width = dim.w;
           json.height = dim.h;
           json.top = oW > oH ? dim.y : dim.y + (m.get(oH) - m.get(oW)) / 2;
@@ -462,8 +447,18 @@ define('views/ResourceListItemView', [
           json.left = dim.x;
         }
       }
+      else if (w  &&  h) {
+        var clip = U.clipToFrame(80, 80, w, h, 80);
+        if (clip) {
+          json.top = clip.clip_top;
+          json.right = clip.clip_right;
+          json.bottom = clip.clip_bottom;
+          json.left = clip.clip_left;
+        }
+      }
+      
       var params = this.hashParams;
-      if (U.isAssignableFrom(vocModel, U.getLongUri1("media/publishing/Video"))  &&  params['-tournament'])
+      if (this.doesModelSubclass('media/publishing/Video')  &&  params['-tournament'])
         json['v_submitToTournament'] = {uri: params['-tournament'], name: params['-tournamentName']};
 
       this.addCommonBlock(viewCols, json);
@@ -478,24 +473,26 @@ define('views/ResourceListItemView', [
         else
           json.liUri = U.makePageUrl(action, atts._uri);
       }  
-      
-      this.$el.html(this.template(json));
-      return this;
+
+      return this.doRender(options, json);
     },
     
     addCommonBlock: function(viewCols, json) {
       var vocModel = this.vocModel,
-          atts = this.resource.attributes;
+          atts = this.resource.attributes,
+          interfaces = this['implements'],
+          superclasses = this['extends'],
+          cloned = this.clonedProperties;
       
       if (!this.commonBlockProps.length) { 
         json.viewCols = viewCols  &&  viewCols.length ? viewCols : '<div class="commonLI">' + json.davDisplayName + '</div>'; 
         return viewCols;
       }
-      var isSubmission = this.resource.isA('Submission');
+      var isSubmission = this.doesModelImplement('Submission');
       if (!viewCols.length  ||  isSubmission) {
         var vCols = '';
         if (isSubmission) {
-          var d = U.getCloneOf(vocModel, 'Submission.dateSubmitted');
+          var d = cloned['Submission']  &&  cloned['Submission'].dateSubmitted;
           var dateSubmitted = d  &&  d.length ? atts[d[0]] : null;
           if (dateSubmitted  &&  this.commonBlockProps.indexOf(d[0]) != -1)
             vCols += '<div class="dateLI">' + U.getFormattedDate(dateSubmitted) + '</div>';
@@ -503,7 +500,7 @@ define('views/ResourceListItemView', [
         if (viewCols.length)
           vCols += viewCols;
         else {
-          var isClass = U.isAssignableFrom(vocModel, G.commonTypes.WebClass);
+          var isClass = this.doesModelSubclass(G.commonTypes.WebClass);
           vCols += '<div class="commonLI">' + json.davDisplayName;
           if (isClass) {
             var comment = json['comment'];
@@ -512,7 +509,7 @@ define('views/ResourceListItemView', [
           }
         }
         if (isSubmission) {
-          var d = U.getCloneOf(vocModel, 'Submission.submittedBy');
+          var d = cloned['Submission']  &&  cloned['Submission'].submittedBy;
           if (d  &&  !this.hashParams[d]) {
             var submittedBy = d  &&  d.length ? json[d[0]] : null;
             if (submittedBy  &&  this.commonBlockProps.indexOf(d[0]) != -1) {
@@ -542,27 +539,62 @@ define('views/ResourceListItemView', [
       var meta = vocModel.properties;
       meta = meta || m.properties;
 
-      if (this.resource.isA('CollaborationPoint')) { 
-        var comments = U.getCloneOf(vocModel, 'CollaborationPoint.comments');
-        if (comments.length > 0) {
-          var pMeta = meta[comments[0]];
-          var cnt = json[pMeta.shortName] && json[pMeta.shortName].count;
-          json.v_showCommentsFor = { uri: _.encode(U.getLongUri1(atts['_uri'])), count: cnt }; //_.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
-        }
-      }
-      if (this.resource.isA('Votable')) {
-        var votes = U.getCloneOf(vocModel, 'Votable.likes');
-        if (votes.length == 0)
-          votes = U.getCloneOf(vocModel, 'Votable.voteUse');
-        if (votes.length > 0) {
-          var pMeta = meta[votes[0]];
-          var cnt = json[pMeta.shortName] && json[pMeta.shortName].count;
-          json.v_showVotesFor = { uri: _.encode(U.getLongUri1(atts['_uri'])), count: cnt }; //_.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
-        }
-      }  
+      this.setCollaborationPointData(json, atts);
+//      var comments = cloned['CollaborationPoint.comments'];
+//      if (comments.length) { 
+//        var pMeta = meta[comments[0]];
+//        var cnt = json[pMeta.shortName] && json[pMeta.shortName].count;
+//        json.v_showCommentsFor = { uri: _.encode(U.getLongUri1(atts['_uri'])), count: cnt }; //_.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+//      }
+
+      this.setVotableData(json, atts);
+//      if (this.doesModelImplement('isVotable')) {
+//        var votes = cloned['Votable.likes'];
+//        if (!votes)
+//          votes = cloned['Votable.voteUse'];
+//        if (votes) {
+//          var pMeta = meta[votes];
+//          var cnt = json[pMeta.shortName] && json[pMeta.shortName].count;
+//          json.v_showVotesFor = { uri: _.encode(U.getLongUri1(atts['_uri'])), count: cnt }; //_.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+//        }
+//      }
+      
       json.viewCols = viewCols;
 //      json.likesAndComments = this.$el.html(this.likesAndComments(json));
     },
+    
+    setCollaborationPointData: function(tmpl_data, atts) {
+      var cloned = this.clonedProperties,
+          cpProps = cloned.CollaborationPoint,
+          meta = this.vocModel.properties;
+      
+      if (cpProps) {
+        var comments = cpProps.comments;
+        if (comments) { 
+          var pMeta = meta[comments];
+          var cnt = tmpl_data[pMeta.shortName] && tmpl_data[pMeta.shortName].count;
+          tmpl_data.v_showCommentsFor = { uri: _.encode(U.getLongUri1(atts['_uri'])), count: cnt }; //_.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+        }
+      }
+    },
+    
+    setVotableData: function(tmpl_data, atts) {
+      var clonedProps = this.clonedProperties,
+          vProps = clonedProps.Votable;
+      
+      if (vProps) {
+        var votes = vProps['likes'];
+        if (!votes)
+          votes = vProps['voteUse'];
+        
+        if (votes) {
+          var pMeta = meta[votes];
+          var cnt = tmpl_data[pMeta.shortName] && tmpl_data[pMeta.shortName].count;
+          json.v_showVotesFor = { uri: _.encode(U.getLongUri1(atts['_uri'])), count: cnt }; //_.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+        }
+      }  
+    },
+    
     getViewCols: function(json) {
       var res = this.resource,
           atts = res.attributes,
@@ -573,8 +605,9 @@ define('views/ResourceListItemView', [
       var grid = this.gridCols ? U.makeCols(res, this.gridCols) : U.getCols(res, 'grid', true);
       if (!grid) 
         return viewCols;
+      
       var firstProp = true;
-      var containerProp = U.getContainerProperty(vocModel);
+      var containerProp = this.containerProp;
 
       for (var row in grid) {
         var pName = grid[row].propertyName;
@@ -604,7 +637,7 @@ define('views/ResourceListItemView', [
   
             if (prop1.backLink) { 
               if (atts[p].count) 
-                json['showCount'] = p;
+                json['showCount'] = atts[p];
               continue;
             }
             if (first) {
@@ -628,7 +661,7 @@ define('views/ResourceListItemView', [
         }
         if (prop.backLink) { 
           if (atts[pName].count) 
-            json['showCount'] = pName;
+            json['showCount'] = atts[pName];
           continue;
         }
 
@@ -666,96 +699,119 @@ define('views/ResourceListItemView', [
 //      
 //    }
 
-    renderIntersectionItem: function(json, delegateTo, cloneOf) {
+    renderIntersectionItem: function(options, json, delegateTo, cloneOf) {
       var m = this.resource,
           atts = m.attributes,
           vocModel = this.vocModel,
-          meta = vocModel.properties;
+          meta = vocModel.properties,
+          interfaces = this['implements'],
+          superclasses = this['extends'],
+          cloned = this.clonedProperties,
+          clonedIR = cloned.ImageResource || {},
+          clonedX = cloned.Intersection || {};
+      
       if (!meta)
         return this;
       
-      var oW = U.getCloneOf(vocModel, 'ImageResource.originalWidth');
-      var oH = U.getCloneOf(vocModel, 'ImageResource.originalHeight');
+      var oW, oH;
       var type = vocModel.type;
-      var img, dn, rUri, h, w, ab;
+      var img, dn, rUri, h, w, ab, prop;
       
       if (cloneOf == 'Intersection.a') {
-        ab = atts[U.getCloneOf(vocModel, 'Intersection.a')];
-        var imageP = U.getCloneOf(vocModel, 'Intersection.aThumb');
+        prop = clonedX.a;
+        ab = atts[prop];
+        var imageP = clonedX.aThumb;
         var hasAImageProps;
         if (imageP  &&  imageP.length != 0) {
-          img = atts[imageP[0]];
+          img = atts[imageP];
           hasAImageProps = true;
         }
         if (!img) {
-          imageP = U.getCloneOf(vocModel, 'Intersection.aFeatured');
+          imageP = clonedX.aFeatured;
           if (imageP  &&  imageP.length != 0) { 
-            img = atts[imageP[0]];
+            img = atts[imageP];
             hasAImageProps = true;
           }
         }
-        if (!img  &&  !hasAImageProps  &&  U.isA(vocModel, 'Intersection')) {
-          imageP = U.getCloneOf(vocModel, 'ImageResource.smallImage');
+        if (!img  &&  !hasAImageProps  &&  this.doesModelImplement('Intersection')) {
+          imageP = clonedIR.smallImage;
           if (imageP  &&  imageP.length != 0) {
-            img = atts[imageP[0]];
+            img = atts[imageP];
           }
         }
     //        img = json[U.getCloneOf(vocModel, 'Intersection.aFeatured')] || json[U.getCloneOf(vocModel, 'Intersection.aThumb')];
-        if (img) {
-          w = atts[U.getCloneOf(vocModel, 'Intersection.aOriginalWidth')];
-          h = atts[U.getCloneOf(vocModel, 'Intersection.aOriginalHeight')];
-        }
+        oH = clonedX.aOriginalHeight;
+        oW = clonedX.aOriginalWidth;
       }
       else {
-        ab = atts[U.getCloneOf(vocModel, 'Intersection.b')];
-        var imageP = U.getCloneOf(vocModel, 'Intersection.bThumb');
+        prop = clonedX.a;
+        ab = atts[prop];
+        var imageP = clonedX.bThumb;
         if (imageP  &&  imageP.length != 0)
-          img = atts[imageP[0]]; 
+          img = atts[imageP]; 
         if (!img) {
-          imageP = U.getCloneOf(vocModel, 'Intersection.bFeatured');
+          imageP = clonedX.bFeatured;
         
           if (imageP) 
-            img = atts[imageP[0]];
+            img = atts[imageP];
         }
     //        img = json[U.getCloneOf(vocModel, 'Intersection.bThumb')] || json[U.getCloneOf(vocModel, 'Intersection.bFeatured')];
     //        img = json[U.getCloneOf(vocModel, 'Intersection.bFeatured')] || json[U.getCloneOf(vocModel, 'Intersection.bThumb')];
-        if (img) {
-          w = atts[U.getCloneOf(vocModel, 'Intersection.bOriginalWidth')];
-          h = atts[U.getCloneOf(vocModel, 'Intersection.bOriginalHeight')];
-        }
+        oH = clonedX.bOriginalHeight;
+        oW = clonedX.bOriginalWidth;
+      }
+      var range = meta[prop].range;
+      var rm = U.getModel(U.getLongUri1(range));
+      if (U.isA(rm, 'ImageResource')) {
+        var rmeta = rm.properties;
+        var imgP = imageP  &&  imageP.indexOf('Featured') == -1 ? U.getCloneOf(rm, 'ImageResource.smallImage') : U.getCloneOf(rm, 'ImageResource.mediumImage'); 
+        maxDim = imgP  &&  rmeta[imgP].maxImageDimension;
+      }
+      if (img) {
+        w = atts[oW];
+        h = atts[oH];
       }
       if (img  &&  !this.isCommonTemplate) {
-        this.$el.addClass("image_fitted");
-        this.$el.html(this.template(json));
-        return this;
+//        this.$el.addClass("image_fitted");
+//        this.$el.html(this.template(json));
+//        return this;
+        return this.doRender(options, json);
       }
       
       json.width = json.height = json.top = json.right = json.bottom = json.left = ""; 
       // fit image to frame
       if (typeof w != 'undefined'  &&   typeof h != 'undefined') {
         
-        this.$el.addClass("image_fitted");
+//        this.$el.addClass("image_fitted");
         
-        var maxDim = meta[this.imageProperty].maxImageDimension;
+        var maxDim = this.imageProperty.maxImageDimension;
         var clip = U.clipToFrame(80, 80, m.get(oW), m.get(oH), maxDim);
-
-        var dim = U.fitToFrame(80, 80, w / h)
-        json.width = dim.w;
-        json.height = dim.h;
-        json.top = dim.y; //w > h ? dim.y : dim.y + (atts[oH] - atts[oW]) / 2;
-        json.right = dim.w - dim.x;
-        json.bottom = dim.h - dim.y; ////w > h ? dim.h - dim.y : dim.h - dim.y + (atts[oH] - atts[oW]) / 2;
+        if (clip) {
+          json.top = clip.clip_top;
+          json.right = clip.clip_right;
+          json.bottom = clip.clip_bottom;
+          json.left = clip.clip_left;
+          json.height = json.top + json.bottom;
+        }
+        else {
+          var dim = U.fitToFrame(80, 80, w / h);
+          json.width = dim.w;
+          json.height = dim.h;
+          json.top = dim.y; //w > h ? dim.y : dim.y + (atts[oH] - atts[oW]) / 2;
+          json.right = dim.w - dim.x;
+          json.bottom = dim.h - dim.y; ////w > h ? dim.h - dim.y : dim.h - dim.y + (atts[oH] - atts[oW]) / 2;
+          json.left = dim.x;
 //        json.top = dim.y;
 //        json.right = dim.w - dim.x;
 //        json.bottom = dim.h - dim.y;
-        json.left = dim.x;
+        }
         if (w > h)
           json.mH = 80;
         else if (w <= h)
           json.mW = 80;
       }
-      if (cloneOf == 'Intersection.a'  &&  m.isA('Reference')) 
-        dn = atts[U.getCloneOf(vocModel, 'Reference.resourceDisplayName')];
+      if (cloneOf == 'Intersection.a'  &&  this.doesModelImplement('Reference')) 
+        dn = atts[cloned['Reference'].resourceDisplayName];
       else
         dn = atts[delegateTo + '.displayName'];
       
@@ -819,18 +875,86 @@ define('views/ResourceListItemView', [
 //        json.v_showRenabFor = uri;
 //      }
       
-      try {
-        this.$el.html(this.template(json));
-      } catch (err) {
-        console.log('couldn\'t render resourceListItemView: ' + err);
-      }
-      
-      return this;
+//      try {
+//        this.$el.html(this.template(json));
+        return this.doRender(options, json);
+//      } catch (err) {
+//        console.log('couldn\'t render resourceListItemView: ' + err);
+//      }
+//      
+//      return this;
     }
 
   },
   {
-    displayName: 'ResourceListItemView'
+    displayName: 'ResourceListItemView',
+    preinitData: {
+      interfaceProperties: {
+        ImageResource: ['smallImage', 'originalWidth', 'originalHeight'],
+        Intersection: ['a', 'b', 'aThumb', 'aFeatured', 'aOriginalHeight', 'aOriginalWidth', 'bThumb', 'bFeatured', 'bOriginalHeight', 'bOriginalWidth'],
+        Reference: ['resourceDisplayName'],
+        Submission: ['dateSubmitted', 'submittedBy'],
+        CollaborationPoint: ['comments'],
+        Votable: ['likes', 'voteUse'],
+        Buyable: null
+      },
+      superclasses: _.map([
+        "media/publishing/Video", 
+        G.commonTypes.WebClass, 
+        'model/workflow/Alert', 
+        'model/study/QuizQuestion', 
+        G.commonTypes.WebProperty, 
+        G.commonTypes.Jst
+      ], U.getLongUri1)
+    },
+    preinitialize: function(options) {
+      var preinitData = this.preinitData,
+          vocModel = options.vocModel,
+          meta = vocModel.properties,
+          preinit = BasicView.preinitialize.apply(this, arguments),
+          cloned = preinit.prototype.clonedProperties,
+          imageProperty = U.getImageProperty(vocModel),
+          gridCols = U.getColsMeta(vocModel, 'grid').slice(),
+          commonBlockProps = [],
+          params = G.currentHashInfo.hashParams,
+          additional = {        
+            gridCols: gridCols,
+            commonBlockProps: commonBlockProps,
+            containerProp: U.getContainerProperty(vocModel)
+          };
+      
+
+      if (imageProperty) {
+        additional.imageProperty = imageProperty;
+        if (additional.imageProperty)
+          additional.maxImageDimension = meta[additional.imageProperty].maxImageDimension;
+      }
+          
+      if (gridCols) {
+        var dateSubmitted = cloned['Submission']  &&  cloned['Submission'].dateSubmitted;
+        if (dateSubmitted)
+          commonBlockProps.push(dateSubmitted);   
+          
+        var submittedBy = preinit['Submission.submittedBy'];
+        if (submittedBy)
+          commonBlockProps.push(submittedBy);
+        
+        for (var i = 0, len = commonBlockProps.length; i < len; i++) {
+          var p = commonBlockProps[i];
+          var idx = gridCols.indexOf(p);
+          if  (idx != -1) 
+            gridCols.splice(idx, 1);
+          else {
+            commonBlockProps.splice(i, 1);
+            len--;
+            i--
+          }
+        }
+      }
+      
+      additional.isEdit = (params  &&  params['$edit'])  ||  preinit.prototype.doesModelSubclass(G.commonTypes.WebProperty);
+      return preinit.extend(additional);
+    }
   });  
   
   return RLIV;

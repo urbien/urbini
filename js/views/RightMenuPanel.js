@@ -4,8 +4,9 @@ define('views/RightMenuPanel', [
   'utils',
   'events',
   'vocManager',
+  'lib/blur',
   'views/BasicView'
-], function(G, U, Events, Voc, BasicView) {
+], function(G, U, Events, Voc, Blur, BasicView) {
   function isCreatorOrAdmin(res) {
     return (G.currentUser._uri == G.currentApp.creator  ||  U.isUserInRole(U.getUserRole(), 'admin', res));
   };
@@ -13,7 +14,7 @@ define('views/RightMenuPanel', [
   return BasicView.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'grab', 'release', 'chat');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
   //    this.resource.on('change', this.render, this);
       var type = this.modelType;
       this.makeTemplate('rightMenuP', 'template', type);
@@ -22,11 +23,7 @@ define('views/RightMenuPanel', [
       this.makeTemplate('menuHeaderTemplate', 'headerTemplate', type);
       this.viewId = options.viewId + 'r';
       this.isPanel = true;
-      Events.on('pageChange', this.destroy, this);
-    },
-    destroy: function() {
-      this.$el.empty();
-      this.stopListening();
+      this.listenToOnce(Events, 'pageChange', this.destroy);
     },
     events: {
       'click [data-grab]'        : 'grab',
@@ -38,32 +35,43 @@ define('views/RightMenuPanel', [
       'click .chattee'           : 'chat',
       'click #urbien123'         : 'home',
       'click #login'             : 'login',
-      'click'                    : 'click'
+      'click [data-href]'        : BasicView.clickDataHref
+//        ,
+//      'click'                    : 'click'
 //      'click #logout': 'logout',
     },
     home: function(e) {
       Events.stopEvent(e);
       window.location.href = G.serverName + '/app/UrbienApp';
     },
-
-    click: function(e) {
-      var t = e.target;
-      var text = t.innerHTML;
-      while (t  &&  t.nodeName.toLowerCase() != 'a') {
-        if ($(t).attr("data-href"))
-          break;
-        t = t.parentNode;
-      }
-      
-      if (typeof t === 'undefined' || !t)
-        return;
-
-      var href = $(t).attr('href') || $(t).attr('link') || $(t).attr("data-href");
-      var idx = href.lastIndexOf('#');
-      href = idx == -1 ? href : href.slice(idx + 1);
-      
-      this.router.navigate(href, {trigger: true});
-    },
+    
+//    click: function(e) {
+//      var t = e.target,
+//          $t;
+//      
+//      if (t.nodeName == 'A')
+//        return;
+//      
+//      $t = $(t).closest('[data-href]');
+//      if ($t.length)
+//        Events.trigger('navigate', $t[0].dataset.href);
+//      
+////      if (!t)
+////        return;
+////
+////      var href = $(t).attr('href') || $(t).attr('link') || $(t).attr("data-href");
+////      var idx = href.lastIndexOf('#');
+////      href = idx == -1 ? href : href.slice(idx + 1);
+////      
+//////      if (G.isBB()) {
+//////        Events.stopEvent(e);
+//////        window.location.replace(G.appUrl + '#' + href);
+//////        window.location.reload(true);
+//////        return;
+//////      }
+//////      else
+////        this.router.navigate(href, {trigger: true});
+//    },
     
     release: function(e) {
       Events.stopEvent(e);
@@ -88,21 +96,12 @@ define('views/RightMenuPanel', [
     
     grab: function(e) {
       Events.stopEvent(e);
-      var target = e.target;
-//      var li = target;
-//      var foundLi = false;
-//      while (li && li.tagName && !(foundLi = li.tagName.toLowerCase() == 'li'))
-//        li = li.parentNode;
-//      
-//      if (!foundLi)
-//        return;
-//      
-      var self = this;
-//      li.parentNode.removeChild(li);
-      var grabParams = target.dataset.grab;
-      var grabType = G.commonTypes.Grab;
-      Voc.getModels(grabType).done(function() {
-        var grabModel = U.getModel(grabType);
+      var self = this,
+          target = e.target,
+          grabParams = target.dataset.grab,
+          grabType = G.commonTypes.Grab;
+      
+      Voc.getModels(grabType).done(function(grabModel) {
         var grab = new grabModel(grabParams ? _.getParamMap(grabParams) : {});
         grab.save(null, {
           success: function() {
@@ -166,7 +165,7 @@ define('views/RightMenuPanel', [
 //      this.router.navigate(href, {trigger: true});
 //    },
     refresh: function() {
-      this.$el.empty();
+      this.el.$empty();
       this.render();
     },
     
@@ -195,10 +194,11 @@ define('views/RightMenuPanel', [
     },
     
     renderChatParticipants: function() {
-      var p = $('#' + this.viewId);
-      p.empty();
+      this.el.$empty();
+      var p = document.getElementById(this.viewId);
+      p.$empty();
       
-      this.$el.html(this.template());
+      this.html(this.template());
       var frag = document.createDocumentFragment();
       U.addToFrag(frag, this.groupHeaderTemplate({value: this.loc("whosHere") }));
       
@@ -213,7 +213,8 @@ define('views/RightMenuPanel', [
 //        icon: me.thumb
 //      };
       
-      _.each(participants, function(info, userid) {
+      for (var userid in participants) {
+        var info = participants[userid];
         var uri = info.uri;
         if (!uri)
           return;
@@ -241,7 +242,7 @@ define('views/RightMenuPanel', [
           var oH = info.oH;
           if (oW  &&  oH) {
             
-            this.$el.addClass("menu_image_fitted");
+            this.el.classList.add("menu_image_fitted");
             
             var dim = U.fitToFrame(44, 44, oW / oH)
             width = dim.w;
@@ -255,21 +256,19 @@ define('views/RightMenuPanel', [
           else
             U.addToFrag(frag, this.menuItemTemplate(_.extend({image: img}, common)));
         }
-        
-      }.bind(this));
+      }
       
-      var ul = this.$('#rightMenuItems');
-      ul.append(frag);
-      var p = $('#' + this.viewId);
-      p.append(this.$el);
+      var ul = this.$('#rightMenuItems')[0];
+      ul.appendChild(frag);
+      var p = document.getElementById(this.viewId);
+      p.appendChild(this.el);
       
-      if (p  &&  p[0].tagName.toLowerCase() == 'section') 
-        p.css('visibility', 'visible');
+      if (!G.isJQM()) 
+        p.style.visibility = 'visible';
       else {
-
-//      p.panel().panel("open");
-        p.panel("open");
-        ul.listview();
+//        p.panel().panel("open");
+        $(p).panel("open");
+        $(ul).listview();
       }
     },
     
@@ -279,9 +278,10 @@ define('views/RightMenuPanel', [
         return;
       }
       
-      var mi = $('#' + this.viewId).find('ul#rightMenuItems');
-      if (mi  &&  mi.length != 0) {
-        $('#' + this.viewId).panel("open");
+      var menu = document.getElementById(this.viewId);
+      var mi = menu.querySelector('ul#rightMenuItems');
+      if (mi) {
+        $(menu).panel("open");
 //        $('#' + this.viewId).panel().panel("open");
         return;
       }
@@ -295,9 +295,9 @@ define('views/RightMenuPanel', [
         var commentVerb = this.loc('commentVerb'),
             likeVerb = this.loc('likeVerb');
         
-        this.$el.html(this.template({}));      
+        this.html(this.template({}));      
         frag = document.createDocumentFragment();
-        uri = U.makePageUrl('make', 'aspects/tags/Vote', {votable: G.currentApp._uri, makeId: G.nextId, $title: U.makeHeaderTitle(likeVerb, G.currentApp.davDisplayName)});
+        uri = U.makePageUrl('make', 'aspects/tags/Vote', {votable: G.currentApp._uri, '-makeId': G.nextId, $title: U.makeHeaderTitle(likeVerb, G.currentApp.davDisplayName)});
         U.addToFrag(frag, this.menuItemTemplate({title: likeVerb, pageUrl: uri, icon: 'heart', homePage: 'y'}));
 
         if (!G.currentUser.guest) {
@@ -305,7 +305,7 @@ define('views/RightMenuPanel', [
           U.addToFrag(frag, this.menuItemTemplate({title: icons, mobileUrl: U.makePageUrl('social', '', {}), homePage: 'y'}));
         }
 
-        uri = U.makePageUrl('make', 'model/portal/Comment', {$editCols: 'description', forum: G.currentApp._uri, makeId: G.nextId, $title: U.makeHeaderTitle(commentVerb, G.currentApp.davDisplayName)});
+        uri = U.makePageUrl('make', 'model/portal/Comment', {$editCols: 'description', forum: G.currentApp._uri, '-makeId': G.nextId, $title: U.makeHeaderTitle(commentVerb, G.currentApp.davDisplayName)});
         U.addToFrag(frag, this.menuItemTemplate({title: commentVerb, pageUrl: uri, icon: 'comments', homePage: 'y'}));
         var isAllowedToEdit = G.currentUser != 'guest'  &&  (G.currentUser._uri == G.currentApp._creator  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'));
         if (isAllowedToEdit) {
@@ -332,11 +332,11 @@ define('views/RightMenuPanel', [
       else {
         var json = this.resource && res.toJSON();
   //      var isSuperUser = isCreatorOrAdmin(res);
-        this.$el.html(this.template(json));      
+        this.html(this.template(json));      
         
         frag = document.createDocumentFragment();
 
-        var title = this.loc(this.resource ? 'objProps' : 'listProps');
+        var title = '<div class="gradientEllipsis">' + this.loc(this.resource ? 'objProps' : 'listProps') + '</div>';
         U.addToFrag(frag, this.headerTemplate({title: title, icon: 'gear'}));
         var isItemListing = res.isA("ItemListing");
         var isBuyable = res.isA("Buyable");
@@ -404,20 +404,22 @@ define('views/RightMenuPanel', [
         }
       }
 
-      var ul = this.$('#rightMenuItems');
-      ul.append(frag);
-      var p = $('#' + this.viewId);
-      p.append(this.$el);
+      var ul = this.$('#rightMenuItems')[0];
+      ul.appendChild(frag);
+      var p = document.getElementById(this.viewId);
+      p.appendChild(this.el);
       
-      if (p  &&  p[0].tagName.toLowerCase() == 'section') 
-        p.css('visibility', 'visible');
+      if (!G.isJQM()) 
+        p.style.visibility = 'visible';
       else {
 
-        p.panel("open");
+        $(p).panel().panel("open");
 //      p.panel().panel("open");
-        ul.listview();
+        $(ul).listview();
 //      p.trigger("updatelayout")
       }
+//      if (!window.location.hash  ||  window.location.hash == '#')
+//        $(this.el.parentElement).blurjs({source: '#homePage', radius: 10, overlay: 'rgba(48, 46, 46, 0.5)'});
       return this;
     },
 
@@ -638,7 +640,9 @@ define('views/RightMenuPanel', [
       var m = this.resource;
       var user = G.currentUser;
       var edit = m.get('edit');
-      if (!user.guest  &&  (!edit  ||  user.totalMojo > edit)) {
+      var isMakeOrEditRequest =  window.location.hash.indexOf('#edit') != -1  ||  window.location.hash.indexOf('#make') != -1;
+      
+      if (!user.guest  &&  !isMakeOrEditRequest  &&  (!edit  ||  user.totalMojo > edit)) {
         var paintAdd;
         var paintEdit;
         if (!U.isAssignableFrom(this.vocModel, 'Contact')) 
@@ -685,7 +689,7 @@ define('views/RightMenuPanel', [
             case 401:
               Events.trigger('req-login');
 //              Errors.errDialog({msg: msg || 'You are not authorized to make these changes', delay: 100});
-//              Events.on(401, msg || 'You are not unauthorized to make these changes');
+//              this.listenTo(Events, 401, msg || 'You are not unauthorized to make these changes');
               break;
             case 404:
               debugger;

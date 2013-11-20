@@ -4,6 +4,10 @@
 /* A bit custom styling */
 .grid-listview {
   background: #222;
+  overflow: hidden;
+#  white-space: nowrap;
+#  display: inline-block;
+#  width: 1000000000000px;
 }
 /* Link to the Google webfont is in the head */
 .grid-listview .ui-title, .grid-listview .ui-li-aside {
@@ -35,6 +39,15 @@
   text-shadow: none;
 }
 
+.grid-listview .ui-listview .ui-li.ui-btn {
+  display: inline-block;
+}
+
+.grid-listview .ui-listview {
+  overflow: hidden;
+#  width: 1000000000000px;
+}
+
 /* First breakpoint is 298px. 2 column layout. Tiles 140x140 pixels at the breakpoint. */
 @media all and (min-width: 298px) {
   .grid-listview .ui-content {
@@ -61,7 +74,7 @@
   .grid-listview .ui-listview .ui-li-thumb {
     width: 100%;
     height: 100%;
-    display: block;
+    #display: block;
     overflow: hidden;
   }
   .grid-listview .ui-listview .ui-link-inherit {
@@ -197,7 +210,8 @@
   .connect i { font-size:36px;color: lightgrey;}
   .grid-listview .ui-listview .ui-li.ui-btn {
     float: left;
-    width: 30.9333%; /* 33.3333% incl. 2 x 1.2% margin */
+#    width: 30.9333%; /* 33.3333% incl. 2 x 1.2% margin */
+    width: 232px;
     height: 232px;
     margin: 9px 1.2%;
     border-width: 0; /* The 1px border would break the layout so we set it on .ui-btn-inner instead. */
@@ -218,13 +232,14 @@
   /* Set a max-width for the last breakpoint to prevent too much stretching on large screens.
   By setting the max-width equal to the breakpoint width minus padding we keep square tiles. */
   .grid-listview .ui-listview {
-    max-width: 1000px;
-    margin: 0 auto;
+    width: 1000px;
+    margin: 0;
   }
   /* Because of the 1000px max-width the width will always be 230px (and margin left/right 10px),
   but we stick to percentage values for demo purposes. */
   .grid-listview .ui-listview .ui-li.ui-btn {
-    width: 23%;
+#    width: 23%;
+    width: 230px;
     height: 230px;
     margin: 10px 1%;
   }

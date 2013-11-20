@@ -90,10 +90,10 @@ define('error', [
       timeout: 'Slow internet connection, please try again'
     },
     getBackboneErrorHandler: function(errorHandler) {
-      return _.partial(defaultBackboneErrorHandler, errorHandler);
+      return defaultBackboneErrorHandler.bind(null, errorHandler);
     },
     getXHRErrorHandler: function(errorHandler) {
-      return _.partial(defaultXHRErrorHandler, errorHandler);
+      return defaultXHRErrorHandler.bind(null, errorHandler);
     },
     errDialog: function(options) {
       U.alert(options); // maybe give some indication that it's an error?

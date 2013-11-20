@@ -13,7 +13,7 @@ define('views/ControlPanel', [
     tagName: "tr",
     initialize: function(options) {
       _.bindAll(this, 'render', 'refresh', 'add', 'update'); // fixes loss of context for 'this' within methods
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
       this.makeTemplate('inlineListItemTemplate', 'inlineListItemTemplate', type);
@@ -82,13 +82,13 @@ define('views/ControlPanel', [
           prop = this.vocModel.properties[shortName],
           setLinkTo = prop.setLinkTo;
 
-      this.log("Recording step for tour: selector = 'data-shortname'; value = '" + shortName + "'");
+//      this.log("Recording step for tour: selector = 'data-shortname'; value = '" + shortName + "'");
       if (setLinkTo) {
         shortName = setLinkTo;
         prop = this.vocModel.properties[shortName];
       }
       
-      G.log(this.TAG, "Recording step for tour: selector = 'data-shortname'; value = '" + shortName + "'");
+//      G.log(this.TAG, "Recording step for tour: selector = 'data-shortname'; value = '" + shortName + "'");
 
       Voc.getModels(prop.range).done(function() {
         var pModel = U.getModel(prop.range);
@@ -209,14 +209,14 @@ define('views/ControlPanel', [
       var isHorizontal;      
       if (this.isMainGroup && !this.dontStyle) {
         if (!U.isA(this.vocModel, 'ImageResource')  &&  !U.isA(this.vocModel, 'Intersection')) {
-          this.$el.css("float", "left");
-          this.$el.css("width", "100%");
+          this.el.$css("float", "left");
+          this.el.$css("width", "100%");
           isHorizontal = true;
         }
         else {
-          this.$el.css("float", "right");
-          this.$el.css("max-width", "220px");
-          this.$el.css("min-width", "130px");
+          this.el.$css("float", "right");
+          this.el.$css("max-width", "220px");
+          this.el.$css("min-width", "130px");
         }
       }
       var isChat = window.location.hash.indexOf('#chat') == 0; 
@@ -266,6 +266,10 @@ define('views/ControlPanel', [
                       });
                     });
                   }
+                });
+                
+                self.listenTo(Events, 'preparingModelForDestruction.' + inlineList.cid, function() {
+                  Events.trigger('saveModelFromUntimelyDeath.' + inlineList.cid);
                 });
               }
             });
@@ -322,12 +326,14 @@ define('views/ControlPanel', [
                 if (n)
                   params.name = n;
                 params.img = iRes.get('bThumb');
+                params.imageProperty = 'bThumb';
               }
               else {
                 var n = iRes.get(a + '.displayName');
                 if (n)
                   params.name = n;
                 params.img = iRes.get('aThumb');
+                params.imageProperty = 'aThumb';
               }
               if (grid) {
                 var gridCols = '';
@@ -580,7 +586,7 @@ define('views/ControlPanel', [
 //      });
       
       this.$el.trigger('create');
-      if (this.rendered && this.$el.hasClass('ui-listview'))
+      if (this.rendered && this.el.$hasClass('ui-listview'))
         this.$el.listview('refresh');
 
       return this;

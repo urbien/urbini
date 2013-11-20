@@ -1,19 +1,4 @@
-define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQueue', 'cache'], function(G, _, U, idbq, TaskQueue, C) {
-  
-
-// IndexedDB desired interface
-
-//var IDB = new IDB(name).createObjectStores(stores).deleteObjectStores(stores).open();
-//
-//IDB.createObjectStores(toMake).deleteObjectStores(toKill).start();
-//
-//IDB.restart();
-//IDB.clean();
-//IDB.wipe();
-//IDB.get(storeName, uri);
-//IDB.get(storeName, query);
-//IDB.put(storeName, uris);
-
+define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB', 'taskQueue', 'cache', 'lib/fastdom'], function(G, _, Events, U, idbq, TaskQueue, C, Q) {  
   var instance,
       FileSystem,
       fileSystemPromise,
@@ -54,8 +39,9 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
 //    var displayName = item[prop + '.displayName'];
 //    if (!displayName && blob && blob.type)
 //      displayName = blob.type.split('/')[1];
-      
-    return U.getPath(item._uri) + '/' + prop;
+
+    var type = blob.type;
+    return U.getPath(item._uri) + '/' + prop + (type ? '.' + type.slice(type.indexOf('/') + 1) : '');
   };        
 
   function _getFileSystem(items) {
@@ -162,15 +148,14 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   };
   
   function prep(items) {
-    var self = this;
     items = _.isArray(items) ? items : [items];
     return getFileSystem(items).then(function() {
-      return $.when.apply($, _.map(items, _prep.bind(self)));
+      return $.when.apply($, _.map(items, _prep));
     }).then(function() {
-      return [].slice.call(arguments);
+      return _.toArray(arguments);
     });
   };
-  
+
   function _parse(_items) {
     var promises,
         returnObj,
@@ -183,7 +168,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     returnObj = U.getObjectType(_items) === '[object Object]';
     if (returnObj)
       _items = [_items];
-    
+
     items = _.map(_items, function(_item) {
       var item = {};
       _.each(_item, function(val, prop) {
@@ -201,7 +186,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
         else
           item[parsedPropName] = val;
       });
-      
+    
       return item;
     });
     
@@ -209,14 +194,13 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       return returnObj ? items[0] : items;
     });
   };
-  
+
   function parse(_items) {
     if (!_items)
       return RESOLVED_PROMISE;
     
-    var self = this;
     return getFileSystem(_items).then(function() {
-      return _parse.call(self, _items);
+      return _parse(_items);
     });
   }
   
@@ -225,7 +209,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   }
   
   function log() {
-    var args = [].slice.call(arguments);
+    var args = _.toArray(arguments);
     args.unshift("indexedDB", "db");
     G.log.apply(G, args);
   };
@@ -256,7 +240,9 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     this.taskQueue = new TaskQueue("indexedDB");
 //    this.defaultStoreOptions = defaultStoreOptions
     this._openDfd = $.Deferred();
-    this._openPromise = this._openDfd.promise();
+    this._openPromise = this._openDfd.promise().done(function() {
+      Events.trigger('dbOpen');
+    });
     
     for (var fn in IDB.prototype) {
       this[fn] = this[fn].bind(this);
@@ -293,52 +279,54 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   };
 
   function doUpgrade(versionTrans) {
-    var self = this,
-        currentStores = this.getStoreNames(),
-        doDelete = this.storesToKill.length;
+    var currentStores = instance.getStoreNames(),
+        toMake = instance.storesToMake,
+        toDelete = instance.storesToKill,
+        doDelete = toDelete.length;
     
-    this._wasEmpty = !currentStores.length;
+    instance._wasEmpty = !currentStores.length;
     
     // Commented out because decided to not delete stores, just clear them (key path never changes, so deleting all the items is better as it doesn't require a version change transaction)
-    _.each(this.storesToKill, function(storeName) {
-      if (self.hasStore(storeName)) {
+    for (var i = 0, len = toDelete.length; i < len; i++) {
+      var storeName = toDelete[i];
+      if (instance.hasStore(storeName)) {
         try {
           versionTrans.deleteObjectStore(storeName);
-          delete self.stores[storeName];
+          delete instance.stores[storeName];
           log('db', 'deleted object store: ' + storeName);
         } catch (err) {
           debugger;
           log(['error', 'db'], '2. failed to delete object store {0}: {1}'.format(storeName, err));
-          return;
         }
       }
-    });
+    }
     
-    if (doDelete && _.intersection(this.storesToKill, _.pluck(this.storesToMake, 'name')).length) {
+    if (doDelete && _.intersection(instance.storesToKill, _.pluck(instance.storesToMake, 'name')).length) {
       // run delete and create separately to make sure stores are deleted before they are recreated 
       // this hack is for the benefit of WebSQL
       // obviously this crap shouldn't be this high in the abstraction level, as this module shouldn't need to care about WebSQL, so better move it to IndexedDBShim
-      this.storesToKill = [];
-      this.restart(this.getVersion() + 2); 
+      instance.storesToKill = [];
+      instance.restart(instance.getVersion() + 2); 
       return;
     }
     
-    _.each(self.storesToMake, function(storeObj) {
-      var storeName = storeObj.name,
+    for (var i = 0, len = toMake.length; i < len; i++) {
+      var storeObj = toMake[i],
+          storeName = storeObj.name,
           store;
       
       // don't remake an existing store, unless we just deleted it
-      if (_.contains(currentStores, storeName)) // && !_.contains(self.storesToKill, storeName))
-        return;
+      if (_.contains(currentStores, storeName)) // && !_.contains(instance.storesToKill, storeName))
+        continue;
       
       try {
         store = versionTrans.createObjectStore(storeName, storeObj.options);
         if (!store) {
           debugger;
-          return;
+          continue;
         }
         
-        self.stores[storeObj.name] = storeObj;
+        instance.stores[storeObj.name] = storeObj;
         log('db', 'created object store: ' + storeName);
         _.each(storeObj.indices, function(index) {
           store.createIndex(index.property, index.options);
@@ -347,11 +335,10 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       } catch (err) {
         debugger;
         log(['error', 'db'], '2. failed to create object store {0}: {1}'.format(storeName, err));
-        return;
       }
-    });
+    }
     
-    this._clearStoreMonitors();
+    instance._clearStoreMonitors();
   }
 
   /**
@@ -448,7 +435,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
 
   IDB.prototype.getStoreNames = function() {
     var names = this.db && this.db.objectStoreNames;
-    return names ? [].slice.call(names._items || names) : [];
+    return names ? _.toArray(names._items || names) : [];
   };
 
   IDB.prototype.hasStore = function(storeName) {
@@ -465,7 +452,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       debugger;
     
     if (!this.isOpen())
-      return this.onOpen(_.partial(this.wipe.bind(this), filter, doDeleteStores));
+      return this.onOpen(this.wipe.bind(this, filter, doDeleteStores));
     
     if (this._wasEmpty)
       return RESOLVED_PROMISE;
@@ -486,7 +473,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   IDB.prototype.open = function(version) {
     var self = this,
         settings = {
-          upgrade: doUpgrade.bind(this)
+          upgrade: doUpgrade
         };
     
     if (version)
@@ -512,56 +499,58 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
         name = '{0}starting IndexedDB {1}. {2}'.format(prefix, this.name, reason || ''),
         alreadyQueued = this.taskQueue.getQueued(name);
     
-    return alreadyQueued || this._queueTask(name, _.partial(restart.bind(this), version), true);
+    return alreadyQueued || this._queueTask(name, restart.bind(this, version), true);
   };
 
   function get(storeName, primaryKey) {
     if (!this.hasStore(storeName))
       return REJECTED_PROMISE;
       
-    var self = this,
-        resultDfd = $.Deferred(),
+    var resultDfd = $.Deferred(),
         resultPromise = resultDfd.promise(),
         transPromise = this.$idb.transaction([storeName], IDBTransaction.READ_ONLY).progress(function(trans) {
           log('started transaction to get ' + primaryKey);
           trans.objectStore(storeName).get(primaryKey).then(function(item) {
             log('parsing result for ' + primaryKey);
-            return parse.call(self, item).then(resultDfd.resolve, resultDfd.reject);
+            return parse(item).then(resultDfd.resolve, resultDfd.reject);
           });
         });
     
     return $.when(resultPromise, transPromise).then(function(result) {
-      log('returning result for ' + primaryKey);
-      if (result)
-        return result;
-      else
-        return $.Deferred().reject().promise();
+      return Q.waitOne().then(function() {
+        log('returning result for ' + primaryKey);
+        if (result)
+          return result;
+        else
+          return G.getRejectedPromise();
+      });
     });
   };
   
   IDB.prototype.get = function(storeName, uri) {
-    return this._queueTask('get item {0} from store {1}'.format(uri, storeName), _.partial(get.bind(this), storeName, uri));    
+    return this._queueTask('get item {0} from store {1}'.format(uri, storeName), get.bind(this, storeName, uri));    
   };
 
   var queryRunMethods = ['getAll', 'getAllKeys'];
   function wrapQuery(query) {
     for (var fn in query) {
-      if (_.contains(queryRunMethods, fn))
-        wrapQueryRunMethod.call(this, query, fn);
-      else
-        wrapQueryBuildingMethod.call(this, query, fn);
+      if (typeof query[fn] == 'function') {
+        if (_.contains(queryRunMethods, fn))
+          wrapQueryRunMethod(query, fn);
+        else
+          wrapQueryBuildingMethod(query, fn);
+      }
     }
     
     return query;
   };
 
   function wrapQueryBuildingMethod(query, fn) {
-    var self = this,
-        backup = query[fn];
+    var backup = query[fn];
 
     query[fn] = function() {
       var subQuery = backup.apply(query, arguments);
-      return wrapQuery.call(self, subQuery);
+      return wrapQuery(subQuery);
     };
     
     if (fn == 'sort') {
@@ -572,23 +561,26 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
       }
     }
   };
-
+  
   function wrapQueryRunMethod(query, fn) {
-    var self = this,
-        backup = query[fn];
+    var backup = query[fn];
     
     if (backup._wrapped)
       return;
     
     query[fn] = function(storeName) {
-      if (!self.hasStore(storeName))
+      if (!instance.hasStore(storeName))
         return REJECTED_PROMISE;
-      
+
       var args = arguments;
-      return self._queueTask('querying object store {0} by indices'.format(storeName), function(defer) {
-        args[0] = self.$idb.objectStore(args[0], IDBTransaction.READ_ONLY);
+      return instance._queueTask('querying object store {0} by indices'.format(storeName), function(defer) {
+        args[0] = instance.$idb.objectStore(args[0], IDBTransaction.READ_ONLY);
         return backup.apply(query, args).then(function(results) {
-          return parse.call(self, results || []);
+          return parse(results || []).then(function(results) {
+            return Q.waitOne().then(function() {
+              return results;
+            });
+          });
         });
       });
       
@@ -617,10 +609,8 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
   };
 
   IDB.prototype.queryByIndex = function(indexNameOrQuery) {
-    var self = this,
-        query = typeof indexNameOrQuery == 'string' ? idbq.Index(prepPropName(indexNameOrQuery)) : indexNameOrQuery;
-
-    wrapQuery.call(this, query);
+    var query = typeof indexNameOrQuery == 'string' ? idbq.Index(prepPropName(indexNameOrQuery)) : indexNameOrQuery;
+    wrapQuery(query);
     return query;
   };
 
@@ -635,39 +625,50 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
         limit = options.limit,
         filter = options.filter,
         from = options.from,
-        direction = U.isTrue(asc) ? IDBCursor.NEXT : IDBCursor.PREV,
+        direction = asc == undefined || U.isTrue(asc) ? IDBCursor.NEXT : IDBCursor.PREV,
         promises = [],
         done = false,
         finish = function() {
           return results;
-        };
+        },
+        overallPromise;
 
     filter = filter || alwaysTrue;    
-    return trans.progress(function(trans) {
+    overallPromise = trans.progress(function(trans) {
       log("db", 'Starting getItems Transaction, query with valueTester');
       var store = trans.objectStore(storeName);
       function processItem(item) {
         if (done)
           return false; // ends the cursor transaction
         
-        var parsePromise = parse.call(self, item.value).done(function(val) {
-          if (filter(val)) {
-            results.push(val);
-            if (results.length >= limit)
-              done = true;
-          }
+        var dfd = $.Deferred(),
+            promise = dfd.promise();
+    
+        Q.nonDom(function() {          
+          parse(item.value).done(function(val) {
+            if (filter(val)) {
+              results.push(val);
+              if (results.length >= limit)
+                done = true;
+            }      
+      
+            dfd.resolve();
+          }).fail(dfd.resolve); // resolve always to make sure we return results
         });
-        
-        promises.push(parsePromise);
+    
+        promises.push(promise);
       };
           
       store.each(processItem, from && IDBKeyRange.lowerBound(from, true), direction);
     }).fail(function() {
       debugger;
     }).then(function() {
-      log("db", 'Finished getItems Transaction, got {0} items'.format(results.length));      
-      return $.when.apply($, promises);
+//      Events.trigger('garbage', promises);
+      log("db", 'Finished getItems Transaction, got {0} items'.format(results.length));
+      return $.when.apply($, promises).then(Q.waitOne);
     }).then(finish, finish);
+    
+    return overallPromise; 
   }
   
   /**
@@ -687,15 +688,10 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
    * @returns a JQuery Promise object
    */
   IDB.prototype.search = function(storeName, options) {
-    return this._queueTask('search for items in object store {0}'.format(storeName), _.partial(search.bind(this), storeName, options));
+    return this._queueTask('{0} search for items in object store {1}'.format(G.nextId(), storeName), search.bind(this, storeName, options));
   };
 
   function put(storeName, items) {
-    var self = this,
-        storeDfd = $.Deferred(),
-        storePromise = storeDfd.promise(),
-        transPromise;
-
     if (storeName.createIndex) {
       throw "Operation not supported at this time, please call 'put' with arguments storeName and items";
 //      storeDfd.resolve(storeName);
@@ -703,13 +699,13 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     
     // do them consecutively instead of in parallel because we don't want the db transaction to timeout in case prep() needs time to store stuff to the fileSystem
     // if prep doesn't involve saving files to the fileSystem, it's synchronous and takes very little time
-    return prep.call(this, items).then(function(items) {      
-      return self.$idb.transaction(storeName, IDBTransaction.READ_WRITE).progress(function(trans) {
+    return prep(items).then(function(items) {      
+      return instance.$idb.transaction(storeName, IDBTransaction.READ_WRITE).progress(function(trans) {
         var store = trans.objectStore(storeName);
-        _.map(items, function(item) {
-          return store.put(item);
-        });
-      }).fail(storeDfd.reject);
+        for (var i = 0, len = items.length; i < len; i++) {
+          store.put(items[i]);
+        }
+      });
     });
   };
   
@@ -718,7 +714,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
     if (items.length)
       this._wasEmpty = false;
     
-    return this._queueTask('saving items to object store {0}'.format(storeName), _.partial(put.bind(this), storeName, items));
+    return this._queueTask('saving items to object store {0}'.format(storeName), put.bind(this, storeName, items));
   };
 
   function del(storeName, primaryKeys) {
@@ -735,7 +731,7 @@ define('indexedDB', ['globals', 'underscore', 'utils', 'queryIndexedDB', 'taskQu
 
   IDB.prototype['delete'] = function(storeName, primaryKeys) {
     primaryKeys = _.isArray(primaryKeys) ? primaryKeys : [primaryKeys];
-    return this._queueTask('deleting items from object store {0}'.format(storeName), _.partial(del.bind(this), storeName, primaryKeys));
+    return this._queueTask('deleting items from object store {0}'.format(storeName), del.bind(this, storeName, primaryKeys));
   };  
 
   function wrap($idbObj, idbOp, args) {

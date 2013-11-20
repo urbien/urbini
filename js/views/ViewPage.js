@@ -6,20 +6,21 @@ define('views/ViewPage', [
   'views/BasicPageView',
   'views/Header',
   'views/ResourceView',
-  'views/ControlPanel'
-], function(G, U, Events, BasicPageView, Header, ResourceView, ControlPanel) {
+  'views/ControlPanel',
+  'lib/fastdom'
+], function(G, U, Events, BasicPageView, Header, ResourceView, ControlPanel, Q) {
   return BasicPageView.extend({
     clicked: false,
     initialize: function(options) {
       _.bindAll(this, 'render', 'home', 'edit', 'pageChange');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicPageView.prototype.initialize.apply(this, arguments);
 //      this.resource.on('change', this.render, this);
       var self = this,
           res = this.resource;
       
-      this.$el.on('pageshow', function() {
-        setTimeout(self.pageChange, 1000);
-      });
+//      this.$el.on('page_show', function() {
+//        setTimeout(self.pageChange, 1000);
+//      });
       
       this.makeTemplate('resource', 'template', this.vocModel.type);
       this.viewId = options.viewId;
@@ -27,8 +28,8 @@ define('views/ViewPage', [
       var commonTypes = G.commonTypes;
       this.headerButtons = {
         back: true,
-        menu: true,
-        rightMenu: !G.currentUser.guest,
+//        menu: true,
+        rightMenu: true, //!G.currentUser.guest,
         login: G.currentUser.guest,
         chat: res.isA("ChatRoom")
       };
@@ -64,14 +65,21 @@ define('views/ViewPage', [
         }        
       }
       
-      var self = this;        
-      this.readyDfd = $.Deferred();
-      this.ready = this.readyDfd.promise();
+      var self = this;
+//      var readyDfd = $.Deferred();
+//      this.ready = readyDfd.promise();
+//      this.resource.fetch({
+//        success: readyDfd.resolve,
+//        error: readyDfd.reject
+//      });
+      
+      this.imgReadyDfd = $.Deferred();
+      this.imgReady = this.imgReadyDfd.promise();
       if (viewType) {
         U.require(viewType, function(viewMod) {
-          self.imageView = new viewMod(_.extend({el: $(this.imgDiv, self.el), arrows: false}, commonParams));
+          self.imageView = new viewMod(_.extend({el: this.$(this.imgDiv)[0], arrows: false}, commonParams));
           self.addChild(self.imageView);
-          self.readyDfd.resolve();
+          self.imgReadyDfd.resolve();
   //        renderDfd.done(self.imageView.finalize);
         });
       }
@@ -143,8 +151,8 @@ define('views/ViewPage', [
         }
 
         this.onload(function() {          
-          U.require(['collections/ResourceList', 'vocManager', 'views/PhotogridView'], function(ResourceList, Voc, PhotogridView) {
-            Voc.getModels(friendType).done(function() {              
+          U.require(['collections/ResourceList', 'vocManager', 'views/HorizontalListView'], function(ResourceList, Voc, HorizontalListView) {
+            Voc.getModels(friendType).done(function() {
               var friendProps = {};
               friendProps[friend1] = friendProps[friend2] = uri;
               self.friends = new ResourceList(null, {
@@ -158,7 +166,16 @@ define('views/ViewPage', [
               self.friends.fetch({
                 success: function() {
                   if (self.friends.size()) {
-                    self.photogrid = new PhotogridView({model: self.friends, parentView: self, source: uri, swipeable: true});
+                    var photogridEl = self.el.querySelector('#photogrid');
+                    photogridEl.classList.remove('hidden');
+                    self.photogrid = new HorizontalListView({
+                      el: photogridEl,
+                      model: self.friends, 
+                      parentView: self, 
+                      source: uri
+                    });
+                    
+//                    self.photogrid = new PhotogridView({model: self.friends, parentView: self, source: uri, swipeable: true});
                     self.addChild(self.photogrid);
                     self.photogridDfd.resolve();
     //                var header = $('<div data-role="footer" data-theme="{0}"><h3>{1}</h3>'.format(G.theme.photogrid, friends.title));
@@ -171,7 +188,7 @@ define('views/ViewPage', [
         });
       }
       
-      Events.on("mapReady", this.showMapButton);
+      this.listenTo(Events, "mapReady", this.showMapButton);
     },
 //    doInlineBacklinks: function(bls) {
 //      var ranges = _.pluck(bls, "range");
@@ -214,11 +231,12 @@ define('views/ViewPage', [
 //      });
 //    },
     events: {
+      'page_show': function() { setTimeout(this.pageChange, 1000) },
       'click #edit': 'edit',
 //      'click': 'click',
       'click #homeBtn': 'home',
-      'swiperight': 'swiperight',
-      'swipeleft': 'swipeleft'
+      'swiperight.viewPage': 'swiperight',
+      'swipeleft.viewPage': 'swipeleft'
 //        ,
 //      'pagechange': 'pageChange'
     },
@@ -226,12 +244,13 @@ define('views/ViewPage', [
       if (this.hashParams.$tour) {
         var selector = '[' + this.hashParams.$tourSelector + ']';
         
-        var elm = this.$el.find(selector);
+        var elm = this.$(selector);
         var direction = this.hashParams.$tourD;
         if (!direction)
           direction = 'left';
-        elm.addClass('hint--' + direction + ' hint--always');
-        elm.attr('data-hint', this.hashParams.$tourM);
+        
+        elm.classList.add('hint--' + direction + ' hint--always');
+        elm.dataset.hint = this.hashParams.$tourM;
       }
     },
 
@@ -250,17 +269,20 @@ define('views/ViewPage', [
 
     render: function() {
       var res = this.resource;
-      var json = res.toJSON();
-      json.viewId = this.cid;
-      this.$el.html(this.template(json));      
+//      var json = res.toJSON();
+      var json = this.getBaseTemplateData();
+//      json.viewId = this.cid;
+      this.html(this.template(json));      
       var self = this;
       this.photogridPromise.done(function() {        
-        var pHeader = self.$('#photogridHeader');
-        var h3 = pHeader.find('h3');
-        h3[0].innerHTML = self.friends.title;
-        pHeader.removeClass('hidden');
+        var pHeader = self.$('#photogridHeader')[0];
+        var h3 = pHeader.querySelector('h3');
+        if (h3)
+          h3.innerHTML = self.friends.title;
+        
+        pHeader.classList.remove('hidden');
         self.assign({
-          'div#photogrid': self.photogrid
+          '#photogrid': self.photogrid
         });
       });
 
@@ -302,33 +324,30 @@ define('views/ViewPage', [
       
       this.assign('#headerDiv', this.header, {buttons: this.headerButtons});
       this.assign(views);
-      this.ready.done(function() {
+      this.imgReady.done(function() {
         this.assign(this.imgDiv, this.imageView);
       }.bind(this));
       
-      this.onload(function() {
-        
-//      });
-//      this._queueTask(function() {        
+      this.onload(Q.write.bind(Q, function() {          
         if (!this.isAbout) {
           if (G.currentUser.guest) {
-            this.$('#edit').hide();
+            this.$('#edit').$hide();
           }
         }       
         
-        if (!this.$el.parentNode) 
-          $('body').append(this.$el);
+        if (!this.el.parentNode) 
+          document.body.appendChild(this.el);
       
-        this.$el.attr("data-theme", G.theme.swatch);
+        this.el.dataset.theme = G.theme.swatch;
         if (G.theme.backgroundImage) 
-          this.$('#resourceViewHolder').css('background-image', 'url(' + G.theme.backgroundImage +')');
+          this.$('#resourceViewHolder').$css('background-image', 'url(' + G.theme.backgroundImage +')');
   
-        this.$('#chatbox').css("display", "none");      
-      }.bind(this));
+        this.$('#chatbox').$hide();      
+      }, this));
 //      renderDfd.resolve();
 //      this.restyle();
       
-      return this.ready;
+      return this;
     }
   }, {
     displayName: 'ViewPage'

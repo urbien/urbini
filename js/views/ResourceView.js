@@ -15,9 +15,10 @@ define('views/ResourceView', [
   };
 
   return BasicView.extend({
+    autoFinish: false,
     initialize: function(options) {
       _.bindAll(this, 'render', 'refresh'); // fixes loss of context for 'this' within methods
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
       _.each(['propRowTemplate', 'propRowTemplate2', 'propGroupsDividerTemplate', 'priceTemplate', 'buyTemplate', 'sellTemplate'], function(t) {
         this.makeTemplate(t, t, this.vocModel.type);
       }.bind(this));
@@ -36,16 +37,7 @@ define('views/ResourceView', [
 
       var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
       this.isCode = codemirrorModes.length; // we don't need to use the actual modes, just need to know whether we need codemirror stuff
-      var readyDfd = $.Deferred(function(defer) {
-        if (this.isCode) {
-          U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes), function() {
-            defer.resolve();
-          });
-        }
-        else
-          defer.resolve();
-      }.bind(this));
-      
+      this.ready = this.isCode ? U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes)) : G.getResolvedPromise();
       if (options.isBuyGroup) {
         this.isBuyGroup = true;
 //        var purchasesBLProp, 
@@ -61,12 +53,12 @@ define('views/ResourceView', [
 //        else
         this.purchasesBacklinkProp = this.vocModel.properties[options.purchasesBLProp];
       }
-      this.autoFinish = false;
-      this.ready = readyDfd.promise();      
+      
       return this;
     },
     events: {
-      'click': 'click'
+      'click': 'click',
+      'click #other': 'showOther'  
     },
     click: function(e) {
       if (!this.isBuyGroup)
@@ -74,6 +66,7 @@ define('views/ResourceView', [
       
       var t = e.target;
       var tagName = t.tagName.toLowerCase();
+        
       while (tagName  &&  tagName != 'a') {
         t = t.parentElement;
         tagName = t.tagName.toLowerCase();
@@ -102,7 +95,16 @@ define('views/ResourceView', [
       props[bl.backLink] = res.getUri();
       return this.router.navigate(U.makeMobileUrl('make', U.getLongUri1(cbType), props));
     },
-    
+    showOther: function(e) {
+      var t = e.target;
+      var tagName = t.tagName.toLowerCase();
+      var wl = G.currentApp.widgetLibrary
+      if (wl  &&  wl != 'Jquery Mobile') {
+        Events.stopEvent(e);
+        t.parentNode.$('ul').$toggleClass('hidden');        
+        return;
+      }
+    },
     refresh: function(resource, options) {
       options = options || {};
       if (options.skipRefresh || options.fromDB)
@@ -154,8 +156,8 @@ define('views/ResourceView', [
       var isAbout = (isApp  &&  !!params['$about']  &&  !!res.get('description')) || !!params['$fs'];
 //      var isAbout = isApp  &&  !!params['$about']  &&  !!res.get('description');
       if (isAbout  &&  isApp) {
-        this.$el.removeClass('hidden');
-        this.$el.html(res.get('description'));
+        this.el.classList.remove('hidden');
+        this.el.$html(res.get('description'));
         this.$el.trigger('create');      
         return this;
       }
@@ -169,7 +171,7 @@ define('views/ResourceView', [
       var currentAppProps = U.getCurrentAppProps(meta);
       var propGroups;
       if (this.isBuyGroup) {
-        this.$el.css({
+        this.el.$css({
           'float': "right",
           width: "45%",
           'min-width': "130"
@@ -180,20 +182,20 @@ define('views/ResourceView', [
 
         if (this.vocModel.type.endsWith("coupon/Coupon")) {
           if (json.discount < 90) {
-            U.addToFrag(frag, this.priceTemplate({color: color[1], name: 'Discount', shortName: 'discount', value: U.getFlatValue(meta.discount, json.discount)})); //json['discount']})));
-            U.addToFrag(frag, this.priceTemplate({color: color[0], name: 'You save', shortName: 'dealDiscount', value: U.getFlatValue(meta.dealAmount, json.dealValue) - U.getFlatValue(meta.dealPrice, json['dealPrice'])}));
+            U.addToFrag(frag, this.priceTemplate({color: color[1], name: 'Discount', shortName: 'discount', value: U.getFlatValue(meta.discount, json.discount)})); //res.get('discount')})));
+            U.addToFrag(frag, this.priceTemplate({color: color[0], name: 'You save', shortName: 'dealDiscount', value: U.getFlatValue(meta.dealAmount, json.dealValue) - U.getFlatValue(meta.dealPrice, res.get('dealPrice'))}));
           }
           else
             U.addToFrag(frag, this.priceTemplate({color: color[0], name: 'Deal value', shortName: 'dealValue', value: U.getFlatValue(meta.dealAmount, json.dealValue)}));
           
           var buyUrl = U.makePageUrl('make', 'http://www.hudsonfog.com/voc/commerce/coupon/CouponBuy', {coupon: this.resource.get('_uri'), '-makeId': G.nextId()});
-          U.addToFrag(frag, this.buyTemplate({color: color[2], name: 'Price', shortName: 'dealPrice', value: U.getFlatValue(meta.dealPrice, json['dealPrice']), buyUrl: buyUrl}));
+          U.addToFrag(frag, this.buyTemplate({color: color[2], name: 'Price', shortName: 'dealPrice', value: U.getFlatValue(meta.dealPrice, res.get('dealPrice')), buyUrl: buyUrl}));
         }
         else {        
-//          U.addToFrag(frag, this.priceTemplate(_.extend({color: color[1], name: 'Discount', shortName: 'discount', value: U.getFlatValue(meta.discount, json.discount)}))); //json['discount']})));
-//          U.addToFrag(frag, this.priceTemplate(_.extend({color: color[0], name: 'You save', shortName: 'dealDiscount', value: U.getFlatValue(meta.dealAmount, json.dealAmount) - U.getFlatValue(meta.price, json['price'])})));
+//          U.addToFrag(frag, this.priceTemplate(_.extend({color: color[1], name: 'Discount', shortName: 'discount', value: U.getFlatValue(meta.discount, json.discount)}))); //res.get('discount')})));
+//          U.addToFrag(frag, this.priceTemplate(_.extend({color: color[0], name: 'You save', shortName: 'dealDiscount', value: U.getFlatValue(meta.dealAmount, json.dealAmount) - U.getFlatValue(meta.price, res.get('price'))})));
           var buyUrl = res.get('ItemListing.externalBuyUrl');
-          U.addToFrag(frag, this.buyTemplate({color: color[2], name: meta['price'].displayName, shortName: 'price', value: U.getFlatValue(meta.price, json['price']), buyUrl: buyUrl}));
+          U.addToFrag(frag, this.buyTemplate({color: color[2], name: meta['price'].displayName, shortName: 'price', value: U.getFlatValue(meta.price, res.get('price')), buyUrl: buyUrl}));
           U.addToFrag(frag, this.sellTemplate({color: color[2], background: 'rgba(255, 0, 0, 0.9)'}));
         }
         this.$el.html(frag);      
@@ -215,12 +217,12 @@ define('views/ResourceView', [
         if (d.length > 0) {
           var val = res.get(d[0]);
           if (val) {
-//            var val = U.makeProp({resource: res, propName: d, prop: meta[p], value: json[d]});
+//            var val = U.makeProp({resource: res, propName: d, prop: meta[p], value: res.get(d)});
 //            U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
-            this.$el.removeClass('hidden');
+            this.el.classList.remove('hidden');
             U.addToFrag(frag, '<div id="Description">' + val + '</div>');
             this.$el.html(frag);      
-            if (this.$el.hasClass('ui-listview')) {
+            if (this.el.$hasClass('ui-listview')) {
               this.$el.trigger('create');      
               this.$el.listview('refresh');
             }
@@ -234,7 +236,6 @@ define('views/ResourceView', [
       var idx = 0;
       var groupNameDisplayed;
       var maxChars = 30;
-
 
       if (propGroups.length) {
         for (var i = 0; i < propGroups.length; i++) {
@@ -259,7 +260,7 @@ define('views/ResourceView', [
             if (prop['app']  &&  (!currentAppProps || $.inArray(p, currentAppProps) == -1))
               continue;
             displayedProps[p] = true;
-            var val = U.makeProp({resource: res, prop: prop, value: json[p]});
+            var val = U.makeProp({resource: res, prop: prop, value: res.get(p)});
             if (!groupNameDisplayed) {
               U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
               groupNameDisplayed = true;
@@ -270,7 +271,6 @@ define('views/ResourceView', [
             if (prop.code) {
               val.value = this.__prependNumbersDiv(prop, val.value);          
             }
-            
             if (val.name.length + v.length > maxChars)
               U.addToFrag(frag, this.propRowTemplate2(val));
             else
@@ -311,13 +311,27 @@ define('views/ResourceView', [
         if (!willShow(res, prop)) //(!U.isPropVisible(res, prop))
           continue;
   
+//        var wl = G.currentApp.getWidgetLibrary();
+//        var isJQM = au!wl  ||  wl == 'Jquery Mobile';
+//        var isBB = !isJQM  &&  wl == 'Building Blocks';
+        var isJQM = G.isJQM();
+        var isBB = G.isBB();
         if (numDisplayed  &&  !groupNameDisplayed) {
-          otherLi = '<li data-role="collapsible" id="other" data-inset="false" style="border:0px;' + (G.theme.backgroundImage ? 'background-image: url(' + G.theme.backgroundImage + ')' : '') + '" data-content-theme="' + G.theme.list + '"  data-theme="' + G.theme.list + '" id="other"><h3 style="margin:0px;">Other</h3><ul data-inset="true" data-role="listview" style="margin: -10px 0px;">';
+//          var wl = G.currentApp.widgetLibrary;
+          if (isJQM)
+            otherLi = '<li data-role="collapsible" id="other" data-inset="false" style="border:0px;' + (G.theme.backgroundImage ? 'background-image: url(' + G.theme.backgroundImage + ')' : '') + '" data-content-theme="' + G.theme.list + '"  data-theme="' + G.theme.list + '"><h3 style="margin:0px;">Other</h3><ul data-inset="true" data-role="listview" style="margin: -10px 0px;">';
+          else if (isBB)
+            otherLi = '<section id="other"><header style="margin:0px;cursor:pointer;"><i class="ui-icon-plus-sign"></i>&#160;Other</header><ul class="other hidden">';
+          else if (G.isTopcoat())
+            otherLi = '<li id="other" class="topcoat-list__item"><h3><i class="ui-icon-plus-sign"></i>&#160;Other</h3><ul class="topcoat-list__container hidden">';
+          else if (G.isBootstrap())
+            otherLi = '<li id="other"><h3 style="font-size:18px;"><i class="ui-icon-plus-sign"></i>&#160;Other</h3><ul class="list-group-container hidden">';
   //        this.$el.append('<li data-role="collapsible" data-content-theme="c" id="other"><h2>Other</h2><ul data-role="listview">'); 
           groupNameDisplayed = true;
         }
         
-        var val = U.makeProp({resource: res, propName: p, prop: prop, value: json[p]});
+        displayedProps[p] = true;
+        var val = U.makeProp({resource: res, propName: p, prop: prop, value: res.get(p)});
         if (prop.code) {
           val.value = this.__prependNumbersDiv(prop, val.value);          
         }
@@ -338,7 +352,10 @@ define('views/ResourceView', [
       }
       
       if (otherLi) {
-        otherLi += "</ul></li>";
+        if (!isBB)
+          otherLi += "</ul></li>";
+        else
+          otherLi += "</ul></section>";
         U.addToFrag(frag, otherLi);
       }
   //    if (displayedProps.length  &&  groupNameDisplayed)
@@ -346,14 +363,15 @@ define('views/ResourceView', [
       
   //    var j = {"props": json};
   //    this.$el.html(html);
-      this.$el.html(frag);
-      if (this.$el.hasClass('ui-listview')) {
+      this.el.$html(frag);
+      if (this.el.$hasClass('ui-listview')) {
         this.$el.trigger('create');      
         this.$el.listview('refresh');
       }
       else
         this.$el.trigger('create');      
-
+      if (!_.size(displayedProps))
+        this.el.$hide();
 
       if (this.isCode && CodeMirror) {
 //        var doc = document;
@@ -379,8 +397,15 @@ define('views/ResourceView', [
 //
 //          highlightText(text, highlight);
 //        }.bind(this));
-        this.$('textarea[data-code]').each(function() {
-          var mode = this.dataset.code;
+        
+        var textareas = this.$('textarea[data-code]'),
+            textarea,
+            editor,
+            i = textareas.length;
+        
+        while (i--) {
+          textarea = textareas[i];
+          var mode = textarea.dataset.code;
           switch (mode) {
             case 'html':
               mode = 'text/html';
@@ -398,7 +423,7 @@ define('views/ResourceView', [
             }
           }
           
-          var editor = CodeMirror.fromTextArea(this, {
+          editor = CodeMirror.fromTextArea(textarea, {
             mode: mode,
             tabMode: 'indent',
             lineNumbers: true,
@@ -407,13 +432,11 @@ define('views/ResourceView', [
             readOnly: true
           });
           
-          setTimeout(function() {
-            // sometimes the textarea will have invisible letters, or be of a tiny size until you type in it. This is a preventative measure that seems to work
-            editor.refresh.apply(editor); 
-          }, 50);
+          // sometimes the textarea will have invisible letters, or be of a tiny size until you type in it. This is a preventative measure that seems to work
+          setTimeout(editor.refresh.bind(editor), 50);
 //          $(".Codemirror").focus();
 //          var $this = $(this);
-        });
+        }
       }
 
       return this;

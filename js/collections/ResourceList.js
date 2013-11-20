@@ -3,8 +3,9 @@ define('collections/ResourceList', [
   'globals',
   'utils', 
   'error', 
-  'events'
-], function(G, U, Errors, Events) {
+  'events',
+  'lib/fastdom'
+], function(G, U, Errors, Events, Q) {
   function log() {
     var args = [].slice.call(arguments);
     args.unshift("ResourceList");
@@ -14,14 +15,18 @@ define('collections/ResourceList', [
   var tsProp = 'davGetLastModified';
   var listParams = ['perPage', 'offset'];
   var ResourceList = Backbone.Collection.extend({
+    _fetchDeferreds: {},
     initialize: function(models, options) {
       if (!models && !options.model)
         throw new Error("resource list must be initialized with options.model or an array of models");
-      
+
+      if (!this.cid)
+        this.cid = _.uniqueId('rl');
+
       options = options || {};
       _.extend(this, {
         page: 0,
-        perPage: 30,
+        perPage: 10,
         offset: 0,
         firstPage: 0,
         params: {},
@@ -34,11 +39,10 @@ define('collections/ResourceList', [
           this[o] = options[o];
       }
       
-      var self = this,
-          vocModel = this.vocModel = this.model,
+      var vocModel = this.vocModel = this.model,
           meta = vocModel.properties;
           
-      _.bindAll(this, 'fetch', 'parse', 'parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'onResourceChange', 'disablePaging', 'enablePaging'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'fetch', 'parse', '_parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'onResourceChange', 'disablePaging', 'enablePaging'); // fixes loss of context for 'this' within methods
 //      this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
 //      this.on('aroundMe', vocModel.getAroundMe);
@@ -50,11 +54,11 @@ define('collections/ResourceList', [
       this.baseUrl = G.apiUrl + encodeURIComponent(this.type);
       this.url = this.baseUrl;
       if (options.params) {
-        this.params = options.params;
-        this.query = $.param(this.params);
+        this._parseParams(options.params);
+//        this.query = $.param(this.params);
       }
       else
-        this.parseQuery(options._query);
+        this._parseQuery(options._query);
       
       if (vocModel.adapter) {
         var validator = vocModel.adapter.validateCollection,
@@ -97,27 +101,34 @@ define('collections/ResourceList', [
 //      });
 
       if (!this['final']) {
-        Events.on('newResource:' + this.type, function(resource, options) {
+        var self = this;
+        this.listenTo(Events, 'newResource:' + this.type, function(resource, options) {
           // we are adding this resource to this collection at the moment
-          self.filterAndAddResources([resource], options);
+          setTimeout(function() {            
+            Q.nonDom(self.filterAndAddResources.bind(self, [resource], options), self);
+          }, 1000);
         });
         
-        Events.on('newResources:' + this.type, function(resources, options) {
+        this.listenTo(Events, 'newResources:' + this.type, function(resources, options) {
           // we are adding this resource to this collection at the moment
-          self.filterAndAddResources(resources, options);
+          setTimeout(function() {            
+            Q.nonDom(self.filterAndAddResources.bind(self, resources, options), self);
+          }, 1000);
         });
         
-        Events.on('newResourceList:' + this.type, function(list) {
+        this.listenTo(Events, 'newResourceList:' + this.type, function(list) {
           if (list === self)
             return;
   
-          self.filterAndAddResources(list.models);        
+          setTimeout(function() {            
+            Q.nonDom(self.filterAndAddResources.bind(self, list.models), self);
+          }, 1000);
         });
       }
       
       this.monitorQueryChanges();
       this.enablePaging();
-      this.on('endOfList', this.disablePaging);
+      this.on('endOfList', this.disablePaging);      
       log("info", "init " + this.shortName + " resourceList");      
     },
 
@@ -128,10 +139,11 @@ define('collections/ResourceList', [
       var self = this,
           added = [];
       
-      _.each(resources, function(resource) {          
-        if (!self.get(resource) && self.belongsInCollection(resource))
+      for (var i = 0, len = resources.length; i < len; i++) {
+        var resource = resources[i];
+        if (!this.get(resource) && this.belongsInCollection(resource))
           added.push(resource);
-      });
+      }
       
       self.add(added, {
         announce: false
@@ -173,38 +185,51 @@ define('collections/ResourceList', [
         this.trigger('updated', [resource]);
     },
     add: function(resources, options) {
+      if (!_.size(resources))
+        return;
+      
       if (this['final'] && this.models.length)
         throw "This list is locked, it cannot be changed";
       
       options = options || {};
       var self = this,
-          multiAdd = _.isArray(resources);
+          multiAdd = _.isArray(resources),
+          fromServer = this.lastFetchOrigin == 'server',
+          params = this.modelParamsStrict,
+          setInitialParams = fromServer && _.size(params);
       
       resources = multiAdd ? resources : [resources];
       if (!resources.length)
         return;
       
-      resources = _.map(resources, function(resource) {
-        return resource instanceof Backbone.Model ? resource : new this.vocModel(resource, {silent: true, parse: true}); // avoid tripping newResource event as we want to trigger bulk 'added' event        
-      }.bind(this));
-
-      _.each(resources, function(resource) {
-        var uri = resource.getUri();
+      for (var i = 0, len = resources.length; i < len; i++) {
+        var resource = resources[i],
+            uri;
+        
+        resource = resources[i] = resource instanceof Backbone.Model ? 
+                                                            resource : 
+                                                            new this.vocModel(resource, {silent: true, parse: true}); // avoid tripping newResource event as we want to trigger bulk 'added' event
+        
+        uri = resource.getUri();
         if (U.isTempUri(uri)) {
           resource.once('uriChanged', function(oldUri) {
             var newUri = resource.getUri();
-            this._byId[newUri] = this._byId[oldUri]; // HACK? we need to replace the internal models cache mapping to use the new uri
-            delete this._byId[oldUri];
-          }.bind(this));
+            self._byId[newUri] = self._byId[oldUri]; // HACK? we need to replace the internal models cache mapping to use the new uri
+            delete self._byId[oldUri];
+          });
         }
         
-        resource.off('change', self.onResourceChange);
-        resource.on('change', self.onResourceChange);
-      });
-      
+        if (setInitialParams) {
+          // we may be end up requesting models with $select=..., or $omit=..., so we should set the provided ones right now, in case they're omitted from the fetch response
+          resource.set(params, {silent: true});
+        }
+
+        this.listenTo(resource, 'change', self.onResourceChange);
+        this.listenTo(resource, 'change', self.onResourceChange);
+      }
 //      this.adding = true;
       try {
-        return Backbone.Collection.prototype.add.call(this, resources, options);
+        return Backbone.Collection.prototype.add.call(this, resources, _.defaults({ silent: true }, options));
       } finally {
 //        this.adding = false;
         if (multiAdd && !this.resetting) {
@@ -226,10 +251,13 @@ define('collections/ResourceList', [
 //      this.add([resource]); // to make it act like multi-add, so it triggers an 'added' event
 //      this.trigger('replaced', resource, oldUri);
 //    },
+    
     getNextPage: function(options) {
-      this.setOffset(this.offset + this.perPage);
-      this.setOffset(Math.min(this.offset, this.models.length));
-      this.pager(options);
+      var numToFetch = options.params && options.params.$limit || this.perPage;
+//      this.setOffset(this.offset + numToFetch);
+      this.setOffset(this.length);
+//      this.setOffset(Math.min(this.offset, this.models.length));
+      return this.pager(options);
     },
     getPreviousPage: function () {
       this.setOffset(this.offset - this.perPage);
@@ -249,7 +277,7 @@ define('collections/ResourceList', [
       if (length)
         options.from = this.models[length - 1].getUri();
       
-      this.fetch(options);
+      return this.fetch(options);
     },
     setPerPage: function(perPage) {
       this.page = this.firstPage;
@@ -272,30 +300,42 @@ define('collections/ResourceList', [
       
       return this.baseUrl + '?' + $.param(params);
     },
-    parseQuery: function(query) {
-      var params, filtered = {};
+    
+    _parseQuery: function(query) {
+      var params;
       if (query)
         params = U.getQueryParams(query);
       else
         params = this.params || {};
       
+      this._parseParams(params);
+    },
+    
+    _parseParams: function(params) {
+      var modelParams = {},
+          strict = {};
+      
       for (var name in params) {
+        var val = params[name];
         if (name == '$offset') {
           this.setOffset(parseInt(val)); // offset is special because we need it for lookup in db
           this.page = Math.floor(this.offset / this.perPage);
         }
         else if (name == '$limit') {
-          this.perPage = filtered.$limit = parseInt(val);
+          this.perPage = params.$limit = parseInt(val);
         }
-        else if (name.charAt(0) == '-')
-          continue;
-        else
-          filtered[name] = params[name];
+        else if (!/^-/.test(name)) {
+          modelParams[name] = val;
+          if (!/^\$/.test(name))
+            strict[name] = val;
+        }
       }
       
-      this.params = filtered;
+      this.params = params;
+      this.modelParams = modelParams;
+      this.modelParamsStrict = strict;
       this.url = this.baseUrl + (this.params ? $.param(this.params) : ''); //this.getUrl();
-      this.query = U.getQueryString(U.getQueryParams(this), true); // sort params in alphabetical order for easier lookup
+      this.query = U.getQueryString(modelParams, true); // sort params in alphabetical order for easier lookup
     },
     isAll: function(interfaceNames) {
       return U.isAll(this.vocModel, interfaceNames);
@@ -317,9 +357,10 @@ define('collections/ResourceList', [
         this._lastFetchedOn = G.currentServerTime();
       
       var vocModel = this.vocModel;
-      _.each(response, function(res) {
+      for (var i = 0, len = response.length; i < len; i++) {
+        var res = response[i];
         res._uri = U.getLongUri1(res._uri, vocModel);
-      });
+      }
       
       var adapter = this.vocModel.adapter;
       if (adapter && adapter.parseCollection)
@@ -338,7 +379,7 @@ define('collections/ResourceList', [
 
     disablePaging: function() {
       this._outOfData = true;
-      setTimeout(this.enablePaging, 3 * 60000);
+      window._setTimeout(this.enablePaging, 3 * 60000);
     },
 
     enablePaging: function() {
@@ -395,9 +436,6 @@ define('collections/ResourceList', [
     },
     
     fetch: function(options) {
-      if (this.offset && !this._outOfData)
-        log("info", "fetching next page");
-
       options = options || {};
       _.defaults(options, {
         update: true, 
@@ -409,11 +447,12 @@ define('collections/ResourceList', [
           vocModel = this.vocModel,
           error = options.error = options.error || Errors.getBackboneErrorHandler(),
           adapter = vocModel.adapter,
+          params = this.params,
           extraParams = options.params || {};
 
       if (this['final']) {
         error(this, {status: 204, details: "This list is locked"}, options);
-        return;      
+        return G.getRejectedPromise();      
       }
 
       if (!extraParams.$omit && !extraParams.$select && !this.params.$omit && !this.params.$select) {
@@ -426,9 +465,8 @@ define('collections/ResourceList', [
         }
       }
 
-      this.params = this.params || {};
       if (this.offset)
-        this.params.$offset = this.offset;
+        params.$offset = this.offset;
       
       this.rUri = options.rUri;
       var urlParams = this.rUri ? _.getParamMap(this.rUri) : {};
@@ -438,18 +476,17 @@ define('collections/ResourceList', [
         limit = limit && parseInt(limit);
       }
       if (!limit)
-        limit = this.perPage;
+        limit = extraParams.$limit || this.perPage;
       
       if (limit > 50)
         options.timeout = 5000 + limit * 50;
       
-      this.params.$limit = limit;
-      
+      params.$limit = limit;
       try {
         options.url = this.getUrl(extraParams);
       } catch (err) {
         error(this, {status: 204, details: err.message}, options);
-        return;
+        return G.getRejectedPromise();      
       }
 
 //      if (this.currentlyFetching && this.currentlyFetching.url == options.url) {
@@ -481,10 +518,10 @@ define('collections/ResourceList', [
         if (mojo) {
           try {
             mojo = JSON.parse(mojo);
-            if (mojo.edit) {
-              _.each(resp, function(m) {
-                m.edit = editMojo;
-              });
+            if (mojo = mojo.edit) {
+              for (var i = 0, len = resp.length; i < len; i++) {
+                resp[i].edit = mojo;
+              }
             }
           } catch (err) {
           }
@@ -499,35 +536,10 @@ define('collections/ResourceList', [
           success(resp, status, xhr);
           return;
         }
-        else {
-          var select = extraParams && extraParams.$select;
-          if (select && select !== '$all') {
-            var first = self.models[0];
-            if (first) {
-              var props = U.parsePropsList(select, self.vocModel),
-                  atts = U.filterObj(first.attributes, function(key) { return /^[a-zA-Z]+$/.test(key) }),
-                  nonSelectedProps = _.difference(_.keys(atts), props),
-                  hasNonSelectedProps = !_.size(_.pick(atts, nonSelectedProps));
-              
-              if (!hasNonSelectedProps) {
-                var newOptions = {
-                  forceFetch: true,
-                  forceMerge: true,
-                  params: _.clone(extraParams)
-                };
-                
-                newOptions.params.$omit = select;
-                delete newOptions.params.$select;
-                G.whenNotRendering(_.partial(self.fetch, newOptions), self);
-              }
-            }
-          }
-          
-          self._lastFetchedOn = now;
-        }
         
         var now = G.currentServerTime(),
-            code = xhr.status;
+            code = xhr.status,
+            select = extraParams && extraParams.$select;
         
         function err() {
           debugger;
@@ -535,6 +547,7 @@ define('collections/ResourceList', [
           error(self, resp || {code: code}, options);            
         }
         
+        self._lastFetchedOn = now;
         switch (code) {
           case 200:
             if (!resp)
@@ -546,12 +559,23 @@ define('collections/ResourceList', [
             success([], status, xhr);
             return;
           case 304:
-            var ms = self.models.slice(options.start, options.end);
-            _.each(ms, function(m) {
-              m.set({'_lastFetchedOn': now}, {silent: true});
-            });
+//            var ms = self.models.slice(options.start, options.end);
+            var models = self.models,
+                start = options.start || 0,
+                end = options.end || (start + params.$limit);
             
-            self.trigger('endOfList');
+            end = Math.min(end, models.length);
+            if (typeof start != 'undefined' && typeof end != 'undefined') {
+              for (var i = start; i < end; i++) {
+                models[i].set({'_lastFetchedOn': now}, {silent: true});              
+              }
+            }
+            
+//            _.each(ms, function(m) {
+//              m.set({'_lastFetchedOn': now}, {silent: true});
+//            });
+//            
+//            self.trigger('endOfList');
             success([], status, xhr);
             return;
           default:
@@ -561,22 +585,56 @@ define('collections/ResourceList', [
         
         self.update(resp, options);
         success(resp, status, xhr);
+        if (!select || select == '$all')
+          return;
+        
+        var first = self.models[0];
+        if (!first)
+          return;
+        
+        var props = U.parsePropsList(select, self.vocModel),
+            atts = U.filterObj(first.attributes, function(key) { return /^[a-zA-Z]+$/.test(key) }),
+            nonSelectedProps = _.difference(_.keys(atts), props),
+            hasNonSelectedProps = !_.size(_.pick(atts, nonSelectedProps));
+
+        if (hasNonSelectedProps)
+          return;
+        
+        var newOptions = {
+          forceFetch: true,
+          forceMerge: true,
+          params: _.extend(_.omit(extraParams, '$select'), {
+            $omit: select,
+            $blCounts: 'y' // might as well make the most of this request
+          })
+        };
+        
+        G.whenNotRendering(self.fetch.bind(self, newOptions));
       }; 
-      
+
+      if (this.offset && !this._outOfData) {
+//        if (this.offset > 60)
+//          debugger;
+        log("info", "fetching next page, from " + this.offset + ", to: " + (this.offset + limit));
+      }
+
       return this.sync('read', this, options);
     },
     
     update: function(resources, options) {
+      if (!resources || !resources.length)
+        return;
+      
       if (this.lastFetchOrigin === 'db') {
-        var numBefore = this.models.length;
-        this.set(resources, options);
+//        var numBefore = this.models.length;
+        this.add(resources, _.defaults({
+          parse: false // make sure parse if false
+        }, options));
+        
         return;
       }
 
-      resources = this.parse(resources);      
-      if (!_.size(resources)) {
-        return false;
-      }
+      resources = this.parse(resources);
       
       // only handle collections here as we want to add to db in bulk, as opposed to handling 'add' event in collection and adding one at a time.
       // If we switch to regular fetch instead of Backbone.Collection.fetch({add: true}), collection will get emptied before it gets filled, we will not know what really changed
@@ -624,14 +682,36 @@ define('collections/ResourceList', [
         // not everyone who cares about resources being updated has access to the collection
         Events.trigger('updatedResources', _.union(updated, added));
       }
-      else if (this.params.$offset)
-        this.trigger('endOfList');
+//      else if (this.params.$offset)
+//        this.trigger('endOfList');
       
       return this;
     },
     
-    isFetching: function() {
-      return this._fetchPromise && this._fetchPromise.state() == 'pending';
+    isFetching: function(url) {
+      return url ? _.has(this._fetchDeferreds, url) : !!_.size(this._fetchDeferreds);
+    },
+
+    getFetchDeferred: function(url) {
+      return this._fetchDeferreds[url];
+    },
+
+    setFetchDeferred: function(url, deferred) {
+      this._fetchDeferreds[url] = deferred;
+    },
+
+    clearFetchDeferred: function(url) {
+      delete this._fetchDeferreds[url];
+    },
+    
+    selfDestruct: function() {
+      this.stopListening();
+      var models = this.models;
+      for (var i = 0, num = models.length; i < num; i++) {
+        models[i].collection = null;
+      }
+      
+      models.length = 0;
     }
   }, {
     displayName: 'ResourceList'

@@ -65,12 +65,9 @@ define('models/Resource', [
       
       if (this.loaded)
         this.announceNewResource(options);
-      else if (this.vocModel.type === commonTypes.Jst) {
-        Events.trigger('newTemplate', this);
-      }
       
       if (commonTypes.App == this.type) {
-        Events.on('saved', function(res) {
+        this.listenTo(Events, 'saved', function(res) {
           var types = U.getTypes(res.vocModel);
           if (_.intersection(types, APP_TYPES).length) {
 //            debugger; // maybe check if the changes concern this app, or another
@@ -96,6 +93,11 @@ define('models/Resource', [
       });
 
 //      this.checkIfLoaded();
+    },
+    
+    selfDestruct: function() {
+      this.stopListening();
+      this.collection && this.collection.remove(this);
     },
     
     _load: function(options) {
@@ -161,10 +163,10 @@ define('models/Resource', [
         if (val) {
           if (prop.range.endsWith('model/portal/Video'))
             return val;
-          else if (prop.range.endsWith('model/portal/Image') && /^(http|https|ftp):\/\//.test(val))
+          else if (prop.range.endsWith('model/portal/Image') && /(^(http|https|ftp):\/\/)|(^(icons\/))/.test(val))
             return val;
           else
-            return val.startsWith('data:') ? val : U.getLongUri1(val);
+            return /^(data:|!?null)/.test(val) ? val : U.getLongUri1(val);
         }
         else
           return val;
@@ -275,7 +277,7 @@ define('models/Resource', [
       if (!resUri)
         return;
       
-      Events.on('updateBacklinkCounts:' + resUri, this.updateCounts);
+      this.listenTo(Events, 'updateBacklinkCounts:' + resUri, this.updateCounts);
       this.subscribedToUpdates = true;
     },
     
@@ -708,10 +710,8 @@ define('models/Resource', [
       }
         
       var cloneOf = prop.cloneOf;
-      if (cloneOf) {
-        if (/^Address1?\.postalCode1?$/.test(cloneOf))
-          return _.validateZip(value) || 'Please enter a valid Postal Code';
-      }
+      if (cloneOf && U.isCloneOf(prop, 'Address1.postalCode1'))
+        return _.validateZip(value) || 'Please enter a valid Postal Code';
       
       return true;
     },
@@ -757,7 +757,7 @@ define('models/Resource', [
         
         var code = xhr.status;
         function err() {
-          debugger;
+//          debugger;
           log('error', code, options.url);
           error(self, resp || {code: xhr.status}, options);            
         };
@@ -825,7 +825,7 @@ define('models/Resource', [
       var props = this.attributes;
       for (var p in props) {
         var prop = meta[p];
-        if (U.isResourceProp(prop)) {
+        if (prop && U.isResourceProp(prop)) {
 //        if (prop && (prop.containerMember || prop.notifyContainer)) { // let's just notify all, it's cheap
           var val = props[p];
           if (!val) // might have gotten unset
@@ -1187,7 +1187,7 @@ define('models/Resource', [
     },
 
 //    _resetEditableProps: function() {
-//      U.wipe(this._editableProps);
+//      _.wipe(this._editableProps);
 //      delete this._editablePropsUrlInfo;
 //    },
     
@@ -1333,9 +1333,21 @@ define('models/Resource', [
 //      this._editableProps = result;
       return result;
     },
+
+    getFetchDeferred: function() {
+      return this._fetchDeferred;
+    },
+    
+    setFetchDeferred: function(deferred) {
+      this._fetchDeferred = deferred;
+    },
+
+    clearFetchDeferred: function() {
+      this._fetchDeferred = null;
+    },
     
     isFetching: function() {
-      return !this._fetchPromise || this._fetchPromise.state() !== 'pending';
+      return !this._fetchDeferred || this._fetchDeferred.state() !== 'pending';
     }
 //    ,
 //    getMiniVersion: function() {

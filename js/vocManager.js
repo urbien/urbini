@@ -9,8 +9,9 @@ define('vocManager', [
   'modelLoader',
   'plugManager',
   'cache',
-  'apiAdapter'
-], function(G, U, Errors, Events, Resource, ResourceList, ModelLoader, PlugManager, C, API) {
+  'apiAdapter',
+  'lib/fastdom'
+], function(G, U, Errors, Events, Resource, ResourceList, ModelLoader, PlugManager, C, API, Q) {
   Backbone.Model.prototype._super = function(funcName){
     return this.constructor.__super__[funcName].apply(this, _.rest(arguments));
   };
@@ -21,7 +22,12 @@ define('vocManager', [
     G.log.apply(G, args);
   };
 
-  G.classUsage = _.map(G.classUsage, U.getTypeUri);  
+  G.classUsage = _.map(G.classUsage, U.getTypeUri);
+  var _fetchMoreModelsTimeout;
+  function doFetchMoreModels() {
+    Voc.getModels(null, {go: true});
+  }
+  
   function fetchLinkedAndReferredModels(list) {
     var resources = U.isCollection(list) ? list.models : _.isArray(list) ? list : [list];
     if (!resources.length)
@@ -34,7 +40,7 @@ define('vocManager', [
     if (_.size(models)) {
       log('ajax', 'fetching linked/referred models for {0}'.format(U.isCollection(list) ? 'list: ' + list.query : 
                                                                     resources.length > 1 ? 'resources' : 'resource: ' + resources[0].getUri()));
-      Voc.getModels(models, {sync: false});
+      Voc.getModels(models, {debounce: 3000});
     }
   };
   
@@ -93,7 +99,7 @@ define('vocManager', [
     },
     
     fetchLinkedAndReferredModels: function(listOrRes) {
-      G.whenNotRendering(_.partial(fetchLinkedAndReferredModels, listOrRes));
+      G.whenNotRendering(fetchLinkedAndReferredModels.bind(null, listOrRes));
     },
 
     detectReferredModels: function(list) {      
@@ -241,9 +247,10 @@ define('vocManager', [
     });
   });
   
-  Events.on('newResources', function(resources) {
+  Events.on('newResources', setTimeout.bind(window, function(resources) {
     var actualTypes = {};
-    _.each(resources, function(resource) {
+    for (var i = 0, len = resources.length; i < len; i++) {
+      var resource = resources[i];
       if (resource._changingModel)
         return;
       
@@ -255,20 +262,21 @@ define('vocManager', [
         var byType = actualTypes[actualType] = actualTypes[actualType] || [];
         byType.push(resource);
       }        
-    });
-    
-    if (_.size(actualTypes)) {
-      Voc.getModels(_.keys(actualTypes)).done(function() {
-        for (var type in actualTypes) {
-          var actualModel = U.getModel(type);
-          var sadResources = actualTypes[type];
-          _.each(sadResources, function(resource) {                
-            resource.setModel(actualModel);
-          });
-        }
-      });
     }
-  });
+    
+    if (!_.size(actualTypes))
+      return;
+    
+    Voc.getModels(_.keys(actualTypes)).done(function() {
+      for (var type in actualTypes) {
+        var actualModel = U.getModel(type);
+        var sadResources = actualTypes[type];
+        for (var i = 0, len = sadResources.length; i < len; i++) {            
+          sadResources[i].setModel(actualModel);
+        }
+      }
+    });
+  }, 500));
   
   Events.on('newResourceList', function(list) {
     _.each(['updated', 'added', 'reset'], function(event) {
@@ -280,11 +288,16 @@ define('vocManager', [
   });
 
   Events.on('newResource', function(res) {
-    if (!res.collection)
-      Voc.fetchLinkedAndReferredModels([res]);
+    if (!res.collection) {
+      setTimeout(function() {
+        Q.nonDom(fetchLinkedAndReferredModels.bind(Voc, ([res])));
+      }, 1000);
+    }
   });
 
-  Events.on('newPlugs', Voc.savePlugsToStorage);
+//  Events.on('newPlugs', Q.defer.bind(Q, 30, 'nonDom', function() {
+//    Q.defer(30, 'nonDom', Voc.savePlugsToStorage, Voc);
+//  }));
   
   Events.on('getModels', function(models, dfd) {
     Voc.getModels(models).then(dfd.resolve, dfd.reject);

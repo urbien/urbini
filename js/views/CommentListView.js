@@ -5,31 +5,48 @@ define('views/CommentListView', [
   'views/ResourceListView',
   'views/CommentListItemView',
   'collections/ResourceList',
-  'jqueryMobile'
+  '@widgets'
 ], function(G, U, Events, ResourceListView, CommentListItemView, ResourceList, $m) {
   return ResourceListView.extend({
     type: 'comment',
-    renderItem: function(res, last) {
+    
+    preinitializeItem: function() {
+    },
+        
+    getPageTag: function() {
+      return 'tbody';
+    },
+    
+    getDummyTag: function() {
+      return 'tr';
+    },
+    
+    preinitializeItem: function(res) {
+      return CommentListItemView;
+    },
+
+    renderItem: function(res, prepend) {
       var liView = this.addChild(new CommentListItemView({
-        parentView: this,
         resource: res
       }));
       
-      liView.render({force: true});
+      this.addChild(liView, prepend);
+      liView.render(this._itemRenderOptions);
       return liView;
     },
     
     postRender: function() {
       if (this.rendered) {
         this.$el.trigger('create');
-        if (this.$el.hasClass('ui-listview'))
+        if (this.el.$hasClass('ui-listview'))
           this.$el.listview('refresh');
       }
 
-      this.$el.css('display', 'block');
+      this.el.$css('display', 'block');
     }
   },
   {
-    displayName: "CommentListView"
+    displayName: "CommentListView",
+    _itemView: CommentListItemView
   });
 });

@@ -3,6 +3,7 @@ define('app', [
  'globals',
  'underscore',
  'backbone',
+ 'backboneMixins',
  'templates', 
  'utils', 
  'events',
@@ -11,10 +12,10 @@ define('app', [
  'modelLoader',
  'vocManager',
  'resourceManager',
- 'router',
  'collections/ResourceList'
- ], function(G, _, Backbone, Templates, U, Events, Errors, C, ModelLoader, Voc, ResourceManager, Router, ResourceList) {
+ ], function(G, _, Backbone, __bbMxns__, Templates, U, Events, Errors, C, ModelLoader, Voc, ResourceManager, ResourceList) {
 //  var Chrome;
+  var Router;
   Backbone.emulateHTTP = true;
   Backbone.emulateJSON = true;
   var pushEndpointType = G.commonTypes.PushEndpoint,
@@ -80,7 +81,7 @@ define('app', [
       }
       else {
         Errors.offline();
-        Events.on('online', _.partial(loadCurrentModel, dfd));
+        Events.once('online', loadCurrentModel.bind(null, dfd));
       }
     }); 
     
@@ -101,7 +102,7 @@ define('app', [
         accesses = currentApp.dataAccesses || [],
         providerType = "model/social/AppProviderAccount",
         consumerType = "model/social/AppConsumerAccount",
-        accessType = "model/social/AppConsumerAccount",
+        accessType = "model/social/AppDataShareAccess1",
         models = [];
     
     if (providers.length)
@@ -163,6 +164,9 @@ define('app', [
     
     return $.Deferred(function(defer) {      
       templatesRL.fetch({
+        params: {
+          $select: '$all'
+        },
         success: function() {
           templatesRL.each(function(template) {
             Templates.addCustomTemplate(template);
@@ -193,6 +197,9 @@ define('app', [
 
     return $.Deferred(function(defer) {      
       viewsRL.fetch({
+        params: {
+          $select: '$all'
+        },
         success: function() {
           viewsRL.each(function(view) {
             debugger;
@@ -215,7 +222,7 @@ define('app', [
     if (G.currentUser.guest)
       return RESOLVED_PROMISE;
       
-    return Voc.getModels(G.commonTypes.Grab).then(function() {
+    return Voc.getModels(G.commonTypes.Grab, {debounce: 3000}).then(function() {
       G.currentUser.grabbed = new ResourceList(G.currentUser.grabbed, {
         model: U.getModel(G.commonTypes.Grab),
         params: {
@@ -236,7 +243,7 @@ define('app', [
           Events.trigger('firefoxAppInstalled', check.result);
       };
       
-      Events.on('firefoxAppInstalled', dfd.resolve.bind(dfd));
+      Events.once('firefoxAppInstalled', dfd.resolve.bind(dfd));
     }
   };
   
@@ -313,7 +320,7 @@ define('app', [
       if (oldDfd)
         Events.off('pageChange', oldDfd.resolve);
       
-      Events.on('pageChange', dfd.resolve);
+      Events.once('pageChange', dfd.resolve);
       if (oldPromise && oldPromise.state() === 'pending')
         promise.then(oldDfd.resolve);
 
@@ -322,7 +329,7 @@ define('app', [
     reset();
     Events.on('changingPage', reset);
     G.whenNotRendering = function(fn, context) {
-      return promise.then(_.partial(run, fn, context));
+      return promise.then(run.bind(null, fn, context));
     };
   };
   
@@ -334,7 +341,7 @@ define('app', [
     if (!type)
       return G.getRejectedPromise();
       
-    return Voc.getModels(type, {wait: true}).then(function(model) {
+    return Voc.getModels(type, {debounce: 3000}).then(function(model) {
       var data;
       switch (hashInfo.route) {
         case "chooser": 
@@ -382,8 +389,11 @@ define('app', [
         var fetchDfd = $.Deferred(),
             isList = U.isCollection(data);
         
-        Events.trigger('cache' + (U.isModel(data) ? 'Resource' : 'List', data));
+        Events.trigger('cache' + (U.isModel(data) ? 'Resource' : 'List'), data);
         data.fetch({
+          params: {
+            $select: '$all'
+          },
           success: function() {
             if (!data.isFetching())
               fetchDfd.resolve();
@@ -397,8 +407,8 @@ define('app', [
       });
     });
     
-    if (Voc.isDelayingModelsFetch())
-      Voc.getModels(null, {go: true});    
+//    if (Voc.isDelayingModelsFetch())
+//      Voc.getModels(null, {go: true});    
   };
   
   function doPostStartTasks() {
@@ -406,7 +416,9 @@ define('app', [
     initGrabs();
     setupPushNotifications();
     ResourceManager.sync();
-    prefetchResources();
+    if (U.getUrlInfo().route == 'home')
+      prefetchResources();
+    
   //    if (G.inWebview) {
   //      App.replaceGetUserMedia();
   //      Events.on('messageToApp', function(msg) {
@@ -492,8 +504,41 @@ define('app', [
     G.currentUser.role = G.currentUser.guest ? 'guest' : G.currentUser.role || 'contact';
   };
   
+  function setupWidgetLibrary() {
+    if (G.isJQM()) {
+      var jqmEvents = ['pagebeforecreate', 'pagecreate', 'pagebeforehide', 'pagehide', 'pagebeforeshow', 'pageshow', 'pagebeforechange', 'pagechange'],
+          $doc = $(document);
+      
+      function fwdEvent(page_event) {
+        return function(e) {
+          e.target.dispatchEvent(new Event(page_event));
+        }
+      }
+      
+      for (var i = 0, len = jqmEvents.length; i < len; i++) {
+        var pageevent = jqmEvents[i],
+            page_event = 'page_' + pageevent.slice(4);
+            
+        $doc.on(pageevent, fwdEvent(page_event));        
+      }      
+    }
+  }
+  
+//  function setupScrollMonitor() {
+//    Events.on('scrollVelocity', function(velocity) {
+//      G._setScrollVelocity(velocity || 0);
+//    });
+//
+//    Events.on('viewportDestination', function(x, y, timeToDestination) {
+//      G._setViewportDestination(x, y, timeToDestination || 0);
+//    });
+//  }
+  
   function doPreStartTasks() {
 //    setupHashMonitor();
+//    setupScrollMonitor();
+    ModelLoader.loadEnums();
+    setupWidgetLibrary();
     setupPackagedApp();
     setupUser();
     setupAvailibilityMonitor();
@@ -516,9 +561,10 @@ define('app', [
     setupNetworkEvents();
 //    if (G.browser.mobile)
 //      G.removeHoverStyles();
-    ModelLoader.loadEnums();
     
-    return $.whenAll.apply($, [modelsViewsTemplatesAndDB, localized]);
+    return $.whenAll(modelsViewsTemplatesAndDB, localized, require(['@widgets', 'router']).done(function($w, r) {
+      Router = r;
+    }));
   };
   
   
@@ -576,7 +622,7 @@ define('app', [
     
 //    Events.on('viewDestroyed', function(view) {
 //      setTimeout(function() {
-//        U.wipe(view);
+//        _.wipe(view);
 //      }, 0);
 //    });
   };
@@ -634,6 +680,7 @@ define('app', [
   };
   
   function startApp() {
+    Events.trigger('startingApp');
     return $.Deferred(function(dfd) {        
       if (App.started)
         return dfd.resolve();
@@ -649,15 +696,15 @@ define('app', [
         G.log(App.TAG, "info", "hash stripped");
         window.location.hash = '';
       }
-      
+
       App.router = new Router();
-      if (G.support.pushState) {
-        Backbone.history.start({
-          pushState: true, 
-          root: G.appUrl.slice(G.appUrl.indexOf('/', 8))
-        });
-      }
-      else
+//      if (G.support.pushState) {
+//        Backbone.history.start({
+//          pushState: true, 
+//          root: G.appUrl.slice(G.appUrl.indexOf('/', 8))
+//        });
+//      }
+//      else
         Backbone.history.start();
       
       dfd.resolve();
@@ -834,14 +881,17 @@ define('app', [
       $(document.body).append(popupHtml);
       var $popup = $('#login_popup');
       if (onDismiss) {
-        $popup.find('[data-cancel]').click(function() {
-          onDismiss();
-        });
+        $popup.find('[data-cancel]').click(onDismiss);
       }
-      
-      $popup.trigger('create');
-      $popup.popup().popup("open");
-      $popup.parent().css('z-index', 1000000);
+//      if (!G.currentApp.widgetLibrary  ||  G.currentApp.widgetLibrary == 'Jquery Mobile') {
+      if (G.isJQM()) {
+        $popup.trigger('create');
+        $popup.popup().popup("open");
+        $popup.parent().css('z-index', 1000000);
+      }  
+      else {
+        $popup.css('left', (G.viewport.width - 255) / 2);
+      }
       return false; // prevents login button highlighting
     });
     

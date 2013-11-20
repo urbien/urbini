@@ -2,6 +2,7 @@ define('underscoreMixins', ['_underscore'], function(_) {
   var ArrayProto = Array.prototype,
       concat = ArrayProto.concat,
       slice = ArrayProto.slice,
+      indexOf = ArrayProto.indexOf,
       __htmlCommentRegex = /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/,
       __htmlCommentRegexGM = /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/gm,
       __jsCommentRegex = /(?:\/\*(?:[\s\S]*?)\*\/)|(?:\/\/(?:.*)$)/,
@@ -65,24 +66,43 @@ define('underscoreMixins', ['_underscore'], function(_) {
   
   _.extend(Array, {
     remove: function(array /* items */) {
-      var items = concat.apply(ArrayProto, slice.call(arguments, 1));
-      
-      for (var i in items) {
-        var item = items[i],
-            idx = array.indexOf(item);
-        
-        if (idx != -1)
-          array.splice(idx, 1);
+      for (var i = 1, len = arguments.length; i < len; i++) {
+        var arg = arguments[i];
+        if (_.isArray(arg)) {
+          for (var j = 0, argLen = arg.length; j < argLen; j++) {
+            Array.remove(array, arg[j]);
+          }
+        }
+        else {
+          var idx = indexOf.call(array, arg);
+          if (~idx) {
+            Array.removeFromTo(array, idx, idx + 1);
+//            for (var j = idx, arrLen = array.length - 1; j < arrLen; j++) {
+//              array[j] = array[j + 1];
+//            }
+//            
+//            array.length = arrLen;
+          }
+        }
       }
       
       return array;
     },
 
-    // courtesy of John Resig
-    removeFromTo: function(array, from, to) {
-      var rest = array.slice((to || from) + 1 || array.length);
-      array.length = from < 0 ? array.length + from : from;
-      return array.push.apply(array, rest);
+//    removeFromTo: function(array, from, to) {
+//      var rest = array.slice((to || from) + 1 || array.length);
+//      array.length = from < 0 ? array.length + from : from;
+//      return array.push.apply(array, rest);
+//    },
+
+    removeFromTo: function(array, fromIdx, toIdx) {
+      var howMany = toIdx - fromIdx;
+      for (var i = fromIdx, len = array.length - howMany; i < len; i++) {
+        array[i] = array[toIdx++];
+      }
+
+      array.length = len;
+      return array;
     },
 
     last: function(array) {
@@ -104,19 +124,22 @@ define('underscoreMixins', ['_underscore'], function(_) {
   }
 
   _.mixin({
-    partial: function(fn) {
-      var args = slice.call(arguments, 1);
-      return function() {
-        return fn.apply(null, args.concat(_.toArray(arguments)));
-      };
-    },
-    
-    partialWith: function(fn, context) {
-      var args = slice.call(arguments, 2);
-      return function() {
-        return fn.apply(context, args.concat(_.toArray(arguments)));
-      };
-    },
+//    partial: function(fn) {
+////      var args = slice.call(arguments, 1);
+////      return function() {
+////        return fn.apply(null, args.concat(_.toArray(arguments)));
+////      };
+//      var args = slice.call(arguments, 1);
+//      args.unshift(null);
+//      return fn.bind.apply(fn, args);
+//    },
+//    
+//    partialWith: function(fn, context) {
+////      var args = slice.call(arguments, 2);
+////      return function() {
+////        return fn.apply(context, args.concat(_.toArray(arguments)));
+////      };
+//    },
     
     negate: function(fn, context) {
       return function() {
@@ -126,6 +149,50 @@ define('underscoreMixins', ['_underscore'], function(_) {
     
     isPromise: function(obj) {
       return obj && typeof obj.then == 'function';
+    },
+    
+    index: index,
+    setProperty: function(obj, prop, val) {
+      obj[prop] = val;
+    },
+    
+    deepExtend: function(obj) {
+      var parentRE = /#{\s*?_\s*?}/,
+          slice = Array.prototype.slice;
+     
+      for (var i = 1, num = arguments.length; i < num; i++) {
+        var source = arguments[i];
+        for (var prop in source) {
+          if (_.has(source, prop)) {
+            if (_.isUndefined(obj[prop]) || _.isFunction(obj[prop]) || _.isNull(source[prop])) {
+              obj[prop] = _.clone(source[prop]);
+            }
+            else if (_.isString(source[prop]) && parentRE.test(source[prop])) {
+              if (_.isString(obj[prop])) {
+                obj[prop] = source[prop].replace(parentRE, obj[prop]);
+              }
+            }
+            else if (_.isArray(obj[prop]) || _.isArray(source[prop])){
+              if (!_.isArray(obj[prop]) || !_.isArray(source[prop])){
+                throw 'Error: Trying to combine an array with a non-array (' + prop + ')';
+              } else {
+                obj[prop] = _.reject(_.deepExtend(obj[prop], source[prop]), function (item) { return _.isNull(item);});
+              }
+            }
+            else if (_.isObject(obj[prop]) || _.isObject(source[prop])){
+              if (!_.isObject(obj[prop]) || !_.isObject(source[prop])){
+                throw 'Error: Trying to combine an object with a non-object (' + prop + ')';
+              } else {
+                obj[prop] = _.deepExtend(obj[prop], source[prop]);
+              }
+            } else {
+              obj[prop] = source[prop];
+            }
+          }
+        }
+      }
+      
+      return obj;
     },
     
     leaf: function(obj, path, separator) {
@@ -165,26 +232,33 @@ define('underscoreMixins', ['_underscore'], function(_) {
 //      });
 //    },
    
-    deepExtend: function(obj, source) {
-      _.each(slice.call(arguments, 1), function(source) {
-        for (var p in source) {
-          if (_.has(source, p) && !_.has(obj, p)) {
-            obj[p] = source[p];
-            continue;
-          }
-            
-          var val = source[p], 
-              org = obj[p];
-          
-          if (_.isObject(val) && _.isObject(org))
-            _.deepExtend(org, val);
-          else
-            obj[p] = val;          
-        }
-        
-        return obj;
-      });
+    getObjectType: function(o) {
+      return Object.prototype.toString.call(o);
     },
+
+//    deepExtend: function(obj, source) {
+////      _.each(slice.call(arguments, 1), function(source) {
+//      for (var i = 1, num = arguments.length; i < num; i++) {
+//        var source = arguments[i];
+//        for (var p in source) {
+//          var val = source[p], 
+//              org = obj[p];
+//          
+//          if (_.has(source, p) && !_.has(obj, p)) {
+//            obj[p] = val && _.getObjectType(val) == '[object Object]' ? _.deepExtend({}, val) : val;
+//            continue;
+//          }
+//            
+//          if (_.isObject(val) && _.isObject(org))
+//            _.deepExtend(org, val);
+//          else
+//            obj[p] = val;
+//        }
+//        
+//        return obj;
+//      }
+////      });
+//    },
 
     validatePhone: function(phone) {
       return /^(\+?\d{0,3})\s*((\(\d{3}\)|\d{3})\s*)?\d{3}(-{0,1}|\s{0,1})\d{2}(-{0,1}|\s{0,1})\d{2}$/.test(phone);
@@ -220,7 +294,7 @@ define('underscoreMixins', ['_underscore'], function(_) {
     },
     
     decode: function(str) {
-      return decodeURIComponent(str).replace(/\+/g, ' ');
+      return decodeURIComponent(str.replace(/\+/g, '%20'));
     },
 
     pushUniq: function(arr) {
@@ -244,25 +318,38 @@ define('underscoreMixins', ['_underscore'], function(_) {
       }
     },
    
-    randomString: function() {
-      return (Math.random() * new Date().getTime()).toString(36).toUpperCase().replace(/\./g, '');
+    randomString: function(length) {
+      var random = (Math.random() * new Date().getTime()).toString(36).toUpperCase().replace(/\./g, '');
+      return length ? random.slice(0, length) : random;
     },
    
     wipe: function(obj) {
       for (var p in obj) {
-        if (_.has(obj, p))
+        if (obj.hasOwnProperty(p))
           delete obj[p];
       }
     },
-    
+
+    clearProperties: function(obj) {
+      for (var p in obj) {
+        if (obj.hasOwnProperty(p))
+          obj[p] = undefined;
+      }
+    },
+
     /** 
      * From http://eloquentjavascript.net/chapter6.html
      */
+    "<": function(a, b){return a < b;},
+    ">": function(a, b){return a > b;},
+    "<=": function(a, b){return a <= b;},
+    ">=": function(a, b){return a >= b;},
     "+": function(a, b){return a + b;},
     "==": function(a, b){return a == b;},
     "!=": function(a, b){return a != b;},
     "===": function(a, b){return a === b;},
     "!": function(a){return !a;},
+    "!=": function(a, b){return a != b;},
     "!==": function(a, b){return a !== b;},
       /* and so on */  
     
@@ -299,7 +386,27 @@ define('underscoreMixins', ['_underscore'], function(_) {
             .replace(/&lt;/g, '<')
             .replace(/&gt;/g, '>')
             .replace(/&amp;/g, '&');
-    }
+    },
+    
+    /**
+     * extends to[methodName] to first call from[methodName] and only then itself
+     */
+    extendMethod: function(to, from, methodName) {
+      if (!_.isUndefined(from[methodName])) {
+        var original = to[methodName];
+        if (!original)
+          to[methodName] = from[methodName];
+        else {
+          to[methodName] = function() {
+            var originalReturn = original.apply(this, arguments);
+            from[methodName].apply(this, arguments);
+            return originalReturn;
+          };
+        }
+      }
+    },
+    
+    now: window.performance ? window.performance.now.bind(window.performance) : Date.now.bind(Date)
   });
   
   return _;

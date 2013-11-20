@@ -4,15 +4,16 @@ define('views/MenuPanel', [
   'utils',
   'events',
   'vocManager',
+  'lib/blur.js',
   'views/BasicView'
-], function(G, U, Events, Voc, BasicView) {
+], function(G, U, Events, Voc, Blur, BasicView) {
   return BasicView.extend({
 //    role: 'data-panel',
 //    id: 'menuPanel',
 //    theme: 'd',
     initialize: function(options) {
-      _.bindAll(this, 'render','click', 'edit');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      _.bindAll(this, 'render','click', 'hide');
+      BasicView.prototype.initialize.apply(this, arguments);
   //    this.resource.on('change', this.render, this);
       this.tagName = options.tagName;
       var type = this.modelType;
@@ -23,27 +24,41 @@ define('views/MenuPanel', [
       this.makeTemplate('menuItemNewAlertsTemplate', 'menuItemNewAlertsTemplate', type);
 //      this.makeTemplate('filterTemplate', 'filterTemplate', type);
       this.viewId = options.viewId;
-      this.isPanel = true;
+      this.isPanel = true;      
+      this.listenToOnce(Events, 'pageChange', this.destroy);
     },
     tabs: {},
     events: {
-      'click #edit'      : 'edit',
+//      'click #edit'      : 'edit',
 //      'click #add': 'add',
 //      'click #delete': 'delete',
 //      'click #subscribe': 'subscribe',
       'click #logout'    : 'logout',
       'click #home123'   : 'home',
       'click #urbien123' : 'home',
-      'click'            : 'click'
+      'click'            : 'click',
+      'click [data-href]': BasicView.clickDataHref
     },
-    edit: function(e) {
-      Events.stopEvent(e);
-      this.router.navigate(U.makeMobileUrl('edit', this.resource.getUri()), {trigger: true, replace: true});
-      return this;
+    
+    pageEvents: {
+      'page_beforehide': 'hide'
     },
+    
+    hide: function() {
+      if (G.isJQM())
+        this.$el.closest('[data-role="panel"]').panel('close');
+//      else
+//        this.$el.css('visibility', 'visible');
+    },
+    
+//    edit: function(e) {
+//      Events.stopEvent(e);
+//      this.router.navigate(U.makeMobileUrl('edit', this.resource.getUri()), {trigger: true, replace: true});
+//      return this;
+//    },
     logout: function(e) {
       Events.stopEvent(e);
-      G.log(this.TAG, "Recording step for tour: selector: #logout");
+//      G.log(this.TAG, "Recording step for tour: selector: #logout");
       Events.trigger('logout');
       return;
     },
@@ -54,7 +69,7 @@ define('views/MenuPanel', [
       while (t.tagName.toLowerCase() != 'li') 
         t = t.parentNode;
       
-      G.log(this.TAG, "Recording step for tour: selector = 'id'; value = '" + t.id + "'");
+//      G.log(this.TAG, "Recording step for tour: selector = 'id'; value = '" + t.id + "'");
       if (t.id == 'home123') 
         window.location.href = here.slice(0, here.indexOf('#'));
       else 
@@ -63,63 +78,36 @@ define('views/MenuPanel', [
       return this;
     },
     click: function(e) {
-      var t = e.target;
-      var text = t.innerHTML;
-      while (t  &&  t.nodeName.toLowerCase() != 'a') {
-        if ($(t).attr("data-href"))
-          break;
-        t = t.parentNode;
-      }
+      var t = e.target,
+          $t,
+          hashIdx,
+          href,
+          text = U.removeHTML(t.innerHTML).trim();
       
-      if (typeof t === 'undefined' || !t)
+      this.hide();
+      if ((href = this.tabs[text]) != null) {
+        e.originalEvent.preventDefault();
+        Events.trigger('navigate', U.replaceParam(href, '$title', text));
         return;
-      
-      text = U.removeHTML(text).trim();
-      var attr;
-      if ($(t).attr('href'))
-        attr = 'href';
-      else if ($(t).attr('link'))
-        attr = 'link';
-      else
-        attr = 'data-href';
-      
-      var href = $(t).attr(attr); //$(t).attr('href') || $(t).attr('link') || $(t).attr("data-href");
-      G.log(this.TAG, "Recording step for tour: selector = '" + attr + "'; value = '" + href + "'");
-      
-      
-      var idx = href.lastIndexOf('#');
-      href = idx == -1 ? href : href.slice(idx + 1);
-          
-      if (this.tabs[text]) {
-        if (this.tabs[text] == href) {
-          e.originalEvent.preventDefault();
-          this.router.navigate(href, {trigger: true, destinationTitle: text});
-          return;
-        }
       }
+
+      if (!href)
+        return;
+            
+      debugger; // we should really get rid of this block
       if (href.indexOf("Alert?") != -1) 
         G.currentUser.newAlertsCount = 0;
-
-      var hash = window.location.hash;
-      if (hash  &&  href == hash.substring(1)) {
-        var menu = this.$el.closest('[data-role="panel"]');
-//        menu.hide('slow');
-        menu.panel('close');
-        return;
-      }
-      this.router.navigate(href, {trigger: true});
-//      var link = $(t).attr('link');
-//      if (link) {
-//        $(t).removeAttr('link');
-//        $(t).attr('href', link);
-//      }
+      
+      Events.stopEvent(e);
+      Events.trigger('navigate', href);
     },
 //    tap: Events.defaultTapHandler,
     render:function (eventName) {
-      var mi = $('#' + this.viewId).find('ul#menuItems');
-      if (mi  &&  mi.length != 0) {
+      var menu = document.getElementById(this.viewId);
+      var mi = menu && menu.querySelector('#menuItems');
+      if (mi && G.isJQM()) {
 //        $('#' + this.viewId).panel().panel("open");
-        $('#' + this.viewId).panel("open");
+        menu.panel("open");
         return;
       }
       var self = this;
@@ -127,33 +115,27 @@ define('views/MenuPanel', [
       var json = this.resource && res.toJSON();
       
       if (!res)
-        this.$el.html(this.template({}));      
+        this.html(this.template({}));      
       else
-        this.$el.html(this.template(json));      
+        this.html(this.template(json));      
 
-      var ul = this.$('#menuItems');
+      var ul = this.$('#menuItems')[0];
       var frag = document.createDocumentFragment();
 
       if (!G.currentUser.guest) {
         var mobileUrl = 'view/profile';
         if (!hash  ||  hash != mobileUrl) {
-          var title = this.loc('profile');
-          U.addToFrag(frag, this.menuItemTemplate({title: title, mobileUrl: mobileUrl, image: G.currentUser.thumb, cssClass: 'menu_image_fitted' }));
-          self.tabs[title] = U.getPageUrl(mobileUrl);
+          U.addToFrag(frag, this.menuItemTemplate({title: this.loc('profile'), mobileUrl: mobileUrl, image: G.currentUser.thumb, cssClass: 'menu_image_fitted' }));
         } 
       }
+      
       if (G.tabs) {
         var tabs = _.clone(G.tabs);
-//        U.addToFrag(frag, self.menuItemTemplate({title: 'Home', icon: 'home', pageUrl: G.pageRoot}));
-//        U.addToFrag(frag, self.groupHeaderTemplate({value: G.appName}));
-        _.each(tabs, function(t) {
-//          t.mobileUrl = t.mobileUrl || U.getMobileUrl(t.pageUrl);
+        for (var name in tabs) {
+          var t = tabs[name];
           t.pageUrl = t.hash;
-          U.addToFrag(frag, self.menuItemTemplate(t))
-//          self.tabs[t.title] = t.mobileUrl;
-        });
-        
-        tabs = null;
+          U.addToFrag(frag, this.menuItemTemplate(t))
+        }
       }
       
       var params = {lastPublished: '!null'};
@@ -217,7 +199,7 @@ define('views/MenuPanel', [
           var $in = '_uri,' + _.pluck(_.toArray(installed), 'application').join(',');
           
           // Apps I installed
-          U.addToFrag(frag, this.menuItemTemplate({title: this.loc("myApps"), mobileUrl: U.makeMobileUrl('list', "model/social/App", {$in: $in, $myApps: 'y'})}));          
+          U.addToFrag(frag, this.menuItemTemplate({title: this.loc("myApps"), mobileUrl: U.makeMobileUrl('list', "model/social/App", {$in: $in, $myApps: 'y'})}));
         }
         
         // Apps I created
@@ -243,20 +225,22 @@ define('views/MenuPanel', [
       
       if (G.pageRoot != 'app/UrbienApp') {
 //        U.addToFrag(frag, this.homeMenuItemTemplate({title: "Urbien Home", icon: 'repeat', id: 'urbien123'}));
-        U.addToFrag(frag, this.menuItemTemplate({title: this.loc("urbienHome"), icon: 'repeat', id: 'urbien123', mobileUrl: '#'}));
+        U.addToFrag(frag, this.menuItemTemplate({title: this.loc("urbienHome"), icon: 'repeat', id: 'urbien123', mobileUrl: '#home/'}));
       }
       
-      ul.append(frag);      
-      var p = $('#' + this.viewId);
-      p.append(this.$el);
-      if (p  &&  p[0].tagName.toLowerCase() == 'section') 
-        p.css('visibility', 'visible');
+      ul.appendChild(frag);      
+      var p = document.getElementById(this.viewId);
+      p.appendChild(this.el);
+      if (!G.isJQM()) 
+        p.style.visibility = 'visible';
       else {
-        p.panel("open");
-        this.$('#menuItems').listview();
+        $(p).panel().panel("open");
+        $(this.$('#menuItems')).listview();
       }
 //      p.panel().panel("open");
 //      this.$('#menuItems').listview();
+//      if (U.isMasonry(this.vocModel))
+//        this.$el.blurjs({source: '#nabs_grid', radius: 5});
       
       return this;
     }

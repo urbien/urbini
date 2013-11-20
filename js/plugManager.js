@@ -174,9 +174,9 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
   
   function initPlugs(type) {
     // TODO: turn off plugs as needed, instead of this massacre
-    _.each(scriptActions, function(action) {
-      Events.off(action + ':' + type);
-    });
+    for (var i = 0; i < scriptActions.length; i++) {
+      Events.off(scriptActions[i] + ':' + type);
+    }
     
     var plugs = CACHE[type];
     if (!plugs) {
@@ -188,9 +188,13 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
     if (!plugs)
       return;
   
-    _.each(plugs, function(plug) {
-      initPlug(plug);
-    });
+    for (var i = 0; i < plugs.length; i++) {
+      initPlug(plugs[i]);
+    }
+    
+//    _.each(plugs, function(plug) {
+//      initPlug(plug);
+//    });
   };
 
   function fetchPlugs(models) {

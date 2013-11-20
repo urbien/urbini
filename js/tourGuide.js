@@ -156,7 +156,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
 
     Events.on('tourStep', function(step) {
       _step = step;
-      if (_step.get('number') >= _steps.length) {
+      if (!G.currentUser.guest && _step.get('number') >= _steps.length) {
         new MY_TOUR_MODEL().save({
           status: 'completed',
           user: G.currentUser._uri,

@@ -6,31 +6,20 @@
 <!-- Templates -->
 <script type="text/template" id="resource-list">
   <!-- Resource list page -->
-  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div> 
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
-  <!-- div id="sidebarDiv" class="ui-content" role="main">
-
-    <ul id="sidebar"  data-role="listview" data-theme="{{= G.theme.list }}"  data-filter-theme="{{= G.theme.list }}" 
-    {{ if (this.collection.models.length > 5) { }}
-     data-filter="{{= this.canSearch }}" data-filter-placeholder="{{= loc(obj.placeholder || 'search') }}"
-   {{ } }}
-   ></ul-->
-
   <div id="sidebarDiv" role="main">
-
-    <section data-type="list" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
-    <ul id="sidebar"></ul>
-   </section>
-    
-    
-    <div id="nabs_grid" class="masonry">
+    <div id="sidebar" data-theme="{{= G.theme.list }}"  data-filter-theme="{{= G.theme.list }}" 
+      {{ if (this.collection.models.length > 5) { }}
+       data-filter="{{= this.canSearch }}" data-filter-placeholder="{{= loc(obj.placeholder || 'search') }}"
+     {{ } }}
+    >
     </div>
+    <div id="nabs_grid" class="masonry"></div>
     
-    <!-- ul id="columns">
-    </ul -->
     <table class="table-stroke" width="100%" style="display:none" id="comments">
     </table>
     <form data-ajax="false" id="mv" action="#">
@@ -46,20 +35,11 @@
       </ul>
     </form>  
   </div>
-  
-  <!-- div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
-     <a data-role="button" data-icon="repeat" id="homeBtn" target="#">Home</a -->
-     <!-- "Next" button removed after endless page introduction>
-     {{ if (this.collection.length > this.collection.perPage) { }}
-       <a data-role="button" data-shadow="false" data-icon="arrow-right" id="nextPage" target="#" class="next" style="float:right;">{{= loc('next') }}</a>
-     {{ }                                                       }}
-     -->
-  <!-- /div -->
 </script>  
  
 <script type="text/template" id="resource">
   <!-- Single resource view -->  
-  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div>
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div>
   <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
 
   <!-- div id="headerMessageBar"></div -->
@@ -72,7 +52,15 @@
     </div>
     <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     <div id="photogridHeader" style="top: -3px;" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
-    <div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="grid-listview hidden"></div>
+    <!--div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="grid-listview hidden">
+      <div class="dummy head"></div>
+      <div class="dummy tail"></div>
+    </div-->
+    
+    <div id="photogrid" data-inset="true" data-filter="false" class="thumb-gal hidden">
+      <div class="dummy head"></div>
+      <div class="dummy tail"></div>
+    </div>
     
     {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
           <div style="padding:10px;"><a data-role="button" class="{{= 'ui-btn-hover-' + G.theme.swatch }}" data-icon="heart" data-theme="{{= G.theme.swatch }}" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></div>
@@ -203,7 +191,7 @@
 
 <script type="text/template" id="chatPageTemplate">
   <!-- Chat page -->
-  <div id="{{= viewId }}" data-role="panel" data-display="overlay" style="z-index: 3000;" data-theme="{{= G.theme.menu}}"></div> 
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" style="z-index: 3000;" data-theme="{{= G.theme.menu}}" data-position="right"></div> 
   <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" style="z-index: 3001;" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
   <div id="videoChat" class="videoChat">
@@ -337,7 +325,7 @@
 
 <script type="text/template" id="socialNetworkPageTemplate">
 <!-- View where the user can connect various social networks -->  
-  <div id="{{= this.cid }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div>
+  <div id="{{= this.cid }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div>
   <div id="{{= this.cid + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
   <div id="headerDiv"></div>
   <div id="socialButtons" style="min-width:200px; margin: 0 auto;"></div>
@@ -517,6 +505,7 @@
   <!-- Right-side slide-out menu panel -->
   <ul data-role="none" data-theme="{{= G.theme.menu }}" id="rightMenuItems" class="menuItems">
   </ul>
+  
 </script>  
 
 <script type="text/template" id="stringPT">
@@ -612,7 +601,7 @@
 </script>
 
 <script type="text/template" id="imagePT">
-  <img src="{{= value }}" data-for="{{= U.getImageAttribute(this.resource, prop.shortName) }}"></img>
+  <img data-lazysrc="{{= value }}" class="lazyImage" data-for="{{= this.resource ? U.getImageAttribute(this.resource, prop.shortName) : '' }}"></img>
 </script>
 
 
@@ -626,20 +615,24 @@
 <script type="text/template" id="listItemTemplate">
   <!-- JQM one row on a list page -->
   {{ var action = action ? action : 'view' }}
-  <div class="ui-btn-inner ui-li ui-li-has-thumb" style="cursor:pointer;" data-viewid="{{= viewId }}">
-  {{ if (typeof v_submitToTournament == 'undefined') { }}
-    <div class="ui-btn-text" style="padding:.7em 10px 10px 90px;min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
+  <div class="ui-btn-inner ui-li ui-li-has-thumb" data-viewid="{{= viewId }}">
+  {{ if (!obj.v_submitToTournament) { }}
+    <div class="ui-btn-text" style="padding:0.7em 10px 10px 90px;min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
   {{ } }}
-  {{ if (typeof v_submitToTournament != 'undefined') { }}
-    <div class="ui-btn-text" style="padding:.7em 10px 0 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
+  {{ if (obj.v_submitToTournament) { }}
+    <div class="ui-btn-text" style="padding:0em 10px 0 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
   {{ } }}
-    <img src="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : 'icons/blank.png'}}" 
+    <img data-lazysrc="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : G.blankImgDataUrl}}" 
     {{ if (obj.right) { }}  
-      style="
+      class="lazyImage" style="
         left:-{{= left }}px; top:-{{= top }}px;
-        clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px); {{= obj.mH ? 'max-height:' + mH + 'px;' : '' }} {{= obj.mW ? 'max-width:' + mW + 'px;' : '' }}"
+        clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px); {{= obj.mH ? 'max-height:' + mH + 'px;' : '' }}"
     {{ } }}
-    class="ui-li-thumb" data-for="{{= U.getImageAttribute(this.resource, this.imageProperty) }}" /></i> 
+    {{ if (!obj.right) { }}
+      class="lazyImage ui-li-thumb" style="max-width:80px; max-height:80px;"
+    {{ } }}
+    
+    data-for="{{= U.getImageAttribute(this.resource, this.imageProperty) }}" /></i> 
     {{= viewCols }}
   </div>
   </div>
@@ -656,7 +649,7 @@
      {{ } }}
    </div>
   {{ } }}
-  {{= obj.showCount ? '<span class="ui-li-count">' + obj[showCount].count + '</span>' : '' }} 
+  {{= obj.showCount ? '<span class="ui-li-count">' + obj.showCount.count + '</span>' : '' }} 
   -->  
   {{ if (typeof distance != 'undefined') { }}
     <span class="ui-li-count">{{= Math.round(distance * 100) /100  + ' ' + distanceUnits }}</span>
@@ -670,7 +663,7 @@
 
 <script type="text/template" id="listItemTemplateNoImage">
   <!-- one row on a list page (no image) -->
-  <div class="ui-btn-inner ui-li" style="border:none; padding:10px; cursor:pointer;" data-viewid="{{= viewId }}">
+  <div class="ui-btn-inner ui-li" style="padding:10px;" data-viewid="{{= viewId }}">
   {{ if (!obj.v_submitToTournament) { }}  
     <div class="ui-btn-text"
     {{ if (obj.isJst) { }}
@@ -704,7 +697,7 @@
   {{ if (this.resource.isA('Distance')  &&  obj.distance) { }}
     <span class="ui-li-count">{{= distance + ' mi' }}</span>
   {{ } }}
-  {{= obj.showCount ? '<span class="ui-li-count">' + obj[showCount].count + '</span>' : '' }} 
+  {{= obj.showCount ? '<span class="ui-li-count">' + obj.showCount.count + '</span>' : '' }} 
   <!--
   {{ if (typeof v_submitToTournament != 'undefined') { }}
     <a href="{{= v_submitToTournament.uri }}" data-role="button" data-icon="plus" data-theme="e" data-iconpos="notext"></a>
@@ -724,7 +717,7 @@
       {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl) + '"' : '' }} >
     
     <!-- {{ if (!obj.homePage) { }} -->   
-    <img src="{{= obj.image || 'icons/blank.png'}}" class="thumb" 
+    <img src="{{= obj.image || G.blankImgDataUrl }}" class="thumb" 
     {{ if (typeof obj.width != 'undefined'  &&  obj.width.length) { }}  
       style="
         width:{{= width }}px; height:{{= height }}px;
@@ -766,7 +759,7 @@
 <script type="text/template" id="homeMenuItemTemplate">
   <!-- app home page menu item -->
   <li {{= obj.icon ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}  id="{{= typeof id == 'undefined' ? 'home123' : id }}">
-    <img src="{{= typeof image != 'undefined' ? image : 'icons/blank.png'}}" style="float: right;" class="ui-li-thumb" /> 
+    <img src="{{= typeof image != 'undefined' ? image : G.blankImgDataUrl }}" style="float: right;" class="ui-li-thumb" /> 
     <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} target="#">
       {{= title }}
     </a>
@@ -792,7 +785,7 @@
   
   <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }}>{{= name }} {{= obj.gridCols ? '<br/>' + gridCols : '' }}
     {{ if (obj.img) { }}
-      <img src="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
+      <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
       {{ if (obj.width) { }}  
       style="max-height:none;max-width:none;
         height:{{= height }}px;
@@ -800,7 +793,8 @@
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
       {{ } }}
       
-      data-for="{{= U.getImageAttribute(resource, imageProperty) }}" />
+      data-for="{{= U.getImageAttribute(resource, imageProperty) }}"
+      class="lazyImage" />
     {{ } }}
   </a>
   {{ if (typeof comment != 'undefined') { }}
@@ -817,7 +811,8 @@
 >
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
-     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp" data-icon="plus-sign" data-theme="{{= G.theme.list }}">
+     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a>
+     <a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp" data-icon="plus-sign" data-theme="{{= G.theme.list }}">
      {{ if (typeof comment != 'undefined') { }}
        <p style="padding-left: 15px;">{{= comment }}</p>
      {{ } }}
@@ -856,7 +851,7 @@
  {{ params[backlink] = _uri; }}
  {{ if (!value  &&  !chat) { }}  
    <a data-role="button" data-shadow="false" data-shortName="{{= shortName }}" data-title="{{= title }}" style="text-align:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; border:1px solid {{= borderColor }}; background-color: {{= color }}" href="#">
-     <span style="font-size: 16px;"><i class="{{= icon }}""></i>&#160;{{= name }}</span>
+     <span style="font-size: 18px;"><i class="{{= icon }}"></i>&#160;{{= name }}</span>
    </a>
  {{ } }}
  {{ if (obj.value != 'undefined' || chat) { }}  
@@ -959,7 +954,8 @@
 
 <script type="text/template" id="rightMenuButtonTemplate">
   <!-- button that toggles the object properties panel -->
-  <a target="#" href="#{{= viewId }}" data-icon="indent-right">{{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}
+  <a target="#" href="#{{= viewId }}" data-icon="reorder"><!--{{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}-->
+    {{= '<span class="menuBadge">{0}</span>'.format(obj.newAlerts || '') }}
   </a>
 </script>
 
@@ -1003,15 +999,6 @@
     </a>
 
     {{ }); }}
-
-    <!--h5>Login by Email</h5>
-    <form id="loginForm" action="j_security_check" method="POST" onsubmit="return hash(this, 'j_security_check')" autocomplete="off">
-      <table>
-        <tr><td>Email: </td><td><input name="j_username" /></td></tr>
-        <tr><td>Password: </td><td><input type="password" name="j_password" /></td></tr>
-        <tr><td colspan="2"><input type="submit" value="Submit" /></td></tr>
-      </table>
-    </form-->
   </div>
 </script>
 
@@ -1034,20 +1021,18 @@
 
 <script type="text/template" id="publishBtnTemplate">
   <!-- button to (re-)publish an app, i.e. a glorified 'Save App' button -->
-  <!--a target="#" data-icon="book" id="publish" data-role="button" data-position="notext">{{= loc(wasPublished ? 'appChangedClickToRepublish' : 'publishAppWhenDone') }}</a-->
   <a target="#" data-icon="book" id="publish" data-role="button" data-position="notext">{{= loc(wasPublished ? 'appChangedClickToRepublish' : 'publishAppWhenDone') }}</a>
   
 </script>
 
 <script type="text/template" id="resetTemplateBtnTemplate">
 <!-- button to reset a template to its default value -->
-<a target="#" data-icon="retweet" id="resetTemplate" data-role="button" data-position="notext" data-mini="true">{{= loc('resetToDefault') }}</a>
+  <a target="#" data-icon="retweet" id="resetTemplate" data-role="button" data-position="notext" data-mini="true">{{= loc('resetToDefault') }}</a>
 </script>
 
 <script type="text/template" id="doTryBtnTemplate">
   <!-- button that spirits you away to go try a particular app -->
-  <!--a target="#" data-icon="circle-arrow-up" id="doTry" data-role="button" data-position="notext">{{= loc('gotoApp') }}</a-->
-  <a target="#" id="doTry" role="button" style="font-size:1rem"><i class="ui-icon-circle-arrow-up"></i>&#160;{{= loc('gotoApp') }}</a>
+  <a target="#" data-icon="circle-arrow-up" id="doTry" data-role="button" data-position="notext">{{= loc('gotoApp') }}</a>
 </script>
 
 <script type="text/template" id="installAppBtnTemplate">
@@ -1057,8 +1042,8 @@
 
 <script type="text/template" id="forkMeBtnTemplate">
   <!-- a la Github's Fork It button, let's you clone an existing app -->
-  <!--a target="#" data-icon="copy" id="forkMe" data-role="button" data-position="notext">{{= loc('forkMe') }}</a-->
-  <a target="#" id="forkMe" role="button" style="font-size:1rem"><i class="ui-icon-circle-arrow-up"></i>&#160;{{= loc('forkMe') }}</a>
+  <a target="#" data-icon="copy" id="forkMe" data-role="button" data-position="notext">{{= loc('forkMe') }}</a>
+  <!-- a target="#" id="forkMe" role="button" style="font-size:1rem"><i class="ui-icon-circle-arrow-up"></i>&#160;{{= loc('forkMe') }}</a -->
 </script>
 
 <script type="text/template" id="enterTournamentBtnTemplate">
@@ -1177,12 +1162,18 @@
 </script>
 
 <script type="text/template" id="comment-item">
-<td width="1%" valign="top">
-  <a href="{{= U.makePageUrl('view', submitter) }}">
-    <img src="{{= obj['submitter.thumb'] }}" />
+<td valign="top">
+  <a href="{{= U.makePageUrl('view', submitter) }}" style="position:relative;"> 
+    <img src="{{= obj['submitter.thumb'] }}" 
+    
+      {{ if (obj.top) { }}     
+        style="position:absolute; left:-{{= left }}px; top:-{{= top }}px;
+        clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
+      {{ } }}
+    />
   </a>
 </td>
-<td width="99%" class="cl" valign="top">
+<td class="cl" style="padding-left:60px;" valign="top">
   <span class="commentListDate" style="float:right;">{{= G.U.getFormattedDate(submitTime, true) }}</span>
   <a href="{{= U.makePageUrl('view', submitter) }}">
     {{= obj['submitter.displayName'] }}
@@ -1201,12 +1192,13 @@
   <div class="anab" data-viewid="{{= viewId }}">
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img src="{{= obj.resourceMediumImage || 'icons/blank.png' }}" border="0" 
+        <img data-lazysrc="{{= obj.resourceMediumImage || G.blankImgDataUrl }}" border="0" 
         {{ if (typeof imgWidth != 'undefined') { }} 
          style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"
          {{ } }}
         
-         data-for="{{= U.getImageAttribute(this.resource, 'resourceMediumImage') }}" />
+         data-for="{{= U.getImageAttribute(this.resource, 'resourceMediumImage') }}"
+         class="lazyImage" />
       </a>
     </div>
   </div>
@@ -1214,7 +1206,7 @@
     <tr>
       <td class="urbien" width="55px">
         <a href="{{= modifiedBy }}">
-          <img src="{{= obj.v_modifiedByPhoto || 'icons/blank.png' }}" data-for="{{= U.getImageAttribute(this.resource, 'v_modifiedByPhoto') }}" border="0" />
+          <img data-lazysrc="{{= obj.v_modifiedByPhoto || G.blankImgDataUrl }}" class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, 'v_modifiedByPhoto') }}" border="0" />
         </a>
       </td>
       <td>
@@ -1273,17 +1265,14 @@
 <script type="text/template" id="masonry-list-item">
   <!-- a masonry item brick -->
   
-  <div class="anab">
-    <div class="galleryItem_css3">
-      <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img src="{{= obj.resourceMediumImage || 'icons/blank.png' }}" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}"
+  <div class="anab" data-viewid="{{= viewId }}">
+    <div class="galleryItem_css3"
          {{ if (obj.imgWidth) { }}
-           {{ if (!obj.top) { }}
-             <!-- style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;" -->
-             style="height:{{= imgHeight }}px;"
-           {{ } }}
-        {{ } }}
-        ></img>
+              style="{{= (obj.top ? '' : 'height:' + imgHeight + 'px;') + (obj.left ? '' : 'width:' + imgWidth + 'px;') }}"
+         {{ } }}
+    >
+      <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
+        <img data-lazysrc="{{= obj.resourceMediumImage || G.blankImgDataUrl }}" class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" />
       </a>
     </div>
     <!-- {{= typeof friendsCount == 'undefined' ? '' : '<div class="appBadge">' + friendsCount + '</div>' }} -->
@@ -1345,6 +1334,38 @@
   </form>
 </script>
 
+<script type="text/template" id="horizontalListItem">
+  <a href="{{= target }}">
+  </a> 
+    {{ if (obj.image) { }}
+      <img data-lazysrc="{{= image }}" class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" 
+      {{ if (obj.right) { }}  
+          style="position:absolute; left:-{{= left }}px; top:-{{= top }}px;
+          clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
+      {{ } }}
+      />    
+    {{ }              }}
+  <div class="phOverlay">
+    {{= obj.title ? '<h3>{0}</h3>'.format(obj.title) : '' }}
+    {{= obj.caption  &&  obj.caption.trim() ? '<p>{0}</p>'.format(obj.caption) : '' }}
+    {{= typeof obj.superscript !== 'undefined' ? '<p class="ui-li-aside">{0}</p>'.format(superscript) : '' }}
+  </div>
+</script>
+
+<script type="text/template" id="intersectionListItemTemplate">
+  <li data-viewid="{{= viewId }}">
+    {{= a }}
+    {{= b }}
+  </li>
+</script>
+
+<script type="text/template" id="intersectionListItemTemplate">
+  <li data-viewid="{{= viewId }}">
+    {{= a }}
+    {{= b }}
+  </li>
+</script>
+
 <script type="text/template" id="photogridTemplate">
   <!-- an image grid with per-image overlays -->
 
@@ -1352,10 +1373,10 @@
     {{ for (var i = 0; i < items.length; i++) { }}
     {{   var item = items[i];                   }}
 <!--      <li style="{{= ('float: ' + (item.float || 'left')) + (i > 0 && i < items.length - 1 ? ';margin-left: 13%; margin-right:13%;' : '') }}">    -->
-      <li style="{{= ('float: ' + (item.float || 'left')) + (item.width ? ';width:' + item.width : '') + (item.height ? ';height:' + item.height : '') + (item.margin ? ';margin:' + item.margin : '') }}">
+      <li style="{{= (item.width ? ';width:' + item.width : '') + (item.height ? ';height:' + item.height : '') + (item.margin ? ';margin:' + item.margin : '') }}">
         <a href="{{= item.target }}">
           {{ if (item.image) { }}
-            <img src="{{= item.image }}" data-for="{{= U.getImageAttribute(item, item.imageProperty) }}" />    
+            <img data-lazysrc="{{= item.image }}" class="lazyImage" data-for="{{= U.getImageAttribute(item, item.imageProperty) }}" />    
           {{ }              }}
 
           {{= item.title ? '<h3>{0}</h3>'.format(item.title) : '' }}
@@ -1403,8 +1424,8 @@
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">
 <!-- the edit page for any particular resource -->
-<div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}"></div> 
-<div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu }}" data-position="right"></div> 
+<div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
+<div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu ? G.theme.propertiesMenu : G.theme.menu }}" data-position="right"></div> 
 <!--div id="headerMessageBar"></div-->
 <div id="headerDiv"></div>
 <div id="resourceEditView">
@@ -1546,14 +1567,14 @@
     {{ if (obj.img) { }}    
       style="padding-left: 60px; padding-bottom:0px; min-height: 40px;"><img name="{{= shortName }}" src="{{= img }}" style="
       
-    {{ if (typeof obj.width != 'undefined') { }}  
-        height:{{= height }}px;
-        left:-{{= left }}px; top:-{{= top }}px;
-        clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
-    {{ } }}
-    {{ if (typeof obj.width == 'undefined') { }}  
-        max-height: 50px;
-    {{ } }}
+      {{ if (obj.width) { }}  
+          height:{{= height }}px;
+          left:-{{= left }}px; top:-{{= top }}px;
+          clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
+      {{ } }}
+      {{ if (typeof obj.width == 'undefined') { }}  
+          max-height: 50px;
+      {{ } }}
       
       "/>
     {{ }              }}
@@ -1570,7 +1591,7 @@
   
   {{ if (prop.range && ((isImage && prop.camera) || isVideo || isAudio)) { }}
     <a href="#cameraPopup" class="cameraCapture" target="#" data-icon="{{= isVideo ? 'facetime-video' : isAudio ? 'circle' : 'camera' }}" data-prop="{{= shortName }}"></a>
-    {{ if (!G.canWebcam) { }}
+    {{ if (!G.canWebcam || (isVideo && G.browser.firefox)) { }}
       <input data-role="none" type="file" class="cameraCapture" accept="{{= isVideo ? 'video/*' : isAudio ? 'audio/*' : 'image/*' }};capture=camera;" style="visibility:hidden; display:none;" data-prop="{{= shortName }}" />
     {{ }                   }}
   {{ }                                                                                                                                                                                        }}

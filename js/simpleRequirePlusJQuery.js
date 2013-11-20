@@ -9617,10 +9617,15 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
       baseUrl: ''
     };
     
-    
+
+  function getRealName(name) {
+    var paths = config.paths;
+    return paths && paths[name] || name;
+  }
+
   function toUrl(name) {
     var paths = config.paths;
-    var url = config.baseUrl + ((paths && paths[name]) || name);
+    var url = config.baseUrl + getRealName(name);
     return url.match(extRegExp) ? url : url + '.js';
   }
 
@@ -9663,9 +9668,19 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     var url = toUrl(name);
     var dfd = moduleMap[url] = moduleMap[url] || $.Deferred();
     defineMap[name] = true;
-    require(deps, function() {
+    
+    function _define() {
       dfd.resolve(cb.apply(root, arguments));
-    });
+    }
+    
+    if (deps && deps.length)
+      require(deps, _define);
+    else
+      _define();
+    
+//    require(deps, function() {
+//      dfd.resolve(cb.apply(root, arguments));
+//    });
   }
   
   /**
@@ -9719,31 +9734,30 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
       var dfd = moduleMap[url];
       if (!dfd) {
         dfd = moduleMap[url] = $.Deferred();
-        require.load(name).then(function() {
-          if (dfd.state() === 'resolved')
-            return;
+        var shim = config.shim && config.shim[name],
+            deps = shim && (shim.deps || shim),
+            exports = shim && shim.exports;
           
-          if (arguments.length) {
-            return dfd.resolve.apply(dfd, arguments);
-          }
-          
-          var shim = config.shim && config.shim[name],
-              deps = shim && (shim.deps || shim),
-              exports = shim && shim.exports;
-            
-          if (shim) { // non AMD
-            require(deps, function() {
+        if (shim) {// non AMD
+          require(deps).done(function() {
+            require.load(name).done(function() {
               if (exports)
                 dfd.resolve(root[exports]);
               else
                 dfd.resolve();
-            });
-          }
-          else if (!defineMap[name]) { // non AMD, no deps
-            dfd.resolve();
-          }
-          
-        }, dfd.reject);        
+            }).fail(dfd.reject);
+          }).fail(dfd.reject);
+        }
+        else {
+          require.load(name).done(function() {
+            if (dfd.state() == 'pending') {
+              if (arguments.length) 
+                dfd.resolve.apply(dfd, arguments);
+              else if (!defineMap[name]) // will be resolved via define
+                dfd.resolve();
+            }
+          }).fail(dfd.reject);
+        }
       }
 
       var prereq = dfd.promise();
@@ -9779,6 +9793,7 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
   
   require.load = load;
   require.toUrl = toUrl;
+  require.getRealName = getRealName;
   root.require = require;
   root.define = define;
   var main = $('[data-main]');
@@ -9796,4 +9811,6 @@ if ( typeof define === "function" && define.amd && define.amd.jQuery ) {
     s.src = main; 
     head.appendChild(s);
   }
+  
+  window.moduleMap = moduleMap;
 })(jQuery, undefined);

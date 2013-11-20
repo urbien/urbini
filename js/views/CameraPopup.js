@@ -10,24 +10,28 @@ define('views/CameraPopup', [
       Whammy, 
       Recorder,
       URL = window.URL || window.webkitURL,
-      AudioContext = /*window.AudioContext ||*/ window.webkitAudioContext, // firefox doesn't have audioContext.createMediaStreamSource
-      $wnd = $(window);
+      AudioContext = /*window.AudioContext ||*/ window.webkitAudioContext; // firefox doesn't have audioContext.createMediaStreamSource
 
   return BasicView.extend({
     template: 'cameraPopupTemplate',
     tagName: 'li',
+    autoFinish: false,
     events: {
 //      'click #camVideo'         : 'stop',
 //      'click canvas'            : 'start',
       'click #cameraSubmitBtn'  : 'submit',
       'click #cameraShootBtn'   : 'startOrStop',
-      'click #cameraCancelBtn'  : 'destroy',
+      'click #cameraCancelBtn'  : 'destroy'
+    },
+    
+    windowEvents: {
       'resize'                   : 'onresize',
       'orientationchange'        : 'onorientationchange'
     },
+    
     initialize: function(options) {
       _.bindAll(this, 'render', 'start', 'stop', 'reset', 'drawVideoFrame_', 'checkVideoSize');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
       this.makeTemplate(this.template, 'template', this.vocModel.type);
       this.prop = options.prop;
       var prop = this.vocModel.properties[this.prop],
@@ -65,12 +69,11 @@ define('views/CameraPopup', [
       else
         this.readyDfd.resolve();
 
-      Events.on('pageChange', function() {
+      this.listenTo(Events, 'pageChange', function() {
         if (!this.pageView.isActive())
           this.destroy();
       }, this);
       
-      this.autoFinish = false;
       return this;
     },
     destroy: function() {
@@ -107,10 +110,8 @@ define('views/CameraPopup', [
       };
       
       if (!this.isAudio) {
-        _.extend(result, {
-          width: this.$canvas.width(),
-          height: this.$canvas.height()
-        });
+        result.width = this.canvas.width;
+        result.height = this.canvas.height;
       }
       
       this.trigger(this.isVideo ? 'video' : this.isAudio ? 'audio' : 'image', result);
@@ -174,13 +175,15 @@ define('views/CameraPopup', [
       this.setstate('reviewing');
     },
     render: function() {
-      var args = arguments;
+      var self = this,
+          args = arguments;
+      
       this.ready.done(function() {
-        this.renderHelper.apply(this, arguments);
-      }.bind(this));
+        self.renderHelper.apply(self, arguments);
+      });
     },
     renderHelper: function(options) {    
-      this.$el.html(this.template({
+      this.html(this.template({
         video: this.isVideo,
         audio: this.isAudio,
         image: this.isImage
@@ -188,33 +191,30 @@ define('views/CameraPopup', [
       
       var doc = document;
       $('#cameraPopup').remove();
+      this.$('#cameraCancelBtn')[0].addEventListener('click', this.destroy);
       $(doc.body).append(this.el);
-      this.$popup = $('#cameraPopup');
-      this.setElement(this.$popup[0]);
+      this.popup = $('#cameraPopup');
+      this.setElement(this.popup);
 
-      this.$popup.trigger('create');
-      this.$popup.popup().popup("open");
+      $(this.popup).trigger('create').popup().popup("open");
       
       var streaming     = false;
-      this.$previewDiv = this.$('#camPreview');
-      this.previewDiv = this.$previewDiv[0];
+      this.previewDiv = this.$('#camPreview')[0];
       if (this.hasVideo) {
         // video
-        this.$video       = this.$('#camVideo');
-        this.video        = this.$video[0];
+        this.video       = this.$('#camVideo')[0];
         this.video.muted  = true;
   
-        this.$canvas      = this.$('#canvas');
-        this.canvas       = this.$canvas[0];
+        this.canvas      = this.$('#canvas')[0];
         this.canvas.width = this.videoWidth;
         this.canvas.height = this.videoHeight;
       }
       
-      this.$shootBtn    = this.$('#cameraShootBtn');
-      this.$submitBtn   = this.$('#cameraSubmitBtn');
+      this.shootBtn    = this.$('#cameraShootBtn')[0];
+      this.submitBtn   = this.$('#cameraSubmitBtn')[0];
       this.rafId        = null;
       this.frames       = null;
-      this.initialShootBtnText = this.initialShootBtnText || this.$shootBtn.find('.ui-btn-text').text();
+      this.initialShootBtnText = this.initialShootBtnText || this.shootBtn.getElementsByClassName('ui-btn-text')[0].innerText;
         
       // audio
       if (this.hasAudio) {
@@ -288,7 +288,7 @@ define('views/CameraPopup', [
         return;
       }
       
-      this.$shootBtn.removeClass('ui-disabled');
+      this.shootBtn.classList.remove('ui-disabled');
       this.adjustPopup();
     },
     
@@ -306,19 +306,20 @@ define('views/CameraPopup', [
       this.audioInput = this.realAudioInput;
       this.audioInput.connect(this.inputPoint);
       this.audioRecorder = new Recorder(this.inputPoint);
-      this.$shootBtn.removeClass('ui-disabled');
+      this.shootBtn.classList.remove('ui-disabled');
     },
 
     adjustPopup: function() {
-      var vWidth = this.video.videoWidth,
-          vHeight = this.video.videoHeight,
-          wWidth = $wnd.width(),
-          wHeight = $wnd.height();
-      
-      var $popup = this.$el.parent();
-      var offset = $(document).scrollTop();
-      $popup.css('top', Math.round(wHeight / 2 - vHeight / 2) + offset);
-      $popup.css('left', Math.round(wWidth / 2 - vWidth / 2));
+//      var vWidth = this.video.videoWidth,
+//          vHeight = this.video.videoHeight,
+//          viewport = G.viewport,
+//          wWidth = viewport.width,
+//          wHeight = viewport.height;
+//      
+//      var popup = this.el.parentNode;
+//      var offset = $(document).scrollTop();
+//      $popup.css('top', Math.round(wHeight / 2 - vHeight / 2) + offset);
+//      $popup.css('left', Math.round(wWidth / 2 - vWidth / 2));
     },
     
     onresize: function(e) {
@@ -383,27 +384,27 @@ define('views/CameraPopup', [
       
       colorCl = colorCl || 'black';
       if (this.isVideo || this.isImage) {
-        this.$video[videoOn ? 'show' : 'hide']();
-        this.$canvas[videoOn ? 'hide' : 'show']();
+        this.video[videoOn ? 'show' : 'hide']();
+        this.canvas[videoOn ? 'hide' : 'show']();
       }
       
       if (this.rendered) {
         if (this.isVideo || this.isAudio) {
-          this.$shootBtn.find('.ui-btn-text').html(shootBtnText);
+          this.shootBtn.getElementsByClassName('ui-btn-text')[0].html(shootBtnText);
         }
         else {
-          this.$shootBtn.find('.ui-btn-text').html(videoOn ? this.initialShootBtnText : 'Redo');
+          this.shootBtn.getElementsByClassName('ui-btn-text')[0].html(videoOn ? this.initialShootBtnText : 'Redo');
         }
         
         _.each([camCl, repeatCl, stopCl, 'red', 'black'], function(cl) {          
-          shootBtnGuts = shootBtnGuts && shootBtnGuts.length ? shootBtnGuts : this.$shootBtn.find('.' + cl);
-          shootBtnGuts.removeClass(cl);
+          shootBtnGuts = shootBtnGuts && shootBtnGuts.length ? shootBtnGuts : this.shootBtn.$('.' + cl);
+          shootBtnGuts.classList.remove(cl);
         }.bind(this));
         
-        this.$shootBtn.button();
-        shootBtnGuts.addClass(shootAddCl);
-        this.$submitBtn[videoOn ? 'addClass' : 'removeClass']('ui-disabled');
-        this.$shootBtn.removeClass('ui-disabled');
+        $(this.shootBtn).button();
+        shootBtnGuts.classList.add(shootAddCl);
+        this.submitBtn[videoOn ? '$addClass' : '$removeClass']('ui-disabled');
+        this.shootBtn.classList.remove('ui-disabled');
       }
 
 //      if (shootBtnGuts && colorCl)
@@ -416,15 +417,15 @@ define('views/CameraPopup', [
             this.video.pause();
             this.embedVideoPreview();
           	this.exportAudioForDownload();
-            this.$canvas.hide();
-            this.$video.hide();
+            this.canvas.$hide();
+            this.video.$hide();
           }
           else
-	        this.exportAudioForDownload();
+            this.exportAudioForDownload();
         }
         else {
           if (this.isVideo) {
-            this.$previewDiv.hide();
+            this.previewDiv.$hide();
             this.video.play();
           }
         }
@@ -469,8 +470,7 @@ define('views/CameraPopup', [
         }
         
         this.previewDiv.appendChild(audio);
-        this.$audioPrev = this.$('#camPreview audio');
-        this.audioPrev = this.$audioPrev[0];
+        this.audioPrev = this.$('#camPreview audio')[0];
       } else {
         window.URL.revokeObjectURL(audio.src);
       }
@@ -506,8 +506,7 @@ define('views/CameraPopup', [
         video.style.width = this.videoWidth + 'px';
         video.style.height = this.videoHeight + 'px';
         this.previewDiv.appendChild(video);
-        this.$videoPrev = this.$('#camPreview video');
-        this.videoPrev = this.$videoPrev[0];
+        this.videoPrev = this.$('#camPreview video')[0];
       } else {
         window.URL.revokeObjectURL(video.src);
       }
@@ -537,7 +536,10 @@ define('views/CameraPopup', [
       this.videoUrl = url;
       video.src = url;
 //      downloadLink.href = url;
-      this.$previewDiv.width(this.videoWidth).height(this.videoHeight).show();
+      var style = this.previewDiv.style;
+      style.width = this.videoWidth;
+      style.height = this.videoHeight;
+      this.previewDiv.$show();
     },
 
     drawVideoFrame_: function(time) {

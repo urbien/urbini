@@ -28,10 +28,9 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
     var filter = U.getQueryParams(this.data),
         meta = this.data.vocModel.properties;
     
-    if (_.any(_.keys(filter), function(param) {
+    if (_.any(_.keys(filter), function(param) { // no support for searching by compound params like a.b yet
       return /\./.test(param);
     })) {
-      debugger;
       return G.getRejectedPromise();
     }
 
@@ -78,9 +77,8 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
     if (!this._preProcess())
       return;
     
-    var isStale = this._isStale();
     if (this._isUpdate()) {
-      if (this._isForceFetch() || isStale)
+      if (this._isForceFetch() || this._isStale())
         this._delayedFetch(); // shortPage ? null : lf); // if shortPage, don't set If-Modified-Since header
       else if (this.data.length)
         this._success(null, 'success', addEmptyResponseHeaderFn({
@@ -95,7 +93,8 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
         return;
       }
       
-      if (isStale && this.info.start < this.data.length) {
+      if (this._isStale() && this.info.start < this.data.length) { 
+        // we've got some resources at the end of an incomplete page, meaning there's nothing to fetch from the server
         this._success(null, 'success', addEmptyResponseHeaderFn({status: 304})); // no need to refetch from db, we already did, and there's nothing to fetch from the server it seems
         return; 
       }
@@ -107,14 +106,15 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
       return;
     }
     
-    Synchronizer.prototype._read.call(this);
+    return Synchronizer.prototype._read.call(this);
   };
   
   CollectionSynchronizer.prototype._onDBSuccess = function(results) {
     if (!results || !results.length)
       return this._fetchFromServer(100);
           
-    var numBefore = this.data.length,
+    var info = this.info,
+        numBefore = this.data.length,
         numAfter,
         lastFetchedTS,
         pagination = {
@@ -126,26 +126,25 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
 //            offset: this.options.start
 //          }
 //        };
-      
-    try {
-      if (this._isForceFetch())
-        return this._fetchFromServer();
+
+    this._success(results, 'success', {
+      getResponseHeader: function(p) {
+        if (p == 'X-Pagination')
+          return JSON.stringify(pagination);
+      }
+    }); // add to / update collection
+
+    if (this._isForceFetch())
+      return this._fetchFromServer();
         
-      numAfter = this.data.length;
-      if (!this._isUpdate() && numAfter === numBefore) // db results are useless
-        return this._delayedFetch();
-      
-      lastFetchedTS = Synchronizer.getLastFetched(results, this._getNow());
-      if (this._isStale(lastFetchedTS, this._getNow()))
-        return this._delayedFetch();
-    } finally {    
-      this._success(results, 'success', {
-        getResponseHeader: function(p) {
-          if (p == 'X-Pagination')
-            return JSON.stringify(pagination);
-        }
-      }); // add to / update collection
-    }
+    numAfter = this.data.length;
+    info.isUpdate = info.isUpdate || numAfter >= info.end; // || shortPage;
+    if (!info.isUpdate && numAfter === numBefore) // db results are useless
+      return this._delayedFetch();
+    
+    lastFetchedTS = Synchronizer.getLastFetched(results, this._getNow());
+    if (this._isStale(lastFetchedTS, this._getNow()))
+      return this._delayedFetch();
   };
 
   CollectionSynchronizer.prototype._getItems = function(options) {
@@ -156,6 +155,7 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
         IDB = IndexedDBModule.getIDB(),
         type = U.getTypeUri(options.key),
         filter = options.filter,
+        limit = options.limit,
         data = options.data,
         props = data.vocModel.properties,
         temps = {},
@@ -172,8 +172,10 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
     }
           
     for (var key in filter) {
-      var val = filter[key];
-      if (U.isResourceProp(props[key]) && U.isTempUri(val)) {
+      var val = filter[key],
+          prop = props[key];
+      
+      if (prop && U.isResourceProp(prop) && U.isTempUri(val)) {
         temps[key] = val;
       }
     }

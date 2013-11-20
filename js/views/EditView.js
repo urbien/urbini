@@ -7,10 +7,11 @@ define('views/EditView', [
   'cache',
   'vocManager',
   'views/BasicView',
-  'jqueryMobile'
-], function(G, Events, Errors, U, C, Voc, BasicView, $m) {
-  var spinner = 'loading edit view';
-  var scrollerClass = 'i-txt',
+  '@widgets',
+  'lib/fastdom'
+], function(G, Events, Errors, U, C, Voc, BasicView, $m, Q) {
+  var spinner = 'loading edit view',
+      scrollerClass = 'i-txt',
       switchClass = 'boolean',
       secs = [/* week seconds */604800, /* day seconds */ 86400, /* hour seconds */ 3600, /* minute seconds */ 60, /* second seconds */ 1];
       
@@ -19,8 +20,16 @@ define('views/EditView', [
     return prop.required  &&  currentAtts[p]  &&  prop.containerMember && (isEdit || reqParams[p]);
   };
   
+  function getRemoveErrorLabelsFunction(el) {
+    var parent = el.parentNode;
+    return function() {
+      parent.$('label.error').$remove();
+    };
+  };
+
   var scrollerTypes = ['date', 'duration'];
   return BasicView.extend({
+    autoFinish: false,
     initialize: function(options) {
       var self = this;
       _.each(scrollerTypes, function(s) {
@@ -29,11 +38,11 @@ define('views/EditView', [
         }
       });
     
-      _.bindAll(this, 'render', 'click', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 
+      _.bindAll(this, 'render', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 
                       'onSelected', 'setValues', 'getInputs', 'getScrollers', 'getValue', 'addProp', 
                       'scrollDate', 'scrollDuration', 'capturedImage', 'onerror', 'onsuccess', 'onSaveError',
                       'checkAll', 'uncheckAll'); // fixes loss of context for 'this' within methods
-      this.constructor.__super__.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
       this.makeTemplate('editRowTemplate', 'editRowTemplate', type);
@@ -77,7 +86,7 @@ define('views/EditView', [
       
       this.ready = $.when(codemirrorDfd.promise());
       if (this.saveOnEdit) {
-        Events.on('pageChange', function(from, to) {
+        this.listenToOnce(Events, 'pageChange', function(from, to) {
           // don't autosave new resources, they have to hit submit on those...or is that weird?
           if (!this.isChildOf(from) || this.resource.isNew() || U.getHash().startsWith('chooser')) 
             return;
@@ -92,35 +101,36 @@ define('views/EditView', [
         this._submitted = false;
       }.bind(this));
       
-      this.autoFinish = false;
       return this;
     },
     events: {
-      'click .cancel'                     :'cancel',
-      'submit form'                        :'submit',
+      'click #cancel'                     :'cancel',
+      'submit form'                       :'submit',
       'click .resourceProp'               :'chooser',
       'click input[data-duration]'        :'scrollDuration',
       'click input[data-date]'            :'scrollDate',
 //      'click select[data-enum]': 'scrollEnum',
       'click .cameraCapture'              :'cameraCapture',
-      'change .cameraCapture'              :'cameraCapture',
+      'change .cameraCapture'             :'cameraCapture',
       'click #check-all'                  :'checkAll',
       'click #uncheck-all'                :'uncheckAll',
-      'click'                             :'click'
+      'keydown input'                     :'onKeyDownInInput',
+      'change select'                     :'onSelected',
+      'change input[type="checkbox"]'     :'onSelected'
     },
 
     /** 
      * find all non-checked non-disabled checkboxes, check them, trigger jqm to repaint them and trigger a 'change' event so whatever we have tied to it is triggered (for some reason changing the prop isn't enough to trigger it)
      */
     checkAll: function() {
-      this.$form.find("input:checkbox:not(:checked):not(:disabled)").prop('checked', true).checkboxradio('refresh').change();
+      $(this.form).find("input:checkbox:not(:checked):not(:disabled)").prop('checked', true).checkboxradio('refresh').change();
     },
 
     /**
      * find all checked non-disabled checkboxes, uncheck them, trigger jqm to repaint them and trigger a 'change' event so whatever we have tied to it is triggered (for some reason changing the prop isn't enough to trigger it)
      */
     uncheckAll: function() {
-      this.$form.find("input:checkbox:checked:not(:disabled)").prop('checked', false).checkboxradio('refresh').change();
+      $(this.form).find("input:checkbox:checked:not(:disabled)").prop('checked', false).checkboxradio('refresh').change();
     },
 
     capturedImage: function(options) {
@@ -175,16 +185,11 @@ define('views/EditView', [
 
     cameraCapture: function(e) {
       var self = this,
-          target = e.currentTarget;
-      
-//      if (!G.navigator.isChrome) {
-//        U.alert({
-//          msg: "Your browser doesn't support recording video"
-//        });
-//        
-//        return;
-//      }
-      
+          target = e.currentTarget,
+          propName = target.dataset.prop,
+          prop = self.vocModel.properties[propName],
+          isImage = prop.range.endsWith('model/portal/Image');
+            
       function makeCameraPopup() {
         Events.stopEvent(e);
         var link = $(target);
@@ -194,10 +199,13 @@ define('views/EditView', [
             self.stopListening(self.CameraPopup);
           }
           
-          self.CameraPopup = new CameraPopup({model: self.model, parentView: self, prop: link.data('prop')});
-          self.CameraPopup.render();
-          self.listenTo(self.CameraPopup, 'image', self.capturedImage);
-          self.listenTo(self.CameraPopup, 'video', self.capturedVideo);
+          self.cameraPopup = new CameraPopup({model: self.model, parentView: self, prop: link.data('prop')});
+          self.cameraPopup.render();
+          self.listenTo(self.cameraPopup, 'image', self.capturedImage);
+          self.listenTo(self.cameraPopup, 'video', self.capturedVideo);
+          self.cameraPopup.onload(function() {            
+            self.addChild(self.cameraPopup);
+          });
         });        
       }
       
@@ -214,11 +222,7 @@ define('views/EditView', [
       };
       
       function loadFile() {
-        var propName = target.dataset.prop,
-            prop = self.vocModel.properties[propName],
-            file = target.files[0],
-            isImage = prop.range.endsWith('model/portal/Image');
-        
+        var file = target.files[0];
         if (isImage) {
           var reader = new FileReader();
           reader.onload = function(e) {
@@ -243,8 +247,18 @@ define('views/EditView', [
       };
       
       if (G.canWebcam) {
-        makeCameraPopup();
-        return;
+//        if (!isImage && !G.browser.chrome) {
+//          U.alert({
+//            msg: "Your browser doesn't support recording video"
+//          });
+//          
+//          return;
+//        }
+
+        if (isImage || G.browser.chrome) {
+          makeCameraPopup();
+          return false;
+        }
       }
       
       // not using camera popup, using <input type="file" /> possibly with accept="image/*|audio/*|video/*;capture=camera;"
@@ -257,6 +271,8 @@ define('views/EditView', [
       else if (e.type === 'change') {
         loadFile();
       }
+      
+      return false;
     },
     
     disable: function(msg) {
@@ -387,7 +403,7 @@ define('views/EditView', [
         if (!dn)
           dn = prop.charAt(0).toUpperCase() + prop.slice(1);
         var name = chosenRes.get('davDisplayName');
-        link.innerHTML = '<span style="font-weight:bold">' + dn + '</span> ' + chosenRes.get('davDisplayName');
+        link.innerHTML ='<span style="font-weight:bold">' + dn + '</span> ' + chosenRes.get('davDisplayName');
         this.setResourceInputValue(link, uri);
         if (U.isAssignableFrom(vocModel, commonTypes.App)  &&  U.isAssignableFrom(chosenRes.vocModel, commonTypes.Theme)) {
           if (G.currentApp) {
@@ -432,18 +448,18 @@ define('views/EditView', [
       }
 
 //      Events.off('chose:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
-//      Events.on('chose:' + prop, this.onChoose(e, prop), this);
-      Events.off('chose:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
-      Events.off('choseMulti:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
-      Events.on('chose:' + prop, this.onChoose(e, prop), this);
-      Events.on('choseMulti:' + prop, this.onChooseMulti(e, prop), this);
+//      this.listenTo(Events, 'chose:' + prop, this.onChoose(e, prop));
+      this.stopListening(Events, 'chose:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
+      this.stopListening(Events, 'choseMulti:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
+      this.listenTo(Events, 'chose:' + prop, this.onChoose(e, prop));
+      this.listenTo(Events, 'choseMulti:' + prop, this.onChooseMulti(e, prop));
       Events.trigger('loadChooser', this.resource, this.vocModel.properties[prop], e);
       
 //      var self = this;
 //      var vocModel = this.vocModel, type = vocModel.type, res = this.resource, uri = res.getUri();
 //      var pr = vocModel.properties[prop];
 //      Events.off('chooser:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
-//      Events.on('chooser:' + prop, this.onChoose(e, prop), this);
+//      this.listenTo(Events, 'chooser:' + prop, this.onChoose(e, prop));
 //      var params = {};
 //      if (pr.where) {
 //        params = U.getQueryParams(pr.where);
@@ -586,52 +602,60 @@ define('views/EditView', [
       _.extend(this, params);
     },
     resetForm: function() {
-      $('form').clearForm();      
+      $(this.$('form')).clearForm();      
     },
     getInputs: function() {
-      return this.$form.find('[data-formEl]');
+      return this.form.$('[data-formEl]');
     },
     getScrollers: function() {
-      return this.$form.find('.' + scrollerClass);
+      return this.form.$('.' + scrollerClass);
     },
     
     refreshScrollers: function() {
       if (this.loadedScrollers) {
         var meta = this.vocModel.properties;
         var self = this;
-        this.getScrollers().each(function() {
+        this.getScrollers().$forEach(function() {
           $(this).mobiscroll('destroy');
           var prop = meta[this.name];
           self.getScroller(prop, this);
         });
       }
     },
-    isScroller: function(input) {
-      input = input instanceof $ ? input : $(input);
-      return input.hasClass(scrollerClass);
-    },
     fieldError: function(resource, errors) {
       if (arguments.length === 1)
         errors = resource;
       
       var badInputs = [];
-      var errDiv = this.$form.find('div[name="errors"]');
-      errDiv.empty();
-      var inputs = this.getInputs();
+      var errDiv = this.form.querySelectorAll('div[name="errors"]');
+      errDiv.$empty();
+      errDiv = errDiv[0];
+//      errDiv.empty();
+      var inputs = this.getInputs(),
+          msg,
+          madeError = false,
+          input,
+          i;
+      
       for (name in errors) {
-        var msg = errors[name];
-        var madeError = false;
-        var input = inputs.filter(function(idx, inp) {
-          return (inp.name === name);
-        });
+        input = null;
+        msg = errors[name];
+        madeError = false;
+        i = inputs.length;
+        while (i--) {
+          if (inputs[i].name == name) {
+            input = inputs[i];
+            break;
+          }
+        }
         
         var id;
-        if (input.length) {
-          badInputs.push(input[0]);
-          var id = input[0].id;
-          var err = this.$form.find('label.error[for="{0}"]'.format(id));
-          if (err.length) {
-            err[0].innerText = msg;
+        if (input) {
+          badInputs.push(input);
+          var id = input.id;
+          var err = this.form.querySelector('label.error[for="{0}"]'.format(id));
+          if (err) {
+            err.innerText = msg;
             madeError = true;
           }
         }
@@ -643,9 +667,9 @@ define('views/EditView', [
             label.setAttribute('for', id);
           label.setAttribute('class', 'error');
           if (input.length)
-            input[0].parentNode.insertBefore(label, input.nextSibling);
+            input.parentNode.insertBefore(label, input.nextSibling);
           else
-            errDiv[0].appendChild(label);
+            errDiv.appendChild(label);
         }
       }
       
@@ -686,23 +710,23 @@ define('views/EditView', [
     },
     
     getValue: function(input) {
-      var jInput = $(input);
+//      var jInput = $(input);
       var val;
       
       var p = this.vocModel.properties[input.name];
       if (_.contains(input.classList, switchClass))
         val = input.value === 'Yes' ? true : false;
       else if (p && p.multiValue)
-        val = this.getResourceInputValue(jInput); //input.innerHTML;
+        val = this.getResourceInputValue(input); //input.innerHTML;
       else
-        val = input.tagName === 'A' ? this.getResourceInputValue(jInput) : input.value;
+        val = input.tagName === 'A' ? this.getResourceInputValue(input) : input.value;
 
       return val;
     },
     
     submitInputs: function() {
       var allGood = true;
-      var changed = $(this.inputs).filter(function() {return $(this).data("modified") === true});
+      var changed = _.filter(this.inputs, function(input) {return input.dataset.modified === true});
       for (var i = 0; i < changed.length; i++) {
         var input = changed[i];
         allGood = this.setValues(input.name, this.getValue(input), {onValidationError: this.fieldError});
@@ -744,13 +768,19 @@ define('views/EditView', [
       
       this._submitted = true;
       var inputs = U.isAssignableFrom(this.vocModel, "Intersection") ? this.getInputs() : this.inputs;
-      inputs.attr('disabled', true);
-      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceProperties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case 
+      inputs.$attr('disabled', true);
+      inputs = _.filter(inputs, function(input) { 
+        return !input.classList.contains(scrollerClass) && 
+               !input.classList.contains(switchClass) && 
+               input.dataset.name != 'interfaceProperties'; 
+      });
+      
+//      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceProperties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case 
 //      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceClass.properties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case 
       var self = this,
           action = this.action, 
           url = G.apiUrl, 
-          form = this.$form, 
+          form = this.form, 
           vocModel = this.vocModel,
           meta = vocModel.properties;
       
@@ -818,7 +848,7 @@ define('views/EditView', [
       if (typeof errors === 'undefined') {
         this.setValues(atts, {skipValidation: true});
         this.onsuccess();
-        self.getInputs().attr('disabled', false);
+        self.getInputs().$attr('disabled', false);
       }
       else
         this.onerror(errors);
@@ -844,7 +874,7 @@ define('views/EditView', [
         resource = null;
       }
       
-      this.getInputs().attr('disabled', false);
+      this.getInputs().$attr('disabled', false);
       var code = xhr ? xhr.code || xhr.status : 0;
       if (!code || xhr.statusText === 'error') {
         Errors.errDialog({msg: 'There was en error with your request, please try again', delay: 100});
@@ -865,7 +895,7 @@ define('views/EditView', [
 //            successUrl: G.serverName + '/' + G.pageRoot + '#aspects%2fcommerce%2fTransaction?transactionType=Deposit&$orderBy=dateSubmitted&$asc=0'
           };
           
-          window.location.href = G.serverName + '/' + G.pageRoot + '#make/aspects%2fcommerce%2fTransaction?' + $.param(params);
+          Events.trigger('navigate', 'make/aspects%2fcommerce%2fTransaction?' + $.param(params));
         }, 2000);
         return;
       }
@@ -876,7 +906,7 @@ define('views/EditView', [
             msg: 'You are not unauthorized to make these changes'
           });
 //          Errors.errDialog({msg: msg || 'You are not authorized to make these changes', delay: 100});
-//          Events.on(401, msg || 'You are not unauthorized to make these changes');
+//          this.listenTo(Events, 401, msg || 'You are not unauthorized to make these changes');
           break;
         case 404:
           debugger;
@@ -915,7 +945,7 @@ define('views/EditView', [
       res.save(props, {
         sync: sync,
         success: function(resource, response, options) {
-          self.getInputs().attr('disabled', false);
+          self.getInputs().$attr('disabled', false);
           res.lastFetchOrigin = null;
           self.disable('Changes submitted');
 //          self.redirect();
@@ -946,7 +976,7 @@ define('views/EditView', [
           return this;
       }
       
-      this.getScrollers().each(function() {
+      this.getScrollers().$forEach(function() {
         $(this).mobiscroll('destroy');        
       });
       
@@ -954,44 +984,6 @@ define('views/EditView', [
       this.refreshScrollers();
     },
     
-    click: function(e) {
-//      var from = e.target;
-//      if (from.tagName === 'select') {
-//        Events.stopEvent(e);
-//        return;
-//      }
-//      var div = from;
-//      while (div.tagName.toLowerCase() != 'div'  ||  div.localName.toLowerCase == 'label') {
-//        div = div.parentElement; 
-//        continue;
-//      }
-//      var inp = $(div).find('input[type="checkbox"]');
-//      if (!inp  ||  !inp.length) 
-//        return;
-////      Events.stopEvent(e);
-////      var val = this.resource.get('interfaceClass.properties');
-//      var name = inp[0].name;
-//      var val = this.resource.get(name);
-//      var iVal = inp[0].value;
-//      var idx = iVal.lastIndexOf('/');
-//      if (idx != -1)
-//        iVal = iVal.substring(idx + 1);
-//      var props = val.split(',');
-//      var idx = props.indexOf(iVal);
-//      if (!inp[0].checked) {
-////        inp[0].checked = true;
-//        if (idx == -1)
-//          this.setValues(name, val += ',' + iVal);
-////          this.setValues('interfaceClass.properties', val += ',' + iVal);
-//      }
-//      else if (idx != -1) {
-////        inp[0].checked = false;
-//        props.splice(idx, 1);
-//        this.setValues(name, props.join(','));
-////        this.setValues('interfaceClass.properties', props.join(','));
-//      }
-//      return true;
-    },
     onSelected: function(e) {
       var atts = {}, res = this.resource, input = e.target;
       if (this.isForInterfaceImplementor && input.type === 'checkbox') {
@@ -1044,10 +1036,7 @@ define('views/EditView', [
         atts[t.name] = this.getValue(t);
       }
 
-      var $input = $(this);
-      this.setValues(atts, {onValidationError: this.fieldError, onValidated: function() {
-        $input.parent().find('label.error').remove();
-      }});
+      this.setValues(atts, {onValidationError: this.fieldError, onValidated: getRemoveErrorLabelsFunction(input)});
     },
     
     setValues: function(key, val, options) {
@@ -1145,12 +1134,12 @@ define('views/EditView', [
 //      U.addToFrag(info.frag, this.editRowTemplate(pInfo));
 //    },
     getResourceInputValue: function(input) {
-      input = input instanceof $ ? input : $(input);
-      return input.data('uri');
+//      input = input instanceof $ ? input : $(input);
+      return input.dataset.uri;
     },
     setResourceInputValue: function(input, value) {
-      input = input instanceof $ ? input : $(input);
-      input.data('uri', value);
+//      input = input instanceof $ ? input : $(input);
+      input.dataset.uri = value;
     },
     isCameraRequired: function() {
       var res = this.resource, 
@@ -1182,13 +1171,15 @@ define('views/EditView', [
      * @return select list, checkbox, radio button, all other non-text and non-resource-ranged property inputs
      */
     render: function() {
-      var args = arguments;
+      var self = this,
+          args = arguments;
+      
       this.ready.done(function() {
         G.showSpinner(spinner);
-        this.renderHelper.apply(this, args);
+        self.renderHelper.apply(self, args);
         G.hideSpinner(spinner);
-        this.finish();
-      }.bind(this));
+        self.finish();
+      });
     },
     renderHelper: function(options) {
       var self = this;
@@ -1295,7 +1286,7 @@ define('views/EditView', [
         });
       }        
       
-      (this.$ul = this.$('#fieldsList')).html(frag);
+      (this.$ul = $(this.$('#fieldsList'))).html(frag);
       if (this.$ul.hasClass('ui-listview')) {
         this.$ul.trigger('create');
         this.$ul.listview('refresh');
@@ -1304,7 +1295,7 @@ define('views/EditView', [
         this.$ul.trigger('create');
 
       var doc = document;
-      var form = this.$form = this.$('form');
+      var form = this.form = this.$('form')[0];
       
       if (this.isForInterfaceImplementor) {
 //        var start = +new Date();
@@ -1312,7 +1303,6 @@ define('views/EditView', [
         if (!iCl)
           iCl = reqParams['interfaceClass.davClassUri'];
         if (iCl) {
-          var self = this;
           Voc.getModels(iCl).done(function() {
             var frag = document.createDocumentFragment();
             var m = U.getModel(iCl);
@@ -1351,9 +1341,16 @@ define('views/EditView', [
             }
             else
               self.$ul1.trigger('create');
-            
-            var checkboxes = self.$form.find('input[type="checkbox"]');
-            checkboxes.change(self.onSelected);
+          
+            self.redelegateEvents();
+//            var checkboxes = self.form.querySelectorAll('input[type="checkbox"]'),
+//                checkbox,
+//                i = checkboxes.length;
+//            
+//            while (i--) {
+//              checkbox = checkboxes[i];
+//              checkbox.addEventListener('change', self.onSelected);
+//            }
 //            console.debug("building interfaceImplementor rows took: " + (+new Date() - start));
           });
         }
@@ -1361,99 +1358,91 @@ define('views/EditView', [
       
 //        this.$ul.listview('refresh');
       var inputs = this.inputs = this.getInputs(); //form.find('input');
-      
       var initInputs = function(inputs) {
         _.each(inputs, function(input) {
-          if (self.isScroller(input))
+          if (input.$hasClass(scrollerClass))
             return;
           
-          var $in = $(input);
-          var $parent = $in.parent();
-          var validated = function() {
-            $parent.find('label.error').remove();
-  //          i.focus();
-          };
-  
+          var validated = getRemoveErrorLabelsFunction(input);
           var setValues = _.debounce(function() {
             self.setValues(this.name, this.value, {onValidated: validated, onValidationError: self.fieldError});
           }, 500);
-          
-          $in.on('input', function() {
-            var $this = $(this);
-            if ($this.data('codemirror'))
+
+          input.addEventListener('input', function() {
+            var $input = $(input);
+            if ($input.data('codemirror'))
               return;
             
-            $this.data('modified', true);
+            input.dataset.modified = true;
             setValues.apply(this, arguments);
           });
           
-          $in.focusout(setValues);
+          input.addEventListener('blur', setValues);
         });
 //        $in.keyup(onFocusout);
       };
 
       initInputs(inputs);        
-      form.find('[required]').each(function() {
-        form.find('label[for="{0}"]'.format(this.id)).addClass('req');
-      });
+      var reqd = form.$('[required]'),
+          numReqd = reqd.length;
       
-      var selected = form.find('select');
-      selected.change(this.onSelected);
+      while (numReqd--) {
+        form.$('label[for="{0}"]'.format(reqd[numReqd].id)).$addClass('req');
+      }
       
-      // set initial values on resource
-      selected.each(function() {
-        var name = this.name;
-        if (_.isUndefined(res.get(name)) || self.isForInterfaceImplementor)
-          return;
-        
-        if (this.value)
-          self.setValues(name, this.value);
-      });
+      var selects = form.getElementsByTagName('select'),
+          select,
+          numSelects = selects.length;
 
-      form.find("input").bind("keydown", function(event) {
-        // track enter key
-        var keycode = (event.keyCode ? event.keyCode : (event.which ? event.which : event.charCode));
-        if (keycode == 13) { // keycode for enter key
-          // force the 'Enter Key' to implicitly click the Submit button
-          Events.stopEvent(event);
-          var input = event.target;
-          var name = input.name;
-          var $in = $(input);
-          var $parent = $in.parent();
-          var validated = function() {
-            $parent.find('label.error').remove();
-          };
-  
-          var didSet = self.setValues(name, input.value, {onValidated: validated, onValidationError: self.fieldError});
-          if (didSet)
-            form.submit();
-          
-          return false;
-        } else  {
-          return true;
-        }
-      }); // end of function
-            
-      var edits = res.getUnsavedChanges();
-      form.find('.resourceProp').each(function() {
-        // TODO: disable resource chooser buttons for image range properties that have cameraOnly annotation      
-        var name = this.name;
-        var prop = meta[name];
-        var $this = $(this);
-        if (prop && prop.cameraOnly) {
-          $('<span><i> (only live photo allowed)</i></span>').insertAfter($this.find('label'));
+      while (numSelects--) {
+        select = selects[numSelects];
+        select.addEventListener('change', this.onSelected);
         
-          $(this).click(function(e) {
+        // set initial values on resource
+        var name = select.name,
+            value;
+        
+        if (_.isUndefined(res.get(name)) || this.isForInterfaceImplementor)
+          continue;
+        
+        if ((value = select.value) != null)
+          this.setValues(name, value);
+      }
+      
+      form.getElementsByTagName('input').$on('keydown', this._onKeyDownInInput); // end of function
+      var edits = res.getUnsavedChanges();
+      form.querySelectorAll('.resourceProp').$forEach(function(resProp) {
+        // TODO: disable resource chooser buttons for image range properties that have cameraOnly annotation      
+        var name = resProp.name;
+        var prop = meta[name];
+//        var $this = $(this);
+        if (prop && prop.cameraOnly) {
+          var span = document.createElement('span');
+          span.innerHTML = '<i> (only live photo allowed)</i>';
+          span.$after(resProp.querySelector('label'));
+          
+          resProp.addEventListener('click', function(e) {
             Events.stopEvent(e);
-            self.$('[data-prop="{0}"]'.format(name)).trigger('click');
+            var matched = self.$('[data-prop="{0}"]'.format(name)),
+                match,
+                i = matched.length;
+            
+            while (i--) {
+              match = matched[i];
+              match.dispatchEvent(new Event('click', {
+                view: match,
+                bubbles: true,
+                cancelable: true
+              }));
+            }
           });
         }
 
         var value = res.get(name);
         if (_.isUndefined(value))
-          value = this.value;
+          value = resProp.value;
         
-        self.setResourceInputValue(this, value);
+        self.setResourceInputValue(resProp, value);
       });
       
 //      if (_.size(displayedProps) === 1) {
@@ -1469,11 +1458,11 @@ define('views/EditView', [
       
       if (!this.rendered) {
         if (this.action === 'make' && this.isCameraRequired()) {
-          Events.on('pageChange', function() {
+          this.listenTo(Events, 'pageChange', function() {
             if (this.isCameraRequired() && this.isActive()) { // have to check again, because it's only required when the props are not set yet
               $m.silentScroll(0);
               setTimeout(function() {
-                $(this.$('a.cameraCapture')[0]).trigger('click');
+                this.$('a.cameraCapture').trigger('click');
               }.bind(this), 100);
             }
           }.bind(this));
@@ -1492,7 +1481,7 @@ define('views/EditView', [
         }
       });
       
-//      form.find('fieldset input[type="checkbox"]').each(function() {
+//      form.find('fieldset input[type="checkbox"]').$forEach(function() {
 //        form.find('label[for="{0}"]'.format(this.id)).addClass('req');
 //      });
 
@@ -1501,14 +1490,14 @@ define('views/EditView', [
     
     attachCodeMirror: function() {
       this.makeTemplate('resetTemplateBtnTemplate', 'resetTemplate', this.vocModel.type);
-      var form = this.$form;
+      var form = this.form;
       var view = this;
       var res = this.resource;
       var meta = this.vocModel.properties;
       var isTemplate = this.vocModel.type === G.commonTypes.Jst;
-      form.find('textarea[data-code]').each(function() {
-        var textarea = this;
-        var $textarea = $(this);
+      var textareas = this.$('textarea[data-code]');
+      
+      _.each(textareas, function(textarea) {
         var code = textarea.dataset.code;
         var propName = textarea.name;
         var mode;
@@ -1525,7 +1514,7 @@ define('views/EditView', [
           }
         }
         
-        var editor = CodeMirror.fromTextArea(textarea, {
+        editor = CodeMirror.fromTextArea(textarea, {
           mode: mode,
           tabMode: 'indent',
           lineNumbers: true,
@@ -1534,7 +1523,7 @@ define('views/EditView', [
         });
         
         // TODO: fix this so it can save changes as you type, but not lose focus
-        editor.on('change', _.debounce(function() {
+        editor.on('change', Q.debounce(function() {
           var newVal = editor.getValue();
           view.setValues(propName, newVal);
         }, 500));
@@ -1548,36 +1537,38 @@ define('views/EditView', [
         
         var changeHandler;
         if (defaultText) {
-          var reset = $(view.resetTemplate());
-          var resetText = reset[0].innerText;
+          var reset = $.parseHTML(view.resetTemplate())[0];
+          var resetText = reset.innerText;
           var didReset = false;
           var prevValue = defaultText;
           var resetHandler = function() {
             didReset = !didReset;
             prevValue = defaultText;
-            reset.find('.ui-btn-text').text(resetText);
+            reset.querySelector('.ui-btn-text').innerText = resetText;
             editor.off('change', resetHandler);
           };
           
-          reset.click(function(e) {
+          reset.addEventListener('click', function(e) {
             editor.off('change', resetHandler);
             Events.stopEvent(e);
             var newValue = prevValue;
             prevValue = editor.getValue();
             editor.setValue(newValue);
             didReset = !didReset;
-            reset.find('.ui-btn-text').text(didReset ? 'Undo reset' : resetText);
+            reset.querySelector('.ui-btn-text').innerText = didReset ? 'Undo reset' : resetText;
             if (didReset)    
               editor.on('change', resetHandler);
           });
           
-          reset.insertAfter($textarea.next());
-          reset.button();
+          reset.$after(textarea.nextSibling);
+          if (reset.button)
+            reset.button();
+          
           if (defaultText === textarea.value) {
-            reset.addClass('ui-disabled');
+            reset.classList.add('ui-disabled');
             changeHandler = function(from, to, text, removed, next) {
               if (!text && to.text && to.text.length) {
-                reset.removeClass('ui-disabled')
+                reset.classList.remove('ui-disabled')
                 editor.off('change', changeHandler);
               }
             };                
@@ -1587,13 +1578,34 @@ define('views/EditView', [
         changeHandler && editor.on('change', changeHandler);
         setTimeout(function() {
           // sometimes the textarea will have invisible letters, or be of a tiny size until you type in it. This is a preventative measure that seems to work
-          editor.refresh.apply(editor);
+          editor.refresh();
           editor.scrollIntoView({line: 0, ch: 0});
-          $textarea.focus();
-        }.bind(textarea), 50);
+          textarea.focus();
+        }, 50);
         
         $.data(textarea, 'codemirror', editor);
       });
+    },
+    
+    onKeyDownInInput: function() {
+      // track enter key
+      var keycode = (event.keyCode ? event.keyCode : (event.which ? event.which : event.charCode));
+      if (keycode == 13) { // keycode for enter key
+        // force the 'Enter Key' to implicitly click the Submit button
+        Events.stopEvent(event);
+        var input = event.target,
+            name = input.name,
+            value = input.value,
+            parent = input.parentNode;
+        
+        var didSet = this.setValues(name, value, {onValidated: getRemoveErrorLabelsFunction(input), onValidationError: this.fieldError});
+        if (didSet)
+          this.form.submit();
+        
+        return false;
+      } else  {
+        return true;
+      }
     }
   }, {
     displayName: 'EditView'

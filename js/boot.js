@@ -4,39 +4,50 @@
 DOMReady.add( function () {
   'use strict';
   var l = Lablz,
-      div = d.createElement('div'),
-      head = d.getElementsByTagName('head')[0];
+      head = d.head;
   
-  div.className = 'mainDiv';
-  div.style.background = 'none';
-  if (localStorage  &&  localStorage.getItem)
+  if (localStorage  &&  localStorage.getItem) {
     localStorage.setItem('homePage', l.homePage);
-    
-  div.innerHTML = l.homePage;
+    localStorage.setItem('homePageCss', l.globalCss);
+  }
   
-  var scripts = div.getElementsByTagName('script');
+  var hash = window.location.hash;
+  if (!hash || /\#home/.test(hash)) {
+    d.body.innerHTML = d.body.innerHTML + l.homePage;
+    delete l.homePage;
+    var style = d.createElement('style');
+    style.type = 'text/css';
+    style.textContent = l.globalCss; 
+    head.appendChild(style);
+    delete l.globalCss;
+
+    var scripts = d.body.getElementsByTagName('script');
 /*  console.log('scripts: ' + scripts.length); */ 
 
-  try {
-    for (var i=0; scripts  &&  i<scripts.length; i++) {
-      var s = d.createElement('script'); 
-      s.type = 'text/javascript';
-      if (scripts[i].innerText)
-        s.innerText = scripts[i].innerText;
-      else 
-        s.innerHTML =  scripts[i].innerHTML;
-/*      console.log('script: ' + scripts[i].innerHTML); */ 
-      head.appendChild(s);
-/*      eval(scripts[i].innerText); */ 
+    try {
+      for (var i=0; scripts  &&  i<scripts.length; i++) {
+        var s = d.createElement('script'); 
+        s.type = 'text/javascript';
+        if (scripts[i].innerText)
+          s.innerText = scripts[i].innerText;
+        else 
+          s.innerHTML =  scripts[i].innerHTML;
+  /*      console.log('script: ' + scripts[i].innerHTML); */ 
+        head.appendChild(s);
+  /*      eval(scripts[i].innerText); */ 
+      }
+    } catch (e) {
+      console.log('eval failed: ' + e);
     }
-  } catch (e) {
-    console.log('eval failed: ' + e);
   }
   
-  if (window.location.hash) { 
+  
+/*  if (window.location.hash) { 
     div.style.display = 'none';
-  }
-  d.getElementById('page').appendChild(div);
+  }*/
+  
+  /*d.getElementById('page').appendChild(div);*/
+/*  d.body.appendChild(div);*/
   /*setTimeout(function() {*/
   
       var s = d.createElement('script'); 
@@ -55,31 +66,10 @@ DOMReady.add( function () {
     })();
     
     for (var i = 0, r = l.X_CSS; i < r.length; i++) {
-      var l = d.createElement('link');
-      l.rel = 'stylesheet';
-      l.type = 'text/css';
-      l.href = r[i]; 
-      head.appendChild(l);
+      var k = d.createElement('link');
+      k.rel = 'stylesheet';
+      k.type = 'text/css';
+      k.href = r[i]; 
+      head.appendChild(k);
     }
 });
-/*
-function ajaxCallback() {
-  div.innerHTML= request.responseText;
-  runScripts(div); //run all scripts now contained in the target div element
-}
- 
-function runScripts(e) {
-  if (e.nodeType != 1) return; //if it's not an element node, return
- 
-  if (e.tagName.toLowerCase() == 'script') {
-    eval(e.text); //run the script
-  }
-  else {
-    var n = e.firstChild;
-    while ( n ) {
-      if ( n.nodeType == 1 ) runScripts( n ); //if it's an element node, recurse
-      n = n.nextSibling;
-    }
-  }
-}
-*/

@@ -15,11 +15,11 @@ define('views/MapView', [
     loadedCSS: false,
     initialize: function (options) {
       _.bindAll(this, 'render', 'show', 'hide','toggleMap', 'resetMap', 'onSwipe', 'resize');
-      this.constructor.__super__.initialize.apply(this, arguments);
-      Events.on("mapIt", this.toggleMap);
-//      Events.on("pageChange", this.resetMap);
+      BasicView.prototype.initialize.apply(this, arguments);
+      this.listenTo(Events, "mapIt", this.toggleMap);
+//      this.listenTo(Events, "pageChange", this.resetMap);
       
-      var self = this;
+      var self = this,
           dfds = [],
           readyDfd = $.Deferred(),
           modulesDfd = U.require(['maps', 'leaflet', 'leafletMarkerCluster', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css']);
@@ -42,18 +42,22 @@ define('views/MapView', [
 //      'click': 'click',
       'swipe'             : 'onSwipe',
       'swiperight'        : 'onSwipe',
-      'swipeleft'         : 'onSwipe',
+      'swipeleft'         : 'onSwipe'
+    },
+    
+    windowEvents: {
       'orientationchange' : 'resize',
       'resize'            : 'resize'
     },
+    
     resize: function() {
       if (!this.mapper)
         return;
       
       if (window.innerWidth > window.innerHeight) // landscape
-        this.$('#map').height(window.innerHeight * 0.6);
+        this.$('#map').$css('height', window.innerHeight * 0.6);
       else
-        this.$('#map').height(window.innerHeight * 0.4);
+        this.$('#map').$css('height', window.innerHeight * 0.4);
       
       this.resetMap();
     },
@@ -143,7 +147,7 @@ define('views/MapView', [
       map.finish();
       
       Events.trigger('mapReady', res);
-      this.$el.append(frag);
+      this.el.appendChild(frag);
       this.hide();
       this.resize();
       return this;
@@ -162,12 +166,12 @@ define('views/MapView', [
     },
     
     show: function() {
-      this.$el.show();
+      this.el.style.display = 'block';
       return this;
     },
     
     hide: function() {
-      this.$el.hide();
+      this.el.style.display = 'none';
       return this;    
     },
     getMapItemHTML: function(res) {
@@ -195,10 +199,11 @@ define('views/MapView', [
             height = Math.round(height / imgOffset);
           }
           
-          medImg = {value: _.decode(medImg)};
-          width && (medImg.width = width);
-          height && (medImg.height = height);
-          data.image = this.makeTemplate("imagePT", "imagePT")(medImg);
+          var tmpl_data = this.getBaseTemplateData();
+          tmpl_data.value = _.decode(medImg);
+          width && (tmpl_data.width = width);
+          height && (tmpl_data.height = height);
+          data.image = this.makeTemplate("imagePT", "imagePT")(tmpl_data);
 //          _.extend(data, {U: U, G: G});
           return this.makeTemplate("mapItemTemplate", "mapItemTemplate")(data);
         }
