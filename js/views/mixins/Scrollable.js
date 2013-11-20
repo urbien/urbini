@@ -33,13 +33,17 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
     if (window.pageXOffset || window.pageYOffset) {
       SCROLL_OFFSET.X = -window.pageXOffset;
       SCROLL_OFFSET.Y = -window.pageYOffset;
-      console.debug('scrolled to', SCROLL_OFFSET);
+//      console.debug('scrolled to', SCROLL_OFFSET);
       window.scrollTo(0, 0);
     }
     
     if (originalScroll)
       originalScroll.apply(this, arguments);
   };
+  
+  document.addEventListener('swipe', function(e) {
+    releaseGesture(e);
+  });
   
 //  // IE9, Chrome, Safari, Opera
 //  window.addEventListener("mousewheel", mouseWheelHandler, true);
@@ -220,7 +224,28 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
       }
     };
   }
+
+  var LOCKED_BY;
+  function takeOverGesture(e, me) {
+//    e.gesture.preventDefault();
+//    e.gesture._taken = true;
+//    e._taken = me;
+    console.log("LOCKING gesture");
+    LOCKED_BY = me;
+  }
+
+  function releaseGesture(e) {
+    console.log("UNLOCKING gesture");
+    LOCKED_BY = null;
+  }
   
+  function isLocked(e, me) {
+//  return e._taken && e._taken != me;
+//    return e.gesture._taken;
+//    return false;
+    return LOCKED_BY && LOCKED_BY != me;
+  }
+
   var Scrollable = Backbone.Mixin.extend({
     className: 'scrollable',
     initialize: function(options) {
@@ -392,33 +417,20 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
     },
     
     _onScrollerMouseOut: function(e) {
-      if (!this._scrollerInitialized || !this._isScrolling())
+      if (!this._scrollerInitialized || !this._scrollerProps._dragging) //!this._isScrolling())
         return;
       
       // check if the user swiped offscreen (in which case we can't detect 'mouseup' so we will simulate 'mouseup' NOW)
       e = e ? e : window.event;
-      var from = e.relatedTarget || e.toElement,
+      var from = e.fromElement || e.relatedTarget || e.toElement,
           s = this._scrollerProps;
       
-      if (!from || from.nodeName == "HTML") {
-        if (s._dragging) {
-          this.el.dispatchEvent(new MouseEvent('mouseup', {
-//            view: this.el,
-            cancelable: true,
-            bubbles: true
-          }));
-          
-//          e.type = 'mouseup';
-//          e.target = this.el;
-//          this.el.dispatchEvent(e);
-//          s._start = s._keyHeld = s._flinging = s._snapping = s._dragging = null;
-//          if (!this._isInBounds(s.position, false /* don't include bounce gutter */))
-//            this._snapScroller(); //To(axis, pos[axis] < s.scrollBounds[axis].min ? 'min' : 'max');
-//          else {
-////            Events.trigger('scrollState', 'idle');
-//            this._resetScroller();
-//          }
-        }
+//      console.debug("FROM:", from);
+      if (!from || from == this.el || from.nodeName == "HTML" || _.contains(from.parentNode.childNodes, this.el)) {
+        this.el.dispatchEvent(new MouseEvent('mouseup', {
+          cancelable: true,
+          bubbles: true
+        }));
       }
     },
     
@@ -439,7 +451,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
         return;
       
       var s = this._scrollerProps;
-      e.gesture.preventDefault();
+      takeOverGesture(e, this);
+//      e.gesture.preventDefault();
 //      PREVENT_CLICK = true;
       if (this._isScrollingHandsFree()) // if we're currently coasting/flinging, we don't know our position
         this._updateScrollPosition();   // so we need to parse our position from css
@@ -452,10 +465,20 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
 
     _onScrollerDragEnd: function(e) {
 //      console.log("DRAG END, flinging: " + this._scrollerProps.flinging);
-//      if (!this._canScroll(e))
-//        return;
+      if (!this._canScroll(e))
+        return;
       
-      return this._onScrollerSwipe(e);
+//      try {
+        var s = this._scrollerProps;
+        if (s._dragging && !s._snapping && !s._flinging)      
+          return this._onScrollerSwipe(e);
+        else
+          releaseGesture(e, this);
+//      } finally {
+//        s._dragging = false;
+//        releaseGesture(e, me);
+//      }
+//
 //      e.gesture.preventDefault();
 //      var s = this._scrollerProps,
 //          pos;
@@ -480,7 +503,6 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
         return;
       
       // scrollTo immediately
-      e.gesture.preventDefault();
       var s = this._scrollerProps;
       if (!s._start) {
         this._onScrollerDragStart(e);
@@ -517,7 +539,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
     },
 
     _canScroll: function(e) {
-      return this._scrollerInitialized && e && e.gesture;
+      return this._scrollerInitialized && e && e.gesture && !isLocked(e, this);
 //      if (!this._scrollerInitialized || !e || !e.gesture)
 //        return false;
 //      
@@ -545,7 +567,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
       if (!s.momentum)
         return;
             
-      e.gesture.preventDefault();
+//      e.gesture.preventDefault();
       axis = this._getScrollAxis();
       velocity = Math.min(e.gesture['velocity' + axis], s.MAX_VELOCITY) * getDirectionMultiplier(e.gesture.direction);
       pos = s.position;
@@ -566,6 +588,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
 //        e.gesture.stopDetect();
         this._flingScroller(velocity);
       }
+      
+//      releaseGesture(e, me);
     },
 
     _onKeyDown: function(e) {
@@ -850,17 +874,13 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
 //      this.log('RESETTING SCROLLER');
       var s = this._scrollerProps;
       this._clearScrollTimeouts();
-//      this._clearTouchHistory();
       if (this._isScrolling()) {
         s._start = s._keyHeld = s._flinging = s._snapping = s._dragging = null;
-//        Events.trigger('scrollState', 'idle');
         Q.write(this._clearScrollerTransitionStyle, this, undefined, {
           throttle: true,
           last: true
         });
       }
-      
-//      G.enableClick();
     },
     
     _clearScrollerTransitionStyle: function() {
@@ -908,28 +928,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
     },
 
     _onScrollerClick: function(e) {
-      if (!this._scrollerInitialized)
-        return;
-      
-//      console.debug(this.TAG, e.type.toUpperCase(), "EVENT:", e);
-//      var s = this._scrollerProps;
-//      if (this._isScrolling()) {
-//        console.debug("PREVENTING CLICK EVENT: ", e);
-//        e = e.gesture || e;
-//        e.preventDefault();
-//        e.stopPropagation();
-//        if (!s._start && !s._snapping && !this._isInBounds(s.position, false /* don't include bounce gutter */)) {
-//          // theoretically, this shouldn't happen, but it happened once
-//          debugger;
-//          this._snapScroller();
-//        }
-//        
-//        return false;
-//      }
-//      
-//      this._resetScroller();
-      
-      Q.read(this._calculateScrollerSize, this);
+      if (this._scrollerInitialized)
+        Q.read(this._calculateScrollerSize, this);
     },
     
     _triggerScrollEvent: function(type, scroll) {
@@ -1091,7 +1091,6 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
           time;
       
       s._snapping = true;
-//      Events.trigger('scrollState', 'snapping');
       if (axis == 'X')
         snapToX = destination;
       else
@@ -1124,7 +1123,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
     },
 
     _flingScroller: function(velocity) {
-      velocity *= 1.2;
+      velocity *= 1.5;
       this._clearScrollTimeouts();
       var self = this,
           s = this._scrollerProps,

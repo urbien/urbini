@@ -221,24 +221,34 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       return this.classList.contains(cl);
     },
 
-    $prepend: function(htmlOrFrag) {
-      if (!this.firstChild)
-        return this.$append(htmlOrFrag);
+    $prepend: function(/* htmlOrFrag, htmlOrFrag, ... */) {
+      var i = arguments.length;
+      while (i--) {
+        var htmlOrFrag = arguments[i];
+        if (!this.firstChild) {
+          this.$append(htmlOrFrag);
+          continue;
+        }
+        
+        if (typeof htmlOrFrag == 'string')
+          htmlOrFrag = $.parseHTML(htmlOrFrag);
+        
+        htmlOrFrag.$before(this.firstChild);
+      }
       
-      if (typeof htmlOrFrag == 'string')
-        htmlOrFrag = $.parseHTML(htmlOrFrag);
-      
-      htmlOrFrag.$before(this.firstChild);
       return this;
     },
 
-    $append: function(htmlOrFrag) {
-      if (typeof htmlOrFrag == 'string')
-        this.innerHTML += htmlOrFrag;
-      else if (htmlOrFrag instanceof DocumentFragment)
-        this.appendChild(htmlOrFrag);
-      else
-        throw "only HTML string or DocumentFragment are supported";
+    $append: function(/* htmlOrFrag, htmlOrFrag, ... */) {
+      for (var i = 0; i < arguments.length; i++) {
+        var htmlOrFrag = arguments[i];
+        if (typeof htmlOrFrag == 'string')
+          this.innerHTML += htmlOrFrag;
+        else if (htmlOrFrag instanceof DocumentFragment)
+          this.appendChild(htmlOrFrag);
+        else
+          throw "only HTML string or DocumentFragment are supported";
+      }
       
       return this;
     },
@@ -312,17 +322,6 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       extendCollection(htmlCollectionProto, prop);
   }
   
-//  nodeListProto.$filter = function(selector) {
-//    var frag = document.createDocumentFragment();
-//    var nodeList = frag.querySelectorAll();
-//    this.$forEach(function(node) {
-//      if (node.$matches(selector))
-//        nodeList[nodeList.length] = node;
-//    });
-//    
-//    return nodeList;
-//  };
-    
   return {
 //    unhide: function(els) {
 //      return this.hide(els, true);

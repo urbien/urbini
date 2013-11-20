@@ -486,7 +486,7 @@ define('views/ChatPage', [
           // track enter key
           var keycode = (event.keyCode ? event.keyCode : (event.which ? event.which : event.charCode));
           if (keycode == 13) { // keycode for enter key
-            self.sendMessageBtn.trigger('click');
+            self.sendMessageBtn.$trigger('click');
           }
         });
         
