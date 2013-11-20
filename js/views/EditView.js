@@ -1462,8 +1462,8 @@ define('views/EditView', [
             if (this.isCameraRequired() && this.isActive()) { // have to check again, because it's only required when the props are not set yet
               $m.silentScroll(0);
               setTimeout(function() {
-                this.$('a.cameraCapture').trigger('click');
-              }.bind(this), 100);
+                self.$('a.cameraCapture').$trigger('click');
+              }, 100);
             }
           }.bind(this));
         }
