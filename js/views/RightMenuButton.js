@@ -47,15 +47,22 @@ define('views/RightMenuButton', [
     },
     
     initialize: function(options) {
-      _.bindAll(this, 'render', 'leftMenu', 'rightMenu', 'hidePanels');
-      this.constructor.__super__.initialize.apply(this, arguments);
+      _.bindAll(this, 'render', 'refresh', 'leftMenu', 'rightMenu', 'hidePanels');
+      BasicView.prototype.initialize.apply(this, arguments);
       this.makeTemplate(this.templateName, 'template', this.modelType);
       this.viewId = options.viewId;
       this.isChat = /^chat/.test(this.hash);
       return this;
     },
     
-    _leftMenu: function(e) {
+   refresh: function() {      
+      this.findMenuBadge();
+      var num = this.isChat ? this.pageView.getNumParticipants() : G.currentUser.newAlertsCount;
+      this.menuBadge.innerHTML = num || '';
+      this.menuBadge.style.display = num ? '' : 'none';
+    },
+
+   _leftMenu: function(e) {
       var self = this;
       var p = this.leftMenuEl; //$('#' + this.viewId);
       // HACK
@@ -96,8 +103,7 @@ define('views/RightMenuButton', [
     _rightMenu: function(e) {
       var p = this.rightMenuEl; //$('#' + this.viewId + 'r');
       // HACK
-      var tagName = (p && p.tagName.toLowerCase() == 'section') ? 'nav' : 'div'; 
-
+      var tagName = (G.isBB()  ||  G.isBootstrap()) ? 'nav' : 'div'; 
 //      if (!this.initialRightMenuStyle)
 //        this.initialRightMenuStyle = p[0].style;
 
@@ -133,20 +139,17 @@ define('views/RightMenuButton', [
       return this;
     },
     
-    refresh: function() {
-      if (this.isChat) {
-        var num = this.pageView.getNumParticipants();
-        this.menuBadge.innerHTML = num || '';
-        this.menuBadge.style.display = num ? '' : 'none';
-      }
+    findMenuBadge: function() {
+      if (!this.menuBadge)
+        this.menuBadge = (G.isBootstrap() ? this.$('.badge') : G.isTopcoat() ? this.$('.topcoat-notification') : this.$('.menuBadge'))[0];
     },
     
     render: function(options) {
       this.html(this.template({viewId: this.viewId}));
-      this.menuBadge = this.$('.menuBadge')[0];
+      this.findMenuBadge();
       if (!this.rendered) {
-        this.leftMenuEl = this.pageView.el.querySelector('#' + this.viewId);
-        this.rightMenuEl = this.pageView.el.querySelector('#' + this.viewId + 'r');
+        this.leftMenuEl = this.pageView.$('#' + this.viewId)[0];
+        this.rightMenuEl = this.pageView.$('#' + this.viewId + 'r')[0];
 
         // only allow tap and hold events, click muddies the waters
         this.el.addEventListener('click', function(e) {
@@ -154,16 +157,14 @@ define('views/RightMenuButton', [
         });
       }
       
-      this.finish();
       
       if (this.isChat) {
-        this.pageView.on('chat:newParticipant', this.refresh, this);
-        this.pageView.on('chat:participantLeft', this.refresh, this);
-        this.refresh();
+        this.listenTo(this.pageView, 'chat:newParticipant', this.refresh, this);
+        this.listenTo(this.pageView, 'chat:participantLeft', this.refresh, this);
       }
-      else
-        this.menuBadge.style.display = 'none';
       
+      this.finish();
+      this.refresh();
       return this;
     }
   },
