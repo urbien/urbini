@@ -115,20 +115,7 @@ define('views/ResourceListView', [
         to: 0
       };
 
-      this.empty();
-      if (this.isDummyPadded()) {
-        this.dummies = this.getDummies();
-        if (!this.dummies.length) {
-          this.html(this.makeDummies());
-          this.dummies = this.getDummies();
-        }
-        
-        if (this._horizontal) {
-          this.dummies.head.style.display = 'inline-block';
-          this.dummies.tail.style.display = 'inline-block';
-        }
-      }
-      
+      this.initDummies();
       this._onScrollerSizeChanged({
         target: this.el,
         content: viewport,
@@ -148,6 +135,26 @@ define('views/ResourceListView', [
 
     modelEvents: {
       'reset': '_resetPaging'
+    },
+    
+    initDummies: function() {
+      if (!this.el || this._initiailizedDummies)
+        return;
+      
+      this._initializedDummies = true;
+      this.empty();
+      if (this.isDummyPadded()) {
+        this.dummies = this.getDummies();
+        if (!this.dummies.length) {
+          this.html(this.makeDummies());
+          this.dummies = this.getDummies();
+        }
+        
+        if (this._horizontal) {
+          this.dummies.head.style.display = 'inline-block';
+          this.dummies.tail.style.display = 'inline-block';
+        }
+      }
     },
     
     _resetPaging: function() {
@@ -274,6 +281,7 @@ define('views/ResourceListView', [
       
 //      this._viewportSizeChanged();
       this.imageProperty = U.getImageProperty(this.collection);
+      this.initDummies();
       this.adjustSlidingWindow();
     },
   
