@@ -19,39 +19,32 @@ define('templates', [
       lazyReplacement,
       lazyRegex,
       emptyLazyRegex,
-      lazyClassRegex = /(class="?'?[^"']*)lazyImage([^"']*"?'?)/ig;
+      lazyClassRegex = /(class="?'?[^"']*)lazyImage\s*([^"']*"?'?)/ig,
+      initBlankImg,
+      prepTemplate;
   
-  function initBlankImg() {
-    if (!blankImgSrc) {
-      blankImgSrc = G.getBlankImgSrc();
-      lazyReplacement = 'src="{0}" {1}'.format(blankImgSrc, lazyImgSrcAttr);
-      lazyRegex = new RegExp('src="{0}" {1}=\"?\'?([^\"\']+)\"?\'?'.format(blankImgSrc, lazyImgSrcAttr), 'ig');
-//      emptyLazyRegex = new RegExp('src="{0}" {1}=\"\s*"?\'?'.format(blankImgSrc, lazyImgSrcAttr), 'ig');
-    }
-  }
-  
-  Events.once('appStart', initBlankImg);
-//  window.onimageload = function onimageload() {
-////    var $this = $(this);
-////    Q.defer(Math.random() * 5 | 0, 'read', $this.trigger.bind($this, 'imageOnload'));
-//    $(this).trigger('imageOnload');
-//    return false;
-//  };
-//  
-//  window.onimageerror = function onimageerror() {
-//    $(this).trigger('imageOnerror');
-//    return false;
-//  };
-  
-  function prepTemplate(text) {
-    initBlankImg();
-    return text.trim().replace(lazyImgSrcAttr, lazyReplacement);
-//    return text.trim();
-//    return text.trim().replace('<img src=', '<img src="{0}" onload="window.onimageload.call(this);" onerror="window.onimageerror.call(this);" {1}='.format(blankImgSrc, lazyImgSrcAttr));
-//    return text.trim().replace('<img src=', '<img src="{0}" {1}='.format(blankImgSrc, lazyImgSrcAttr));
+  if (G.lazifyImages) {
+    initBlankImg = function() {
+      if (!blankImgSrc) {
+        blankImgSrc = G.getBlankImgSrc();
+        lazyReplacement = 'src="{0}" {1}'.format(blankImgSrc, lazyImgSrcAttr);
+        lazyRegex = new RegExp('src="{0}" {1}=\"?\'?([^\"\']+)\"?\'?'.format(blankImgSrc, lazyImgSrcAttr), 'ig');
+  //      emptyLazyRegex = new RegExp('src="{0}" {1}=\"\s*"?\'?'.format(blankImgSrc, lazyImgSrcAttr), 'ig');
+      }
+    };
     
-//    return text.trim().replace('<img src=', '<img src="{0}" onload="lzld(this);" onerror="lzld(this)" {1}='.format(blankImgSrc, lazyImgSrcAttr));
-  };
+    prepTemplate = function(text) {
+      initBlankImg();
+      return text.trim().replace(lazyImgSrcAttr, lazyReplacement);
+    };
+    
+    Events.once('appStart', initBlankImg);
+  } 
+  else {
+    prepTemplate = function(text) {
+      return text.trim().replace(lazyImgSrcAttr, "src").replace(lazyClassRegex, "$1$2");
+    };
+  }
   
   var Templates = {
     // Hash of preloaded templates for the app

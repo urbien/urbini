@@ -8,8 +8,12 @@ define('views/HorizontalListView', [
   'views/mixins/Scrollable',
   'views/mixins/LazyImageLoader'
 ], function(G, U, Events, ResourceListView, HorizontalListItemView, Scrollable, LazyImageLoader) {
+  var mixins = [Scrollable];
+  if (G.lazifyImages)
+    mixins.unshift(LazyImageLoader);
+  
   return ResourceListView.extend({
-    mixins: [LazyImageLoader, Scrollable],
+    mixins: mixins,
     _renderedIntersectionUris: [],
     _scrollableOptions: {
       axis: 'X',

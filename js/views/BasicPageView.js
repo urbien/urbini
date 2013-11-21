@@ -15,8 +15,12 @@ define('views/BasicPageView', [
   var MESSAGE_BAR_TYPES = ['info', 'error', 'tip', 'countdown'],
       pageEvents = ['page_show', 'page_hide', 'page_beforeshow'],
       doc = document,
-      $wnd = $(window);
+      $wnd = $(window),
+      mixins = [Scrollable];
 
+  if (G.lazifyImages)
+    mixins.unshift(LazyImageLoader);
+  
   function isInsideDraggableElement(element) {
     return !!$(element).parents('[draggable=true]').length;
   };
@@ -27,7 +31,7 @@ define('views/BasicPageView', [
     style: {
       'min-height': '100%'
     },
-    mixins: [LazyImageLoader, Scrollable],
+    mixins: mixins,
 //    constructor: function(options) {
 //      options = options || {};
 //      var atts = options.attributes = options.attributes || {};

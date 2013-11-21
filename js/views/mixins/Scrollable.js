@@ -879,19 +879,19 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
       this._clearScrollTimeouts();
       if (this._isScrolling()) {
         s._start = s._keyHeld = s._flinging = s._snapping = s._dragging = s._jumping = null;
-        Q.write(this._clearScrollerTransitionStyle, this, undefined, {
-          throttle: true,
-          last: true
-        });
+//        Q.write(this._clearScrollerTransitionStyle, this, undefined, {
+//          throttle: true,
+//          last: true
+//        });
       }
     },
     
-    _clearScrollerTransitionStyle: function() {
-//      this.log("clearing scroller transition style");
-      DOM.setStylePropertyValues(this.el.style, {
-        transition: null
-      });
-    },
+//    _clearScrollerTransitionStyle: function() {
+////      this.log("clearing scroller transition style");
+//      DOM.setStylePropertyValues(this.el.style, {
+//        transition: null
+//      });
+//    },
     
     _clearScrollTimeouts: function() {
       var timeouts = this._scrollerProps.timeouts;
