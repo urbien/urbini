@@ -684,7 +684,7 @@ define('views/ResourceListView', [
         if (isLast && currentPageHtml.length) {
 //          currentPageHtml[currentPageHtml.length] = pageEndTag;
           var html = currentPageHtml.join("");
-          if (!self._scrollable)
+          if (G.lazifyImages && !self._scrollable)
             html = DOM.unlazifyImagesInHTML(html);
             
           currentPageEl.innerHTML = html;            

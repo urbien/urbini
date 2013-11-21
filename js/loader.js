@@ -1952,7 +1952,8 @@ define('globals', function() {
     },
     canClick: function() {
       return !this._clickDisabled;
-    }
+    },
+    lazifyImages: true
   });
 
   if (G.globalCss) {
