@@ -18,6 +18,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
 
   function fireResizeEvent() {
     window.dispatchEvent(new Event('debouncedresize'));
+    window.dispatchEvent(new Event('viewportdimensions'));
   };
   
   window.addEventListener('orientationchange', function() {
@@ -31,6 +32,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
 
   function fireOrientationchangeEvent() {
     window.dispatchEvent(new Event('debouncedorientationchange'));
+    window.dispatchEvent(new Event('viewportdimensions'));
   };
 
   function saveViewportSize() {
