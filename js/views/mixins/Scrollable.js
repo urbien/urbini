@@ -1064,14 +1064,22 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
     
     _snapScroller: function(immediate) {
       this._clearScrollTimeouts();
-      // snap the content div to its frame
+      // snap the content div to the closest border
 //      this.log('snapping scroller');
       var s = this._scrollerProps,
-          axis = this.getScrollAxis();
+          axis = this.getScrollAxis(),
+          pos = s.position[axis],
+          bounds = s.scrollBounds[axis],
+          min = bounds.min,
+          max = bounds.max,
+          endpoint;
       
-      this._snapScrollerTo(axis, 
-                           s.position[axis] <= s.scrollBounds[axis].min ? 'min' : 'max', 
-                           immediate);
+      if (Math.abs(max - pos) < Math.abs(min - pos))
+        endpoint = 'max';
+      else
+        endpoint = 'min';
+        
+      this._snapScrollerTo(axis, endpoint, immediate);
     },
     
     _snapScrollerTo: function(axis, endpoint, immediate) {
@@ -1204,6 +1212,9 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
   }, {
     displayName: 'Scrollable'    
   });
+  
+  if (G.DEBUG)
+    U.logFunctions(Scrollable.prototype, '_scrollTo', '_snapScroller', 'snapScrollerToHead', 'snapScrollerToTail', '_flingScroller', '_stopScroller');
   
   return Scrollable;
 });

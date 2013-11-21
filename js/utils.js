@@ -3782,11 +3782,16 @@ define('utils', [
       }
     },
     
-    logFunctions: function(obj) {
-      _.each(obj, function(fn, prop) {
+    logFunctions: function(obj /*, function names, leave blank to log all functions on obj */) {
+      var fns = arguments.length > 1 ? _.rest(arguments) : _.functions(obj);
+      _.each(fns, function(fnName) {
+        if (!_.has(obj, fnName))
+          throw "not a function: " + fnName;
+        
+        var fn = obj[fnName];
         if (typeof fn == 'function') {
-          obj[prop] = function() {
-            console.log("FUNCTION LOG: " + prop + '()');
+          obj[fnName] = function() {
+            log(this.TAG || this.constructor.displayName || "", "FUNCTION LOG:", fnName, '(', _(arguments).map(function(arg) {return "'" + arg + "'"}).join(', '), ')');
             return fn.apply(this, arguments);
           };
         }
