@@ -72,8 +72,8 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
     
     _updateBasedOnViewportDestination: function() {
       var prevDest = this._lastImagesJobCoords,
-          axis = this._getScrollAxis(),
-          dest = this._getViewportDestination();
+          axis = this.getScrollAxis(),
+          dest = this.getViewportDestination();
       
       if (prevDest) {
         if (Math.abs(dest[axis] - prevDest[axis]) < IMG_OFFSET * 2 / 3) {
@@ -271,7 +271,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
     
     _getAdjustedViewport: function() {
       var viewport = G.viewport,
-          viewportDestination = this._getViewportDestination(),
+          viewportDestination = this.getViewportDestination(),
           translation = DOM.getTranslation(this.el),
           viewportPositionX = -translation.X, // if we scroll the page down, we will be looking at elements with positive offset, like top:200px, 
           viewportPositionY = -translation.Y, // while translation will be negative, like translate(0px, -200px), meaning the top of the page is 200px submerged into the header
