@@ -129,12 +129,20 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           return this.getAttribute(arg0);
         
         for (var prop in arg0) { // set
-          this.setAttribute(prop, arg0[prop]);
+          var val = arg0[prop];
+          if (val == null)
+            this.removeAttribute(prop);
+          else
+            this.setAttribute(prop, arg0[prop]);
         }
         
         break;
       case 2:
-        this.setAttribute(arguments[0], arguments[1]);
+        var val = arguments[1];
+        if (val == null)
+          this.removeAttribute(arguments[0]);
+        else
+          this.setAttribute(arguments[0], val);
         break;
       default:
         throw "invalid arguments to style method of Node";

@@ -2,12 +2,8 @@
 define('templates', [
   'globals', 
   'underscore', 
-  'events', 
-  '../templates.jsp',
-  '../templates_bb.jsp',
-  '../templates_topcoat.jsp',
-  '../templates_bootstrap.jsp'
-], function(G,_, Events, HTML, HTML_bb, HTML_topcoat, HTML_bootstrap) {
+  'events'].concat(Lablz._widgetTemplates)
+, function(G,_, Events, HTML, HTML_bb, HTML_topcoat, HTML_bootstrap) {
   _.templateSettings = {
     evaluate:    /\{\{(.+?)\}\}/g,
     interpolate: /\{\{=(.+?)\}\}/g

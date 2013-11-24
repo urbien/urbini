@@ -147,21 +147,22 @@ define('router', [
 //        self.lastBackClick = now;
         self.previousFragment = null;
         self.backClicked = true;
-        var href = window.location.href, i = 10;
-        while (i-- > 0) {
-          window.history.back();
-          if (window.location.href != href)
-            break;
-        }
-        
-        if (window.location.href == href) {
-          // there's nowhere to go back to
-          if (ifNoHistory) {
-            setTimeout(ifNoHistory, 0);
-          }
-            
-          return;
-        }
+        window.history.back();
+//        var href = window.location.href, i = 10;
+//        while (i-- > 0) {
+//          window.history.back();
+//          if (window.location.href != href)
+//            break;
+//        }
+//        
+//        if (window.location.href == href) {
+//          // there's nowhere to go back to
+//          if (ifNoHistory) {
+//            setTimeout(ifNoHistory, 2000);
+//          }
+//            
+//          return;
+//        }
         
 //        // if this._hashChanged is true, it means the hash changed but the page hasn't yet, so it's safe to use window.history.back(;
 //        var haveHistory = self.urlsStack.length || (self._hashChanged && self.currentUrl != null);        
@@ -503,7 +504,7 @@ define('router', [
         cachedView.setMode(mode || G.LISTMODES.LIST);
         this.changePage(cachedView, _.extend({page: page}));
         Events.trigger('navigateToList:' + list.listId, list);
-        G.whenNotRendering(function() {  
+        G.whenNotRendering(function() {
           list.fetch({
             page: page, 
             forceFetch: forceFetch
@@ -523,7 +524,15 @@ define('router', [
         rUri: oParams 
       });
       
-      var listView = new ListPage({model: list, forceFetch: forceFetch, sync: true});
+      var listView = new ListPage({
+        model: list, 
+        fetchOptions: {
+          forceFetch: forceFetch
+//          , 
+//          sync: true
+        }
+      });
+      
       listView.setMode(mode || G.LISTMODES.LIST);
       
 //      list.fetch({
@@ -995,9 +1004,7 @@ define('router', [
           hashInfo = G.currentHashInfo,
           cachedView = C.getCachedView(),
           uri = hashInfo.uri,
-          query = hashInfo.query,
           typeUri = hashInfo.type,
-          views,
           edit = hashInfo.action == 'edit',
           chat = hashInfo.action == 'chat',
           viewPageCl,
@@ -1037,15 +1044,6 @@ define('router', [
       if (!model)
         return this;
 
-//      if (U.isAssignableFrom(model, 'Contact')) {
-//        var altType = G.serverName + '/voc/dev/' + G.currentApp.appPath + "/Urbien1";
-//        var altModel = U.getModel(altType);
-//        if (altModel) {
-//          typeUri = altType;
-//          model = altModel;
-//        }
-//      }
-      
       res = cachedView ? cachedView.resource : C.getResource(uri);
       if (res && !res.loaded)
         res = null;
@@ -1092,27 +1090,35 @@ define('router', [
       }
       
       res = this.currentModel = new model({_uri: uri});
-      view = new viewPageCl({model: res, source: this.previousHash});
+      view = new viewPageCl({
+        model: res, 
+        source: this.previousHash,
+        fetchOptions: {
+          forceFetch: forceFetch
+        }
+      });
       
-      function success() {
-        if (wasTemp)
-          self._checkUri(res, uri, action);
-        
-        self.changePage(view);
-        Events.trigger('navigateToResource:' + res.resourceId, res);
-      };
+      this.changePage(view);
       
-      if (chat) {
-        res.fetch();
-        success();
-      }
-      else {
-        res.fetch({
-          sync: true, 
-          forceFetch: forceFetch, 
-          success: _.once(success)
-        });
-      }
+//      function success() {
+//        if (wasTemp)
+//          self._checkUri(res, uri, action);
+//        
+//        self.changePage(view);
+//        Events.trigger('navigateToResource:' + res.resourceId, res);
+//      };
+//      
+//      if (chat) {
+//        res.fetch();
+//        success();
+//      }
+//      else {
+//        res.fetch({
+////          sync: true, 
+//          forceFetch: forceFetch, 
+//          success: _.once(success)
+//        });
+//      }
       
       return true;
     },

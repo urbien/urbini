@@ -335,7 +335,7 @@ define('resourceManager', [
   });
   
   Events.on('userChanged', function() {
-    RM.cleanDatabaseAndReopen(true);
+    RM.cleanDatabaseAndReopen();
   });
 
   Events.on('preparingToPublish', function(app) {
@@ -378,17 +378,13 @@ define('resourceManager', [
   });
 
   Events.on('VERSION:Models', function() {
-    RM.cleanDatabaseAndReopen(true); // delete stores, don't just clear them
+    RM.cleanDatabaseAndReopen();
   });
   
   Events.on('VERSION', function(init) {
     RM.deleteDatabase().then(function() {
       Voc.storeModels();
     })
-  });
-  
-  Events.on("saveToDB", function(resource) {
-    
   });
   
   Events.on('delete', function(res) {

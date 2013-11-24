@@ -164,39 +164,6 @@ define('globals', function() {
     ls.put('Globals', JSON.stringify(Lablz));
   };
 
-  function isModuleNeeded(name) {
-    if (~G.skipModules.indexOf(name))
-      return false;
-    
-//    var isBB = G.getWidgetLibrary() == 'Building Blocks';
-//    if (isBB && /jquery\.mobile/.test(name, 'ig'))
-//      return false;
-//    
-//    if (!isBB && /\/bb\/|templates_bb\.jsp|bb_styles\.css/.test(name))
-//      return false;
-    
-    switch (name) {
-//    case '@widgets':
-//      return !isBB;
-    case '../templates_topcoat.jsp':
-      return G.isTopcoat();
-    case '../templates_bb.jsp':
-      return G.isBB();
-    case '../templates_bootstrap.jsp':
-      return G.isBootstrap();
-    case 'lib/IndexedDBShim':
-      return G.dbType == 'shim';
-    case 'lib/whammy':
-      return browser.chrome;
-    case 'chrome':
-      return G.inWebview;
-    case 'firefox':
-      return G.hasFFApps;
-    default:
-      return true;
-    }
-  };
-  
   function addModule(text) {
   //  console.log("evaling/injecting", text.slice(text.lastIndexOf('# sourceURL')));
     // Script Injection
@@ -277,8 +244,8 @@ define('globals', function() {
   var orgLoad = require.load;
   require.load = function(name) {
     name = require.getRealName(name);
-    if (!isModuleNeeded(name))
-      return G.getResolvedPromise();
+//    if (!isModuleNeeded(name))
+//      return G.getResolvedPromise();
     
     var url = G.getCanonicalPath(require.toUrl(name));
     var args = arguments,
@@ -702,69 +669,26 @@ define('globals', function() {
 
   function setupWidgetLibrary() {
     var widgets = G._widgetsLib = [],
-        bundle = widgetsBundle;
+        bundle = widgetsBundle,
+        templates = ['../templates.jsp'];
     
     for (var i = 0, len = bundle.length; i < len; i++) {
       widgets.push(bundle[i].name);
     }
     
-//    var req = window.require,
-//        def = window.define;
-//    
-//    window.require = function(modules, cb) {
-//      modules = modules ? ($.isArray(modules) ? modules : [modules]) : [];
-//      var idxW = modules.indexOf('@widgets'),
-//          idxL = modules.indexOf('@widgetsLib'),
-//          idx = ~idxW ? idxW : idxL;
-//      
-//      if (idxW == -1 && idxL == -1)
-//        return req.apply(this, arguments);
-//      
-//      modules.splice(idx, 1);
-//      var wBundleFiles = _.pluck(widgetsBundle, 'name');
-//      if (~idxW)
-//        wBundleFiles = wBundleFiles.concat('widgetLibAdapter');
-//      
-//      var newArgs = [];
-//      return req(modules.concat(wBundleFiles), function() {
-//        var lastArg = arguments[arguments.length - 1];
-//        if (!modules.length)
-//          return idxW ? lastArg : undefined;
-//        
-//        for (var i = 0; i < idx; i++) {
-//          newArgs.push(arguments[i]);
-//        }
-//        
-//        if (~idxW)
-//          newArgs.push(lastArg);
-//
-//        if (cb)
-//          cb.apply(window, newArgs);  
-//        
-//        if (newArgs.length)
-//          return newArgs;
-//      }).then(function() {
-//        if (newArgs.length)
-//          return newArgs;
-//      });
-//    };
-//
-//    window.define = function(name, deps, cb) {
-//      if (arguments.length != 3 || !/^@/.test(name))
-//        return def.apply(this, arguments);
-//      
-//      debugger;
-//    };
-//    
-//    for (var prop in req) {
-//      if (req.hasOwnProperty(prop))
-//        window.require[prop] = req[prop]; // copy over define.amd, and whatever else
-//    }
-//    
-//    for (var prop in def) {
-//      if (def.hasOwnProperty(prop))
-//        window.define[prop] = def[prop]; // copy over define.amd, and whatever else
-//    }
+    switch (G._widgetLibrary.toLowerCase()) {
+    case 'building blocks':
+      templates.push('../templates_bb.jsp');
+      break;
+    case 'topcoat':
+      templates.push('../templates_topcoat.jsp');
+      break;
+    case 'bootstrap':
+      templates.push('../templates_bootstrap.jsp');
+      break;
+    }
+    
+    G._widgetTemplates = templates;
   }
   
   function load() {
@@ -867,10 +791,12 @@ define('globals', function() {
       for (var name in bundles) {
         var bundle = bundles[name];
         for (var i = bundle.length - 1; i >= 0; i--) {
-          if (!isModuleNeeded(bundle[i].name))
+          if (!G.isModuleNeeded(bundle[i].name))
             bundle.splice(i, 1);
         }
       }
+      
+      this.pruneUnneededBundles = null;
     },
       
     pruneBundle: function(bundle, options) {
@@ -1521,9 +1447,8 @@ define('globals', function() {
           var bundle = G.bundles[bName];
           if (_.any(bundle, function(info) { return info.name == fullName; })) {
             found = true;
-            if (bName !== 'pre') {
+            if (bName !== 'pre')
               bundlePromises.push(bundle._deferred.promise());
-            }
             
             break;
           }
@@ -1953,7 +1878,30 @@ define('globals', function() {
     canClick: function() {
       return !this._clickDisabled;
     },
-    lazifyImages: true
+    lazifyImages: true,
+    isModuleNeeded: function(name) {
+      if (~G.skipModules.indexOf(name))
+        return false;
+      
+      switch (name) {
+      case '../templates_topcoat.jsp':
+        return G.isTopcoat();
+      case '../templates_bb.jsp':
+        return G.isBB();
+      case '../templates_bootstrap.jsp':
+        return G.isBootstrap();
+      case 'lib/IndexedDBShim':
+        return G.dbType == 'shim';
+      case 'lib/whammy':
+        return browser.chrome;
+      case 'chrome':
+        return G.inWebview;
+      case 'firefox':
+        return G.hasFFApps;
+      default:
+        return true;
+      }
+    }
   });
 
   if (G.globalCss) {
@@ -1971,7 +1919,7 @@ define('globals', function() {
   setMiscGlobals();
   adjustForVendor();
   testIfInsidePackagedApp();
-//  Bundler.pruneUnneededModules();
+  Bundler.pruneUnneededModules();
   Bundler.prepAppCacheBundle();
   require.config(requireConfig);   
   load();

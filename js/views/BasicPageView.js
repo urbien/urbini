@@ -15,7 +15,7 @@ define('views/BasicPageView', [
   var MESSAGE_BAR_TYPES = ['info', 'error', 'tip', 'countdown'],
       pageEvents = ['page_show', 'page_hide', 'page_beforeshow'],
       doc = document,
-      $wnd = $(window),
+      viewport = G.viewport,
       mixins = [Scrollable];
 
   if (G.lazifyImages)
@@ -24,9 +24,23 @@ define('views/BasicPageView', [
   function isInsideDraggableElement(element) {
     return !!$(element).parents('[draggable=true]').length;
   };
+
+  function getTooltipPos($el) {
+    var position = $el.offset();
+    var t = position.top + $el.outerHeight()/2 - 20;
+    var l = position.left + $el.outerWidth()/2 - 20;
+    if (l + 40 > viewport.width) 
+      l = viewport.width - 40;
+    
+    return {
+      top: t,
+      left: l
+    };
+  }
   
   var PageView = BasicView.extend({
 //    mixins: [Scrollable],
+    _fetchPromise: null,
     viaHammer: true,
     style: {
       'min-height': '100%'
@@ -51,7 +65,7 @@ define('views/BasicPageView', [
     initialize: function(options) {
       var self = this;
       BasicView.prototype.initialize.apply(this, arguments);
-      _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft'/*, 'scroll', '_onScroll', '_onViewportDimensionsChanged'*/); //, 'onpage_show', 'onpage_hide');            
+      _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft'/*, 'scroll', '_onScroll'*/, '_onViewportDimensionsChanged'); //, 'onpage_show', 'onpage_hide');            
       
 //      this._subscribeToImageEvents();
 //      
@@ -89,20 +103,28 @@ define('views/BasicPageView', [
           self.createCallInProgressHeader(G.callInProgress);        
       };
       
-//      for (var i = 0; i < viewportEvents.length; i++) {
-//        var event = viewportEvents[i],
-//            listener = 'on' + event;
-//        
-//        if (listener in window) {
-//          window.addEventListener(event, this._onViewportDimensionsChanged, false);          
-//        }
-//      }
+      if (this.model) {
+        if (this.resource) {
+          if (this.resource.loaded || !this.resource.getUri()) {
+            this._fetchPromise = G.getResolvedPromise();
+            return;
+          }
+        }
+        else if (this.collection) {
+          if (this.collection._lastFetchedOn) {
+            this._fetchPromise = G.getResolvedPromise();
+            return;
+          }
+        }
+        
+        var fetchDfd = $.Deferred();
+        this._fetchPromise = fetchDfd.promise();
+        this.model.fetch(_.extend({
+          success: fetchDfd.resolve,
+          error: fetchDfd.reject
+        }, options.fetchOptions));
+      }
     },
-    
-//    windowEvents: {
-//      'resize.default': '_onViewportDimensionsChanged',
-//      'orientationchange.default': '_onViewportDimensionsChanged'
-//    },
     
     events: {
       'scrollstart.page': 'reverseBubbleEvent',
@@ -129,9 +151,9 @@ define('views/BasicPageView', [
       '.default destroyed': '_onDestroyed'
     },
     
-//    windowEvents: {
-//      'scroll': '_onScroll'
-//    },
+    windowEvents: {
+      'viewportdimensions': '_onViewportDimensionsChanged'
+    },
     
     _onActiveView: function(view) {
       if (view !== this) {
@@ -244,16 +266,10 @@ define('views/BasicPageView', [
 //        // </debug>
 //      }
 //    }, 100),
-//
-//    _onViewportDimensionsChanged: Q.debounce(function(e) {
-//      if (this.$el)
-//        this.$el.triggerHandler(e.type);
-//      
-//      var children = this.children;
-//      for (var cid in children) {
-//        children[cid].$el.triggerHandler(e.type, e);
-//      }
-//    }, 50),
+
+    _onViewportDimensionsChanged: function(e) {
+      this._fixTooltips();
+    },
 
     onTourStep: function(step) {
       if (this.isActive())
@@ -287,23 +303,44 @@ define('views/BasicPageView', [
       }
     },
     
-    removeTooltip: function($el) {
-  //    if (elm[0].tagName == 'DIV')
-  //      elm.removeClass('hint--always hint--left hint--right ').removeAttr('data-hint');
-  //    else
-  //      elm.unwrap();
+    _fixTooltips: function() {
+      var tooltipOn = this._tooltipOn,
+          tooltip,
+          el,
+          pos;
       
-      var nonHintClasses = _.filter(($el.attr("class") || '').split(" "), function(item) {
-        return !item.startsWith("hint--");
-      });
-//      this.$el.off('resize', function() {
-//        
-//      });
-      $el.attr("class", nonHintClasses.join(" "));
+      if (!tooltipOn)
+        return;
+      
+      tooltip = this._getTooltip();
+      if (tooltips) {
+        pos = getTooltipPos(tooltip);
+        tooltip.$css({
+          top: pos.top + 'px',
+          left: pos.left + 'px'
+        });
+      }
+    },
+    
+    removeTooltip: function(el) {
+      var i = el.classList.length;
+      while (i--) {
+        var cl = el.classList[i];
+        if (cl.startsWith('hint--'))
+          el.classList.remove(cl);
+      }
+      
+      if (this._tooltipOn == el)
+        this._tooltipOn = null;
+    },
+    
+    _getTooltip: function() {
+      return doc.getElementsByClassName('play')[0];
     },
     
     addTooltip: function(el, tooltip, direction, type, style) {
       el = el instanceof $ ? el : $(el);
+      this._tooltipOn = el;
       var classes = ['always', 
                      direction || 'left', 
                      type      || 'info', 
@@ -314,31 +351,16 @@ define('views/BasicPageView', [
       });
      
       var self = this;
-      var position = el.offset();
-      var viewport = G.viewport;
-      var t = position.top + el.outerHeight()/2 - 20;
-      var l = position.left + el.outerWidth()/2 - 20;
-      if (l + 40 > viewport.width) 
-        l = viewport.width - 40;
+      var pos = getTooltipPos(el);
+      var page = doc.getElementById('page');
       if (tooltip)
-        $('#page').prepend('<div class="play ' + classes.join(' ') + '" style="top:' + t + 'px; left:' + l + 'px" data-hint="' + tooltip + '"><div class="glow"></div><div class="shape"></div></div>');
+        page.$prepend('<div class="play ' + classes.join(' ') + '" style="top:' + pos.top + 'px; left:' + pos.left + 'px" data-hint="' + tooltip + '"><div class="glow"></div><div class="shape"></div></div>');
       else
-        $('#page').prepend('<div class="play" style="top:' + t + 'px; left:' + l + 'px;"><div class="glow"></div><div class="shape"></div></div>');
-//      el.addClass(classes.join(' '), {duration: 1000});
-//      el.attr('data-hint', tooltip);      
+        page.$prepend('<div class="play" style="top:' + t + 'px; left:' + l + 'px;"><div class="glow"></div><div class="shape"></div></div>');
+
       this.once('inactive', function() {
-        self.removeTooltip(el);
-        $('.play').remove();
-      });
-      
-      this.$el.on('resize', function() {
-        var position = el.offset();
-        var t = position.top + el.outerHeight()/2 - 20;
-        var l = position.left + el.outerWidth()/2 - 20;
-        if (l + 40 > viewport.width) 
-          l = viewport.width - 40;
-        $('.play').css('top', t + 'px');
-        $('.play').css('left', l + 'px');
+        self.removeTooltip(el[0]);
+        self._getTooltips().remove();
       });
     },
 
@@ -447,10 +469,6 @@ define('views/BasicPageView', [
     },
     
 //    _onDestroyed: function() {
-//      for (var i = 0; i < viewportEvents.length; i++) {
-//        window.removeEventListener(viewportEvents[i], this._onViewportDimensionsChanged);          
-//      }
-//      
 //      return BasicView.prototype._onDestroyed.apply(this, arguments);
 //    },
 
@@ -576,7 +594,11 @@ define('views/BasicPageView', [
         clearTimeout(timeoutId);
       
       $m.loading('hide');
-    }    
+    },
+    
+    getFetchPromise: function() {
+      return this._fetchPromise;
+    }
   }, {
     displayName: 'BasicPageView'
   });

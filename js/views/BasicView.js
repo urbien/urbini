@@ -388,8 +388,13 @@ define('views/BasicView', [
       Events.trigger('viewDestroyed', this);
       Events.trigger('viewDestroyed:' + this.cid, this);
       
+      if (this.model)
+        this.stopListening(this.model);
+      if (this.pageView)
+        this.stopListening(this.pageView);
+      
       this.undelegateEvents();
-      this.stopListening();
+      this.stopListening(); // last cleanup
       this.unobserveMutations();
       
       if (this.parentView) {
@@ -883,6 +888,16 @@ define('views/BasicView', [
 //      cleanImage(img);
 //    },
 
+    findChildByResource: function(res) {
+      for (var childId in this.children) {
+        var child = this.children[childId];
+        if (child.resource == res)
+          return child;
+      }
+      
+      return undefined;
+    },
+    
     findResourceByCid: function(cid) {
       if (this.resource && this.resource.cid == cid)
         return this.resource;
@@ -953,6 +968,10 @@ define('views/BasicView', [
       } else {
         this.el.addEventListener('DOMSubtreeModified', callback, true);
       }      
+    },
+    
+    getFetchPromise: function() {
+      return this.pageView && this.pageView.getFetchPromise();
     }
   }, {
     displayName: 'BasicView',

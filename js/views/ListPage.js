@@ -171,7 +171,6 @@ define('views/ListPage', [
         readyDfd.resolve();
       });
       
-      this.collection.fetch(_.pick(options, 'forceFetch', 'sync'));
       this.canSearch = !this.isSpecialIntersection; // for now - search + photogrid results in something HORRIBLE, try it if you're feeling brave
       
       // setup filtering

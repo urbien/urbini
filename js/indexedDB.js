@@ -291,9 +291,9 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       var storeName = toDelete[i];
       if (instance.hasStore(storeName)) {
         try {
-          versionTrans.deleteObjectStore(storeName);
-          delete instance.stores[storeName];
-          log('db', 'deleted object store: ' + storeName);
+          versionTrans.objectStore(storeName).clear(); //deleteObjectStore(storeName);
+//          delete instance.stores[storeName];
+          log('db', 'cleared object store: ' + storeName);
         } catch (err) {
           debugger;
           log(['error', 'db'], '2. failed to delete object store {0}: {1}'.format(storeName, err));
@@ -301,22 +301,22 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       }
     }
     
-    if (doDelete && _.intersection(instance.storesToKill, _.pluck(instance.storesToMake, 'name')).length) {
-      // run delete and create separately to make sure stores are deleted before they are recreated 
-      // this hack is for the benefit of WebSQL
-      // obviously this crap shouldn't be this high in the abstraction level, as this module shouldn't need to care about WebSQL, so better move it to IndexedDBShim
-      instance.storesToKill = [];
-      instance.restart(instance.getVersion() + 2); 
-      return;
-    }
+//    if (doDelete && _.intersection(instance.storesToKill, _.pluck(instance.storesToMake, 'name')).length) {
+//      // run delete and create separately to make sure stores are deleted before they are recreated 
+//      // this hack is for the benefit of WebSQL
+//      // obviously this crap shouldn't be this high in the abstraction level, as this module shouldn't need to care about WebSQL, so better move it to IndexedDBShim
+//      instance.storesToKill = [];
+//      instance.restart(instance.getVersion() + 2); 
+//      return;
+//    }
     
     for (var i = 0, len = toMake.length; i < len; i++) {
       var storeObj = toMake[i],
           storeName = storeObj.name,
           store;
       
-      // don't remake an existing store, unless we just deleted it
-      if (_.contains(currentStores, storeName)) // && !_.contains(instance.storesToKill, storeName))
+      // don't remake an existing store
+      if (_.contains(currentStores, storeName))
         continue;
       
       try {
@@ -448,9 +448,6 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   };
   
   IDB.prototype.wipe = function(filter, doDeleteStores) {
-    if (!doDeleteStores)
-      debugger;
-    
     if (!this.isOpen())
       return this.onOpen(this.wipe.bind(this, filter, doDeleteStores));
     

@@ -33,7 +33,6 @@ define('app', [
     }
   };  
   
-  // provide a promise-based interface to the SimplePush API
   function extendMetadataKeys() {
     var extended = {};
     var metadata = G.modelsMetadata;

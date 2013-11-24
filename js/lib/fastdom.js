@@ -9,8 +9,13 @@
  * @author Wilson Page <wilsonpage@me.com>
  */
 
-define('lib/fastdom', ['globals', 'underscore', 'frameWatch'], function(G, _, FrameWatch) {
+define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, FrameWatch) {
   'use strict';
+  window._setTimeout = window.setTimeout;
+  window._setInterval = window.setInterval;
+  window._clearTimeout = window.clearTimeout;
+  window._clearInterval = window.clearInterval;
+
   var FPS = 45,
       FRAME_SIZE = 16,
       FRAME_END = 14,
@@ -538,10 +543,6 @@ define('lib/fastdom', ['globals', 'underscore', 'frameWatch'], function(G, _, Fr
       return FrameWatch.unsubscribe(id);
     };
     
-    window._setTimeout = window.setTimeout;
-    window._setInterval = window.setInterval;
-    window._clearTimeout = window.clearTimeout;
-    window._clearInterval = window.clearInterval;
     window.setTimeout = fastdom.setTimeout;
     window.clearTimeout = fastdom.clearTimeout;
     window.resetTimeout = fastdom.resetTimeout;

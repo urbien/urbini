@@ -263,7 +263,8 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         
         var globalEvents = this.globalEvents,
             windowEvents = this.windowEvents,
-            myEvents = this.myEvents;
+            myEvents = this.myEvents,
+            modelEvents = this.modelEvents;
         
         if (globalEvents) {
           var delegated = this._delegatedGlobalEvents = this._delegatedGlobalEvents || {};
@@ -300,6 +301,19 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
               
               delegated[key] = fn;
               this.on(eventName, fn, this);
+            }
+          }
+        }
+
+        if (modelEvents) {
+          var delegated = this._delegatedModelEvents = this._delegatedModelEvents || {};
+          for (var key in modelEvents) {
+            if (!_.has(delegated, key)) {
+              var eventName = getEventName(key),
+                  fn = getFunction.call(this, modelEvents, key);
+              
+              delegated[key] = fn;
+              this.listenTo(this.model, eventName, fn, this);
             }
           }
         }
@@ -353,7 +367,8 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       undelegateNonDOMEvents: function() {        
         var globalEvents = this._delegatedGlobalEvents,
             myEvents = this._delegatedMyEvents,
-            windowEvents = this._delegatedWindowEvents;
+            windowEvents = this._delegatedWindowEvents,
+            modelEvents = this._delegatedModelEvents;
         
         if (globalEvents) {
           for (var key in globalEvents) {
@@ -373,6 +388,13 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
           for (var key in windowEvents) {
             var fn = windowEvents[key];
             window.removeEventListener(getEventInfo(key).eventName, fn);
+          }
+        }
+        
+        if (modelEvents) {
+          for (var key in modelEvents) {
+            var fn = modelEvents[key];
+            this.stopListening(this.model, getEventInfo(key).eventName, fn, this);
           }
         }
       },

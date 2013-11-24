@@ -1,4 +1,4 @@
-define('frameWatch', ['underscore'], function() {
+define('FrameWatch', ['underscore'], function() {
   var raf = window.raf,
       caf = window.caf,
       taskCounter = 0,

@@ -14,7 +14,7 @@ define('views/MapView', [
 //    cssListeners: [],
     loadedCSS: false,
     initialize: function (options) {
-      _.bindAll(this, 'render', 'show', 'hide','toggleMap', 'resetMap', 'onSwipe', 'resize');
+      _.bindAll(this, 'render', 'show', 'hide','toggleMap', 'resetMap', 'onSwipe', 'onDrag', 'resize');
       BasicView.prototype.initialize.apply(this, arguments);
       this.listenTo(Events, "mapIt", this.toggleMap);
 //      this.listenTo(Events, "pageChange", this.resetMap);
@@ -39,10 +39,8 @@ define('views/MapView', [
       $.when.apply($, dfds).always(readyDfd.resolve);
     },
     events: {
-//      'click': 'click',
       'swipe'             : 'onSwipe',
-      'swiperight'        : 'onSwipe',
-      'swipeleft'         : 'onSwipe'
+      'drag'              : 'onDrag'
     },
     
     windowEvents: {
@@ -60,6 +58,9 @@ define('views/MapView', [
         this.$('#map').$css('height', window.innerHeight * 0.4);
       
       this.resetMap();
+    },
+    onDrag: function(e) {
+      Events.stopEvent(e);
     },
     onSwipe: function(e) {
       Events.stopEvent(e);

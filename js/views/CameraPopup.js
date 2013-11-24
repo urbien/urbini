@@ -384,8 +384,8 @@ define('views/CameraPopup', [
       
       colorCl = colorCl || 'black';
       if (this.isVideo || this.isImage) {
-        this.video[videoOn ? 'show' : 'hide']();
-        this.canvas[videoOn ? 'hide' : 'show']();
+        this.video[videoOn ? '$show' : '$hide']();
+        this.canvas[videoOn ? '$hide' : '$show']();
       }
       
       if (this.rendered) {

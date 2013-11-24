@@ -67,10 +67,11 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
         })
       );
     }
-    else
+    else {
       Events.trigger('back',  function ifNoHistory() {
         Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()));
       });
+    }
   };
 
   Redirecter.prototype.redirectAfterCancelMake = function(res, options) {
