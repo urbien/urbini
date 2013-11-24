@@ -45,16 +45,6 @@ define('views/Header', [
         self.buttonViews = {};
       });
       
-////      this.calcTitle();
-//      this.makeTemplate('errorListTemplate', 'errorListTemplate', this.modelType);
-//      this.makeTemplate('callInProgressHeaderTemplate', 'callInProgressHeaderTemplate', this.modelType);
-//
-//      _.each(['info', 'error'], function(event) {
-//        var handler = this._updateInfoErrorBar;
-//        Events.off(event, handler);
-//        Events.on(event, handler);
-//      }.bind(this));
-
       return this;
     },
     
@@ -92,20 +82,19 @@ define('views/Header', [
       }
       
       this.buttonViews = {};
-      this.readyDfd = $.Deferred();
-      this.ready = this.readyDfd.promise();
-      U.require(reqdButtons, function() {
+      var self = this;
+      var btnsReq = U.require(reqdButtons, function() {
         var i = 0;
         for (var btn in buttons) {
           var model = arguments[i++];
           if (G.isBootstrap())
             model = model.extend({tagName: 'div'}, {}); 
 
-          this.buttonViews[btn] = this.buttonViews[btn] || this.addChild(new model(btnOptions));
+          self.buttonViews[btn] = self.buttonViews[btn] || self.addChild(new model(btnOptions));
         }
-        
-        this.readyDfd.resolve();
-      }.bind(this));
+      });
+      
+      this.ready = $.when(btnsReq, this.getFetchPromise());
     },
     
     calcTitle: function() {      

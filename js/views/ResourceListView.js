@@ -29,7 +29,7 @@ define('views/ResourceListView', [
     _slidingWindowInsideBuffer: 1200, // px, should depend on size of visible area of the list, speed of device, RAM
     _slidingWindowOutsideBuffer: 800, // px, should depend on size of visible area of the list, speed of device, RAM
 //    _slidingWindowBuffer: 800, // px, should depend on size of visible area of the list, speed of device, RAM
-    _minSlidingWindowDimension: 3000, // px, should depend on size of visible area of the list, speed of device, RAM
+    _minSlidingWindowDimension: null, // px, should depend on size of visible area of the list, speed of device, RAM
 //    _pageOffset: 0,
 //    _maxPagesInSlidingWindow: 12,
     _minPagesInSlidingWindow: 12,
@@ -69,6 +69,7 @@ define('views/ResourceListView', [
       
 //      var self = this,
 //          col = this.collection;
+//      
 //      _.each(['updated', 'added', 'reset'], function(event) {
 //        self.stopListening(col, event);
 //        self.listenTo(col, event, function(resources) {
@@ -83,8 +84,7 @@ define('views/ResourceListView', [
 //          
 //          self.refresh(options);
 //        });
-//      });
-      
+//      });      
       
       var viewport = G.viewport;
       this._pages = [];
@@ -115,7 +115,7 @@ define('views/ResourceListView', [
         to: 0
       };
 
-      this.initDummies();
+//      this.initDummies();
       this._onScrollerSizeChanged({
         target: this.el,
         content: viewport,
@@ -134,11 +134,35 @@ define('views/ResourceListView', [
     },
 
     modelEvents: {
-      'reset': '_resetPaging'
+      'reset': '_resetPaging',
+      'added': '_onAddedResources'
+//        ,
+//      'updated': '_onUpdatedResources'
     },
     
+    _onAddedResources: function(resources) {
+      this._outOfData = false;
+      this.adjustSlidingWindow();
+    },
+
+//    _onUpdatedResources: function(resources) {
+//      debugger;
+//      var i = resources.length,
+//          res,
+//          childView;
+//      
+//      while (i--) {
+//        res = resources[i];
+//        childView = this.findChildByResource(res);
+//        if (childView)
+//          childView.refresh();
+//      }
+//      
+////      this.refresh();
+//    },
+
     initDummies: function() {
-      if (!this.el || this._initiailizedDummies)
+      if (!this.el || this._initializedDummies)
         return;
       
       this._initializedDummies = true;
@@ -427,6 +451,9 @@ define('views/ResourceListView', [
         this._initSlidingWindowTimer = setTimeout(this.adjustSlidingWindow, 50);
         return false;
       }
+      
+      if (!this._initializedDummies)
+        this.initDummies();
       
       if (this._pagesCurrentlyInSlidingWindow < this._minPagesInSlidingWindow)
         return this._growSlidingWindow(n).done(this._queueSlidingWindowCheck);
@@ -744,6 +771,7 @@ define('views/ResourceListView', [
               
               var child = self.children[viewId];
               self.listenTo(child.resource, 'change', self.onResourceChanged);
+              self.listenTo(child.resource, 'saved', self.onResourceChanged);
               child.setElement(childEl);
               if (child.postRender)
                 child.postRender();
@@ -952,9 +980,9 @@ define('views/ResourceListView', [
     },
 
     onResourceChanged: function(res) { // attach/detach when sliding window moves
-      var itemView = this.getViewByResource(res);
+      var itemView = this.findChildByResource(res);
       if (itemView) {
-        itemView.refresh(); // or maybe remove and reappend?
+        itemView.render(); // or maybe remove and reappend?
         this.adjustSlidingWindow();
         // expect an extra reflow here
       }

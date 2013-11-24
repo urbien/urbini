@@ -97,10 +97,11 @@ define('views/EditView', [
       }
 
       this.on('active', function() {
-        this._canceled = false;
-        this._submitted = false;
-      }.bind(this));
-      
+        self._canceled = false;
+        self._submitted = false;
+      });
+
+      this.on('inactive', this.reset, this);
       return this;
     },
     events: {
@@ -736,6 +737,10 @@ define('views/EditView', [
       
       return true;
     },
+
+    reset: function() {
+      this.getInputs().$attr('disabled', null);
+    },
     
     submit: function(e, options) {
       e && Events.stopEvent(e);
@@ -767,7 +772,8 @@ define('views/EditView', [
         return;
       
       this._submitted = true;
-      var inputs = U.isAssignableFrom(this.vocModel, "Intersection") ? this.getInputs() : this.inputs;
+//      var inputs = U.isAssignableFrom(this.vocModel, "Intersection") ? this.getInputs() : this.inputs;
+      var inputs = this.getInputs();
       inputs.$attr('disabled', true);
       inputs = _.filter(inputs, function(input) { 
         return !input.classList.contains(scrollerClass) && 

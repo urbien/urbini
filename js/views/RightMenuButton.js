@@ -57,9 +57,11 @@ define('views/RightMenuButton', [
     
    refresh: function() {      
       this.findMenuBadge();
-      var num = this.isChat ? this.pageView.getNumParticipants() : G.currentUser.newAlertsCount;
-      this.menuBadge.innerHTML = num || '';
-      this.menuBadge.style.display = num ? '' : 'none';
+      if (this.menuBadge) {
+        var num = this.isChat ? this.pageView.getNumParticipants() : G.currentUser.newAlertsCount;
+        this.menuBadge.innerHTML = num || '';
+        this.menuBadge.style.display = num ? '' : 'none';
+      }
     },
 
    _leftMenu: function(e) {

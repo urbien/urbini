@@ -37,7 +37,11 @@ define('views/ResourceView', [
 
       var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
       this.isCode = codemirrorModes.length; // we don't need to use the actual modes, just need to know whether we need codemirror stuff
-      this.ready = this.isCode ? U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes)) : G.getResolvedPromise();
+      var promises = [this.getFetchPromise()];
+      if (this.isCode)
+        promises.push(U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes)));
+      
+      this.ready = $.when.apply($, promises);
       if (options.isBuyGroup) {
         this.isBuyGroup = true;
 //        var purchasesBLProp, 

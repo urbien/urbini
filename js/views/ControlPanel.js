@@ -11,6 +11,7 @@ define('views/ControlPanel', [
 ], function(G, _, Events, U, BasicView, Voc, ResourceList, C) {
   return BasicView.extend({
     tagName: "tr",
+    autoFinish: false,
     initialize: function(options) {
       _.bindAll(this, 'render', 'refresh', 'add', 'update'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);
@@ -190,8 +191,12 @@ define('views/ControlPanel', [
 //        this.$el.listview('refresh');
 //      }
 //    },
-    
+
     render: function(options) {
+      return this.getFetchPromise().done(this.renderHelper.bind(this, options));
+    },
+    
+    renderHelper: function(options) {
       var res = this.resource;
       var vocModel = this.vocModel;
       var type = res.type;
@@ -589,6 +594,7 @@ define('views/ControlPanel', [
       if (this.rendered && this.el.$hasClass('ui-listview'))
         this.$el.listview('refresh');
 
+      this.finish();
       return this;
     }
   }, {

@@ -28,8 +28,8 @@ define('views/ResourceListItemView', [
         this.imageProperty = options.imageProperty;
       
       this.checked = options.checked;
-      this.resource.on('remove', this.remove, this);
-//      this.resource.on('change', this.render, this);
+      this.listenTo(this.resource, 'remove', this.remove);
+//      this.listenTo(this.resource, 'saved', this.render);
       if (!this.isEdit)
         this.makeTemplate('listItemTemplate', 'template', this.vocModel.type, true); // don't fall back to default, we want to know if no template was found for this type
       

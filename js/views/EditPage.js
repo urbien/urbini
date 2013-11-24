@@ -16,6 +16,7 @@ define('views/EditPage', [
 ], function(G, _, U, Events, Voc, C, ResourceList, BasicPageView, Header, EditView, ResourceImageView, ResourceListView, ControlPanel) {
   var editParams = ['action', 'viewId'];
   return BasicPageView.extend({
+    autoFinish: false,
     initialize: function(options) {
       _.bindAll(this, 'render', 'edit', 'home', 'set', 'resetForm');
       BasicPageView.prototype.initialize.apply(this, arguments);
@@ -108,7 +109,11 @@ define('views/EditPage', [
       return this;
     },
 
-    render: function() {
+    render: function(options) {
+      this.getFetchPromise().done(this.renderHelper.bind(this, options));
+    },
+    
+    renderHelper: function(options) {
       this.$el.html(this.template(this.settings));
       var views = {
         '#resourceEditView': this.editView,
