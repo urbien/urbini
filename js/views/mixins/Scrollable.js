@@ -220,12 +220,12 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
 //    e.gesture.preventDefault();
 //    e.gesture._taken = true;
 //    e._taken = me;
-    console.log("LOCKING gesture");
+//    console.log("LOCKING gesture");
     LOCKED_BY = me;
   }
 
   function releaseGesture(e) {
-    console.log("UNLOCKING gesture");
+//    console.log("UNLOCKING gesture");
     LOCKED_BY = null;
   }
   
@@ -506,8 +506,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
           axis = this.getScrollAxis(),
           coordProp = 'page' + axis,
           distance = touch[coordProp] - s._start[coordProp],
-          now = _.now(),
-          time = now - s._startTime,
+          time = e.timeStamp - s._startTime,
           newX, newY;
       
       if (!distance)
@@ -852,8 +851,10 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
         if (contentSizeChanged)
           this.el.dispatchEvent(new CustomEvent('scrollocontent', {detail: scrollInfo}));
         
-        if (content[dim] > container[dim])
+        if (!s._scrollable && content[dim] > container[dim]) {
+          s._scrollable = true;
           this.el.dispatchEvent(new CustomEvent('scrolloable', {detail: scrollInfo}));
+        }
       }
       
       this.setDimensions(content.width, content.height);
@@ -934,9 +935,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
       if (prevPos && Math.abs(pos[axis] - prevPos[axis]) < SCROLL_EVENT_DISTANCE_THRESH)
         return;
       
-//      if (prevPos)
-//        this.log("SCROLL FROM: ", prevPos[axis], pos[axis]);
-      s.prevPosition = _.clone(pos); 
+      s.prevPosition = _.clone(pos);
+//      this.log("SCROLL EVENT:", -pos.Y);
       this.el.dispatchEvent(new CustomEvent(type.replace('scroll', 'scrollo'), { detail: this.getScrollInfo(scroll) }));
     },
     
@@ -951,7 +951,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
     _scrollTo: function(x, y, time, ease) {
       time = time || 0;
       ease = ease || beziers.fling;
-      this.log('scrolling to:', x, ',', y, ', in ' + time + 'ms');
+//      this.log('scrolling to:', x, ',', y, ', in ' + time + 'ms');
       var s = this._scrollerProps,
           pos = s.position,
           bounce = s.bounce;
@@ -1149,8 +1149,14 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
     },
     
     _scrollVelocity: 0,
+    _lastVelocityDirection: 'tail',
     _setScrollVelocity: function(velocity) {
-//      this.log(this.TAG, "SCROLL VELOCITY:", velocity);
+      velocity = (velocity * 100 | 0) / 100;
+      if (velocity < 0)
+        this._lastVelocityDirection = 'tail';
+      else if (velocity > 0)
+        this._lastVelocityDirection = 'head';
+      
       this._scrollVelocity = velocity;
     },
     
@@ -1158,6 +1164,10 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
       return this._scrollVelocity;
     },
 
+    getLastScrollDirection: function() {
+      return this._lastVelocityDirection;
+    },
+    
     _setViewportDestination: function(x, y, timeToDestination) {
       var s = this._scrollerProps,
           axis = this.getScrollAxis(),
