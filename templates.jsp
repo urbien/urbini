@@ -716,8 +716,8 @@
   <li style="cursor: pointer;min-height: 42px; {{= obj.image ? 'padding-top: 0;padding-right:0px;padding-bottom: 7px;' : 'padding-bottom:0px; margin-bottom:-10px;' }}"  id="{{= obj.id ? obj.id : G.nextId() }}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
       {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl) + '"' : '' }} >
     
-    <!-- {{ if (!obj.homePage) { }} -->   
-    <img src="{{= obj.image || G.blankImgDataUrl }}" class="thumb" 
+    {{ if (obj.image) { }}   
+    <img src="{{= image }}" class="thumb" 
     {{ if (typeof obj.width != 'undefined'  &&  obj.width.length) { }}  
       style="
         width:{{= width }}px; height:{{= height }}px;
@@ -725,8 +725,8 @@
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
     {{ } }}
     /> 
-    <!-- {{ } }} -->
-    <div class="gradientEllipsis" style="min-height:38px;max-width:100%;font-size:18px;margin-left:15px;float:left;{{= obj.image ? 'padding-top:10px;' : '' }}" 
+    {{ } }}
+    <div class="gradientEllipsis" style="min-height:38px;max-width:100%;font-size:18px;float:left;{{= obj.image ? 'padding-top:10px;margin-left:15px;' : '' }}" 
       {{ if (obj.data) {                              }}
       {{   for (var d in data) {                      }}
       {{=    ' data-{0}="{1}"'.format(d, data[d])     }}
@@ -1189,6 +1189,7 @@
 </script>
 
 <script type="text/template" id="masonry-mod-list-item">
+<div>
   <div class="anab" data-viewid="{{= viewId }}">
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
@@ -1260,6 +1261,7 @@
     </td>
     </tr>
   </table>
+</div>  
 </script>
 
 <script type="text/template" id="masonry-list-item">
@@ -1268,11 +1270,11 @@
   <div class="anab" data-viewid="{{= viewId }}">
     <div class="galleryItem_css3"
          {{ if (obj.imgWidth) { }}
-              style="{{= (obj.top ? '' : 'height:' + imgHeight + 'px;') + (obj.left ? '' : 'width:' + imgWidth + 'px;') }}"
+            style="{{= (obj.top ? '' : 'height:' + imgHeight + 'px;') + (obj.left ? '' : 'width:' + imgWidth + 'px;') }}"
          {{ } }}
     >
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img data-lazysrc="{{= obj.resourceMediumImage || G.blankImgDataUrl }}" class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" />
+        <img data-lazysrc="{{= obj.resourceMediumImage || G.blankImgDataUrl }}" {{= obj.width ? 'width="' + width + '"' : '' }} {{= obj.height ? 'height="' + height + '"' : '' }} class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" />
       </a>
     </div>
     <!-- {{= typeof friendsCount == 'undefined' ? '' : '<div class="appBadge">' + friendsCount + '</div>' }} -->
