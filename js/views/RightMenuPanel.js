@@ -4,9 +4,8 @@ define('views/RightMenuPanel', [
   'utils',
   'events',
   'vocManager',
-  'lib/blur',
   'views/BasicView'
-], function(G, U, Events, Voc, Blur, BasicView) {
+], function(G, U, Events, Voc, BasicView) {
   function isCreatorOrAdmin(res) {
     return (G.currentUser._uri == G.currentApp.creator  ||  U.isUserInRole(U.getUserRole(), 'admin', res));
   };
