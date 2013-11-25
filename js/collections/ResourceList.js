@@ -102,22 +102,28 @@ define('collections/ResourceList', [
 
       if (!this['final']) {
         var self = this;
-        this.listenTo(Events, 'newResource:' + this.type, function(resource, options) {
+        this.listenTo(Events, 'newResource:' + this.type, function(resource, fromList) {
           // we are adding this resource to this collection at the moment
+          if (self == fromList)
+            return;
+          
           setTimeout(function() {            
-            Q.nonDom(self.filterAndAddResources.bind(self, [resource], options), self);
+            Q.nonDom(self.filterAndAddResources.bind(self, [resource]), self);
           }, 1000);
         });
         
-        this.listenTo(Events, 'newResources:' + this.type, function(resources, options) {
+        this.listenTo(Events, 'newResources:' + this.type, function(resources, fromList) {
           // we are adding this resource to this collection at the moment
+          if (self == fromList)
+            return;
+          
           setTimeout(function() {            
-            Q.nonDom(self.filterAndAddResources.bind(self, resources, options), self);
+            Q.nonDom(self.filterAndAddResources.bind(self, resources), self);
           }, 1000);
         });
         
         this.listenTo(Events, 'newResourceList:' + this.type, function(list) {
-          if (list === self)
+          if (self == list)
             return;
   
           setTimeout(function() {            
@@ -145,8 +151,9 @@ define('collections/ResourceList', [
           added.push(resource);
       }
       
-      self.add(added, {
-        announce: false
+      this.add(added, {
+        announce: false,
+        parse: false
       });
     },
     
@@ -184,6 +191,10 @@ define('collections/ResourceList', [
       if (!options.partOfUpdate)
         this.trigger('updated', [resource]);
     },
+    
+    /**
+     * assumes unsorted collection
+     */
     add: function(resources, options) {
       if (!_.size(resources))
         return;
@@ -191,26 +202,33 @@ define('collections/ResourceList', [
       if (this['final'] && this.models.length)
         throw "This list is locked, it cannot be changed";
       
-      options = options || {};
+      options = _.defaults({}, options, { silent: true, parse: true });
       var self = this,
           multiAdd = _.isArray(resources),
           fromServer = this.lastFetchOrigin == 'server',
           params = this.modelParamsStrict,
-          setInitialParams = fromServer && _.size(params);
+          setInitialParams = fromServer && _.size(params),
+          numBefore = this.length,
+          models = this.models,
+          added,
+          numAfter,
+          i,
+          result;
       
       resources = multiAdd ? resources : [resources];
       if (!resources.length)
         return;
+
+      Backbone.Collection.prototype.add.call(this, resources, options);
       
-      for (var i = 0, len = resources.length; i < len; i++) {
-        var resource = resources[i],
-            uri;
-        
-        resource = resources[i] = resource instanceof Backbone.Model ? 
-                                                            resource : 
-                                                            new this.vocModel(resource, {silent: true, parse: true}); // avoid tripping newResource event as we want to trigger bulk 'added' event
-        
-        uri = resource.getUri();
+      numAfter = this.length;
+      if (numAfter <= numBefore)
+        return;
+      
+      for (var i = numBefore; i < numAfter; i++) {
+        var resource = models[i],
+            uri = resource.getUri();
+          
         if (U.isTempUri(uri)) {
           resource.once('uriChanged', function(oldUri) {
             var newUri = resource.getUri();
@@ -227,20 +245,19 @@ define('collections/ResourceList', [
         this.listenTo(resource, 'change', self.onResourceChange);
         this.listenTo(resource, 'change', self.onResourceChange);
       }
-//      this.adding = true;
-      try {
-        return Backbone.Collection.prototype.add.call(this, resources, _.defaults({ silent: true }, options));
-      } finally {
-//        this.adding = false;
-        if (multiAdd && !this.resetting) {
-          this.trigger('added', resources);
-        }
-        
-        if (options.announce !== false) {
-          Events.trigger('newResources', resources);
-          Events.trigger('newResources:' + this.type, resources);
-        }
+
+      if (multiAdd && !this.resetting) {
+        added = models.slice(numBefore);
+        this.trigger('added', added);
       }
+      
+      if (options.announce !== false) {
+        added = added || models.slice(numBefore);
+        Events.trigger('newResources', added, this);
+        Events.trigger('newResources:' + this.type, added, this);
+      }
+
+      return result;
     },
 //    replace: function(resource, oldUri) {
 //      if (U.isModel(oldUri))
