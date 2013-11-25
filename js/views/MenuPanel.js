@@ -4,9 +4,8 @@ define('views/MenuPanel', [
   'utils',
   'events',
   'vocManager',
-  'lib/blur.js',
   'views/BasicView'
-], function(G, U, Events, Voc, Blur, BasicView) {
+], function(G, U, Events, Voc, BasicView) {
   return BasicView.extend({
 //    role: 'data-panel',
 //    id: 'menuPanel',
@@ -107,7 +106,7 @@ define('views/MenuPanel', [
       var mi = menu && menu.querySelector('#menuItems');
       if (mi && G.isJQM()) {
 //        $('#' + this.viewId).panel().panel("open");
-        menu.panel("open");
+        $(menu).panel("open");
         return;
       }
       var self = this;
@@ -235,7 +234,8 @@ define('views/MenuPanel', [
         p.style.visibility = 'visible';
       else {
         $(p).panel().panel("open");
-        $(this.$('#menuItems')).listview();
+        $(ul).listview();
+//        $(this.$('#menuItems')).listview();
       }
 //      p.panel().panel("open");
 //      this.$('#menuItems').listview();

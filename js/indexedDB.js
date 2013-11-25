@@ -7,7 +7,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       useFileSystem,
       RESOLVED_PROMISE = G.getResolvedPromise(),
       REJECTED_PROMISE = G.getRejectedPromise(),
-      fileMap = {};  
+      fileMap = {};
 //      ,
 //      defaultStoreOptions = {keyPath: prepPropName('_uri'), autoIncrement: false},
 //      defaultIndexOptions = {unique: false, multiEntry: false};
@@ -100,7 +100,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       debugger;
     });
   }
-
+  
   function _convertImage(item, _item, prop, val) {
     return $.Deferred(function(defer) {
       var img = new Image;

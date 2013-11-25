@@ -14,7 +14,7 @@ define('views/CameraPopup', [
 
   return BasicView.extend({
     template: 'cameraPopupTemplate',
-    tagName: 'li',
+    tagName: 'div',
     autoFinish: false,
     events: {
 //      'click #camVideo'         : 'stop',
@@ -193,11 +193,18 @@ define('views/CameraPopup', [
       $('#cameraPopup').remove();
       this.$('#cameraCancelBtn')[0].addEventListener('click', this.destroy);
       $(doc.body).append(this.el);
+
       this.popup = $('#cameraPopup');
       this.setElement(this.popup);
 
-      $(this.popup).trigger('create').popup().popup("open");
-      
+      var cp = $(this.popup).trigger('create');
+      if (G.isJQM())
+        cp.popup().popup("open");
+      else {
+        this.el.parentNode.style['position'] = "absolute";
+        this.el.parentNode.style['top'] = '20%';
+        this.el.parentNode.style['width'] = '100%';
+      }
       var streaming     = false;
       this.previewDiv = this.$('#camPreview')[0];
       if (this.hasVideo) {
@@ -214,7 +221,7 @@ define('views/CameraPopup', [
       this.submitBtn   = this.$('#cameraSubmitBtn')[0];
       this.rafId        = null;
       this.frames       = null;
-      this.initialShootBtnText = this.initialShootBtnText || this.shootBtn.getElementsByClassName('ui-btn-text')[0].innerText;
+      this.initialShootBtnText = this.initialShootBtnText || (G.isJQM() ? this.shootBtn.getElementsByClassName('ui-btn-text')[0].innerText : this.shootBtn.innerText);
         
       // audio
       if (this.hasAudio) {

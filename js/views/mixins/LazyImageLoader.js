@@ -524,9 +524,9 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
           res.fetch({
             dbOnly: true,
             success: this._queueImageFetch.bind(this, img),
-            error: function() {
-              debugger;
-            }
+//            error: function() {
+//              debugger;
+//            }
           });
           
           return;

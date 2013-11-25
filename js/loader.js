@@ -1156,8 +1156,8 @@ define('globals', function() {
       leaflet: 'lib/leaflet',
       leafletMarkerCluster: 'lib/leaflet.markercluster',
 //      jqueryImagesLoaded: 'lib/jquery.imagesloaded',
-      jqueryMasonry: 'lib/jquery.masonry',
-      jqueryAnyStretch: 'lib/jquery.anystretch'
+      jqueryMasonry: 'lib/jquery.masonry'
+//      jqueryAnyStretch: 'lib/jquery.anystretch'
     },
     shim: {
       backbone: {

@@ -32,10 +32,11 @@
     </table>
     <form data-ajax="false" id="mv" action="#">
       <div style="width:100%;padding-top:1rem;text-align:center">
-        <button type="submit" style="background-color:#eee; width:90%" id="mvSubmit">{{= loc('submit') }}</button>
+        <button class="btn btn-default" type="submit" style="background-color:#eee; font-size:18px; width:90%;padding:1rem 0 3rem 0;" id="mvSubmit">{{= loc('submit') }}</button>
       </div>
+      <br/>
       <div data-role="fieldcontain">
-        <fieldset data-role="controlgroup" id="mvChooser">
+        <fieldset id="mvChooser">
         </fieldset>
       </div>
     </form>  
@@ -101,21 +102,26 @@
 
 <script type="text/template" id="inlineListItemTemplate">
 <!-- one row of an inline backlink in view mode -->
-<li class="list-group-item" data-viewid="{{= viewId }}">
-  <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }}>{{= name }}{{= obj.gridCols ? '<br/>' + gridCols : '' }}
+<li class="list-group-item" data-viewid="{{= viewId }}" {{= obj.img ? 'style="padding:0"' : '' }}>
+  <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }}>
     {{ if (obj.img) { }}
       <img data-lazy-src="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
-      {{ if (obj.width) { }}  
+      {{ if (obj.top) { }}  
       style="max-height:none;max-width:none;
         height:{{= height }}px;
         left:-{{= left }}px; top:-{{= top }}px;
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
+      {{ } }}
+      {{ if (!obj.top) { }}  
+        style="max-height:80px;max-width:80px;"
       {{ } }}
       
       data-for="{{= U.getImageAttribute(resource, imageProperty) }}"
       class="lazyImage" />
     {{ } }}
   </a>
+  <span style="position:absolute;padding:1rem;font-size:1.6rem;font-weight:bold;">{{= name }}{{= obj.gridCols ? '<br/>' + gridCols : '' }}</span>
+  
   {{ if (typeof comment != 'undefined') { }}
     <p>{{= comment }}</p>
   {{ } }}
@@ -134,7 +140,7 @@
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}<span class="badge pull-right" style="margin-right:2.5rem;">{{= value }}</span></a>
      <a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp"><i class="ui-icon-plus-sign"></i>
      {{ if (typeof comment != 'undefined') { }}
-       <p style="padding-left: 15px;">{{= comment }}</p>
+       <p>{{= comment }}</p>
      {{ } }}
      </a>
    </li>
@@ -155,21 +161,22 @@
 
 <script type="text/template" id="cpMainGroupTemplate">
 <!-- button for an important backlink on a resource on the resource's view page -->
+<button class="btn"  style="border:1px solid {{= borderColor }}; background: {{= color }}">
  {{ var params = {}; }}
  {{ params[backlink] = _uri; }}
- {{ if (!value  &&  !chat) { }}  
-   <button class="btn-default" data-shortName="{{= shortName }}" data-title="{{= title }}" style="border:1px solid {{= borderColor }}; background: {{= color }}" href="#">
+ {{ if (!obj.value  &&  !obj.chat) { }}  
+   <a data-shortName="{{= shortName }}" data-title="{{= title }}" href="#">
      <span><i class="{{= icon }}"></i>&#160;{{= name }}</span>
-   </button>
+   </a>
  {{ } }}
- {{ if (obj.value != 'undefined' || chat) { }}  
-   <button class="btn-default" data-propName="{{= shortName }}" style="border:1px solid {{= borderColor }}; background: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
+ {{ if (obj.value || obj.chat) { }}  
+   <a data-propName="{{= shortName }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" style="width:95%;">
      <span><i class="{{= icon }}"></i>&#160;{{= name }}</span>
      
-     <!-- {{= obj.value ? '<span class="counter">' + value + '</span>' :  ''  }} -->
-     {{= obj.value ? '<div class="counter">' + value + '</div>' :  ''  }}
-   </button>
+     {{= obj.value ? '<div style="display:inline-block;position:absolute;top:-35%;right:1px"><span class="counter" style="padding:1px 5px;background:#EEF;border-radius:1rem;font-size:1.2rem;">' + value + '</span></div>' :  ''  }}
+   </a>
  {{ } }}
+ </button>
 </script>
 
 <script type="text/template" id="cpMainGroupTemplateH">
@@ -177,12 +184,12 @@
  {{ var params = {}; }}
  {{ params[backlink] = _uri; }}
  {{ if (!value) { }}  
-   <button class="btn-default" data-shortName="{{= shortName }}" style="text-shadow:0 1px 0 {{= borderColor }}; background: {{= color }}; border:1px solid {{= borderColor }};" href="#" data-title="{{= title }}">
+   <button class="btn" data-shortName="{{= shortName }}" style="text-shadow:0 1px 0 {{= borderColor }}; background: {{= color }}; border:1px solid {{= borderColor }};" href="#" data-title="{{= title }}">
       <span>{{= obj.icon ? '<i class="' + icon + '" style="margin-left:-5px;"></i>' : '' }} {{= name }}</span> 
    </button>
  {{ } }}
  {{ if (typeof value != 'undefined') { }}  
-   <button class="btn-default" data-propName="{{= shortName }}"  style="text-shadow:0 1px 0 {{= borderColor }}; background: {{= color }}; border:1px solid {{= borderColor }};" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
+   <button class="btn" data-propName="{{= shortName }}"  style="text-shadow:0 1px 0 {{= borderColor }}; background: {{= color }}; border:1px solid {{= borderColor }};" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
      <!-- {{= obj.icon ? '<i class="' + icon + '" style="font-size:20px;top:35%"></i>' : '' }} -->
      <span>{{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="float: right;position:relative;margin: -17px;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}</span>
    </button>
@@ -355,7 +362,7 @@
 
 <script type="text/template" id="doTryBtnTemplate">
   <!-- button that spirits you away to go try a particular app -->
-  <a target="#" data-icon="circle-arrow-up" id="doTry" data-role="button" data-position="notext">{{= loc('gotoApp') }}</a>
+  <a target="#" id="doTry"><i class="circle-arrow-up"></i>{{= loc('gotoApp') }}</a>
 </script>
 
 <script type="text/template" id="installAppBtnTemplate">
@@ -391,37 +398,37 @@
     <div id="name" class="resTitle" {{= this.categories ? 'style="width: 100%;background:#757575;"' : 'style="min-height: 20px;background:#757575;"' }} align="center">
       <h4 id="pageTitle" style="font-weight:normal;">{{= this.title }}</h4>
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
-        <button style="max-width:200px; display: inline-block;" id="doTryBtn">
+        <button style="max-width:200px; display: inline-block;" class="btn" id="doTryBtn">
           {{ if (obj.tryApp) { }}
               {{= tryApp }}
           {{ } }}
         </button>
-        <button style="max-width:200px; display: inline-block;" id="forkMeBtn">
+        <button style="max-width:200px; display: inline-block;"  class="btn" id="forkMeBtn">
           {{ if (obj.forkMeApp) { }}
               {{= forkMeApp }}
           {{ } }}
         </button>
-        <button style="max-width:400px;" id="publishBtn" class="headerSpecialBtn">
+        <button style="max-width:400px;" id="publishBtn" class="headerSpecialBtn btn">
           {{ if (obj.publishApp) { }}
               {{= publish }}
           {{ } }}
         </button>
-        <button style="max-width:200px;" id="testPlugBtn" class="headerSpecialBtn">
+        <button style="max-width:200px;" id="testPlugBtn" class="headerSpecialBtn btn">
           {{ if (obj.testPlug) { }}
               {{= testPlug }}
           {{ } }}
         </button>
-        <button style="max-width:200px;" id="installAppBtn"  class="headerSpecialBtn">
+        <button style="max-width:200px;" id="installAppBtn"  class="headerSpecialBtn btn">
           {{ if (obj.installApp) { }}
             {{= installApp }}
           {{ } }}
         </button>
-        <button style="max-width:320px;" id="enterTournamentBtn" class="headerSpecialBtn">
+        <button style="max-width:320px;" id="enterTournamentBtn" class="headerSpecialBtn btn">
           {{ if (obj.enterTournament) { }}
               {{= enterTournament }}
           {{ } }}
         </button>
-        <button style="max-width:320px;" id="resetTemplateBtn" class="headerSpecialBtn">
+        <button style="max-width:320px;" id="resetTemplateBtn" class="headerSpecialBtn btn">
           {{ if (obj.resetTemplate) { }}
               {{= resetTemplate }}
           {{ } }}
@@ -541,7 +548,7 @@
         <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true" data-theme="{{= G.theme.activeButton }}">{{= loc('checkAll') }}</a></div>
         <div class="ui-block-b"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true" data-theme="{{= G.theme.footer }}">{{= loc('uncheckAll') }}</a></div>
       </fieldset>
-      <fieldset data-role="controlgroup" id="interfaceProps">
+      <fieldset id="interfaceProps">
       </fieldset>
     </div>
     {{                                                             }}
@@ -563,11 +570,11 @@
 <script type="text/template" id="mvListItem">
   <!-- a multivalue input for edit forms -->
   {{ var id = G.nextId() }}
-  <label class="pack-checkbox">
-    <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}"  class="pack-checkbox" value="{{= _uri }}" {{= obj._checked ? 'checked="checked"' : '' }} />
-    <span></span>
-  </label>
-  <label for="{{= id }}">{{= davDisplayName }}<!-- {{= obj._thumb ? '<img src="' + _thumb + '" style="float:right;max-height:40px;" />' : '' }}--></label>
+  <div class="checkboxFive">
+    <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}" value="{{= _uri }}" {{= obj._checked ? 'checked="checked"' : '' }} />
+    <label for="{{= id }}" style="margin-left:-2.5rem;"><!-- {{= obj._thumb ? '<img src="' + _thumb + '" style="float:right;max-height:40px;" />' : '' }}--></label>
+    <span style="padding-left:1rem;vertical-align:top;">{{= davDisplayName }}</span>
+  </div>
 </script>
 
 

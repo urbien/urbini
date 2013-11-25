@@ -101,18 +101,20 @@
 <script type="text/template" id="inlineListItemTemplate">
 <!-- one row of an inline backlink in view mode -->
 <li data-viewid="{{= viewId }}">
-  <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }}><p>{{= name }}</p> {{= obj.gridCols ? '<br/>' + gridCols : '' }}
+  <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }}>
     {{ if (obj.img) { }}
       <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
-      {{ if (obj.width) { }}  
+      {{ if (obj.top) { }}  
       style="max-height:none;max-width:none;
-        height:{{= height }}px;
         left:-{{= left }}px; top:-{{= top }}px;
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
       {{ } }}
-      
+      {{ if (!obj.top) { }}  
+        style="max-height:80px;max-width:80px;"
+      {{ } }}
       data-for="{{= U.getImageAttribute(resource, imageProperty) }}"
       class="lazyImage" />
+      <span style="position:absolute;padding:1rem;font-size:1.6rem;font-weight:bold;">{{= name }}{{= obj.gridCols ? '<br/>' + gridCols : '' }}</span>
     {{ } }}
   </a>
   {{ if (typeof comment != 'undefined') { }}
