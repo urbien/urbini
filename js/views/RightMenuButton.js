@@ -29,7 +29,6 @@ define('views/RightMenuButton', [
 //      this.leftMenuPanel = null;
       }
     },
-
     hideRightPanel: function() {
       if (this.rightMenuPanel) {
 //      this.rightMenuPanel.destroy();
@@ -70,8 +69,11 @@ define('views/RightMenuButton', [
 
 //      if (!this.initialLeftMenuStyle)
 //        this.initialLeftMenuStyle = p[0].style;
-      if (this.leftMenuPanel)
+      if (this.leftMenuPanel) {
+        if (G.isJQM())
+          $(this.leftMenuEl).panel('open');
         this.leftMenuEl.style.visibility = 'visible';
+      }
       else {
         this.leftMenuPanel = new MenuPanel({viewId: this.viewId, model: this.model, tagName: tagName, parentView: this.getPageView()});
         this.leftMenuPanel.render();
@@ -107,8 +109,11 @@ define('views/RightMenuButton', [
 //      if (!this.initialRightMenuStyle)
 //        this.initialRightMenuStyle = p[0].style;
 
-      if (this.rightMenuPanel)
+      if (this.rightMenuPanel) {
+        if (G.isJQM())
+          $(this.rightMenuEl).panel('open');
         this.rightMenuEl.style.visibility = 'visible';
+      }
       else {
         var self = this;
         this.rightMenuPanel = new RightMenuPanel({viewId: this.viewId, model: this.model, tagName: tagName, parentView: this.getPageView()});
@@ -153,7 +158,8 @@ define('views/RightMenuButton', [
 
         // only allow tap and hold events, click muddies the waters
         this.el.addEventListener('click', function(e) {
-          e.preventDefault();
+//          e.preventDefault();
+          Events.stopEvent(e);
         });
       }
       
