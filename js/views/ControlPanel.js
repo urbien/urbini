@@ -318,7 +318,8 @@ define('views/ControlPanel', [
             };
             
             var grid = U.getCols(iRes, 'grid', true);
-            if (U.isA(iRes.vocModel, 'Intersection')) {  
+            if (U.isA(iRes.vocModel, 'Intersection')) {
+              var oH, oW, ab;
               var a = U.getCloneOf(iRes.vocModel, 'Intersection.a')[0];
               var b = U.getCloneOf(iRes.vocModel, 'Intersection.b')[0];
               if (a == meta[name].backLink) {
@@ -327,6 +328,9 @@ define('views/ControlPanel', [
                   params.name = n;
                 params.img = iRes.get('bThumb');
                 params.imageProperty = 'bThumb';
+                oW = 'bOriginalWidth';
+                oH = 'bOriginalHeight';
+                ab = b;
               }
               else {
                 var n = iRes.get(a + '.displayName');
@@ -334,6 +338,9 @@ define('views/ControlPanel', [
                   params.name = n;
                 params.img = iRes.get('aThumb');
                 params.imageProperty = 'aThumb';
+                oW = 'aOriginalWidth';
+                oH = 'aOriginalHeight';
+                ab = a;
               }
               if (grid) {
                 var gridCols = '';
@@ -346,6 +353,35 @@ define('views/ControlPanel', [
                 if (gridCols)
                   params.gridCols = gridCols;
               }
+              var w = iRes.get(oW),
+                  h = iRes.get(oH);
+              if (w  &&  h) {
+                var range = iRes.vocModel.properties[ab].range;
+                var rm = U.getModel(U.getLongUri1(range));
+                if (U.isA(rm, 'ImageResource')) {
+                  var rmeta = rm.properties;
+                  var imgP = imageP  &&  imageP.indexOf('Featured') == -1 ? U.getCloneOf(rm, 'ImageResource.smallImage') : U.getCloneOf(rm, 'ImageResource.mediumImage'); 
+                  maxDim = imgP  &&  rmeta[imgP].maxImageDimension;
+                  var clip = U.clipToFrame(80, 80, w, h, maxDim);
+                  if (clip) {
+                    params.top = clip.clip_top;
+                    params.right = clip.clip_right;
+                    params.bottom = clip.clip_bottom;
+                    params.left = clip.clip_left;
+                    params.height = json.top + json.bottom;
+                  }
+                  else {
+                    var dim = U.fitToFrame(80, 80, w / h);
+                    params.width = dim.w;
+                    params.height = dim.h;
+                    params.top = dim.y; //w > h ? dim.y : dim.y + (atts[oH] - atts[oW]) / 2;
+                    params.right = dim.w - dim.x;
+                    params.bottom = dim.h - dim.y; ////w > h ? dim.h - dim.y : dim.h - dim.y + (atts[oH] - atts[oW]) / 2;
+                    params.left = dim.x;
+                  }
+                }
+              }
+
             }
             else {
               if (grid) {
