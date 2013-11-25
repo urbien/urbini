@@ -55,13 +55,8 @@ define('models/Resource', [
       if (this.isNew())
         this.setDefaults();
       
-      if (atts) {
-        this.parse(atts);
-        // if no model based props are set, means we didn't "load" this resource yet
-//        if (!_.any(_.keys(atts), function(key) {return /^[a-zA-Z]/.test(key)})) {
-//          this.loaded = false;
-//        }
-      }
+//      if (atts)
+//        this.parse(atts);
       
       if (this.loaded)
         this.announceNewResource(options);
@@ -365,12 +360,17 @@ define('models/Resource', [
       
       return uri;
     },
+    
+    _getLastFetchOrigin: function() {
+      return this.lastFetchOrigin || (this.collection && this.collection.lastFetchOrigin);
+    },
+    
     parse: function(resp, options) {
       options = options || {};
       if (!this.vocModel)
         this.setModel();
       
-      if (this.lastFetchOrigin === 'db' || !hasNonMetaProps(resp))
+      if (this._getLastFetchOrigin() === 'db' || !hasNonMetaProps(resp))
         return resp;
       
       if (!options.parse && this.lastFetchOrigin !== 'server')
@@ -502,7 +502,13 @@ define('models/Resource', [
     },
 
     _resetUnsavedChanges: function() {
-      this.unsavedChanges = this.isNew() ? this.toJSON() : {};
+//      this.unsavedChanges = this.isNew() ? this.toJSON() : 
+//                        this.unsavedChanges ? _.wipe(this.unsavedChanges) : {};
+      if (this.unsavedChanges)
+        _.wipe(this.unsavedChanges);
+      else
+        this.unsavedChanges = {}; // TODO: figure out why previously we had: this.unsavedChanges = this.isNew() ? this.toJSON() : {}
+                                  // for some reason we wanted to keep all the props that haven't been propagated to the server, not just props unsaved (to db) 
     },
     
     clear: function() {
@@ -1061,7 +1067,7 @@ define('models/Resource', [
             this.set(this.parse(conflict, {overwriteUserChanges: true}));
             Events.trigger('messageBar', 'error', {
               message: errorObj.details || "Uh oh. Seems someone (maybe you) has made edits that trump yours. We've loaded theirs so you're good to go. Please re-edit and re-submit.",
-              persist: true
+              persist: false
             });
           }
           else {
@@ -1069,7 +1075,7 @@ define('models/Resource', [
             Events.trigger('cacheResource', new this.vocModel(conflict));
             Events.trigger('messageBar', 'error', {
               message: errorObj.details || "Uh oh. Seems whatever you're making <a href='{0}'>already exists</a>.".format(U.makePageUrl('view', conflict._uri)),
-              persist: true
+              persist: false
             });
           }
         }

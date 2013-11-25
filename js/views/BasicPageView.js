@@ -54,10 +54,10 @@ define('views/BasicPageView', [
 //      return BasicView.call(this, options);
 //    },
     
-    _configure: function() {
+    _configure: function(options) {
 //      var atts = options.attributes = options.attributes || {};
       var atts = this.attributes = this.attributes || {};
-      atts['id'] = 'page' + G.nextId();      
+      atts['id'] = options.el && options.el.id || 'page' + G.nextId();      
       atts['data-role'] = 'page';
       return BasicView.prototype._configure.apply(this, arguments);
     },

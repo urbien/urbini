@@ -53,7 +53,7 @@ define('resourceSynchronizer', [
     if (!this._preProcess())
       return;
 
-    if (!this.info.tempUri && this._isUpdate()) {
+    if (!this.info.tempUri && this._isUpdate() && !this.options.dbOnly) { // dbOnly means we want to fetch from db even if we've already fetched it before
       if (this._isForceFetch() || this._isStale())
         this._delayedFetch();
       
@@ -392,9 +392,11 @@ define('resourceSynchronizer', [
         refs = info.references,
         vocModel = resource.vocModel,
         type = vocModel.type,
-        atts = _.omit(ref, REF_STORE_PROPS);
+        atts = _.omit(ref, REF_STORE_PROPS),
+        isNew = resource.isNew();
     
-    atts.$returnMade = true;  
+    atts.$returnMade = true;
+    resource.lastFetchOrigin = 'server';
     resource.save(atts, { // ref has only the changes the user made
       sync: true, 
       fromDB: true,
@@ -420,16 +422,16 @@ define('resourceSynchronizer', [
         
         var oldUri = ref._uri,
             newUri = data._uri,
-            tempUri = ref._tempUri;
-      
-        var oldType = U.getTypeUri(oldUri);
-        var newType = U.getTypeUri(newUri);
+            tempUri = ref._tempUri,
+            oldType = U.getTypeUri(oldUri),
+            newType = U.getTypeUri(newUri);
+        
         if (oldType !== newType) {
           Voc.getModels(newType).done(function(newModel) {
             resource.setModel(newModel);
           });
         }
-        
+          
         ref = {
           _uri: newUri, 
           _dirty: 0, 
