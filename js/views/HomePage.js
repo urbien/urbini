@@ -2,10 +2,9 @@
 define('views/HomePage', [
   'globals',
   'events',
-  'jqueryAnyStretch',
   'utils',
   'views/BasicPageView'
-], function(G, Events, Jas, U, BasicPageView) {
+], function(G, Events, U, BasicPageView) {
   return BasicPageView.extend({
     TAG: 'HomePage',
     first: true,
@@ -56,17 +55,17 @@ define('views/HomePage', [
         return;
       if (!id.startsWith('hpRightPanel'))
         return;
-      if (!$('#hpLeftPanel')) 
+      if (!this.el.querySelector('#hpLeftPanel'))
         return this.rightMenu(e);
-      if (!this.$('#' + this.viewId).length)
-        return;
+//      if (!this.$('#' + this.viewId).length)
+//        return;
       
       Events.stopEvent(e);
       U.require(["views/MenuPanel"]).done(function(MP) {
         self.menuPanel = new MP({viewId: 'viewHome'});
+        self.addChild(self.menuPanel);
+        self.menuPanel.render();
       });
-      self.addChild(self.menuPanel);
-      self.menuPanel.render();
     },
     
     render: function(options) {
@@ -92,8 +91,8 @@ define('views/HomePage', [
 //        }
 //      }
       
-      if (this.$el.attr("data-stretch"))
-        this.$el.anystretch();
+//      if (this.$el.attr("data-stretch"))
+//        this.$el.anystretch();
 
       this.first = false;
       if (this.rendered)
