@@ -306,14 +306,11 @@ define('views/ResourceImageView', [
         }
       }
       
-      var imgAtts = {
+      imgAtts = DOM.lazifyImages({
         src: image,
         'data-for': U.getImageAttribute(res, imagePropName)
-      };
+      })[0];
       
-//      if (G.lazifyImages)
-//        imgAtts = DOM.lazifyImages(imgAtts);
-//      
 //      if (l) {
 //        iTemplate += '<a href="#cameraPopup" class="cameraCapture" target="#" data-icon="camera" data-prop="'+ cOf[0] + '"></a>';
 //        imgAtts.style = 'position:absolute; clip: rect(' + t + 'px,' + r + 'px,' + b + 'px,' + l + 'px); left:' + left + 'px; '; // + (top ? 'top: ' + top + 'px;' : '');   

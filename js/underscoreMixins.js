@@ -346,6 +346,7 @@ define('underscoreMixins', ['_underscore'], function(_) {
     ">=": function(a, b){return a >= b;},
     "+": function(a, b){return a + b;},
     "==": function(a, b){return a == b;},
+    "!=": function(a, b){return a != b;},
     "===": function(a, b){return a === b;},
     "!": function(a){return !a;},
     "!=": function(a, b){return a != b;},

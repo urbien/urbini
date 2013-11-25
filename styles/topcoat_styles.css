@@ -2,6 +2,16 @@ html {
   font-size: 10px;
 }
 
+[data-role="page"] { 
+  top: 0; 
+  left: 0;
+ /* bottom: 0; */ 
+  width: 100%; 
+  min-height: 100%; 
+  position: absolute; 
+  border: 0; 
+}
+
 li {
   position: relative;
 }
@@ -136,7 +146,31 @@ a {
 #name.resTitle {
   padding: 7px;
 }
-
+.editList textarea, .editList input[type="text"] {
+  width: 80%;
+}
+.cameraPopup {
+  background: #f9f9f9;
+  border-radius: 1rem;
+  border: 1px solid #aaa;
+/*
+  width: 30%;
+  height: inherit;
+  top: 5rem;
+  position: absolute;
+*/  
+  padding: 1rem;
+  min-width: 290px;
+  max-width: 330px;
+  margin: 0 auto;
+}
+#cameraCancelBtn i {
+  position: absolute; 
+  border-radius: 1rem; 
+  font-size: 2.8rem; 
+  top: -2.5rem;
+  right: -2rem;
+}
 @media all and (min-width:420px) {
   .editList select {
     width: 76%;
@@ -173,6 +207,26 @@ fieldset div {
 #mvChooser {
   border: none;
 }
+#mvChooser li {
+  cursor: default;
+}
+
+#mvChooser .listPage li > div:nth-child(2) {
+  clear: both;
+  float: left;
+}
+
+#mvChooser input[type="checkbox"] {
+  width: 3rem;
+  height: 3rem;
+  margin-left: -3rem;
+}
+#mvChooser ul {
+  margin-left: -0.5rem;
+}
+#mvChooser ul li:first-child {
+  border-top:0;
+}
 
 fieldset#submitBtns div {
   width:50%;
@@ -186,11 +240,6 @@ fieldset#submitBtns div:first-child {
 fieldset#submitBtns div:nth-child(2) {
   float:right;
 }
-#mvChooser .listPage li > div:nth-child(2) {
-  clear: both;
-  float: left;
-}
-
 fieldset#submitBtns div:first-child button {
   width:100%;
 }
@@ -218,13 +267,7 @@ fieldset .listPage .topcoat-list__container {
   width: 3rem;
   height: 3rem;
 }
-input[type="checkbox"] {
-  width: 3rem;
-  height: 3rem;
-}
-#mvChooser ul {
-  margin-left: -0.5rem;
-}
+
 #mvSubmit {
   font-size: 2.4rem;
 }

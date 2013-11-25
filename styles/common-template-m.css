@@ -31,9 +31,9 @@ html { height: 100%; }
 }
 .galleryItem_css3 img { float: left;}
 .galleryItem_container .galleryItem, .galleryItem_container .galleryItem_css3 { margin: 0px; }
-.nab .anab  { box-shadow: none;}
-.nab .anab span { padding-right: 12px; }
-.nab .anab .b span { padding-right: 0px; padding-left: 0px; color: #393939; font-weight: normal;}
+.nab  { box-shadow: none;}
+.nab  span { padding-right: 12px; }
+.nab  .b span { padding-right: 0px; padding-left: 0px; color: #393939; font-weight: normal;}
 
 .nab .nabP { background: #f2f2f2; }
 .nab .nabP td { padding: 5px 2px 5px 10px; vertical-align: top;}
@@ -43,37 +43,21 @@ html { height: 100%; }
 
 /* Portrait styles */
 
-@media screen and (orientation:portrait) {
 
-  .nabBoard {
-/*    width: 292px !important; */
-  }
-  
-  .nab .anab .galleryItem_css3 img {
-/*    max-width: 272px !important; */
-  }
-}
-
-@media screen and (orientation:landscape) {
-    /* Landscape styles */
-  .nabBoard {
-/*    width: 225px !important; */
-  }
-  
-  .nab .anab .galleryItem_css3 img {
-/*    max-width: 205px !important; */
-  }
-}
-
-.anab .nabRL #-inner img  { width: 16px;  padding-right: 2px; border: 0; /*vertical-align: top;height: 16px; */}
+.nabRL #-inner img  { width: 16px;  padding-right: 2px; border: 0; /*vertical-align: top;height: 16px; */}
 
 .nab .modP img { padding-right: 5px; }
-.galleryItem, .galleryItem_css3, .galleryItem_Nab { position: relative; }
+
+.galleryItem, .galleryItem_css3, .galleryItem_nab { 
+  position: relative; 
+}
 .galleryItem_css3, galleryItem_nab { 
   display: inline-block; 
+  /*
   box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); 
   -webkit-box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); 
-  -moz-box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); 
+  -moz-box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
+  */ 
  }
 
 .likes_tbl {  position: absolute; opacity: 0; visibility: hidden; z-index: 1; top: 0px; left: 0px; border-collapse: collapse; }
@@ -133,9 +117,14 @@ html { height: 100%; }
 .field_comment .comment { margin-top: 5px; }
 
 
-.nab { float: left; 
+.nab { 
+  float: left; 
   /* width: 192px; */ 
-  margin: 5px; padding: 15px 15px 0; font-size: 12px; background-color: #ffffff; border: 1px solid #DDDDDD; 
+  margin: 5px; 
+  /* padding: 15px 15px 0; */ 
+  font-size: 12px; 
+  background-color: #ffffff; 
+  border: 1px solid #DDDDDD; 
 /*  box-shadow: 0 0px 1px #AAAAAA; */
 }
 
@@ -158,8 +147,8 @@ html { height: 100%; }
 
 
 .gnab { font-size: 11px; }
-/* .nab .anab .galleryItem_css3 img {max-width: 205px;} */
-.nab .anab .galleryItem_css3 { display: inline-block; box-shadow: none; -webkit-box-shadow: none; -moz-box-shadow: none; }
+/* .nab .galleryItem_css3 img {max-width: 205px;} */
+.nab .galleryItem_css3 { display: inline-block; box-shadow: none; -webkit-box-shadow: none; -moz-box-shadow: none; }
 
 .renab img { width:16px;height:14px; margin-top: -4px;}
 .renab img {max-width: 14px; padding-right: 3px; }
@@ -178,33 +167,19 @@ html { height: 100%; }
 #renabs span.action   {font-weight:bold;font-size:8pt;color:#000066;}
 
 --------------------------------------------------------------------------------------- */
-.nabBoard {
-/*  width: 222px !important; */ 
-  padding: 0 !important; cursor: pointer;
-}
-
-.nabBoard h3, .gridBoard h3 { height: 20px; padding: 11px 15px 5px; font-size: 13px; font-weight: 300; overflow: hidden;margin: 0}
 h3#pageTitle {margin: 10px 0 7px 0;}
-.gridBoard {max-width: 669px !important; padding: 0 !important;cursor: pointer;}
-.nabBoard .link { height: 200px; display: block; padding: 0 0 10px 12px; overflow: hidden;}
-.gridBoard .link {display: block; padding: 9px 0 4px 12px; overflow: hidden;}
-.nabBoard .link img, .gridBoard .link img  {float: left; width: 100px; /* magnify: 100 / 61 */ margin-left: -20px; /* set at horizontal center */ }
 .boardsTitle, .nabTitle {margin-left: 10px; padding-top: 5px; font-size: 16pt; color: #cb2027; }
 .boardsTitle a { color: #f47414; }
 
 #comments a, #renabs a {color: #f47414; }
-.nabBoard .link div, .gridBoard .link div { width: 61px; height: 61px; border: 1px solid #f0f0f0; overflow: hidden; float: left; margin: 0px 4px 4px 0px;}
-
-.nabBoard .editBoard {padding: 0 15px 11px; text-align: center;}
-.nabBoard .editBoard .Buttn {display: block; padding: 0.5em 0.825em;}
 
 .editBoard a {font-size: 13px;} 
 .WhiteButton {color: #524d4d; text-shadow: 0 1px rgba(255,255,255,0.9);}
 
-.anab .nabRL  { display: inline; }
-.anab .nabRL div { padding: 0px 10px 10px 10px;}
+.nabRL  { display: inline; }
+.nabRL div { padding: 0px 10px 10px 10px;}
 
-.anab .nabRL .btn span {padding-right: 0; }
+.nabRL .btn span {padding-right: 0; }
 
 .modP tr {vertical-align: top;}
 .lc1 a {
@@ -275,15 +250,6 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   }
 }
 */
-/*@media (max-width: 328px)  {*/
-/* @media only screen and (max-divice-width: 480px;)  { */
-/*
-@media screen and (max-device-width: 480px) and (orientation: landscape) {
-  .nab .anab .galleryItem_css3 img {max-width: 272px;}
-  .nabBoard {width: 290px !important; padding: 0 !important; cursor: pointer;}
-  .nabBoard .link { height: 260px; display: block; overflow: hidden;}
-}
-*/
 @media screen and (max-device-width: 480px) and (orientation: portrait) {
   .nab a { font-size: 16px; }
 
@@ -299,11 +265,13 @@ h3#pageTitle {margin: 10px 0 7px 0;}
     border: 1px solid #DDDDDD; 
     /*box-shadow: 0 0px 1px #AAAAAA; */
   }
-/*  .nab .anab .galleryItem_css3 img {max-width: 272px;} */
+/*  
+  .nab .galleryItem_css3 img {max-width: 272px;} 
   .nabBoard {
     /* width: 290px !important; */ 
     padding: 0 !important; cursor: pointer;}
   .nabBoard .link { height: 260px; display: block; overflow: hidden;}
+*/
   #resourceImage img {max-width: 320px;}
 /*  #sidebar {margin: 0} */
   .ui-listview .connect { float: left; top:60px; padding:0px; border:0px; background: none;background-image:none;}
@@ -319,18 +287,6 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 .u-desc {
   padding-top:7px; font-size: 14px;
 }
-/*
-@media all and (min-width: 468px){
-  .nabBoard {width: 222px !important; padding: 0 !important; cursor: pointer;}
-  .nabBoard .link { height: 200px; display: block; padding: 0 0 10px 12px; overflow: hidden;}
-}
-
-@media all and (min-width: 768px){
-  .nab { margin: auto; margin-top: 5px; margin-bottom: 5px; padding: 15px 15px 0; float: none; font-size: 12px; background-color: #fff; border: 1px solid #DDDDDD;}
-  .nabBoard {width: 222px !important; padding: 0 !important; cursor: pointer;}
-  .nabBoard .link { height: 200px; display: block; padding: 0 0 10px 12px; overflow: hidden;}
-}
-*/
 #mainGroup div {white-space:normal; height: 60px; }
 /* #mainGroup span {text-shadow: 0 1px 0 #bbb;} */
 #resourceView { font-size: 16px; }
@@ -1216,3 +1172,40 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 div {
   font-family: Helvetica, Ariel, sans-serif;
 }
+/*
+.nabBoard {
+  padding: 0 !important; cursor: pointer;
+}
+
+.nabBoard h3, .gridBoard h3 { height: 20px; padding: 11px 15px 5px; font-size: 13px; font-weight: 300; overflow: hidden;margin: 0}
+.gridBoard {max-width: 669px !important; padding: 0 !important;cursor: pointer;}
+.nabBoard .link { height: 200px; display: block; padding: 0 0 10px 12px; overflow: hidden;}
+.gridBoard .link {display: block; padding: 9px 0 4px 12px; overflow: hidden;}
+.nabBoard .link img, .gridBoard .link img  {float: left; width: 100px; /* magnify: 100 / 61 */ margin-left: -20px; /* set at horizontal center */ }
+
+.nabBoard .link div, .gridBoard .link div { width: 61px; height: 61px; border: 1px solid #f0f0f0; overflow: hidden; float: left; margin: 0px 4px 4px 0px;}
+
+.nabBoard .editBoard {padding: 0 15px 11px; text-align: center;}
+.nabBoard .editBoard .Buttn {display: block; padding: 0.5em 0.825em;}
+*/
+/*@media (max-width: 328px)  {*/
+/* @media only screen and (max-divice-width: 480px;)  { */
+/*
+@media screen and (max-device-width: 480px) and (orientation: landscape) {
+  .nab .galleryItem_css3 img {max-width: 272px;}
+  .nabBoard {width: 290px !important; padding: 0 !important; cursor: pointer;}
+  .nabBoard .link { height: 260px; display: block; overflow: hidden;}
+}
+*/
+/*
+@media all and (min-width: 468px){
+  .nabBoard {width: 222px !important; padding: 0 !important; cursor: pointer;}
+  .nabBoard .link { height: 200px; display: block; padding: 0 0 10px 12px; overflow: hidden;}
+}
+
+@media all and (min-width: 768px){
+  .nab { margin: auto; margin-top: 5px; margin-bottom: 5px; padding: 15px 15px 0; float: none; font-size: 12px; background-color: #fff; border: 1px solid #DDDDDD;}
+  .nabBoard {width: 222px !important; padding: 0 !important; cursor: pointer;}
+  .nabBoard .link { height: 200px; display: block; padding: 0 0 10px 12px; overflow: hidden;}
+}
+*/

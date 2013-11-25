@@ -271,6 +271,23 @@ define('views/ResourceMasonryItemView', [
           tmpl_data['imgHeight'] = iH;
           var maxDim = this.maxImageDimension;
           
+          if (imgWidth) {
+            var idx = img.lastIndexOf('.jpg_');
+            var idx1 = img.indexOf('_', idx + 5);
+            if (idx != -1  &&  idx1 != -1) {
+              var s = img.substring(idx + 5, idx1);
+              idx = s.indexOf("-");
+              if (idx != -1) {
+                var w = s.substring(0, idx);
+                if (w <= imgWidth) {
+                  tmpl_data['width'] = s.substring(0, idx);
+                  tmpl_data['height'] = s.substring(idx + 1);
+                }
+              }
+            }
+            if (tmpl_data['width'])
+              maxDim = imgWidth;
+          }
           if (maxDim  &&  (maxDim > this.IMG_MAX_WIDTH)) {
             var mdW, mdH;
             if (oWidth >= oHeight) {
