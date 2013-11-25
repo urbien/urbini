@@ -835,34 +835,58 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
             onload = info.onload,
             onerror = info.onerror;
         
-        img.onload = function() {
+        if (info.realSrc)
+          img.setAttribute(LAZY_DATA_ATTR, info.realSrc);
+        
+        img.src = src;
+        this.onImageLoad(img, function() {
           try {
             return onload && onload.apply(this, arguments);
           } finally {
             URL.revokeObjectURL(src);
           }
-        };
+        });
 
-        img.onerror = function() {
+        this.onImageError(img, function() {
           try {
             return onerror && onerror.apply(this, arguments);
           } finally {
             URL.revokeObjectURL(src);
           }          
-        }
-
-        img.src = src;
-        if (info.realSrc)
-          img.setAttribute(LAZY_DATA_ATTR, info.realSrc);
+        });
       }
       else if (info.realSrc) {
-        if (info.onload)
-          img.onload = info.onload; // probably store img in local filesystem
-        if (info.onerror)
-          img.onerror = info.onerror;
-        
         img.src = info.realSrc;
+        
+        if (info.onload)
+          this.onImageLoad(img, info.onload); // probably store img in local filesystem
+        if (info.onerror)
+          this.onImageError(img, info.onerror);        
       }
+    },
+    
+    onImageError: function(img, callback) {
+      if (img.complete)
+        return;
+      
+      var onerror = img.onerror;
+      img.onerror = function() {
+        onerror && onerror.call(img);
+        callback.call(img);
+      };
+    },
+    
+    onImageLoad: function(img, callback) {
+      if (img.complete)
+        callback.call(img);
+      else {
+        var onload = img.onload;
+        img.onload = function() {
+          onload && onload.call(img);
+          callback.call(img);
+        };
+      }
+//        img.$on('load', callback);
     },
     
     lazifyImages: function(/* images */) {

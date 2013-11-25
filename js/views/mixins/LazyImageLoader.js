@@ -1,6 +1,7 @@
 define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUtils', 'events', 'lib/fastdom'], function(G, _, U, DOM, Events, Q) {
   var doc = document,
       docEl = doc.documentElement,
+      KEEP_BLOB_ON_RESOURCE = false,
       LAZY_DATA_ATTR = G.lazyImgSrcAttr,
       LAZY_ATTR = LAZY_DATA_ATTR.slice(5),
       DUMMY_IMG = G.getBlankImgSrc(),
@@ -301,6 +302,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
             resInfoStr = img.getAttribute('data-for'),
             resInfo = resInfoStr && U.parseImageAttribute(resInfoStr),
             realSrc = img.getAttribute(LAZY_DATA_ATTR),
+            res = this.findResourceByCid(resInfo.id) || this.findResourceByUri(resInfo.id),
             rect,
             info;
         
@@ -310,7 +312,9 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
             src: img.src,
             realSrc: realSrc,
             inDoc: docEl.contains(img),
-            data: img.file || img.blob,
+            resource: res,
+//            data: res.get(resInfo.prop + '.data'),
+//            data: img.file || img.blob,
 //            distance: distance(rect, viewport, adjustment),
             inBounds: intersectTest(rect, viewport)
           }
@@ -421,6 +425,12 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
 
     _updateImage: function(img, info) {
       DOM.unlazifyImage(img, info);
+      if (!KEEP_BLOB_ON_RESOURCE) {
+        var prop = info['for'].prop;
+        if (prop)
+          info.resource.unset(prop + '.data', { silent: true }); // don't keep the file/blob in memory
+      }
+
 //      this._distanceToFarthestImage = Math.max(this._distanceToFarthestImage || 0, info.distance);
       _.wipe(info); // just in case it gets leaked...yea, that sounds bad      
     },
@@ -454,13 +464,14 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
 
     _fetchImage: function(img, info) {
       var self = this,
-          imgInfo, // { cid: {String} resource cid for the resource to which this image belongs, prop: {String} property name }
+//          imgInfo, // { id: {String} resource cid for the resource to which this image belongs, prop: {String} property name }
           res,
           prop,
           imgUri;
       
 //      Array.remove(this._lazyImages, img);      
       if (info.data) {
+        debugger;
 //        this._queueImageUpdate(img, info);
         return true;
       }
@@ -470,19 +481,21 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
         return;
       }
       
-      res = this.findResourceByCid(imgInfo.id) || this.findResourceByUri(imgInfo.id);
+//      res = this.findResourceByCid(imgInfo.id) || this.findResourceByUri(imgInfo.id);
+      res = info.resource;
+//      info.resource = res;
       prop = imgInfo.prop;
       
       if (res && prop && (imgUri = res.get(prop))) {
         var dataProp = prop + '.data',
-            hasData = _.has(res.attributes, dataProp),
-            data = hasData && res.get(dataProp);
+            hasDataProp = prop + '.hasData',
+            hasData = res.get(hasDataProp),
+            data = res.get(dataProp);
         
         if (data) {
           var isBlob = data instanceof Blob,
               isFile = data instanceof File;
           
-          res.unset(dataProp, { silent: true }); // don't keep the file/blob in memory
           if (typeof data == 'string') {
             info.src = data;
 //            this._queueImageUpdate(img, info);
@@ -490,14 +503,16 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
   //            img.src = data;
           }
           else if (isBlob || isFile) {
-            img[isBlob ? 'blob' : 'file'] = info.data = data; // do keep file/blob on the image
+            //img[isBlob ? 'blob' : 'file'] = 
+            info.data = data; // do keep file/blob on the image
 //            this._queueImageUpdate(img, info);
             return true;
           }
           else if (data._filePath) {
             U.require('fileSystem').done(function(FS) {
               FS.readAsFile(data._filePath, data._contentType).done(function(file) {
-                img.file = info.data = file; // do keep file/blob on the image
+                //img.file = 
+                info.data = file; // do keep file/blob on the image
                 self._queueImageUpdate(img, info);
               });
             });
@@ -526,12 +541,11 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
             if (!blob)
               return;
                   
-//            blob.type = "image/" + realSrc.slice(realSrc.lastIndexOf('.') + 1);
-            
             // save to resource
             var atts = {};
             atts[prop + '.uri'] = imgUri;
             atts[dataProp] = blob;
+            atts[hasDataProp] = true;
             res.set(atts, {
               silent: true
             });
