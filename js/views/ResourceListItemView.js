@@ -588,9 +588,9 @@ define('views/ResourceListItemView', [
           votes = vProps['voteUse'];
         
         if (votes) {
-          var pMeta = meta[votes];
+          var pMeta = this.vocModel.properties[votes];
           var cnt = tmpl_data[pMeta.shortName] && tmpl_data[pMeta.shortName].count;
-          json.v_showVotesFor = { uri: _.encode(U.getLongUri1(atts['_uri'])), count: cnt }; //_.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
+          tmpl_data.v_showVotesFor = { uri: _.encode(U.getLongUri1(atts['_uri'])), count: cnt }; //_.encode(U.getLongUri1(rUri)); // + '?m_p=' + votes[0] + '&b_p=' + pMeta.backLink);
         }
       }  
     },
