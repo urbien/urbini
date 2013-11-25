@@ -110,7 +110,11 @@ define('views/EditPage', [
     },
 
     render: function(options) {
-      this.getFetchPromise().done(this.renderHelper.bind(this, options));
+      var self = this;
+      this.getFetchPromise().done(function() {
+        self.renderHelper(options);
+        self.finish();
+      });
     },
     
     renderHelper: function(options) {

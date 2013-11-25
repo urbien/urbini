@@ -74,17 +74,13 @@ define('views/EditView', [
       this.isCode = codemirrorModes.length;
 
       var self = this;
-      var codemirrorDfd = $.Deferred(function(defer) {
-        if (self.isCode) {
-          U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes), function() {
-            defer.resolve();
-          });
-        }
-        else
-          defer.resolve();        
-      });
+      var codemirrorPromise;
+      if (self.isCode)
+        codemirrorPromise = U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes));
+      else
+        codemirrorPromise = G.getResolvedPromise();
       
-      this.ready = $.when(codemirrorDfd.promise());
+      this.ready = $.when(codemirrorPromise, this.getFetchPromise());
       if (this.saveOnEdit) {
         this.listenToOnce(Events, 'pageChange', function(from, to) {
           // don't autosave new resources, they have to hit submit on those...or is that weird?
@@ -1187,6 +1183,7 @@ define('views/EditView', [
         self.finish();
       });
     },
+    
     renderHelper: function(options) {
       var self = this;
       var args = arguments;
@@ -1606,7 +1603,7 @@ define('views/EditView', [
         
         var didSet = this.setValues(name, value, {onValidated: getRemoveErrorLabelsFunction(input), onValidationError: this.fieldError});
         if (didSet)
-          this.form.submit();
+          this.form.$trigger('submit');
         
         return false;
       } else  {

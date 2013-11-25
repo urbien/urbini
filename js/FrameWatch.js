@@ -44,10 +44,10 @@ define('FrameWatch', ['underscore'], function() {
 
   function publish() {
     if (typeof frameId != 'undefined') {
+      frameId = raf(publish);
       var now = _.now();
       lastFrameDuration = now - lastFrameStart;
       lastFrameStart = now;
-      frameId = raf(publish);
       for (var id in listeners) {
         invoke(listeners[id]);
       }

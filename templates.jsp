@@ -1435,7 +1435,7 @@
     </ul>
     
     <div name="errors" style="float:left"></div>
-    {{ if (this.resource.isAssignableFrom("InterfaceImplementor")) }}
+    {{ if (this.resource.isAssignableFrom("InterfaceImplementor")) { }}
     <div data-role="fieldcontain" id="ip">
       <fieldset class="ui-grid-a">
         <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true" data-theme="{{= G.theme.activeButton }}">{{= loc('checkAll') }}</a></div>
@@ -1444,12 +1444,12 @@
       <fieldset data-role="controlgroup" id="interfaceProps">
       </fieldset>
     </div>
-    {{                                                             }}
+    {{ }                                                             }}
     
     <div class="ui-body ui-body-b">
       <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><button type="cancel" id="cancel" data-theme="{{= G.theme.footer }}" class="cancel">{{= obj.cancel || loc('cancel') }}</button></div>
-        <div class="ui-block-b"><button type="submit" id="submit" data-theme="{{= G.theme.activeButton }}" class="submit">{{= obj.submit || loc('submit') }}</button></div>
+        <div class="ui-block-a"><button name="cancelBtn" type="cancel" id="cancel" data-theme="{{= G.theme.footer }}" class="cancel">{{= obj.cancel || loc('cancel') }}</button></div>
+        <div class="ui-block-b"><button name="submitBtn" type="submit" id="submit" data-theme="{{= G.theme.activeButton }}" class="submit">{{= obj.submit || loc('submit') }}</button></div>
       </fieldset>
     </div>
 
