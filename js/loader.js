@@ -697,7 +697,7 @@ define('globals', function() {
 
     G.startedTask("loading pre-bundle");
     G.showSpinner({name: spinner, timeout: 10000});
-    APP_START_DFD.done(function() {
+    APP_START_PROMISE.done(function() {
       G.hideSpinner(spinner);
       G.log(G.TAG, 'stats', "App start took: " + (new Date().getTime() - __started) + ' millis');
     });
@@ -1179,6 +1179,7 @@ define('globals', function() {
 
   var G = window.Lablz,
       APP_START_DFD = $.Deferred(),
+      APP_START_PROMISE = APP_START_DFD.promise(), 
       DB_OPEN_DFD = $.Deferred(),
       RESOLVED_PROMISE = $.Deferred().resolve().promise(),
       REJECTED_PROMISE = $.Deferred().reject().promise(),
@@ -1254,7 +1255,7 @@ define('globals', function() {
     falseFn: function() { return false; },
     trueFn: function() { return true; },
     onAppStart: function(fn) {
-      return APP_START_DFD.promise().then(fn);
+      return APP_START_PROMISE.then(fn);
     },
     getResolvedPromise: function() {
       return RESOLVED_PROMISE;
@@ -1657,6 +1658,15 @@ define('globals', function() {
       console.debug.apply(console, arguments);
     },
 
+//    _space: function(n) {
+//      var space = '';
+//      while (n--) {
+//        space += ' ';
+//      }
+//      
+//      return space;
+//    },
+    
     log: function(tag, type) {
       if (!G.DEBUG || !TRACE.ON || !console || !console.log || !type)
         return;
@@ -1680,7 +1690,7 @@ define('globals', function() {
 
         var txt = type + ' : ' + tag + ' : ' + msgStr + ' : ';
         var d = new Date(G.currentServerTime());
-        console.log((css ? '%c ' : '') + txt + new Array(Math.max(100 - txt.length, 0)).join(" ") + d.toUTCString().slice(17, 25) + ':' + d.getUTCMilliseconds(), css ? 'background: ' + (typeTrace.bg || '#FFF') + '; color: ' + (typeTrace.color || '#000') : '');        
+        console.log((css ? '%c ' : '') + txt + new Array(Math.max(100 - txt.length, 0)).join(' ') + d.toUTCString().slice(17, 25) + ':' + d.getUTCMilliseconds(), css ? 'background: ' + (typeTrace.bg || '#FFF') + '; color: ' + (typeTrace.color || '#000') : '');        
       }
     },
     

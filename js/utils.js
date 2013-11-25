@@ -82,19 +82,6 @@ define('utils', [
       return promise;
     },    
     
-    onImageLoad: function(img, callback) {
-      if (img.complete)
-        callback.call(img);
-      else {
-        var onload = img.onload;
-        img.onload = function() {
-          onload && onload.call(img);
-          callback.call(img);
-        };
-      }
-//        img.$on('load', callback);
-    },
-    
     getImage: function(url, format) {
 //      var dfd = $.Deferred(),
 //          promise = dfd.promise(),
