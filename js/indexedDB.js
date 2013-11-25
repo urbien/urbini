@@ -425,7 +425,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   };
 
   IDB.prototype.start = function() {
-    if (!this.storesToMake.length && !this.storesToKill.length)
+    if (this.isOpen() && !this.storesToMake.length && !this.storesToKill.length)
       return RESOLVED_PROMISE;
     else {
       var version = this.getVersion();
