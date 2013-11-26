@@ -45,8 +45,8 @@ define('views/IntersectionListView', [
       if (!this._visible) {
         this._visible = true;
         this.el.dataset.viewid = this.cid;
-        this.el.classList.remove("hidden")
-               .$trigger("create");
+        this.el.classList.remove("hidden");
+        this.el.$trigger("create");
       }
     }
   }, {

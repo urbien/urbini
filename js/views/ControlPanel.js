@@ -610,7 +610,8 @@ define('views/ControlPanel', [
           }
         }
       }
-      this.$el.html(frag);
+      
+      this.el.$html(frag);
 //      if (this.hashParams.$tour) {
 //        var s = this.$el.find(this.hashParams.$tourS + '=' + this.hashParams.$tourV);
 //        s.css('class', 'hint--left');
@@ -626,9 +627,11 @@ define('views/ControlPanel', [
 //          this.innerHTML = '<i class="ui-icon-ban-circle"></i> ' + this.innerHTML;
 //      });
       
-      this.$el.trigger('create');
-      if (this.rendered && this.el.$hasClass('ui-listview'))
-        this.$el.listview('refresh');
+      if (G.isJQM()) {
+        this.$el.trigger('create');
+        if (/*this.rendered &&*/ this.el.$hasClass('ui-listview'))
+          this.$el.listview('refresh');
+      }
 
       this.finish();
       return this;

@@ -1355,10 +1355,7 @@
 </script>
 
 <script type="text/template" id="intersectionListItemTemplate">
-  <li data-viewid="{{= viewId }}">
-    {{= a }}
-    {{= b }}
-  </li>
+  <li data-viewid="{{= viewId }}"> {{= a + b }} </li>
 </script>
 
 <script type="text/template" id="intersectionListItemTemplate">

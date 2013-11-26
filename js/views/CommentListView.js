@@ -36,7 +36,7 @@ define('views/CommentListView', [
     },
     
     postRender: function() {
-      if (this.rendered) {
+      if (this.rendered && G.isJQM()) {
         this.$el.trigger('create');
         if (this.el.$hasClass('ui-listview'))
           this.$el.listview('refresh');

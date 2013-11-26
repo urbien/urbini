@@ -225,13 +225,16 @@ define('views/ResourceView', [
 //            U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
             this.el.classList.remove('hidden');
             U.addToFrag(frag, '<div id="Description">' + val + '</div>');
-            this.$el.html(frag);      
-            if (this.el.$hasClass('ui-listview')) {
-              this.$el.trigger('create');      
-              this.$el.listview('refresh');
+            this.el.$html(frag);      
+            if (G.isJQM()) {
+              if (this.el.$hasClass('ui-listview')) {
+                this.$el.trigger('create');      
+                this.$el.listview('refresh');
+              }
+              else
+                this.$el.trigger('create');
             }
-            else
-              this.$el.trigger('create');      
+            
             return this;
           }
         }
@@ -368,12 +371,15 @@ define('views/ResourceView', [
   //    var j = {"props": json};
   //    this.$el.html(html);
       this.el.$html(frag);
-      if (this.el.$hasClass('ui-listview')) {
-        this.$el.trigger('create');      
-        this.$el.listview('refresh');
+      if (G.isJQM()) {
+        if (this.el.$hasClass('ui-listview')) {
+          this.$el.trigger('create');      
+          this.$el.listview('refresh');
+        }
+        else
+          this.$el.trigger('create');
       }
-      else
-        this.$el.trigger('create');      
+      
       if (!_.size(displayedProps))
         this.el.$hide();
 

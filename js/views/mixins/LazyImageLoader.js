@@ -45,7 +45,8 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
     },
     
     myEvents: {
-      'viewportDestination': '_onViewportDestinationChanged'
+      'viewportDestination': '_onViewportDestinationChanged',
+      'loadLazyImages': '_queueImagesJob'
     },
     
     windowEvents: {

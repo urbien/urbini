@@ -61,9 +61,12 @@ define('views/IntersectionListItemView', [
     setElement: function() {
       var result = Backbone.View.prototype.setElement.apply(this, arguments);
       if (this.hItemA) {
-        var a = this.$el.first();
-        this.hItemA.setElement(a);
-        this.hItemB.setElement(a.next());
+        var els = this.el.childNodes.$filter(function(n) {
+          return n.nodeType == 1;
+        });
+
+        this.hItemA.setElement(els[0]);
+        this.hItemB.setElement(els[1]);
       }
       
       return result;

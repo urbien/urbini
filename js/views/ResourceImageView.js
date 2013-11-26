@@ -364,6 +364,8 @@ define('views/ResourceImageView', [
         var h = t ? b - t : b;
         this.el.style.height = h + 'px';
       }
+      
+      this.pageView.trigger('loadLazyImages', this.el);
       return this;
     }
   },

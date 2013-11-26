@@ -14,6 +14,7 @@ define('views/ListPage', [
       SPECIAL_INTERSECTIONS = [G.commonTypes.Handler, G.commonTypes.Friend, U.getLongUri1('model/social/NominationForConnection') /*, commonTypes.FriendApp*/];
   
   return BasicPageView.extend({
+//    viewType: 'collection',
     template: 'resource-list',
     clicked: false,
     autoFinish: false,
@@ -374,6 +375,8 @@ define('views/ListPage', [
 //      this.$el.attr("data-scrollable", "true");
       tmpl_data.isMasonry = this.isMasonry;
       this.html(this.template(tmpl_data));
+      if (!this.el.parentNode)  
+        document.body.appendChild(this.el);
       
       views[this.listContainer] = this.listView;
       this.assign(views);
@@ -382,8 +385,6 @@ define('views/ListPage', [
         this.assign('#mapHolder', this.mapView);  
       }.bind(this));
       
-      if (!this.el.parentNode)  
-        document.body.appendChild(this.el);
       if (!this.isMV)
         this.$('#mv').$hide();
       if (!this.isEdit)

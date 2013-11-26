@@ -348,6 +348,38 @@
   </section>
 </script>
 
+<script type="text/template" id="genericDialogTemplate">
+<section role="region" class="loginPopup" id="{{= id }}">
+  {{ if (obj.header) { }}
+  <div data-role="header" id="header" data-theme="a" class="ui-corner-top">
+    <h1>{{= header }}</h1>
+  </div>
+  {{ }                 }}
+  
+  {{ if (obj.ok === false && obj.cancel === false) { }}
+    <a href="#" data-cancel="cancel" data-rel="back" data-role="button" data-theme="{{= G.theme.menu }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
+  {{ }                 }}
+
+  <div data-role="content" data-theme="d" class="ui-corner-bottom ui-content">
+    {{= obj.title ? '<h3 class="ui-title">{0}</h3>'.format(title) : '' }}
+    {{ if (obj.img) { }}
+      <img src="{{= img }}" style="display:block" />    
+    {{ }              }}
+    {{= obj.details ? '<p style="display:block">{0}</p>'.format(details)                 : '' }}
+    
+    <div style="display:block">
+    {{ if (obj.cancel) { }}
+    <a href="#" role="button" data-cancel="" class="lpButton" data-theme="{{= G.theme.footer }}">{{= loc(typeof cancel === 'string' ? cancel : 'cancel') }}</a>
+    {{ }                 }}
+    
+    {{ if (obj.ok) { }}
+    <a href="#" role="button" data-ok="" class="lpButton" data-theme="{{= G.theme.activeButton }}">{{= loc(typeof ok === 'string' ? ok : 'ok') }}</a>
+    {{ }                 }}
+    </div>
+  </div>
+</section>
+</script>
+
 <script type="text/template" id="logoutButtonTemplate">
   <li id="logout">
     <a id="logout" target="#" data-icon="signout">{{= loc('signOut') }}</a>

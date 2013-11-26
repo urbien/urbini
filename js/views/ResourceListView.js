@@ -59,6 +59,7 @@ define('views/ResourceListView', [
   };
   
   return BasicView.extend({
+//    viewType: 'collection',
     _itemRenderOptions: {
       force: true,
       renderToHtml: true,
@@ -594,7 +595,8 @@ define('views/ResourceListView', [
           tailDiff,
           invisibleLayer = this._invisibleLayerThickness,
           pageDim = this.getPageDimension(),
-          scrollingTowardsHead = this.pageView.getLastScrollDirection() == 'head';
+          scrollingTowardsHead = this.pageView.getLastScrollDirection() == 'head',
+          canAppend = !this._outOfData || this._displayedCollectionRange.to != this.collection.length;
 
       if (!this._initializedDummies)
         this.initDummies();
@@ -603,7 +605,7 @@ define('views/ResourceListView', [
         this._initSlidingWindowTimer = setTimeout(this.adjustSlidingWindow, 50);
         return false;
       }
-
+      
 //      if (this._pagesCurrentlyInSlidingWindow < this._minPagesInSlidingWindow)
 //        return this._growSlidingWindow(n, scrollingTowardsHead).done(this._queueSlidingWindowCheck);
       
@@ -617,14 +619,7 @@ define('views/ResourceListView', [
       else 
         tailDiff -= pageDim * Math.min(this._minPagesInSlidingWindow / 4 | 0, 2); //this._slidingWindowOutsideBuffer / 2; //this._minSlidingWindowDimension * 0.25;
       
-      if (slidingWindowDim < this._minSlidingWindowDimension) { // should this be measured in pages or in pixels or viewports?
-//        if (this._getSlidingWindowOffset(true /* at the head */)) { // check if head dummy is of non-zero size
-//          var headDiff = viewport.head - slidingWindow.head,
-//              tailDiff = slidingWindow.tail - viewport.tail;
-//          
-//          growAtTheHead = headDiff < tailDiff;
-//        }
-        
+      if (canAppend && slidingWindowDim < this._minSlidingWindowDimension) { // should this be measured in pages or in pixels or viewports?
         if (this._scrollable)
           n = Math.ceil((this._minSlidingWindowDimension - slidingWindowDim) / pageDim);
         
@@ -639,12 +634,12 @@ define('views/ResourceListView', [
         var headTail = eatHeadTail(extraSpace, headDiff, tailDiff, pageDim, !scrollingTowardsHead);
         return this._shrinkSlidingWindow(headTail.head, headTail.tail).done(this._queueSlidingWindowCheck); // n==1. Always grow by one page at a time (so the user doesn't have to wait to see the first few pages)
       }
-      else if (tailDiff < this._slidingWindowInsideBuffer) {
+      else if (canAppend && tailDiff < this._slidingWindowInsideBuffer) {
         n = Math.ceil((this._slidingWindowInsideBuffer - tailDiff) / viewportDim);
         if (tailDiff < this._slidingWindowOutsideBuffer)
           return this.appendPages(n).done(this._queueSlidingWindowCheck);
 //          return this.page(n).done(this._queueSlidingWindowCheck);
-        else if (this.collection.length - this._displayedCollectionRange.to < this._elementsPerPage * 2)
+        else if (!this._outOfData && this.collection.length - this._displayedCollectionRange.to < this._elementsPerPage * 2)
           return this.getNextPage().done(this._queueSlidingWindowCheck);
         else
           return G.getResolvedPromise();
@@ -775,8 +770,12 @@ define('views/ResourceListView', [
         if (force) {
           // settle for loading an incomplete page
           colRange.to = col.length;
+          n = Math.ceil(colRange.to - colRange.from) / this._elementsPerPage; 
         }
         else {
+          if (this._outOfData)
+            return G.getRejectedPromise();
+          
           var numToFetch = Math.max(colRange.to - col.length, this._elementsPerPage);
           return this.getNextPage(numToFetch).then(this.addPages.bind(this, n, atTheHead), this.addPages.bind(this, n, atTheHead, true));
         }
@@ -869,9 +868,9 @@ define('views/ResourceListView', [
           this.postRenderItem(liView._html, info);
           currentPageHtml[currentPageHtml.length] = liView._html;
           delete liView._html;
-          numRendered++;
         }
         
+        numRendered++;
         if (isLast && currentPageHtml.length) {
 //          currentPageHtml[currentPageHtml.length] = pageEndTag;
           var html = currentPageHtml.join("");

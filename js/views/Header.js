@@ -18,10 +18,11 @@ define('views/Header', [
   var REGULAR_BUTTONS = ['back', 'mapIt', 'add', 'video', 'chat', 'login', 'rightMenu'];
   var commonTypes = G.commonTypes;
   return BasicView.extend({
+//    viewType: 'any',
     autoFinish: false,
     template: 'headerTemplate',
     initialize: function(options) {
-      _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload'); //, '_updateInfoErrorBar', 'checkErrorList', 'sendToCall');
+      _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload', 'refresh'); //, '_updateInfoErrorBar', 'checkErrorList', 'sendToCall');
       BasicView.prototype.initialize.apply(this, arguments);
       options = options || {};
       _.extend(this, options);
@@ -83,7 +84,7 @@ define('views/Header', [
       
       this.buttonViews = {};
       var self = this;
-      var btnsReq = U.require(reqdButtons, function() {
+      this.btnsReq = U.require(reqdButtons, function() {
         var i = 0;
         for (var btn in buttons) {
           var model = arguments[i++];
@@ -94,7 +95,7 @@ define('views/Header', [
         }
       });
       
-      this.ready = $.when(btnsReq, this.getFetchPromise());
+      this.ready = $.when(this.btnsReq, this.getFetchPromise());
     },
     
     calcTitle: function() {      
@@ -239,15 +240,29 @@ define('views/Header', [
         this.getButtonViews();
       }
         
-      var args = arguments;
-      this.ready.done(function() {
-        this.renderHelper.apply(this, args);
-        this.finish();
-        if (G.isBootstrap()) {
-          var lis = this.$el.find('#headerUl div');
-          lis.attr('class', 'navbar-header');
-        }
-      }.bind(this));
+      var self = this,
+          args = arguments;
+      
+      function doRender() {
+        self.renderHelper.apply(self, args);
+        self.finish();
+        if (G.isBootstrap())
+          self.$('#headerUl div').$attr('class', 'navbar-header');
+      };
+      
+      if (this.btnsReq.state() !== 'pending') {
+        doRender();
+        doRender = null;
+      }
+      
+      if (this.ready.state() == 'pending') {
+        this.ready.done(function() {
+          if (doRender)
+            doRender();
+          else
+            self.refresh();
+        });
+      }
     },
 
     refreshTitle: function() {
@@ -384,9 +399,6 @@ define('views/Header', [
     },
     
     renderHelper: function() {
-      if (window.location.hash.indexOf("#menu") != -1)
-        return this;
-
       var self = this;
       var isJQM = G.isJQM(); //!wl  ||  wl == 'Jquery Mobile';
       var res = this.resource; // undefined, if this is a header for a collection view

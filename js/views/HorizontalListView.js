@@ -14,7 +14,7 @@ define('views/HorizontalListView', [
   
   return ResourceListView.extend({
     mixins: mixins,
-    _renderedIntersectionUris: [],
+    _renderedIntersectionUris: null,
     _scrollableOptions: {
       axis: 'X',
       keyboard: false
@@ -38,6 +38,7 @@ define('views/HorizontalListView', [
     initialize: function(options) {
 //      _.bindAll(this, 'renderItem');
       ResourceListView.prototype.initialize.apply(this, arguments);
+      this._renderedIntersectionUris = [],
       _.extend(this, options);
     },
 

@@ -1289,14 +1289,15 @@ define('views/EditView', [
         });
       }        
       
-      (this.$ul = $(this.$('#fieldsList'))).html(frag);
-      if (this.$ul[0].$hasClass('ui-listview')) {
-        this.$ul.trigger('create');
-        this.$ul.listview('refresh');
-      }
-      else {
-        this.$ul.trigger('create');
-        this.$el.trigger('create');
+      this.ul = this.$('#fieldsList').$html(frag)[0];
+      if (G.isJQM()) {
+        if (this.ul.$hasClass('ui-listview')) {
+          $(this.ul).trigger('create').listview('refresh');
+        }
+        else {
+          $(this.ul).trigger('create');
+          this.$el.trigger('create');
+        }
       }
 
       var doc = document;
@@ -1339,13 +1340,13 @@ define('views/EditView', [
             props = props.slice(0, props.length - 1);
             self.setValues('interfaceProperties', props);
             
-            (self.$ul1 = self.$el.find('#interfaceProps')).html(frag);
-            if (self.$ul1.hasClass('ui-listview')) {
-              self.$ul1.trigger('create');
-              self.$ul1.listview('refresh');
+            self.ul1 = self.$('#interfaceProps').$html(frag)[0];
+            if (G.isJQM()) {
+              if (self.ul1.$hasClass('ui-listview'))
+                $(self.ul1).trigger('create').listview('refresh');
+              else
+                $(self.ul1).trigger('create');
             }
-            else
-              self.$ul1.trigger('create');
           
             self.redelegateEvents();
 //            var checkboxes = self.form.querySelectorAll('input[type="checkbox"]'),

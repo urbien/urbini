@@ -331,7 +331,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
     },
     
     _onMouseWheel: function(e) {
-      if (!this._scrollerInitialized)
+      if (!this._scrollerInitialized || !this.isActive())
         return;
       
 //      var delta = Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail))),
@@ -963,8 +963,6 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
           pos = s.position,
           bounce = s.bounce;
       
-//      x -= SCROLL_OFFSET.X;
-//      y -= SCROLL_OFFSET.Y;
       if (time) {
         var self = this,
             axis = this.getScrollAxis(),
@@ -978,52 +976,60 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
             timePeriodPercent = period / time,
 //            distanceUnit = distance / numScrollEvents,
             distanceMultipliers = ease.distanceMultipliers,
-            percentDistanceTraveled = 0,
-            percentTimeTraveled = 0,
             pingPos = U.clone(pos),
             alertedAboutDestinationProximity = false,
-            scrollTime = 0;
+            scrollTime = time,
+            now,
+            tmp,
+            velocity,
+            percentDistanceTraveled = 0,
+            percentTimeTraveled = 0,
+            prevPercentDist = 0,
+    		    prevPercentTime = 0,
+    		    distanceTraveled;
     
-        this._setScrollVelocity(distanceMultipliers[0] * distance / time);
+//        this._setScrollVelocity(distanceMultipliers[0] * distance / time);
         function ping() {
-          if (self._isScrolling()) {
-            var prevPercentTime = percentTimeTraveled;
-            var prevPercentDist = percentDistanceTraveled;
-            var distanceTraveled = percentDistanceTraveled * distance;
-            percentTimeTraveled += timePeriodPercent;
+          tmp = _.now();
+          if (now)
+            scrollTime -= tmp - now;;
+            
+          now = tmp;
+          if (scrollTime > period) {
+            prevPercentDist = percentDistanceTraveled;
+            prevPercentTime = percentTimeTraveled;
+            percentTimeTraveled = (time - scrollTime) / time;
+            distanceTraveled = percentDistanceTraveled * distance;
             percentDistanceTraveled = distanceMultipliers[(percentTimeTraveled * NUM_PRECALCED_DISTANCES) | 0];
-            self._setScrollVelocity(avgVelocity * (percentDistanceTraveled - prevPercentDist) / (percentTimeTraveled - prevPercentTime));
+            if (percentTimeTraveled)
+              velocity = avgVelocity * (percentDistanceTraveled - prevPercentDist) / (percentTimeTraveled - prevPercentTime);
+            else
+              velocity = distanceMultipliers[0] * distance / time;
+            
             pingPos[axis] = pos[axis] + distanceTraveled;
-//            self._updateScrollPosition(pingPos.X, pingPos.Y);
             if (!alertedAboutDestinationProximity && Math.abs(distance - distanceTraveled) < viewportDim * 3) {
-//              console.log("SENDING VIEWPORT DESTINATION ALERT", x, y, time - percentTimeTraveled * time);
               alertedAboutDestinationProximity = true;
-              self._setViewportDestination(-x, -y, time - percentTimeTraveled * time);
+              self._setViewportDestination(-pingPos.X, -pingPos.Y, time - percentTimeTraveled * time);
             }
-              
-//            console.log("DISTANCE LEFT: ", distance - distanceTraveled);
-            self._triggerScrollEvent('scroll', scrollPosToOffset(pingPos));
+            
+//            console.log("DISTANCE", distanceTraveled);
+//            console.log("TIME", time - scrollTime);
+//            console.log("VELOCITY", velocity);
+            self._queueScrollTimeout(ping, period);
           }
+          else {
+//            console.log("END OF FLING");
+            velocity = 0;
+            self._updateScrollPosition(x, y);
+            self._setViewportDestination(-x, -y, scrollTime);
+            self._resetScroller();
+          }
+          
+          self._triggerScrollEvent('scroll', scrollPosToOffset(pingPos));
+          self._setScrollVelocity(velocity);
         }
         
-        this._queueScrollTimeout(function() {
-          var destination = _.clone(pos);
-          destination[axis] += distance;
-          self._setScrollVelocity(0);
-          self._updateScrollPosition(x, y);
-          self._triggerScrollEvent('scroll', scrollPosToOffset(destination));
-          self._resetScroller();
-          U.recycle(pingPos);
-        }, time);
-        
-        // queue up scroll events
-        if (numScrollEvents) {
-          for (var i = 0; i < numScrollEvents; i++) {
-            this._queueScrollTimeout(ping, scrollTime += period);
-          }
-        }
-        else
-          self._setViewportDestination(-x, -y, time);
+        ping();
       }
       else {
         this._updateScrollPosition(x, y);
