@@ -165,7 +165,7 @@ define('views/ViewPage', [
               
               self.friends.fetch({
                 success: function() {
-                  if (self.friends.size()) {
+                  if (!self.photogrid && self.friends.size()) {
                     var photogridEl = self.el.querySelector('#photogrid');
                     photogridEl.classList.remove('hidden');
                     self.photogrid = new HorizontalListView({

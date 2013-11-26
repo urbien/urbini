@@ -67,8 +67,10 @@ define('views/BasicView', [
       this._updateHashInfo();
       this._loadingDfd = new $.Deferred();
       this._loadPromise = this._loadingDfd.done(function() {
-        if (!this.rendered)
+        if (!this.rendered) {
           this.rendered = true;
+          this.trigger('rendered');
+        }
       }.bind(this));
       
       this._taskQueue = [];      

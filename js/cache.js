@@ -297,25 +297,38 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       return _.compact(_.pluck(getViews(), 'resource'));
     };
 
-    function getLists() {
-      var cols = [];
-      _.each(getViews(), function(view) {
-        var res = view.resource,
-            col = view.collection;
+    function addCollections(view, cols) {
+      var res = view.resource,
+          col = view.collection;
+      
+      if (res) {
+        col = res.collection;
+        if (col) {
+          if (cols.indexOf(col) == -1)
+            cols.push(col);
+        }
         
-        if (res) {
-          col = res.collection;
-          if (col) {
-            if (cols.indexOf(col) == -1)
-              cols.push(col);
-          }
-          
-          pushUniq(cols, view.resource.getInlineLists());
-        }
-        else if (col) {
+        pushUniq(cols, res.getInlineLists());
+      }
+      else if (col) {
+        pushUniq(cols, col);
+      }
+      
+      for (var id in view.children) {
+        var col = view.children[id].collection;
+        if (col)
           pushUniq(cols, col);
-        }
-      });
+      }
+    }
+    
+    function getLists() {
+      var cols = [],
+          views = getViews(),
+          i = views.length;
+      
+      while (i--) {        
+        addCollections(views[i], cols);
+      }
       
       return cols;
     };
