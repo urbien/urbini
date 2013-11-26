@@ -1151,17 +1151,16 @@ define('views/ResourceListView', [
         self._showAndHidePages();
       });
 
-      splitIdx = Math.max(fromTheHead ? n : this._pages.length - n, 0);
+      if (fromTheHead)
+        splitIdx = Math.min(n, this._pages.length - 1);
+      else
+        splitIdx = Math.max(this._pages.length - n, 0);
+      
       removedPages = info[fromTheHead ? 'removedFromTop' : 'removedFromBottom'] = fromTheHead ? this._pages.slice(0, splitIdx) : this._pages.slice(splitIdx); // optimize
-//      this._pages = fromTheHead ? this._pages.slice(splitIdx) : this._pages.slice(0, splitIdx);  // optimize    
-      if (fromTheHead) {
-//        debugger;
+      if (fromTheHead)
         Array.removeFromTo(this._pages, 0, splitIdx);
-      }
-      else {
-//        debugger;
+      else
         this._pages.length = splitIdx;
-      }
       
       Q.defer(1, 'read', function() {
         for (var i = 0, len = removedPages.length; i < len; i++) {

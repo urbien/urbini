@@ -164,11 +164,7 @@ define('views/ResourceImageView', [
     },
     
     render: function(options) {
-      if (this.renderHelper.apply(this, arguments)) {
-//        this.observeMutations({
-//          
-//        });
-      }
+      this.getFetchPromise().done(this.renderHelper.bind(this, options));
     },
     
     renderHelper: function(options) {
