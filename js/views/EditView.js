@@ -1290,12 +1290,14 @@ define('views/EditView', [
       }        
       
       (this.$ul = $(this.$('#fieldsList'))).html(frag);
-      if (this.$ul.hasClass('ui-listview')) {
+      if (this.$ul[0].$hasClass('ui-listview')) {
         this.$ul.trigger('create');
         this.$ul.listview('refresh');
       }
-      else
+      else {
         this.$ul.trigger('create');
+        this.$el.trigger('create');
+      }
 
       var doc = document;
       var form = this.form = this.$('form')[0];

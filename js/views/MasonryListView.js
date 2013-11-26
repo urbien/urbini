@@ -19,6 +19,22 @@ define('views/MasonryListView', [
   function getBottom(child) {
     return getTop(child) + child.offsetHeight;
   }
+
+  function getBricks(pages) {
+    return pages.reduce(function(memo, page) {
+      memo.push.apply(memo, page.childNodes);
+      return memo;
+    }, []);
+    
+//    var bricks = [],
+//        i = pages.length;
+//    
+//    while (i--) {
+//      bricks.push.apply(bricks, pages[i].childNodes);
+//    }
+//    
+//    return bricks;
+  }
   
   return ResourceListView.extend({
     className: 'masonry',
@@ -136,7 +152,7 @@ define('views/MasonryListView', [
         return Math.ceil(numEls * viewportDim / pageDim);
       }
       else {
-        var dimensions = this._pageDimensions;
+        var dimensions = this._containerDimensions;
         return Math.min(dimensions.width * dimensions.height / (200 * 200) | 0, 15);
       }
     },
@@ -203,18 +219,13 @@ define('views/MasonryListView', [
         if (hasUpdated)
           this.masonry.reload();
         else {
-          if (appended) { 
+          if (appended) {
+            var bricks = getBricks(appended);
 //            console.log("APPENDED", appended.length, "PAGES, id:", this._slidingWindowOpInfo.id, _.pluck(appended, 'id').join(', '));
-            this.masonry.appended(appended);
+            this.masonry.appended(bricks, null, true);
           }
           if (prepended) {
-            var bricks = [],
-                i = prepended.length;
-            
-            while (i--) {
-              bricks.push.apply(bricks, prepended[i].childNodes);
-            }
-            
+            var bricks = getBricks(prepended);
             bricks.reverse();
 //            console.log("PREPENDED", prepended.length, "PAGES, id:", this._slidingWindowOpInfo.id, _.pluck(appended, 'id').join(', '));
             this.masonry.prepended(bricks, null, true);

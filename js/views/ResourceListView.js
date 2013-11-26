@@ -264,7 +264,15 @@ define('views/ResourceListView', [
     },
 
     getPageDimension: function() {
-      return this._pageDimensions[getDimensionName.call(this)];
+      if (!this._pages.length)
+        return 0;
+      
+      var sw = this.getSlidingWindow();
+      return (sw.tail - sw.head) / this._pages.length;
+    },
+    
+    getContainerDimension: function() {
+      return this._containerDimensions[getDimensionName.call(this)];
     },
     
     getElementsPerPage: function() {
@@ -272,14 +280,15 @@ define('views/ResourceListView', [
         this._optimizedElementsPerPage = true;
         
         var viewportDim = this.getViewport()[getDimensionName.call(this)],
-            page = this._pages[0],
-            numEls = page.childElementCount,
-            pageDim = page[getOffsetDimensionName.call(this)];
+            dimProp = getOffsetDimensionName.call(this),
+            numEls = this._displayedCollectionRange.to - this._displayedCollectionRange.from,
+            slidingWindow = this.getSlidingWindow(),
+            elHeight = (slidingWindow.tail - slidingWindow.head) / numEls;
         
-        return Math.ceil(numEls * viewportDim / pageDim); 
+        return this._elementsPerPage = viewportDim / elHeight | 0; 
       }
       else
-        return Math.min(this.getPageDimension() / 50 | 0, 10);
+        return this._elementsPerPage = Math.min(this.getContainerDimension() / 50 | 0, 10);
     },
     
     _onScrollerSizeChanged: function(e) {
@@ -291,27 +300,16 @@ define('views/ResourceListView', [
           pageDimension;
       
       _.extend(this._scrollerContainer, info.container);
-      this._pageDimensions = _.clone(info.container);
-      pageDimension = this._pageDimensions[dimProp];
+      this._containerDimensions = _.clone(info.container);
+      pageDimension = info.container[dimProp];
+      this._elementsPerPage = this.getElementsPerPage();
       this._updateViewport(info);
       this._minSlidingWindowDimension = pageDimension * pages; // px, should depend on size of visible area of the list, speed of device, RAM
       this._maxSlidingWindowDimension = pageDimension * this._maxPagesInSlidingWindow; // px, should depend on size of visible area of the list, speed of device, RAM
       this._slidingWindowInsideBuffer = slidingWindowDim / 2; // how far away the viewport is from the closest border of the sliding window before we start to fetch more resources
       this._slidingWindowOutsideBuffer = Math.max(slidingWindowDim / 5, this._slidingWindowInsideBuffer / 2); // how far away the viewport is from the closest border of the sliding window before we need to adjust the window
-//      _slidingWindowBuffer: 800, // px, should depend on size of visible area of the list, speed of device, RAM
-//      if (G.browser.mobile && pageHeight < 500)
-//        this._elementsPerPage = 5;
-//      else
-//        this._elementsPerPage = 10;
-      
-      this._elementsPerPage = this.getElementsPerPage();
+
       this.adjustSlidingWindow();
-//      if (this._initSlidingWindowTimer) {
-//        clearTimeout(this._initSlidingWindowTimer);
-//        this.adjustSlidingWindow();
-//      }
-//      else if (this.rendered)
-//        this.refresh();
     },
     
     _queueSlidingWindowCheck: function() {
@@ -635,6 +633,7 @@ define('views/ResourceListView', [
       else if (slidingWindowDim > this._maxSlidingWindowDimension) { // should this be measured in pages or in pixels or viewports?
         var headDiff = viewport.head - slidingWindow.head,
             tailDiff = slidingWindow.tail - viewport.tail,
+//            extraSpace = headDiff + tailDiff - 2 * this._slidingWindowOutsideBuffer;
             extraSpace = slidingWindowDim - this._minSlidingWindowDimension;
         
         var headTail = eatHeadTail(extraSpace, headDiff, tailDiff, pageDim, !scrollingTowardsHead);
