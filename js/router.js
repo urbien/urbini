@@ -1333,7 +1333,8 @@ define('router', [
       } catch( e ) {}
       
       Transitioner[options && options.reverse ? 'right' : 'left'](fromView, toView, null, this.firstPage ? 0 : 400).done(function() {
-        G.activePage = $m.activePage = toView.$el;
+        G.$activePage = $m.activePage = toView.$el;
+        G.activePage = toView.el;
       });
     },
     
@@ -1342,7 +1343,8 @@ define('router', [
         $m.initializePage(toView.$el);
       
       $m.changePage(toView.$el, options);
-      G.activePage = toView.$el;
+      G.$activePage = toView.$el;
+      G.activePage = toView.el;
     },
 
 //    $changePage: function(toPage, options) {

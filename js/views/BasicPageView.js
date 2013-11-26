@@ -25,10 +25,10 @@ define('views/BasicPageView', [
     return !!$(element).parents('[draggable=true]').length;
   };
 
-  function getTooltipPos($el) {
-    var position = $el.offset();
-    var t = position.top + $el.outerHeight()/2 - 20;
-    var l = position.left + $el.outerWidth()/2 - 20;
+  function getTooltipPos(el) {
+    var position = el.$offset();
+    var t = position.top + el.offsetHeight / 2 - 20;
+    var l = position.left + el.offsetWidth /2 - 20;
     if (l + 40 > viewport.width) 
       l = viewport.width - 40;
     
@@ -281,7 +281,7 @@ define('views/BasicPageView', [
           info = step.get('infoMessage');
       
       try {
-        element = this.$(step.get('selector'));
+        element = this.$(step.get('selector'))[0];
       } catch (err) {
         this.log('error', 'bad selector for tour step: {0}, err: '.format(selector), err);
         return;
@@ -294,7 +294,7 @@ define('views/BasicPageView', [
         });
       }
 
-      if (element.length) {
+      if (element) {
         this.addTooltip(element, 
                         step.get('tooltip'), 
                         step.get('direction'),
@@ -339,7 +339,7 @@ define('views/BasicPageView', [
     },
     
     addTooltip: function(el, tooltip, direction, type, style) {
-      el = el instanceof $ ? el : $(el);
+//      el = el instanceof $ ? el : $(el);
       this._tooltipOn = el;
       var classes = ['always', 
                      direction || 'left', 
@@ -359,7 +359,7 @@ define('views/BasicPageView', [
         page.$prepend('<div class="play" style="top:' + t + 'px; left:' + l + 'px;"><div class="glow"></div><div class="shape"></div></div>');
 
       this.once('inactive', function() {
-        self.removeTooltip(el[0]);
+        self.removeTooltip(el);
         self._getTooltips().remove();
       });
     },

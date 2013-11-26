@@ -23,7 +23,8 @@ define('utils', [
       RECYCLED_OBJECTS = [],
       RECYCLED_ARRAYS = [],
       FRAGMENT_SEPARATOR = HAS_PUSH_STATE ? '/' : '#',
-      LAZY_DATA_ATTR = G.lazyImgSrcAttr;
+      LAZY_DATA_ATTR = G.lazyImgSrcAttr,
+      $w;
 
   window._setInterval(function() { // TODO: make this less stupid
     for (var templateName in compiledTemplates) {
@@ -3278,23 +3279,27 @@ define('utils', [
      *  
      */
     dialog: function(options) {
-      var id = options.id = options.id || 'dialog' + G.nextId();
-      $('#' + id).remove();
+      var id = options.id = options.id || 'dialog' + G.nextId(),
+          existing = doc.getElementById(id);
+      
+      existing && existing.$remove();
       var dialogHtml = U.template('genericDialogTemplate')(_.defaults(options, {
         ok: true,
         cancel: true
       }));
       
-      (G.activePage || $(doc.body)).append(dialogHtml);
-      var $dialog = $('#' + id);
-      $dialog.trigger('create');
-      $dialog.popup().popup("open");
+      (G.activePage || doc.body).$append(dialogHtml);
+      var dialog = doc.getElementById(id);
+      if (G.isJQM())
+        $(dialog).trigger('create').popup().popup("open");
+      else
+        dialog.style['z-index'] = 1000000;
       if (options.onok)
-        $dialog.find('[data-cancel]').click(options.oncancel);
+        dialog.$('[data-cancel]').$on('click', options.oncancel);
       if (options.onok)
-        $dialog.find('[data-ok]').click(options.onok);
+        dialog.$('[data-ok]').$on('click', options.onok);
       
-      return $dialog;
+      return dialog;
     },
         
     deposit: function(params) {
@@ -3346,15 +3351,16 @@ define('utils', [
         options: options
       });
 
-      var $dialog = (G.activePage || $(doc.body)).append(dialogHtml).find('#' + id);
+      var dialog = (G.activePage || doc.body).$append(dialogHtml).$('#' + id);
       _.each(options, function(option) {
         if (option.action) {
-          $dialog.find('#' + option.id).click(option.action);
+          dialog.$('#' + option.id).$on('click', option.action);
         }
       });
       
-      $dialog.trigger('create');
-      $dialog.popup().popup("open");
+      if (G.isJQM()) {
+        $(dialog).trigger('create').popup().popup("open");
+      }
     },
     
     getPath: function(uri) {
@@ -3518,30 +3524,13 @@ define('utils', [
     },
 
     createAudio: function(options) {
-      var atts = '', 
-          $audio;
+      var audio = doc.createElement('audio');
       
       options = options || {};
       options.id = options.id || 'audio' + G.nextId();
-      for (var att in options) {
-        atts += "{0}='{1}' ".format(att, options[att]);
-      }
-      
-      $audio = $("<audio {0} />".format(atts));
-      G.activePage.append($audio);
-      return {
-        play: function() {
-          $audio[0].play();
-        },
-        pause: function() {
-          $audio[0].pause();
-        },
-        remove: function() {
-          this.pause();
-          $audio[0].src = null;
-          $audio.remove();
-        }
-      };
+      audio.$attr(options);
+      G.activePage.appendChild(audio);
+      return audio;
     },
     
     vibrate: (function() {
