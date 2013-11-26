@@ -888,14 +888,15 @@
     };
 
     Conversation.prototype.handleStreamRemoved = function() {
-        var media = document.getElementById(this.id),
-            container = this.parent.getRemoteMediaContainer();
+        var media = document.getElementById(this.id);
+//        ,
+//            container = this.parent.getRemoteMediaContainer();
 
         var stream = this.stream;
         this.stream = null;
         if (media) {
-            if (container)
-                container.removeChild(media);
+            if (media.parentNode)
+                media.parentNode.removeChild(media);
 
             this.emit('mediaRemoved', {
                 type: 'remote',
