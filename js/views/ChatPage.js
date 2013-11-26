@@ -7,8 +7,9 @@ define('views/ChatPage', [
   'cache',
   'vocManager',
   'views/BasicPageView',
-  'views/Header'
-], function(G, _, U, Events, C, Voc, BasicPageView, Header) {
+  'views/Header',
+  'domUtils'
+], function(G, _, U, Events, C, Voc, BasicPageView, Header, DOM) {
   // To avoid shortest-path interpolation.
   var BTN_ACTIVE_CLASS = 'ui-btn-active',
       SIGNALING_SERVER = 'http://' + G.serverName.match(/^http[s]?\:\/\/([^\/]+)/)[1] + ':8889',
@@ -62,7 +63,7 @@ define('views/ChatPage', [
       options = options || {};      
       this.headerButtons = {
         back: true,
-        menu: true,
+        rightMenu: true,
         login: G.currentUser.guest,
 //        rightMenu: true,
         video: this.isPrivate
@@ -461,6 +462,10 @@ define('views/ChatPage', [
       this.videoChat         = this.$('#videoChat')[0];
       this.textChat          = this.$('#textChat')[0];
       
+      this.remoteMedia.dataset.blah = 'blah' + G.nextId();
+      if (this.textOnly)
+        this.videoChat.$remove();
+      
       this.localMedia.$hide();
       if (this.resource && this.isPrivate) {
         this.paintInChatBacklinks();
@@ -482,13 +487,15 @@ define('views/ChatPage', [
 
       if (!this.rendered) { // only once
         this.disableTakeSnapshot();
-        this.chatInput.addEventListener("keydown", function(event) {
-          // track enter key
-          var keycode = (event.keyCode ? event.keyCode : (event.which ? event.which : event.charCode));
-          if (keycode == 13) { // keycode for enter key
-            self.sendMessageBtn.$trigger('click');
-          }
-        });
+        if (this.chatInput) {
+          this.chatInput.addEventListener("keydown", function(event) {
+            // track enter key
+            var keycode = (event.keyCode ? event.keyCode : (event.which ? event.which : event.charCode));
+            if (keycode == 13) { // keycode for enter key
+              self.sendMessageBtn.$trigger('click');
+            }
+          });
+        }
         
         this.startChat();
       }
@@ -505,7 +512,10 @@ define('views/ChatPage', [
     },
 
     enableChat: function() {
-      this.$sendMessageBtn.button().button('enable');
+      if (!this.sendMessageBtn)
+        return;
+      
+      DOM.toggleButton(this.sendMessageBtn);
       if (this.chatInput) {
         this.chatInput.classList.remove('ui-disabled');
       }
@@ -514,7 +524,10 @@ define('views/ChatPage', [
     },
 
     disableChat: function() {
-      this.$sendMessageBtn.button().button('disable');
+      if (!this.sendMessageBtn)
+        return;
+      
+      DOM.toggleButton(this.sendMessageBtn, true);
       if (this.chatInput) {
         this.chatInput.classList.add('ui-disabled');
       }
@@ -524,10 +537,10 @@ define('views/ChatPage', [
     },
 
     enableTakeSnapshot: function() {
-      if (!this.$snapshotBtn)
+      if (!this.$snapshotBtn.length)
         return;
       
-      this.$snapshotBtn.button().button('enable');
+      DOM.toggleButton(this.$snapshotBtn);
       this.$('canvas').$remove();
       var vid = this.el.getElementsByTagName('video')[0];
       if (vid) {
@@ -537,10 +550,10 @@ define('views/ChatPage', [
     },    
 
     disableTakeSnapshot: function() {
-      if (!this.$snapshotBtn)
+      if (!this.$snapshotBtn.length)
         return;
       
-      this.$snapshotBtn.button().button('disable');
+      DOM.toggleButton(this.$snapshotBtn, true); // disable
       this.$('canvas').$remove();
     },
 
@@ -624,7 +637,9 @@ define('views/ChatPage', [
         
         self.addChild(self.backlinks);
         self.assign('#inChatBacklinks', self.backlinks);
-        $bl.find('[data-role="button"]').button();
+        if (G.isJQM())
+          $bl.find('[data-role="button"]').button();
+        
 //        self.backlinks.render();
 //        readyDfd.resolve();
 //        .find('a').click(function() {
@@ -774,11 +789,13 @@ define('views/ChatPage', [
     },
     
     _updateParticipants: function() {
-      this.participants = _.keys(this.userIdToInfo);
-      if (!this.getNumParticipants())
-        this.chatInput.placeholder = 'Chat room is empty...';
-      else
-        this.chatInput.placeholder = '';
+      if (this.chatInput) {
+        this.participants = _.keys(this.userIdToInfo);
+        if (!this.getNumParticipants())
+          this.chatInput.placeholder = 'Chat room is empty...';
+        else
+          this.chatInput.placeholder = '';
+      }
     },
     
     sendUserInfo: function(options, to) {
@@ -794,6 +811,9 @@ define('views/ChatPage', [
     },
 
     addMessage: function(info) {
+      if (!this.messages)
+        return;
+      
       var self = this,
           message = info.message,
           resource = message && message.resource,
@@ -825,9 +845,11 @@ define('views/ChatPage', [
       var height = $(doc).height();
       var atBottom = this.isScrolledToTail();
       this.messages.$append(this.messageTemplate(info));
-      if (atBottom || true) {
-        this.el.addEventListener('scrollocontent', function snap() { // wait for Scrollable to recalc the size of the page and the current position
-          self.el.off('scrollocontent', snap);
+      if (atBottom && !this._readyToSnapToBottom) {
+        this._readyToSnapToBottom = true;
+        this.el.$on('scrollocontent', function snap() { // wait for Scrollable to recalc the size of the page and the current position
+          self._readyToSnapToBottom = false;
+          self.el.$off('scrollocontent', snap);
           self.snapScrollerToTail(true); // true == immediate snap          
         }); 
       }
@@ -1280,11 +1302,11 @@ define('views/ChatPage', [
             this.playRingtone();
             // fall through to throw up request dialog
           default:
-            var $dialog = this.showRequestDialog(data);
+            var dialog = this.showRequestDialog(data);
             var promise = this.promiseToHandleRequest(req);
             promise.done(function() {
-              if ($dialog.parent())
-                $dialog.popup('close'); // check if it's not closed already
+              if (dialog.parentNode)
+                DOM.closeDialog(dialog); // check if it's not closed already
             });
             
             break;
@@ -1464,7 +1486,16 @@ define('views/ChatPage', [
         if (info.stream)
           Events.trigger('endRTCCall', this.rtcCall);
         
-        this.$('canvas#' + info.media.id).$remove();
+        var id = info.media.id,
+            canvases = this.$('canvas').$filter(function(canvas) {
+              return canvas.id == id;  // would have used this.$('canvas#' + info.media.id) but querySelector doesn't like when id has underscores and other characters
+            }),
+            i = canvases.length;
+        
+        while (i--) {
+          canvases[i].$remove();
+        }
+        
         this.restyleVideos();
       }
     },
@@ -1624,7 +1655,7 @@ define('views/ChatPage', [
           request = data.request,
           userInfo = this.getUserInfo(data.from),
           id = 'chatRequestDialog';
-          $popup = U.dialog({
+          popup = U.dialog({
             id: id,
             //      title: userInfo.name + ' is cold and alone and needs your help',
             header: request.type.capitalizeFirst() + ' Request',
@@ -1634,17 +1665,19 @@ define('views/ChatPage', [
             cancel: 'Decline',
             oncancel: function(e) {
               self.denyRequest(request, data.from);
-              $popup.parent() && $popup.popup('close');
+              popup.parentNode && DOM.closeDialog(popup);
+              e.preventDefault();
               return false;
             },
             onok: function(e) {
               self.grantRequest(request, data.from);
-              $popup.parent() && $popup.popup('close');
+              popup.parentNode && DOM.closeDialog(popup);
+              e.preventDefault();
               return false;
             }
           });
           
-      return $popup;
+      return popup;
       
 //      $('#' + id).$remove();
 //      
@@ -1707,7 +1740,7 @@ define('views/ChatPage', [
     },
     
     getNumParticipants: function() {
-      return this.participants.length;
+      return this.participants ? this.participants.length : 0;
     },
 
     getUserId: function() {
