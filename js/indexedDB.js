@@ -30,9 +30,13 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   };
 
   function isFileOrFilePath(item) {
-    return _.any(item, function(val) { 
-      return val && (val instanceof Blob || val[filePropertyName]); // || (typeof val === 'object' && isFileOrFilePath(val)); 
-    });
+    for (var prop in item) {
+      var val = item[prop];
+      if (val && (val instanceof Blob || val[filePropertyName]))
+        return true; 
+    }
+    
+    return false;
   };
 
   function getFileSystemPath(item, prop, blob) {
@@ -47,7 +51,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   function _getFileSystem(items) {
     items = !items ? null : _.isArray(items) ? items : [items];
     if (!items || (useFileSystem && !FileSystem && _.any(items, isFileOrFilePath))) { // HACK
-      return (fileSystemPromise = U.require('fileSystem').then(function(fs) { 
+      return (fileSystemPromise = U.require('fileSystem').done(function(fs) { 
         FileSystem = fs;
       }));
     }
