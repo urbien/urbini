@@ -32,6 +32,7 @@ define('views/BasicView', [
   // END http://open.bekk.no/mixins-in-backbone //
   
   var BasicView = Backbone.View.extend({
+//    viewType: 'resource',
     initialize: function(options) {
       _.bindAll(this, 'reverseBubbleEvent', 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_render',  '_refresh');      
       this.TAG = this.TAG || this.constructor.displayName;
@@ -801,11 +802,13 @@ define('views/BasicView', [
     },
     
     restyle: function() {
-      this.$el.find('ul[data-role]').listview();
-      this.$el.find('div[data-role="fieldcontain"]').fieldcontain();
-      this.$el.find('button[data-role="button"]').button();
-      this.$el.find('input,textarea').textinput();
+      if (G.isJQM()) {
+        this.$el.find('ul[data-role]').listview();
+        this.$el.find('div[data-role="fieldcontain"]').fieldcontain();
+        this.$el.find('button[data-role="button"]').button();
+        this.$el.find('input,textarea').textinput();
 //      this.$el.page();
+      }
     },
     
     getHashInfo: function() {
