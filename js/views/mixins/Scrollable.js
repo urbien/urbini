@@ -664,6 +664,13 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
 //      this.log('KEYING UP', U.getKeyEventCode(e));
       e.preventDefault();
       this._updateScrollPositionAndReset();
+      var v = this.getScrollVelocity(),
+          sign;
+          
+      if (v) {
+        sign = v > 0 ? 1 : -1;
+        this._flingScroller(sign * Math.max(Math.abs(v), 1));
+      }
     },
 
     _toggleScrollEventHandlers: function(enable) {

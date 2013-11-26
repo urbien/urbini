@@ -426,9 +426,11 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
     _updateImage: function(img, info) {
       DOM.unlazifyImage(img, info);
       if (!KEEP_BLOB_ON_RESOURCE) {
-        var prop = info['for'].prop;
-        if (prop)
-          info.resource.unset(prop + '.data', { silent: true }); // don't keep the file/blob in memory
+        if (info.resource) {
+          var prop = info['for'].prop;
+          if (prop)
+            info.resource.unset(prop + '.data', { silent: true }); // don't keep the file/blob in memory
+        }
       }
 
 //      this._distanceToFarthestImage = Math.max(this._distanceToFarthestImage || 0, info.distance);
@@ -523,7 +525,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
         else if (hasData) {
           res.fetch({
             dbOnly: true,
-            success: this._queueImageFetch.bind(this, img),
+            success: this._queueImageFetch.bind(this, img)
 //            error: function() {
 //              debugger;
 //            }
