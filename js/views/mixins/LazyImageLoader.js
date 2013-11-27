@@ -526,7 +526,12 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
         else if (hasData) {
           res.fetch({
             dbOnly: true,
-            success: this._queueImageFetch.bind(this, img)
+            success: function() {
+              if (!res.get(dataProp))
+                res.unset(hasDataProp, {silent: true});
+              
+              self._queueImageFetch(img);
+            }
 //            error: function() {
 //              debugger;
 //            }
