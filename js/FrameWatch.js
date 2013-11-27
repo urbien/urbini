@@ -44,13 +44,15 @@ define('FrameWatch', ['underscore'], function() {
 
   function publish() {
     if (typeof frameId != 'undefined') {
-      frameId = raf(publish);
       var now = _.now();
       lastFrameDuration = now - lastFrameStart;
       lastFrameStart = now;
       for (var id in listeners) {
         invoke(listeners[id]);
       }
+      
+      if (typeof frameId != 'undefined') // may have gotten canceled during the invocation of the listeners
+        frameId = raf(publish);
     }
   }
   
