@@ -1298,8 +1298,10 @@ define('utils', [
      * @params (resource or resource.attributes, [model or model.properties])
      */
     getDisplayName: function(resource, vocModel) {
+      if (resource instanceof Backbone.Model && !resource.isLoaded())
+        return resource.vocModel.displayName;
+            
       var dn = U.getValue(resource, 'davDisplayName');
-      
       if (dn) {
         if (dn == 'null')
           dn = '* Not Specified *';

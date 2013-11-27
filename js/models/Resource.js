@@ -95,6 +95,10 @@ define('models/Resource', [
       this.collection && this.collection.remove(this);
     },
     
+    isLoaded: function() {
+      return this.loaded;
+    },
+    
     _load: function(options) {
       if (!this.loaded) {
         this.loaded = true;
