@@ -37,7 +37,7 @@ define('views/ViewPage', [
       var params = _.getParamMap(window.location.hash);
       var isApp = this.isApp = U.isAssignableFrom(res, commonTypes.App);
       var isAbout = this.isAbout = (isApp  &&  !!params['$about']  &&  !!res.get('description')) || !!params['$fs'];
-      var commonParams = {
+      var commonParams = this.commonChildViewParams = {
         model: res,
         parentView: this,
         isAbout: isAbout
@@ -103,10 +103,10 @@ define('views/ViewPage', [
       }  
       
       this.isPurchasable = res.isOneOf(["ItemListing","Buyable"]);
-      if (this.isPurchasable) { 
-        this.buyGroup = new ResourceView(_.extend({isBuyGroup: true}, commonParams));
-        this.addChild(this.buyGroup);
-      }
+//      if (this.isPurchasable) { 
+//        this.buyGroup = new ResourceView(_.extend({isBuyGroup: true}, commonParams));
+//        this.addChild(this.buyGroup);
+//      }
         
       this.resourceView = new ResourceView(commonParams);
       this.addChild(this.resourceView);
@@ -268,12 +268,12 @@ define('views/ViewPage', [
     },
 
     render: function() {
-      var res = this.resource;
-//      var json = res.toJSON();
-      var json = this.getBaseTemplateData();
-//      json.viewId = this.cid;
-      this.html(this.template(json));      
-      var self = this;
+      var self = this,
+          res = this.resource;
+          viewTag = this.isAbout  &&  this.isApp ? '#about' : '#resourceView',
+          views = {};
+      
+      this.html(this.template(this.getBaseTemplateData()));      
       this.photogridPromise.done(function() {        
         var pHeader = self.$('#photogridHeader')[0];
         var h3 = pHeader.querySelector('h3');
@@ -293,31 +293,12 @@ define('views/ViewPage', [
 //        });
 //      });
 
-      var viewTag = this.isAbout  &&  this.isApp ? 'div#about' : 'ul#resourceView';
-      var views = {};
       views[viewTag] = this.resourceView;
       if (this.cp)
-        views['ul#cpView'] = this.cp;
+        views['#cpView'] = this.cp;
       if (this.cpMain)
-        views['div#mainGroup'] = this.cpMain;
+        views['#mainGroup'] = this.cpMain;
  
-      if (this.isPurchasable) {
-        var purchasesBLProp; 
-        
-        if (res.isA("ItemListing"))
-          purchasesBLProp = U.getCloneOf(this.vocModel, "ItemListing.ordersPlaced")[0];
-        else if (res.isA("Buyable"))
-          purchasesBLProp = U.getCloneOf(this.vocModel, "Buyable.orderItems")[0];
-        
-        if (purchasesBLProp) {
-          this.isBuyGroup = true;
-          this.purchasesBLProp = purchasesBLProp;
-          views['div#buyGroup'] = this.buyGroup;
-        }
-        else
-          this.isBuyGroup = false;
-
-      }     
 //      var isGeo = this.isGeo();
 //      this.headerButtons.aroundMe = isGeo;
       
@@ -325,27 +306,53 @@ define('views/ViewPage', [
       this.assign('#headerDiv', this.header, {buttons: this.headerButtons});
       this.assign(views);
       this.imgReady.done(function() {
-        this.assign(this.imgDiv, this.imageView);
-      }.bind(this));
-      
-      this.onload(Q.write.bind(Q, function() {          
-        if (!this.isAbout) {
-          if (G.currentUser.guest) {
-            this.$('#edit').$hide();
+        self.assign(self.imgDiv, self.imageView);
+      });
+
+      if (this.isPurchasable && !this.buyGroup && this.el.querySelector('#buyGroup')) {
+        this.getFetchPromise().done(function() {
+          if (res.get('price') == null)
+            return;
+          
+          var purchasesBLProp; 
+          self.buyGroup = new ResourceView(_.extend({isBuyGroup: true}, self.commonChildViewParams));
+          self.addChild(self.buyGroup);
+          
+          if (res.isA("ItemListing"))
+            purchasesBLProp = U.getCloneOf(self.vocModel, "ItemListing.ordersPlaced")[0];
+          else if (res.isA("Buyable"))
+            purchasesBLProp = U.getCloneOf(self.vocModel, "Buyable.orderItems")[0];
+          
+          if (purchasesBLProp) {
+            self.isBuyGroup = true;
+//            self.purchasesBLProp = purchasesBLProp;
+//            views['div#buyGroup'] = self.buyGroup;
+            self.assign('#buyGroup', self.buyGroup);
           }
-        }       
-        
-        if (!this.el.parentNode) 
-          document.body.appendChild(this.el);
+          else
+            self.isBuyGroup = false;
+        });
+      }     
       
-        this.el.dataset.theme = G.theme.swatch;
-        if (G.theme.backgroundImage) 
-          this.$('#resourceViewHolder').$css('background-image', 'url(' + G.theme.backgroundImage +')');
-  
-        this.$('#chatbox').$hide();      
-      }, this));
-//      renderDfd.resolve();
-//      this.restyle();
+      this.onload(function() {
+        Q.write(function() {
+
+          if (!self.isAbout) {
+            if (G.currentUser.guest) {
+              self.$('#edit').$hide();
+            }
+          }       
+          
+          if (!self.el.parentNode) 
+            document.body.appendChild(self.el);
+        
+          self.el.dataset.theme = G.theme.swatch;
+          if (G.theme.backgroundImage) 
+            self.$('#resourceViewHolder').$css('background-image', 'url(' + G.theme.backgroundImage +')');
+    
+          self.$('#chatbox').$hide();      
+        });
+      });
       
       return this;
     }
