@@ -313,7 +313,7 @@ define('views/BasicPageView', [
         return;
       
       tooltip = this._getTooltip();
-      if (tooltips) {
+      if (tooltip) {
         pos = getTooltipPos(tooltip);
         tooltip.$css({
           top: pos.top + 'px',
