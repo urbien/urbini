@@ -977,6 +977,15 @@ define('views/BasicView', [
     
     getFetchPromise: function() {
       return this.pageView && this.pageView.getFetchPromise();
+    },
+    
+    toggleVisibility: function(off) {
+      if (this.el) {
+        if (off)
+          this.el.style.visibility = 'hidden';
+        else
+          this.el.style.removeProperty('visibility');
+      }
     }
   }, {
     displayName: 'BasicView',
@@ -1044,7 +1053,7 @@ define('views/BasicView', [
     
     clickDataHref: function(e) {
       Events.trigger('navigate', e.currentTarget.dataset.href);
-    }
+    }    
   });
 
   return BasicView; 
