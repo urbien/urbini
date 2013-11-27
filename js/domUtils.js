@@ -165,13 +165,17 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       },
   
       $hide: function() {
+        this.dataset._style_display = this.style.display;
         this.style.display = 'none';
         return this;
       },
       
       $show: function() {
-        if (this.style.display)
-          this.style.display = "";
+        if (this.style.display) {
+          var display = this.dataset._style_display || "";
+          delete this.dataset._style_display;
+          this.style.display = display;
+        }
         
         return this;
       },
@@ -203,12 +207,12 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       $html: function(htmlOrFrag) {
         if (typeof htmlOrFrag == 'string')
           this.innerHTML = htmlOrFrag;
-        else if (htmlOrFrag instanceof DocumentFragment) {
+        else if (htmlOrFrag instanceof Node) {
           this.innerHTML = "";
           this.appendChild(htmlOrFrag);
         }
         else
-          throw "only HTML string or DocumentFragment are supported";
+          throw "only HTML string or Node / DocumentFragment are supported";
         
         return this;
       }
@@ -295,6 +299,11 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
         var i = arguments.length;
         while (i--) {
           var htmlOrFrag = arguments[i];
+          if (htmlOrFrag instanceof Array || htmlOrFrag instanceof NodeList) {
+            this.$prepend.apply(this, htmlOrFrag);
+            continue;
+          }
+          
           if (!this.firstChild) {
             this.$append(htmlOrFrag);
             continue;
@@ -314,8 +323,13 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           var htmlOrFrag = arguments[i];
           if (typeof htmlOrFrag == 'string')
             this.innerHTML += htmlOrFrag;
-          else if (htmlOrFrag instanceof DocumentFragment)
+          else if (htmlOrFrag instanceof Node)
             this.appendChild(htmlOrFrag);
+          else if (htmlOrFrag instanceof Array || htmlOrFrag instanceof NodeList) {
+            for (var j = 0; j < htmlOrFrag.length; j++) {
+              this.appendChild(htmlOrFrag[j]);
+            }
+          }
           else
             throw "only HTML string or DocumentFragment are supported";
         }
@@ -410,7 +424,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     }
   })(window, document);
 
-  return {    
+  return {
     getBezierCoordinate: function(p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y, percentComplete) {
       percentComplete = Math.max(0, Math.min(percentComplete, 1));
       var percent = 1 - percentComplete;
@@ -469,6 +483,10 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       return rows;
     },
 
+    identityTransformString: function() {
+      return 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)';
+    },
+    
     parseTransform: function(transformStr) {
       if (transformStr == 'none')
         return this.getNewIdentityMatrix(4);
