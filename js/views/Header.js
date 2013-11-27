@@ -98,8 +98,13 @@ define('views/Header', [
       this.ready = $.when(this.btnsReq, this.getFetchPromise());
     },
     
+    recalcTitle: function() {
+      this.pageTitle = null;
+      this.calcTitle();
+    },
+    
     calcTitle: function() {      
-      if (typeof this.pageTitle !== 'undefined') {
+      if (this.pageTitle != null) {
         this._title = this.title = this.pageTitle;
         return this;
       }
@@ -131,19 +136,15 @@ define('views/Header', [
             title = U.getPlural(res);
           else {
             title = U.getDisplayName(res);
-            if (hash  &&  hash.indexOf('make/') == 0) {
-//              title = this.pageTitle;
-            }
-            else {
+            if (this._hashInfo.route != 'make') {
               if (!U.isAssignableFrom(this.vocModel, "Contact"))
-//                titleHTML = U.makeHeaderTitle(encodeURIComponent(this.vocModel['displayName']), title);
-              this.pageTitle = this.vocModel['displayName'] + ": " + title;
+                this.pageTitle = res.isLoaded() ? this.vocModel['displayName'] + ": " + title : title;
             }
           }
         }
       }
       
-      this._title = title;
+      document.title = this._title = title;
       this.title = titleHTML || title;
 
       return this;
@@ -266,7 +267,7 @@ define('views/Header', [
     },
 
     refreshTitle: function() {
-      this.calcTitle();
+      this.recalcTitle();
       this.$('#pageTitle')[0].innerHTML = this.title;
 //      $('title').text(this.title);
       this.pageView.trigger('titleChanged', this._title);
