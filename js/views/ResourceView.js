@@ -57,7 +57,8 @@ define('views/ResourceView', [
 //        else
         this.purchasesBacklinkProp = this.vocModel.properties[options.purchasesBLProp];
       }
-      
+    
+      this.toggleVisibility(true); // set to invisible until it's rendered
       return this;
     },
     events: {
@@ -132,23 +133,31 @@ define('views/ResourceView', [
 //    tap: Events.defaultTapHandler,  
 //    click: Events.defaultClickHandler,
     
-    pruneProps: function(json) {
-      if (this.resource.isA("VideoResource")) {
-        var videoHtml5Prop = U.getCloneOf(this.vocModel, "VideoResource.videoHtml5")[0];
-        if (videoHtml5Prop)
-          delete json[videoHtml5Prop];
-      }
-    },
+//    pruneProps: function(json) {
+//      if (this.resource.isA("VideoResource")) {
+//        var videoHtml5Prop = U.getCloneOf(this.vocModel, "VideoResource.videoHtml5")[0];
+//        if (videoHtml5Prop)
+//          delete json[videoHtml5Prop];
+//      }
+//    },
     
     render: function() {
-      var args = arguments;
-//      if (!this.ready)
-//        return this.renderHelper.apply(this, args);
+      var self = this,
+          args = arguments,
+          invisible = false;
+      
+      if (!this.resource.isLoaded()) {
+        this.toggleVisibility(true);
+        invisible = true;
+      }
       
       return this.ready.then(function() {
-        this.renderHelper.apply(this, args);
-        this.finish();
-      }.bind(this));
+        self.renderHelper.apply(self, args);
+        if (invisible)
+          self.toggleVisibility();
+        
+        self.finish();
+      });
     },
     
     renderHelper: function(options) {
@@ -167,8 +176,9 @@ define('views/ResourceView', [
       }
       var meta = vocModel.properties;
       var userRole = U.getUserRole();
-      var json = res.toJSON();
-      this.pruneProps(json);
+      var json = res.attributes;
+//      var json = res.toJSON();
+//      this.pruneProps(json);
 
       var frag = document.createDocumentFragment();
 
@@ -283,7 +293,7 @@ define('views/ResourceView', [
             else
               U.addToFrag(frag, this.propRowTemplate(val));
             
-            json[p] = val;
+//            json[p] = val;
           }
         }
       }
