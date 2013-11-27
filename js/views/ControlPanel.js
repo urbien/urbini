@@ -193,7 +193,18 @@ define('views/ControlPanel', [
 //    },
 
     render: function(options) {
-      return this.getFetchPromise().done(this.renderHelper.bind(this, options));
+      var invisible = false;
+      if (!this.resource.isLoaded()) {
+        this.toggleVisibility(true);
+        invisible = true;
+      }
+      
+      var self = this;
+      return this.getFetchPromise().done(function() {
+        self.renderHelper(options);
+        if (invisible)
+          self.toggleVisibility();
+      });
     },
     
     renderHelper: function(options) {
@@ -204,7 +215,7 @@ define('views/ControlPanel', [
       if (!meta)
         return this;
       
-      var json = res.toJSON();
+      var json = this.getBaseTemplateData(); //res.toJSON();
       var frag = document.createDocumentFragment();
   
       var mainGroup = U.getArrayOfPropertiesWith(meta, "mainGroup");
@@ -437,6 +448,7 @@ define('views/ControlPanel', [
       }
       
       if (propGroups.length) {
+        var tmpl_data = {};
         for (var i = 0; i < propGroups.length; i++) {
           var grMeta = propGroups[i];
           if (!this.isMainGroup  &&  grMeta.mainGroup)
@@ -510,22 +522,35 @@ define('views/ControlPanel', [
               }
               else
                 icon = prop['icon'];
-              var common = {range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, borderColor: borderColor[colorIdx], color: color[colorIdx], chat: isChat};
+              
+              tmpl_data.icon = null;
+              tmpl_data.range = range;
+              tmpl_data.backlink = prop.backlink;
+              tmpl_data.shortName = p;
+              tmpl_data.name = n;
+              tmpl_data.value = cnt;
+              tmpl_data._uri = uri;
+              tmpl_data.title = t;
+              tmpl_data.comment = prop.comment;
+              tmpl_data.borderColor = borderColor[colorIdx];
+              tmpl_data.color = color[colorIdx];
+              tmpl_data.chat = isChat;
+//              var common = {range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, borderColor: borderColor[colorIdx], color: color[colorIdx], chat: isChat};
               colorIdx++;
               if (this.isMainGroup) {
 //                if (!icon)
 //                  icon = 'ui-icon-star-empty';
-                
+                tmpl_data.icon = icon;
                 if (isHorizontal)
-                  U.addToFrag(frag, this.cpMainGroupTemplateH(_.extend({icon: icon}, common)));
+                  U.addToFrag(frag, this.cpMainGroupTemplateH(tmpl_data));
                 else
-                  U.addToFrag(frag, this.cpMainGroupTemplate(_.extend({icon: icon}, common)));
+                  U.addToFrag(frag, this.cpMainGroupTemplate(tmpl_data));
               }
               else {
                 if (isPropEditable)
-                  U.addToFrag(frag, this.cpTemplate(common));
+                  U.addToFrag(frag, this.cpTemplate(tmpl_data));
                 else
-                  U.addToFrag(frag, this.cpTemplateNoAdd(common));                
+                  U.addToFrag(frag, this.cpTemplateNoAdd(tmpl_data));                
               }
 //              if (isPropEditable)
 //                U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: res.getUri()}));
@@ -537,7 +562,8 @@ define('views/ControlPanel', [
       }
       if (!this.isMainGroup) {
         groupNameDisplayed = false;
-        var tmpl_data;
+        var tmpl_data = {};
+        
         for (var p in meta) {
           if (!/^[a-zA-Z]/.test(p))
             continue;
@@ -561,7 +587,7 @@ define('views/ControlPanel', [
             count = json[p];
             p = pp;
             prop = pMeta;
-            tmpl_data = _.extend(json, {p: {count: count}});
+            json[p] = {count: count};
           }
           if (count == -1) {
             if (!prop  ||  (!_.has(json, p)  &&  typeof prop.readOnly != 'undefined')) {
@@ -601,12 +627,19 @@ define('views/ControlPanel', [
   //          var uri = U.getShortUri(res.getUri(), vocModel); 
             var uri = res.getUri();
             var t = title + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + n;
-            var comment = prop.comment;
-            var common = {range: range, shortName: p, backlink: prop.backLink, value: cnt, _uri: uri, title: t, comment: comment, name: n};
+            tmpl_data.range = range;
+            tmpl_data.shortName = p;
+            tmpl_data.backlink = prop.backLink;
+            tmpl_data.value = cnt;
+            tmpl_data._uri = uri;
+            tmpl_data.title = t;
+            tmpl_data.comment = prop.comment;
+            tmpl_data.name = n;
+//            var common = {range: range, shortName: p, backlink: prop.backLink, value: cnt, _uri: uri, title: t, comment: comment, name: n};
             if (isPropEditable)
-              U.addToFrag(frag, this.cpTemplate(common));
+              U.addToFrag(frag, this.cpTemplate(tmpl_data));
             else
-              U.addToFrag(frag, this.cpTemplateNoAdd(common));            
+              U.addToFrag(frag, this.cpTemplateNoAdd(tmpl_data));            
           }
         }
       }
