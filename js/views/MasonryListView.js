@@ -7,8 +7,9 @@ define('views/MasonryListView', [
   'views/ResourceMasonryItemView',
   'collections/ResourceList',
   'jqueryMasonry',
-  '@widgets'
-], function(G, U, Events, ResourceListView, ResourceMasonryItemView, ResourceList, Mason, $m) {
+  '@widgets',
+  'lib/fastdom'
+], function(G, U, Events, ResourceListView, ResourceMasonryItemView, ResourceList, Mason, $m, Q) {
   var MASONRY_FN = 'masonry', // in case we decide to switch to Packery or some other plugin
       ITEM_SELECTOR = '.nab';
 
@@ -20,20 +21,10 @@ define('views/MasonryListView', [
     return getTop(child) + child.offsetHeight;
   }
 
-  function getBricks(pages) {
-    return pages.reduce(function(memo, page) {
-      memo.push.apply(memo, page.childNodes);
-      return memo;
-    }, []);
-    
-//    var bricks = [],
-//        i = pages.length;
-//    
-//    while (i--) {
-//      bricks.push.apply(bricks, pages[i].childNodes);
-//    }
-//    
-//    return bricks;
+  function getBricks(views) {
+    return views.map(function(view) {
+      return view.el;
+    });
   }
   
   return ResourceListView.extend({
@@ -56,13 +47,6 @@ define('views/MasonryListView', [
       var self = this;
       _.bindAll(this, 'reloadMasonry');
       ResourceListView.prototype.initialize.apply(this, arguments);      
-//      this.listenTo(Events, 'pageChange', function(prev, current) {
-//        if (self.pageView == current && self.rendered) {
-////          self.$el.imagesLoaded(function() {
-//            self.masonry('reload');
-////          });
-//        }
-//      });
     },
     
     resizeMasonry: function() {
@@ -97,9 +81,19 @@ define('views/MasonryListView', [
     },
     
     renderItem: function(res, info) {
-      var liView = this.addChild(new this._preinitializedItem({
-        resource: res
-      }));
+      var liView = this.getCachedItemView(),
+          options = {
+            resource: res
+          };
+      
+      if (liView) {
+        console.log("RECYCLING LIST ITEM");
+        liView.reset().initialize(options);
+      }
+      else {
+        console.log("CREATING NEW LIST ITEM, TOTAL CHILD VIEWS:", _.size(this.children));
+        liView = this.addChild(new this._preinitializedItem(options));
+      }
       
       liView.render(this._itemRenderOptions);
       return liView;
@@ -158,6 +152,9 @@ define('views/MasonryListView', [
     },
 
     getSlidingWindow: function() {
+      if (_.size(this._cachedSlidingWindow)) // we don't create a new object when we invalidate, we just wipe the properties on it
+        return this._cachedSlidingWindow;
+      
       if (!this.masonry) {
         return {
           head: 0,
@@ -165,33 +162,20 @@ define('views/MasonryListView', [
         };
       }
       
-//      var slidingWindow = {},
-//          lastPage = this.el.lastChild,
-//          firstPage = this.el.firstChild;
-//      
-//      if (!firstPage || !firstPage.childElementCount)
-//        slidingWindow.head = slidingWindow.tail = 0;
-//      else {
-//        slidingWindow.head = getTop(_.max(firstPage.childNodes, getTop)); // get the top offset of the child closest to the bottom the screen in the first page 
-//        slidingWindow.tail = getBottom(_.min(lastPage.childNodes, getBottom)); // get the top offset of the child closest to the top of the screen in the last page
-//      }
-//      
-//      return slidingWindow;
       var bounds = this.masonry.getBounds();
-      return {
+      return (this._cachedSlidingWindow = {
         head: bounds.min,
         tail: bounds.max
-      };
+      });
     },    
    
     isDummyPadded: function() {
       return false;
     },
 
-    doRemovePages: function(pages, fromTheHead) {
-//      console.log("REMOVED", pages.length, "PAGES, id:", this._slidingWindowOpInfo.id);
-      this.masonry.remove(pages);
-//      this._slidingWindowOpInfo.removed = true;
+    doRemove: function(childViews, fromTheHead) {
+      ResourceListView.prototype.doRemove.apply(this, arguments);
+      this.masonry.removedBricks(getBricks(childViews));
     },
 
     preRender: function() {
@@ -202,6 +186,10 @@ define('views/MasonryListView', [
       if (!this.rendered) {
         this.masonry = new Mason({
           itemSelector: ITEM_SELECTOR
+//          ,
+//          containerStyle: {
+//            position: 'relative'
+//          }
         }, this.el);
  
         this.centerMasonry(this);
@@ -213,28 +201,33 @@ define('views/MasonryListView', [
 //          removedFromBottom = info.removedFromBottom.length && info.removedFromBottom.slice(),      // need this while using imagesLoaded (async)    
       var prepended = info.prepended.length && info.prepended.slice(),// need this while using imagesLoaded (async)
           appended = info.appended.length && info.appended.slice(),   // need this while using imagesLoaded (async)
-          hasUpdated = !!_.size(info.updated);
+          hasUpdated = !!_.size(info.updated),
+          dfd = $.Deferred();
       
       if (hasUpdated || prepended || appended) {
-        if (hasUpdated)
-          this.masonry.reload();
-        else {
-          if (appended) {
-            var bricks = getBricks(appended);
-//            console.log("APPENDED", appended.length, "PAGES, id:", this._slidingWindowOpInfo.id, _.pluck(appended, 'id').join(', '));
-            this.masonry.appended(bricks, null, true);
+        Q.read(function() { // because appended/prepended read brick offsetWidth/offsetHeight
+          if (hasUpdated)
+            this.masonry.reload();
+          else {
+            if (appended) {
+              var bricks = getBricks(appended);
+  //            console.log("APPENDED", appended.length, "PAGES, id:", this._slidingWindowOpInfo.id, _.pluck(appended, 'id').join(', '));
+              this.masonry.appended(bricks, null, true);
+            }
+            if (prepended) {
+              var bricks = getBricks(prepended);
+              bricks.reverse();
+  //            console.log("PREPENDED", prepended.length, "PAGES, id:", this._slidingWindowOpInfo.id, _.pluck(appended, 'id').join(', '));
+              this.masonry.prepended(bricks, null, true);
+            }
           }
-          if (prepended) {
-            var bricks = getBricks(prepended);
-            bricks.reverse();
-//            console.log("PREPENDED", prepended.length, "PAGES, id:", this._slidingWindowOpInfo.id, _.pluck(appended, 'id').join(', '));
-            this.masonry.prepended(bricks, null, true);
-          }
-        }
-        
-        this.trigger('refreshed');
+          
+          this.trigger('refreshed');
+          dfd.resolve();
+        }, this);
       }
       
+      return dfd.promise();
 //      this._slidingWindowOpInfo.removed = false;
     },
 

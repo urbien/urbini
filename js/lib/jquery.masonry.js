@@ -8,9 +8,11 @@
  * Copyright 2011 David DeSandro
  */
 
-define('lib/jquery.masonry', ['underscore'], function(_) {
+define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'], function(G, _, DOM, Q) {
   // ========================= Masonry ===============================
 
+  var CSS = G.crossBrowser.css;
+  
   // our "Widget" object constructor
   function Mason( options, element ){
     this.element = element;
@@ -18,19 +20,29 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
     this._init();
   };
 
+  function cleanData(bricks) {
+    var i = bricks.length,
+        data;
+    
+    while (i--) {
+      data = bricks[i].dataset;
+      delete data.outerWidth;
+      delete data.outerHeight;
+    }
+  }
+  
+  function getXYZ(brick) {
+    return DOM.parseTranslation(brick.style[CSS.transformLookup]);
+  };
+  
   // styles of container element we want to keep track of
-  var masonryContainerStyles = [ 'position', 'height' ];
+  var masonryContainerStyles = [ 'position', CSS.transformLookup ];
 
   Mason.settings = {
     fromBottom: false,
     isResizable: true,
-    isAnimated: false,
-    animationOptions: {
-      queue: false,
-      duration: 500
-    },
     gutterWidth: 0,
-    isRTL: false,
+//    isRTL: false, // only left to right is supported
     isFitWidth: false,
     containerStyle: {
       position: 'relative'
@@ -63,20 +75,24 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
       }
   
       i = matches.length;
-      this._brickify.apply(this, matches);
+//      this._brickify.apply(this, matches);
       return matches;
     },
     
-    _brickify: function(/* brickWannabes */) {
-      var i = arguments.length;
-      while (i--) {
-        arguments[i].$css({ position: 'absolute' })
-                    .$addClass('masonry-brick')
-      }
-    },
+//    _brickify: function(/* brickWannabes */) {
+//      var filtered = _.filter(arguments, function(b) {
+//            return !b.$hasClass('masonry-brick') || b.style.position !== 'absolute';
+//          }),
+//          i = filtered.length;
+//          
+//      while (i--) {
+//        filtered[i].$css({ position: 'absolute' })
+//                    .$addClass('masonry-brick')
+//      }
+//    },
 
     // sets up widget
-    _create : function( options ) {
+    _create: function( options ) {
   
       this.options = $.extend( true, {}, Mason.settings, options );
       this.originalFromBottom = this.options.fromBottom;
@@ -97,7 +113,7 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
         position : 'relative'
       });
   
-      this.horizontalDirection = this.options.isRTL ? 'right' : 'left';
+//      this.horizontalDirection = this.options.isRTL ? 'right' : 'left';
       this.offset = {};
   
       // get top left position of where the bricks should be
@@ -133,7 +149,7 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
     // (from the constructor above), and when you
     // attempt to initialize the widget again (by the bridge)
     // after it has already been initialized.
-    _init : function( callback ) {
+    _init: function( callback ) {
   
       this.reLayout( callback );
   
@@ -172,8 +188,7 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
   
     // used on collection of atoms (should be filtered, and sorted before )
     // accepts atoms-to-be-laid-out to start with
-    layout : function( bricks, callback ) {
-  
+    layout: function( bricks, callback ) {
       // layout logic
       var brick, colSpan, groupCount, groupY, groupColY, j, 
       colYs = this._getColYs(), 
@@ -217,19 +232,13 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
   
       this.styleQueue.push({ el: this.element, style: containerSize });
   
-      // are we animating the layout arrangement?
-      // use plugin-ish syntax for css or animate
-      var animated = !this.isLaidOut && this.options.isAnimated;
-      var animOpts = this.options.animationOptions;
-  
       // process styleQueue
       var obj;
       for (i=0, len = this.styleQueue.length; i < len; i++) {
         obj = this.styleQueue[i];
-        if (animated)
-          obj.el.$animate(obj.style, animOpts);
-        else
-          obj.el.$css(obj.style);
+        obj.el.$css(obj.style);
+        if (obj.className)
+          obj.el.$addClass(obj.className);
       }
   
       // clear out queue for next time
@@ -247,7 +256,7 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
   
     // calculates number of columns
     // i.e. this.columnWidth = 200
-    _getColumns : function() {
+    _getColumns: function() {
       var container = this.options.isFitWidth ? this.element.parentNode : this.element,
           containerWidth = container.offsetWidth;
   
@@ -271,22 +280,28 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
     },
   
     _getOuterHeight: function( brick ) {
+      if (brick.dataset.outerHeight)
+        return parseInt(brick.dataset.outerHeight);
+      
       var offsetHeight = brick.offsetHeight;
       if (!this.hasOwnProperty('_brickExtraHeight'))
         this._brickExtraHeight = $(brick).outerHeight(true) - offsetHeight;
   
-      return offsetHeight + this._brickExtraHeight; 
+      return (brick.dataset.outerHeight = offsetHeight + this._brickExtraHeight); 
     },
   
     _getOuterWidth: function( brick ) {
+      if (brick.dataset.outerWidth)
+        return parseInt(brick.dataset.outerWidth);
+      
       var offsetWidth = brick.offsetWidth;
       if (!this.hasOwnProperty('_brickExtraWidth'))
         this._brickExtraWidth = $(brick).outerWidth(true) - offsetWidth;
   
-      return offsetWidth + this._brickExtraWidth; 
+      return (brick.dataset.outerWidth = offsetWidth + this._brickExtraWidth); 
     },
   
-    _placeBrick : function( brick, setCount, setY ) {
+    _placeBrick: function( brick, setCount, setY ) {
       // get the minimum Y value from the columns
       var extreme = this.options.fromBottom ? Math.max : Math.min,
           extremeY  = extreme.apply( Math, setY ),
@@ -295,7 +310,9 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
               i = setY.length,
               shortCol  = i,
               setSpan   = this.cols + 1 - i,
-              position  = {},
+              position  = {
+                position: 'absolute'
+              },
               colYs = this._getColYs();
   
       //    Which column has the min/max Y value, 
@@ -310,15 +327,25 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
       }
   
       // position the brick
+//      if (this.options.fromBottom)
+//        position.top = setHeight - this.offset.y + 'px';
+//      else
+//        position.top = extremeY + this.offset.y + 'px';
+//  
+//        //position.top = minimumY;
+//        // position.left or position.right
+//      position[ this.horizontalDirection ] = this.columnWidth * shortCol + this.offset.x + 'px';
+      
+      var top,
+          horizontal = this.columnWidth * shortCol + this.offset.x;
+      
       if (this.options.fromBottom)
-        position.top = setHeight - this.offset.y + 'px';
+        top = setHeight - this.offset.y;
       else
-        position.top = extremeY + this.offset.y + 'px';
-  
-        //position.top = minimumY;
-        // position.left or position.right
-        position[ this.horizontalDirection ] = this.columnWidth * shortCol + this.offset.x + 'px';
-      this.styleQueue.push({ el: brick, style: position });
+        top = extremeY + this.offset.y;
+      
+      position[CSS.transformLookup] = 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0,' + horizontal + ',' + top + ',0, 1)';
+      this.styleQueue.push({ el: brick, style: position, className: 'masonry-brick' });
   
       // apply setHeight to necessary columns
       for ( i=0; i < setSpan; i++ ) {
@@ -327,7 +354,7 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
   
     },
   
-    resize : function() {
+    resize: function() {
       var prevColCount = this.cols;
       // get updated colCount
       this._getColumns('masonry');
@@ -338,12 +365,12 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
     },
   
   
-    reLayout : function( callback ) {
+    reLayout: function( callback ) {
       this._getColumns('masonry');
       this._reloadLayout( callback );
     },
   
-    _reloadLayout : function( callback ) {
+    _reloadLayout: function( callback ) {
       // reset columns
       var i = this.cols;
       this.options.fromBottom = this.originalFromBottom;
@@ -360,12 +387,11 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
     // ====================== Convenience methods ======================
   
     // goes through all children again and gets bricks in proper order
-    reloadItems : function() {
+    reloadItems: function() {
       this.bricks = this._getBricks( this.element.childNodes );
     },
   
-  
-    reload : function( callback ) {
+    reload: function( callback ) {
       this.reloadItems();
       this.reLayout( callback );
     },
@@ -381,11 +407,11 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
     },
   
     // convienence method for working with Infinite Scroll
-    _appended : function( content, callback, contentIsBricks ) {
+    _appended: function( content, callback, contentIsBricks ) {
       // add new bricks to brick pool
       var newBricks;
       if (contentIsBricks) {
-        this._brickify.apply(this, content);
+//        this._brickify.apply(this, content);
         newBricks = content;
       }
       else
@@ -396,11 +422,12 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
     },
   
     _getLeftmostColumn: function(brick) {
-      var offset = parseInt(brick.style[this.horizontalDirection], 10) || 0;
+//      var offset = parseInt(brick.style[this.horizontalDirection], 10) || 0;
+      var offset = parseInt(getXYZ(brick).X, 10) || 0;
       var edgeCol = Math.round(offset / this.columnWidth);
-      if (this.horizontalDirection == 'right')
-        return this.cols - edgeCol - this._getColSpan(brick);
-      else
+//      if (this.horizontalDirection == 'right')
+//        return this.cols - edgeCol - this._getColSpan(brick);
+//      else
         return edgeCol;
     },
     
@@ -427,7 +454,8 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
         fromCol = this._getLeftmostColumn(brick);
         colSpan = this._getColSpan(brick);
         height = this._getOuterHeight(brick);
-        top = parseInt(brick.style.top, 10) || 0;
+//        top = parseInt(brick.style.top, 10) || 0;
+        top = parseInt(getXYZ(brick).Y, 10) || 0;
         while (colSpan--) {
           col = fromCol + colSpan;
           topColYs[col] = Math.min(top, topColYs[col]);
@@ -439,29 +467,37 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
       this.bottomColYs = bottomColYs;
     },
 
-    remove: function(content) {
-      var bricks = this._getBricks(content),
-          i = content.length;
+    removed: function(content, removeFromDOM) {
+      var bricks = this._getBricks(content);
+      cleanData(bricks);
       
       this.bricks = _.difference(this.bricks, bricks);
-      while (i--) {
-        content[i].$remove();
+      if (removeFromDOM) {
+        i = content.length;
+        while (i--) {
+          content[i].$remove();
+        }
       }
       
       this._recalcColYs();
     },
         
     // removes elements from Masonry widget
-    removeBricks : function( bricks ) {
+    removedBricks: function(bricks, removeFromDOM) {
       this.bricks = _.difference(this.bricks, bricks);
-      var i = bricks.length;
-      while (i--) {
-        bricks[i].$remove();
+      cleanData(bricks);
+      if (removeFromDOM) {
+        var i = bricks.length;
+        while (i--) {
+          bricks[i].$remove();
+        }
       }
+      
+      this._recalcColYs();
     },
   
     // destroys widget, returns elements and container back (close) to original style
-    destroy : function() {
+    destroy: function() {
       var bricks = this.bricks,
           brick,
           style,
@@ -471,7 +507,8 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
         brick = bricks[i];
         style = brick.style;
         brick.classList.remove('masonry-brick');
-        style.position = style.top = style.left = '';
+        brick.style[CSS.transformLookup] = DOM.identityTransformString;
+//        style.position = style.top = style.left = '';
       }
   
       // re-apply saved container styles

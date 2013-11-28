@@ -62,7 +62,7 @@ define('views/ResourceListView', [
 //    viewType: 'collection',
     _itemRenderOptions: {
       force: true,
-      renderToHtml: true,
+//      renderToHtml: true,
       delegateEvents: false // delegate when we issue setElement
     },
 
@@ -72,15 +72,16 @@ define('views/ResourceListView', [
     _minPagesInSlidingWindow: 6,
     // END CONFIG
     
+    _childEls: null,
     _outOfData: false,
     _adjustmentQueued: false,
-    _hiddenPagesAtHead: 0,
-    _hiddenPagesAtTail: 0,
+    _hiddenElementsAtHead: 0,
+    _hiddenElementsAtTail: 0,
     _slidingWindowInsideBuffer: 0, // px, should depend on size of visible area of the list, speed of device, RAM
     _slidingWindowOutsideBuffer: 0, // px, should depend on size of visible area of the list, speed of device, RAM
     _minSlidingWindowDimension: null, // px, should depend on size of visible area of the list, speed of device, RAM
     _maxSlidingWindowDimension: null, // px, should depend on size of visible area of the list, speed of device, RAM
-    _pagesCurrentlyInSlidingWindow: 0,
+//    _pagesCurrentlyInSlidingWindow: 0,
     _elementsPerPage: 0,
     _horizontal: false,
     _scrollable: false, // is set to true when the content is bigger than the container
@@ -133,14 +134,13 @@ define('views/ResourceListView', [
 //        });
 //      });      
       
-      var viewport = G.viewport;
       this._pages = [];
       this._scrollerContainer = {};
       this._viewport = {};
       this._cachedSlidingWindow = {}; // sliding window dimensions 
       this._slidingWindowOpInfo = {   // can reuse this as sliding window operations never overlap
         id: G.nextId(),
-        isFirstPage: false,
+//        isFirstPage: false,
         html: [],
         prepended: [],
         appended: [],
@@ -163,14 +163,8 @@ define('views/ResourceListView', [
       };
 
 //      this.initDummies();
-      this._onScrollerSizeChanged({
-        target: this.el,
-        content: viewport,
-        container: viewport,
-        scrollTop: 0,
-        scrollLeft: 0
-      });
-
+      this.itemViewCache = [];
+      this._childEls = [];
       return this;
     },
 
@@ -187,6 +181,14 @@ define('views/ResourceListView', [
 //      'updated': '_onUpdatedResources'
     },
     
+    recycleItemViews: function(views) {
+      Array.prepend(this.itemViewCache, views);
+    },
+    
+    getCachedItemView: function() {
+      return this.itemViewCache.pop();
+    },
+
     _onAddedResources: function(resources) {
       this._outOfData = false;
       this.adjustSlidingWindow();
@@ -232,7 +234,7 @@ define('views/ResourceListView', [
       this._outOfData = false;
       this._pages.length = 0;
 //      this._pageOffset = 0;
-      this._pagesCurrentlyInSlidingWindow = 0;
+//      this._pagesCurrentlyInSlidingWindow = 0;
       this._displayedCollectionRange.from = this._displayedCollectionRange.to = 0;
       this.$('.listPage').$remove();
       this.adjustSlidingWindow();
@@ -265,11 +267,15 @@ define('views/ResourceListView', [
     },
 
     getPageDimension: function() {
-      if (!this._pages.length)
+//      if (!this._pagesCurrentlyInSlidingWindow)
+//        return 0;
+      
+      var num = this.el.childElementCount;
+      if (!num)
         return 0;
       
       var sw = this.getSlidingWindow();
-      return (sw.tail - sw.head) / this._pages.length;
+      return this._elementsPerPage * (sw.tail - sw.head) / num;
     },
     
     getContainerDimension: function() {
@@ -277,7 +283,7 @@ define('views/ResourceListView', [
     },
     
     getElementsPerPage: function() {
-      if (this._pages.length) {
+      if (this.el.childElementCount) {
         this._optimizedElementsPerPage = true;
         
         var viewportDim = this.getViewport()[getDimensionName.call(this)],
@@ -294,8 +300,9 @@ define('views/ResourceListView', [
     
     _onScrollerSizeChanged: function(e) {
       var info = e.detail || e,
+          numEls = this.el ? this.el.childElementCount : 0,
           dimProp = getDimensionName.call(this),
-          pages = Math.max(this._minPagesInSlidingWindow, this._pagesCurrentlyInSlidingWindow),
+          pages = Math.max(this._minPagesInSlidingWindow, numEls / this._elementsPerPage), //this._pagesCurrentlyInSlidingWindow),
           slidingWindow = this.getSlidingWindow(),
           slidingWindowDim = Math.max(this._minSlidingWindowDimension, slidingWindow.tail - slidingWindow.head),
           pageDimension;
@@ -350,12 +357,21 @@ define('views/ResourceListView', [
 //      };
       
 //      this._viewportSizeChanged();
+      var viewport = G.viewport;
       this.imageProperty = U.getImageProperty(this.collection);
+      this._onScrollerSizeChanged({
+        target: this.el,
+        content: viewport,
+        container: viewport,
+        scrollTop: 0,
+        scrollLeft: 0
+      });
+
       this.adjustSlidingWindow();
     },
   
     isDummyPadded: function() {
-      return true;
+      return false; //true;
     },
     
     /**
@@ -474,43 +490,47 @@ define('views/ResourceListView', [
     },
     
     _hidePages: function(head, tail) {
-      if (!this._pages.length)
+      var numHidden = 0,
+          childNodes = this._childEls,
+          childNode,
+          i;
+      
+      if (!childNodes.length)
         return;
       
-//      Q.write(function() {
-        var numHidden = 0,
-            page;
-        
-        if (head) {
-          while (head--) {
-            page = this._pages[head];
-            if (!page.dataset.hidden) {
-              numHidden++;
-              page.dataset.hidden = true;
-            }
-            
-            page.style.visibility = 'hidden';
-          }
-          
-          this._hiddenPagesAtHead += numHidden;
-        }
-         
-        if (tail) {
-          var lastPageIdx = this._pages.length - 1;
-          while (tail--) {
-            page = this._pages[lastPageIdx - tail];
-            if (!page.dataset.hidden) {
-              numHidden++;
-              page.dataset.hidden = true;
-            }
-            
-            page.style.visibility = 'hidden';
+      i = head && head * this._elementsPerPage;
+      if (i) {
+        while (i--) {
+          childNode = childNodes[i];
+          if (!childNode.dataset.hidden) {
             numHidden++;
+            childNode.dataset.hidden = true;
           }
           
-          this._hiddenPagesAtTail += numHidden;
+          childNode.style.visibility = 'hidden';
         }
-//      }, this);
+        
+        this._hiddenElementsAtHead += numHidden;
+      }
+       
+      i = tail && tail * this._elementsPerPage;
+      if (i) {
+        var lastElIdx = childNodes.length - 1,
+            idx;
+        
+        while (i-- && (idx = lastElIdx - i)) {
+          childNode = childNodes[idx];
+          if (!childNode.dataset.hidden) {
+            numHidden++;
+            chidlNode.dataset.hidden = true;
+          }
+          
+          childNode.style.visibility = 'hidden';
+          numHidden++;
+        }
+        
+        this._hiddenElementsAtTail += numHidden;
+      }
     },
     
     _showAndHidePages: function() {
@@ -543,38 +563,38 @@ define('views/ResourceListView', [
     },
     
     _showHiddenPages: function() {
-//      Q.write(function() {
-        var numUnhidden = 0;
-        if (this.pageView.getLastScrollDirection() == 'head') {
-          for (i = 0; i < this._pages.length; i++) {
-            var page = this._pages[i];
-  //          if (page.style.visibility != 'hidden') // we've reached the visible part
-            if (!page.dataset.hidden)
-              break;
-            
-            page.style.removeProperty('visibility');
-            delete page.dataset.hidden;
-            numUnhidden++;
-          }
+      var numUnhidden = 0,
+          childNodes = this._childEls,
+          childNode;
+      
+      if (this.pageView.getLastScrollDirection() == 'head') {
+        for (var i = 0; i < childNodes.length; i++) {
+          childNode = childNodes[i];
+          if (!childNode.dataset.hidden)
+            break;
           
-          this._hiddenPagesAtHead -= numUnhidden;
+          childNode.style.removeProperty('visibility');
+          delete childNode.dataset.hidden;
+          numUnhidden++;
         }
-        else {
-          i = this._pages.length;
-          while (i--) {
-            var page = this._pages[i];
-  //          if (page.style.visibility != 'hidden') // we've reached the visible part
-            if (!page.dataset.hidden)
-              break;
-            
-            page.style.removeProperty('visibility');
-            delete page.dataset.hidden;
-            numUnhidden++;
-          }
+        
+        this._hiddenPagesAtHead -= numUnhidden;
+      }
+      else {
+        var i = childNodes.length;
+        while (i--) {
+          childNode = childNodes[i];
+//          if (page.style.visibility != 'hidden') // we've reached the visible part
+          if (!childNode.dataset.hidden)
+            break;
           
-          this._hiddenPagesAtTail -= numUnhidden;
+          childNode.style.removeProperty('visibility');
+          delete childNode.dataset.hidden;
+          numUnhidden++;
         }
-//      }, this);
+        
+        this._hiddenElementsAtTail -= numUnhidden;
+      }
     },
     
     /**
@@ -598,10 +618,10 @@ define('views/ResourceListView', [
           scrollingTowardsHead = this.pageView.getLastScrollDirection() == 'head',
           canAppend = !this._outOfData || this._displayedCollectionRange.to != this.collection.length;
 
-      if (!this._initializedDummies)
-        this.initDummies();
+//      if (!this._initializedDummies)
+//        this.initDummies();
   
-      if (!viewport || !this._initializedDummies) {
+      if (!viewport) {// || !this._initializedDummies) {
         this._initSlidingWindowTimer = setTimeout(this.adjustSlidingWindow, 50);
         return false;
       }
@@ -614,15 +634,20 @@ define('views/ResourceListView', [
       slidingWindowDim = slidingWindow.tail - slidingWindow.head;
       headDiff = viewport.head - slidingWindow.head;
       tailDiff = slidingWindow.tail - viewport.tail;
+//      if (scrollingTowardsHead)
+//        headDiff -= pageDim * Math.min(this._minPagesInSlidingWindow / 4 | 0, 2); //this._minSlidingWindowDimension * 0.25;
+//      else 
+//        tailDiff -= pageDim * Math.min(this._minPagesInSlidingWindow / 4 | 0, 2); //this._slidingWindowOutsideBuffer / 2; //this._minSlidingWindowDimension * 0.25;
       if (scrollingTowardsHead)
-        headDiff -= pageDim * Math.min(this._minPagesInSlidingWindow / 4 | 0, 2); //this._minSlidingWindowDimension * 0.25;
+        headDiff -= this._minSlidingWindowDimension * 0.25;
       else 
-        tailDiff -= pageDim * Math.min(this._minPagesInSlidingWindow / 4 | 0, 2); //this._slidingWindowOutsideBuffer / 2; //this._minSlidingWindowDimension * 0.25;
+        tailDiff -= this._minSlidingWindowDimension * 0.25;
       
       if (canAppend && slidingWindowDim < this._minSlidingWindowDimension) { // should this be measured in pages or in pixels or viewports?
         if (this._scrollable)
           n = Math.ceil((this._minSlidingWindowDimension - slidingWindowDim) / pageDim);
         
+        n = Math.min(n, this._maxPagesInSlidingWindow);
         return this.addPages(n, scrollingTowardsHead).done(this._queueSlidingWindowCheck); // n==1. Always grow by one page at a time (so the user doesn't have to wait to see the first few pages)
       }
       else if (slidingWindowDim > this._maxSlidingWindowDimension) { // should this be measured in pages or in pixels or viewports?
@@ -632,10 +657,13 @@ define('views/ResourceListView', [
             extraSpace = slidingWindowDim - this._minSlidingWindowDimension;
         
         var headTail = eatHeadTail(extraSpace, headDiff, tailDiff, pageDim, !scrollingTowardsHead);
+        headTail.head = Math.min(headTail.head, this._maxPagesInSlidingWindow);
+        headTail.tail = Math.min(headTail.tail, this._maxPagesInSlidingWindow);
         return this._shrinkSlidingWindow(headTail.head, headTail.tail).done(this._queueSlidingWindowCheck); // n==1. Always grow by one page at a time (so the user doesn't have to wait to see the first few pages)
       }
       else if (canAppend && tailDiff < this._slidingWindowInsideBuffer) {
         n = Math.ceil((this._slidingWindowInsideBuffer - tailDiff) / viewportDim);
+        n = Math.min(n, this._maxPagesInSlidingWindow);
         if (tailDiff < this._slidingWindowOutsideBuffer)
           return this.appendPages(n).done(this._queueSlidingWindowCheck);
 //          return this.page(n).done(this._queueSlidingWindowCheck);
@@ -644,10 +672,11 @@ define('views/ResourceListView', [
         else
           return G.getResolvedPromise();
       }
-      else if (this._displayedCollectionRange.from > 0 && headDiff < this._slidingWindowOutsideBuffer) {
+      else if (this.el.childElementCount && headDiff < this._slidingWindowOutsideBuffer) {
 //        diff = diff < 0 ? -diff + this._slidingWindowOutsideBuffer : diff;
         n = Math.ceil((this._slidingWindowInsideBuffer - headDiff) / viewportDim);
 //        return this.page(n, true).done(this._queueSlidingWindowCheck);
+        n = Math.min(n, this._maxPagesInSlidingWindow);
         return this.prependPages(n).done(this._queueSlidingWindowCheck);
       }
       else
@@ -759,7 +788,7 @@ define('views/ResourceListView', [
       
       if (atTheHead) {
         colRange.to = displayed.from;
-        colRange.from = Math.max(displayed.from - elementsToAdd, 0);
+        colRange.from = Math.max(colRange.to - elementsToAdd, 0);
       }
       else {
         colRange.from = displayed.to;
@@ -785,7 +814,7 @@ define('views/ResourceListView', [
         return G.getRejectedPromise();
             
       var info = this._slidingWindowOpInfo;
-      info.isFirstPage = !this._pagesCurrentlyInSlidingWindow; 
+//      info.isFirstPage = !this._pagesCurrentlyInSlidingWindow; 
       
       preRenderPromise = this.preRender(info);
       if (_.isPromise(preRenderPromise))
@@ -817,71 +846,34 @@ define('views/ResourceListView', [
           pageEndTag = '</{0}>'.format(pageTag),
           stop = false,
           dfd = $.Deferred(),
-          promise = dfd.promise(),
-          dummy = this._getDummy(atTheHead),
-          dummyDim = dummy && this._getSlidingWindowOffset(atTheHead),
-          newDummyDim, 
-          currentPageHtml = [],
-          currentPageEl,
-          postRenderResult, 
-          finish;
-      
-      function finish() {
-        if (self.isDummyPadded() && newDummyDim != dummyDim) {
-          Q.write(function() {
-            self.setDummyDimension(dummy, newDummyDim);
-            dfd.resolve();
-          });
-        }
-        else
-          dfd.resolve();
-      };
+          promise = dfd.promise(); 
       
       label(promise);
-      dfd.done(function() {
+      promise.done(function() {
         self._invalidateCachedSlidingWindow();
-        self._pagesCurrentlyInSlidingWindow += n;
-        if (atTheHead) {
-//          self._pageOffset = Math.max(self._pageOffset - n, 0);
+//        self._pagesCurrentlyInSlidingWindow += n;
+        if (atTheHead)
           displayed.from -= numRendered;
-        }
         else
           displayed.to += numRendered;
+        
+        if (displayed.from >= displayed.to)
+          displayed.from = displayed.to;
       });
       
       function renderOneListItem(resNum, isFirst, isLast) {
         var res = col.models[resNum],
             liView = this.renderItem(res, atTheHead);
 
-//        if (atTheHead)
-//          console.log("PREPENDING", U.getDisplayName(res));
-        
-        if (isFirst) {
-          currentPageEl = doc.createElement(pageTag);
-          currentPageEl.setAttribute('class', pageClasses);
-          self.setPageAttributes(currentPageEl);
-          currentPageHtml.length = 0;
-//          currentPageHtml[currentPageHtml.length] = '<{0} class="listPage {1}" {2}>'.format(pageTag, pageClasses, pageAttributes);
-        }
-        
         if (liView !== false) {
-          this.postRenderItem(liView._html, info);
-          currentPageHtml[currentPageHtml.length] = liView._html;
-          delete liView._html;
+          self.listenTo(liView.resource, 'change', self.onResourceChanged);
+          self.listenTo(liView.resource, 'saved', self.onResourceChanged);
+          added.push(liView);
+          numRendered++;
         }
         
-        numRendered++;
-        if (isLast && currentPageHtml.length) {
-//          currentPageHtml[currentPageHtml.length] = pageEndTag;
-          var html = currentPageHtml.join("");
-          if (G.lazifyImages && !self._scrollable)
-            html = DOM.unlazifyImagesInHTML(html);
-            
-          currentPageEl.innerHTML = html;            
-          added.push(currentPageEl);
-//            info.html[info.html.length] = html;
+        if (isLast)
           numPagesRendered++;
-        }
       }
       
       for (var i = 0, resNum = colRange.from; i < n; i++) {
@@ -899,7 +891,6 @@ define('views/ResourceListView', [
       }
 
       Q.defer(1, 'read', function getDummyDim() {
-        dfd.notify(numPagesRendered);
         if (!self._optimizedElementsPerPage && self._pages.length)
           self.getElementsPerPage();
         
@@ -910,63 +901,30 @@ define('views/ResourceListView', [
         
         Q.write(function insertPage() {
 //          self.log("PAGER", "ADDING PAGE, FRAME", window.fastdom.frameNum);
-//          var pages = info.added = $($.parseHTML(info.html.join(""), doc));
           var el = self.el,
-              insertionPoint,
-              i;
+              childEls = self._childEls,
+              addedEls = added.map(function(c) { return c.el }),
+              i = added.length,
+              childView;
           
           if (atTheHead)
-            insertionPoint = self.isDummyPadded() ? el.firstChild.nextSibling : el.firstChild;
+            Array.prepend(childEls, addedEls);
           else
-            insertionPoint = self.isDummyPadded() ? el.lastChild : null; 
-
-          self._pages[atTheHead ? 'unshift' : 'push'].apply(self._pages, added);
-          i = added.length;
+            childEls.push.apply(childEls, addedEls);
+          
           while (i--) {
-            var page = added[i],
-                childEls = page.childNodes.$filter(function(c) { return c.nodeType == 1 }); // filter out text nodes that creep in
-
-            for (var j = 0; j < childEls.length; j++) {
-              var childEl = childEls[j],
-                  viewId = childEl.dataset.viewid;
-              
-              if (typeof viewId == 'undefined')
-                continue;
-              
-              var child = self.children[viewId];
-              self.listenTo(child.resource, 'change', self.onResourceChanged);
-              self.listenTo(child.resource, 'saved', self.onResourceChanged);
-              child.setElement(childEl);
-              if (child.postRender)
-                child.postRender();
-            }
-            
-            el.insertBefore(page, insertionPoint);
-            insertionPoint = page;
+            childView = added[i];
+            childView.postRender();
+            if (!childView.el.parentNode)
+              el.appendChild(childView.el); // we don't care about its position in the list, as it's absolutely positioned 
           }
           
           self._showAndHidePages();
-          postRenderResult = self.postRender(info);
-          
-          // if dummy dimension changed, we will use it on the next frame (in the "finish" function)
-          if (self.isDummyPadded()) {
-            if (colRange.from == 0)
-              newDummyDim = 0;
-  //          else if (dummyDim > 0)
-  //            newDummyDim = Math.max(dummyDim - self.getDimension(pages), 0);
-            else if (dummyDim > 0) {
-              newDummyDim = Math.max(dummyDim - _.reduceRight(added, function(memo, page) { 
-                return memo + self.getDimension(page); 
-              }, 0), 0);
-            }
-            else
-              newDummyDim = dummyDim;
-          }
-          
+          var postRenderResult = self.postRender(info);
           if (_.isPromise(postRenderResult))
-            postRenderResult.always(finish);
+            postRenderResult.always(dfd.resolve);
           else
-            finish();
+            dfd.resolve();
         });
       });
 
@@ -1003,7 +961,7 @@ define('views/ResourceListView', [
     },
     
     getListItems: function() {
-      return _.filter(this.el.childNodes, function(node) {
+      return _.filter(this._childEls, function(node) {
         return !node.classList.contains('dummy');
       });
     },
@@ -1016,8 +974,8 @@ define('views/ResourceListView', [
         return this._cachedSlidingWindow;
       
       // override this if you're not using dummies
-      if (!this.isDummyPadded())
-        throw "not implemented yet, please override or implement";
+//      if (!this.isDummyPadded())
+//        throw "not implemented yet, please override or implement";
       
       if (!this.rendered)
         return {head: 0, tail: 0};
@@ -1036,81 +994,16 @@ define('views/ResourceListView', [
       _.wipe(this._cachedSlidingWindow, true);
     },
     
-//    /**
-//     * grows the sliding window by "n" pages, from the top/left if head==true, otherwise from the bottom/right
-//     * @return a promise
-//     */
-//    _growSlidingWindow: function(n, head) {
-//      if (!head && this._outOfData) //|| this._pagesCurrentlyInSlidingWindow + n > this._maxPagesInSlidingWindow)
-//        return G.getRejectedPromise();
-//      
-//      this.log('PAGER', 'GROWING SLIDING WINDOW');
-//      n = n || 1;
-//      var self = this;
-////      this.calcAddRemoveSize(n, true, head);
-//      return $.Deferred(function(defer) {
-//        var promise;
-//        if (head)
-//          promise = self.prependPages(n);
-//        else
-//          promise = self.appendPages(n);
-//        
-//        promise.done(function() {
-////          self._pagesInSlidingWindow = Math.max(self._pagesCurrentlyInSlidingWindow, self._pagesInSlidingWindow);
-////          console.log("GREW SLIDING WINDOW TO", self._pagesCurrentlyInSlidingWindow);
-//          self.getNewSize();
-//          defer.resolve();
-//        }).fail(defer.reject);
-//      }).promise();
-//    },
-
     /**
      * shrinks the sliding window by "head" pages at the head and "tail" pages at the tal
      * @return a promise
      */
     _shrinkSlidingWindow: function(head, tail) {
       this.log('PAGER', 'SHRINKING SLIDING WINDOW');
-      
-      
-      var self = this,
-          dfd = $.Deferred(),
-          invisibleLayer = this._invisibleLayerThickness,
-          headPromise,
-          tailPromise;
-      
-//      if (invisibleLayer) {
-//        var invisibleHead = Math.min(invisibleLayer, head),
-//            invisibleTail = Math.min(invisibleLayer, tail),
-//            lastPageIdx = this._pages.length - 1;
-//        
-//        head -= invisibleHead;
-//        tail -= invisibleTail;
-//        
-//        while (invisibleHead--) {
-//          this._pages[head + invisibleHead].$hide();
-//        }
-//        
-//        while (invisibleTail--) {
-//          this._pages[lastPageIdx -(tail + invisibleTail)].$hide();
-//        }
-//      }
-      
-      
-      headPromise = head ? this.removePages(head, true) : G.getResolvedPromise();
-      tailPromise = tail ? this.removePages(tail) : G.getResolvedPromise();
-      function done() {
-        if (headPromise.state() != 'pending' && tailPromise.state() != 'pending') {
-//          if (_.countBy(self._pages, function(p) { return p.style.display == 'none' })['true'] > 2)
-//            debugger;
-          
-          self.getNewSize();
-          dfd.resolve();
-        }
-      };
-      
-      headPromise.always(done);
-      tailPromise.always(done);
-      return dfd.promise();
+      head && this.removePages(head, true);
+      tail && this.removePages(tail);
+      this.getNewSize();
+      return G.getResolvedPromise();
     },
 
     /**
@@ -1119,83 +1012,48 @@ define('views/ResourceListView', [
      */
     removePages: function(n, fromTheHead) {
       this.log("PAGER", "REMOVING", n, "PAGES FROM THE", fromTheHead ? "HEAD" : "TAIL");
-      var self = this,
+      var childNodes = this._childEls,
+          numToRemove = Math.min(n * this._elementsPerPage, childNodes.length),
           info = this._slidingWindowOpInfo,
           displayed = this._displayedCollectionRange,
           removedViews = [],
-          removedPages,
-          first,
-          last,
-          head,
-          tail,
-          splitIdx,
-          removedPageDim,
-//          ,
-//      var sizes = this._slidingWindowAddRemoveInfo,
-//          $dummy = fromTheHead ? this.dummies.head : this.dummies.tail,
-//          removedViews = sizes.removedViews,
-          dfd = $.Deferred();
+          removeFrom,
+          removeTo;
 
-      dfd.done(function() {
-        self._invalidateCachedSlidingWindow();
-        self._pagesCurrentlyInSlidingWindow = Math.max(self._pagesCurrentlyInSlidingWindow - n, 0);
-        if (fromTheHead) {
-          displayed.from += removedViews.length;
-//          self.log('PAGE OFFSET: ', this._pageOffset + n);
-//          self._pageOffset += n;
-        }
-        else
-          displayed.to -= removedViews.length;
-        
-        self._showAndHidePages();
-      });
+      if (fromTheHead) {
+        removeFrom = 0;
+        removeTo = Math.min(numToRemove, childNodes.length);
+      }
+      else {
+        removeFrom = Math.max(childNodes.length - numToRemove, 0);
+        removeTo = childNodes.length;
+      }
+      
+      for (var i = removeFrom; i < removeTo; i++) {
+        var childEl = childNodes[i],
+            childView = this.children[childEl.dataset.viewid];
+
+        removedViews.push(childView);
+      }
 
       if (fromTheHead)
-        splitIdx = Math.min(n, this._pages.length - 1);
+        Array.removeFromTo(this._childEls, 0, numToRemove);
       else
-        splitIdx = Math.max(this._pages.length - n, 0);
-      
-      removedPages = info[fromTheHead ? 'removedFromTop' : 'removedFromBottom'] = fromTheHead ? this._pages.slice(0, splitIdx) : this._pages.slice(splitIdx); // optimize
-      if (fromTheHead)
-        Array.removeFromTo(this._pages, 0, splitIdx);
-      else
-        this._pages.length = splitIdx;
-      
-      Q.defer(1, 'read', function() {
-        for (var i = 0, len = removedPages.length; i < len; i++) {
-          var page = removedPages[i],
-              children = page.childNodes;
-          
-          for (var j = 0, numChildren = children.length; j < numChildren; j++) {
-            var child = children[j],
-                childView = self.children[child.dataset.viewid];
-            
-            removedViews.push(childView);
-          }
-        }
-
-        removedPageDim = _.reduceRight(removedPages, function(memo, page) { 
-          return memo + self.getDimension(page); 
-        }, 0);
+        this._childEls.length -= numToRemove;
         
-        Q.write(function removePagesFromDOM() {
-          self.doRemovePages(removedPages, fromTheHead);
-          for (var i = 0, len = removedViews.length; i < len; i++) {
-            var view = removedViews[i];
-            self.stopListening(view.resource);
-            view.destroy();
-          }
-          
-          if (self.isDummyPadded()) {
-            self.log("PAGER", "UPDATING {0} DUMMY SIZE".format(fromTheHead ? "HEAD" : "TAIL"));
-            self.setDummyDimension(self._getDummy(fromTheHead), self._getSlidingWindowOffset(fromTheHead) + removedPageDim);
-          }
-          
-          dfd.resolve();
-        });
-      });
-
-      return dfd.promise();
+      this.doRemove(removedViews);
+      this._invalidateCachedSlidingWindow();
+//      this._pagesCurrentlyInSlidingWindow = Math.max(this._pagesCurrentlyInSlidingWindow - n, 0);
+      if (fromTheHead)
+        displayed.from += removedViews.length;
+      else
+        displayed.to -= removedViews.length;
+      
+      if (displayed.from >= displayed.to)
+        displayed.from = displayed.to;
+      
+      this._showAndHidePages();
+      return G.getResolvedPromise();
     },
 
     onResourceChanged: function(res) { // attach/detach when sliding window moves
@@ -1239,11 +1097,18 @@ define('views/ResourceListView', [
 //      return this._pagingPromise;
 //    },
 
-    doRemovePages: function(pages) {
-      var i = pages.length;
+//    doRemovePages: function(pages) {
+    doRemove: function(removedViews) {
+      var i = removedViews.length,
+          view;
+      
       while (i--) {
-        pages[i].$remove();
+        view = removedViews[i];
+        this.stopListening(view.resource);
+        view.undelegateAllEvents();
       }
+
+      this.recycleItemViews(removedViews);
     },
     
     getNextPage: function(numResourcesToFetch) {
@@ -1343,28 +1208,33 @@ define('views/ResourceListView', [
      * @return view for rendered list item
      */
     renderItem: function(res, prepend) {
-      var viewName = 'listItem' + G.nextId(),
-          liView,
-          preinitializedItem = this._preinitializedItem,
-          options = {
-//            createElement: false,
+      var options = {
             delegateEvents: false,
             resource: res
-          };
+          },
+          liView = this.getCachedItemView(),
+          viewName,
+          preinitializedItem;
       
-      if (this.isEdit) {
-        liView = new preinitializedItem(options);
-      }
-      else if (this.isMultiValueChooser) {
+      if (this.isMultiValueChooser) {
         options.checked = _.contains(this.mvVals, res.get('davDisplayName'));
-        liView = new preinitializedItem(options);
+      }
+      else if (!this.isEdit) {
+        options.swatch = res.get('swatch') || this._defaultSwatch;
+      }
+      
+      if (liView) {
+        console.log("RECYCLING LIST ITEM");
+        liView.reset().initialize(options);
       }
       else {
-        options.swatch = res.get('swatch') || this._defaultSwatch;
+        console.log("CREATING NEW LIST ITEM, TOTAL CHILD VIEWS:", _.size(this.children));
+        viewName = 'listItem' + G.nextId();
+        preinitializedItem = this._preinitializedItem;
         liView = new preinitializedItem(options);
+        this.addChild(liView, prepend);      
       }
       
-      this.addChild(liView, prepend);      
       liView.render(this._itemRenderOptions);
       return liView;
     },
@@ -1411,22 +1281,6 @@ define('views/ResourceListView', [
       }
 
       this._prerendered = true;
-
-//      .then(function() {
-//        var m = U.getModel(r);
-//        if (self.imageProperty.cloneOf == 'aFeatured' || self.imageProperty.cloneOf == 'bFeatured') {
-//          p = m.properties[U.cloneOf(m, 'ImageResource.mediumImage')];
-//          maxDim = m.properties[p].maxImageDimention || m.properties[p].imageWidth; 
-//        }
-//        else {
-//          p = m.properties[U.cloneOf(m, 'ImageResource.smallImage')];
-//          maxDim = m.properties[p].maxImageDimention || m.properties[p].imageWidth; 
-//        }
-//        
-//        rect = self.clipRect(resource, image, oW, oH, maxDim);
-//        _.extend(props, {top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right});
-//        return self.doRender(options, props);
-//      });
     },
 
     /**
@@ -1436,28 +1290,12 @@ define('views/ResourceListView', [
      * }
      */
     postRender: function(info) {
-//      if (G.isTopcoat()) {
-//        var items = this.getListItems();
-//        for (var i = 0; i < items.length; i++) {
-//          items[i].classList.add('topcoat-list__item');
-//        }
-//      }
       // override me
-      // init/refresh listview
-//      if (this.rendered) {
-//        this.$el.trigger('create');
-//        if (!this.isMultiValueChooser && this.$el.hasClass('ui-listview'))
-//          this.$el.listview('refresh');
-//        
-//        this.trigger('refreshed');
-//      }
     },
     
-    postRenderItem: function(el, info) {
-      // override me
-//      info.frag.appendChild(el);
-//      info.html += el;
-    },
+//    postRenderItem: function(el, info) {
+//      // override me
+//    },
     
     hasMasonry: function() {
       return this.type == 'masonry';

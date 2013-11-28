@@ -18,8 +18,14 @@ define('views/ResourceListItemView', [
 //    className: "ui-li ui-li-static ui-btn-up-c ui-first-child",
     isCommonTemplate: true,
     initialize: function(options) {
+      this.listenTo(this.resource, 'remove', this.remove);
+      if (this._initialized) {
+        this.resource = this.model = options.resource || options.model;
+        return;
+      }
+      
       _.bindAll(this, 'render', 'click', /*'recipeShoppingListHack',*/ 'remove'); // fixes loss of context for 'this' within methods
-      BasicView.prototype.initialize.apply(this, arguments);
+      BasicView.prototype.initialize.apply(this, arguments);      
       var elAttrs = this.attributes,
           classes = this.className;
       
@@ -28,7 +34,6 @@ define('views/ResourceListItemView', [
         this.imageProperty = options.imageProperty;
       
       this.checked = options.checked;
-      this.listenTo(this.resource, 'remove', this.remove);
 //      this.listenTo(this.resource, 'saved', this.render);
       if (!this.isEdit)
         this.makeTemplate('listItemTemplate', 'template', this.vocModel.type, true); // don't fall back to default, we want to know if no template was found for this type
@@ -73,8 +78,16 @@ define('views/ResourceListItemView', [
       // resourceListView will call render on this element
   //    this.model.on('change', this.render, this);
       this.className = classes;
+      this._initialized = true;
       return this;
     },
+    
+    reset: function() {
+      this.rendered = false;
+//      this.el.$empty();
+      return this;
+    },
+    
     events: {
       'click': 'click',
 //      'click .recipeShoppingList': 'recipeShoppingListHack',
@@ -279,7 +292,7 @@ define('views/ResourceListItemView', [
       if (options && options.renderToHtml)
         this._html = this.renderHtml(html);
       else 
-        this.html(html);
+        this.el.$html(html);
       
       return this;
     },

@@ -265,24 +265,15 @@ define('views/BasicView', [
     },
 
     getBaseTemplateData: function() {
-//      for (var p in baseTemplateData) {
-//        if (baseTemplateData.hasOwnProperty(p))
-//          delete baseTemplateData[p];
-//      }
-//      
-//      baseTemplateData._viewId = this.cid;
-//      if (this.resource)
-//        baseTemplateData._uri = this.resource.get('_uri');
-//
-//      return baseTemplateData;
-      var data = {
-        viewId: this.cid
-      };
+      var data = this._baseTemplateData;
+      if (data)
+        _.wipe(data);
+      else
+        data = this._baseTemplateData = {};
       
-      if (this.resource) {
+      data.viewId = this.cid;
+      if (this.resource)
         data._uri = this.resource.get('_uri');
-//        data.davDisplayName = this.resource.attributes.davDisplayName;
-      }
       
       return data;
     },
@@ -290,16 +281,6 @@ define('views/BasicView', [
     refresh: function() {
       // override this
     },
-    
-//    _refresh: function(rOptions) {
-//      var force = rOptions && rOptions.force;
-//      if (!force && !this.rendered)
-//        return this;
-//      
-////      this.log('refresh', 'page title:', this.getPageTitle());
-//      this._queueTask(this._doRefresh, this, arguments);
-//      return this;
-//    },
     
     _refresh: function(rOptions) {
       rOptions = rOptions || {};

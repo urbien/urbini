@@ -6,18 +6,26 @@ define('views/ResourceMasonryItemView', [
   'events',
   'views/BasicView',
   'lib/fastdom',
+  'domUtils',
   'jqueryMasonry'
-], function(G, _, U, Events, BasicView, Q) {
+], function(G, _, U, Events, BasicView, Q, DOM) {
   var RMIV = BasicView.extend({
 //    className: 'nab nabBoard masonry-brick',
 //    className: 'pin',
 //    tagName: 'li',
     
+    tagName: 'div',
     TAG: "ResourceMasonryItemView",
     style: {},
     initialize: function(options) {
+      if (this._initialized) {
+        this.resource = this.model = options.resource || options.model;
+        return;
+      }
+      
       _.bindAll(this, 'render', 'like', 'click'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);
+      
       options = options || {};
       options.vocModel = this.vocModel;
       
@@ -63,8 +71,16 @@ define('views/ResourceMasonryItemView', [
         this.IMG_MAX_WIDTH = 205; // value of CSS rule: ".nab .anab .galleryItem_css3 img"      // resourceListView will call render on this element
 //      this.$el.attr('style', 'width:' + (this.IMG_MAX_WIDTH + 20) + 'px !important');
   //    this.model.on('change', this.render, this);
+      this._initialized = true;
       return this;
     },
+    
+    reset: function() {
+      this.rendered = false;
+//      this.el.$empty();
+      return this;
+    },
+    
     events: {
       'click .like': 'like',
       'click': 'click'
@@ -124,7 +140,7 @@ define('views/ResourceMasonryItemView', [
         return this;
       }
       else
-        this.$el.html(html);
+        this.el.$html(html);
     },
     
     render: function(options) {      
@@ -180,7 +196,8 @@ define('views/ResourceMasonryItemView', [
 //      return this.renderTile();
     },  
     renderTile: function(options, event) {
-      var m = this.resource,
+      var self = this,
+          m = this.resource,
           atts = m.attributes,
           vocModel = this.vocModel,
           meta = vocModel.properties,
@@ -400,25 +417,38 @@ define('views/ResourceMasonryItemView', [
       if (!this.postRender) {
         this.postRender = function() {        
     //      this.$el.attr('style', 'width:' + (this.IMG_MAX_WIDTH + 20) + 'px !important;');
-//          Q.write(function() {
-            this.$el.attr('style', 'width:' + (this.IMG_MAX_WIDTH + 17) + 'px !important;' + (divHeight ? 'height:' +  divHeight + 'px;' : '')); 
-      //      if (!tmpl_data['top'])
-      //        this.$el.find('.galleryItem_css3 img').attr('style', 'max-width:' + this.IMG_MAX_WIDTH + 'px !important;');
-            
-            if (tmpl_data['top']  &&  isBM) {
-              this.$el.find('.galleryItem_css3').attr('style', 'height:' + (tmpl_data['bottom'] - tmpl_data['top']) + 'px;'); 
-              this.$el.find('.galleryItem_css3 img').attr('style', 'position:absolute; top: -' + tmpl_data['top'] + 'px;left: -' + tmpl_data['left'] + 'px; clip: rect(' + tmpl_data['top'] + 'px,' + tmpl_data['right'] + 'px,' + tmpl_data['bottom'] + 'px,' + tmpl_data['left'] + 'px)');
-              /*
-              tmpl_data['top'] = dH;
-              tmpl_data['right'] = iW + dW;
-              tmpl_data['bottom'] = iH + dH;
-              tmpl_data['left'] = dW;
-              tmpl_data['margin-top'] = 0;
-              tmpl_data['margin-left'] = 0 - dW;
-              */ 
-            }
-//          }, this);
-        }.bind(this);
+          var style = self.el.style,
+              gItem = self.el.querySelector('.galleryItem_css3'),
+              gItemImg = self.el.querySelector('.galleryItem_css3 img'),
+              gItemImgStyle = gItemImg.style;
+          
+          style.setProperty('width', (self.IMG_MAX_WIDTH + 17) + 'px', 'important');
+          if (divHeight)
+            style.height = divHeight + 'px';
+          else
+            style.removeProperty('height');
+    //      if (!tmpl_data['top'])
+    //        this.$el.find('.galleryItem_css3 img').attr('style', 'max-width:' + this.IMG_MAX_WIDTH + 'px !important;');
+          
+          gItemImgStyle.width = tmpl_data['imgWdth'];
+          gItemImgStyle.height = tmpl_data['imgHeight'];
+          if (tmpl_data['top']  &&  isBM) {  
+            gItem.style.height = (tmpl_data['bottom'] - tmpl_data['top']) + 'px';
+            gItemImgStyle.position = 'absolute';
+            gItemImgStyle[G.crossBrowser.css.transformLookup] = DOM.positionToMatrix(tmpl_data['top'], tmpl_data['left']);
+//            gItemImgStyle.top = '-' + tmpl_data['top'] + 'px';
+//            gItemImgStyle.left = '-' + tmpl_data['left'] + 'px'; 
+            gItemImgStyle.clip = 'rect(' + tmpl_data['top'] + 'px,' + tmpl_data['right'] + 'px,' + tmpl_data['bottom'] + 'px,' + tmpl_data['left'] + 'px)';
+            /*
+            tmpl_data['top'] = dH;
+            tmpl_data['right'] = iW + dW;
+            tmpl_data['bottom'] = iH + dH;
+            tmpl_data['left'] = dW;
+            tmpl_data['margin-top'] = 0;
+            tmpl_data['margin-left'] = 0 - dW;
+            */ 
+          }
+        };
       }
       
       return this;
