@@ -130,6 +130,9 @@ define('views/ResourceMasonryItemView', [
     },
     
     doRender: function(options, data) {
+      if (this.el.childElementCount)
+        return this.updateTile(options, data);
+      
       var html = this.template(data);
       if (options && options.renderToHtml) {
 //        var tagName = this.tagName || 'div';
@@ -195,6 +198,129 @@ define('views/ResourceMasonryItemView', [
           
 //      return this.renderTile();
     },  
+    
+    updateTile: function(options, obj) {
+      var gItem = this.el.firstChild,
+          gItemA = gItem.querySelector('a'),
+          gItemImg = gItemA.querySelector('img'),
+          nabRL = this.el.querySelector('.nabRL'),
+          appBadge = this.el.querySelector('.appBadge'),
+          nabRLDivs = nabRL.$('div'),
+          nabRLGridCols = nabRLDivs[0],
+          nabRLSocial = nabRLDivs[1],
+          tournament = nabRL.querySelector('.b'),
+          meta = this.vocModel.properties,
+          resourceUri = U.makePageUrl('view', this.resource.getUri()),
+          atts = this.resource.attributes,
+          cloned = this.clonedProperties;
+          
+//          comments = data.v_showCommentsFor && nabRLSocial.firstChild,
+//          votes = data.v_showVotesFor && nabRLSocial.firstChild
+      if (obj.imgWidth) {
+        debugger;
+        gItem.$attr('style', _.template("{{= (obj.top ? '' : 'height:' + imgHeight + 'px;') + (obj.left ? '' : 'width:' + imgWidth + 'px;') }}")(obj));
+      }
+      
+      gItemA.href = obj.rUri || 'about:blank';
+      if (gItemImg) {
+        gItemImg.setAttribute(G.lazyImgSrcAttr, obj.resourceMediumImage || G.blankImgDataUrl);
+        gItemImg.dataset['for'] = U.getImageAttribute(this.resource, obj.imageProperty);
+        if (obj.width)
+          gItemImg.style.width = obj.width;
+        if (obj.height)
+          gItemImg.style.height = obj.height;
+      }
+      
+      if (!appBadge) {
+        if (_.has(obj, 'friendMeCount')) {
+          appBadge = document.createElement('div');
+          appBadge.setAttribute('class', 'appBadge');
+          appBadge.innerHTML = '<a style="color:white;" href="' + obj.friendMeUri + '">' + obj.friendMeCount + '</a>';
+          this.el.insertBefore(appBadge, nabRL);
+        }
+      }
+      else {
+        if (_.has(obj, 'friendMeCount')) {
+          var a = appBadge.querySelector('a');
+          a.href = obj.friendMeUri;
+          a.innerText = obj.friendMeCount;
+        }
+      }
+      
+//      nabRLGridCols.innerHTML = obj.gridCols;
+      var grid = U.getCols(this.resource, 'grid');
+      if (grid) {
+        var mediumImageProp = cloned['ImageResource'].mediumImage,
+            smallImageProp = cloned['ImageResource'].smallImage,
+            a,
+            s;
+        
+        for (var row in grid) {
+          var pName = grid[row].propertyName,
+              prop;
+          
+          if (pName == mediumImageProp  ||  pName == smallImageProp)
+            continue;
+          
+          prop = meta[pName];
+          if (!prop.skipLabelInGrid) {
+            var label = nabRLGridCols.querySelector('.label[data-prop="' + pName + '"]');
+            if (label)
+              label.innerText = row;
+          }
+          
+          a = nabRLGridCols.querySelector('a[data-prop="' + pName + '"]');
+          s = grid[row].value;
+          if (grid[row].resourceLink) {
+            a.href = resourceUri;
+            a.innerText = atts[pName];
+//            s = '<a href="' + resourceUri + '">' + atts[pName] + '</a>';
+          }
+          else if (meta[pName].facet  &&  meta[pName].facet.indexOf("/href") != -1) {
+            a.href = s;
+            a.innerText = s;
+//            s = '<a href="' + s + '">' + s + '</a>';
+          }
+          
+//          gridCols += s;
+        }
+      }
+      
+      if (obj.v_showCommentsFor) {
+        var a = nabRLSocial.$('a'),
+            aMake = a[0],
+            aList = a[1];
+        
+        if (aMake) {
+          aMake.href = U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: obj.v_showCommentsFor.uri, '-makeId': G.nextId()});
+          if (aList && obj.v_showCommentsFor.count) {
+            aList.href = U.makePageUrl('list', 'model/portal/Comment', {forum: obj.v_showCommentsFor.uri});
+            aList.childNodes[1].textContent = obj.v_showCommentsFor.count;
+          }
+        }
+      }
+      
+      if (obj.v_showVotesFor) {
+        var aMake = nabRLSocial.querySelector('.like');
+        if (aMake) {
+          aMake.href = U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: obj.v_showVotesFor.uri, '-makeId': G.nextId()});
+          var divList = nabRLSocial.$('div')[0];
+          if (divList) {
+            var aList = divList.querySelector('a');
+            if (aList && obj.v_showVotesFor.count) {
+              var aList = nabRLSocial.querySelector('div');
+              aList.href = U.makePageUrl('list', 'aspects/tags/Vote', {votable: obj.v_showVotesFor.uri, $title: davDisplayName + ' liked by'});
+              aList.childNodes[1].textContent = obj.v_showVotesFor.count;          
+            }
+          }
+        }
+      }
+      
+      if (tournament && v_submitForTournament) {
+        tournament.href = v_submitForTournament;
+      }
+    },
+    
     renderTile: function(options, event) {
       var self = this,
           m = this.resource,
@@ -230,36 +356,37 @@ define('views/ResourceMasonryItemView', [
       var resourceLink;
       var i = 0;
 
-      var grid = U.getCols(m, 'grid');
-      if (grid) {
+      var grid = U.getColsMeta(vocModel, 'grid'),
+          gCols = [];
+      
+      for (var g = 0; g < grid.length; g++) {
         var mediumImageProp = cloned['ImageResource'].mediumImage,
-            smallImageProp = cloned['ImageResource'].smallImage;
+            smallImageProp = cloned['ImageResource'].smallImage,
+            pName = grid[g],
+            prop = meta[pName],
+            pDisplayName = U.getPropDisplayName(prop),
+            val = atts[pName] || prop.propertyGroupList || '';
         
-        for (var row in grid) {
-          if (i == 0)
-            i++;
-          else
-            gridCols += "<br/>";
-
-          var pName = grid[row].propertyName;
-          if (pName == mediumImageProp  ||  pName == smallImageProp)
-            continue;
-          
-          var gP = meta[pName];          
-          if (!meta[pName].skipLabelInGrid)
-            gridCols += '<span class="label">' + row + '</span>';
-          var s = grid[row].value;
-          if (grid[row].resourceLink) 
-            s = '<a href="' + resourceUri + '">' + atts[pName] + '</a>';
-          else if (meta[pName].facet  &&  meta[pName].facet.indexOf("/href") != -1)
-            s = '<a href="' + s + '">' + s + '</a>';
-  //        else if (meta[pName].range == 'date' ||  meta[pName].range == 'ComplexDate'  ||  meta[pName].range == 'dateTime')
-  //          s += U.getFormattedDate(json[pName]);
-          
-          gridCols += s;
-        }
+        if (pName == mediumImageProp  ||  pName == smallImageProp)
+          continue;
+        
+        val = U.makeProp(m, prop, val || '').value || '';
+        var label = '';
+        if (!prop.skipLabelInGrid)
+          label += '<span data-prop="' + pName + '" class="label">' + pDisplayName + '</span>';
+        
+        if (prop.resourceLink) 
+          val = '<a data-prop="' + pName + '" href="' + resourceUri + '">' + val + '</a>';
+        else if (prop.facet  &&  prop.facet.indexOf("/href") != -1)
+          val = '<a data-prop="' + pName + '" href="' + val + '">' + val + '</a>';
+//        else if (meta[pName].range == 'date' ||  meta[pName].range == 'ComplexDate'  ||  meta[pName].range == 'dateTime')
+//          s += U.getFormattedDate(json[pName]);
+        
+        if (label || val)
+          gCols.push(label + val);
       }
       
+      gridCols = gCols.join('<br />');
       var divHeight;      
       if (typeof img != 'undefined') {
         if (img.indexOf('Image/') == 0)

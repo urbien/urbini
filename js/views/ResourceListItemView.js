@@ -658,7 +658,7 @@ define('views/ResourceListItemView', [
               viewCols += '<div data-theme="d" style="padding: 5px 0 5px 0;"><i><u>' + U.getPropDisplayName(prop) + '</u></i></div>';                
             }
             
-            var val = json[p] = U.makeProp({resource: res, prop: prop1, value: atts[p]});
+            var val = json[p] = U.makeProp(res, prop1, atts[p]);
 //            var v = val.value.replace(/(<([^>]+)>)/ig, '').trim();
             var range = prop1.range;
             var s = range.indexOf('/') != -1 ? atts[p + '.displayName'] || val.value : val.value;
