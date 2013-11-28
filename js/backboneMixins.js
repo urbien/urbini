@@ -258,8 +258,8 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
 
       delegateNonDOMEvents: function() {
         this._nondomDelegated ? this._nondomDelegated++ : this._nondomDelegated = 1;
-        if (this._nondomDelegated > 1)
-          this.log("delegate", "non-DOM", this._nondomDelegated);
+//        if (this._nondomDelegated > 1)
+//          this.log("delegate", "non-DOM", this._nondomDelegated);
         
         var globalEvents = this.globalEvents,
             windowEvents = this.windowEvents,
@@ -414,8 +414,8 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       delegateEvents: function() {
         if (this.el) {
           this._domDelegated ? this._domDelegated++ : this._domDelegated = 1;
-          if (this._domDelegated > 1)
-            this.log("delegate", "DOM", this._domDelegated);
+//          if (this._domDelegated > 1)
+//            this.log("delegate", "DOM", this._domDelegated);
           
   //        if (!this.rendered)
   //          return;
