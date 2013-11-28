@@ -75,21 +75,23 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
       }
   
       i = matches.length;
-//      this._brickify.apply(this, matches);
+      this._brickify.apply(this, matches);
       return matches;
     },
     
-//    _brickify: function(/* brickWannabes */) {
+    _brickify: function(/* brickWannabes */) {
 //      var filtered = _.filter(arguments, function(b) {
 //            return !b.$hasClass('masonry-brick') || b.style.position !== 'absolute';
 //          }),
 //          i = filtered.length;
-//          
-//      while (i--) {
-//        filtered[i].$css({ position: 'absolute' })
-//                    .$addClass('masonry-brick')
-//      }
-//    },
+
+      var i = arguments.length;
+      while (i--) {
+//        filtered[i].$css({ position: 'absolute', opacity: '0.999999' })
+        arguments[i].$css({ position: 'absolute', opacity: '0.999999' })
+                    .$addClass('masonry-brick')
+      }
+    },
 
     // sets up widget
     _create: function( options ) {
@@ -310,9 +312,7 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
               i = setY.length,
               shortCol  = i,
               setSpan   = this.cols + 1 - i,
-              position  = {
-                position: 'absolute'
-              },
+              position  = {},
               colYs = this._getColYs();
   
       //    Which column has the min/max Y value, 
@@ -345,7 +345,7 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
         top = extremeY + this.offset.y;
       
       position[CSS.transformLookup] = 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0,' + horizontal + ',' + top + ',0, 1)';
-      this.styleQueue.push({ el: brick, style: position, className: 'masonry-brick' });
+      this.styleQueue.push({ el: brick, style: position });
   
       // apply setHeight to necessary columns
       for ( i=0; i < setSpan; i++ ) {

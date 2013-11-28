@@ -14,9 +14,12 @@ define('views/ResourceMasonryItemView', [
 //    className: 'pin',
 //    tagName: 'li',
     
+    className: 'nab masonry-brick',
+    attributes: {
+      style: 'position: absolute;'
+    },
     tagName: 'div',
     TAG: "ResourceMasonryItemView",
-    style: {},
     initialize: function(options) {
       if (this._initialized) {
         this.resource = this.model = options.resource || options.model;
