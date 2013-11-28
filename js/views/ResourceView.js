@@ -277,7 +277,7 @@ define('views/ResourceView', [
             if (prop['app']  &&  (!currentAppProps || $.inArray(p, currentAppProps) == -1))
               continue;
             displayedProps[p] = true;
-            var val = U.makeProp({resource: res, prop: prop, value: res.get(p)});
+            var val = U.makeProp(res, prop, res.get(p));
             if (!groupNameDisplayed) {
               U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
               groupNameDisplayed = true;
@@ -348,7 +348,7 @@ define('views/ResourceView', [
         }
         
         displayedProps[p] = true;
-        var val = U.makeProp({resource: res, propName: p, prop: prop, value: res.get(p)});
+        var val = U.makeProp(res, prop, res.get(p));
         if (prop.code) {
           val.value = this.__prependNumbersDiv(prop, val.value);          
         }
