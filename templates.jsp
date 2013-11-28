@@ -1267,18 +1267,17 @@
 <script type="text/template" id="masonry-list-item">
   <!-- a masonry item brick -->
   
-  <div class="anab" data-viewid="{{= viewId }}">
-    <div class="galleryItem_css3"
-         {{ if (obj.imgWidth) { }}
-            style="{{= (obj.top ? '' : 'height:' + imgHeight + 'px;') + (obj.left ? '' : 'width:' + imgWidth + 'px;') }}"
-         {{ } }}
-    >
-      <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img data-lazysrc="{{= obj.resourceMediumImage || G.blankImgDataUrl }}" {{= obj.width ? 'width="' + width + '"' : '' }} {{= obj.height ? 'height="' + height + '"' : '' }} class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" />
-      </a>
-    </div>
-    <!-- {{= typeof friendsCount == 'undefined' ? '' : '<div class="appBadge">' + friendsCount + '</div>' }} -->
-    {{= typeof friendMeCount == 'undefined' ? '' : '<div class="appBadge"><a style="color:white;" href="' + friendMeUri + '">' + friendMeCount + '</a></div>' }}
+  <div class="galleryItem_css3"
+       {{ if (obj.imgWidth) { }}
+          style="{{= (obj.top ? '' : 'height:' + imgHeight + 'px;') + (obj.left ? '' : 'width:' + imgWidth + 'px;') }}"
+       {{ } }}
+  >
+    <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
+      <img data-lazysrc="{{= obj.resourceMediumImage || G.blankImgDataUrl }}" {{= obj.width ? 'width="' + width + '"' : '' }} {{= obj.height ? 'height="' + height + '"' : '' }} class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" />
+    </a>
+  </div>
+  <!-- {{= typeof friendsCount == 'undefined' ? '' : '<div class="appBadge">' + friendsCount + '</div>' }} -->
+  {{= typeof friendMeCount == 'undefined' ? '' : '<div class="appBadge"><a style="color:white;" href="' + friendMeUri + '">' + friendMeCount + '</a></div>' }}
   <div class="nabRL">
     <div>
       {{= gridCols }}
@@ -1317,7 +1316,6 @@
     {{ } }}
   </div>     
         {{= typeof isIdea == 'undefined' ? '' : '<p class="ui-li-aside ui-li-desc">Idea</p>'}}
-</div>
 </script>
 
 

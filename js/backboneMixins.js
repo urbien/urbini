@@ -192,7 +192,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         if (!this.el)
           throw "can't set HTML for a view with no element";
         
-        this.el.innerHTML = html; // it's the responsibility of the dev to call view.redelegateEvents();
+        this.el.$html(html); // it's the responsibility of the dev to call view.redelegateEvents();
       },
       
       empty: function() {

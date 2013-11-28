@@ -5,6 +5,8 @@ define('FrameWatch', ['underscore'], function() {
       listeners = {},
       lastFrameStart,
       lastFrameDuration,
+//      frameNumber = 0,
+//      lastFrameNumber,
       frameId;
   
   function invoke(listener) {
@@ -29,31 +31,34 @@ define('FrameWatch', ['underscore'], function() {
   }
   
   function unsubscribe(id) {
-    try {
-      if (listeners[id]) {
-        delete listeners[id];
-        return true;
-      }
-    } finally {
-      if (!_.size(listeners) && frameId !== undefined) {
-//          caf(frameId);
-        frameId = undefined;
-      }
+    if (listeners[id]) {
+      delete listeners[id];
+      return true;
     }
   }
 
   function publish() {
-    if (typeof frameId != 'undefined') {
-      var now = _.now();
-      lastFrameDuration = now - lastFrameStart;
-      lastFrameStart = now;
-      for (var id in listeners) {
-        invoke(listeners[id]);
-      }
-      
-      if (typeof frameId != 'undefined') // may have gotten canceled during the invocation of the listeners
-        frameId = raf(publish);
+    if (frameId === undefined)
+      return;
+    
+//    frameNumber++;
+    var now = _.now();
+    lastFrameDuration = now - lastFrameStart;
+    lastFrameStart = now;
+    for (var id in listeners) {
+      invoke(listeners[id]);
     }
+    
+    if (!_.size(listeners)) {
+      //      caf(frameId);
+      frameId = undefined;
+    }
+    else {
+      // may have gotten canceled during the invocation of the listeners
+      frameId = raf(publish);
+    }
+      
+//    lastFrameNumber = frameNumber;
   }
   
   return {

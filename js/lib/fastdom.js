@@ -212,8 +212,8 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
   };
 
   FastDom.prototype.isOutOfTime = function() {
-//    return false;
-    return (this._frameTime = _.last(this.timestamps) - this.frameStart) >= FRAME_END;
+    return false;
+//    return (this._frameTime = _.last(this.timestamps) - this.frameStart) >= FRAME_END;
   };
   
   /**
