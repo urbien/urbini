@@ -1189,7 +1189,6 @@
 </script>
 
 <script type="text/template" id="masonry-mod-list-item">
-<div>
   <div class="anab" data-viewid="{{= viewId }}">
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
@@ -1261,7 +1260,6 @@
     </td>
     </tr>
   </table>
-</div>  
 </script>
 
 <script type="text/template" id="masonry-list-item">

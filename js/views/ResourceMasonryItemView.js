@@ -14,9 +14,12 @@ define('views/ResourceMasonryItemView', [
 //    className: 'pin',
 //    tagName: 'li',
     
+    className: 'nab masonry-brick',
+    attributes: {
+      style: 'position: absolute;'
+    },
     tagName: 'div',
     TAG: "ResourceMasonryItemView",
-    style: {},
     initialize: function(options) {
       if (this._initialized) {
         this.resource = this.model = options.resource || options.model;
@@ -132,11 +135,11 @@ define('views/ResourceMasonryItemView', [
     doRender: function(options, data) {
       var html = this.template(data);
       if (options && options.renderToHtml) {
-//        var tagName = this.tagName || 'div';
-//        this._html = '<{0} class="{1}">{2}</{0}>'.format(tagName, this.className, html);
+        var tagName = this.tagName || 'div';
+        this._html = '<{0} class="{1}" {2}>{3}</{0}>'.format(tagName, this.className, DOM.toAttributesString(this.attributes), html);
 //        this._html = '<{0}>{1}</{0}>'.format(tagName, html);
 //        this._html = html; 
-        this._html = html;
+//        this._html = html;
         return this;
       }
       else

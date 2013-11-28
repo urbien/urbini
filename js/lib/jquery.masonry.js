@@ -20,17 +20,6 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
     this._init();
   };
 
-  function cleanData(bricks) {
-    var i = bricks.length,
-        data;
-    
-    while (i--) {
-      data = bricks[i].dataset;
-      delete data.outerWidth;
-      delete data.outerHeight;
-    }
-  }
-  
   function getXYZ(brick) {
     return DOM.parseTranslation(brick.style[CSS.transformLookup]);
   };
@@ -75,21 +64,21 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
       }
   
       i = matches.length;
-//      this._brickify.apply(this, matches);
+      this._brickify.apply(this, matches);
       return matches;
     },
     
-//    _brickify: function(/* brickWannabes */) {
-//      var filtered = _.filter(arguments, function(b) {
-//            return !b.$hasClass('masonry-brick') || b.style.position !== 'absolute';
-//          }),
-//          i = filtered.length;
-//          
-//      while (i--) {
-//        filtered[i].$css({ position: 'absolute' })
-//                    .$addClass('masonry-brick')
-//      }
-//    },
+    _brickify: function(/* brickWannabes */) {
+      var filtered = _.filter(arguments, function(b) {
+            return !b.$hasClass('masonry-brick') || b.style.position !== 'absolute';
+          }),
+          i = filtered.length;
+          
+      while (i--) {
+        filtered[i].$css({ position: 'absolute' })
+                    .$addClass('masonry-brick')
+      }
+    },
 
     // sets up widget
     _create: function( options ) {
@@ -411,7 +400,7 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
       // add new bricks to brick pool
       var newBricks;
       if (contentIsBricks) {
-//        this._brickify.apply(this, content);
+        this._brickify.apply(this, content);
         newBricks = content;
       }
       else
@@ -469,7 +458,6 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
 
     removed: function(content, removeFromDOM) {
       var bricks = this._getBricks(content);
-      cleanData(bricks);
       
       this.bricks = _.difference(this.bricks, bricks);
       if (removeFromDOM) {
@@ -485,7 +473,6 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
     // removes elements from Masonry widget
     removedBricks: function(bricks, removeFromDOM) {
       this.bricks = _.difference(this.bricks, bricks);
-      cleanData(bricks);
       if (removeFromDOM) {
         var i = bricks.length;
         while (i--) {

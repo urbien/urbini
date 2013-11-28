@@ -11,7 +11,7 @@ define('views/MasonryListView', [
   'lib/fastdom'
 ], function(G, U, Events, ResourceListView, ResourceMasonryItemView, ResourceList, Mason, $m, Q) {
   var MASONRY_FN = 'masonry', // in case we decide to switch to Packery or some other plugin
-      ITEM_SELECTOR = '.nab';
+      ITEM_SELECTOR = '.masonry-brick';
 
   function getTop(child) {
     return parseInt(child.style.top, 10) || 0;
@@ -21,10 +21,13 @@ define('views/MasonryListView', [
     return getTop(child) + child.offsetHeight;
   }
 
-  function getBricks(views) {
-    return views.map(function(view) {
-      return view.el;
-    });
+  function getBricks(pages) {
+    var els = [];
+    for (var i = 0; i < pages.length; i++) {
+      els.push.apply(els, pages[i].childNodes);
+    }
+    
+    return els;
   }
   
   return ResourceListView.extend({
@@ -64,10 +67,6 @@ define('views/MasonryListView', [
       }
     },    
 
-    setDummyDimension: function(el, value) {
-      // do nothing
-    },
-    
     getPageTag: function() {
       return 'div';
     },
@@ -75,25 +74,14 @@ define('views/MasonryListView', [
     preinitializeItem: function(res) {
       return ResourceMasonryItemView.preinitialize({
         vocModel: this.vocModel,
-        className: 'nab', // nabBoard',
         parentView: this
       });
     },
     
     renderItem: function(res, info) {
-      var liView = this.getCachedItemView(),
-          options = {
-            resource: res
-          };
-      
-      if (liView) {
-        console.log("RECYCLING LIST ITEM");
-        liView.reset().initialize(options);
-      }
-      else {
-        console.log("CREATING NEW LIST ITEM, TOTAL CHILD VIEWS:", _.size(this.children));
-        liView = this.addChild(new this._preinitializedItem(options));
-      }
+      var liView = this.addChild(new this._preinitializedItem({
+        resource: res
+      }));
       
       liView.render(this._itemRenderOptions);
       return liView;
@@ -139,11 +127,14 @@ define('views/MasonryListView', [
       if (this._pages.length) {
         this._optimizedElementsPerPage = true;
         var viewportDim = this.getViewport().height,
-            page = this._pages[0],
-            pageDim = getBottom(_.max(page.childNodes, getBottom)) - getTop(_.min(page.childNodes, getTop)),
-            numEls = page.childElementCount;
-
-        return Math.ceil(numEls * viewportDim / pageDim);
+            sw = this.getSlidingWindow(),
+            swDim = sw.tail - sw.head;
+//            page = this._pages[0],
+//            pageDim = getBottom(_.max(page.childNodes, getBottom)) - getTop(_.min(page.childNodes, getTop)),
+//            numEls = page.childElementCount;
+//
+//        return Math.ceil(numEls * viewportDim / pageDim);
+        return Math.ceil(this.masonry.bricks.length / (swDim / viewportDim));
       }
       else {
         var dimensions = this._containerDimensions;
@@ -169,13 +160,9 @@ define('views/MasonryListView', [
       });
     },    
    
-    isDummyPadded: function() {
-      return false;
-    },
-
-    doRemove: function(childViews, fromTheHead) {
-      ResourceListView.prototype.doRemove.apply(this, arguments);
-      this.masonry.removedBricks(getBricks(childViews));
+    doRemovePages: function(pages, fromTheHead) {
+      ResourceListView.prototype.doRemovePages.apply(this, arguments);
+      this.masonry.removedBricks(getBricks(pages));
     },
 
     preRender: function() {
