@@ -511,7 +511,7 @@
 <script type="text/template" id="stringPT">
   <!-- Left-side slide-out menu panel -->
   {{ if (typeof value != 'undefined' && value.indexOf('<span') == -1) { }}
-     <div style="white-space: normal;font-size:16px;">{{= value }}</div>
+     <div data-prop="{{= prop.shortName }}" style="white-space: normal;font-size:16px;">{{= value }}</div>
   {{ } }}
   {{ if (typeof value != 'undefined' && value.indexOf('<span') != -1) { }}
     {{= value }}
@@ -1272,7 +1272,7 @@
           style="{{= (obj.top ? '' : 'height:' + imgHeight + 'px;') + (obj.left ? '' : 'width:' + imgWidth + 'px;') }}"
        {{ } }}
   >
-    <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
+    <a href="{{= obj.rUri || 'about:blank' }}">
       <img data-lazysrc="{{= obj.resourceMediumImage || G.blankImgDataUrl }}" {{= obj.width ? 'width="' + width + '"' : '' }} {{= obj.height ? 'height="' + height + '"' : '' }} class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" />
     </a>
   </div>

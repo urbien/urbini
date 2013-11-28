@@ -945,7 +945,7 @@ define('utils', [
     splitRequestFirstHalf: '$gridCols,$images,$displayNameElm,$alwaysReturnToClient',  // change these together
     setSplitRequest: function(vocModel) {        // change these together
       var meta = vocModel.properties,
-          gridCols = U.getColsMeta(vocModel, 'grid'),
+          gridCols = U.getGridColsMeta(vocModel),
           imageProps = U.getPropsRanged(vocModel, G.commonTypes.Image), //U.getClonedProps(vocModel, 'ImageResource'),
           displayNameProps = U.getDisplayNameProps(vocModel),
           firstHalf,
@@ -969,7 +969,15 @@ define('utils', [
       
       vocModel.splitRequest = secondHalf && secondHalf.length > 3;
     },
+
+    getViewColsMeta: function(vocModel) {
+      return this.getColsMeta(vocModel, 'view');
+    },
     
+    getGridColsMeta: function(vocModel) {
+      return this.getColsMeta(vocModel, 'grid');
+    },
+
     getColsMeta: function(vocModel, colsType) {
       colsType = colsType || 'grid';
       var colsProp = colsType + 'Cols';
@@ -988,44 +996,45 @@ define('utils', [
     },
     
     makeCols: function(res, cols, isListView) {
+      if (!cols)
+        return null;
+      
       var vocModel = res.vocModel;
       var resourceLink;
       var rows = {};
-      var i = 0;
-      if (cols) {
-        _.each(cols, function (col) {
-          col = col.trim();
-          var prop = vocModel.properties[col];
-          if (!prop)
-            return;
-          
-          var val = res.get(col);
-          if (!val) {
-            var pGr = prop.propertyGroupList;
-            if (pGr) {
-              var s = U.getPropDisplayName(prop);
-              var nameVal = {name: s, value: pGr};
-              rows[s] = {value : pGr};  
-              rows[s].propertyName = col;  
-              rows[s].idx = i++;
-            }
-            
-            return;
+      var total = 0;
+      for (var i = 0; i < cols.length; i++) {
+        var col = cols[i].trim();
+        var prop = vocModel.properties[col];
+        if (!prop)
+          return;
+        
+        var val = res.get(col);
+        if (!val) {
+          var pGr = prop.propertyGroupList;
+          if (pGr) {
+            var s = U.getPropDisplayName(prop);
+            var nameVal = {name: s, value: pGr};
+            rows[s] = {value : pGr};  
+            rows[s].propertyName = col;  
+            rows[s].idx = total++;
           }
           
-          var nameVal = U.makeProp({resource: res, prop: prop, value: val, isDisplayName: isListView ? prop.displayNameElm : undefined});
-          var nvn = nameVal.name;
-          rows[nvn] = {value: nameVal.value};
-          rows[nvn].idx = i++;
-          rows[nvn].propertyName = col;
-          if (prop.resourceLink)
-            rows[nvn].resourceLink = true;
-    //        resourceLink = nameVal.value;
-    //      else
-        });
-      }  
+          continue;
+        }
+        
+        var nameVal = U.makeProp(res, prop, val);
+        var nvn = nameVal.name;
+        rows[nvn] = {value: nameVal.value};
+        rows[nvn].idx = total++;
+        rows[nvn].propertyName = col;
+        if (prop.resourceLink)
+          rows[nvn].resourceLink = true;
+  //        resourceLink = nameVal.value;
+  //      else
+      }
       
-      return i == 0 ? null : rows;
+      return total == 0 ? null : rows;
     },
 
     
@@ -1805,15 +1814,13 @@ define('utils', [
 
       return rgba;
     },   
-    makeProp: function(info) {
-      var res = info.resource;
+    makeProp: function(res, prop, value) {
+//      var res = info.resource;
       var vocModel = res.vocModel;
-      var propName = info.propName;
-      var prop = info.prop || propName && vocModel && vocModel.properties[propName];
-      propName = propName || prop.shortName;
-      var val = info.value || U.getValue(res, propName);
+      var propName = prop.shortName; //info.propName;
+      var val = value || U.getValue(res, propName);
       val = typeof val !== 'undefined' ? U.getTypedValue(res, propName, val) : val;
-      var isDisplayName = info.isDisplayName || prop.displayNameElm;
+      var isDisplayName = prop.displayNameElm;
       
       var cc = prop.colorCoding;
       if (!prop.code) {
@@ -1826,7 +1833,7 @@ define('utils', [
               val = "<span style='color:" + cc + "'>" + val + "</span>";
           }
         }
-        else if (prop.range == 'string') {
+        else if (val && prop.range == 'string') {
           var href = window.location.hash;
           var isView = href.startsWith("#view/");
 
@@ -3888,6 +3895,8 @@ define('utils', [
     getDisplayNameProps: '_displayNameProps', 
     getPrimaryKeys: '_primaryKeys', 
 //    getModelImageProperty: '_imageProperty',
+    getGridColsMeta: '_gridCols',
+    getViewColsMeta: '_viewCols',
     isResourceProp: '_isResourceProp',
     getPropCloneOf: '_clonedProperties',
     getPositionProps: '_positionProperties',
