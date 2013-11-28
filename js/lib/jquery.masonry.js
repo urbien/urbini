@@ -69,13 +69,15 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
     },
     
     _brickify: function(/* brickWannabes */) {
-      var filtered = _.filter(arguments, function(b) {
-            return !b.$hasClass('masonry-brick') || b.style.position !== 'absolute';
-          }),
-          i = filtered.length;
+//      var filtered = _.filter(arguments, function(b) {
+//            return !b.$hasClass('masonry-brick') || b.style.position !== 'absolute';
+//          }),
+//          i = filtered.length;
           
+      var i = arguments.length;
       while (i--) {
-        filtered[i].$css({ position: 'absolute' })
+//        filtered[i].$css({ position: 'absolute', opacity: '0.999999' })
+        arguments[i].$css({ position: 'absolute', opacity: '0.999999' })
                     .$addClass('masonry-brick')
       }
     },
@@ -299,9 +301,7 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
               i = setY.length,
               shortCol  = i,
               setSpan   = this.cols + 1 - i,
-              position  = {
-                position: 'absolute'
-              },
+              position  = {},
               colYs = this._getColYs();
   
       //    Which column has the min/max Y value, 
@@ -334,7 +334,7 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
         top = extremeY + this.offset.y;
       
       position[CSS.transformLookup] = 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0,' + horizontal + ',' + top + ',0, 1)';
-      this.styleQueue.push({ el: brick, style: position, className: 'masonry-brick' });
+      this.styleQueue.push({ el: brick, style: position });
   
       // apply setHeight to necessary columns
       for ( i=0; i < setSpan; i++ ) {
@@ -400,7 +400,7 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
       // add new bricks to brick pool
       var newBricks;
       if (contentIsBricks) {
-        this._brickify.apply(this, content);
+//        this._brickify.apply(this, content);
         newBricks = content;
       }
       else
