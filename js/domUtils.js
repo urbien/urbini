@@ -205,16 +205,12 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       },
       
       $html: function(htmlOrFrag) {
-        if (typeof htmlOrFrag == 'string')
+        if (typeof htmlOrFrag == 'string') {
           this.innerHTML = htmlOrFrag;
-        else if (htmlOrFrag instanceof Node) {
-          this.innerHTML = "";
-          this.appendChild(htmlOrFrag);
+          return this;
         }
-        else
-          throw "only HTML string or Node / DocumentFragment are supported";
         
-        return this;
+        return this.$empty().$append(htmlOrFrag);        
       }
     };
     
@@ -323,6 +319,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           var htmlOrFrag = arguments[i];
           if (typeof htmlOrFrag == 'string')
             this.innerHTML += htmlOrFrag;
+//            this.$append($.parseHTML(htmlOrFrag));
           else if (htmlOrFrag instanceof Node)
             this.appendChild(htmlOrFrag);
           else if (htmlOrFrag instanceof Array || htmlOrFrag instanceof NodeList) {
@@ -885,6 +882,10 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
         $wrap(p).popup('close');
       else
         $unwrap(p).$remove();
+    },
+    
+    positionToMatrix: function(top, left) {
+      return 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, ' + top + ', ' + left + ', 0, 1)';
     }
   };
 });
