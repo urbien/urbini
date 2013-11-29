@@ -278,7 +278,7 @@ fieldset {
 
 .editList li {
   padding: 0.5rem 1.5rem; 
-  min-height: 3rem;
+  min-height: 2rem;
   font-size: 1.6rem;
 }
 
@@ -414,4 +414,9 @@ section#login_popup {
 .menuBadge {
   left: 50%;
   top:  0.5rem;
+}
+.resourceProp {
+  font-size:1.6rem;
+  cursor:pointer;
+  min-height:3rem;
 }
