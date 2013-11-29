@@ -179,7 +179,6 @@
 /*  color: #fff; */
   content:"\f0c8" 
 }
-
 .ui-icon-searchfield:after {
   position:absolute;
   font-family: FontAwesome !important;
@@ -456,3 +455,10 @@
   font-size: 18px;
   margin: 10px;
 }
+/*
+#resourceEditView ul {
+  padding: 1rem;
+  border-radius: 1rem;
+  list-style: none;
+}
+*/
