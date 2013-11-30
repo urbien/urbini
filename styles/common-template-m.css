@@ -29,6 +29,7 @@ html { height: 100%; }
 /*  margin: 10px 10px 6px 10px; */
   margin: 8px 10px 6px 8px;
 }
+
 .galleryItem_css3 img { float: left;}
 .galleryItem_container .galleryItem, .galleryItem_container .galleryItem_css3 { margin: 0px; }
 .nab  { box-shadow: none; position: absolute; }
@@ -173,7 +174,6 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 
 #comments a, #renabs a {color: #f47414; }
 
-.editBoard a {font-size: 13px;} 
 .WhiteButton {color: #524d4d; text-shadow: 0 1px rgba(255,255,255,0.9);}
 
 .nabRL  { display: inline; }
@@ -1172,6 +1172,25 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 div {
   font-family: Helvetica, Ariel, sans-serif;
 }
+
+
+.triangle {
+  position:absolute;  
+  width: 0;
+  height: 0; 
+  border-left: 8px solid transparent;  /* left arrow slant */
+  border-right: 8px solid transparent; /* right arrow slant */
+  border-bottom: 8px solid #2f2f2f; /* bottom, add background color here */
+  font-size: 0;
+  transform:rotate(89deg);
+ -ms-transform:rotate(90deg); /* IE 9 */
+ -webkit-transform: rotate(135deg); 
+  line-height: 0;
+  right: -19px;
+  bottom:  -5px;
+}
+
+
 /*
 .nabBoard {
   padding: 0 !important; cursor: pointer;
@@ -1181,10 +1200,11 @@ div {
 .gridBoard {max-width: 669px !important; padding: 0 !important;cursor: pointer;}
 .nabBoard .link { height: 200px; display: block; padding: 0 0 10px 12px; overflow: hidden;}
 .gridBoard .link {display: block; padding: 9px 0 4px 12px; overflow: hidden;}
-.nabBoard .link img, .gridBoard .link img  {float: left; width: 100px; /* magnify: 100 / 61 */ margin-left: -20px; /* set at horizontal center */ }
+.nabBoard .link img, .gridBoard .link img  {float: left; width: 100px; margin-left: -20px; }
 
 .nabBoard .link div, .gridBoard .link div { width: 61px; height: 61px; border: 1px solid #f0f0f0; overflow: hidden; float: left; margin: 0px 4px 4px 0px;}
 
+.editBoard a {font-size: 13px;} 
 .nabBoard .editBoard {padding: 0 15px 11px; text-align: center;}
 .nabBoard .editBoard .Buttn {display: block; padding: 0.5em 0.825em;}
 */

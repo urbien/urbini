@@ -11,7 +11,14 @@ html {
   position: absolute; 
   border: 0; 
 }
-
+a.resourceProp {
+  position: relative;
+  font-size:1.6rem;
+  cursor:pointer;
+  min-height:3rem;
+}
+}
+ 
 li {
   position: relative;
 }

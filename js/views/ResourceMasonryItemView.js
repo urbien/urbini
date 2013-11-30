@@ -218,7 +218,7 @@ define('views/ResourceMasonryItemView', [
 //          comments = data.v_showCommentsFor && nabRLSocial.firstChild,
 //          votes = data.v_showVotesFor && nabRLSocial.firstChild
       if (obj.imgWidth) {
-        debugger;
+//        debugger;
         gItem.$attr('style', _.template("{{= (obj.top ? '' : 'height:' + imgHeight + 'px;') + (obj.left ? '' : 'width:' + imgWidth + 'px;') }}")(obj));
       }
       
