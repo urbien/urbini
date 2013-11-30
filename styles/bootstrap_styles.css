@@ -216,6 +216,11 @@ fieldset#submitBtns div:first-child {
 fieldset#submitBtns div:nth-child(2) {
   float:right;
 }
+.editList input[type="text"], .editList textarea {
+  width: 80%;
+  display: inline-block;
+}
+
 textarea.form-control {
   overflow: hidden;
 }
@@ -323,7 +328,33 @@ checkbox.form-control {
   border: none;
 }
 
+.cameraPopup {
+  background: #f9f9f9;
+  border-radius: 1rem;
+  border: 1px solid #aaa;
+  padding: 1rem;
+  min-width: 290px;
+  max-width: 330px;
+  margin: 0 auto;
+}
+#cameraCancelBtn i {
+  position: absolute; 
+  border-radius: 1rem; 
+  font-size: 2.8rem; 
+  top: -2.5rem;
+  right: -2rem;
+}
 
+div.nabBtn { 
+  padding-bottom:25px;
+}
+.phOverlay {
+  width: 100%;
+  height: 30%;
+}
+.phOverlay h3 {
+  margin-top:10px;
+}
 /*
 @media all and (min-width:420px) {
   .editList select {

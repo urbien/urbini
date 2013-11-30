@@ -179,7 +179,7 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 .nabRL  { display: inline; }
 .nabRL div { padding: 0px 10px 10px 10px;}
 
-.nabRL .btn span {padding-right: 0; }
+.nabRL .nabBtn span {padding-right: 0; }
 
 .modP tr {vertical-align: top;}
 .lc1 a {
@@ -197,8 +197,15 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 .lc1 img {
   max-width: 32px;
 }
-.btn { text-align: center; padding-bottom: 3px; height: 25px; }
-.nabRL .btn a { color: #757575; text-shadow: none; }
+div.nabBtn { 
+  text-align: center; 
+  height: 25px; 
+  background: #eeeeee; 
+  padding-top: 10px; 
+  padding-bottom: 0px;
+}
+
+.nabRL .nabBtn a { color: #757575; text-shadow: none; }
 
 .commentListDate {
   color: #999999;
@@ -954,6 +961,9 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   overflow: hidden;
   position: relative;
 }
+.thumb-inner img {
+  z-index: -1;
+}
 .thumb-inner a {
   height: 100%;
   width: 100%;
@@ -1172,6 +1182,25 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 div {
   font-family: Helvetica, Ariel, sans-serif;
 }
+
+
+.triangle {
+  position:absolute;  
+  width: 0;
+  height: 0; 
+  border-left: 8px solid transparent;  /* left arrow slant */
+  border-right: 8px solid transparent; /* right arrow slant */
+  border-bottom: 8px solid #2f2f2f; /* bottom, add background color here */
+  font-size: 0;
+  transform:rotate(89deg);
+ -ms-transform:rotate(90deg); /* IE 9 */
+ -webkit-transform: rotate(135deg); 
+  line-height: 0;
+  right: -2px;
+  bottom:  2px;
+}
+
+
 /*
 .nabBoard {
   padding: 0 !important; cursor: pointer;
