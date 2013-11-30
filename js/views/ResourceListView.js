@@ -1248,9 +1248,7 @@ define('views/ResourceListView', [
     onResourceChanged: function(res) { // attach/detach when sliding window moves
       var itemView = this.findChildByResource(res);
       if (itemView) {
-        itemView.render({
-          unlazifyImages: !this._scrollable
-        }); // or maybe remove and reappend?
+        itemView.render(); // or maybe remove and reappend?
         
         this.adjustSlidingWindow();
         // expect an extra reflow here
@@ -1438,7 +1436,10 @@ define('views/ResourceListView', [
         this.addChild(liView, prepend);      
       }
       
-      liView.render();
+      liView.render({
+        unlazifyImages: !this._scrollable
+      });
+      
       liView.el.dataset.index = liView.resource.collection.indexOf(liView.resource);
       return liView;
     },
