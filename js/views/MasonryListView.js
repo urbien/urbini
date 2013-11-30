@@ -54,7 +54,7 @@ define('views/MasonryListView', [
     
     initialize: function(options) {
       var self = this;
-      _.bindAll(this, 'reloadMasonry');
+//      _.bindAll(this, 'reloadMasonry');
       ResourceListView.prototype.initialize.apply(this, arguments);      
 //      this.listenTo(Events, 'pageChange', function(prev, current) {
 //        if (self.pageView == current && self.rendered) {
@@ -104,7 +104,7 @@ define('views/MasonryListView', [
       liView.render(this._itemRenderOptions);
       return liView;
     },
-    
+/*    
     reloadMasonry: function(e) {
       if (!this.rendered) 
         return;
@@ -130,7 +130,7 @@ define('views/MasonryListView', [
 //        this._reloadMasonry();
       this.centerMasonry(this);
     },
-
+*/
     _getSlidingWindowOffset: function(head) {
       if (!this._pages.length)
         return 0;
