@@ -15,9 +15,6 @@ define('views/ResourceMasonryItemView', [
 //    tagName: 'li',
     
     className: 'nab masonry-brick',
-    attributes: {
-      style: 'position: absolute;'
-    },
     tagName: 'div',
     TAG: "ResourceMasonryItemView",
     initialize: function(options) {
@@ -80,6 +77,7 @@ define('views/ResourceMasonryItemView', [
     
     reset: function() {
       this.rendered = false;
+      this.undelegateNonDOMEvents();
 //      this.el.$empty();
       return this;
     },
@@ -136,7 +134,7 @@ define('views/ResourceMasonryItemView', [
       if (this.el.childElementCount)
         return this.updateTile(options, data);
       
-      var html = this.template(data);
+      var html = this.template(data, options && options.unlazifyImages);
       if (options && options.renderToHtml) {
 //        var tagName = this.tagName || 'div';
 //        this._html = '<{0} class="{1}">{2}</{0}>'.format(tagName, this.className, html);

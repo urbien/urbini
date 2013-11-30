@@ -124,8 +124,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
 
   function scrollOffsetToPos(offset) {
     return {
-      X: -offset.X,
-      Y: -offset.Y
+      X: -offset.scrollLeft,
+      Y: -offset.scrollTop
     }
   }
 
@@ -298,6 +298,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
     },
 
     myEvents: {
+      'invalidateSize': '_onSizeInvalidated',
       'destroyed': '_toggleScrollEventHandlers'
     },
 
@@ -933,18 +934,19 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
         Q.read(this._calculateScrollerSize, this);
     },
     
-    _triggerScrollEvent: function(type, scroll) {
+    _triggerScrollEvent: function(type, pos, force) {
+      force = force || type.endsWith('end');
       var s = this._scrollerProps,
           axis = this.getScrollAxis(),
-          pos = scroll ? scrollOffsetToPos(scroll) : s.position,
           prevPos = s.prevPosition;
-      
-      if (prevPos && Math.abs(pos[axis] - prevPos[axis]) < SCROLL_EVENT_DISTANCE_THRESH)
+
+      pos = pos || s.position;
+      if (!force && prevPos && Math.abs(pos[axis] - prevPos[axis]) < SCROLL_EVENT_DISTANCE_THRESH)
         return;
       
       s.prevPosition = _.clone(pos);
 //      this.log("SCROLL EVENT:", -pos.Y);
-      this.el.dispatchEvent(new CustomEvent(type.replace('scroll', 'scrollo'), { detail: this.getScrollInfo(scroll) }));
+      this.el.dispatchEvent(new CustomEvent(type.replace('scroll', 'scrollo'), { detail: this.getScrollInfo(scrollPosToOffset(pos)) }));
     },
     
     getScrollInfo: function(scroll) {
@@ -986,7 +988,9 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
             percentTimeTraveled = 0,
             prevPercentDist = 0,
     		    prevPercentTime = 0,
-    		    distanceTraveled;
+    		    distanceTraveled,
+    		    scrollEvent = 'scrollstart',
+    		    forceEventDispatch = false;
     
 //        this._setScrollVelocity(distanceMultipliers[0] * distance / time);
         function ping() {
@@ -1012,21 +1016,24 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
               self._setViewportDestination(-pingPos.X, -pingPos.Y, time - percentTimeTraveled * time);
             }
             
-//            console.log("DISTANCE", distanceTraveled);
-//            console.log("TIME", time - scrollTime);
-//            console.log("VELOCITY", velocity);
             self._queueScrollTimeout(ping, period);
           }
           else {
 //            console.log("END OF FLING");
             velocity = 0;
+            pingPos[axis] = pos[axis] + distance;
             self._updateScrollPosition(x, y);
             self._setViewportDestination(-x, -y, scrollTime);
             self._resetScroller();
+            self._triggerScrollEvent('scroll', pingPos, forceEventDispatch);
+            scrollEvent = 'scrollend';
+            forceEventDispatch = true;
           }
           
-          self._triggerScrollEvent('scroll', scrollPosToOffset(pingPos));
+          self._triggerScrollEvent(scrollEvent, pingPos, forceEventDispatch);
           self._setScrollVelocity(velocity);
+          if (scrollEvent == 'scrollstart')
+            scrollEvent = 'scroll';
         }
         
         ping();
@@ -1236,8 +1243,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
     displayName: 'Scrollable'    
   });
   
-  if (G.DEBUG)
-    U.logFunctions(Scrollable.prototype, '_scrollTo', '_snapScroller', 'snapScrollerToHead', 'snapScrollerToTail', '_flingScroller', '_stopScroller');
+//  if (G.DEBUG)
+//    U.logFunctions(Scrollable.prototype, '_scrollTo', '_snapScroller', 'snapScrollerToHead', 'snapScrollerToTail', '_flingScroller', '_stopScroller');
   
   return Scrollable;
 });

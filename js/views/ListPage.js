@@ -160,14 +160,14 @@ define('views/ListPage', [
         listViewType = 'IntersectionListView';
       else if (this.isComment)
         listViewType = 'CommentListView';
-      else if (isMasonry || isModification)
-        listViewType = 'MasonryListView';
+//      else if (isMasonry || isModification)
+//        listViewType = 'MasonryListView';
       else
         listViewType = 'ResourceListView';
       
       this.ready = readyDfd.promise();
       U.require('views/' + listViewType).done(function(listViewCl) {
-        self.listView = new listViewCl(_.extend({mode: self.mode}, self.options, commonParams));
+        self.listView = new listViewCl(_.extend({mode: self.mode, displayMode: isMasonry || isModification ? 'masonry' : 'vanillaList'}, self.options, commonParams));
         self.addChild(self.listView);
         readyDfd.resolve();
       });

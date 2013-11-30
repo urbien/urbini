@@ -634,7 +634,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
         },
         overallPromise;
 
-    filter = filter || alwaysTrue;    
+//    filter = filter || alwaysTrue;    
     overallPromise = trans.progress(function(trans) {
       log("db", 'Starting getItems Transaction, query with valueTester');
       var store = trans.objectStore(storeName);
@@ -642,20 +642,20 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
         if (done)
           return false; // ends the cursor transaction
         
-        var dfd = $.Deferred(),
-            promise = dfd.promise();
+//        var dfd = $.Deferred(),
+//            promise = dfd.promise();
+//    
+//        Q.nonDom(function() {          
+        var promise = parse(item.value).done(function(val) {
+          if (!filter || filter && filter(val)) {
+            results.push(val);
+            if (results.length >= limit)
+              done = true;
+          }      
     
-        Q.nonDom(function() {          
-          parse(item.value).done(function(val) {
-            if (filter(val)) {
-              results.push(val);
-              if (results.length >= limit)
-                done = true;
-            }      
-      
-            dfd.resolve();
-          }).fail(dfd.resolve); // resolve always to make sure we return results
-        });
+//          dfd.resolve();
+        }); //.fail(dfd.resolve); // resolve always to make sure we return results
+//        });
     
         promises.push(promise);
       };

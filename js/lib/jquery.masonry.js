@@ -188,9 +188,39 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
   
     // ====================== General Layout ======================
   
+    _calcContainerSize: function() {
+      var containerSize = {};
+//    containerSize.height = Math.max.apply( Math, this.bottomColYs ) - Math.min.apply( Math, this.topColYs ) + 'px';
+      containerSize.height = Math.max.apply( Math, this.bottomColYs ) - this.offset.y + 'px';
+      if ( this.options.isFitWidth ) {
+        containerSize.width = this.cols * this.columnWidth - this.options.gutterWidth + 'px';
+      }
+      
+      return containerSize;
+    },
+
+    _resizeContainer: function() {
+      var containerSize = this._calcContainerSize(),
+          style = this.element.style;
+      
+      style.width = containerSize.width;
+      style.height = containerSize.height;
+    },
+
     // used on collection of atoms (should be filtered, and sorted before )
     // accepts atoms-to-be-laid-out to start with
     layout: function( bricks, callback ) {
+//      if (this._inLimbo) {
+//        var i = this.cols;
+//        while (i--) {
+//          this.topColYs[i] = -Infinity;
+//          this.bottomColYs[i] = Infinity;
+//        }
+//        
+//        this._recalcColYs(bricks);
+//        this._inLimbo = false;
+//      }
+      
       // layout logic
       var brick, colSpan, groupCount, groupY, groupColY, j, 
       colYs = this._getColYs(), 
@@ -225,13 +255,7 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
   
       // set the size of the container
       // TODO: adjust this if necessary to take into account both sets of cols
-      var containerSize = {};
-//      containerSize.height = Math.max.apply( Math, this.bottomColYs ) - Math.min.apply( Math, this.topColYs ) + 'px';
-      containerSize.height = Math.max.apply( Math, this.bottomColYs ) - this.offset.y + 'px';
-      if ( this.options.isFitWidth ) {
-        containerSize.width = this.cols * this.columnWidth - this.options.gutterWidth + 'px';
-      }
-  
+      var containerSize = this._calcContainerSize();  
       this.styleQueue.push({ el: this.element, style: containerSize });
   
       // process styleQueue
@@ -239,6 +263,10 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
       for (i=0, len = this.styleQueue.length; i < len; i++) {
         obj = this.styleQueue[i];
         obj.el.$css(obj.style);
+        for (var p in obj.data) {
+          obj.el.dataset[p] = obj.data[p];
+        }
+        
         if (obj.className)
           obj.el.$addClass(obj.className);
       }
@@ -337,15 +365,18 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
 //      position[ this.horizontalDirection ] = this.columnWidth * shortCol + this.offset.x + 'px';
       
       var top,
-          horizontal = this.columnWidth * shortCol + this.offset.x;
+          left = this.columnWidth * shortCol + this.offset.x;
       
       if (this.options.fromBottom)
         top = setHeight - this.offset.y;
       else
         top = extremeY + this.offset.y;
       
-      position[CSS.transformLookup] = 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0,' + horizontal + ',' + top + ',0, 1)';
-      this.styleQueue.push({ el: brick, style: position });
+      position[CSS.transformLookup] = 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0,' + left + ',' + top + ',0, 1)';
+      this.styleQueue.push({ el: brick, style: position, data: {
+        top: top,
+        left: left
+      }});
   
       // apply setHeight to necessary columns
       for ( i=0; i < setSpan; i++ ) {
@@ -372,18 +403,26 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
   
     _reloadLayout: function( callback ) {
       // reset columns
-      var i = this.cols;
       this.options.fromBottom = this.originalFromBottom;
-      this.topColYs = [];
-      this.bottomColYs = [];
-      while (i--) {
-        this.topColYs.push( this.offset.y );
-        this.bottomColYs.push( this.offset.y );
-      }
+      this._resetColYs();
+      
       // apply layout logic to all bricks
       this.layout( this.bricks, callback );
     },
   
+    _resetColYs: function() {
+      var i = this.cols;
+      if (!this.topColYs)
+        this.topColYs = new Array(i);
+      if (!this.bottomColYs)
+        this.bottomColYs = new Array(i);
+      
+      while (i--) {
+        this.topColYs[i] = this.offset.y;
+        this.bottomColYs[i] = this.offset.y;
+      }
+    },
+    
     // ====================== Convenience methods ======================
   
     // goes through all children again and gets bricks in proper order
@@ -391,6 +430,17 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
       this.bricks = this._getBricks( this.element.childNodes );
     },
   
+    setOffset: function(offset) {
+      var top = this.topColYs,
+          bottom = this.bottomColYs,
+          i = this.cols;
+      
+      while (i--) {
+        top[i] = offset;
+        bottom[i] = offset;
+      }
+    },
+    
     reload: function( callback ) {
       this.reloadItems();
       this.reLayout( callback );
@@ -437,6 +487,11 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
     },
 
     _recalcColYs: function() {
+      if (!this.bricks.length) {
+        this._resetColYs();
+        return;
+      }
+      
       var bricks = this.bricks,
           brick,
           fromCol,
@@ -480,6 +535,7 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
       }
       
       this._recalcColYs();
+      this._resizeContainer();
     },
         
     // removes elements from Masonry widget
@@ -494,6 +550,7 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
       }
       
       this._recalcColYs();
+      this._resizeContainer();
     },
   
     // destroys widget, returns elements and container back (close) to original style

@@ -31,7 +31,7 @@ html { height: 100%; }
 }
 .galleryItem_css3 img { float: left;}
 .galleryItem_container .galleryItem, .galleryItem_container .galleryItem_css3 { margin: 0px; }
-.nab  { box-shadow: none;}
+.nab  { box-shadow: none; position: absolute; }
 .nab  span { padding-right: 12px; }
 .nab  .b span { padding-right: 0px; padding-left: 0px; color: #393939; font-weight: normal;}
 

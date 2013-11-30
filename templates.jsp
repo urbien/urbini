@@ -584,7 +584,7 @@
 </script>
 
 <!--script type="text/template" id="mapItemTemplate">
-<span><a href="{{= U.makePageUrl('view', value) }}">{{= typeof displayName == 'undefined' ? value : displayName }} {{= image ? '<br />' + image : '' }} </a></span>
+<span><a href="{{= U.makePageUrl('view', uri) }}">{{= typeof displayName == 'undefined' ? uri : displayName }} {{= image ? '<br />' + image : '' }} </a></span>
 </script-->
 
 <script type="text/template" id="mapItemTemplate">
@@ -1317,7 +1317,6 @@
   </div>     
         {{= typeof isIdea == 'undefined' ? '' : '<p class="ui-li-aside ui-li-desc">Idea</p>'}}
 </script>
-
 
 <script type="text/template" id="fileUpload">
   <!-- a file upload form -->

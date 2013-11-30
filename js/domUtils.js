@@ -800,7 +800,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           src,
           realSrc,
           isHTMLElement = images[0] instanceof HTMLElement,
-          get = isHTMLElement ? function(el, attr) { return el.getAttribute(attr) } : _.index;
+          get = isHTMLElement ? function(el, attr) { return el.getAttribute(attr) || el.style[attr] } : _.index;
       
       function read() {
         for (var i = 0, num = images.length; i < num; i++) {

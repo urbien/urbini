@@ -5,11 +5,12 @@ define('views/MasonryListView', [
   'events',
   'views/ResourceListView',
   'views/ResourceMasonryItemView',
+  'views/ResourceListItemView',
   'collections/ResourceList',
   'jqueryMasonry',
   '@widgets',
   'lib/fastdom'
-], function(G, U, Events, ResourceListView, ResourceMasonryItemView, ResourceList, Mason, $m, Q) {
+], function(G, U, Events, ResourceListView, ResourceMasonryItemView, ResourceListItemView, ResourceList, Mason, $m, Q) {
   var MASONRY_FN = 'masonry', // in case we decide to switch to Packery or some other plugin
       ITEM_SELECTOR = '.nab';
 
@@ -31,7 +32,7 @@ define('views/MasonryListView', [
     className: 'masonry',
     autoFinish: false, // we want to say we finished rendering after the masonry is done doing its magic, which may happen async
     type: 'masonry',
-    _elementsPerPage: 10,
+    _averageElementSize: 150,
     events: {
       'refresh': 'refresh'
 //        ,
@@ -44,8 +45,7 @@ define('views/MasonryListView', [
     },
     
     initialize: function(options) {
-      var self = this;
-      _.bindAll(this, 'reloadMasonry');
+//      _.bindAll(this, 'reloadMasonry');
       ResourceListView.prototype.initialize.apply(this, arguments);      
     },
     
@@ -54,24 +54,6 @@ define('views/MasonryListView', [
         this.masonry.resize();
     },
     
-    _updateConstraints: function() {
-      ResourceListView.prototype._updateConstraints.call(this);
-      if (this._viewportDim) {
-        if (G.browser.mobile && this._viewportDim < 500)
-          this._elementsPerPage = 4;
-        else
-          this._elementsPerPage = 20;
-      }
-    },    
-
-    setDummyDimension: function(el, value) {
-      // do nothing
-    },
-    
-    getPageTag: function() {
-      return 'div';
-    },
-
     preinitializeItem: function(res) {
       return ResourceMasonryItemView.preinitialize({
         vocModel: this.vocModel,
@@ -98,80 +80,73 @@ define('views/MasonryListView', [
       return liView;
     },
     
-    reloadMasonry: function(e) {
-      if (!this.rendered) 
-        return;
-      
-      var ww = G.viewport.width;
-      var brickW = (G.viewport.height > ww  &&  ww < 420) ? 272 : 205;
-      var w = $(this.$el.find('.nab')).attr('width');
-      if (!w) {
-        w = $(this.$el.find('.nab')).css('width');
-        if (w)
-          w = w.substring(0, w.length - 2);
+//    reloadMasonry: function(e) {
+//      if (!this.rendered) 
+//        return;
+//      
+//      var ww = G.viewport.width;
+//      var brickW = (G.viewport.height > ww  &&  ww < 420) ? 272 : 205;
+//      var w = $(this.$el.find('.nab')).attr('width');
+//      if (!w) {
+//        w = $(this.$el.find('.nab')).css('width');
+//        if (w)
+//          w = w.substring(0, w.length - 2);
+//      }
+//      
+//      var imgP = U.getImageProperty(this.collection);
+//      if (imgP) {
+//        var prop = this.vocModel.properties[imgP];
+//        brickW = prop.imageWidth || prop.maxImageDimension;
+//      }
+//      if (w < brickW  ||  w > brickW + 20) 
+//        this.refresh({orientation: true});
+//      else
+//        this.masonry.reload();
+////        this._reloadMasonry();
+//      this.centerMasonry(this);
+//    },
+
+    calcElementsPerViewport: function() {
+      var num;
+      if (this._childEls.length) {
+        this._calculatedElementsPerPage = true;
+        var containersFitInWindow = this.getSlidingWindowDimension() / this.getContainerDimension(),
+            numEls = this._childEls.length;
+
+        num = Math.ceil(numEls / containersFitInWindow);
       }
-      
-      var imgP = U.getImageProperty(this.collection);
-      if (imgP) {
-        var prop = this.vocModel.properties[imgP];
-        brickW = prop.imageWidth || prop.maxImageDimension;
-      }
-      if (w < brickW  ||  w > brickW + 20) 
-        this.refresh({orientation: true});
       else
-        this.masonry.reload();
-//        this._reloadMasonry();
-      this.centerMasonry(this);
+        num = Math.min(this.getContainerArea() / (200 * 200) | 0, 15);
+      
+      this._elementsPerViewport = num;
     },
 
-    _getSlidingWindowOffset: function(head) {
-      if (!this._pages.length)
-        return 0;
-
-      if (head)
-        return getTop(_.min(this._pages[0].childNodes, getTop));
-      else
-        return getBottom(_.max(this._pages[0].childNodes, getBottom));
+    getSlidingWindowArea: function() {
+      var otherDim = this._containerDimensions[this._horizontal ? 'height' : 'width'];
+      return this.getSlidingWindowDimension() * otherDim; 
     },
     
-    getElementsPerPage: function() {
-      if (this._pages.length) {
-        this._optimizedElementsPerPage = true;
-        var viewportDim = this.getViewport().height,
-            page = this._pages[0],
-            pageDim = getBottom(_.max(page.childNodes, getBottom)) - getTop(_.min(page.childNodes, getTop)),
-            numEls = page.childElementCount;
-
-        return Math.ceil(numEls * viewportDim / pageDim);
+    calcAverageElementSize: function() {
+      if (!this._childEls.length)
+        return;
+      
+//      this._averageElementSize = Math.sqrt(this.getSlidingWindowArea()) / Math.sqrt(this._childEls.length);
+      this._averageElementSize = this.getSlidingWindowDimension() / this._childEls.length;
+    },
+    
+    calcSlidingWindow: function() {
+      var sw = this._slidingWindowRange;
+      if (this.masonry) {
+        var bounds = this.masonry.getBounds();
+        sw.head = bounds.min;
+        sw.tail = bounds.max;
       }
       else {
-        var dimensions = this._containerDimensions;
-        return Math.min(dimensions.width * dimensions.height / (200 * 200) | 0, 15);
+        sw.head = 0;
+        sw.tail = this.getViewportDimension();
       }
-    },
-
-    getSlidingWindow: function() {
-      if (_.size(this._cachedSlidingWindow)) // we don't create a new object when we invalidate, we just wipe the properties on it
-        return this._cachedSlidingWindow;
-      
-      if (!this.masonry) {
-        return {
-          head: 0,
-          tail: 0
-        };
-      }
-      
-      var bounds = this.masonry.getBounds();
-      return (this._cachedSlidingWindow = {
-        head: bounds.min,
-        tail: bounds.max
-      });
     },    
    
-    isDummyPadded: function() {
-      return false;
-    },
-
     doRemove: function(childViews, fromTheHead) {
       ResourceListView.prototype.doRemove.apply(this, arguments);
       this.masonry.removedBricks(getBricks(childViews));
@@ -208,6 +183,12 @@ define('views/MasonryListView', [
           if (hasUpdated)
             this.masonry.reload();
           else {
+            var needsReset = this._offsets.length && (appended && appended.length == this._childEls.length  || 
+                                                      prepended && prepended.length == this._childEls.length);
+
+            if (needsReset)
+              this.masonry.setOffset(this._offsets[appended ? this._displayedCollectionRange.from : this._displayedCollectionRange.to]);
+              
             if (appended) {
               var bricks = getBricks(appended);
   //            console.log("APPENDED", appended.length, "PAGES, id:", this._slidingWindowOpInfo.id, _.pluck(appended, 'id').join(', '));
@@ -239,7 +220,7 @@ define('views/MasonryListView', [
 //        return refreshResult;
 //      }
       this.masonry.reload();
-      this.centerMasonry();
+//      this.centerMasonry();
     },
     
     centerMasonry: function(list) {
