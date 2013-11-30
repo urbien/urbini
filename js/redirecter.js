@@ -474,17 +474,27 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       var params = U.getQueryParams(prop.where);
       for (var p in params) {
         var val = params[p];
+        var valPrefix = '';
+        if (p.endsWith('!')) {
+          delete params[p];
+          p = p.substring(0, p.length - 1);
+          valPrefix = '!';
+          
+        }
+          
         if (val.startsWith("$this")) { // TODO: fix String.prototyep.startsWith in utils.js to be able to handle special (regex) characters in regular strings
           if (val === '$this')
-            params[p] = res.getUri();
+            params[p] = valPrefix + res.getUri();
           else {
             val = res.get(val.slice(6));
             if (val)
-              params[p] = val;
+              params[p] = valPrefix + val;
             else
               delete params[p];
           }
         }
+        else
+          params[p] = valPrefix + val;
       }
       
       if (!prop.multiValue  &&  !U.isAssignableFrom(vocModel, G.commonTypes.WebProperty)) {
