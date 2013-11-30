@@ -7,7 +7,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       ArrayProto = Array.prototype,
       resizeTimeout;
 
-  window.addEventListener('resize', function() {
+  window.addEventListener('resize', function(e) {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(fireResizeEvent, 100);
   });
@@ -17,8 +17,10 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
   });
 
   function fireResizeEvent() {
-    window.dispatchEvent(new Event('debouncedresize'));
-    window.dispatchEvent(new Event('viewportdimensions'));
+    if (saveViewportSize()) {
+      window.dispatchEvent(new Event('debouncedresize'));
+      window.dispatchEvent(new Event('viewportdimensions'));
+    }
   };
   
   window.addEventListener('orientationchange', function() {
@@ -36,12 +38,33 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
   };
 
   function saveViewportSize() {
-    var viewport = G.viewport;
-    if (!viewport)
+    var viewport = G.viewport,
+        width = window.innerWidth,
+        height = window.innerHeight,
+        oldWidth = 0,
+        oldHeight = 0,
+        changed = false;
+    
+    if (viewport) {
+      oldWidth = viewport.width;
+      oldHeight = viewport.height;
+    }
+    else
       viewport = G.viewport = {};
     
-    viewport.width = window.innerWidth;
-    viewport.height = window.innerHeight;
+    if (oldWidth !== width) {
+      viewport.width = width;
+      changed = true;
+    }
+    if (oldHeight !== height) {
+      viewport.height = height;
+      changed = true;
+    }
+
+    if (changed)
+      console.log("Viewport size changed from " + oldWidth + 'x' + oldHeight + ', to ' + width + 'x' + height);
+
+    return changed;
 //    Events.trigger('viewportResize', viewport);
   };
 
@@ -54,8 +77,8 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
   };
 
   saveViewportSize();  
-  window.addEventListener('orientationchange', saveViewportSize); 
-  window.addEventListener('debouncedresize', saveViewportSize); 
+//  window.addEventListener('orientationchange', saveViewportSize); 
+//  window.addEventListener('debouncedresize', saveViewportSize); 
 
   function getElementArray(els) {
     return els instanceof Array ||
@@ -212,8 +235,8 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
         
         return this;
       }
-    };
-    
+    },
+        
     noOffset = {
       top: 0,
       left: 0
@@ -303,12 +326,13 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           if (typeof htmlOrFrag == 'string')
             htmlOrFrag = $.parseHTML(htmlOrFrag);
           
-          htmlOrFrag.$before(this.firstChild);
+          (htmlOrFrag instanceof Array) ? htmlOrFrag[0].$before(this.firstChild) : htmlOrFrag.$before(this.firstChild);
+//           htmlOrFrag.$before(this.firstChild);
         }
         
         return this;
-      },
-  
+      },  
+      
       $append: function(/* htmlOrFrag, htmlOrFrag, ... */) {
         for (var i = 0; i < arguments.length; i++) {
           var htmlOrFrag = arguments[i];
@@ -777,6 +801,9 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     },
     
     lazifyImages: function(/* images */) {
+      if (!G.lazifyImages)
+        return;
+      
       var images = arguments,
           infos = [],
           lazyImgAttr = G.lazyImgSrcAttr,
