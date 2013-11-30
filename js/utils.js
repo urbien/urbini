@@ -3608,12 +3608,30 @@ define('utils', [
 
     isMasonryModel: function(vocModel) {
       var type = vocModel.type;
-      return type.startsWith(G.defaultVocPath) && _.any(['Tournament', 'Theme', 'Goal', 'Coupon', 'VideoResource', 'Movie', 'App', 'ThirtyDayTrial', 'Urbien'], function(className) {
+      return type.startsWith(G.defaultVocPath) && _.any(['Tournament', 'Theme', 'Goal', 'Coupon', 'VideoResource', 'Movie', 'App', 'ThirtyDayTrial', 'Tree'], function(className) {
         return type.endsWith('/' + className);
       });
     },
     
     isIntersecting: function(rectA, rectB) {
+//      var outOfTop = rectA.bottom - rectB.top,
+//          outOfBottom = rectB.bottom - rectA.top,
+//          outOfLeft = rectA.right - rectB.left,
+//          outOfRight = rectB.right - rectA.left;
+//      
+//      if (outOfTop < 0)
+//        console.log("Out of top by", -outOfTop);
+//      else if (outOfBottom < 0)
+//        console.log("Out of bottom by", -outOfBottom);
+//      else if (outOfLeft < 0)
+//        console.log("Out of left by", -outOfLeft);
+//      else if (outOfRight < 0)
+//        console.log("Out of right by", -outOfRight);
+//      else
+//        return true;
+//      
+//      return false;
+
       return rectA.bottom >= rectB.top 
           && rectA.top    <= rectB.bottom 
           && rectA.right  >= rectB.left 
