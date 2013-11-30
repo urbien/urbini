@@ -27,6 +27,10 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
         height: 'Y'
       };
 
+//  document.body.addEventListener("touchmove", function(e) {
+//    e.preventDefault();
+//    e.stopPropagation();
+//  }, false);
 
   var originalScroll = window.onscroll;
   window.onscroll = function(e) {
@@ -324,6 +328,11 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
     },
     
     _onNativeScroll: function(e) {
+//      if (G.mobile) {
+//        Events.stopEvent(e);
+//        return false;
+//      }
+      
       if (this._scrollerInitialized && !e._scrollo && this.isPageView()) {
       // Native scroll was prevented but we recorded the desired scroll location, now we scroll the scroller there manually
         this._scrollTo(SCROLL_OFFSET.X, SCROLL_OFFSET.Y);
@@ -489,6 +498,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
     },
 
     _onScrollerDrag: function(e) {
+      e.gesture.preventDefault();
       if (!this._canScroll(e))
         return;
       
@@ -544,6 +554,7 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
     },
     
     _onScrollerSwipe: function(e) {
+      e.gesture.preventDefault();
       if (!this._canScroll(e))
         return;
       
@@ -647,7 +658,10 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
       if (jump) {
         time = Math.min(time, maxJumpTime);
         s._jumping = true;
+        this.log("SCROLLER, JUMPING VIA KEYBOARD");
       }
+      else
+        this.log("SCROLLER, SCROLLING VIA KEYBOARD");
       
       e.preventDefault();
       this._scrollTo(newPos.X, newPos.Y, time, ease);
@@ -1237,7 +1251,8 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
   });
   
   if (G.DEBUG)
-    U.logFunctions(Scrollable.prototype, '_scrollTo', '_snapScroller', 'snapScrollerToHead', 'snapScrollerToTail', '_flingScroller', '_stopScroller');
+    U.logFunctions(Scrollable.prototype, '_scrollTo', '_snapScroller', 'snapScrollerToHead', 'snapScrollerToTail', 
+        '_flingScroller', '_stopScroller', '_onKeyDown' , '_onScrollerDrag', '_onNativeScroll', '_onMouseWheel', '_onScrollerSwipe', '_onScrollerDragEnd');
   
   return Scrollable;
 });
