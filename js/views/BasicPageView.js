@@ -313,8 +313,8 @@ define('views/BasicPageView', [
         return;
       
       tooltip = this._getTooltip();
-      if (tooltips) {
-        pos = getTooltipPos(tooltip);
+      if (tooltip) {
+        pos = getTooltipPos(tooltipOn);
         tooltip.$css({
           top: pos.top + 'px',
           left: pos.left + 'px'
@@ -360,7 +360,7 @@ define('views/BasicPageView', [
 
       this.once('inactive', function() {
         self.removeTooltip(el);
-        self._getTooltips().remove();
+        self._getTooltip().remove();
       });
     },
 
