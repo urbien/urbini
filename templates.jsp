@@ -65,7 +65,7 @@
     {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
           <div style="padding:10px;"><a data-role="button" class="{{= 'ui-btn-hover-' + G.theme.swatch }}" data-icon="heart" data-theme="{{= G.theme.swatch }}" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></div>
     {{ } }}
-    <ul data-role="listview" data-inset="true" data-shadow="false" style="padding: 10px;" data-theme="{{= G.theme.list }}" id="resourceView">
+    <ul data-theme="{{= G.theme.list }}" id="resourceView">
     </ul>
     <div id="about" class="hidden" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}"></div>
     
@@ -74,7 +74,7 @@
       <br/-->
     {{ } }}
     
-    <ul data-role="listview" data-theme="{{= G.theme.list }}" id="cpView" class="ui-listview" data-inset="true" style="padding: 10px;">
+    <ul data-theme="{{= G.theme.list }}" id="cpView" data-inset="true">
     </ul>
   </div>
   <!--div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
@@ -804,6 +804,7 @@
 </li>
 </script>
 
+
 <script type="text/template" id="cpTemplate">
 <!-- readwrite backlink in resource view -->
 <li data-propName="{{= shortName }}"
@@ -811,8 +812,11 @@
 >
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
-     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a>
-     <a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp" data-icon="plus-sign" data-theme="{{= G.theme.list }}">
+     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}
+       <span class="ui-li-count">{{= value }}</span>
+     </a>
+     <a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp" data-theme="{{= G.theme.list }}">
+       <i class="ui-icon-plus-sign"></i>
      {{ if (typeof comment != 'undefined') { }}
        <p style="padding-left: 15px;">{{= comment }}</p>
      {{ } }}
@@ -885,7 +889,12 @@
 >
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
-     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}<span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="{{= G.theme.list }}" data-icon="chevron-right" data-iconshadow="false" class="cp"></a>
+     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}
+       <span class="ui-li-count">{{= value }}</span>
+     </a>
+     <a target="#" data-theme="{{= G.theme.list }}" data-iconshadow="false" class="cp">
+       <i class="ui-icon-chevron-right"></i>
+     </a>
    </li>
 </script>
 
@@ -1221,7 +1230,7 @@
   <table width="100%">
     <tr>
     <td colspan="2">
-      <div class="btn" style="background:#eeeeee; padding: 10px 0 0 5px;margin:-3px;">
+      <div class="nabBtn" style="background:#eeeeee; padding: 10px 0 0 5px;margin:-3px;">
         {{ if (typeof v_showCommentsFor != 'undefined') { }}
           <!--a data-icon="comments" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor, '-makeId': G.nextId()}) }}">
           </a -->
@@ -1284,7 +1293,7 @@
       {{= gridCols }}
     </div>
     {{ if (typeof v_showCommentsFor != 'undefined'  ||  typeof v_showVotesFor != 'undefined' ) { }}
-      <div style="background: #eeeeee; padding-top: 10px; padding-bottom: 0px;" class="btn">
+      <div class="nabBtn" style="padding-top:10px">
         {{ if (typeof v_showCommentsFor != 'undefined') { }}
           <a style="float:left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor.uri, '-makeId': G.nextId()}) }}">Comment
           </a>
@@ -1569,7 +1578,7 @@
       {{ if (obj.width) { }}  
           height:{{= height }}px;
           left:-{{= left }}px; top:-{{= top }}px;
-          clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
+          clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);max-width:none;max-height:none;"
       {{ } }}
       {{ if (typeof obj.width == 'undefined') { }}  
           max-height: 50px;
@@ -1586,6 +1595,7 @@
     {{ if (!obj.value) { }}
       {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
     {{ } }} 
+    <div class="triangle"></div>
   </a>
   
   {{ if (prop.range && ((isImage && prop.camera) || isVideo || isAudio)) { }}
