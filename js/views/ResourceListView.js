@@ -95,7 +95,8 @@ define('views/ResourceListView', [
     _scrollable: false, // is set to true when the content is bigger than the container
 
     initialize: function(options) {
-      _.bindAll(this, 'render', 'fetchResources', 'refresh', 'onScroll', 'adjustSlidingWindow', 'setMode', 'onResourceChanged', 'getNewSize', '_onScrollerSizeChanged', '_onScrollerScrollable', '_queueSlidingWindowCheck'); //, 'onScrollerSizeChanged');
+      _.bindAll(this, 'render', 'fetchResources', 'refresh', 'onScroll', 'adjustSlidingWindow', 'setMode', 'onResourceChanged', 'getNewSize', '_onScrollerSizeChanged', 
+                      '_onScrollerScrollable', '_queueSlidingWindowCheck'); //, 'onScrollerSizeChanged');
       options = options || {};
       BasicView.prototype.initialize.call(this, options);
       this.displayMode = options.displayMode || 'vanillaList';
@@ -150,7 +151,7 @@ define('views/ResourceListView', [
 //        });
 //      });      
       
-      this._offsets = [];
+//      this._offsets = [];
       this._containerDimensions = {};
       this._viewport = {};
       this._slidingWindowRange = {
@@ -188,7 +189,7 @@ define('views/ResourceListView', [
       'scrollosize.resourceListView': '_onScrollerSizeChanged',
       'scrolloable.resourceListView': '_onScrollerScrollable'
     },
-
+    
     modelEvents: {
       'reset': '_resetSlidingWindow',
       'added': '_onAddedResources'
@@ -198,6 +199,10 @@ define('views/ResourceListView', [
     
     events: {
       'click': 'click'
+    },
+    
+    windowEvents: {
+      'viewportwidthchanged': '_onWidthChanged'
     },
     
     click: function(e) {
@@ -431,7 +436,7 @@ define('views/ResourceListView', [
       this.adjustSlidingWindow();
     },
     
-    _updateViewport: function(info) {
+    _updateContainerSize: function(info) {
       var container = info.container,
           width = container.width,
           height = container.height,
@@ -448,16 +453,12 @@ define('views/ResourceListView', [
       return this._viewport;
     },
 
-    getViewportDimension: function() {
-      return this._viewport[this._horizontal ? 'width' : 'height'];
-    },
-    
     _onScrollerScrollable: function(e) {
       this._scrollable = true;
     },
 
     calcElementsPerViewport: function() {
-      this._elementsPerViewport = this.getViewportDimension() / this.getAverageElementSize() | 0;
+      this._elementsPerViewport = this.getContainerDimension() / this.getAverageElementSize() | 0;
     },
     
     getElementsPerViewport: function() {
@@ -529,11 +530,21 @@ define('views/ResourceListView', [
 //          numElsDesired;
       
       _.extend(this._containerDimensions, info.container);
-      this._updateViewport(info);
+      this._updateContainerSize(info);
       this._recalcPaging();
       this.adjustSlidingWindow();
     },
     
+    _onWidthChanged: function() {
+      if (this._horizontal)
+        return; // let onScrollerSizeChanged handle it
+      
+      this._containerDimensions.width = this.el.offsetWidth;
+      this.masonry && this.masonry.resize();
+      this._recalcPaging();
+      this.adjustSlidingWindow();
+    },    
+
     _queueSlidingWindowCheck: function() {
       resetTimeout(this._slidingWindowTimeout) || (this._slidingWindowTimeout = setTimeout(this.adjustSlidingWindow));
 //      setTimeout(this.adjustSlidingWindow); // async so that the first pages can be displayed before we add more
@@ -547,7 +558,7 @@ define('views/ResourceListView', [
     },
 
     _onScroll: function(e) {
-      this._updateViewport(e.detail);
+      this._updateContainerSize(e.detail);
       this.adjustSlidingWindow();
     },
     
@@ -904,7 +915,6 @@ define('views/ResourceListView', [
           maxEls = this.getMaxElements(),
           minEls = this.getMinElements(),
           viewport = this.getViewport(),
-          viewportDim,
           slidingWindow, // should be relative to this view, i.e. head==0 means we're at the top/left of the page
           slidingWindowDim,
           headDiff,
@@ -1032,7 +1042,7 @@ define('views/ResourceListView', [
             
       preRenderPromise = this.preRender(info);
       if (_.isPromise(preRenderPromise))
-        return preRenderPromise.then(this._addElements.bind(this, n, atTheHead, info));
+        return preRenderPromise.then(this._addElements.bind(this, elementsToAdd, atTheHead, info));
       else
         return this._addElements(elementsToAdd, atTheHead, info);
     },
@@ -1053,15 +1063,15 @@ define('views/ResourceListView', [
       promise.done(function() {
 //        self._invalidateCachedSlidingWindow();
         self._recalcPaging();
-        var i = elementsToAdd,
-            oIdx,
-            elIdx;
-        
-        while (i--) {
-          oIdx = atTheHead ? colRange.from + i : colRange.to - i - 1;
-          elIdx = atTheHead ? i : self._childEls.length - i - 1;
-          self._offsets[oIdx] = parseInt(self._childEls[elIdx].dataset.top);
-        }
+//        var i = elementsToAdd,
+//            oIdx,
+//            elIdx;
+//        
+//        while (i--) {
+//          oIdx = atTheHead ? colRange.from + i : colRange.to - i - 1;
+//          elIdx = atTheHead ? i : self._childEls.length - i - 1;
+//          self._offsets[oIdx] = parseInt(self._childEls[elIdx].dataset.top);
+//        }
         
         self.getNewSize();
       });
@@ -1436,7 +1446,10 @@ define('views/ResourceListView', [
       }
       
       liView.render({
-        unlazifyImages: !this._scrollable
+        unlazifyImages: !this._scrollable,
+        style: {
+          opacity: 0
+        }
       });
       
       liView.el.dataset.index = liView.resource.collection.indexOf(liView.resource);
@@ -1491,7 +1504,7 @@ define('views/ResourceListView', [
       if (!this.masonry) {
         this.masonry = new Mason({
           itemSelector: ITEM_SELECTOR,
-          oneElementPerRow: this.mode == 'vanillaList'
+          oneElementPerRow: this.displayMode == 'vanillaList'
         }, this.el);
  
         this.finish();
@@ -1508,13 +1521,13 @@ define('views/ResourceListView', [
           if (hasUpdated)
             this.masonry.reload();
           else {
-            var needsReset = this._offsets.length && (appended && appended.length == this._childEls.length  || 
-                                                      prepended && prepended.length == this._childEls.length);
-
-            if (needsReset) {
-              debugger;
-              this.masonry.setOffset(this._offsets[appended ? this._displayedCollectionRange.from : this._displayedCollectionRange.to]);
-            }
+//            var needsReset = this._offsets.length && (appended && appended.length == this._childEls.length  || 
+//                                                      prepended && prepended.length == this._childEls.length);
+//
+//            if (needsReset) {
+//              debugger;
+//              this.masonry.setOffset(this._offsets[appended ? this._displayedCollectionRange.from : this._displayedCollectionRange.to]);
+//            }
               
             if (appended) {
               var bricks = getBricks(appended);
@@ -1573,7 +1586,7 @@ define('views/ResourceListView', [
       }
       else {
         sw.head = 0;
-        sw.tail = this.getViewportDimension();
+        sw.tail = this.getContainerDimension();
       }
     },
 

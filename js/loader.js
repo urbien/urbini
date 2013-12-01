@@ -1911,7 +1911,9 @@ define('globals', function() {
       default:
         return true;
       }
-    }
+    },
+    
+    viewport: { width: null, height: null }
   });
 
   if (G.globalCss) {

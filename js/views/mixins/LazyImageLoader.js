@@ -133,7 +133,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
 //          viewport = this._getAdjustedViewport();
           
       if (offscreenImgs.length)
-        DOM.lazifyImages.apply(DOM, offscreenImgs);
+        DOM.lazifyImages(offscreenImgs);
     },
 
     _imageJobIds: [],

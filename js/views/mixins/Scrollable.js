@@ -304,8 +304,19 @@ define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils',
 
     windowEvents: {
       'scroll': '_onNativeScroll',
-      'resize': '_onSizeInvalidated',
+      'viewportwidthchanged': '_onWidthInvalidated',
+      'viewportheightchanged': '_onHeightInvalidated',
       'orientationchange': '_onSizeInvalidated'
+    },
+
+    _onWidthInvalidated: function() {
+      if (this.getScrollAxis() == 'X')
+        this._onSizeInvalidated();
+    },
+
+    _onHeightInvalidated: function() {
+      if (this.getScrollAxis() == 'Y')
+        this._onSizeInvalidated();
     },
 
     /**

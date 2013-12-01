@@ -296,6 +296,9 @@ define('views/ResourceListItemView', [
       else 
         this.el.$html(html);
       
+      if (options && options.style)
+        this.el.$css(options.style);
+        
       return this;
     },
     

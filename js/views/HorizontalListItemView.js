@@ -352,7 +352,10 @@ define('views/HorizontalListItemView', [
       if (options && options.renderToHtml)
         this._html = '<{0} class="{1}"><div class="thumb-inner">{2}</div></{0}>'.format(this.tagName, this.className, html);
       else
-        this.$el.template(html);
+        this.el.$html(html);
+      
+      if (options && options.style)
+        this.el.$css(options.style);
     }    
   }, {
     displayName: 'HorizontalListItemView',

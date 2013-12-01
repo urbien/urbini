@@ -133,6 +133,8 @@ define('views/HorizontalListView', [
         this.el.dataset.viewid = this.cid;
         this.$el.trigger("create");
       }
+      
+      return ResourceListView.prototype.postRender.apply(this, arguments);
     }
   }, {
     displayName: "HorizontalListView",

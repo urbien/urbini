@@ -302,10 +302,10 @@ define('views/ResourceImageView', [
         }
       }
       
-      imgAtts = DOM.lazifyImages({
+      imgAtts = DOM.lazifyImage({
         src: image,
         'data-for': U.getImageAttribute(res, imagePropName)
-      })[0];
+      });
       
 //      if (l) {
 //        iTemplate += '<a href="#cameraPopup" class="cameraCapture" target="#" data-icon="camera" data-prop="'+ cOf[0] + '"></a>';

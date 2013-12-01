@@ -434,15 +434,15 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
     // Clear reference to the job
     delete this.jobs[job.id];
 
-    if (G.DEBUG)
+//    if (G.DEBUG)
       return this._run(job);
     
-    try { 
-      return this._run(job);
-    } catch(e) {
-      debugger;
-      this.onError(e);
-    }
+//    try { 
+//      return this._run(job);
+//    } catch(e) {
+//      debugger;
+//      this.onError(e);
+//    }
   };
 
   FastDom.prototype._run = function(job) {

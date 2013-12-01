@@ -56,17 +56,6 @@ define('views/ListPage', [
       }
       */
       var isGeo = this.isGeo = this.isGeo(); // && _.any(rl.models, function(m) {return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'))});
-      if (isGeo) {
-        this.mapReadyDfd = $.Deferred();
-        this.mapReady = this.mapReadyDfd.promise();
-        U.require('views/MapView', function(MV) {
-          MapView = MV;
-          self.mapView = new MapView(commonParams);
-          self.addChild(self.mapView);
-          self.mapReadyDfd.resolve();
-        });
-      }      
-
       var params = hash ? _.getParamMap(hash) : null;
       var isMV = this.isMV = params  &&  params['$multiValue'] != null;
 
@@ -381,9 +370,19 @@ define('views/ListPage', [
       views[this.listContainer] = this.listView;
       this.assign(views);
         
-      this.mapReady && this.mapReady.done(function() {
-        this.assign('#mapHolder', this.mapView);  
-      }.bind(this));
+      if (!this.mapView && this.isGeo) {
+        Events.once('mapIt', function() {          
+          U.require('views/MapView', function(MV) {
+            MapView = MV;
+            self.mapView = new MapView(commonParams);
+            self.addChild(self.mapView);
+            self.assign('#mapHolder', self.mapView);  
+          });
+        });
+      }      
+
+//      this.mapReady && this.mapReady.done(function() {
+//      }.bind(this));
       
       if (!this.isMV)
         this.$('#mv').$hide();

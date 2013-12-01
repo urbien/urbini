@@ -145,6 +145,9 @@ define('views/ResourceMasonryItemView', [
       }
       else
         this.el.$html(html);
+      
+      if (options && options.style)
+        this.el.$css(options.style);
     },
     
     render: function(options) {      
@@ -213,7 +216,9 @@ define('views/ResourceMasonryItemView', [
           meta = this.vocModel.properties,
           resourceUri = U.makePageUrl('view', this.resource.getUri()),
           atts = this.resource.attributes,
-          cloned = this.clonedProperties;
+          imgSrc = obj.resourceMediumImage,
+          cloned = this.clonedProperties,
+          blankImg = G.getBlankImgSrc();
           
 //          comments = data.v_showCommentsFor && nabRLSocial.firstChild,
 //          votes = data.v_showVotesFor && nabRLSocial.firstChild
@@ -223,15 +228,21 @@ define('views/ResourceMasonryItemView', [
       }
       
       gItemA.href = obj.rUri || 'about:blank';
-      if (gItemImg) {
-        gItemImg.setAttribute(G.lazyImgSrcAttr, obj.resourceMediumImage || G.blankImgDataUrl);
-        gItemImg.dataset['for'] = U.getImageAttribute(this.resource, obj.imageProperty);
-        if (obj.width)
-          gItemImg.style.width = obj.width;
-        if (obj.height)
-          gItemImg.style.height = obj.height;
+      gItemImg.dataset['for'] = U.getImageAttribute(this.resource, obj.imageProperty);
+      if (imgSrc && G.lazifyImages) {
+        gItemImg.setAttribute(G.lazyImgSrcAttr, imgSrc);
+        gItemImg.$removeClass('wasLazyImage');
+        gItemImg.$addClass('lazyImage');            
+        gItemImg.src = blankImg;
       }
+      else
+        gItemImg.src = imgSrc || blankImg;
       
+      if (obj.width)
+        gItemImg.style.width = obj.width;
+      if (obj.height)
+        gItemImg.style.height = obj.height;
+
       if (!appBadge) {
         if (_.has(obj, 'friendMeCount')) {
           appBadge = document.createElement('div');

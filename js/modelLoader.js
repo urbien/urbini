@@ -121,17 +121,12 @@ define('modelLoader', [
         overallPromise;
 
     _.each(types, function(type) {      
-      var promise = modelToPromiseObj[type] = getModelPromise(type) || makeModelPromise(type);
+      var promise = /*modelToPromiseObj[type] =*/ getModelPromise(type) || makeModelPromise(type);
       promises.push(promise);
     });
     
-    overallPromise = $.whenAll.apply($, promises);
-    overallPromise.then(function() {
-      if (!_.all([].slice.call(arguments)))
-        debugger;
-    });
-    
-    return _.extend(modelToPromiseObj, _.pick(overallPromise, 'promise', 'done', 'fail', 'then', 'always', 'state'));
+    return $.whenAll.apply($, promises);
+//    return _.extend(modelToPromiseObj, _.pick(overallPromise, 'promise', 'done', 'fail', 'then', 'always', 'state'));
   };
   
   function makeModelPromise(type) {

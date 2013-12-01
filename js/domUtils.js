@@ -17,8 +17,18 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
   });
 
   function fireResizeEvent() {
-    window.dispatchEvent(new Event('debouncedresize'));
-    window.dispatchEvent(new Event('viewportdimensions'));
+    var v = G.viewport,
+        heightChanged = window.innerHeight !== v.height,
+        widthChanged = window.innerWidth !== v.width;
+    
+    if (heightChanged || widthChanged) {
+      window.dispatchEvent(new Event('debouncedresize'));
+      window.dispatchEvent(new Event('viewportdimensions'));
+      if (heightChanged)
+        window.dispatchEvent(new Event('viewportheightchanged'));
+      if (widthChanged)
+        window.dispatchEvent(new Event('viewportwidthchanged'));
+    }
   };
   
   window.addEventListener('orientationchange', function() {
@@ -37,9 +47,6 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
 
   function saveViewportSize() {
     var viewport = G.viewport;
-    if (!viewport)
-      viewport = G.viewport = {};
-    
     viewport.width = window.innerWidth;
     viewport.height = window.innerHeight;
 //    Events.trigger('viewportResize', viewport);
@@ -829,7 +836,11 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
 //        img.$on('load', callback);
     },
     
-    lazifyImages: function(/* images */) {
+    lazifyImage: function(img, immediately) {
+      return DOM.lazifyImages([img], immediately);
+    },
+    
+    lazifyImages: function(images, immediately) {
       var images = arguments,
           infos = [],
           lazyImgAttr = G.lazyImgSrcAttr,
@@ -893,7 +904,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
         }
       };
       
-      if (isHTMLElement) {
+      if (isHTMLElement && !immediately) {
         Q.read(read);
         Q.write(write);
       }
