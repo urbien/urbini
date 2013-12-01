@@ -359,6 +359,44 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
         })();
         
         return this;
+      },
+
+      $padding: function() {
+        var style = window.getComputedStyle(this);
+        return {
+          top: parseFloat(style.paddingTop),
+          left: parseFloat(style.paddingLeft),
+          bottom: parseFloat(style.paddingBottom),
+          right: parseFloat(style.paddingRight)
+        }
+      },
+
+      $margin: function() {
+        var style = window.getComputedStyle(this);
+        return {
+          top: parseFloat(style.marginTop),
+          left: parseFloat(style.marginLeft),
+          bottom: parseFloat(style.marginBottom),
+          right: parseFloat(style.marginRight)
+        }
+      },
+      
+      $outerHeight: function(includeMargin) {
+        if (!includeMargin)
+          return this.offsetHeight;
+        else {
+          var margin = this.$margin();
+          return this.offsetHeight + margin.top + margin.bottom;
+        }
+      },
+      
+      $outerWidth: function(includeMargin) {
+        if (!includeMargin)
+          return this.offsetWidth;
+        else {
+          var margin = this.$margin();
+          return this.offsetWidth + margin.left + margin.right;
+        }
       }
     };
     
@@ -885,7 +923,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     },
     
     positionToMatrix: function(top, left) {
-      return 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, ' + top + ', ' + left + ', 0, 1)';
+      return 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, ' + (left || 0) + ', ' + (top || 0) + ', 0, 1)';
     }
   };
 });
