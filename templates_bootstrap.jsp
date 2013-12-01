@@ -584,6 +584,7 @@
 </script>
 
 <script type="text/template" id="stringPET">
+<div id="_prim">
   {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 100; }}
   {{ if (name) { }}
     <label for="{{= id }}" class="ui-input-text" {{= isInput ? '' : 'style="vertical-align:top"' }}>{{= name }}</label>
@@ -594,15 +595,18 @@
     <{{= isInput ? 'input type="text"' : 'textarea  rows="10"' }} name="{{= shortName }}" id="{{= id }}"  value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }} class="form-control">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   </div>
   {{ } }} 
+</div>
 </script>
 
 <script type="text/template" id="booleanPET">
+<div id="_prim">
    <input type="checkbox" name="{{= shortName }}" id="{{= id }}" style="border:none;" class="formElement boolean form-control effeckt-ckbox-ios7 pull-right" {{= obj.value ? 'checked' : '' }}/>
   {{ if (name && name.length > 0) { }}
     <label for="{{= id }}">{{= name }}</label>
     {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }} 
   {{ } }}
 <!--  {{= typeof comment == 'undefined' ? '' : '<span class="comment">' + comment + '</span>' }} -->
+</div>
 </script>
 
 <script type="text/template" id="resourcePET">
@@ -614,7 +618,7 @@
       <input data-role="none" type="file" class="cameraCapture" accept="{{= isVideo ? 'video/*' : isAudio ? 'audio/*' : 'image/*' }};capture=camera;" style="visibility:hidden; display:none;" data-prop="{{= shortName }}" />
     {{ }                   }}
   {{ }                                                                                                                                                                                        }}
-  <a target="#"  name="{{= shortName }}" class="resourceProp" id="{{= id }}" {{= rules }}> 
+  <a target="#"  name="{{= shortName }}" class="resourceProp" id="{{= id }}" {{= obj.img ? 'style="padding: 0 1.5rem"' : ''}} {{= rules }}> 
     {{ if (obj.img) { }}    
       <img name="{{= shortName }}" src="{{= img }}" style="
       
@@ -641,13 +645,17 @@
   <!-- {{= typeof multiValue === 'undefined' ? '' : value }} -->
 </script>
 <script type="text/template" id="telPET">
+<div id="_prim">
   <label for="{{= id }}" class="ui-input-text">{{= name }}</label>
   <input type="tel" name="{{= shortName }}" id="{{= id }}" class="ui-input-text" value="{{= typeof value === 'undefined' ? '' : value }}" />
+</div>
 </script>
 
 <script type="text/template" id="emailPET">
+<div id="_prim">
   <label for="{{= id }}" class="ui-input-text">{{= name }}</label>
   <input type="email" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="form-control ui-input-text{{= ' formElement' }}" {{= rules }} />
+</div>
 </script>
 
 <script type="text/template" id="hiddenPET">

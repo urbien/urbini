@@ -282,3 +282,10 @@ fieldset .listPage .topcoat-list__container {
   font-size:2.3rem;
   top:2rem;
 }
+.cameraCapture i {
+  position:absolute;
+  right:1rem;
+  font-size:2.3rem;
+  top:1.5rem;
+  overflow:hidden;
+}

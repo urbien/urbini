@@ -423,10 +423,10 @@ section#login_popup {
   left: 50%;
   top:  0.5rem;
 }
-#cameraPopup i {
+.cameraCapture i {
   position:absolute;
   right:1rem;
   font-size:2.3rem;
-  top:2rem;
+  top:1.5rem;
   overflow:hidden;
 }
