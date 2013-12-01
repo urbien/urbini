@@ -13,7 +13,8 @@ define('views/ResourceListView', [
   'vocManager'
 ], function(G, U, DOM, Events, BasicView, ResourceMasonryItemView, ResourceListItemView, ResourceList, Mason, Q, Voc) {
   var $wnd = $(window),
-      doc = document;
+      doc = document,
+      transformProp = G.crossBrowser.css.transformLookup;
 
   var MASONRY_FN = 'masonry', // in case we decide to switch to Packery or some other plugin
       ITEM_SELECTOR = '.masonry-brick';
@@ -73,6 +74,10 @@ define('views/ResourceListView', [
     displayMode: 'vanillaList', // other options: 'masonry'
     // END CONFIG
     
+//    _brickMarginH: null,
+//    _brickMarginV: null,
+//    _headOffset: 0,
+//    _tailOffset: 0,
     _childEls: null,
     _outOfData: false,
     _adjustmentQueued: false,
@@ -96,9 +101,7 @@ define('views/ResourceListView', [
       this.displayMode = options.displayMode || 'vanillaList';
       if (this.displayMode == 'masonry') {
         this._itemClass = ResourceMasonryItemView;
-        this.calcAverageElementSize = this.calcAverageElementSizeMasonry;        
-        this.calcElementsPerViewport = this.calcElementsPerViewportMasonry;        
-//        this.calcSlidingWindow = this.calcSlidingWindowMasonry;        
+        this.calcElementsPerViewport = this.calcElementsPerViewportMasonry;
       }
       else
         this._itemClass = ResourceListItemView;
@@ -1166,10 +1169,6 @@ define('views/ResourceListView', [
       return this._slidingWindowRange;
     },
     
-//    calcSlidingWindow: function() {
-//      // override me
-//    },
-    
     _recalcPaging: function() {
       this.calcContainerArea();
       this.calcSlidingWindow();
@@ -1487,14 +1486,14 @@ define('views/ResourceListView', [
 
       this._prerendered = true;
     },
-
+    
     postRender: function(info) {
       if (!this.masonry) {
         this.masonry = new Mason({
-          itemSelector: ITEM_SELECTOR
+          itemSelector: ITEM_SELECTOR,
+          oneElementPerRow: this.mode == 'vanillaList'
         }, this.el);
  
-//        this.centerMasonry(this);
         this.finish();
         return;
       }
@@ -1509,11 +1508,13 @@ define('views/ResourceListView', [
           if (hasUpdated)
             this.masonry.reload();
           else {
-//            var needsReset = this._offsets.length && (appended && appended.length == this._childEls.length  || 
-//                                                      prepended && prepended.length == this._childEls.length);
-//
-//            if (needsReset)
-//              this.masonry.setOffset(this._offsets[appended ? this._displayedCollectionRange.from : this._displayedCollectionRange.to]);
+            var needsReset = this._offsets.length && (appended && appended.length == this._childEls.length  || 
+                                                      prepended && prepended.length == this._childEls.length);
+
+            if (needsReset) {
+              debugger;
+              this.masonry.setOffset(this._offsets[appended ? this._displayedCollectionRange.from : this._displayedCollectionRange.to]);
+            }
               
             if (appended) {
               var bricks = getBricks(appended);
@@ -1537,6 +1538,17 @@ define('views/ResourceListView', [
 //      this._slidingWindowOpInfo.removed = false;
     },
     
+    getSlidingWindowArea: function() {
+      var otherDim = this._containerDimensions[this._horizontal ? 'height' : 'width'];
+      return this.getSlidingWindowDimension() * otherDim; 
+    },
+    
+//    calcSlidingWindow: function() {
+//      // override me
+//      this._slidingWindowRange.head = this._headOffset;
+//      this._slidingWindowRange.tail = this._tailOffset;
+//    },    
+
     calcElementsPerViewportMasonry: function() {
       var num;
       if (this._childEls.length) {
@@ -1547,24 +1559,11 @@ define('views/ResourceListView', [
         num = Math.ceil(numEls / containersFitInWindow);
       }
       else
-        num = Math.min(this.getContainerArea() / (200 * 200) | 0, 15);
+        num = Math.min(this.getContainerArea() / (this._averageElementSize * this._averageElementSize) | 0, 15);
       
       this._elementsPerViewport = num;
     },
 
-    getSlidingWindowArea: function() {
-      var otherDim = this._containerDimensions[this._horizontal ? 'height' : 'width'];
-      return this.getSlidingWindowDimension() * otherDim; 
-    },
-    
-    calcAverageElementSizeMasonry: function() {
-      if (!this._childEls.length)
-        return;
-      
-//      this._averageElementSize = Math.sqrt(this.getSlidingWindowArea()) / Math.sqrt(this._childEls.length);
-      this._averageElementSize = this.getSlidingWindowDimension() / this._childEls.length;
-    },
-    
     calcSlidingWindow: function() {
       var sw = this._slidingWindowRange;
       if (this.masonry) {
@@ -1576,7 +1575,7 @@ define('views/ResourceListView', [
         sw.head = 0;
         sw.tail = this.getViewportDimension();
       }
-    },    
+    },
 
     hasMasonry: function() {
       return this.type == 'masonry';

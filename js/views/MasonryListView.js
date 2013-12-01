@@ -186,8 +186,10 @@ define('views/MasonryListView', [
             var needsReset = this._offsets.length && (appended && appended.length == this._childEls.length  || 
                                                       prepended && prepended.length == this._childEls.length);
 
-            if (needsReset)
+            if (needsReset) {
+              debugger;
               this.masonry.setOffset(this._offsets[appended ? this._displayedCollectionRange.from : this._displayedCollectionRange.to]);
+            }
               
             if (appended) {
               var bricks = getBricks(appended);
@@ -242,6 +244,42 @@ define('views/MasonryListView', [
 //        else
 //          list.$el.attr('style', style + 'left: ' + d + 'px;');
 //      }
+    },
+    
+    calcElementsPerViewport: function() {
+      var num;
+      if (this._childEls.length) {
+        this._calculatedElementsPerPage = true;
+        var containersFitInWindow = this.getSlidingWindowDimension() / this.getContainerDimension(),
+            numEls = this._childEls.length;
+
+        num = Math.ceil(numEls / containersFitInWindow);
+      }
+      else
+        num = Math.min(this.getContainerArea() / (200 * 200) | 0, 15);
+      
+      this._elementsPerViewport = num;
+    },
+
+    calcAverageElementSize: function() {
+      if (!this._childEls.length)
+        return;
+      
+//      this._averageElementSize = Math.sqrt(this.getSlidingWindowArea()) / Math.sqrt(this._childEls.length);
+      this._averageElementSize = this.getSlidingWindowDimension() / this._childEls.length;
+    },
+    
+    calcSlidingWindow: function() {
+      var sw = this._slidingWindowRange;
+      if (this.masonry) {
+        var bounds = this.masonry.getBounds();
+        sw.head = bounds.min;
+        sw.tail = bounds.max;
+      }
+      else {
+        sw.head = 0;
+        sw.tail = this.getViewportDimension();
+      }
     }
   }, {
     displayName: "MasonryListView",
