@@ -204,7 +204,6 @@ define('views/ResourceMasonryItemView', [
     },  
     
     updateTile: function(options, obj) {
-      return;
       var gItem = this.el.firstChild,
           gItemA = gItem.querySelector('a'),
           gItemImg = gItemA.querySelector('img'),
