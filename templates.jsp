@@ -1,3 +1,24 @@
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <div>
 <!-- Attributions>
   Font Awesome - http://fortawesome.github.com/Font-Awesome
@@ -1268,47 +1289,47 @@
           style="{{= (obj.top ? '' : 'height:' + imgHeight + 'px;') + (obj.left ? '' : 'width:' + imgWidth + 'px;') }}"
        {{ } }}
   >
-    <a href="{{= obj.rUri || 'about:blank' }}">
-      <img data-lazysrc="{{= obj.resourceMediumImage || G.getBlankImgSrc() }}" {{= obj.width ? 'width="' + width + '"' : '' }} {{= obj.height ? 'height="' + height + '"' : '' }} class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" />
+    <a href="{{= obj.rUri || 'about:blank' }}" style="position:absolute;">
+      <img style="position:absolute;" data-lazysrc="{{= obj.resourceMediumImage || G.blankImgDataUrl }}" {{= obj.imgWidth ? 'width="' + imgWidth + '"' : '' }} {{= obj.imgHeight ? 'height="' + imgHeight + '"' : '' }} class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" />
     </a>
   </div>
   <!-- {{= typeof friendsCount == 'undefined' ? '' : '<div class="appBadge">' + friendsCount + '</div>' }} -->
-  {{= typeof friendMeCount == 'undefined' ? '' : '<div class="appBadge"><a style="color:white;" href="' + friendMeUri + '">' + friendMeCount + '</a></div>' }}
-  <div class="nabRL">
-    <div>
+  {{= typeof friendMeCount == 'undefined' ? '' : '<div class="appBadge"><a style="color:white; position:absolute;" href="' + friendMeUri + '">' + friendMeCount + '</a></div>' }}
+  <div class="nabRL" {{= obj.imgHeight ? 'style="top:' + (imgHeight + 19) + 'px;"' : 'style="padding-top:10px;"' }}>
+    <div  style="position:absolute;{{= obj.contentWidth ? 'width:' + contentWidth + 'px;' : '' }}">
       {{= gridCols }}
     </div>
     {{ if (typeof v_showCommentsFor != 'undefined'  ||  typeof v_showVotesFor != 'undefined' ) { }}
-      <div style="background: #eeeeee; padding-top: 10px; padding-bottom: 0px;" class="btn">
+      <div style="background: #eeeeee; padding-top: 10px; padding-bottom: 0px; position:absolute;top:{{= commentLikeTop }}px;{{= obj.contentWidth ? 'width:' + contentWidth + 'px;' : '' }}" class="btn">
         {{ if (typeof v_showCommentsFor != 'undefined') { }}
-          <a style="float:left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor.uri, '-makeId': G.nextId()}) }}">Comment
+          <a style="position:absolute;left:10px;" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor.uri, '-makeId': G.nextId()}) }}">Comment
           </a>
           {{ if (v_showCommentsFor.count) { }}
-            <a style="float:right; font-size:12px;" href="{{= U.makePageUrl('list', 'model/portal/Comment', {forum: v_showCommentsFor.uri}) }} "><span class="ui-icon-comment-alt"></span>{{= v_showCommentsFor.count }}</a>
+            <a style="position:absolute; font-size:12px;right:40px;" href="{{= U.makePageUrl('list', 'model/portal/Comment', {forum: v_showCommentsFor.uri}) }} "><span class="ui-icon-comment-alt"></span>{{= v_showCommentsFor.count }}</a>
           {{ } }}
         {{ } }}
         {{ if (typeof v_showVotesFor != 'undefined') { }}
-          <a class="like" style="float: left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}">
+          <a class="like"  style="position:absolute;left:70px;" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}">
           {{ if (typeof v_showCommentsFor != 'undefined') { }}
              &#160;&#160;&#8226;
           {{ } }}
           &#160;&#160;Like 
           </a>
           {{ if (v_showVotesFor.count) { }}
-          <div style="float:right; font-size:12px;"> 
+          <div style="position:absolute; font-size:12px; right: 10px;"> 
             <a href="{{= U.makePageUrl('list', 'aspects/tags/Vote', {votable: v_showVotesFor.uri, $title: davDisplayName + ' liked by'}) }}"><span class="ui-icon-heart-empty"></span>{{= v_showVotesFor.count }}</a> 
           </div>
           {{ } }}
         {{ } }}
         <!--
         {{ if (typeof tryApp != 'undefined') { }}
-            <a href="{{= tryApp }}" style="float:left;">&#160;&#160;&#8226;&#160;&#160;<span style="color:#f54416;">Try</span></a>
+            <a href="{{= tryApp }}" style="position:absolute;">&#160;&#160;&#8226;&#160;&#160;<span style="color:#f54416;">Try</span></a>
         {{ } }}
         -->
      </div>
     {{ } }}
-    {{ if (typeof v_submitForTournament != 'undefined') { }}
-      <a class="b" href="{{= v_submitForTournament }}" data-role="button" data-icon="star" data-theme="e">Submit an entry</a>
+    {{ if (obj.v_submitForTournament) { }}
+      <div style="position:absolute;top:{{= commentLikeTop - 30 }}px;width:{{= contentWidth }}px;"><a  style="position:absolute;" class="b" href="{{= v_submitForTournament }}" data-role="button" data-icon="star" data-theme="e">Submit an entry</a></div>
     {{ } }}
   </div>     
         {{= typeof isIdea == 'undefined' ? '' : '<p class="ui-li-aside ui-li-desc">Idea</p>'}}

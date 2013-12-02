@@ -651,7 +651,7 @@
 
 <script type="text/template" id="hiddenPET">
   <input type="hidden" name="{{= shortName }}" id="{{= id }}" value="{{= value }}" class="{{= 'formElement ' }}ui-input-text form-control" {{= rules }} />
-</script>c
+</script>
 
 </div>
 

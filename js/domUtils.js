@@ -315,7 +315,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           if (typeof htmlOrFrag == 'string')
             htmlOrFrag = $.parseHTML(htmlOrFrag);
           
-          htmlOrFrag.$before(this.firstChild);
+          htmlOrFrag[0].$before(this.firstChild);
         }
         
         return this;
