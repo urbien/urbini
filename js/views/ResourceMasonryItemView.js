@@ -401,7 +401,7 @@ define('views/ResourceMasonryItemView', [
 //        else if (meta[pName].range == 'date' ||  meta[pName].range == 'ComplexDate'  ||  meta[pName].range == 'dateTime')
 //          s += U.getFormattedDate(json[pName]);
 
-        linesCount += Math.round(symbolsCount / lineWidth) + 1;
+        linesCount += (symbolsCount < lineWidth ? 1 : Math.round(symbolsCount / lineWidth) + 1);
         if (label || val)
           gCols.push(label + val);
       }
