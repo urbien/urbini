@@ -1,24 +1,3 @@
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 <div>
 <!-- Attributions>
   Font Awesome - http://fortawesome.github.com/Font-Awesome
