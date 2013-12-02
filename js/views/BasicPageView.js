@@ -127,8 +127,8 @@ define('views/BasicPageView', [
     },
     
     events: {
-      'scrollstart.page': 'reverseBubbleEvent',
-      'scrollstop.page': 'reverseBubbleEvent',      
+//      'scrollstart.page': 'reverseBubbleEvent',
+//      'scrollstop.page': 'reverseBubbleEvent',      
 //      'scroll.page': 'scroll',
       'page_hide.page': 'onpageevent',
       'page_show.page': 'onpageevent',
@@ -200,7 +200,7 @@ define('views/BasicPageView', [
 //      else if (e.type == 'page_hide')
 //        this.trigger('inactive');
       
-      this.reverseBubbleEvent.apply(this, arguments);      
+//      this.reverseBubbleEvent.apply(this, arguments);      
     },
 
 //    scroll: function() {

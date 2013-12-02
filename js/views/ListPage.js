@@ -374,7 +374,10 @@ define('views/ListPage', [
         Events.once('mapIt', function() {          
           U.require('views/MapView', function(MV) {
             MapView = MV;
-            self.mapView = new MapView(commonParams);
+            self.mapView = new MapView({
+              model: self.filteredCollection,
+              parentView: self
+            });
             self.addChild(self.mapView);
             self.assign('#mapHolder', self.mapView);  
           });

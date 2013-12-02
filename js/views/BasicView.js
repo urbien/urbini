@@ -34,7 +34,7 @@ define('views/BasicView', [
   var BasicView = Backbone.View.extend({
 //    viewType: 'resource',
     initialize: function(options) {
-      _.bindAll(this, 'reverseBubbleEvent', 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_render',  '_refresh');      
+      _.bindAll(this, 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_render',  '_refresh', 'finish');      
       this.TAG = this.TAG || this.constructor.displayName;
 //      this.log('newView', ++this.constructor._instanceCounter);
       var superCtor = this.constructor;
@@ -595,12 +595,6 @@ define('views/BasicView', [
         var childViews = _.values(this.children);
         return _.union([], childViews, _.union.apply(_, _.map(childViews, function(child) {return child.getDescendants()})));
       }
-    },
-    
-    reverseBubbleEvent: function(e) {
-      _.each(this.children, function(child) {
-        child.$el && child.$el.triggerHandler(e.type, e); // triggerHandler will prevent the event from bubbling back up and creating an infinite loop
-      });
     },
     
     triggerChildren: function(event) {

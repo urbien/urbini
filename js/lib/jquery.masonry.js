@@ -14,10 +14,10 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
   var CSS = G.crossBrowser.css;
   
   // our "Widget" object constructor
-  function Mason( options, element ){
+  function Mason( options, element, callback ){
     this.element = element;
     this._create( options );
-    this._init();
+    this._init(callback);
   };
 
   function cleanData(bricks) {
@@ -28,12 +28,15 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
       data = bricks[i].dataset;
       delete data.outerWidth;
       delete data.outerHeight;
+      delete data.masonryColSpan;
+      delete data.x;
+      delete data.y;
     }
   }
   
-  function getXYZ(brick) {
-    return DOM.parseTranslation(brick.style[CSS.transformLookup]);
-  };
+//  function getXYZ(brick) {
+//    return DOM.parseTranslation(brick.style[CSS.transformLookup]);
+//  };
   
   // styles of container element we want to keep track of
   var masonryContainerStyles = [ 'position', CSS.transformLookup ];
@@ -42,13 +45,17 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
     horizontal: false,
     oneElementPerCol: false,
     oneElementPerRow: false,
+    stretchRow: false,
+    stretchCol: false,
     fromBottom: false,
     isResizable: true,
     gutterWidth: 0,
 //    isRTL: false, // only left to right is supported
-    isFitWidth: false,
+//    isFitWidth: false,
     containerStyle: {
-      position: 'relative'
+      position: 'relative',
+      'transform-style': 'preserve-3d',
+      '-webkit-transform-style': 'preserve-3d'
     }
   };
 
@@ -61,8 +68,10 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
     _create: function( options ) {
   
       this.options = $.extend( true, {}, Mason.settings, options );
+      this.axis = this.options.horizontal ? 'x' : 'y';
+      this.AXIS = this.axis.toUpperCase();
       this.originalFromBottom = this.options.fromBottom;
-      this.styleQueue = [];
+//      this.styleQueue = [];
       // need to get bricks
       this.reloadItems();
   
@@ -76,7 +85,10 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
       }
   
       this.element.$css(this.options.containerStyle);
-      this.containerSize = {};
+      this.containerSize = {
+        width: this.element.offsetWidth,
+        height: this.element.offsetHeight
+      };
       
       // get top left position of where the bricks should be
       this.offset = {};
@@ -149,10 +161,10 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
     _calcContainerSize: function() {
       var containerSize = this.containerSize;
 //    containerSize.height = Math.max.apply( Math, this.bottomColYs ) - Math.min.apply( Math, this.topColYs ) + 'px';
-      containerSize.height = Math.max.apply( Math, this.bottomColYs ) - this.offset.y + 'px';
-      if ( this.options.isFitWidth ) {
-        containerSize.width = this.cols * this.columnWidth - this.options.gutterWidth + 'px';
-      }
+      containerSize[this.options.horizontal ? 'width' : 'height'] = Math.max.apply( Math, this.bottomColYs ) - this.offset[this.axis] + 'px';
+//      if ( this.options.isFitWidth ) {
+//        containerSize.width = this.cols * this.columnWidth - this.options.gutterWidth + 'px';
+//      }
       
       return containerSize;
     },
@@ -163,30 +175,30 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
       style.height = this.containerSize.height;
     },
 
-    // used on collection of atoms (should be filtered, and sorted before )
-    // accepts atoms-to-be-laid-out to start with
-    layout: function( bricks, callback ) {
-//      if (this._inLimbo) {
-//        var i = this.cols;
-//        while (i--) {
-//          this.topColYs[i] = -Infinity;
-//          this.bottomColYs[i] = Infinity;
-//        }
-//        
-//        this._recalcColYs(bricks);
-//        this._inLimbo = false;
-//      }
+    _readBrickData: function(bricks, callback) {
+      this._calcBrickMargin();
+      var brick,
+          i = bricks.length;
+
+      while (i--) {
+        brick = bricks[i];
+        this._calcOuterDimensions(brick);
+        this._calcColSpan(brick);
+      }
       
+      callback && callback();
+    },
+    
+    _placeBricks: function(bricks, callback) {
       // layout logic
       var brick, colSpan, groupCount, groupY, groupColY, j, 
-      colYs = this._getColYs(), 
-      extreme = this.options.fromBottom ? Math.min : Math.max;
+          colYs = this._getColYs(),
+          extreme = this.options.fromBottom ? Math.min : Math.max;
   
       for (var i=0, len = bricks.length; i < len; i++) {
         brick = bricks[i];
         //how many columns does this brick span
-        colSpan = Math.ceil( this._getOuterWidth(brick) / this.columnWidth );
-        colSpan = Math.min( colSpan, this.cols );
+        colSpan = this._getColSpan(brick);
   
         if ( colSpan === 1 ) {
           // if brick spans only one column, just like singleMode
@@ -212,49 +224,78 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
       // set the size of the container
       // TODO: adjust this if necessary to take into account both sets of cols
       this._calcContainerSize();
-      this.styleQueue.push({ el: this.element, style: this.containerSize });
+      if (this.containerSize.height)
+        this.element.style.height = this.containerSize.height;
+      if (this.containerSize.width)
+        this.element.style.width = this.containerSize.width;
+//      this.styleQueue.push({ el: this.element, style: this.containerSize });
   
       // process styleQueue
-      var obj;
-      for (i=0, len = this.styleQueue.length; i < len; i++) {
-        obj = this.styleQueue[i];
-        obj.el.$css(obj.style);
-        for (var p in obj.data) {
-          obj.el.dataset[p] = obj.data[p];
-        }
-        
-        if (obj.className)
-          obj.el.$addClass(obj.className);
-      }
+//      var obj;
+//      for (i=0, len = this.styleQueue.length; i < len; i++) {
+//        obj = this.styleQueue[i];
+//        obj.el.$css(obj.style);
+//        for (var p in obj.data) {
+//          obj.el.dataset[p] = obj.data[p];
+//        }
+//        
+//        if (obj.className)
+//          obj.el.$addClass(obj.className);
+//      }
   
       // clear out queue for next time
-      this.styleQueue = [];
+//      this.styleQueue = [];
   
       // provide elems as context for the callback
       if ( callback ) {
         callback.call( bricks );
       }
-  
-//      this.isLaidOut = true;
-  
+    },
+    
+    // used on collection of atoms (should be filtered, and sorted before )
+    // accepts atoms-to-be-laid-out to start with
+    layout: function( bricks, callback ) {
+      var self = this;
+      function write() {
+        Q.write(self._placeBricks, self, [bricks, callback]);
+      };
+      
+      Q.read(this._readBrickData, this, [bricks, write]);
       return this;
     },
   
+    _calcBrickMargin: function() {
+      if (!this.hasOwnProperty('_brickMarginX') && this.bricks.length) {
+        var brick = this.bricks[0];
+        this._brickMarginY = brick.$outerHeight(true) - brick.offsetHeight;
+        this._brickMarginX = brick.$outerWidth(true) - brick.offsetWidth;
+        this._calcOuterDimensions(brick);
+      }
+    },
+    
     // calculates number of columns
     // i.e. this.columnWidth = 200
     _getColumns: function() {
-      if (this.options.oneElementPerRow) {
+      if (this.options.oneElementPerRow || this.options.stretchRow) {
         this.columnWidth = this.containerSize.width = this.element.offsetWidth;
         this.cols = 1;
         return;
       }
+      else if (this.options.oneElementPerCol || this.options.stretchCol) {
+        this.columnWidth = this.containerSize.height = this.element.offsetHeight;
+        this.cols = 1;
+        return;
+      }
       
-      var container = this.options.isFitWidth ? this.element.parentNode : this.element,
+      var brick = this.bricks[0],
+          dimensionMethod = this.options.horizontal ? '_getOuterHeight' : '_getOuterWidth',
+          container = this.options.isFitWidth ? this.element.parentNode : this.element,
           containerWidth = container.offsetWidth;
   
+      this._calcBrickMargin();
       this.columnWidth = this.options.columnWidth ||
                          // or use the size of the first item
-                         this.bricks.length && this._getOuterWidth(this.bricks[0]) ||
+                         this[dimensionMethod](brick) ||
                          // if there's no items, use size of container
                          containerWidth;
   
@@ -270,39 +311,47 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
       return this.options.fromBottom ? this.topColYs : this.bottomColYs;
     },
   
-    _getOuterHeight: function( brick ) {
-//      if (this.options.oneElementPerCol)
-//        return this.containerSize.height;
-//      else 
-      if (brick.dataset.outerHeight)
-        return parseInt(brick.dataset.outerHeight);
-      
-      var offsetHeight = brick.offsetHeight;
-      if (!this.hasOwnProperty('_brickExtraHeight'))
-        this._brickExtraHeight = $(brick).outerHeight(true) - offsetHeight;
-  
-      return (brick.dataset.outerHeight = offsetHeight + this._brickExtraHeight); 
+    _getOuterWidth: function(brick) {
+      return parseFloat(brick.dataset.outerWidth);
     },
-  
-    _getOuterWidth: function( brick ) {
-      if (this.options.oneElementPerRow)
-        return this.containerSize.width;
-      else if (brick.dataset.outerWidth)
-        return parseInt(brick.dataset.outerWidth);
-      
-      var offsetWidth = brick.offsetWidth;
-      if (!this.hasOwnProperty('_brickExtraWidth'))
-        this._brickExtraWidth = $(brick).outerWidth(true) - offsetWidth;
-  
-      return (brick.dataset.outerWidth = offsetWidth + this._brickExtraWidth); 
+
+    _getOuterHeight: function(brick) {
+      return parseFloat(brick.dataset.outerHeight);
+    },
+
+    _calcOuterDimensions: function( brick ) {
+      var outerWidth, outerHeight;
+      if (!brick.dataset.outerHeight) {        
+        if (this.options.stretchCol)
+          outerHeight = this.containerSize.height;
+        else {
+          var offsetHeight = brick.offsetHeight;
+          outerHeight = offsetHeight + this._brickMarginY;
+        }
+        
+        brick.dataset.outerHeight = outerHeight; 
+      }
+
+      if (!brick.dataset.outerWidth) {        
+        if (this.options.stretchRow)
+          outerWidth = this.containerSize.width;
+        else {
+          var offsetWidth = brick.offsetWidth;
+          outerWidth = offsetWidth + this._brickMarginX;
+        }
+        
+        brick.dataset.outerWidth = outerWidth; 
+      }
+
     },
   
     _placeBrick: function( brick, setCount, setY ) {
       // get the minimum Y value from the columns
-      var extreme = this.options.fromBottom ? Math.max : Math.min,
+      var dimensionMethod = this.options.horizontal ? '_getOuterWidth' : '_getOuterHeight',
+          extreme = this.options.fromBottom ? Math.max : Math.min,
           extremeY  = extreme.apply( Math, setY ),
           multiplier = this.options.fromBottom ? -1 : 1,
-          setHeight = extremeY + (this._getOuterHeight(brick) * multiplier),
+          setHeight = extremeY + (this[dimensionMethod](brick) * multiplier),
           i = setY.length,
           shortCol  = i,
           setSpan   = this.cols + 1 - i,
@@ -322,20 +371,37 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
   
       // position the brick
       var top,
-          left = this.columnWidth * shortCol + this.offset.x;
+          left;
       
-      if (this.options.fromBottom)
-        top = setHeight - this.offset.y;
-      else
-        top = extremeY + this.offset.y;
+      if (this.options.horizontal) {        
+        top = this.columnWidth * shortCol + this.offset.y;
+        
+        if (this.options.fromBottom)
+          left = setHeight - this.offset.x;
+        else
+          left = extremeY + this.offset.x;
+      }
+      else {
+        left = this.columnWidth * shortCol + this.offset.x;
       
-      style[CSS.transformLookup] = DOM.positionToMatrix(top, left);
-      style.opacity = 0.99999;
-      this.styleQueue.push({ el: brick, style: style, data: {
-        top: top,
-        left: left
-      }});
-  
+        if (this.options.fromBottom)
+          top = setHeight - this.offset.y;
+        else
+          top = extremeY + this.offset.y;
+      }
+
+      brick.style[CSS.transformLookup] = DOM.positionToMatrix(top, left);
+      brick.style.opacity = 0.99999;
+      brick.dataset.x = left;
+      brick.dataset.y = top;
+      
+//      style[CSS.transformLookup] = DOM.positionToMatrix(top, left);
+//      style.opacity = 0.99999;
+//      this.styleQueue.push({ el: brick, style: style, data: {
+//        y: top,
+//        x: left
+//      }});
+      
       // apply setHeight to necessary columns
       for ( i=0; i < setSpan; i++ ) {
         colYs[ shortCol + i ] = setHeight;
@@ -369,15 +435,16 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
     },
   
     _resetColYs: function() {
-      var i = this.cols;
+      var i = this.cols,
+          offset = this.offset[this.axis];
+      
       if (!this.topColYs)
         this.topColYs = new Array(i);
       if (!this.bottomColYs)
         this.bottomColYs = new Array(i);
       
       while (i--) {
-        this.topColYs[i] = this.offset.y;
-        this.bottomColYs[i] = this.offset.y;
+        this.topColYs[i] = this.bottomColYs[i] = offset;
       }
       
       this.topColYs.length = this.bottomColYs.length = this.cols;
@@ -424,14 +491,25 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
     },
   
     _getLeftmostColumn: function(brick) {
-      var offset = parseInt(getXYZ(brick).X, 10) || 0;
+      var offset = parseInt(brick.dataset[this.options.horizontal ? 'y' : 'x'], 10) || 0;
       var edgeCol = Math.round(offset / this.columnWidth);
       return edgeCol;
     },
-    
+
+    _calcColSpan: function(brick) {
+      var span;
+      if (this.options.horizontal && this.options.oneElementPerCol || !this.options.horizontal && this.options.oneElementPerRow)
+        span = 1;
+      else {
+        var colSpan = Math.ceil( this[this.options.horizontal ? '_getOuterHeight' : '_getOuterWidth'](brick) / this.columnWidth );
+        span = Math.min( colSpan, this.cols );
+      }
+      
+      brick.dataset.masonryColSpan = span;
+    },
+
     _getColSpan: function(brick) {
-      var colSpan = Math.ceil( this._getOuterWidth(brick) / this.columnWidth );
-      return Math.min( colSpan, this.cols );
+      return parseInt(brick.dataset.masonryColSpan);
     },
 
     _recalcColYs: function() {
@@ -440,7 +518,8 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
         return;
       }
       
-      var bricks = this.bricks,
+      var dimensionMethod = this.options.horizontal ? '_getOuterWidth' : '_getOuterHeight',
+          bricks = this.bricks,
           brick,
           fromCol,
           offset = this.offset.y,
@@ -456,9 +535,9 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
         brick = bricks[i];
         fromCol = this._getLeftmostColumn(brick);
         colSpan = this._getColSpan(brick);
-        height = this._getOuterHeight(brick);
+        height = this[dimensionMethod](brick);
 //        top = parseInt(brick.style.top, 10) || 0;
-        top = parseInt(getXYZ(brick).Y, 10) || 0;
+        top = parseInt(brick.dataset[this.axis], 10) || 0;
         while (colSpan--) {
           col = fromCol + colSpan;
           topColYs[col] = Math.min(top, topColYs[col]);

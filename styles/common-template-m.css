@@ -117,6 +117,10 @@ html { height: 100%; }
 * html .dat_td .comment { left: 5px; } /* hack for multivalue */
 .field_comment .comment { margin-top: 5px; }
 
+.scrollable {
+  -webkit-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+}
 
 .nab { 
   float: left; 
@@ -130,7 +134,7 @@ html { height: 100%; }
 }
 
 /*#nabs_grid .nab { visibility: hidden; }*/
-.dList #nabs_grid .nab { visibility: visible; } /* TODO: implement 2 (RL) masonry and delete this rule */
+.dList #nabs_grid .nab { visibility: visible; -webkit-transform-style: preserve-3d } /* TODO: implement 2 (RL) masonry and delete this rule */
 
 /* hide "bricks" initially and show them only ones are aligned */ 
 .masonry > li, .masonry > div { visibility: hidden; }

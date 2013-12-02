@@ -63,13 +63,9 @@
     
     <div id="photogridHeader" class="hidden"><h3></h3></div>
     <!--div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="grid-listview hidden">
-      <div class="dummy head"></div>
-      <div class="dummy tail"></div>
     </div-->
     
     <div id="photogrid" data-inset="true" data-filter="false" class="thumb-gal hidden">
-      <div class="dummy head"></div>
-      <div class="dummy tail"></div>
     </div>
     <br/>
     {{ if (this.vocModel.type.endsWith("Impersonations")) { }}

@@ -38,7 +38,10 @@ define('views/HorizontalListItemView', [
   var SIV = BasicView.extend({
     tagName: 'div',
     template: 'horizontalListItem',
-    className: 'thumb-gal-item',
+    className: 'masonry-brick thumb-gal-item',
+    style: {
+      'position': 'absolute'
+    },
     initialize: function(options) {
       _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);

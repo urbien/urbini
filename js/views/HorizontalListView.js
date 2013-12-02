@@ -38,6 +38,14 @@ define('views/HorizontalListView', [
     initialize: function(options) {
 //      _.bindAll(this, 'renderItem');
       ResourceListView.prototype.initialize.apply(this, arguments);
+      _.extend(this._masonryOptions, {
+        horizontal: true, 
+        oneElementPerRow: false,
+        oneElementPerCol: true,
+        stretchRow: false,
+        stretchCol: false
+      });
+      
       this._renderedIntersectionUris = [],
       _.extend(this, options);
     },

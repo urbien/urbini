@@ -78,6 +78,7 @@ define('views/ResourceListView', [
 //    _brickMarginV: null,
 //    _headOffset: 0,
 //    _tailOffset: 0,
+    _masonryOptions: null,
     _childEls: null,
     _outOfData: false,
     _adjustmentQueued: false,
@@ -100,12 +101,18 @@ define('views/ResourceListView', [
       options = options || {};
       BasicView.prototype.initialize.call(this, options);
       this.displayMode = options.displayMode || 'vanillaList';
+      this._masonryOptions = {
+        itemSelector: ITEM_SELECTOR
+      };
+      
       if (this.displayMode == 'masonry') {
         this._itemClass = ResourceMasonryItemView;
         this.calcElementsPerViewport = this.calcElementsPerViewportMasonry;
       }
-      else
+      else {
         this._itemClass = ResourceListItemView;
+        this._masonryOptions.oneElementPerRow = this._masonryOptions.stretchRow = true;
+      }
       
       if (options.axis)
         this._horizontal = options.axis == 'X';
@@ -1061,35 +1068,45 @@ define('views/ResourceListView', [
       
       label(promise);
       promise.done(function() {
-//        self._invalidateCachedSlidingWindow();
         self._recalcPaging();
-//        var i = elementsToAdd,
-//            oIdx,
-//            elIdx;
-//        
-//        while (i--) {
-//          oIdx = atTheHead ? colRange.from + i : colRange.to - i - 1;
-//          elIdx = atTheHead ? i : self._childEls.length - i - 1;
-//          self._offsets[oIdx] = parseInt(self._childEls[elIdx].dataset.top);
-//        }
-        
         self.getNewSize();
       });
       
-      function renderOneListItem(resNum) {
-        var res = col.models[resNum],
-            liView = this.renderItem(res, atTheHead);
+//      function renderOneListItem(resNum) {
+//        var res = col.models[resNum],
+//            liView = this.renderItem(res, atTheHead);
+//
+//        if (liView !== false) {
+//          self.listenTo(liView.resource, 'change', self.onResourceChanged);
+//          self.listenTo(liView.resource, 'saved', self.onResourceChanged);
+//          added.push(liView);
+//        }
+//      }
+//      
+//      for (var i = colRange.from; i < colRange.to; i++) {
+//        Q.write(renderOneListItem, this, [i]);
+//      }
 
-        if (liView !== false) {
-          self.listenTo(liView.resource, 'change', self.onResourceChanged);
-          self.listenTo(liView.resource, 'saved', self.onResourceChanged);
-          added.push(liView);
+      Q.write(function() {        
+        for (var i = colRange.from; i < colRange.to; i++) {
+          var res = col.models[i],
+              liView = this.renderItem(res, atTheHead);
+  
+          if (liView !== false) {
+            this.listenTo(liView.resource, 'change', this.onResourceChanged);
+            this.listenTo(liView.resource, 'saved', this.onResourceChanged);
+            added.push(liView);
+          }
         }
-      }
+      }, this);
       
-      for (var i = colRange.from; i < colRange.to; i++) {
-        Q.nonDom(renderOneListItem, this, [i]);
-      }
+      if (atTheHead)
+        displayed.from = colRange.from;
+      else
+        displayed.to = colRange.to;
+
+      if (displayed.from > displayed.to)
+        displayed.from = displayed.to;
 
       Q.defer(1, 'read', function getDummyDim() {
         if (!self._calculatedElementSize && self._childEls.length)
@@ -1119,15 +1136,7 @@ define('views/ResourceListView', [
             if (!childView.el.parentNode)
               el.appendChild(childView.el); // we don't care about its position in the list, as it's absolutely positioned 
           }
-          
-          if (atTheHead)
-            displayed.from = colRange.from;
-          else
-            displayed.to = colRange.to;
-
-          if (displayed.from > displayed.to)
-            displayed.from = displayed.to;
- 
+           
           self._showAndHideElements();
           var postRenderResult = self.postRender(info);
           if (_.isPromise(postRenderResult))
@@ -1438,7 +1447,7 @@ define('views/ResourceListView', [
         liView.reset().initialize(options);
       }
       else {
-        console.log("CREATING NEW LIST ITEM, TOTAL CHILD VIEWS:", _.size(this.children));
+//        console.log("CREATING NEW LIST ITEM, TOTAL CHILD VIEWS:", _.size(this.children));
         viewName = 'listItem' + G.nextId();
         preinitializedItem = this._preinitializedItem;
         liView = new preinitializedItem(options);
@@ -1502,12 +1511,7 @@ define('views/ResourceListView', [
     
     postRender: function(info) {
       if (!this.masonry) {
-        this.masonry = new Mason({
-          itemSelector: ITEM_SELECTOR,
-          oneElementPerRow: this.displayMode == 'vanillaList'
-        }, this.el);
- 
-        this.finish();
+        this.masonry = new Mason(this._masonryOptions, this.el, this.finish);
         return;
       }
       
@@ -1519,7 +1523,7 @@ define('views/ResourceListView', [
       if (hasUpdated || prepended || appended) {
         Q.read(function() { // because appended/prepended read brick offsetWidth/offsetHeight
           if (hasUpdated)
-            this.masonry.reload();
+            this.masonry.reload(dfd.resolve);
           else {
 //            var needsReset = this._offsets.length && (appended && appended.length == this._childEls.length  || 
 //                                                      prepended && prepended.length == this._childEls.length);
@@ -1532,18 +1536,17 @@ define('views/ResourceListView', [
             if (appended) {
               var bricks = getBricks(appended);
   //            console.log("APPENDED", appended.length, "PAGES, id:", this._slidingWindowOpInfo.id, _.pluck(appended, 'id').join(', '));
-              this.masonry.appended(bricks, null, true);
+              this.masonry.appended(bricks, dfd.resolve, true);
             }
-            if (prepended) {
+            else if (prepended) {
               var bricks = getBricks(prepended);
               bricks.reverse();
   //            console.log("PREPENDED", prepended.length, "PAGES, id:", this._slidingWindowOpInfo.id, _.pluck(appended, 'id').join(', '));
-              this.masonry.prepended(bricks, null, true);
+              this.masonry.prepended(bricks, dfd.resolve, true);
             }
           }
           
           this.trigger('refreshed');
-          dfd.resolve();
         }, this);
       }
       
