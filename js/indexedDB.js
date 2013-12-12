@@ -232,7 +232,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   
   function IDB(name, options) {
     var self = this;
-    this.name = name;
+    this.name = 'hello';//name;
     _.extend(this, options);
     filePropertyName = this.filePropertyName;
     fileTypePropertyName = this.fileTypePropertyName;
@@ -657,7 +657,12 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
         }); //.fail(dfd.resolve); // resolve always to make sure we return results
 //        });
     
-        promises.push(promise);
+        if (promise.state() == 'pending')
+          promises.push(promise);
+        else {
+          if (done)
+            return false;
+        }
       };
           
       store.each(processItem, from && IDBKeyRange.lowerBound(from, true), direction);

@@ -19,6 +19,7 @@ define('views/ResourceMasonryItemView', [
     TAG: "ResourceMasonryItemView",
     initialize: function(options) {
       if (this._initialized) {
+        this._initializedCounter++;
         this.resource = this.model = options.resource || options.model;
         return;
       }
@@ -255,7 +256,7 @@ define('views/ResourceMasonryItemView', [
         if (_.has(obj, 'friendMeCount')) {
           var a = appBadge.querySelector('a');
           a.href = obj.friendMeUri;
-          a.innerText = obj.friendMeCount;
+          a.textContent = obj.friendMeCount;
         }
       }
       
@@ -278,19 +279,19 @@ define('views/ResourceMasonryItemView', [
           if (!prop.skipLabelInGrid) {
             var label = nabRLGridCols.querySelector('.label[data-prop="' + pName + '"]');
             if (label)
-              label.innerText = row;
+              label.textContent = row;
           }
           
           a = nabRLGridCols.querySelector('a[data-prop="' + pName + '"]');
           s = grid[row].value;
           if (grid[row].resourceLink) {
             a.href = resourceUri;
-            a.innerText = atts[pName];
+            a.textContent = atts[pName];
 //            s = '<a href="' + resourceUri + '">' + atts[pName] + '</a>';
           }
           else if (meta[pName].facet  &&  meta[pName].facet.indexOf("/href") != -1) {
             a.href = s;
-            a.innerText = s;
+            a.textContent = s;
 //            s = '<a href="' + s + '">' + s + '</a>';
           }
           
@@ -574,7 +575,7 @@ define('views/ResourceMasonryItemView', [
           if (tmpl_data['top']  &&  isBM) {  
             gItem.style.height = (tmpl_data['bottom'] - tmpl_data['top']) + 'px';
             gItemImgStyle.position = 'absolute';
-            gItemImgStyle[G.crossBrowser.css.transformLookup] = DOM.positionToMatrix(tmpl_data['top'], tmpl_data['left']);
+            gItemImgStyle[DOM.prefix('transform')] = DOM.positionToMatrix3DString(tmpl_data['left'], tmpl_data['top']);
 //            gItemImgStyle.top = '-' + tmpl_data['top'] + 'px';
 //            gItemImgStyle.left = '-' + tmpl_data['left'] + 'px'; 
             gItemImgStyle.clip = 'rect(' + tmpl_data['top'] + 'px,' + tmpl_data['right'] + 'px,' + tmpl_data['bottom'] + 'px,' + tmpl_data['left'] + 'px)';

@@ -630,8 +630,6 @@ define('collections/ResourceList', [
       }; 
 
       if (this.offset && !this._outOfData) {
-//        if (this.offset > 60)
-//          debugger;
         log("info", "fetching next page, from " + this.offset + ", to: " + (this.offset + limit));
       }
 

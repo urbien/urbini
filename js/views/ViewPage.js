@@ -7,8 +7,9 @@ define('views/ViewPage', [
   'views/Header',
   'views/ResourceView',
   'views/ControlPanel',
-  'lib/fastdom'
-], function(G, U, Events, BasicPageView, Header, ResourceView, ControlPanel, Q) {
+  'lib/fastdom',
+  'physicsBridge'
+], function(G, U, Events, BasicPageView, Header, ResourceView, ControlPanel, Q, Physics) {
   return BasicPageView.extend({
     clicked: false,
     initialize: function(options) {
@@ -150,42 +151,42 @@ define('views/ViewPage', [
           friend2 = 'movie';
         }
 
-        this.onload(function() {          
-          U.require(['collections/ResourceList', 'vocManager', 'views/HorizontalListView'], function(ResourceList, Voc, HorizontalListView) {
-            Voc.getModels(friendType).done(function() {
-              var friendProps = {};
-              friendProps[friend1] = friendProps[friend2] = uri;
-              self.friends = new ResourceList(null, {
-                params: {
-                  $or: U.getQueryString(friendProps, {delimiter: '||'})
-                },
-                model: U.getModel(friendType),
-                title: title //U.getDisplayName(res) + "'s " + U.getPlural(friendName)
-              });
-              
-              self.friends.fetch({
-                success: function() {
-                  if (!self.photogrid && self.friends.size()) {
-                    var photogridEl = self.el.querySelector('#photogrid');
-                    photogridEl.classList.remove('hidden');
-                    self.photogrid = new HorizontalListView({
-                      el: photogridEl,
-                      model: self.friends, 
-                      parentView: self, 
-                      source: uri
-                    });
-                    
-//                    self.photogrid = new PhotogridView({model: self.friends, parentView: self, source: uri, swipeable: true});
-                    self.addChild(self.photogrid);
-                    self.photogridDfd.resolve();
-    //                var header = $('<div data-role="footer" data-theme="{0}"><h3>{1}</h3>'.format(G.theme.photogrid, friends.title));
-    //                header.insertBefore(self.photogrid.el);
-                  }
-                }
-              });
-            });        
-          });
-        });
+//        this.onload(function() {          
+//          U.require(['collections/ResourceList', 'vocManager', 'views/HorizontalListView'], function(ResourceList, Voc, HorizontalListView) {
+//            Voc.getModels(friendType).done(function() {
+//              var friendProps = {};
+//              friendProps[friend1] = friendProps[friend2] = uri;
+//              self.friends = new ResourceList(null, {
+//                params: {
+//                  $or: U.getQueryString(friendProps, {delimiter: '||'})
+//                },
+//                model: U.getModel(friendType),
+//                title: title //U.getDisplayName(res) + "'s " + U.getPlural(friendName)
+//              });
+//              
+//              self.friends.fetch({
+//                success: function() {
+//                  if (!self.photogrid && self.friends.size()) {
+//                    var photogridEl = self.el.querySelector('#photogrid');
+//                    photogridEl.classList.remove('hidden');
+//                    self.photogrid = new HorizontalListView({
+//                      el: photogridEl,
+//                      model: self.friends, 
+//                      parentView: self, 
+//                      source: uri
+//                    });
+//                    
+////                    self.photogrid = new PhotogridView({model: self.friends, parentView: self, source: uri, swipeable: true});
+//                    self.addChild(self.photogrid);
+//                    self.photogridDfd.resolve();
+//    //                var header = $('<div data-role="footer" data-theme="{0}"><h3>{1}</h3>'.format(G.theme.photogrid, friends.title));
+//    //                header.insertBefore(self.photogrid.el);
+//                  }
+//                }
+//              });
+//            });        
+//          });
+//        });
       }
       
       this.listenTo(Events, "mapReady", this.showMapButton);
@@ -273,7 +274,8 @@ define('views/ViewPage', [
           viewTag = this.isAbout  &&  this.isApp ? '#about' : '#resourceView',
           views = {};
       
-      this.html(this.template(this.getBaseTemplateData()));      
+      this.html(this.template(this.getBaseTemplateData()));
+      
       this.photogridPromise.done(function() {        
         var pHeader = self.$('#photogridHeader')[0];
         var h3 = pHeader.querySelector('h3');
@@ -335,6 +337,7 @@ define('views/ViewPage', [
       }     
       
       this.onload(function() {
+        self.addToWorld();
         Q.write(function() {
 
           if (!self.isAbout) {

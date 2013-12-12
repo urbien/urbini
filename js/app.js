@@ -12,8 +12,9 @@ define('app', [
  'modelLoader',
  'vocManager',
  'resourceManager',
- 'collections/ResourceList'
- ], function(G, _, Backbone, __bbMxns__, Templates, U, Events, Errors, C, ModelLoader, Voc, ResourceManager, ResourceList) {
+ 'collections/ResourceList',
+ 'physicsBridge'
+ ], function(G, _, Backbone, __bbMxns__, Templates, U, Events, Errors, C, ModelLoader, Voc, ResourceManager, ResourceList, Physics) {
 //  var Chrome;
   var Router;
   Backbone.emulateHTTP = true;
@@ -544,9 +545,12 @@ define('app', [
     setupCleaner();
     prepDB();
     var localized = localize();
-    var modelsViewsTemplatesAndDB = ResourceManager.openDB().then(function() {
-      return getAppAccounts().then(loadCurrentModel).then(function() {
-        return $.whenAll(getTemplates(), getViews());
+    var modelsViewsTemplatesAndDB = $.Deferred();
+    ResourceManager.openDB().done(function() {
+      return getAppAccounts().done(function() {
+        loadCurrentModel().done(function() {
+          $.whenAll.apply($, getTemplates(), getViews()).done(modelsViewsTemplatesAndDB.resolve);
+        });
       });
     });
       
@@ -561,7 +565,8 @@ define('app', [
 //    if (G.browser.mobile)
 //      G.removeHoverStyles();
     
-    return $.whenAll(modelsViewsTemplatesAndDB, localized, require(['@widgets', 'router']).done(function($w, r) {
+    Physics.init();
+    return $.whenAll(modelsViewsTemplatesAndDB.promise(), localized, require(['@widgets', 'router']).done(function($w, r) {
       Router = r;
     }));
   };

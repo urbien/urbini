@@ -9,7 +9,7 @@
   <section id="{{= viewId }}" data-type="sidebar" data-position="right" style="left:auto;right:0;visibility:hidden;z-index:10001"></section>
   <section id="{{= viewId + 'r' }}" data-type="sidebar" data-position="right" style="left:auto;right:0;visibility:hidden;z-index:10001"></section> 
   <!-- div id="headerMessageBar"></div -->
-  <div id="headerDiv"></div>
+  <div id="headerDiv" style="position:relative; z-index:10000000;"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" role="main">
   <!--

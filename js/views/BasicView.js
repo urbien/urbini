@@ -6,8 +6,9 @@ define('views/BasicView', [
   'domUtils',
   'templates',
   'events',
+  'physicsBridge',
   'lib/fastdom'
-], function(G, _Backbone, U, DOM, Templates, Events, Q) {
+], function(G, _Backbone, U, DOM, Templates, Events, Physics, Q) {
   var AP = Array.prototype,
       backboneOn = Backbone.View.prototype.on,
       $wnd = $(window),
@@ -33,8 +34,10 @@ define('views/BasicView', [
   
   var BasicView = Backbone.View.extend({
 //    viewType: 'resource',
+    _initializedCounter: 0,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_render',  '_refresh', 'finish');      
+      _.bindAll(this, 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_render',  '_refresh', 'finish');
+      this._initializedCounter++;
       this.TAG = this.TAG || this.constructor.displayName;
 //      this.log('newView', ++this.constructor._instanceCounter);
       var superCtor = this.constructor;
@@ -110,6 +113,7 @@ define('views/BasicView', [
       if (this.model)
         this.listenTo(Events, 'preparingModelForDestruction.' + this.model.cid, this._preventModelDeletion);
       
+      this._dimensions = {};
 //      G.log(this.TAG, 'new view', this.getPageTitle());
       return this;
     },
@@ -135,7 +139,7 @@ define('views/BasicView', [
      * doesn't change a thing, only remembers this view's dimensions
      */
     setDimensions: function(width, height) {
-      var dim = this._dimensions = this._dimensions || {};
+      var dim = this._dimensions;
       dim.width = width;
       dim.height = height;
     },
@@ -147,6 +151,14 @@ define('views/BasicView', [
       return this._dimensions;
     },
     
+    setWidth: function(width) {
+      this._dimensions.width = width;
+    },
+
+    setHeight: function(height) {
+      this._dimensions.height = height;
+    },
+
     /**
      * doesn't change a thing, only remembers this view's position
      */
@@ -957,10 +969,38 @@ define('views/BasicView', [
     toggleVisibility: function(off) {
       if (this.el) {
         if (off)
-          this.el.style.visibility = 'hidden';
+          this.el.style.opacity = 0;
         else
-          this.el.style.removeProperty('visibility');
+          this.el.style.opacity = 1;
       }
+    },
+    
+    getBodyId: function() {
+      return this.cid + '.' + this._initializedCounter;
+    },
+    
+    addToWorld: function() {
+      if (!this._addedToWorld) {
+        this._addedToWorld = true;
+        var thisTransform = DOM.getTransform(this.el),
+            id = this.getBodyId();
+        
+        Physics.here.addBody(this.el, id);
+        Physics.here.addDraggable(id);
+        Physics.there.addBody('point', {
+          x: thisTransform[3][0],
+          y: thisTransform[3][1],
+          z: thisTransform[3][2],
+          lock: {
+            x: 0 // no movement along the x axis
+          }
+        }, id);
+      }
+    },
+
+    removeFromWorld: function() {
+      Physics.there.removeBody(this.getBodyId());
+      this._addedToWorld = false;
     }
   }, {
     displayName: 'BasicView',

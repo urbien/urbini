@@ -9,6 +9,12 @@ define('underscoreMixins', ['_underscore'], function(_) {
       __jsCommentRegexGM = /(?:\/\*(?:[\s\S]*?)\*\/)|(?:\/\/(?:.*)$)/gm;
 
 
+  String.prototype.toTitleCase = function() {
+    return this.replace(/(?:^|\s)\w/g, function(match) {
+        return match.toUpperCase();
+    });
+  }
+
   String.prototype.repeat = function(num) {
     return new Array(num + 1).join(this);
   };
@@ -218,7 +224,7 @@ define('underscoreMixins', ['_underscore'], function(_) {
           child;
       
       if (lastSep == -1)
-        return obj;
+        return obj[path];
       else {
         try {
           parent = _leaf(obj, path.slice(0, lastSep), separator);

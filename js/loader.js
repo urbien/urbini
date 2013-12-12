@@ -371,8 +371,7 @@ define('globals', function() {
         devVoc = G.DEV_PACKAGE_PATH.replace('/', '\/'),
         regex = devVoc + appPath + '\/[^\/]*$',
         commonTypes = G.commonTypes, 
-        defaultVocPath = G.defaultVocPath,
-        css = G.crossBrowser.css;
+        defaultVocPath = G.defaultVocPath;
     
     G.serverNameHttp = G.serverName.replace(/^[a-zA-Z]+:\/\//, 'http://');
     $.extend(G, {
@@ -394,34 +393,6 @@ define('globals', function() {
     for (var type in commonTypes) {
       commonTypes[type] = defaultVocPath + commonTypes[type];
     }  
-
-//    css.transform = (function() {
-      var prefix, stylePropertyPrefix, transformLookup, docEl = document.documentElement;
-      if (document.createElement('div').style.transform !== undefined) {
-//        prefix = '';
-        stylePropertyPrefix = '';
-        transformLookup = 'transform';
-      } else if (browser.opera) {
-//        prefix = '-o-';
-        stylePropertyPrefix = 'O';
-        transformLookup = 'OTransform';
-      } else if (docEl.style.MozTransform !== undefined) {
-//        prefix = '-moz-';
-        stylePropertyPrefix = 'Moz';
-        transformLookup = 'MozTransform';
-      } else if (docEl.style.webkitTransform !== undefined) {
-//        prefix = '-webkit-';
-        stylePropertyPrefix = 'webkit';
-        transformLookup = '-webkit-transform';
-      } else if (typeof navigator.cpuClass === 'string') {
-//        prefix = '-ms-';
-        stylePropertyPrefix = 'ms';
-        transformLookup = '-ms-transform';
-      }
-      
-      css.prefix = browser.prefix ? '-' + browser.prefix + '-' : '';
-      css.stylePropertyPrefix = stylePropertyPrefix;
-      css.transformLookup = transformLookup;
   };
   
   function adjustForVendor() {
@@ -1070,6 +1041,11 @@ define('globals', function() {
     ON: true,
     DEFAULT: {on: true},
     types : {
+      info: {
+        on: false,
+        color: '#FFFFFF',
+        bg: '#000'      
+      },
       error: {
         on: true,
         color: '#FF0000',
@@ -1136,6 +1112,7 @@ define('globals', function() {
   var requireConfig = {
     paths: {
       '@widgets': 'widgetsLibAdapter',
+      physics: 'physicsBridge',
       hammer: 'lib/hammer',
       mobiscroll: 'lib/mobiscroll-datetime-min',
       simplewebrtc: 'lib/simplewebrtc',
@@ -1534,7 +1511,7 @@ define('globals', function() {
     hasLocalStorage: hasLocalStorage,
     hasFileSystem: !!(window.requestFileSystem || window.webkitRequestFileSystem),
     hasBlobs: typeof window.Blob !== 'undefined',
-    hasWebWorkers: typeof window.Worker !== 'undefined',
+    hasWebWorkers: false, //typeof window.Worker !== 'undefined',
     TAG: 'globals',
     checkpoints: [],
     tasks: {},
@@ -1810,7 +1787,7 @@ define('globals', function() {
         dfd.resolve(worker);
       }).promise();
     },
-    
+
     /**
      * when you're done with a worker, let it go with this method so that others can use it
      */
@@ -1873,22 +1850,20 @@ define('globals', function() {
         message: 'Please log in'
       }
     },
-    crossBrowser: {
-      css: {}
-    },
     _clickDisabled: false,
     enableClick: function() {
-      this.log('events', 'CLICK MONITOR', 'ENABLED CLICK');
+//      this.log('events', 'CLICK MONITOR', 'ENABLED CLICK');
       this._clickDisabled = false;
     },
     disableClick: function() {
-      this.log('events', 'CLICK MONITOR', 'DISABLED CLICK');
+//      this.log('events', 'CLICK MONITOR', 'DISABLED CLICK');
       this._clickDisabled = true;
     },
     canClick: function() {
       return !this._clickDisabled;
     },
     lazifyImages: true,
+    tween: false,
     isModuleNeeded: function(name) {
       if (~G.skipModules.indexOf(name))
         return false;
@@ -1900,14 +1875,16 @@ define('globals', function() {
         return G.isBB();
       case '../templates_bootstrap.jsp':
         return G.isBootstrap();
-      case 'lib/IndexedDBShim':
+      case 'lib/IndexedDBShim.js':
         return G.dbType == 'shim';
-      case 'lib/whammy':
+      case 'lib/whammy.js':
         return browser.chrome;
-      case 'chrome':
+      case 'chrome.js':
         return G.inWebview;
-      case 'firefox':
+      case 'firefox.js':
         return G.hasFFApps;
+      case 'lib/tween.js':
+        return G.tween;
       default:
         return true;
       }

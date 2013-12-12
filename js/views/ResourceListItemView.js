@@ -21,6 +21,7 @@ define('views/ResourceListItemView', [
     initialize: function(options) {
       this.listenTo(this.resource, 'remove', this.remove);
       if (this._initialized) {
+        this._initializedCounter++;
         this.resource = this.model = options.resource || options.model;
         this.delegateNonDOMEvents();
         return;

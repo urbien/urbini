@@ -19,6 +19,7 @@ html { height: 100%; }
 
 [data-role="page"] {
   min-height: 100%;
+  overflow:hidden;
 }
 
 /* Gallery */
@@ -125,7 +126,7 @@ html { height: 100%; }
 .nab { 
   float: left; 
   /* width: 192px; */ 
-  margin: 5px; 
+  /* margin: 5px; */ 
   /* padding: 15px 15px 0; */ 
   font-size: 12px; 
   background-color: #ffffff; 

@@ -6,17 +6,19 @@ define('views/BasicPageView', [
   'events',
   'views/BasicView',
   'views/mixins/LazyImageLoader',
-  'views/mixins/Scrollable',
+//  'views/mixins/Scrollable',
   'lib/fastdom',
-  '@widgets'
+  '@widgets',
+  'domUtils'
 //  ,
 //  'jqueryImagesLoaded'
-], function(G, _, U, Events, BasicView, LazyImageLoader, Scrollable, Q, $m) {
+], function(G, _, U, Events, BasicView, LazyImageLoader, Q, $m, DOM) {
   var MESSAGE_BAR_TYPES = ['info', 'error', 'tip', 'countdown'],
       pageEvents = ['page_show', 'page_hide', 'page_beforeshow'],
       doc = document,
       viewport = G.viewport,
-      mixins = [Scrollable];
+      mixins = [];
+//      mixins = [Scrollable];
 
   if (G.lazifyImages)
     mixins.unshift(LazyImageLoader);
@@ -168,11 +170,12 @@ define('views/BasicPageView', [
     
     _onActive: function() {
 //      this.trigger('active');
+      var self = this;
       BasicView.prototype._onActive.apply(this, arguments);
       var onload = function() {
-        this._checkMessageBar();
-        this._checkAutoClose();
-      }.bind(this);
+        self._checkMessageBar();
+        self._checkAutoClose();
+      };
 
       if (this.rendered)
         onload();
@@ -185,6 +188,7 @@ define('views/BasicPageView', [
     
     _onInactive: function() {
 //      this.trigger('inactive');
+      this.removeFromWorld();
       BasicView.prototype._onInactive.apply(this, arguments);
       this._clearMessageBar();        
     },

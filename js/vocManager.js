@@ -278,22 +278,22 @@ define('vocManager', [
     });
   }, 500));
   
-  Events.on('newResourceList', function(list) {
-    _.each(['updated', 'added', 'reset'], function(event) {
-      Voc.stopListening(list, event);
-      Voc.listenTo(list, event, function(resources) {
-        Voc.fetchLinkedAndReferredModels(resources || list.models);
-      });
-    });
-  });
-
-  Events.on('newResource', function(res) {
-    if (!res.collection) {
-      setTimeout(function() {
-        Q.nonDom(fetchLinkedAndReferredModels.bind(Voc, ([res])));
-      }, 1000);
-    }
-  });
+//  Events.on('newResourceList', function(list) {
+//    _.each(['updated', 'added', 'reset'], function(event) {
+//      Voc.stopListening(list, event);
+//      Voc.listenTo(list, event, function(resources) {
+//        Voc.fetchLinkedAndReferredModels(resources || list.models);
+//      });
+//    });
+//  });
+//
+//  Events.on('newResource', function(res) {
+//    if (!res.collection) {
+//      setTimeout(function() {
+//        Q.nonDom(fetchLinkedAndReferredModels.bind(Voc, ([res])));
+//      }, 1000);
+//    }
+//  });
 
 //  Events.on('newPlugs', Q.defer.bind(Q, 30, 'nonDom', function() {
 //    Q.defer(30, 'nonDom', Voc.savePlugsToStorage, Voc);

@@ -5,7 +5,11 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       isFF = G.browser.firefox,
       vendorPrefixes = ['-moz-', '-ms-', '-o-', '-webkit-'],
       ArrayProto = Array.prototype,
-      resizeTimeout;
+      resizeTimeout,
+      cssPrefix = {},
+      tmpdiv = document.createElement("div");
+
+//      TRANSITION_PROP = G.browser.webkit ? '-webkit-transition' : 'transition';
 
   window.addEventListener('resize', function() {
     clearTimeout(resizeTimeout);
@@ -404,6 +408,25 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           var margin = this.$margin();
           return this.offsetWidth + margin.left + margin.right;
         }
+      },
+      
+      $data: function(/* key, val or properties object */) {
+        var arg0 = arguments[0];
+        if (arguments.length == 2) {
+          this.dataset[arg0] = arguments[1];
+        }
+        else {
+          if (typeof arg0 == 'string')
+            return this.dataset[arg0];
+          else {
+            for (var key in arg0) {
+              if (arg0.hasOwnProperty(key))
+                this.dataset[key] = arg0[key];
+            }
+          }
+        }
+        
+        return this;
       }
     };
     
@@ -530,7 +553,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     },
     
     parseTransform: function(transformStr) {
-      if (transformStr == 'none')
+      if (!transformStr || transformStr == 'none')
         return this.getNewIdentityMatrix(4);
       
       var split = transformStr.slice(transformStr.indexOf('(') + 1).split(', '),
@@ -586,7 +609,12 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       if (!transformStr || transformStr == 'none')
         return _.clone(this._zeroTranslation);
       
-      if (/matrix/.test(transformStr)) {
+      var match = transformStr.match(/^matrix(3d)?/);
+      if (match) {
+        if (match[1]) { // 3d
+          return 
+        }
+        
         var matrix = this.parseTransform(transformStr);
         return {
           X: matrix[3][0],
@@ -610,48 +638,36 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     },
     
     getStylePropertyValue: function(computedStyle, prop) {
-      var value,
-          vendorSpecific = G.crossBrowser.css;
-      
-      if (vendorSpecific) {
-        value = computedStyle.getPropertyValue(vendorSpecific.prefix + prop);
-        if (value === undefined)
-          value = computedStyle.getPropertyValue(prop);
-      }
-      else {
-        for (var i = 0; i < vendorPrefixes.length; i++) {
-          value = computedStyle.getPropertyValue(vendorPrefixes[i] + prop);
-          if (value && value !== 'none')
-            break;
-        }
-      }
-      
-      return value || 'none';
+      return computedStyle.getPropertyValue(this.prefix(prop));
     },
+
+    setTransform: function(el, transform, transition) {
+      var transformProp = this.prefix('transform');
+      if (typeof transform == 'string')
+        el.style[transformProp] = transform;
+      else
+        el.style[transformProp] = this.toMatrix3DString(transform);
       
+      if (arguments.length == 3)
+        el.style[this.prefix('transition')] = transition || '';
+    },
+    
+    toMatrix3DString: function(transform) {
+      return 'matrix3d(' + transform[0].join(',') + ',' + transform[1].join(',') + ',' + transform[2].join(',') + ',' + transform[3].join(',') + ')';
+    },
+
     setStylePropertyValues: function(style, propMap) {
       for (var prop in propMap) {
-        var value = propMap[prop],
-            vendorSpecific = G.crossBrowser.css;
-        
-        style[prop] = value;
-        if (vendorSpecific) {
-          style[vendorSpecific.prefix + prop] = value;
-        }
-        else {
-          for (var i = 0; i < vendorPrefixes.length; i++) {
-            style[vendorPrefixes[i] + prop] = value;
-          }
-        }
+        style[this.prefix(prop)] = propMap[prop];
       }
     },
 
     getTranslation: function(el) {
-      return this.parseTranslation(this.getStylePropertyValue(window.getComputedStyle(el), 'transform'));
+      return this.parseTranslation(el.style[this.prefix('transform')]);
     },
 
     getTransform: function(el) {
-      return this.parseTransform(this.getStylePropertyValue(window.getComputedStyle(el), 'transform'));
+      return this.parseTransform(el.style[this.prefix('transform')]);
     },
     
     empty: function(els) {
@@ -933,8 +949,55 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
         $unwrap(p).$remove();
     },
     
-    positionToMatrix: function(top, left) {
-      return 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, ' + (left || 0) + ', ' + (top || 0) + ', 0, 1)';
+    getCachedWidth: function(el) {
+      var width = el.dataset.width;
+      if (width)
+        return parseInt(width);
+    },
+
+    getCachedHeight: function(el) {
+      var height = el.dataset.height;
+      if (height)
+        return parseInt(height);
+    },
+
+    positionToMatrix3D: function(x, y, z) {
+      return [
+        [1, 0, 0, 0],
+        [0, 1, 0, 0],
+        [0, 0, 1, 0],
+        [x || 0, y || 0, z || 0, 1]
+      ];
+    },
+    
+    positionToMatrix3DString: function(x, y, z) {
+      return 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, ' + (x || 0) + ', ' + (y || 0) + ', ' + (z || 0) + ', 1)';
+    },
+   
+    /**
+     * From wellcaffeinated's PhysicsJS
+     */
+    prefix: function(prop) {
+      if (cssPrefix[prop]){
+        return cssPrefix[prop];
+      }
+
+      var arrayOfPrefixes = ['Webkit', 'Moz', 'Ms', 'O'],
+          name;
+
+      for (var i = 0, l = arrayOfPrefixes.length; i < l; ++i) {
+        name = arrayOfPrefixes[i] + prop.toTitleCase();
+
+        if (name in tmpdiv.style){
+          return cssPrefix[prop] = name;
+        }
+      }
+
+      if (name in tmpdiv.style){
+        return cssPrefix[prop] = prop;
+      }
+
+      return false;
     }
   };
 });

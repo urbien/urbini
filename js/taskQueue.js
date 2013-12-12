@@ -122,7 +122,7 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
       } catch (err) {
         debugger;
         log('error', 'task crashed: ', task.name);
-        task.reject();
+        task.reject(err);
       }
       
       var promise = task.promise();

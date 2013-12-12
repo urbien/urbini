@@ -33,7 +33,7 @@ define('router', [
   };
 
   var lastViewportWidth = G.viewport.width,
-      transformLookup = G.crossBrowser.css.transformLookup;
+      transformLookup = DOM.prefix('transform');
   
   window.addEventListener('resize', Q.debounce(function() {
     if (!lastViewportWidth) {
