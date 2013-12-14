@@ -1053,34 +1053,8 @@ define('views/BasicView', [
       var self = this,
           thisTransform = DOM.getTransform(this.el),
           containerId = this.getBodyContainerId(),
-          topEdgeId = _.uniqueId('topEdge'),
-          containerPoint;
+          topEdgeId = _.uniqueId('topEdge');
     
-      if (this._flexigroup) {
-        containerPoint = {
-          _id: containerId,
-          x: this._offsetLeft + this._outerWidth / 2,
-          y: -G.viewport.height * 5,
-          lock: {
-            x: 0
-          }, 
-          mass: 1000          
-        };
-      }
-      else {
-        containerPoint = {
-          _id: containerId,
-//            x: thisTransform[3][0],
-//            y: thisTransform[3][1],
-//            z: thisTransform[3][2],
-          x: 0,
-          y: 0,
-          lock: {
-            x: 0 // no movement along the x axis
-          }
-        };
-      }
-      
       options = options || {};      
       _.defaults(options, {
         slidingWindow: false,
@@ -1088,8 +1062,8 @@ define('views/BasicView', [
         bounds: this._bounds,
         flexigroup: this._flexigroup
       });
-      
-      Physics.addBody(containerId, 'point', containerPoint, this.el, true);
+
+      this.addContainerBodyToWorld(true);
       this.mason = Physics.there.masonry.newMason(options, this._onPhysicsMessage);
 
       $.when.apply($, this.pageView._getLoadingPromises()).done(function() { // maybe this is a bit wasteful?
@@ -1104,6 +1078,36 @@ define('views/BasicView', [
 
       if (addViewBrick)
         this.addViewBrick();
+    },
+    
+    addContainerBodyToWorld: function(draggable) {
+      var containerId = this.getBodyContainerId();
+      if (this._flexigroup) {
+        this.containerBody = {
+          _id: containerId,
+          x: this._offsetLeft + this._outerWidth / 2,
+          y: -G.viewport.height * 5,
+          lock: {
+            x: 0
+          }, 
+          mass: 1000          
+        };
+      }
+      else {
+        this.containerBody = {
+          _id: containerId,
+//            x: thisTransform[3][0],
+//            y: thisTransform[3][1],
+//            z: thisTransform[3][2],
+          x: 0,
+          y: 0,
+          lock: {
+            x: 0 // no movement along the x axis
+          }
+        };
+      }
+      
+      Physics.addBody(containerId, 'point', this.containerBody, this.el, draggable);
     },
     
     addViewBrick: function() {

@@ -506,41 +506,8 @@ define('views/ResourceListView', [
           viewport = G.viewport,
           numEls;
 
-      if (!this.mason) {
-        var topCenter = viewport.width / 2,
-            groupId;
-        
-//        if (DO_GROUP) {
-//          groupId = this.getBodyId();
-//          this.pageView.addBody(groupId, 'point', {
-//            x: 0,
-//            y: 0,
-//            lock: {
-//              x: 0
-//            }
-//          }, this.el, true); // draggable
-//        }
-//        else {
-//          groupId = _.uniqueId('flexigroup');
-//          this.pageView.addBody(groupId, 'point', {
-//            x: topCenter,
-//            y: -G.viewport.height * 5,
-//            lock: {
-//              x: 0
-//            }, 
-//            mass: 1000
-//          }, null, true); // draggable, but no corresponding DOM element
-//          
-//          this.options.flexigroup = groupId;
-//        };
-//        
-//        this._offsetLeft = this.el.offsetLeft;
-//        this._offsetTop = this.el.offsetTop;
-//        this._updateBounds();
-//        this.options.bounds = this._bounds;
-//        this.mason = Physics.there.masonry.newMason(this.options, this._onmessage);
+      if (!this.mason)
         this.addToWorld(this.options);
-      }
             
 //      numEls = this.getElementsPerViewport() * this._maxViewportsInSlidingWindow;
 //      this.el.innerHTML = new Array(numEls).join("<div></div>");

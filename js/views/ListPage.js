@@ -413,6 +413,7 @@ define('views/ListPage', [
         });
       }
       
+      this.addContainerBodyToWorld(false); // not draggable
       this.finish();
       return this;
     }

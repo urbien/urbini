@@ -260,7 +260,8 @@
           shortCol  = i,
           setSpan   = this.cols + 1 - i,
           style     = {},
-          colYs = this._getColYs();
+          colYs = this._getColYs(),
+          lock;
   
       //    Which column has the min/max Y value, 
       //         closest to the left/right, 
@@ -295,11 +296,15 @@
       }
 
       console.log("adding", brick.geometry._aabb._hw * 2, "x", brick.geometry._aabb._hh * 2, "brick at (" + left + ", " + top + ")");
-      brick.state.pos.unlock();
+      lock = brick.state.pos.unlock();
       brick.state.pos.set(left, top);
-      brick.state.pos.lock({
-        x: this.options.gutterWidth / 2
-      });
+      if (lock)
+        brick.state.pos.lock(lock);
+      else {
+        brick.state.pos.lock({
+          x: this.options.gutterWidth / 2
+        }); 
+      }
     
       // apply setHeight to necessary columns
       for ( i=0; i < setSpan; i++ ) {
