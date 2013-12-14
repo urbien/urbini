@@ -1,0 +1,24 @@
+{
+  "name": "urbini",
+  "version": "0.5.5",
+  "description": "Urbini is a mobile web framework that helps web apps and native apps work together in one network",
+  "main": "./js/loader.js",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:urbien/urbini.git"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "grunt": "0.4.x",
+    "grunt-contrib-concat": "0.x.x",
+    "grunt-contrib-uglify": "0.x.x",
+    "grunt-contrib-jasmine": "0.4.x",
+    "grunt-contrib-clean": "0.x.x",
+    "grunt-contrib-copy": "0.x.x",
+    "grunt-contrib-jshint": "0.x.x",
+    "grunt-contrib-watch": "~0.3.1",
+    "grunt-lodash": "~0.3.0"
+  },
+  "bundledDependencies": [],
+  "license": "MIT"
+}
