@@ -302,6 +302,6 @@ define('vocManager', [
   Events.on('getModels', function(models, dfd) {
     Voc.getModels(models).then(dfd.resolve, dfd.reject);
   });
-  
-  return (G.Voc = Voc);
+  G.Voc = Voc;
+  return Voc;
 });
