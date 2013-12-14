@@ -5,10 +5,8 @@ define('views/ResourceMasonryItemView', [
   'utils',
   'events',
   'views/BasicView',
-  'lib/fastdom',
-  'domUtils',
-  'jqueryMasonry'
-], function(G, _, U, Events, BasicView, Q, DOM) {
+  'domUtils'
+], function(G, _, U, Events, BasicView, DOM) {
   var RMIV = BasicView.extend({
 //    className: 'nab nabBoard masonry-brick',
 //    className: 'pin',

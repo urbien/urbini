@@ -124,7 +124,7 @@ html { height: 100%; }
 }
 
 .nab { 
-  float: left; 
+  /* float: left; */ 
   /* width: 192px; */ 
   /* margin: 5px; */ 
   /* padding: 15px 15px 0; */ 

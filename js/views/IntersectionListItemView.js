@@ -6,8 +6,7 @@ define('views/IntersectionListItemView', [
   'events',
   'views/BasicView',
   'views/HorizontalListItemView',
-  'lib/fastdom',
-  'jqueryMasonry'
+  'lib/fastdom'
 ], function(G, _, Backbone, U, Events, BasicView, HorizontalListItemView, Q) {
   return BasicView.extend({
     template: 'intersectionListItemTemplate',

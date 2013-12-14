@@ -335,19 +335,20 @@ define('views/ViewPage', [
             self.isBuyGroup = false;
         });
       }     
-      
-      this.onload(function() {
-        self.addToWorld();
-        Q.write(function() {
 
+      this.onload(function() {
+        Q.write(function() {
           if (!self.isAbout) {
             if (G.currentUser.guest) {
               self.$('#edit').$hide();
             }
           }       
           
-          if (!self.el.parentNode) 
+          if (!self.el.parentNode) {
             document.body.appendChild(self.el);
+            self.addToWorld(null, true); // auto-add view page brick
+            self.mason.setLimit(self._numBricks);
+          }
         
           self.el.dataset.theme = G.theme.swatch;
           if (G.theme.backgroundImage) 

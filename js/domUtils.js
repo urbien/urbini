@@ -7,6 +7,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       ArrayProto = Array.prototype,
       resizeTimeout,
       cssPrefix = {},
+      renderQueue = [],
       tmpdiv = document.createElement("div");
 
 //      TRANSITION_PROP = G.browser.webkit ? '-webkit-transition' : 'transition';
@@ -26,6 +27,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
         widthChanged = window.innerWidth !== v.width;
     
     if (heightChanged || widthChanged) {
+      saveViewportSize();
       window.dispatchEvent(new Event('debouncedresize'));
       window.dispatchEvent(new Event('viewportdimensions'));
       if (heightChanged)
@@ -65,8 +67,8 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
   };
 
   saveViewportSize();  
-  window.addEventListener('orientationchange', saveViewportSize); 
-  window.addEventListener('debouncedresize', saveViewportSize); 
+//  window.addEventListener('orientationchange', saveViewportSize); 
+//  window.addEventListener('debouncedresize', saveViewportSize); 
 
   function getElementArray(els) {
     return els instanceof Array ||
@@ -385,10 +387,10 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       $margin: function() {
         var style = window.getComputedStyle(this);
         return {
-          top: parseFloat(style.marginTop),
-          left: parseFloat(style.marginLeft),
-          bottom: parseFloat(style.marginBottom),
-          right: parseFloat(style.marginRight)
+          top: parseFloat(style.marginTop || 0),
+          left: parseFloat(style.marginLeft || 0),
+          bottom: parseFloat(style.marginBottom || 0),
+          right: parseFloat(style.marginRight || 0)
         }
       },
       
@@ -998,6 +1000,105 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       }
 
       return false;
+    },
+    
+    /**
+     * @param renderData - e.g. {
+     *    style: {
+     *      add: {
+     *        width: '100px'
+     *      },
+     *      remove: ['height']
+     *    }, 
+     *    attributes: {
+     *      add: {
+     *        'data-blah': 12
+     *      },
+     *      remove: ['stupid']
+     *    }, 
+     *    class: {
+     *      add: ['hey', 'ho'],
+     *      remove: ['yo', 'booya'],
+     *      set: 'yo there'
+     *    }
+     * }
+     */
+    queueRender: function(el, renderData) {
+      renderQueue[renderQueue.length] = arguments;
+    },
+
+    processRenderQueue: function() {
+      var i = renderQueue.length,
+          item;
+          
+      while (i--) {
+        item = renderQueue[i];
+        this.render(item[0] /* el */, item[1] /* renderData */);  // see queueRender method
+      }
+    },
+    
+    blankRenderData: function() {
+      return { 
+        style: {}, 
+        attributes: {}, 
+        'class': {}
+      };
+    },
+    
+    /**
+     * changes an element's styles, attributes, classes (see queueRender method signature for parameter definitions)
+     */
+    render: function(el, renderData) {
+      var style = renderData.style, 
+          attrs = renderData.attributes, 
+          classes = renderData['class'], 
+          add, remove, replace,
+          i;
+      
+      if (style) {
+        if ((add = style.add))
+          el.$css(add);
+        if ((remove = style.remove)) {
+          i = remove.length;
+          while (i--) {
+            el.style.removeProperty(remove[i]);
+          }
+        }
+      }
+      
+      if (attrs) {
+        if ((add = attrs.add))
+          el.$attr(add);
+        if ((remove = attrs.remove)) {
+          i = remove.length;
+          while (i--) {
+            el.removeAttribute(remove[i]);
+          }
+        }
+      }
+
+      if (classes) {
+        if ((add = classes.add)) {
+          if (typeof add == 'string')
+            el.$addClass(add);
+          else
+            el.$addClass.apply(el, add);
+        }
+
+        if ((remove = classes.remove)) {
+          if (typeof remove == 'string')
+            el.$removeClass(remove);
+          else
+            el.$removeClass.apply(el, remove);
+        }
+        
+        if ((replace = classes['set']) !== undefined) {
+          if (replace instanceof Array)
+            replace = replace.join(' ');
+          
+          el.setAttribute('class', replace);
+        }
+      }
     }
   };
 });

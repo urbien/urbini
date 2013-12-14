@@ -43,6 +43,8 @@ define('views/BasicPageView', [
   var PageView = BasicView.extend({
 //    mixins: [Scrollable],
     _fetchPromise: null,
+    _draggable: true,
+    _flexigroup: false,
     viaHammer: true,
     style: {
       'min-height': '100%'
@@ -173,12 +175,15 @@ define('views/BasicPageView', [
       var self = this;
       BasicView.prototype._onActive.apply(this, arguments);
       var onload = function() {
+//        self.addToWorld(true);
         self._checkMessageBar();
         self._checkAutoClose();
       };
 
-      if (this.rendered)
+      if (this.rendered) {
         onload();
+//        this.reconnectToWorld();
+      }
       else
         this.onload(onload);
       
@@ -188,7 +193,7 @@ define('views/BasicPageView', [
     
     _onInactive: function() {
 //      this.trigger('inactive');
-      this.removeFromWorld();
+//      this.disconnectFromWorld();
       BasicView.prototype._onInactive.apply(this, arguments);
       this._clearMessageBar();        
     },
@@ -472,9 +477,10 @@ define('views/BasicPageView', [
       }
     },
     
-//    _onDestroyed: function() {
-//      return BasicView.prototype._onDestroyed.apply(this, arguments);
-//    },
+    _onDestroyed: function() {
+//      this.removeFromWorld();
+      return BasicView.prototype._onDestroyed.apply(this, arguments);
+    },
 
     _checkAutoClose: function() {
       var self = this,

@@ -34,9 +34,12 @@ define('views/BasicView', [
   
   var BasicView = Backbone.View.extend({
 //    viewType: 'resource',
+    _numBricks: 0,
     _initializedCounter: 0,
+    _flexigroup: false,
+    _draggable: false,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_render',  '_refresh', 'finish');
+      _.bindAll(this, 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_render',  '_refresh', 'finish', '_onViewportDimensionsChanged');
       this._initializedCounter++;
       this.TAG = this.TAG || this.constructor.displayName;
 //      this.log('newView', ++this.constructor._instanceCounter);
@@ -76,7 +79,9 @@ define('views/BasicView', [
           this.trigger('rendered');
         }
       }.bind(this));
-      
+
+      this._bodies = [];
+      this._draggables = [];
       this._taskQueue = [];      
       this._templates = [];
       this._templateMap = {};
@@ -266,6 +271,10 @@ define('views/BasicView', [
     
     modelEvents: {},
     
+    windowEvents: {
+      'viewportdimensions': '_onViewportDimensionsChanged'
+    },
+    
     _preventModelDeletion: function() {
       Events.trigger('saveModelFromUntimelyDeath.' + this.model.cid);
     },
@@ -403,20 +412,11 @@ define('views/BasicView', [
       
       this.el.$remove();
       this.$el = this.el = this._hammer = this._hammered = null;
-//      this.$el.remove();
-//      
-//      if (document.documentElement.contains(this.el)) {
-//        this.el.parentNode.removeChild(this.el);
-//      }
-//        this.$el.remove();
       
-//      Q.start(this.$el.remove, this.$el);
-      
-//      for (var i in viewProps) {
-//        this[viewProps[i]] = null;
-//      }
-//      
-//      _.wipe(this);
+//      if (this._bodies.length)
+//        Physics.removeBodies.apply(Physics, this._bodies);
+//      if (this._draggables.length)
+//        Physics.removeDraggables.apply(Physics, this._draggables);
     },
     
     _onModelChanged: function() {
@@ -428,7 +428,7 @@ define('views/BasicView', [
     },
     
     _getLoadingPromises: function() {
-      return [this._loadingDfd].concat(this._getChildrenLoadingPromises());
+      return [this._loadingPromise].concat(this._getChildrenLoadingPromises());
     },
     
 //    isDoneLoading: function() {
@@ -638,14 +638,11 @@ define('views/BasicView', [
       return this.pageView && this.pageView.getPageTitle();
     },
     
-//    _onViewportDimensionsChanged: _.debounce(function(event) {
-//      var $el = this.$el,
-//          type = event.type;
-//      
-//      if (this.isActive())
-//        $el.triggerHandler(type);
-//    }, 50),
-//    
+    _onViewportDimensionsChanged: function() {
+      if (this._updateBounds() && this.mason)
+        this.mason.resize(this._bounds)
+    },
+    
 //    _onActive: function() {
 //      if (this.active)
 //        return;
@@ -663,6 +660,12 @@ define('views/BasicView', [
       var renderArgs = this._renderArgs,
           refreshArgs = this._refreshArgs;
       
+      if (this.mason) {
+        this.mason.wake();
+        if (this._draggable)
+          Physics.addDraggables(this.getBodyContainerId());
+      }
+      
       this.active = true;
       this._renderArgs = this._refreshArgs = null;
       this.triggerChildren('active');
@@ -679,6 +682,12 @@ define('views/BasicView', [
         return;
       
       this.active = false;
+      if (this._draggable)
+        Physics.removeDraggables(this.getBodyContainerId());
+
+      if (this.mason)
+        this.mason.sleep();
+      
       this.triggerChildren('inactive');      
     },
 
@@ -978,24 +987,152 @@ define('views/BasicView', [
     getBodyId: function() {
       return this.cid + '.' + this._initializedCounter;
     },
+
+    getBodyContainerId: function() {
+      return 'container' + this.cid + '.' + this._initializedCounter;
+    },
+
+//    reconnectToWorld: function() {
+//      if (this._bodies.length)
+//        Physics.unbenchBodies.apply(Physics, this._bodies);
+//      if (this._draggables.length)
+//        Physics.addDraggables.apply(Physics, this._draggables);
+//    },
+//    
+//    disconnectFromWorld: function() {
+//      if (this._bodies.length)
+//        Physics.benchBodies.apply(Physics, this._bodies);
+//      if (this._draggables.length)
+//        Physics.removeDraggables.apply(Physics, this._draggables);
+//    },
+//
+//    addDraggable: function(id) {
+//      Physics.here.addDraggable(id);
+//      this._draggables.push(id);
+//    },
     
-    addToWorld: function() {
-      if (!this._addedToWorld) {
-        this._addedToWorld = true;
-        var thisTransform = DOM.getTransform(this.el),
-            id = this.getBodyId();
-        
-        Physics.here.addBody(this.el, id);
-        Physics.here.addDraggable(id);
-        Physics.there.addBody('point', {
-          x: thisTransform[3][0],
-          y: thisTransform[3][1],
-          z: thisTransform[3][2],
+    addBody: function(id, type, options, el, draggable) {
+      Physics.addBody.apply(Physics, arguments);
+      this._bodies.push(id);
+      if (draggable)
+        this._draggables.push(id);
+    },
+    
+    _updateBounds: function() {
+      var viewport = G.viewport,
+          dimensions = this.getDimensions(),
+          bounds = this._bounds || [],
+          newBounds = [0, 0];
+
+      this._offsetLeft = this.el.offsetLeft;
+      this._offsetTop = this.el.offsetTop;
+      
+      // make relative bounds that start at (0, 0)
+      newBounds[2] = dimensions.width || (viewport.width - this._offsetLeft);
+      newBounds[3] = dimensions.height || (viewport.height - this._offsetTop);
+      for (var i = 0; i < 4; i++) {
+        if (bounds[i] != newBounds[i]) {
+          this._bounds = newBounds;
+          this._outerWidth = newBounds[2];
+          this._outerHeight = newBounds[3];
+          return true;
+        }
+      }
+    },
+    
+    _onPhysicsMessage: function() {
+      // override
+    },
+    
+    addToWorld: function(options, addViewBrick) {      
+//      var viewport = G.viewport;
+      if (this.mason)
+        return;
+      
+      this._updateBounds();
+      var self = this,
+          thisTransform = DOM.getTransform(this.el),
+          containerId = this.getBodyContainerId(),
+          topEdgeId = _.uniqueId('topEdge'),
+          containerPoint;
+    
+      if (this._flexigroup) {
+        containerPoint = {
+          _id: containerId,
+          x: this._offsetLeft + this._outerWidth / 2,
+          y: -G.viewport.height * 5,
+          lock: {
+            x: 0
+          }, 
+          mass: 1000          
+        };
+      }
+      else {
+        containerPoint = {
+          _id: containerId,
+//            x: thisTransform[3][0],
+//            y: thisTransform[3][1],
+//            z: thisTransform[3][2],
+          x: 0,
+          y: 0,
           lock: {
             x: 0 // no movement along the x axis
           }
-        }, id);
+        };
       }
+      
+      options = options || {};      
+      _.defaults(options, {
+        slidingWindow: false,
+        container: containerId,
+        bounds: this._bounds,
+        flexigroup: this._flexigroup
+      });
+      
+      Physics.addBody(containerId, 'point', containerPoint, this.el, true);
+      this.mason = Physics.there.masonry.newMason(options, this._onPhysicsMessage);
+
+      $.when.apply($, this.pageView._getLoadingPromises()).done(function() { // maybe this is a bit wasteful?
+        var left = self.el.offsetLeft,
+            top = self.el.offsetTop;
+        
+        self._offsetLeft = left;
+        self._offsetTop = top;
+        if (self._updateBounds() && self.mason)
+          self.mason.resize(self._bounds);
+      });
+
+      if (addViewBrick)
+        this.addViewBrick();
+    },
+    
+    addViewBrick: function() {
+      var width = this._outerWidth,
+          height = this._outerHeight,
+          id = this.getBodyId(),
+          myBrick = { // TODO: separate this into real bricks, like subviews
+            _id: id,
+            fixed: !this._flexigroup,
+            lock: {
+              x: 0 // add gutterWidth/5
+            },
+            mass: 0.1,
+            vertices: [
+              {x: 0, y: height},
+              {x: width, y: height},
+              {x: width, y: 0},
+              {x: 0, y: 0}
+            ],
+            restitution: 0.3
+          };
+      
+      this.addBricks([myBrick]);
+    },
+    
+    addBricks: function(bricks, atTheHead) {
+      this._numBricks += bricks.length;
+      this.mason.addBricks(bricks, atTheHead);
+//      this.mason.setLimit(this._numBricks);
     },
 
     removeFromWorld: function() {

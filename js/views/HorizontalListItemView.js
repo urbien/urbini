@@ -5,9 +5,8 @@ define('views/HorizontalListItemView', [
   'events',
   'views/BasicView',
   'lib/fastdom',
-  'vocManager',
-  'jqueryMasonry'
-], function(G, _, U, Events, BasicView, fd, Voc, Q) {
+  'vocManager'
+], function(G, _, U, Events, BasicView, Q, Voc) {
   function getCaption(res, prop) {
     var vocModel = res.vocModel;
     prop = prop ? prop : res ? null : res;

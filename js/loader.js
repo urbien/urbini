@@ -1862,13 +1862,17 @@ define('globals', function() {
     canClick: function() {
       return !this._clickDisabled;
     },
-    lazifyImages: true,
-    tween: false,
+    lazifyImages: false,
+//    tween: false,
     isModuleNeeded: function(name) {
       if (~G.skipModules.indexOf(name))
         return false;
       
       switch (name) {
+      case 'lib/physicsjs-custom.js':
+        return false;
+      case 'lib/jquery.masonry.js':
+        return false;
       case '../templates_topcoat.jsp':
         return G.isTopcoat();
       case '../templates_bb.jsp':
@@ -1883,8 +1887,8 @@ define('globals', function() {
         return G.inWebview;
       case 'firefox.js':
         return G.hasFFApps;
-      case 'lib/tween.js':
-        return G.tween;
+//      case 'lib/tween.js':
+//        return G.tween;
       default:
         return true;
       }

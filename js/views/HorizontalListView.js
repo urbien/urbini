@@ -24,17 +24,6 @@ define('views/HorizontalListView', [
     _elementsPerPage: 6,
     className: 'thumbnail-gallery',
 
-    events: {
-      'scrollo.horizontalListView': 'onScroll',
-      'scrollosize.horizontalListView': '_onScrollerSizeChanged',
-      'scrolloable.horizontalListView': '_onScrollerScrollable'
-    },
-    
-    _onScrollerSizeChanged: function(e) {
-      if (e.target == this.el)
-        ResourceListView.prototype._onScrollerSizeChanged.apply(this, arguments);
-    },
-
     initialize: function(options) {
 //      _.bindAll(this, 'renderItem');
       ResourceListView.prototype.initialize.apply(this, arguments);
@@ -78,16 +67,6 @@ define('views/HorizontalListView', [
 
     setPageAttributes: function(el) {
       el.style.display = 'inline-block';
-    },
-
-    _updateConstraints: function() {
-      ResourceListView.prototype._updateConstraints.call(this);
-      if (this._viewportDim) {
-        if (G.browser.mobile && this._viewportDim < 500)
-          this._elementsPerPage = 4;
-        else
-          this._elementsPerPage = 10;
-      }
     },
 
     preinitializeItem: function(res) {

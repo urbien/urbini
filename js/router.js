@@ -15,12 +15,13 @@ define('router', [
   'redirecter',
   'transitions',
   'domUtils',
-  'lib/fastdom'
+  'lib/fastdom',
+  'physicsBridge'
 //  , 
 //  'views/ListPage', 
 //  'views/ViewPage'
 //  'views/EditPage' 
-], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth, Redirecter, Transitioner, DOM, Q /*, ListPage, ViewPage*/) {
+], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth, Redirecter, Transitioner, DOM, Q, Physics /*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
   var Modules = {},
       doc = document,
@@ -1604,7 +1605,11 @@ define('router', [
 //        $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
         
 //        if (G.isJQM()) 
-        this.$changePage({changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});        
+      
+      Physics.echo(function() {
+        console.log("CHANGING PAGE");
+        this.$changePage({changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});
+      }.bind(this));
 /*
         if (G.currentApp.widgetLibrary  && G.currentApp.widgetLibrary == 'Building Blocks') {
           var hdr = $('div.ui-page-active .hdr');

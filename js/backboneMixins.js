@@ -1,4 +1,4 @@
-define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils', 'hammer'], function(G, _, Backbone, Events, U, Hammer) {
+define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils', 'hammer', 'domUtils'], function(G, _, Backbone, Events, U, Hammer, DOM) {
   (function(doc, _, Backbone) {
     Backbone.hammerOptions = {
 //      prevent_default: true,
@@ -129,6 +129,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       
       setElement: function(element, delegate) {
         var $element = element instanceof $ ? element : $(element),
+            renderData = DOM.blankRenderData(),
             attrs,
             classes,
             style;
@@ -150,23 +151,24 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         
         if (classes && _.isArray(classes))
           classes = classes.join(' '); //classes.split(' ');
+
+        if (classes)
+          renderData['class']['set'] = classes;
         
-        if (this.style) { 
-          style = _.result(this, 'style');
-          if (style)
-            this.el.$css(style);
-        }
+        if (this.style) 
+          renderData.style.add = _.result(this, 'style');
         
         attrs = _.extend({}, _.result(this, 'attributes'));
         if (this.id) 
           attrs.id = _.result(this, 'id');
-        if (classes)
-          this.el.$addClass.apply(this.el, _.compact(classes.split(' ')));
-          //attrs['class'] = classes;
         
-        this.el.$attr(attrs);
+        if (attrs)
+          renderData.attributes.add = attrs;
+          
+        DOM.render(this.el, renderData);
         if (this.viaHammer)
           this.hammer();
+        
         if (delegate !== false) 
           this.delegateEvents();
         

@@ -9,11 +9,10 @@ define('views/ResourceListView', [
   'views/ResourceMasonryItemView',
   'views/ResourceListItemView',
   'collections/ResourceList',
-  'jqueryMasonry',
   'lib/fastdom',
   'vocManager',
   'physicsBridge'
-], function(G, U, DOM, Events, BasicView, /*Scrollable, */ ResourceMasonryItemView, ResourceListItemView, ResourceList, Mason, Q, Voc, Physics) {
+], function(G, U, DOM, Events, BasicView, /*Scrollable, */ ResourceMasonryItemView, ResourceListItemView, ResourceList, Q, Voc, Physics) {
   var $wnd = $(window),
       doc = document,
       transformProp = DOM.prefix('transform'),
@@ -22,108 +21,9 @@ define('views/ResourceListView', [
   var MASONRY_FN = 'masonry', // in case we decide to switch to Packery or some other plugin
       ITEM_SELECTOR = '.masonry-brick';
 
-//  function compareRanges(a, b) {
-//    var added = [],
-//        removed [];
-//    
-//    if (a.from < b.from) {
-//      removed.push({
-//        from: a.from,
-//        to: Math.min(b.from, a.to)
-//      })
-//    }
-//    else if (a.from > b.from) {
-//      added.push()
-//    }
-//    
-//    return {
-//      added: added,
-//      removed: removed
-//    };
-//  };
-  
-  function toBricks(views, options) {
-    var bricks = [], 
-        view, 
-        id, 
-        el, 
-        width, 
-        height;
-    
-    for (var i = 0, l = views.length; i < l; i++) {
-      view = views[i];
-      el = view.el;
-      width = el.$outerWidth(true);
-      height = el.$outerHeight(true);
-      bricks.push({
-        _id: view.getBodyId(),
-        fixed: !options.dogman,
-        lock: {
-          x: options.gutterWidth / 5
-        },
-        mass: 0.1,
-        vertices: [
-          {x: 0, y: height},
-          {x: width, y: height},
-          {x: width, y: 0},
-          {x: 0, y: 0}
-        ],
-        restitution: 0.3
-      });
-    };
-    
-    return bricks;
-  };
-  
-//  function getTop(child) {
-//    return parseInt(child.style.top, 10) || 0;
-//  }
-//
-//  function getBottom(child) {
-//    return getTop(child) + child.offsetHeight;
-//  }
-//
-////  function getBricks(views) {
-////    return views.map(function(view) {
-////      return view.el;
-////    });
-////  }
-//
-//  function label(item) {
-//    item._label = item._label || _.uniqueId('label');
-//  }
-//
-//  function getOffsetDimensionName() {
-//    return this.options.horizontal ? 'offsetWidth' : 'offsetHeight';
-//  }
-//
-//  function eatHeadTail(space, headSpace, tailSpace, elSize, totalEls, eatHeadFirst) {
-//    var headEls = headSpace / elSize | 0,
-//        tailEls = tailSpace / elSize | 0,
-//        els = Math.min((space / elSize | 0) - 1, totalEls), // -1 is for safety, as page size is a guess
-//        elsDiff = Math.abs(headEls - tailEls),
-//        head = 0,
-//        tail = 0;
-//    
-//    els -= elsDiff;
-//    if (headEls > tailEls)
-//      head += elsDiff;
-//    else
-//      tail += elsDiff;
-//
-//    if (els > 0) {
-//      head += (eatHeadFirst ? els * 0.75 : els * 0.25) | 0;
-//      tail += (eatHeadFirst ? els * 0.25 : els * 0.75) | 0;
-//    }
-//    
-//    return {
-//      head: head,
-//      tail: tail
-//    }
-//  };
-  
   var defaultSlidingWindowOptions = {
     // <MASONRY INITIAL CONFIG>
+    slidingWindow: true,
     horizontal: false,
     minBricks: 10,
     maxBricks: 10,
@@ -136,14 +36,9 @@ define('views/ResourceListView', [
     // </ MASONRY INITIAL CONFIG>      
   };
   
-//  var defaultMasonryOptions {
-//    gutterWidth: 10
-//  };
-  
   return BasicView.extend({
-//    mixins: [Scrollable],
-    
     // CONFIG
+    _draggable: true,
     _invisibleLayerThickness: 0, // in pages, 1 == 1 page, 2 == 2 pages, etc. (3 == 3 pages fool!)
     _maxViewportsInSlidingWindow: 12,
     _minViewportsInSlidingWindow: 6,
@@ -154,6 +49,8 @@ define('views/ResourceListView', [
 //    _brickMarginV: null,
 //    _headOffset: 0,
 //    _tailOffset: 0,
+    _offsetLeft: 0, // updated after append to DOM
+    _offsetTop: 0,  // updated after append to DOM
     _childEls: null,
     _outOfData: false,
     _adjustmentQueued: false,
@@ -164,7 +61,7 @@ define('views/ResourceListView', [
     _lastPrefetchEventSeq: -Infinity,
 
     initialize: function(options) {
-      _.bindAll(this, 'render', 'fetchResources', 'refresh', 'setMode', 'onResourceChanged', '_onmessage');
+      _.bindAll(this, 'render', 'fetchResources', 'refresh', 'setMode', 'onResourceChanged', '_onPhysicsMessage');
       options = options || {};
       BasicView.prototype.initialize.call(this, options);
       this.displayMode = options.displayMode || 'vanillaList';
@@ -172,16 +69,14 @@ define('views/ResourceListView', [
 //        gutterWidth: GUTTER_WIDTH
 //      }, defaultMasonryOptions);
       
-      this.options = _.extend({
-        container: this.getBodyId()
-      }, defaultSlidingWindowOptions);
-      
+      this.options = _.clone(defaultSlidingWindowOptions); // for now
       if (this.displayMode == 'masonry') {
         this._itemClass = ResourceMasonryItemView;
       }
       else {
         this._itemClass = ResourceListItemView;
         this.options.oneElementPerRow = this.options.stretchRow = true;
+        this.options.gutterWidth = 0;
       }
       
       this.transformIdx = this.options.horizontal ? 12 : 13;
@@ -258,11 +153,11 @@ define('views/ResourceListView', [
       'click': 'click'
     },
     
-    windowEvents: {
-      'viewportwidthchanged': '_onWidthChanged'
-    },
+//    windowEvents: {
+//      'viewportwidthchanged': '_onWidthChanged'
+//    },
     
-    _onmessage: function(event) {
+    _onPhysicsMessage: function(event) {
       switch (event.type) {
         case 'range':
           if (this._lastRangeEventSeq < event.eventSeq) {
@@ -270,8 +165,10 @@ define('views/ResourceListView', [
             this._lastRangeEventSeq = event.eventSeq;
             return this._rangeChanged(event);
           }
-          else
+          else {
             debugger;
+            return;
+          }
         case 'prefetch':
           return this._prefetch(event);
         default:
@@ -297,37 +194,36 @@ define('views/ResourceListView', [
       ///////////////////////////////////////////////////////////////////////////////////////////////               <----------->
       if (range.to <= currentRange.from || range.from >= currentRange.to) {   
         // remove all                                                     /////////////////////////////  |-------|         OR         |-------|
-        this.removeBricks(currentRange.from, currentRange.to);
-        this.addBricks(range.from, range.to);
+        this._removeBricks(currentRange.from, currentRange.to);
+        this._addBricks(range.from, range.to);
       }
       /////////////////////////////////////////////////////////////////////////////////////////////////  |---------------|
       else if (range.from <= currentRange.from && range.to <= currentRange.to) {
-        this.removeBricks(range.to, currentRange.to);
-        this.addBricks(range.from, currentRange.from);
+        this._removeBricks(range.to, currentRange.to);
+        this._addBricks(range.from, currentRange.from);
       }
       /////////////////////////////////////////////////////////////////////////////////////////////////       |-----------------------|  // impossible as we only add bricks to one side at a time
 //    else if (range.from <= currentRange.from && range.to >= currentRange.to) {
-//      this.addBricks(range.from, currentRange.from);
-//      this.addBricks(currentRange.to, range.to);
+//      this._addBricks(range.from, currentRange.from);
+//      this._addBricks(currentRange.to, range.to);
 //    }
       /////////////////////////////////////////////////////////////////////////////////////////////////                |----|            // impossible (?) as we only get called if bricks need to be added
       else if (range.from >= currentRange.from && range.to <= currentRange.to) {
-        this.removeBricks(currentRange.from, range.from);
-        this.removeBricks(range.to, currentRange.to);
+        this._removeBricks(currentRange.from, range.from);
+        this._removeBricks(range.to, currentRange.to);
         this.mason.wake(); // otherwise it'll wait forever
       }
       /////////////////////////////////////////////////////////////////////////////////////////////////                  |---------------|
       else if (range.from >= currentRange.from && range.to >= currentRange.to) {
-        this.removeBricks(currentRange.from, range.from);
-        this.addBricks(currentRange.to, range.to);
+        this._removeBricks(currentRange.from, range.from);
+        this._addBricks(currentRange.to, range.to);
       }
       else
         debugger /////////////////////////////////////////////////////////////////////////////////////   THIS SHOULD NEVER HAPPEN ///////////////////////////////////////////////////////////////
     },
 
     _prefetch: function(data) {
-      debugger;
-      this.getNextPage(data.num);
+      this.fetchResources(data.num);
     },
 
 //    ondestroyed: function() {
@@ -541,7 +437,7 @@ define('views/ResourceListView', [
       if (this._outOfData) {
         this._outOfData = false;
         if (this.mason) {
-          this.mason.setCollectionLength(this.collection.length);
+          this.mason.setLimit(this.collection.length);
         }
       }
 //      this.adjustSlidingWindow();
@@ -571,10 +467,29 @@ define('views/ResourceListView', [
 //      this.adjustSlidingWindow();
     },
     
-    _onWidthChanged: function() {
-      if (this.mason)
-        this.mason.resize(Physics.here.getViewportBounds());
-    },    
+    _updateBounds: function() {
+      var viewport = G.viewport,
+          dimensions = this.getDimensions(),
+          bounds = this._bounds || [],
+          newBounds = [0, 0];
+
+      // make relative bounds that start at (0, 0)
+      newBounds[2] = dimensions.width || (viewport.width - this._offsetLeft);
+      newBounds[3] = dimensions.height || (viewport.height - this._offsetTop);
+      for (var i = 0; i < 4; i++) {
+        if (bounds[i] != newBounds[i]) {
+          this._bounds = newBounds;
+          return true;
+        }
+      }
+    },
+    
+//    _onWidthChanged: function() {
+//      if (this.mason) {
+//        this._updateBounds();
+//        this.mason.resize(this._bounds);
+//      }
+//    },    
 
     setHorizontal: function() {
       debugger;
@@ -592,35 +507,39 @@ define('views/ResourceListView', [
           numEls;
 
       if (!this.mason) {
-        if (DO_GROUP) {
-          var id = this.getBodyId();
-          Physics.here.addBody(this.el, id);
-          Physics.here.addDraggable(id);
-          Physics.there.addBody('point', {
-            x: 0,
-            y: 0,
-            lock: {
-              x: 0
-            }
-          }, id);
-        }
-        else {
-          var id = _.uniqueId('dogman');
-          Physics.here.addDraggable(id);
-          Physics.there.addBody('point', {
-            x: G.viewport.width / 2,
-            y: 0,
-            lock: {
-              x: 0
-            },
-            mass: 1000
-          }, id);
-          
-          this.options.dogman = id;
-        }
+        var topCenter = viewport.width / 2,
+            groupId;
         
-        this.options.bounds = Physics.here.getViewportBounds();
-        this.mason = Physics.there.masonry.newMason(this.options, this._onmessage);
+//        if (DO_GROUP) {
+//          groupId = this.getBodyId();
+//          this.pageView.addBody(groupId, 'point', {
+//            x: 0,
+//            y: 0,
+//            lock: {
+//              x: 0
+//            }
+//          }, this.el, true); // draggable
+//        }
+//        else {
+//          groupId = _.uniqueId('flexigroup');
+//          this.pageView.addBody(groupId, 'point', {
+//            x: topCenter,
+//            y: -G.viewport.height * 5,
+//            lock: {
+//              x: 0
+//            }, 
+//            mass: 1000
+//          }, null, true); // draggable, but no corresponding DOM element
+//          
+//          this.options.flexigroup = groupId;
+//        };
+//        
+//        this._offsetLeft = this.el.offsetLeft;
+//        this._offsetTop = this.el.offsetTop;
+//        this._updateBounds();
+//        this.options.bounds = this._bounds;
+//        this.mason = Physics.there.masonry.newMason(this.options, this._onmessage);
+        this.addToWorld(this.options);
       }
             
 //      numEls = this.getElementsPerViewport() * this._maxViewportsInSlidingWindow;
@@ -631,10 +550,6 @@ define('views/ResourceListView', [
         return this.refresh();
             
       this.imageProperty = U.getImageProperty(this.collection);
-      this._offsetTop = this.el.offsetTop;
-//      $.when.apply($, this.pageView._getLoadingPromises()).done(function() {
-//        self._offsetTop = self.el.offsetTop;
-//      });
     },
   
     /**
@@ -754,7 +669,7 @@ define('views/ResourceListView', [
     * @param force - will add as much as it can, including a half page
     * @return a promise
     */
-    addBricks: function(from, to, force) {
+    _addBricks: function(from, to, force) {
       if (from >= to) {
         this.mason.wake();
         return;
@@ -772,12 +687,12 @@ define('views/ResourceListView', [
         }
         else {
           if (this._outOfData) {
-            this.mason.setCollectionLength(this.collection.length);
+            this.mason.setLimit(this.collection.length);
             return;
           }
           
           var numToFetch = to - col.length;
-          return this.fetchResources(numToFetch).then(this.addBricks.bind(this, from, to, force), this.addBricks.bind(this, from, to, force));
+          return this.fetchResources(numToFetch).then(this._addBricks.bind(this, from, to, force), this._addBricks.bind(this, from, to, force));
         }
       }
       
@@ -789,12 +704,12 @@ define('views/ResourceListView', [
             
       preRenderPromise = this.preRender(from, to);
       if (_.isPromise(preRenderPromise))
-        return preRenderPromise.then(this._addBricks.bind(this, from, to));
+        return preRenderPromise.then(this._doAddBricks.bind(this, from, to));
       else
-        return this._addBricks(from, to);
+        return this._doAddBricks(from, to);
     },
 
-    _addBricks: function(from, to) {
+    _doAddBricks: function(from, to) {
       var self = this,
           el = this.el,
           childEls = this._childEls,
@@ -873,7 +788,7 @@ define('views/ResourceListView', [
      * Removes "pages" from the DOM and replaces the lost space by creating/padding a dummy div with the height/width of the removed section
      * The reason we keep dummy divs on both sides of the sliding window and not just at the top is to preserve the integrity of the scroll bar, which would otherwise revert back to 0 if you scrolled back up to the top of the page
      */
-    removeBricks: function(from, to) {
+    _removeBricks: function(from, to) {
       if (from == to)
         return;
       
@@ -955,6 +870,7 @@ define('views/ResourceListView', [
           numLeft = this._childEls.length,
           numMax = this.options.maxBricks,
           numToRecycle = numMax * 2 - numLeft,
+          ids = [],
 //          dfd = $.Deferred(),
           view;
       
@@ -962,6 +878,7 @@ define('views/ResourceListView', [
         view = removedViews[i];
         this.stopListening(view.resource);
         view.undelegateAllEvents();
+        ids.push(view.getBodyId());
       }
 
       if (numToRecycle == removedViews.length || numToRecycle / removedViews.length >= 0.9)
@@ -969,12 +886,13 @@ define('views/ResourceListView', [
       else if (numToRecycle > 0)
         this.recycleItemViews(removedViews.slice(0, numToRecycle));
       
-//      this.mason.removeBricks(removedViews.map(BasicView.prototype.getBodyId), function() {
+//      this.mason._removeBricks(removedViews.map(BasicView.prototype.getBodyId), function() {
 //        debugger;
 //        dfd.resolve();
 //      });
 //      
 //      return dfd.promise();
+      this.pageView._bodies = _.difference(this.pageView._bodies, ids); // TODO: unyuck the yuck
     },
     
     fetchResources: function(numResourcesToFetch) {
@@ -1170,20 +1088,58 @@ define('views/ResourceListView', [
       this._prerendered = true;
     },
     
+    toBricks: function(views, options) {
+      var bricks = [], 
+          view, 
+          id, 
+          el, 
+          width, 
+          height;
+      
+      for (var i = 0, l = views.length; i < l; i++) {
+        view = views[i];
+        el = view.el;
+        id = view.getBodyId();
+        width = el.$outerWidth(true);
+        height = el.$outerHeight(true);
+        bricks.push({
+          _id: id,
+          fixed: !options.flexigroup,
+          lock: {
+            x: options.gutterWidth / 5
+          },
+          mass: 0.1,
+          vertices: [
+            {x: 0, y: height},
+            {x: width, y: height},
+            {x: width, y: 0},
+            {x: 0, y: 0}
+          ],
+          restitution: 0.3
+        });
+      };
+      
+      return bricks;
+    },
+
     postRender: function(from, to, added) {
       var atTheHead = from < this._displayedRange.from,
-          bricks = toBricks(added, this.options),
+          bricks = this.toBricks(added, this.options),
+          i = bricks.length,
+          bodies = this.pageView._bodies,
           view,
-          i = bricks.length;
+          id;
       
       while (i--) {
         view = added[i];
-        Physics.here.addBody(view.el, view.getBodyId());
+        id = view.getBodyId();
+        bodies.push(id);
+        Physics.here.addBody(view.el, id);
       }
 
       this._displayedRange.from = Math.min(this._displayedRange.from, from);
       this._displayedRange.to = Math.max(this._displayedRange.to, to);
-      this.mason.addBricks(bricks, atTheHead);
+      this.addBricks(bricks, atTheHead);
     },
     
     hasMasonry: function() {

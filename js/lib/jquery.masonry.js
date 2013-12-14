@@ -38,8 +38,8 @@
   
   // our "Widget" object constructor
   function Mason( options, bricks ){
-    this.dogman = options.dogman;
-    this.initialYOffset = this.dogman ? this.dogman.state.pos.get(1) : 0;
+    this.flexigroup = options.flexigroup;
+    this.initialYOffset = this.flexigroup ? this.flexigroup.state.pos.get(1) : 0;
       this.bricks = bricks || [];
       this._create( options );
     if (this.bricks.length)
@@ -65,11 +65,7 @@
       this.axis = this.options.horizontal ? 'x' : 'y';
 //      this.AXIS = this.axis.toUpperCase();
       this.originalFromBottom = this.options.fromBottom;
-      this.bounds = options.bounds;
-      this.offset = {
-        x: this.bounds._pos.get(0) - this.bounds._hw,
-        y: this.bounds._pos.get(1) - this.bounds._hh
-      };  
+      this.setBounds(options.bounds)
     },
   
     // _init fires when your instance is first created
@@ -81,19 +77,30 @@
       this._initialized = true;
     },
 
+    setBounds: function(bounds) {
+      this.bounds = bounds;
+      this.offset = {
+        x: this.bounds._pos.get(0) - this.bounds._hw,
+        y: this.bounds._pos.get(1) - this.bounds._hh
+      };
+    },
+    
     getContentBounds: function() {
-      return {
-        min: Math.max.apply(Math, this.topColYs),
-        max: Math.min.apply(Math, this.bottomColYs)
+      return this.topColYs ? {
+        min: Math.min.apply(Math, this.topColYs),
+        max: Math.max.apply(Math, this.bottomColYs)
+      } : {
+        min: 0,
+        max: 0
       }
     },
   
-  _getOffsetDueToDogman: function() {
-    if (this.options.dogman)
-      return this.dogman.state.pos.get(1) - this.initialYOffset;
-    else
-      return 0;
-  },
+    _getOffsetDueToFlexigroup: function() {
+      if (this.options.flexigroup)
+        return this.flexigroup.state.pos.get(1) - this.initialYOffset;
+      else
+        return 0;
+    },
   
     option: function( key, value ){
   
@@ -128,8 +135,8 @@
   
       for (var i=0, len = bricks.length; i < len; i++) {
         brick = bricks[i];
-        //how many columns does this brick span
-    colSpan = this._getColSpan(brick);
+        // how many columns does this brick span
+        colSpan = this._getColSpan(brick);
   
         if ( colSpan === 1 ) {
           // if brick spans only one column, just like singleMode
@@ -166,12 +173,12 @@
     // i.e. this.columnWidth = 200
     _getColumns: function() {
       if (this.options.oneElementPerRow || this.options.stretchRow) {
-        this.columnWidth = this.element.$data('width');
+        this.columnWidth = this.bounds._hw * 2;
         this.cols = 1;
         return;
       }
       else if (this.options.oneElementPerCol || this.options.stretchCol) {
-        this.columnWidth = this.element.$data('height');
+        this.columnWidth = this.bounds._hh * 2;
         this.cols = 1;
         return;
       }
@@ -244,7 +251,7 @@
     _placeBrick: function( brick, setCount, setY ) {
       // get the minimum Y value from the columns
       var view = brick.view,
-      dimensionMethod = this.options.horizontal ? '_getOuterWidth' : '_getOuterHeight',
+          dimensionMethod = this.options.horizontal ? '_getOuterWidth' : '_getOuterHeight',
           extreme = this.options.fromBottom ? Math.max : Math.min,
           extremeY  = extreme.apply( Math, setY ),
           multiplier = this.options.fromBottom ? -1 : 1,
@@ -282,32 +289,22 @@
         left = this.columnWidth * shortCol + this.offset.x + brick.geometry._aabb._hw; // columnWidth includes gutterWidth
       
         if (this.options.fromBottom)
-          top = extremeY - this.offset.y - brick.geometry._aabb._hh + this._getOffsetDueToDogman();
+          top = extremeY - this.offset.y - brick.geometry._aabb._hh + this._getOffsetDueToFlexigroup();
         else
-          top = extremeY + this.offset.y + brick.geometry._aabb._hh + this._getOffsetDueToDogman();
+          top = extremeY + this.offset.y + brick.geometry._aabb._hh + this._getOffsetDueToFlexigroup();
       }
 
-     console.log("adding", brick.geometry._aabb._hw * 2, "x", brick.geometry._aabb._hh * 2, "brick at (" + left + ", " + top + ")");
-    brick.state.pos.set(left, top);
-    brick.state.pos.lock({
-    x: this.options.gutterWidth / 2
-    });
-
-    /*
-    brick.state.vel.lock({
-    x: 0
-    });
-
-    brick.state.acc.lock({
-    x: 0
-    });
-    */
+      console.log("adding", brick.geometry._aabb._hw * 2, "x", brick.geometry._aabb._hh * 2, "brick at (" + left + ", " + top + ")");
+      brick.state.pos.unlock();
+      brick.state.pos.set(left, top);
+      brick.state.pos.lock({
+        x: this.options.gutterWidth / 2
+      });
     
       // apply setHeight to necessary columns
       for ( i=0; i < setSpan; i++ ) {
         colYs[ shortCol + i ] = setHeight;
       }
-  
     },
   
     resize: function() {
@@ -322,8 +319,10 @@
   
   
     reLayout: function() {
-      this._getColumns('masonry');
-      this._reloadLayout();
+      if (this.bricks.length) {
+        this._getColumns('masonry');
+        this._reloadLayout();
+      }
     },
   
     _reloadLayout: function() {
@@ -341,12 +340,13 @@
       
       if (!this.topColYs)
         this.topColYs = new Array(i);
+      
       if (!this.bottomColYs)
         this.bottomColYs = new Array(i);
       
       while (i--) {
         this.topColYs[i] = offset;
-    this.bottomColYs[i] = offset + this.options.gutterWidth;
+        this.bottomColYs[i] = offset + this.options.gutterWidth;
       }
       
       this.topColYs.length = this.bottomColYs.length = this.cols;
@@ -444,14 +444,14 @@
           top,
           height,
           i = bricks.length,
-      dogmanOffset = this._getOffsetDueToDogman();
+          flexigroupOffset = this._getOffsetDueToFlexigroup();
 
       while (i--) {
         brick = bricks[i];
         fromCol = this._getLeftmostColumn(brick);
         colSpan = this._getColSpan(brick);
         height = this[dimensionMethod](brick);
-        top = brick.state.pos.get(1) - brick.geometry._aabb._hh - dogmanOffset;
+        top = brick.state.pos.get(1) - brick.geometry._aabb._hh - flexigroupOffset;
         while (colSpan--) {
           col = fromCol + colSpan;
           topColYs[col] = Math.min(top - this.options.gutterWidth, topColYs[col]);
