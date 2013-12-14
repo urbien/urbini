@@ -305,7 +305,7 @@
           x: this.options.gutterWidth / 2
         }); 
       }
-    
+
       // apply setHeight to necessary columns
       for ( i=0; i < setSpan; i++ ) {
         colYs[ shortCol + i ] = setHeight;

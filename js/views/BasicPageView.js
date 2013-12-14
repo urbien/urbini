@@ -369,7 +369,7 @@ define('views/BasicPageView', [
 
       this.once('inactive', function() {
         self.removeTooltip(el);
-        self._getTooltips().remove();
+        self._getTooltip().remove();
       });
     },
 

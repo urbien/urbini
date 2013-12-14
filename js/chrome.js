@@ -19,7 +19,7 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
     });
     
     return eventName;
-  };
+  }
   
   function setPaths(obj) {
     for (var pkgName in obj) {
@@ -34,7 +34,7 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
           break;
       }
     }
-  };
+  }
 
   function onMessageFromApp(e) {
     if (e.origin.indexOf('chrome-extension://') != 0)
@@ -51,7 +51,7 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
     delete data.type;
     args.unshift('messageFromApp:' + type);
     Events.trigger.apply(Events, args);
-  };
+  }
   
   function onpush(msg) {
     var subchannelId = msg.subchannelId,
@@ -91,7 +91,7 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
         ringtone.remove();
       }
     })
-  };
+  }
   
   function sendMessageToApp(msg) {
     var appWin = G.appWindow;
@@ -99,7 +99,7 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
       appWin.postMessage(msg, G.appOrigin);
     else
       console.debug("can't send message to app, don't know app's window and/or origin");
-  };
+  }
 
   var chrome = {
     notifications: {

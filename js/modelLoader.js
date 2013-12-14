@@ -55,7 +55,7 @@ define('modelLoader', [
     }
     
     return models;
-  };
+  }
       
   function ModelRequestCollector() {
     var dfd, promise, collected = [];
@@ -108,12 +108,12 @@ define('modelLoader', [
     
     _.bindAll(this, 'execute');
     this.reset();
-  };
+  }
 
   function ModelsPromise(models, options) {
     models = normalizeModels(models, options);
     return getModels(models, options);
-  };
+  }
   
   function makeModelsPromise(types) {
     var modelToPromiseObj = {},
@@ -127,7 +127,7 @@ define('modelLoader', [
     
     return $.whenAll.apply($, promises);
 //    return _.extend(modelToPromiseObj, _.pick(overallPromise, 'promise', 'done', 'fail', 'then', 'always', 'state'));
-  };
+  }
   
   function makeModelPromise(type) {
     var dfd = $.Deferred(),
@@ -146,24 +146,24 @@ define('modelLoader', [
     }
     
     return promise;
-  };
+  }
 
   function getModelPromise(type) {
     var promiseInfo = MODEL_PROMISES[type];
     return promiseInfo && promiseInfo.promise;
-  };
+  }
 
   function gotModel(model) {
     var promiseInfo = MODEL_PROMISES[model.type];
     if (promiseInfo)
       promiseInfo.deferred.resolve(model);
-  };
+  }
 
   function didntGetModel(type) {
     var promiseInfo = MODEL_PROMISES[type];
     if (promiseInfo)
       promiseInfo.deferred.reject();
-  };
+  }
 
   function sortModelsByStatus(types, options) {
     if (!IDB)
@@ -183,7 +183,7 @@ define('modelLoader', [
     isIDB = source === 'indexedDB';
     function require(type) {
       missingOrStale[type] = {};
-    };    
+    }    
 
     _.each(types, function(type) {
       var requireType = require.bind(null, type);
@@ -245,7 +245,7 @@ define('modelLoader', [
         });
       });
     }).promise();
-  };
+  }
   
   function fetchModels(models, options) {
     var promise = $.Deferred(function(defer) {
@@ -283,7 +283,7 @@ define('modelLoader', [
     });
     
     return promise;
-  };
+  }
   
   function getModels(models, options) {
     options = options || {};
@@ -334,7 +334,7 @@ define('modelLoader', [
         }
       });
     }    
-  };
+  }
 
   function fetchAndLoadModels(modelsInfo, options) {
     var mightBeStale = modelsInfo.mightBeStale || {},
@@ -345,7 +345,7 @@ define('modelLoader', [
     });
     
     return makeModelsPromise(modelsInfo.getAllTypes());
-  };
+  }
   
   function parseAndLoadModels(data, modelsInfo) {
     modelsInfo = modelsInfo || {};
@@ -420,7 +420,7 @@ define('modelLoader', [
     }
     
     return promise;
-  };
+  }
 
   function loadModels(models, preventOverwrite) {
     var models = models || MODEL_CACHE;
@@ -437,7 +437,7 @@ define('modelLoader', [
     }
     
     return makeModelsPromise(_.pluck(models, 'type'));
-  };
+  }
 
   function loadModel(m, sync) {
     if (sync)
@@ -454,7 +454,7 @@ define('modelLoader', [
     
     Events.trigger('newModel', m);
     gotModel(m);
-  };
+  }
 
   function loadEnumModel(m) {
     return m;
@@ -563,7 +563,7 @@ define('modelLoader', [
     return function() { 
       self.__super__.initialize.apply(this, arguments); 
     }
-  };
+  }
 
   function loadEnums() {
     var enums = getEnumsFromStorage();
@@ -575,7 +575,7 @@ define('modelLoader', [
       makeModelPromise(type);
       loadModel(ENUMS[type], true); // load enums synchronously
     }
-  };
+  }
 
   function storeModels(models, storageType) {
     models = models || MODEL_CACHE;
@@ -613,40 +613,40 @@ define('modelLoader', [
       
       storeEnums(ENUMS, storageType);
     }
-  };
+  }
 
 
   function getEnumsFromStorage() {
     return G.localStorage.get(ENUMERATIONS_KEY);
-  };
+  }
 
   function storeEnums(enums) {
     G.localStorage.put(ENUMERATIONS_KEY, JSON.stringify(enums));
-  };
+  }
 
   function deleteModelFromStorage(uri) {
     G.localStorage.del('metadata:' + uri);
     G.localStorage.del(type);
-  };
+  }
   
   function getModelStorageURL(uri) {
     return MODEL_PREFIX + uri;
-  };
+  }
 
   function getModelMetadataStorageURL(uri) {
     return MODEL_PREFIX + 'metadata:' + uri;
-  };
+  }
  
   function getModelMetadataFromStorage(uri, source) {
     if (source === 'indexedDB')
       return getModelFromStorage(uri, source);
           
     return getItemFromStorage(getModelMetadataStorageURL(uri), source);
-  };
+  }
 
   function getModelFromStorage(uri, source) {
     return getItemFromStorage(getModelStorageURL(uri), source);
-  };
+  }
   
   function getItemFromStorage(url, source) {
     return G.getCached(url, source, MODEL_STORE.name).then(function(data) {
@@ -663,7 +663,7 @@ define('modelLoader', [
       
       return data;
     });    
-  };
+  }
 
   function storeModel(modelJson, storageType) {
     var type = modelJson.type,
@@ -704,7 +704,7 @@ define('modelLoader', [
 //      G.localStorage.putAsync(getModelStorageURL(type), JSON.stringify(modelJson));
 //      _.pushUniq(G.storedModelTypes, type);
 //    }, 100);
-  };
+  }
 
   modelRequestCollector = new ModelRequestCollector();
   var ModelLoader = {

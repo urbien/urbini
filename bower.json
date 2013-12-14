@@ -1,0 +1,25 @@
+{
+  "name": "urbini",
+  "main": "js/loader.js",
+  "version": "0.5",
+  "directory": "js/lib/",
+  "dependencies": {
+    "jquery-mobile": "~1.3.2",
+    "TemplateBinding": "Polymer/TemplateBinding",
+    "PhysicsJS": "urbien/PhysicsJS#master"
+   },
+  "homepage": "https://github.com/urbien/urbini",
+  "authors": [
+    "Ellen Katsnelson <ellen.katsnelson@lablz.com>"
+  ],
+  "description": "test",
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

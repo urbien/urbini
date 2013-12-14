@@ -9,7 +9,7 @@ define('error', [
     var args = [].slice.call(arguments);
     args.unshift("Errors", "error");
     G.log.apply(G, args);
-  };
+  }
   
   var BackboneSyncErrHandlers = {
     "401": function(mode, resp, options) {
@@ -74,11 +74,11 @@ define('error', [
     
     if (errorHandler && keepGoing !== false)
       errorHandler.call(null, model, resp, options);
-  };
+  }
 
   function defaultXHRErrorHandler(errorHandler, xhr, status, err) {
     debugger;
-  };
+  }
   
   var Errors = {
     TAG: "Errors",
@@ -104,7 +104,7 @@ define('error', [
     return function() {
       Errors.errDialog({msg: msg});
     }
-  };
+  }
 
   // create some shortcuts for error dialogs, such as Errors.offline();
   for (var m in Errors.msgs) {

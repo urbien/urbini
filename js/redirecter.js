@@ -13,7 +13,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       connectionType = G.commonTypes.Connection;
   
   function Redirecter() {
-  };
+  }
   
   _.extend(Redirecter.prototype, {    
     _forType: {}, // for redirecting after edit/mkresource
@@ -231,7 +231,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     }
     
     return info;
-  };
+  }
 
   Redirecter.prototype._default = function(res, options) {
     Events.trigger('back', function ifNoHistory() {
@@ -349,6 +349,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       case 'Link':
       case 'Collection':
         Events.trigger('navigate', U.makeMobileUrl('edit', res), options);
+        break;
       default: 
         Events.trigger('navigate', U.makeMobileUrl('view', res.get('domain')), options);
     }
@@ -672,7 +673,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
                 totalEditable = grouped.length + ungrouped.length;
     
     return totalEditable ? Array.prototype.concat.apply([], _.pluck(grouped, 'props')).concat(ungrouped) : null;
-  };
+  }
     
   // FAST FORWARD 'MAKE' FOR TYPES
 //  Redirecter.prototype._ffwdMakeForType[G.commonTypes.AppInstall] = function(res) {

@@ -53,6 +53,11 @@ html { height: 100%; }
 .galleryItem, .galleryItem_css3, .galleryItem_nab { 
   position: relative; 
 }
+
+.galleryItem_css3 {
+  position: absolute;
+}
+
 .galleryItem_css3, galleryItem_nab { 
   display: inline-block; 
   /*
@@ -181,7 +186,7 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 
 .WhiteButton {color: #524d4d; text-shadow: 0 1px rgba(255,255,255,0.9);}
 
-.nabRL  { display: inline; }
+.nabRL  { display: inline; position: absolute;}
 .nabRL div { padding: 0px 10px 10px 10px;}
 
 .nabRL .btn span {padding-right: 0; }

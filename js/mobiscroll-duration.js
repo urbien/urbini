@@ -27,7 +27,7 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
 
   function isNum(str) {
     return /^\d+$/.test(str);
-  };
+  }
   
   function clean(d) {
     for (var i = 0; i < d.length; i++) {
@@ -36,7 +36,7 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
     }
     
     return d;
-  };
+  }
 
   function getWheelValues(seconds, names) {
     var d = [];
@@ -49,7 +49,7 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
     }
     
     return d;
-  };
+  }
   
   function zeroes(length) {
     var arr = [], i = 0;
@@ -62,7 +62,7 @@ define('mobiscroll-duration', ['mobiscroll'], function () {
   function getUnitWheelName(unit) {
 //    return unit; //abbreviations[unit] || unit;
     return unit.slice(0,1).toUpperCase() + unit.slice(1);
-  };
+  }
   
   ms.presets.duration = function(inst) {
     var settings = inst.settings || {},
