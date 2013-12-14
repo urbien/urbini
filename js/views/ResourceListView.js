@@ -1455,10 +1455,11 @@ define('views/ResourceListView', [
       }
       
       liView.render({
-        unlazifyImages: !this._scrollable,
-        style: {
-          opacity: 0
-        }
+        unlazifyImages: !this._scrollable
+//        ,
+//        style: {
+//          opacity: 0
+//        }
       });
       
       liView.el.dataset.index = liView.resource.collection.indexOf(liView.resource);
