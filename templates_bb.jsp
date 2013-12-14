@@ -619,6 +619,7 @@
 </script>
 
 <script type="text/template" id="stringPET">
+<div id="_prim">
   {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 100; }}
   {{ if (name) { }}
     <label for="{{= id }}" class="ui-input-text" {{= isInput ? '' : 'style="vertical-align:top"' }}>{{= name }}</label>
@@ -628,10 +629,12 @@
   <div> 
     <{{= isInput ? 'input type="text"' : 'textarea  rows="10"' }} name="{{= shortName }}" id="{{= id }}"  value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}>{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   </div>
-  {{ } }} 
+  {{ } }}
+</div>   
 </script>
 
 <script type="text/template" id="booleanPET">
+<div id="_prim">
   {{ if (name && name.length > 0) { }}
     <label for="{{= id }}">{{= name }}</label>
     {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }} 
@@ -643,25 +646,29 @@
   </label>
   </section>
 <!--  {{= typeof comment == 'undefined' ? '' : '<span class="comment">' + comment + '</span>' }} -->
+</div>
 </script>
 
 <script type="text/template" id="resourcePET">
   {{ if (prop.range && ((isImage && prop.camera) || isVideo || isAudio)) { }}
     <a href="#cameraPopup" class="cameraCapture" target="#" data-prop="video">
-      <i class="{{= isVideo ? 'ui-icon-facetime-video' : isAudio ? 'ui-icon-circle' : 'ui-icon-camera' }}" style="position:absolute;right:4px;font-size:2.3rem;top:2rem;overflow:hidden"></i>
+      <i class="{{= isVideo ? 'ui-icon-facetime-video' : isAudio ? 'ui-icon-circle' : 'ui-icon-camera' }}"></i>
     </a>
     {{ if (!G.canWebcam) { }}
       <input data-role="none" type="file" class="cameraCapture" accept="{{= isVideo ? 'video/*' : isAudio ? 'audio/*' : 'image/*' }};capture=camera;" style="visibility:hidden; display:none;" data-prop="{{= shortName }}" />
     {{ }                   }}
   {{ }                                                                                                                                                                                        }}
-  <a target="#"  name="{{= shortName }}" {{= !obj.img ? 'style="padding-top:0.5rem;"' : ''}} class="resourceProp" id="{{= id }}" {{= rules }}> 
+
+  <!-- a target="#"  name="{{= shortName }}" {{= !obj.img ? 'style="padding-top:0.5rem;"' : ''}} class="resourceProp" id="{{= id }}" {{= rules }} --> 
+  <a target="#"  name="{{= shortName }}" style="{{= !obj.img ? 'padding-top:0.5rem;' : 'padding: 0 1.5rem;'}}" class="resourceProp" id="{{= id }}" {{= rules }}> 
     {{ if (obj.img) { }}    
       <img name="{{= shortName }}" src="{{= img }}" style="
       
       {{ if (typeof obj.width != 'undefined') { }}  
           height:{{= height }}px;
           left:-{{= left }}px; top:-{{= top }}px;
-          clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);vertical-align:middle;"
+          clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);vertical-align
+          :middle;"
       {{ } }}
       {{ if (typeof obj.width == 'undefined') { }}  
           max-height: 50px;
@@ -681,13 +688,17 @@
   <!-- {{= typeof multiValue === 'undefined' ? '' : value }} -->
 </script>
 <script type="text/template" id="telPET">
+<div id="_prim">
   <label for="{{= id }}" class="ui-input-text">{{= name }}</label>
   <input type="tel" name="{{= shortName }}" id="{{= id }}" class="ui-input-text" value="{{= typeof value === 'undefined' ? '' : value }}" />
+</div>
 </script>
 
 <script type="text/template" id="emailPET">
+<div id="_prim">
   <label for="{{= id }}" class="ui-input-text">{{= name }}</label>
   <input type="email" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= 'formElement ' }}ui-input-text" {{= rules }} />
+</div>
 </script>
 
 <script type="text/template" id="hiddenPET">

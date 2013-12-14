@@ -584,6 +584,7 @@
 </script>
 
 <script type="text/template" id="stringPET">
+<div id="_prim">
   {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 100; }}
   {{ if (name) { }}
     <label for="{{= id }}" class="ui-input-text" {{= isInput ? '' : 'style="vertical-align:top"' }}>{{= name }}</label>
@@ -594,27 +595,30 @@
     <{{= isInput ? 'input type="text"' : 'textarea  rows="10"' }} name="{{= shortName }}" id="{{= id }}"  value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }} class="form-control">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   </div>
   {{ } }} 
+</div>
 </script>
 
 <script type="text/template" id="booleanPET">
+<div id="_prim">
    <input type="checkbox" name="{{= shortName }}" id="{{= id }}" style="border:none;" class="formElement boolean form-control effeckt-ckbox-ios7 pull-right" {{= obj.value ? 'checked' : '' }}/>
   {{ if (name && name.length > 0) { }}
     <label for="{{= id }}">{{= name }}</label>
     {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }} 
   {{ } }}
 <!--  {{= typeof comment == 'undefined' ? '' : '<span class="comment">' + comment + '</span>' }} -->
+</div>
 </script>
 
 <script type="text/template" id="resourcePET">
   {{ if (prop.range && ((isImage && prop.camera) || isVideo || isAudio)) { }}
     <a href="#cameraPopup" class="cameraCapture" target="#" data-prop="video">
-      <i class="{{= isVideo ? 'ui-icon-facetime-video' : isAudio ? 'ui-icon-circle' : 'ui-icon-camera' }}" style="position:absolute;right:4px;font-size:2.3rem;top:2rem;overflow:hidden"></i>
+      <i class="{{= isVideo ? 'ui-icon-facetime-video' : isAudio ? 'ui-icon-circle' : 'ui-icon-camera' }}" style="float:right;font-size:2.3rem;"></i>
     </a>
     {{ if (!G.canWebcam) { }}
       <input data-role="none" type="file" class="cameraCapture" accept="{{= isVideo ? 'video/*' : isAudio ? 'audio/*' : 'image/*' }};capture=camera;" style="visibility:hidden; display:none;" data-prop="{{= shortName }}" />
     {{ }                   }}
   {{ }                                                                                                                                                                                        }}
-  <a target="#"  name="{{= shortName }}" class="resourceProp" id="{{= id }}" {{= rules }}> 
+  <a target="#"  name="{{= shortName }}" class="resourceProp" id="{{= id }}" {{= obj.img ? 'style="padding: 0 1.5rem"' : ''}} {{= rules }}> 
     {{ if (obj.img) { }}    
       <img name="{{= shortName }}" src="{{= img }}" style="
       
@@ -635,22 +639,60 @@
     {{ if (!obj.value) { }}
       {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
     {{ } }} 
+    <div class="triangle"></div>
   </a>
   
   <!-- {{= typeof multiValue === 'undefined' ? '' : value }} -->
 </script>
 <script type="text/template" id="telPET">
+<div id="_prim">
   <label for="{{= id }}" class="ui-input-text">{{= name }}</label>
   <input type="tel" name="{{= shortName }}" id="{{= id }}" class="ui-input-text" value="{{= typeof value === 'undefined' ? '' : value }}" />
+</div>
 </script>
 
 <script type="text/template" id="emailPET">
+<div id="_prim">
   <label for="{{= id }}" class="ui-input-text">{{= name }}</label>
   <input type="email" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="form-control ui-input-text{{= ' formElement' }}" {{= rules }} />
+</div>
 </script>
 
 <script type="text/template" id="hiddenPET">
   <input type="hidden" name="{{= shortName }}" id="{{= id }}" value="{{= value }}" class="{{= 'formElement ' }}ui-input-text form-control" {{= rules }} />
+</script>
+
+<script type="text/template" id="cameraPopupTemplate">
+  <div id="cameraPopup" class="cameraPopup">
+    <div style="position:relative">
+    <a href="#" data-rel="back" id="cameraCancelBtn">
+      <i class="ui-icon-remove-sign"></i>
+    </a>
+    {{ if (obj.video || obj.image) { }}
+      <video id="camVideo" autoplay="autoplay"></video>
+      <canvas id="canvas" width="100%" height="0"></canvas>
+    {{ }                }}
+    {{ if (obj.video || obj.audio) { }}
+      <div id="camPreview">
+      </div>
+    {{ }                }}
+    </div>
+    <div style="text-align:center; padding:1rem 0;">
+    <button class="btn btn-default" style="width:30%;">
+      <a id="cameraShootBtn" target="#" class="ui-disabled" data-inline="true" data-mini="true" style="margin: 0 auto;">
+        <i class="{{= obj.video || obj.audio ? 'icon-circle' : 'icon-camera' }}"></i>
+        
+        {{= obj.video || obj.audio ? 'Record' : 'Shoot' }}
+      </a>
+    </button>  
+    <button class="btn btn-default" style="width:30%;">
+      <a data-icon="ok" id="cameraSubmitBtn" target="#" class="ui-disabled" data-inline="true" data-mini="true" style="margin: 0 auto;">
+        <i class="ui-icon-ok"></i>
+        I'll take it
+      </a>
+    </button>  
+    </div>
+  </div>
 </script>
 
 </div>

@@ -662,8 +662,8 @@ define('views/ControlPanel', [
       
       if (G.isJQM()) {
         this.$el.trigger('create');
-        if (/*this.rendered &&*/ this.el.$hasClass('ui-listview'))
-          this.$el.listview('refresh');
+//        if (this.el.$hasClass('ui-listview'))  //this.rendered &&
+//          this.$el.listview('refresh');
       }
 
       this.finish();

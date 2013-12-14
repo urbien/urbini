@@ -87,9 +87,13 @@ h4#pageTitle  {
 .topcoat-list__header {
   padding: 0;
 }
-.topcoat-list__header h3 {
+#resourceView .topcoat-list__header h3 {
   margin: 0.7rem;
 }
+.editList .topcoat-list__header h3 {
+  margin: 0;
+}
+
 a {
   color: #333333;
 }
@@ -160,12 +164,6 @@ a {
   background: #f9f9f9;
   border-radius: 1rem;
   border: 1px solid #aaa;
-/*
-  width: 30%;
-  height: inherit;
-  top: 5rem;
-  position: absolute;
-*/  
   padding: 1rem;
   min-width: 290px;
   max-width: 330px;
@@ -194,6 +192,10 @@ a {
     width: 75%;
   }
 }
+.resourceProp {
+  padding: 1.5rem;
+}
+
 .editList li {
   padding: 0.5rem 1.5rem; 
   min-height: 3rem;
@@ -280,4 +282,17 @@ fieldset .listPage .topcoat-list__container {
 }
 .topcoat-switch__toggle:after, .topcoat-switch__toggle:before {
   padding-left:1.4rem;
+}
+.cameraCapture i {
+  position:absolute;
+  right:1rem;
+  font-size:2.3rem;
+  top:2rem;
+}
+.cameraCapture i {
+  position:absolute;
+  right:1rem;
+  font-size:2.3rem;
+  top:1.5rem;
+  overflow:hidden;
 }
