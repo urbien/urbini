@@ -29,7 +29,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       if (widthChanged)
         window.dispatchEvent(new Event('viewportwidthchanged'));
     }
-  };
+  }
   
   window.addEventListener('orientationchange', function() {
     clearTimeout(resizeTimeout);
@@ -43,22 +43,22 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
   function fireOrientationchangeEvent() {
     window.dispatchEvent(new Event('debouncedorientationchange'));
     window.dispatchEvent(new Event('viewportdimensions'));
-  };
+  }
 
   function saveViewportSize() {
     var viewport = G.viewport;
     viewport.width = window.innerWidth;
     viewport.height = window.innerHeight;
 //    Events.trigger('viewportResize', viewport);
-  };
+  }
 
   function $wrap(el) {
     return el instanceof $ ? el : $(el);
-  };
+  }
 
   function $unwrap(el) {
     return el instanceof $ ? el[0] : el;
-  };
+  }
 
   saveViewportSize();  
   window.addEventListener('orientationchange', saveViewportSize); 
@@ -68,7 +68,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     return els instanceof Array ||
            els instanceof NodeList || 
            els instanceof HTMLCollection ? els : els && [els];
-  };
+  }
 
   function newNodeList() {
     var frag = document.createDocumentFragment();
@@ -129,7 +129,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           break;
         default:
           throw "invalid arguments to style method of Node";
-        };
+        }
         
         return this;
       },
@@ -159,7 +159,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           break;
         default:
           throw "invalid arguments to style method of Node";
-        };
+        }
         
         return this;
       },
@@ -453,7 +453,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           return this;
         }
       }
-    };
+    }
     
     _.defaults(nodeProto, NodeAug, NodeAndNodeListAug);
   
@@ -569,7 +569,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
         z = arguments[2];
       }
       
-      return 'translate(' + (x || 0) + 'px, ' + (y || 0) + 'px) translateZ(' + (z || 0) + 'px)' + (isFF ? ' rotate(0.01deg)' : '');
+      return 'translate3d(' + (x || 0) + 'px, ' + (y || 0) + 'px, ' + (z || 0) + 'px)'; //+ (isFF ? ' rotate(0.01deg)' : '');
     },
     
     _zeroTranslation: {
@@ -837,7 +837,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     },
     
     lazifyImage: function(img, immediately) {
-      return DOM.lazifyImages([img], immediately);
+      return this.lazifyImages([img], immediately);
     },
     
     lazifyImages: function(images, immediately) {
@@ -869,7 +869,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
             });  
           }
         }
-      };
+      }
 
       function write() {
         for (var i = images.length - 1; i >= 0; i--) { // MUST be backwards loop, as this may be a NodeList and thus may be automatically updated by the browser when we add/remove a class
@@ -902,7 +902,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           
           img.src = blankImg;
         }
-      };
+      }
       
       if (isHTMLElement && !immediately) {
         Q.read(read);

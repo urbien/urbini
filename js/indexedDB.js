@@ -22,12 +22,12 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     for (var prop in indices) {
       this.indices.push(new Index(prop, indices[prop]));
     }    
-  };
+  }
 
   function Index(property, options) {
     this.property = prepPropName(property);
     this.options = _.clone(options);
-  };
+  }
 
   function isFileOrFilePath(item) {
     for (var prop in item) {
@@ -37,7 +37,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     }
     
     return false;
-  };
+  }
 
   function getFileSystemPath(item, prop, blob) {
 //    var displayName = item[prop + '.displayName'];
@@ -46,7 +46,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
 
     var type = blob.type;
     return U.getPath(item._uri) + '/' + prop + (type ? '.' + type.slice(type.indexOf('/') + 1) : '');
-  };        
+  }        
 
   function _getFileSystem(items) {
     items = !items ? null : _.isArray(items) ? items : [items];
@@ -61,7 +61,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   
   function getFileSystem(items) {    
     return FileSystem ? fileSystemPromise :  _getFileSystem(items);
-  };
+  }
 
   function _saveFile(item, _item, prop, val) {
     var isUserCreation = !U.isCompositeProp(prop),
@@ -149,7 +149,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     });
     
     return promise;
-  };
+  }
   
   function prep(items) {
     items = _.isArray(items) ? items : [items];
@@ -158,7 +158,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     }).then(function() {
       return _.toArray(arguments);
     });
-  };
+  }
 
   function _parse(_items) {
     var promises,
@@ -197,7 +197,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     return $.whenAll.apply($, promises).then(function() {        
       return returnObj ? items[0] : items;
     });
-  };
+  }
 
   function parse(_items) {
     if (!_items)
@@ -216,19 +216,19 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     var args = _.toArray(arguments);
     args.unshift("indexedDB", "db");
     G.log.apply(G, args);
-  };
+  }
   
   function prepPropName(propName) {
     return '_' + propName;
-  };
+  }
 
   function parsePropName(propName) {
     return propName.startsWith('_') ? propName.slice(1) : propName;
-  };
+  }
 
   function getIDB(name, options) {
     return instance || (instance = new IDB(name, options));
-  };
+  }
   
   function IDB(name, options) {
     var self = this;
@@ -250,8 +250,8 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     
     for (var fn in IDB.prototype) {
       this[fn] = this[fn].bind(this);
-    };
-  };
+    }
+  }
   
   IDB.prototype.onOpen = function(cb) {
     return this._openPromise.then(cb);
@@ -449,7 +449,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   function deleteAndReopen() {
     this.db = null;
     return this.$idb.deleteDatabase().then(this.open);
-  };
+  }
   
   IDB.prototype.wipe = function(filter, doDeleteStores) {
     if (!this.isOpen())
@@ -493,7 +493,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     version = version || this.getVersion();
     this.db && this.db.close();
     return this.open(version);
-  };
+  }
   
   IDB.prototype.restart = function(version, reason) {
     var prefix = this.db ? 're' : '', 
@@ -526,7 +526,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
           return G.getRejectedPromise();
       });
     });
-  };
+  }
   
   IDB.prototype.get = function(storeName, uri) {
     return this._queueTask('get item {0} from store {1}'.format(uri, storeName), get.bind(this, storeName, uri));    
@@ -544,7 +544,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     }
     
     return query;
-  };
+  }
 
   function wrapQueryBuildingMethod(query, fn) {
     var backup = query[fn];
@@ -561,7 +561,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
         return backup2.apply(query, arguments);
       }
     }
-  };
+  }
   
   function wrapQueryRunMethod(query, fn) {
     var backup = query[fn];
@@ -607,7 +607,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     };
     
     query[fn]._wrapped = true;
-  };
+  }
 
   IDB.prototype.queryByIndex = function(indexNameOrQuery) {
     var query = typeof indexNameOrQuery == 'string' ? idbq.Index(prepPropName(indexNameOrQuery)) : indexNameOrQuery;
@@ -708,7 +708,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
         }
       });
     });
-  };
+  }
   
   IDB.prototype.put = function(storeName, items) {
     items = _.isArray(items) ? items : [items];
@@ -728,7 +728,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
         });
       });      
     });
-  };
+  }
 
   IDB.prototype['delete'] = function(storeName, primaryKeys) {
     primaryKeys = _.isArray(primaryKeys) ? primaryKeys : [primaryKeys];
@@ -758,7 +758,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     }
     
     return wrapper;
-  };
+  }
   
   // Untested
   IDB.prototype.transaction = function(storeName, mode) {

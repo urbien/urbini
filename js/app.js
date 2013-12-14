@@ -57,7 +57,7 @@ define('app', [
     }
     else
       G.linkedModelsMetadata = {};
-  };
+  }
   
   function loadCurrentModel(dfd, waitTime) {
     var self = this,
@@ -85,7 +85,7 @@ define('app', [
     }); 
     
     return promise;
-  }; 
+  } 
 
 //  function buildLocalizationContext() {
 //    G.localizationContext = {
@@ -120,7 +120,7 @@ define('app', [
         currentApp.dataProviders = new ResourceList(providers, {
           model: U.getModel(providerType)
         });
-      };
+      }
 
       if (consumers.length) {
         currentApp.dataConsumerAccounts = new ResourceList(consumers, {
@@ -129,7 +129,7 @@ define('app', [
             $in: 'provider,' + _.pluck(providers, '_uri').join(',')
           }
         });
-      };
+      }
 
       if (accesses.length) {
         currentApp.dataAccesses = new ResourceList(accesses, {
@@ -142,7 +142,7 @@ define('app', [
         });
       }
     });
-  };
+  }
 
   function getTemplates() {
     var currentApp = G.currentApp,
@@ -176,7 +176,7 @@ define('app', [
         error: defer.resolve
       });
     }).promise();
-  }; 
+  } 
 
   function getViews() {
     var jsType = G.commonTypes.JS,
@@ -215,7 +215,7 @@ define('app', [
         error: defer.resolve
       });
     }).promise(); 
-  };
+  }
   
   function initGrabs() {
     if (G.currentUser.guest)
@@ -229,7 +229,7 @@ define('app', [
         }
       });
     });
-  };
+  }
   
   function setupPackagedApp() {
     if (navigator.mozApps) {
@@ -244,7 +244,7 @@ define('app', [
       
       Events.once('firefoxAppInstalled', dfd.resolve.bind(dfd));
     }
-  };
+  }
   
   function setupPushNotifications() {
     if (G.currentUser.guest)
@@ -291,7 +291,7 @@ define('app', [
 //        
 //      });
     });
-  };
+  }
 
   function setupAvailibilityMonitor(dont) {
     function run(fn, context) {
@@ -330,7 +330,7 @@ define('app', [
     G.whenNotRendering = function(fn, context) {
       return promise.then(run.bind(null, fn, context));
     };
-  };
+  }
   
   function hashToResourceOrList(hash) {
     var hashInfo = U.getUrlInfo(hash),
@@ -370,7 +370,7 @@ define('app', [
       
       return data ? data : G.getRejectedPromise();
     });
-  };
+  }
   
   function prefetchResources() {
     var tabs = G.tabs,
@@ -408,7 +408,7 @@ define('app', [
     
 //    if (Voc.isDelayingModelsFetch())
 //      Voc.getModels(null, {go: true});    
-  };
+  }
   
   function doPostStartTasks() {
     Voc.getModels();
@@ -424,7 +424,7 @@ define('app', [
   //        App.sendMessageToApp(msg);
   //      });
   //    }
-  };
+  }
   
   function prepDB() {
     var requiredStores = {    
@@ -466,7 +466,7 @@ define('app', [
     
     ModelLoader.init('indexedDB');
     ResourceManager.init();
-  };
+  }
   
 //  function setupHashMonitor() {
 //    $(window).on('hashchange')
@@ -497,11 +497,11 @@ define('app', [
         }
       });
     }).promise();
-  };
+  }
   
   function setupUser() {
     G.currentUser.role = G.currentUser.guest ? 'guest' : G.currentUser.role || 'contact';
-  };
+  }
   
   function setupWidgetLibrary() {
     if (G.isJQM()) {
@@ -564,7 +564,7 @@ define('app', [
     return $.whenAll(modelsViewsTemplatesAndDB, localized, require(['@widgets', 'router']).done(function($w, r) {
       Router = r;
     }));
-  };
+  }
   
   
   function setupCleaner() {
@@ -624,7 +624,7 @@ define('app', [
 //        _.wipe(view);
 //      }, 0);
 //    });
-  };
+  }
   
   function setupMisc() {
     Events.on('location', function(position) {
@@ -634,7 +634,7 @@ define('app', [
       
       G.currentUser.location = position;        
     });
-  };
+  }
   
   function setupRTCCallMonitor() {
     G.callInProgress = null;
@@ -663,11 +663,11 @@ define('app', [
     Events.on('localVideoMonitor:off', function() {
       G.localVideoMonitor = null;
     });
-  };
+  }
   
   function setupWorkers() {
     Backbone.ajax = U.ajax;
-  };
+  }
   
   function setupNetworkEvents() {
     G.connectionListeners = [];
@@ -676,7 +676,7 @@ define('app', [
       fn.apply(this, arguments);
       Events.trigger(online ? 'online' : 'offline');
     };      
-  };
+  }
   
   function startApp() {
     Events.trigger('startingApp');
@@ -708,7 +708,7 @@ define('app', [
       
       dfd.resolve();
     }).promise();
-  };
+  }
       
 //  replaceGetUserMedia: function() {
 //    navigator.getUserMedia = function(options, success, error) {
@@ -758,7 +758,7 @@ define('app', [
         }
       });
     }).promise();
-  };
+  }
   
 //  _subscribeToNotifications: function(endpoints) {
 //    endpoints = _.isArray(endpoints) ? endpoints : [endpoints];
@@ -904,7 +904,7 @@ define('app', [
         window.location.reload();
       });        
     });
-  };
+  }
   
   var App = {
     TAG: 'App',

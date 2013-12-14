@@ -391,7 +391,7 @@ define('lib/jquery.masonry', ['globals', 'underscore', 'domUtils', 'lib/fastdom'
       }
 
       brick.style[CSS.transformLookup] = DOM.positionToMatrix(top, left);
-      brick.style.opacity = 0.99999;
+//      brick.style.opacity = 0.999999;
       brick.dataset.x = left;
       brick.dataset.y = top;
       

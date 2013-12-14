@@ -3,7 +3,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
     var args = [].slice.call(arguments);
     args.unshift("plugManager");
     G.log.apply(G, args);
-  };
+  }
 
   var PLUGS_PREFIX = 'plugs:',
       scriptActions = ['create', 'edit'],
@@ -109,7 +109,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
     "};";
  
     return Function.apply({}, args);
-  };
+  }
 
   function initPlug(plug) {
     this.plugs = this.plugs || U.toObject(scriptActions);
@@ -144,7 +144,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
         }
       }          
     }
-  };
+  }
 
   function buildScript(script) {
     if (typeof script === 'function') {
@@ -155,7 +155,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
     var proxy = FunctionProxy(script.trim());
     proxy.proxy = true;
     return proxy;
-  };
+  }
 
   function setupPlugs(plugs) {
     if (!plugs)
@@ -170,7 +170,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
         initPlug(typePlugs[i]);
       }
     }
-  };
+  }
   
   function initPlugs(type) {
     // TODO: turn off plugs as needed, instead of this massacre
@@ -195,7 +195,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
 //    _.each(plugs, function(plug) {
 //      initPlug(plug);
 //    });
-  };
+  }
 
   function fetchPlugs(models) {
     if (!models) {
@@ -220,13 +220,13 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
       if (data && data.plugs)
         setupPlugs(data.plugs);
     });
-  };
+  }
   
   function preparePlug(plugFn, plug) {
     return function(res) {
       return executePlug(plugFn, plug, res);
     }
-  };
+  }
   
   /**
    * prepackage all the built in plug functions like "each" with the resources and models needed for a given operation
@@ -241,7 +241,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
     });
     
     return plugTools;
-  };
+  }
   
   /**
    * @param plug a function that takes in two parameters: from and to, a.k.a. cause and effect
@@ -306,7 +306,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
     }).fail(function() {
       debugger;
     });
-  };
+  }
 
   function nukePlug(plug, plugFn) {
     var causeType = plug.causeDavClassUri;
@@ -322,7 +322,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
     _.each(scriptActions, function(action) {        
       Events.off(action + ':' + causeType, plugFn);
     });
-  };
+  }
 
   function savePlugsToStorage(plugs) {
     if (!localStorage || !_.size(plugs))
@@ -351,7 +351,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
       
       ls.putAsync(key, JSON.stringify(current));
     }
-  };
+  }
 
   function getModels(models) {
     var dfd = $.Deferred(),
@@ -359,7 +359,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
     
     Events.trigger('getModels', models, dfd);
     return dfd.promise();
-  };
+  }
   
   var PlugManager = {
     fetchPlugs: fetchPlugs
