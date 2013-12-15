@@ -21,7 +21,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
     var args = _.toArray(arguments);
     args.unshift("tourGuide", "tour");
     G.log.apply(G, args);
-  };
+  }
 
   function adjustFragmentForTour(fragment) {
     var tour = tourManager.getCurrentTour(),
@@ -66,7 +66,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       Events.trigger('tourEnd');
     
     return fragment;
-  };
+  }
 
   function getAllTypes(vocModel) {
     vocModel = typeof vocModel == 'string' ? U.getModel(vocModel) : vocModel;
@@ -78,7 +78,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
   
   function isSubType(type1, type2) {
     return _.contains(getAllTypes(type1), type2);
-  };
+  }
   
   function hashInfoCompliesWithTourStep(hashInfo, step) {
     var isModelParam = _.negate(U.isMetaParameter),
@@ -101,7 +101,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
     }
     
     return routeMatches && typeMatches && paramsMatch;
-  };
+  }
   
 
   
@@ -134,7 +134,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         
         return dfd.promise();
       });
-    };
+    }
     
     Events.on('tourStart', function(tourStarted, tourSteps) {
       if (_tour)
@@ -170,7 +170,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
 
     function reset() {
       _tour = _steps = _step = null;
-    };
+    }
     
     function getTour() {
       if (!_initialized) {
@@ -217,7 +217,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         return _myTours;
       }
     };
-  };
+  }
 
   function getMyTours(tours) {
     if (G.currentUser.guest)
@@ -252,7 +252,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         ajaxQueue: 'tours'
       });
     }).promise();
-  };
+  }
   
   function SearchOperation(current) {
     current = current || {};
@@ -284,7 +284,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         _done = true;
         Events.trigger('tourStep', step);
       }
-    };
+    }
 
     function checkForTour() {
       var currentTourId = _tour && getTourId(_tour),
@@ -332,7 +332,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       }, function() {
 //        debugger; // nothing found
       });
-    };
+    }
 
     function wrap(fn, context) {
       return function() {
@@ -349,7 +349,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         
         return promise;
       };
-    };
+    }
     
     function guessTour() {
       var ands = [{
@@ -401,7 +401,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
           ajaxQueue: 'tours'
         });
       }).promise();
-    };
+    }
 
     function matches(val, desiredVal) {
       return _.isArray(desiredVal) ? _.contains(desiredVal, val) : val == desiredVal;
@@ -468,7 +468,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       });
       
       return _chooseTour(tours);
-    };
+    }
     
     function _chooseTour(tours) {
       if (!tours.length)
@@ -498,7 +498,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
 //        // tour fizzled out
 //        return _chooseTour(tours.slice(1));
 //      });
-    };
+    }
     
     function validateAndRunTour(tour, steps) {
       var stepNum = getStepNum(_hashInfo) || 1;
@@ -515,7 +515,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       }
       
       return REJECTED_PROMISE;
-    };
+    }
     
     chooseTour = wrap(chooseTour);
     _chooseTour = wrap(_chooseTour);
@@ -531,13 +531,13 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         return _done;
       }
     }
-  };
+  }
 
   function getTourStep(steps, stepNum) {
     return steps && steps.where({
       number: stepNum
     })[0];     
-  };
+  }
 
   function fetchTour(tourUri) {
     return $.Deferred(function(defer) {
@@ -557,7 +557,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         ajaxQueue: 'tours'
       });      
     }).promise();
-  };
+  }
 
   function fetchSteps(tourUri) {
     return $.Deferred(function(defer) {
@@ -591,7 +591,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         return;
       }
     }).promise();
-  };
+  }
   
   function getStepByNumber(steps, num) {
     var filter = {};
@@ -601,7 +601,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
   
   function getTourId(tour) {
     return tour.get('id');
-  };
+  }
   
   function getStepNum(hashInfo) {
     hashInfo = hashInfo || G.currentHashInfo;
@@ -609,7 +609,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         stepNum = params[TOUR_STEP_PARAM];
     
     return parseInt(stepNum);
-  };
+  }
   
 
   return (tourManager = TourManager());

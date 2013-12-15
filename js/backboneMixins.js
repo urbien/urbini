@@ -21,7 +21,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       var fn = obj[key];
       fn = typeof fn == 'function' ? fn : this[fn];
       return fn;
-    };
+    }
     
     function getEventName(key) {
       return getEventInfo(key).eventName;
@@ -528,7 +528,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
 //      _.defaults(to.globalEvents, from.globalEvents);
 //      _.defaults(to.myEvents, from.myEvents);
     }
-  };
+  }
 
   function namespaceEvents(events, namespaceStr, postpend) {
     var namespaced = {};
@@ -582,7 +582,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         return this.prototype.mixes(mixin);
       };
     })
-  };
+  }
   
   patchBackboneExtend();
   Backbone.Mixin = {

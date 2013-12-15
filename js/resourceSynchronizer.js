@@ -23,13 +23,13 @@ define('resourceSynchronizer', [
   
   function makeTempID() {
     return G.currentServerTime();
-  };
+  }
 
   ////////////// SYNCHRONIZER /////////////////
   
   function ResourceSynchronizer(data) {
     Synchronizer.apply(this, arguments);
-  };
+  }
   
   ResourceSynchronizer.prototype = Object.create(Synchronizer.prototype);
   ResourceSynchronizer.constructor = ResourceSynchronizer;
@@ -112,11 +112,11 @@ define('resourceSynchronizer', [
         
       _.extend(result, itemJson);      
       return self._saveItemHelper(result, item);            
-    };
+    }
     
     function notFound() {
       return self._saveItemHelper(itemRef, item);            
-    };
+    }
     
     return IDB.queryByIndex('_uri').eq(uri).getAll(REF_STORE.name).then(function(results) {
       if (results.length)
@@ -159,7 +159,7 @@ define('resourceSynchronizer', [
   
   function put(storeName, items) {
     return IndexedDBModule.getIDB().put(storeName, items);
-  };
+  }
   
   ResourceSynchronizer.prototype._getLastFetchedOn = function() {
     if (this.info && !_.isUndefined(this.info.lastFetchedOn))
@@ -269,7 +269,7 @@ define('resourceSynchronizer', [
         syncResources(results);
       }).fail(retry);
     }).fail(retry);
-  };
+  }
   
   function syncResource(ref, refs) {
     var IDB = IndexedDBModule.getIDB(),
@@ -365,7 +365,7 @@ define('resourceSynchronizer', [
       debugger;
       syncWithServer(2000); // queue up another sync      
     });
-  };
+  }
   
   function syncResources(refs) {
     var self = this,
@@ -380,7 +380,7 @@ define('resourceSynchronizer', [
       else
         return RESOLVED_PROMISE;
     }));
-  };
+  }
 
   function saveToServer(updateInfo) {
     var IDB = IndexedDBModule.getIDB(),
@@ -506,7 +506,7 @@ define('resourceSynchronizer', [
     });
       
     return promise;
-  };
+  }
   
   function checkDelete(res) {
     var canceled = U.getCloneOf(res.vocModel, 'Cancellable.cancelled');
@@ -515,7 +515,7 @@ define('resourceSynchronizer', [
     
     res.on('delete', deleteItem.bind(null, res));
     res['delete']();
-  };    
+  }
   
   function deleteItem(item) {
     debugger;
@@ -528,7 +528,7 @@ define('resourceSynchronizer', [
     IDB.queryByIndex('_uri').eq(uri).getAll(REF_STORE.name).done(function(results) {
       IDB['delete'](REF_STORE.name, _.pluck(results || [], REF_STORE.options.keyPath));
     });      
-  };
+  }
 
   ResourceSynchronizer.init = function() {    
     REF_STORE = G.getRefStoreInfo(),

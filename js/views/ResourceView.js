@@ -103,12 +103,12 @@ define('views/ResourceView', [
     showOther: function(e) {
       var t = e.target;
       var tagName = t.tagName.toLowerCase();
-      var wl = G.currentApp.widgetLibrary
-      if (wl  &&  wl != 'Jquery Mobile') {
+//      var wl = G.currentApp.widgetLibrary
+//      if (wl  &&  wl != 'Jquery Mobile') {
         Events.stopEvent(e);
         t.parentNode.$('ul').$toggleClass('hidden');        
         return;
-      }
+//      }
     },
     refresh: function(resource, options) {
       options = options || {};
@@ -235,7 +235,8 @@ define('views/ResourceView', [
 //            U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
             this.el.classList.remove('hidden');
             U.addToFrag(frag, '<div id="Description">' + val + '</div>');
-            this.el.$html(frag);      
+            this.el.$html(frag);
+            /*
             if (G.isJQM()) {
               if (this.el.$hasClass('ui-listview')) {
                 this.$el.trigger('create');      
@@ -244,7 +245,7 @@ define('views/ResourceView', [
               else
                 this.$el.trigger('create');
             }
-            
+            */
             return this;
           }
         }
@@ -336,7 +337,7 @@ define('views/ResourceView', [
         if (numDisplayed  &&  !groupNameDisplayed) {
 //          var wl = G.currentApp.widgetLibrary;
           if (isJQM)
-            otherLi = '<li data-role="collapsible" id="other" data-inset="false" style="border:0px;' + (G.theme.backgroundImage ? 'background-image: url(' + G.theme.backgroundImage + ')' : '') + '" data-content-theme="' + G.theme.list + '"  data-theme="' + G.theme.list + '"><h3 style="margin:0px;">Other</h3><ul data-inset="true" data-role="listview" style="margin: -10px 0px;">';
+            otherLi = '<li id="other" style="border:0px;' + (G.theme.backgroundImage ? 'background-image: url(' + G.theme.backgroundImage + ')' : '') + '" data-content-theme="' + G.theme.list + '"  data-theme="' + G.theme.list + '"><h3 style="margin:0px;"><i class="ui-icon-plus-sign"></i>&#160;Other</h3><ul class="hidden"">';
           else if (isBB)
             otherLi = '<section id="other"><header style="margin:0px;cursor:pointer;"><i class="ui-icon-plus-sign"></i>&#160;Other</header><ul class="other hidden">';
           else if (G.isTopcoat())
@@ -381,6 +382,7 @@ define('views/ResourceView', [
   //    var j = {"props": json};
   //    this.$el.html(html);
       this.el.$html(frag);
+      /*
       if (G.isJQM()) {
         if (this.el.$hasClass('ui-listview')) {
           this.$el.trigger('create');      
@@ -389,7 +391,7 @@ define('views/ResourceView', [
         else
           this.$el.trigger('create');
       }
-      
+      */
       if (!_.size(displayedProps))
         this.el.$hide();
 

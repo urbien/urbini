@@ -977,10 +977,11 @@ define('views/ResourceListView', [
       }
       
       liView.render({
-        unlazifyImages: !this._scrollable,
-        style: {
-          opacity: 0
-        }
+        unlazifyImages: !this._scrollable
+//        ,
+//        style: {
+//          opacity: 0
+//        }
       });
       
       if (!this._itemTemplateElement && this.displayMode == 'masonry') // remove this when we change ResourceListItemView to update DOM instead of replace it

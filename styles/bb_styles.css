@@ -275,10 +275,21 @@ fieldset {
 [class="scrollable"] {
   background: #f9f9f9;
 }
-
+.editList a {
+  cursor:pointer;
+}
+#_prim {
+  padding: 0.5rem 1.5rem;
+}
+.resourceProp {
+  padding: 1.5rem;
+}
 .editList li {
-  padding: 0.5rem 1.5rem; 
+/*
   min-height: 2rem;
+  padding: 0.5rem 1.5rem; 
+*/ 
+  min-height: 3rem;
   font-size: 1.6rem;
 }
 
@@ -415,8 +426,18 @@ section#login_popup {
   left: 50%;
   top:  0.5rem;
 }
+/*
 .resourceProp {
   font-size:1.6rem;
   cursor:pointer;
   min-height:3rem;
 }
+*/
+.cameraCapture i {
+  position:absolute;
+  right:1rem;
+  font-size:2.3rem;
+  top:1.5rem;
+  overflow:hidden;
+}
+

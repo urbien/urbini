@@ -630,13 +630,15 @@
 <script type="text/template" id="resourcePET">
   {{ if (prop.range && ((isImage && prop.camera) || isVideo || isAudio)) { }}
     <a href="#cameraPopup" class="cameraCapture" target="#" data-prop="video">
-      <i class="{{= isVideo ? 'ui-icon-facetime-video' : isAudio ? 'ui-icon-circle' : 'ui-icon-camera' }}" style="float:right;font-size:2.3rem;"></i>
+      <i class="{{= isVideo ? 'ui-icon-facetime-video' : isAudio ? 'ui-icon-circle' : 'ui-icon-camera' }}"></i>
     </a>
     {{ if (!G.canWebcam) { }}
       <input data-role="none" type="file" class="cameraCapture" accept="{{= isVideo ? 'video/*' : isAudio ? 'audio/*' : 'image/*' }};capture=camera;" style="visibility:hidden; display:none;" data-prop="{{= shortName }}" />
     {{ }                   }}
   {{ }                                                                                                                                                                                        }}
-  <a target="#"  name="{{= shortName }}" class="resourceProp" id="{{= id }}" {{= rules }}> 
+
+  <!--a target="#"  name="{{= shortName }}" class="resourceProp" id="{{= id }}" {{= rules }}--> 
+  <a target="#"  name="{{= shortName }}" style="min-height:3rem;{{= obj.img ? 'padding: 0 1.5rem;' : ''}}" class="resourceProp" id="{{= id }}" {{= rules }}> 
     {{ if (obj.img) { }}    
       <img name="{{= shortName }}" src="{{= img }}" style="
       

@@ -53,6 +53,11 @@ html { height: 100%; }
 .galleryItem, .galleryItem_css3, .galleryItem_nab { 
   position: relative; 
 }
+
+.galleryItem_css3 {
+  position: absolute;
+}
+
 .galleryItem_css3, galleryItem_nab { 
   display: inline-block; 
   /*
@@ -181,10 +186,10 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 
 .WhiteButton {color: #524d4d; text-shadow: 0 1px rgba(255,255,255,0.9);}
 
-.nabRL  { display: inline; }
+.nabRL  { display: inline; position: absolute;}
 .nabRL div { padding: 0px 10px 10px 10px;}
 
-.nabRL .btn span {padding-right: 0; }
+.nabRL .nabBtn span {padding-right: 0; }
 
 .modP tr {vertical-align: top;}
 .lc1 a {
@@ -202,8 +207,15 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 .lc1 img {
   max-width: 32px;
 }
-.btn { text-align: center; padding-bottom: 3px; height: 25px; }
-.nabRL .btn a { color: #757575; text-shadow: none; }
+div.nabBtn { 
+  text-align: center; 
+  height: 25px; 
+  background: #eeeeee; 
+  padding-top: 10px; 
+  padding-bottom: 0px;
+}
+
+.nabRL .nabBtn a { color: #757575; text-shadow: none; }
 
 .commentListDate {
   color: #999999;
@@ -959,6 +971,9 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   overflow: hidden;
   position: relative;
 }
+.thumb-inner img {
+  z-index: -1;
+}
 .thumb-inner a {
   height: 100%;
   width: 100%;
@@ -1180,6 +1195,7 @@ div {
 
 
 .triangle {
+/*
   position:absolute;  
   width: 0;
   height: 0; 
@@ -1193,6 +1209,15 @@ div {
   line-height: 0;
   right: -19px;
   bottom:  -5px;
+*/
+  border-color: transparent transparent #2d2d2d transparent;
+  border-width: 0px 0px 10px 10px;
+  border-style: solid;
+  width: 0;
+  height: 0;
+  position:absolute;  
+  right: 1px;
+  bottom: 2px;
 }
 
 

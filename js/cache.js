@@ -48,7 +48,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
         resourcesByUri[uri] = resource;
       
 //      resourcesByCid[resource.cid] = resource;
-    };
+    }
     
     function uncacheResource(/* resource, cid or uri */) {
       var uri, 
@@ -67,14 +67,14 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
         res = resourcesByUri[res];// || resourcesByCid[res];
         return res && uncacheResource(res);
       }
-    };
+    }
     
     function cacheList(list) {
       var qs = list.query, // || $.param(list.params);
           typeUri = list.vocModel.type;
       
       return (lists[typeUri] = lists[typeUri] || {})[qs || typeUri] = list;
-    };
+    }
 
     function uncacheList(list) {
       var qs = list.query, // || $.param(list.params);
@@ -83,7 +83,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       var subCache = lists[typeUri];
       if (subCache)
         delete subCache[qs || typeUri];
-    };
+    }
 
     /**
      * search a collection map for a collection with a given model
@@ -126,7 +126,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       }
       
       return matches || null;
-    };
+    }
     
     /**
      * @param atts: attributes that must be present on the resource we're searching for
@@ -164,7 +164,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       }
       
       return null;
-    };
+    }
     
     function getResource(uri) {
       switch (typeof uri) {
@@ -181,12 +181,12 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
         var fromColCache = searchCollections(lists, filter);
         return fromResCache.concat(fromColCache || []);
       }
-    };
+    }
     
     function getList(model, query) {
       var typeUri = model.type;
       return (lists[typeUri] = lists[typeUri] || {})[query || typeUri];
-    };
+    }
 
     Events.on('badList', function(list) {
       for (var colType in lists) {
@@ -206,7 +206,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       getResource: getResource,
       getList: getList
     };
-  };
+  }
       
   function ViewCacheEntry(view, url) {
     var self = this,
@@ -229,20 +229,20 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
         return view;
       }
     };
-  };
+  }
 
   function ViewCache() {
     var cache = [];
     function getCachedView(url) {
       var cached = getCached(url || window.location.href);
       return cached ? cached.getView() : null;
-    };
+    }
 
     function getCached(url) {
       return _.find(cache, function(entry) {
         return entry.getUrl() == url;
       });
-    };
+    }
     
     function put(view, url) {
       url = url || window.location.href;
@@ -263,11 +263,11 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       
       // let the turn of the event loop that caused cache update to finish first
       setTimeout(clean, 0);
-    };
+    }
     
     function overCapacity() {
       return cache.length > MAX_VIEWS_TO_CACHE; 
-    };
+    }
     
     function clean() {
       if (overCapacity()) {
@@ -285,7 +285,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
           }
         }
       }
-    };
+    }
     
     function getViews() {
       return _.map(cache, function(entry) {
@@ -295,7 +295,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
 
     function getResources() {
       return _.compact(_.pluck(getViews(), 'resource'));
-    };
+    }
 
     function addCollections(view, cols) {
       var res = view.resource,
@@ -331,7 +331,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       }
       
       return cols;
-    };
+    }
     
     Events.on('pageChange', function(prev, current) {
       if (current.isCacheable())
@@ -374,7 +374,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
           Array.removeFromTo(cache, idx, idx + 1);
       }
     };
-  };
+  }
 
   function cacheModel(model) {
     var snCache, typeCache;
@@ -393,7 +393,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
     
     snCache[model.shortName] = model;
     typeCache[model.type] = model;
-  };
+  }
   
   function findResource(lists, uri) {
     var res,
@@ -402,7 +402,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
         });
     
     return res;
-  };
+  }
   
 //  function getModel(type) {
 //    return typeToModel[type] || shortNameToModel[type];
@@ -415,7 +415,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       if (!_.contains(arr, item))
         arr.push(item);
     }
-  };
+  }
   
   var Cache = {
     TAG: 'Cache',

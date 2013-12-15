@@ -126,7 +126,7 @@ define('globals', function() {
                           browser.ms ? 'ms' : '';
     
     return browser;
-  };
+  }
   
   function hasLocalStorage() {
     var supported = false;
@@ -135,7 +135,7 @@ define('globals', function() {
     } catch(e) {}
     
     return supported;
-  };
+  }
   
   function saveBootInfo() {
     var ls = G.localStorage,
@@ -162,7 +162,7 @@ define('globals', function() {
     ls.put('VERSION', JSON.stringify(Lablz.VERSION));
     delete Lablz.VERSION;
     ls.put('Globals', JSON.stringify(Lablz));
-  };
+  }
 
   function addModule(text) {
   //  console.log("evaling/injecting", text.slice(text.lastIndexOf('# sourceURL')));
@@ -239,7 +239,7 @@ define('globals', function() {
           break;
       }      
     }).promise();
-  };
+  }
 
   var orgLoad = require.load;
   require.load = function(name) {
@@ -313,7 +313,7 @@ define('globals', function() {
   
   function getDomain() {
     return G.serverName.match(/([^\.\/]+\.com)/)[0];
-  };
+  }
   
   function testCSS(prop) {
     return prop in doc.documentElement.style;
@@ -363,7 +363,7 @@ define('globals', function() {
     }
     else
       return REJECTED_PROMISE;
-  };
+  }
 
   function setMiscGlobals() {
     var path = window.location.pathname,
@@ -479,7 +479,7 @@ define('globals', function() {
     G.log(G.TAG, 'webview', 'inWebview:', G.inWebview);
     G.log(G.TAG, 'ffIframe', 'inFFIframe:', G.inFirefoxOS);
   //    ALL_IN_APPCACHE = G.inFirefoxOS;
-  };
+  }
   
   function determineMinificationMode() {
     // Determine whether we want the server to minify stuff
@@ -505,7 +505,7 @@ define('globals', function() {
     }
 
     G.minify = minified === 'y' ? true : minified === 'n' ? false : G.minifyByDefault;
-  };
+  }
 
   function setupLocalStorage() {
     if (!hasLocalStorage)
@@ -636,7 +636,7 @@ define('globals', function() {
     
     G.localStorage.putAsync = G.localStorage.put.async(100);
     G.localStorage.cleanAsync = G.localStorage.clean.async(100);
-  };
+  }
 
   function setupWidgetLibrary() {
     var widgets = G._widgetsLib = [],
@@ -700,7 +700,7 @@ define('globals', function() {
     }
     else
       loadRegular();
-  };
+  }
   
   function getCSS(/* bundles */) {
     var css = [];
@@ -754,7 +754,7 @@ define('globals', function() {
         extrasBundle._deferred.resolve();
       });
     });    
-  };
+  }
   
   var Bundler = {
     pruneUnneededModules: function() {

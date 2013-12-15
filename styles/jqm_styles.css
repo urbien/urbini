@@ -4,6 +4,9 @@
 #sidebar .ui-icon {
   background: none;
 }
+.ui-panel-inner {
+  padding: 0; // menu otherwise shows with padding:15x
+}
 
 #resourceViewHolder .cp .ui-btn-icon-notext {
   width: 20px;
@@ -35,31 +38,6 @@
 #resourceViewHolder .ui-icon .ui-icon-chevron-right{
   margin: -12px -9px auto auto !important;
 }
-#other .ui-collapsible-content {
-  border:0;
-  background: none; 
-}
-/*
-.ui-icon-facebook {
-  background-image: url(/icons/facebook-mid.png);
-}
-
-.ui-icon-twitter {
-  background-image: url(/icons/twitter-mid.png);
-}
-
-.ui-icon-linkedin {
-  background-image: url(/icons/linkedin-mid.png);
-}
-
-.ui-icon-tendrilconnect {
-  background-image: url(/icons/tendril-mid.png);
-}
-
-.ui-icon-live {
-  background-image: url(/icons/windows-live-mid.png);
-}
-*/
 .ui-body-c .ui-link:visited {
   color: #757575;
 }
@@ -190,32 +168,27 @@
   background-image: none;
 /*  color: #757575; */
 }
-
-#resourceView #other .ui-btn-inner .ui-icon-plus:after {
-  position:absolute;
-  font-family: FontAwesome !important;
-  top:3px;
-  left:5px;
-  content: "\f01A";
-  font-size: 20px;
-  background: none;
-  background-image: none;
-  opacity: 0.6;
-  margin: -1px -7px auto auto !important;
+#resourceView #other {
+  padding: 0;
+  cursor: pointer;
+}
+#resourceView #other ul {
+  list-style: none;
+  padding-left: 0;
+}
+#resourceView #other h3 {
+  padding: 10px;
+}
+#resourceView li:first-child {
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
 }
 
-/*
-.ui-icon-plus:after {
-  position:absolute;
-  font-family: FontAwesome !important;
-  top:3px;
-  left:5px;
-  content: "\f055";
-  font-size: 20px;
-  background: none;
-  background-image: none;
+#resourceView #other li:first-child {
+  border-top: 1px solid #ccc;
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
 }
-*/
 .ui-icon-minus:after {
   position:absolute;
   font-family: FontAwesome !important;
@@ -455,10 +428,116 @@
   font-size: 18px;
   margin: 10px;
 }
-/*
-#resourceEditView ul {
-  padding: 1rem;
-  border-radius: 1rem;
+
+/* master changes */
+#cpView, #resourceView {
+  padding: 0;
+  border: 1px solid #ccc;
+  margin: 10px;
   list-style: none;
+  border-radius: 10px;
+  background: #f9f9f9;
+}
+#cpView li:last-child, #resourceView li:last-child {
+  border-bottom: none;
+}
+#cpView a {
+  color: #757575;
+  display: block;
+  padding: 15px 10px;
+}
+#resourceView a {
+  color: #757575;
+}
+#cpView li {
+  padding: 0px; 
+  border-bottom: 1px solid #ccc;
+  font-size: 16px;
+  font-weight: bold;
+  position: relative;
+}
+#resourceView li {
+  padding: 10px;
+  border-bottom: 1px solid #ccc;
+  font-size: 16px;
+  font-weight: bold;
+  position: relative;
+}
+
+#cpView .ui-li-count {
+  border-radius: 15px;
+  border: 1px solid #aaa;
+  padding: 0 5px;
+  position:absolute;
+  right:40px;
+  font-size: 12px;
+}
+
+#cpView i {
+  position:absolute;
+  right:10px;
+  font-size:22px;
+  top: 10px;
+}
+
+#cpView a.cp {
+  padding: 0;
+  float: right;
+}
+#cpView li[data-role="list-divider"], #resourceView li[data-role="list-divider"] {
+  padding: 10px;
+  background: #eee;
+}
+
+/*
+#resourceView #other .ui-btn-inner .ui-icon-plus:after {
+  position:absolute;
+  font-family: FontAwesome !important;
+  top:3px;
+  left:5px;
+  content: "\f01A";
+  font-size: 20px;
+  background: none;
+  background-image: none;
+  opacity: 0.6;
+  margin: -1px -7px auto auto !important;
 }
 */
+/*
+.ui-icon-plus:after {
+  position:absolute;
+  font-family: FontAwesome !important;
+  top:3px;
+  left:5px;
+  content: "\f055";
+  font-size: 20px;
+  background: none;
+  background-image: none;
+}
+*/
+/*
+#other .ui-collapsible-content {
+  border:0;
+  background: none; 
+}
+.ui-icon-facebook {
+  background-image: url(/icons/facebook-mid.png);
+}
+
+.ui-icon-twitter {
+  background-image: url(/icons/twitter-mid.png);
+}
+
+.ui-icon-linkedin {
+  background-image: url(/icons/linkedin-mid.png);
+}
+
+.ui-icon-tendrilconnect {
+  background-image: url(/icons/tendril-mid.png);
+}
+
+.ui-icon-live {
+  background-image: url(/icons/windows-live-mid.png);
+}
+*/
+

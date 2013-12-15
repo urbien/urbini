@@ -18,7 +18,7 @@ define('resourceManager', [
       
   function getSynchronizer(method, data, options) {
     return U.isModel(data) ? new ResourceSynchronizer(method, data, options) : new CollectionSynchronizer(method, data, options);
-  };
+  }
 
   var Blob = window.Blob,
       FileSystem,
@@ -47,7 +47,7 @@ define('resourceManager', [
 
   function isStale(timestamp, now) {
     return !timestamp || (now || G.currentServerTime()) - timestamp > MAX_DATA_AGE;
-  };
+  }
   
   Backbone.defaultSync = Backbone.sync;
   Backbone.sync = function(method, data, options) {
@@ -413,7 +413,7 @@ define('resourceManager', [
     });    
     
     return typeToInfos;
-  };
+  }
   
   /**
    * @param resources - map of propName to info objects: {

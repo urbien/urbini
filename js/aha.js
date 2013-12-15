@@ -46,7 +46,7 @@ function collectInfo() {
       if (p == 'og:image') {
         setImage = true;
         images.push(value);
-        var img = new Image;
+        var img = new Image();
         img.src = value;
         img.onload = function() {
           if (this.width < 200 || this.height < 200) {
@@ -337,7 +337,7 @@ function showImageChooser() {
         
         var m = function () {
               function a(g) {
-                  var j = new Image;
+                  var j = new Image();
                   j.height = 360;
                   j.width = 480;
                   j.src = "http://img.youtube.com/vi/" + g + "/0.jpg";
@@ -360,7 +360,7 @@ function showImageChooser() {
                       var r = g.height,
                           z = g.width,
                           t = g.src,
-                          u = new Image;
+                          u = new Image();
                       u.src = t;
                       return {
                           w: z,
@@ -410,14 +410,14 @@ function showImageChooser() {
             return null;
           }
 
-          var noImg = new Image;
+          var noImg = new Image();
           noImg.src = serverUrl + '/images/no_image.png';
           m.push({
             w: 300,
             h: 300,
             src: noImg.src,
             alt: 'No good image here',
-            im2: new Image,
+            im2: new Image(),
             img: noImg
           });
           
@@ -456,7 +456,7 @@ function showImageChooser() {
           document.body.appendChild(n);
           f = document.createElement("div");
           f.setAttribute("id", "tpm_Control");
-          t_img = new Image;
+          t_img = new Image();
           t_img.src = serverUrl + "/images/urbienLogoBig.png";
           t_img.width = "180";
           f.appendChild(t_img);
