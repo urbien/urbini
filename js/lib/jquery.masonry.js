@@ -21,20 +21,20 @@
     return array.filter(function(value){ return rest.indexOf(value) == -1; });
   }
   
-  function intersection(a, b) {
-    var common = [],
-        id;
-    
-    for (var i = 0; i < a.length; i++) {
-      id = a[i]._id;
-      for (var j = 0; j < b.length; j++) {
-        if (id == b[j]._id)
-          common.push([i, j]);
-      }      
-    }
-    
-    return common;
-  };
+//  function intersection(a, b) {
+//    var common = [],
+//        id;
+//    
+//    for (var i = 0; i < a.length; i++) {
+//      id = a[i]._id;
+//      for (var j = 0; j < b.length; j++) {
+//        if (id == b[j]._id)
+//          common.push([i, j]);
+//      }      
+//    }
+//    
+//    return common;
+//  };
   
   // our "Widget" object constructor
   function Mason( options, bricks ){
@@ -393,9 +393,9 @@
     // convienence method for working with Infinite Scroll
     _appended: function( newBricks ) {
       // add new bricks to brick pool
-      var common = intersection(this.bricks, newBricks);
-      if (common.length)
-        debugger;
+//      var common = intersection(this.bricks, newBricks);
+//      if (common.length)
+//        debugger;
       
       this.bricks = this.options.fromBottom ? newBricks.concat(this.bricks) : this.bricks.concat( newBricks );
       if (!this._initialized)

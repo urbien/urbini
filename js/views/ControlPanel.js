@@ -204,6 +204,8 @@ define('views/ControlPanel', [
         self.renderHelper(options);
         if (invisible)
           self.toggleVisibility();
+        
+        self.finish();
       });
     },
     
@@ -666,7 +668,6 @@ define('views/ControlPanel', [
           this.$el.listview('refresh');
       }
 
-      this.finish();
       return this;
     }
   }, {
