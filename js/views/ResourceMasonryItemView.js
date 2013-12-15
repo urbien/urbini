@@ -283,16 +283,18 @@ define('views/ResourceMasonryItemView', [
           }
           
           a = nabRLGridCols.querySelector('a[data-prop="' + pName + '"]');
-          s = grid[row].value;
-          if (grid[row].resourceLink) {
-            a.href = resourceUri;
-            a.textContent = atts[pName];
-//            s = '<a href="' + resourceUri + '">' + atts[pName] + '</a>';
-          }
-          else if (meta[pName].facet  &&  meta[pName].facet.indexOf("/href") != -1) {
-            a.href = s;
-            a.textContent = s;
-//            s = '<a href="' + s + '">' + s + '</a>';
+          if (a) {
+            s = grid[row].value;
+            if (grid[row].resourceLink) {
+              a.href = resourceUri;
+              a.textContent = atts[pName];
+  //            s = '<a href="' + resourceUri + '">' + atts[pName] + '</a>';
+            }
+            else if (meta[pName].facet  &&  meta[pName].facet.indexOf("/href") != -1) {
+              a.href = s;
+              a.textContent = s;
+  //            s = '<a href="' + s + '">' + s + '</a>';
+            }
           }
           
 //          gridCols += s;
@@ -308,7 +310,9 @@ define('views/ResourceMasonryItemView', [
           aMake.href = U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: obj.v_showCommentsFor.uri, '-makeId': G.nextId()});
           if (aList && obj.v_showCommentsFor.count) {
             aList.href = U.makePageUrl('list', 'model/portal/Comment', {forum: obj.v_showCommentsFor.uri});
-            aList.childNodes[1].textContent = obj.v_showCommentsFor.count;
+            var countNode = aList.childNodes[1];
+            if (countNode)
+              countNode.textContent = obj.v_showCommentsFor.count;
           }
         }
       }

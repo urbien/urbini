@@ -157,11 +157,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         return; 
       case 38: // up arrow
         this._coast = true;
-        vector[axisIdx] = 10;
+        vector[axisIdx] = 20;
         break;
       case 40: // down arrow
         this._coast = true;
-        vector[axisIdx] = -10;
+        vector[axisIdx] = -20;
         break;
       default:
         return;

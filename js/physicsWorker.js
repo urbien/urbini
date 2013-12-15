@@ -276,6 +276,7 @@ function initWorld(_world) {
 			
 		while (i--) {
 			body = bodies[i];
+			body.fixed = true;
 			body.state.pos.vadd(data.vector);
 			body.state.vel.zero();
       body.state.acc.zero();
@@ -290,6 +291,7 @@ function initWorld(_world) {
 			
 		while (i--) {
 			body = bodies[i];
+      body.fixed = false;
 			if (stop) {
 			  body.state.vel.zero();
         body.state.acc.zero();
