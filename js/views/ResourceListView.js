@@ -466,30 +466,6 @@ define('views/ResourceListView', [
 //      this.el.$empty();
 //      this.adjustSlidingWindow();
     },
-    
-    _updateBounds: function() {
-      var viewport = G.viewport,
-          dimensions = this.getDimensions(),
-          bounds = this._bounds || [],
-          newBounds = [0, 0];
-
-      // make relative bounds that start at (0, 0)
-      newBounds[2] = dimensions.width || (viewport.width - this._offsetLeft);
-      newBounds[3] = dimensions.height || (viewport.height - this._offsetTop);
-      for (var i = 0; i < 4; i++) {
-        if (bounds[i] != newBounds[i]) {
-          this._bounds = newBounds;
-          return true;
-        }
-      }
-    },
-    
-//    _onWidthChanged: function() {
-//      if (this.mason) {
-//        this._updateBounds();
-//        this.mason.resize(this._bounds);
-//      }
-//    },    
 
     setHorizontal: function() {
       debugger;
@@ -1094,6 +1070,7 @@ define('views/ResourceListView', [
           bricks = this.toBricks(added, this.options),
           i = bricks.length,
           bodies = this.pageView._bodies,
+          displayed = this._displayedRange,
           view,
           id;
       
@@ -1104,8 +1081,15 @@ define('views/ResourceListView', [
         Physics.here.addBody(view.el, id);
       }
 
-      this._displayedRange.from = Math.min(this._displayedRange.from, from);
-      this._displayedRange.to = Math.max(this._displayedRange.to, to);
+      if (displayed.to - displayed.from == 0) {
+        displayed.from = from;
+        displayed.to = to;
+      }
+      else {
+        this._displayedRange.from = Math.min(this._displayedRange.from, from);
+        this._displayedRange.to = Math.max(this._displayedRange.to, to);
+      }
+      
       this.addBricks(bricks, atTheHead);
     },
     

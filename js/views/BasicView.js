@@ -140,29 +140,29 @@ define('views/BasicView', [
       return DOM.toHTML(tag);
     },
 
-    /**
-     * doesn't change a thing, only remembers this view's dimensions
-     */
-    setDimensions: function(width, height) {
-      var dim = this._dimensions;
-      dim.width = width;
-      dim.height = height;
-    },
-    
-    /**
-     * @return the last data passed in to setDimensions (doesn't access DOM so may not be up to date)
-     */
-    getDimensions: function() {
-      return this._dimensions;
-    },
-    
-    setWidth: function(width) {
-      this._dimensions.width = width;
-    },
-
-    setHeight: function(height) {
-      this._dimensions.height = height;
-    },
+//    /**
+//     * doesn't change a thing, only remembers this view's dimensions
+//     */
+//    setDimensions: function(width, height) {
+//      var dim = this._dimensions;
+//      dim.width = width;
+//      dim.height = height;
+//    },
+//    
+//    /**
+//     * @return the last data passed in to setDimensions (doesn't access DOM so may not be up to date)
+//     */
+//    getDimensions: function() {
+//      return this._dimensions;
+//    },
+//    
+//    setWidth: function(width) {
+//      this._dimensions.width = width;
+//    },
+//
+//    setHeight: function(height) {
+//      this._dimensions.height = height;
+//    },
 
     /**
      * doesn't change a thing, only remembers this view's position
@@ -428,7 +428,7 @@ define('views/BasicView', [
     },
     
     _getLoadingPromises: function() {
-      return [this._loadingPromise].concat(this._getChildrenLoadingPromises());
+      return [this._loadPromise].concat(this._getChildrenLoadingPromises());
     },
     
 //    isDoneLoading: function() {
@@ -638,9 +638,19 @@ define('views/BasicView', [
       return this.pageView && this.pageView.getPageTitle();
     },
     
+    updateMason: function() {
+      if (this.mason) {
+        var args = [this._bounds];
+        if (this._viewBrick)
+          args.push([this._viewBrick])
+        
+        this.mason.resize.apply(this.mason, args);
+      }        
+    },
+    
     _onViewportDimensionsChanged: function() {
-      if (this._updateBounds() && this.mason)
-        this.mason.resize(this._bounds)
+      if (this.mason && this._updateSize())
+        this.updateMason();
     },
     
 //    _onActive: function() {
@@ -1018,30 +1028,46 @@ define('views/BasicView', [
         this._draggables.push(id);
     },
     
-    _updateBounds: function() {
+    _updateSize: function() {
+      // TODO - move this to domUtils - it's per DOM element, not per view
       var viewport = G.viewport,
-          dimensions = this.getDimensions(),
-          bounds = this._bounds || [],
-          newBounds = [0, 0];
+          doUpdate = false,
+          oldOuterWidth = this._outerWidth,
+          oldOuterHeight = this._outerHeight,
+          oldWidth = this._width,
+          oldHeight = this._height;
 
       this._offsetLeft = this.el.offsetLeft;
       this._offsetTop = this.el.offsetTop;
+      this._outerWidth = this.el.$outerWidth() || viewport.width - this._offsetLeft;
+      this._outerHeight = this.el.$outerHeight() || viewport.height - this._offsetTop;
+      this._width = Math.min(this._outerWidth, viewport.width - this._offsetLeft);
+      this._height = Math.min(this._outerHeight, viewport.height - this._offsetTop);
+      if (this._width != oldWidth || this._height != oldHeight)
+        doUpdate = true;
       
-      // make relative bounds that start at (0, 0)
-      newBounds[2] = dimensions.width || (viewport.width - this._offsetLeft);
-      newBounds[3] = dimensions.height || (viewport.height - this._offsetTop);
-      for (var i = 0; i < 4; i++) {
-        if (bounds[i] != newBounds[i]) {
-          this._bounds = newBounds;
-          this._outerWidth = newBounds[2];
-          this._outerHeight = newBounds[3];
-          return true;
-        }
+      if (this._outerWidth != oldOuterWidth || this._outerHeight != oldOuterHeight) {
+        doUpdate = true;
+        if (this._viewBrick) {
+          this._viewBrick.vertices = [
+            {x: 0, y: this._outerHeight},
+            {x: this._outerWidth, y: this._outerHeight},
+            {x: this._outerWidth, y: 0},
+            {x: 0, y: 0}
+          ];
+        }        
       }
+      
+//      this._bounds = [this._offsetLeft, this._offsetTop, 
+//                      this._offsetLeft + this._width, this._offsetTop + this._height];
+      this._bounds = [0, 0, 
+                      this._width, this._height];
+      
+      return doUpdate;
     },
     
     _onPhysicsMessage: function() {
-      // override
+      // override me
     },
     
     addToWorld: function(options, addViewBrick) {      
@@ -1049,7 +1075,7 @@ define('views/BasicView', [
       if (this.mason)
         return;
       
-      this._updateBounds();
+      this._updateSize();
       var self = this,
           thisTransform = DOM.getTransform(this.el),
           containerId = this.getBodyContainerId(),
@@ -1067,13 +1093,8 @@ define('views/BasicView', [
       this.mason = Physics.there.masonry.newMason(options, this._onPhysicsMessage);
 
       $.when.apply($, this.pageView._getLoadingPromises()).done(function() { // maybe this is a bit wasteful?
-        var left = self.el.offsetLeft,
-            top = self.el.offsetTop;
-        
-        self._offsetLeft = left;
-        self._offsetTop = top;
-        if (self._updateBounds() && self.mason)
-          self.mason.resize(self._bounds);
+        if (self._updateSize())
+          self.updateMason();
       });
 
       if (addViewBrick)
@@ -1085,7 +1106,7 @@ define('views/BasicView', [
       if (this._flexigroup) {
         this.containerBody = {
           _id: containerId,
-          x: this._offsetLeft + this._outerWidth / 2,
+          x: this._offsetLeft + this._width / 2,
           y: -G.viewport.height * 5,
           lock: {
             x: 0
@@ -1099,8 +1120,8 @@ define('views/BasicView', [
 //            x: thisTransform[3][0],
 //            y: thisTransform[3][1],
 //            z: thisTransform[3][2],
-          x: 0,
-          y: 0,
+          x: this._offsetLeft,
+          y: this._offsetTop,
           lock: {
             x: 0 // no movement along the x axis
           }
@@ -1113,24 +1134,25 @@ define('views/BasicView', [
     addViewBrick: function() {
       var width = this._outerWidth,
           height = this._outerHeight,
-          id = this.getBodyId(),
-          myBrick = { // TODO: separate this into real bricks, like subviews
-            _id: id,
-            fixed: !this._flexigroup,
-            lock: {
-              x: 0 // add gutterWidth/5
-            },
-            mass: 0.1,
-            vertices: [
-              {x: 0, y: height},
-              {x: width, y: height},
-              {x: width, y: 0},
-              {x: 0, y: 0}
-            ],
-            restitution: 0.3
-          };
+          id = this.getBodyId();
       
-      this.addBricks([myBrick]);
+      this._viewBrick = { // TODO: separate this into real bricks, like subviews
+        _id: id,
+        fixed: !this._flexigroup,
+        lock: {
+          x: 0 // add gutterWidth/5
+        },
+        mass: 0.1,
+        vertices: [
+          {x: 0, y: height},
+          {x: width, y: height},
+          {x: width, y: 0},
+          {x: 0, y: 0}
+        ],
+        restitution: 0.3
+      };
+      
+      this.addBricks([this._viewBrick]);
     },
     
     addBricks: function(bricks, atTheHead) {

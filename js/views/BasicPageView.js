@@ -277,6 +277,7 @@ define('views/BasicPageView', [
 //    }, 100),
 
     _onViewportDimensionsChanged: function(e) {
+      BasicView.prototype._onViewportDimensionsChanged.apply(this, arguments);
       this._fixTooltips();
     },
 

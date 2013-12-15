@@ -1,7 +1,9 @@
-define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', 'hammer', 'domUtils'], function(G, _, FrameWatch, Q, Hammer, DOM) {
+define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', 'hammer', 'domUtils', 'utils'], function(G, _, FrameWatch, Q, Hammer, DOM, U) {
   var worker,
+      physicsModuleInfo = G.files['lib/physicsjs-custom.js'],
+      masonryModuleInfo = G.files['lib/jquery.masonry.js'],
       commonMethods = ['addBody', 'removeBody', 'distanceConstraint', 'drag', 'dragend', 'resize', 'benchBodies', 'unbenchBodies'],
-      masonryMethods = ['addBricks', 'setLimit', 'sleep', 'wake', 'resize'],
+      masonryMethods = ['addBricks', 'setLimit', 'sleep', 'wake', 'resize', 'home', 'end'],
       UNRENDERED = {},
       tickerId,
       hammer,
@@ -10,6 +12,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       HERE,
       THERE,
       DragProxy,
+      KeyHandler,
+      ID_TO_MASON = {},
       ID_TO_EL = {},
       ID_TO_LAST_TRANSFORM = {},
       ZERO_TRANSLATION = [0, 0, 0],
@@ -39,23 +43,149 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       },
       callbacks = {},
       subscriptions = {},
+      INPUT_TAGS = ['input', 'textarea'],
       TRANSFORM_PROP = DOM.prefix('transform'),
       TRANSITION_PROP = DOM.prefix('transition');
 
-    document.addEventListener('click', function(e) {
-      try {
-        if (!G.canClick()) {
-          G.log('events', 'PREVENTING CLICK', _.now());
-          e.preventDefault();
-          e.stopPropagation();
-          return false;
+  function log() {
+    var args = [].slice.call(arguments);
+    args.unshift("Physics Bridge");
+    G.log.apply(G, args);
+  };
+      
+  document.addEventListener('click', function(e) {
+    try {
+      if (!G.canClick()) {
+        log('events', 'PREVENTING CLICK', _.now());
+        e.preventDefault();
+        e.stopPropagation();
+        return false;
+      }
+      
+      log('events', 'ALLOWING CLICK', _.now());
+    } finally {
+      G.enableClick();
+    }
+  }, true);
+
+  function isUserInputTag(tag) {
+    return INPUT_TAGS.indexOf(tag) != -1;
+  };
+  
+  function getMasons(/* ids */) {
+    var i = arguments.length,
+        masons = [];
+        
+    while (i--) {
+      mason = ID_TO_MASON[arguments[i]];
+      if (mason)
+        masons.push(mason);
+    }
+    
+    return masons;
+  };
+  
+  KeyHandler = {
+    _keyHeld: null,
+    _dragged: zeroVector.slice(),
+    _coast: false,
+    handleEvent: function(e) {
+      if (isUserInputTag(e.target.tagName))
+        return;
+
+      log(e.type.toUpperCase(), U.getKeyEventCode(e));
+
+      switch (e.type) {
+      case 'keydown':
+        return this._onKeyDown.call(this, e);
+      case 'keyup':
+        return this._onKeyUp.call(this, e);
+      default: 
+        debugger;
+      }
+    },
+    
+    _onKeyDown: function(e) {
+      if (!DRAGGABLES.length)
+        return;
+      
+      var keyCode = U.getKeyEventCode(e),
+          vector = this._dragged,
+          viewport = G.viewport,
+          axisIdx = 1, // generalize to X, Y
+          dimProp = axisIdx == 0 ? 'width' : 'height';
+          
+      if (this._keyHeld && this._keyHeld != keyCode)
+        return;
+      
+      switch (keyCode) {
+      case 33: // page up
+        if (this._keyHeld)
+          return;
+        
+        vector[axisIdx] = viewport[dimProp];
+        break;
+      case 34: // page down
+        if (this._keyHeld)
+          return;
+        
+        vector[axisIdx] = -viewport[dimProp];
+        break;
+      case 35: // end
+        if (this._keyHeld)
+          return;
+        
+        var masons = getMasons.apply(null, DRAGGABLES),
+            i = masons.length;
+        
+        while (i--) {
+          masons[i].end();
         }
         
-        G.log('events', 'ALLOWING CLICK', _.now());
-      } finally {
-        G.enableClick();
+        return; 
+      case 36: // home
+        if (this._keyHeld)
+          return;
+        
+        var masons = getMasons.apply(null, DRAGGABLES),
+            i = masons.length;
+        
+        while (i--) {
+          masons[i].home();
+        }
+        
+        return; 
+      case 38: // up arrow
+        this._coast = true;
+        vector[axisIdx] = 10;
+        break;
+      case 40: // down arrow
+        this._coast = true;
+        vector[axisIdx] = -10;
+        break;
+      default:
+        return;
+      }        
+      
+      this._keyHeld = keyCode;
+      THERE.drag(this._dragged, DRAGGABLES);
+    },
+    
+    _onKeyUp: function(e) {
+      if (DRAGGABLES.length && this._keyHeld && U.getKeyEventCode(e) == this._keyHeld) {
+        THERE.dragend(this._dragged, DRAGGABLES, !this._coast);
+        this._coast = false;
+        this._keyHeld = null;
+        var i = this._dragged.length;
+        while (i--) {
+          this._dragged[i] = 0;
+        }
       }
-    }, true);
+    }
+  };
+  
+  document.addEventListener('keydown', KeyHandler);
+  document.addEventListener('keyup', KeyHandler)
 
   // VECTOR functions
   function isEqual(v1, v2) {
@@ -422,6 +552,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     there: {
       init: function() {
         window.addEventListener('viewportdimensions', this.updateBounds.bind(this));
+        this.postMessage({
+          physicsJSUrl: physicsModuleInfo.fullName || physicsModuleInfo.name,
+          masonryUrl: masonryModuleInfo.fullName || masonryModuleInfo.name
+        });
+        
         this.updateBounds();
       },
       
@@ -481,6 +616,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     if (!(this instanceof Mason))
       return new Mason(slidingWindowOptions, callback);
     
+    ID_TO_MASON[slidingWindowOptions.container] = this;
     this.id = _.uniqueId('mason');
     THERE.rpc(null, 'masonry.init', [this.id, slidingWindowOptions, addSubscription(callback)]);
   };
