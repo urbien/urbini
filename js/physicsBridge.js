@@ -2,8 +2,12 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   var worker,
       physicsModuleInfo = G.files['lib/physicsjs-custom.js'],
       masonryModuleInfo = G.files['lib/jquery.masonry.js'],
-      commonMethods = ['addBody', 'removeBody', 'distanceConstraint', 'drag', 'dragend', 'resize', 'benchBodies', 'unbenchBodies'],
-      masonryMethods = ['addBricks', 'setLimit', 'sleep', 'wake', 'resize', 'home', 'end'],
+      commonMethods = ['step', 'addBody', 'removeBody', 'distanceConstraint', 'drag', 'dragend', 'resize', 'benchBodies', 'unbenchBodies'],
+      layoutMethods = ['addBricks', 'setLimit', 'sleep', 'wake', 'continue', 'resize', 'home', 'end'],
+      TIMESTEP = 1000/60,
+      LOCK_STEP = false, // if true, step the world through postMessage, if false let the world run its own clock
+      PHYSICS_TIME = _.now(), // from here on in,
+      NOW = PHYSICS_TIME,     // these diverge
       UNRENDERED = {},
       tickerId,
       hammer,
@@ -13,7 +17,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       THERE,
       DragProxy,
       KeyHandler,
-      ID_TO_MASON = {},
+      ID_TO_LAYOUT_MANAGER = {},
       ID_TO_EL = {},
       ID_TO_LAST_TRANSFORM = {},
       ZERO_TRANSLATION = [0, 0, 0],
@@ -48,9 +52,10 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       TRANSITION_PROP = DOM.prefix('transition');
 
   function log() {
-    var args = [].slice.call(arguments);
-    args.unshift("Physics Bridge");
-    G.log.apply(G, args);
+//    var args = [].slice.call(arguments);
+//    args.unshift("Physics Bridge");
+//    G.log.apply(G, args);
+    console.log.apply(console, arguments);
   };
       
   document.addEventListener('click', function(e) {
@@ -72,17 +77,18 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     return INPUT_TAGS.indexOf(tag) != -1;
   };
   
-  function getMasons(/* ids */) {
+  function getLayoutManagers(/* ids */) {
     var i = arguments.length,
-        masons = [];
+        manager,
+        managers = [];
         
     while (i--) {
-      mason = ID_TO_MASON[arguments[i]];
-      if (mason)
-        masons.push(mason);
+      manager = ID_TO_LAYOUT_MANAGER[arguments[i]];
+      if (manager)
+        managers.push(manager);
     }
     
-    return masons;
+    return managers;
   };
   
   KeyHandler = {
@@ -93,7 +99,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       if (isUserInputTag(e.target.tagName))
         return;
 
-      log(e.type.toUpperCase(), U.getKeyEventCode(e));
+//      log(e.type.toUpperCase(), U.getKeyEventCode(e));
 
       switch (e.type) {
       case 'keydown':
@@ -135,11 +141,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         if (this._keyHeld)
           return;
         
-        var masons = getMasons.apply(null, DRAGGABLES),
-            i = masons.length;
+        var managers = getLayoutManagers.apply(null, DRAGGABLES),
+            i = managers.length;
         
         while (i--) {
-          masons[i].end();
+          managers[i].end();
         }
         
         return; 
@@ -147,21 +153,21 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         if (this._keyHeld)
           return;
         
-        var masons = getMasons.apply(null, DRAGGABLES),
-            i = masons.length;
+        var managers = getLayoutManagers.apply(null, DRAGGABLES),
+            i = managers.length;
         
         while (i--) {
-          masons[i].home();
+          managers[i].home();
         }
         
         return; 
       case 38: // up arrow
         this._coast = true;
-        vector[axisIdx] = 20;
+        vector[axisIdx] = 40;
         break;
       case 40: // down arrow
         this._coast = true;
-        vector[axisIdx] = -20;
+        vector[axisIdx] = -40;
         break;
       default:
         return;
@@ -253,12 +259,6 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   };
   
   function render(transforms) {
-    Q.write(_render.bind(null, transforms));
-  }
-  
-  function _render(transforms) {
-    DOM.processRenderQueue();
-    
     var el,
         transform,
         translate,
@@ -317,9 +317,10 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       }
     }
   };
-  
+
   /**
    * currently only sends drag data once a frame (maybe it should send every time it gets a drag event)
+   * TODO: make it work for nested draggables
    */
   DragProxy = {
     init: function(){
@@ -332,8 +333,23 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       this.dragging = false;      
       this._ondrag = this._ondrag.bind(this);
       this._ondragend = this._ondragend.bind(this);
-      hammer.on('drag', this._ondrag);
-      hammer.on('dragend', this._ondragend);
+    },
+    
+    _onmouseout: function(e) {
+      if (this.dragging) {
+        // check if the user swiped offscreen (in which case we can't detect 'mouseup' so we will simulate 'mouseup' NOW)
+        e = e ? e : window.event;
+        var from = e.fromElement || e.relatedTarget || e.toElement;
+        
+  //      console.debug("FROM:", from);
+        if (!from || from.nodeName == "HTML") {
+          log("MOUSEOUT, attempting to trigger drag end");
+          hammer.element.dispatchEvent(new MouseEvent('mouseup', {
+            cancelable: true,
+            bubbles: true
+          }));
+        }
+      }
     },
 
     _ondrag: function(e) {
@@ -367,6 +383,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       e.gesture.preventDefault();
       if (this.dragging) {
         this.dragging = false;
+//        log("DRAG RELEASE, speed: (" + this.dragged[0] + ", " + this.dragged[1] + ")");
         THERE.dragend(this.dragged, DRAGGABLES);
       }
     },
@@ -384,6 +401,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     
     tick: function( data ) {
       if (this.dragging && !isEqual(this.dragged, zeroVector)) {
+//        log("DRAG, distance: (" + this.dragged[0] + ", " + this.dragged[1] + ")");
         THERE.drag(this.dragged, DRAGGABLES);
         zero(this.dragged);
       }
@@ -483,14 +501,25 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         hammer = new Hammer(document, hammerOptions);
         DragProxy.init();
         DragProxy.connect(hammer);
+        document.addEventListener('mouseout', DragProxy._onmouseout.bind(DragProxy));
         
-        tickerId = FrameWatch.listenToTick(function() {
-          if (_.size(UNRENDERED)) {
+        tickerId = FrameWatch.listenToTick(function(lastFrameDuration) {
+          if (_.size(UNRENDERED)) {            
             render(UNRENDERED);
             UNRENDERED = {};
           }
           
+          DOM.processRenderQueue();
           DragProxy.tick();
+          if (LOCK_STEP) {
+            var newNow = _.now(),
+            delay = TIMESTEP > newNow - NOW;    
+            if (!delay) {
+              newNow = NOW;
+              PHYSICS_TIME += TIMESTEP;
+              THERE.step(PHYSICS_TIME);
+            }
+          }
         });
         
         var fileInfo = G.files['physicsWorker.js'];
@@ -558,7 +587,9 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         window.addEventListener('viewportdimensions', this.updateBounds.bind(this));
         this.postMessage({
           physicsJSUrl: physicsModuleInfo.fullName || physicsModuleInfo.name,
-          masonryUrl: masonryModuleInfo.fullName || masonryModuleInfo.name
+          masonryUrl: masonryModuleInfo.fullName || masonryModuleInfo.name,
+          debug: G.DEBUG,
+          stepSelf: !LOCK_STEP
         });
         
         this.updateBounds();
@@ -608,21 +639,21 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         });
       },
       
-      masonry: {
-        newMason: function() {
-          return Mason.apply(null, arguments);
+      layout: {
+        newLayout: function() {
+          return LayoutManager.apply(null, arguments);
         }
       }
     }
   };
   
-  function Mason(slidingWindowOptions, callback) {
-    if (!(this instanceof Mason))
-      return new Mason(slidingWindowOptions, callback);
+  function LayoutManager(options, callback) {
+    if (!(this instanceof LayoutManager))
+      return new LayoutManager(options, callback);
     
-    ID_TO_MASON[slidingWindowOptions.container] = this;
-    this.id = _.uniqueId('mason');
-    THERE.rpc(null, 'masonry.init', [this.id, slidingWindowOptions, addSubscription(callback)]);
+    ID_TO_LAYOUT_MANAGER[options.container] = this;
+    this.id = _.uniqueId('layoutManager');
+    THERE.rpc(null, 'layout.init', [this.id, options, addSubscription(callback)]);
   };
   
   HERE = bridge.here;
@@ -634,9 +665,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     };
   });
   
-  masonryMethods.forEach(function(method) {
-    Mason.prototype[method] = function() {
-      console.log("MASONRY." + method);
+  layoutMethods.forEach(function(method) {
+    LayoutManager.prototype[method] = function() {
       return THERE.rpc(this.id, method, _.toArray(arguments));
     };
   });

@@ -348,7 +348,6 @@ define('views/ViewPage', [
           if (!self.el.parentNode) {
             document.body.appendChild(self.el);
             self.addToWorld(null, true); // auto-add view page brick
-            self.mason.setLimit(self._numBricks);
           }
         
           self.el.dataset.theme = G.theme.swatch;

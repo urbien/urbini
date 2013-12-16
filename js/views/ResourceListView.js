@@ -40,8 +40,6 @@ define('views/ResourceListView', [
     // CONFIG
     _draggable: true,
     _invisibleLayerThickness: 0, // in pages, 1 == 1 page, 2 == 2 pages, etc. (3 == 3 pages fool!)
-    _maxViewportsInSlidingWindow: 12,
-    _minViewportsInSlidingWindow: 6,
     displayMode: 'vanillaList', // other options: 'masonry'
     // END CONFIG
     
@@ -57,8 +55,8 @@ define('views/ResourceListView', [
     _hiddenBricksAtHead: 0,
     _hiddenBricksAtTail: 0,
     _scrollable: false, // is set to true when the content is bigger than the container
-    _lastRangeEventSeq: -Infinity,
-    _lastPrefetchEventSeq: -Infinity,
+//    _lastRangeEventSeq: -Infinity,
+//    _lastPrefetchEventSeq: -Infinity,
     className: 'scrollable',
 
     initialize: function(options) {
@@ -70,7 +68,7 @@ define('views/ResourceListView', [
 //        gutterWidth: GUTTER_WIDTH
 //      }, defaultMasonryOptions);
       
-      this.options = _.clone(defaultSlidingWindowOptions); // for now
+      this.options = _.extend({}, defaultSlidingWindowOptions); // for now
       if (this.displayMode == 'masonry') {
         this._itemClass = ResourceMasonryItemView;
       }
@@ -161,17 +159,10 @@ define('views/ResourceListView', [
     _onPhysicsMessage: function(event) {
       switch (event.type) {
         case 'range':
-          if (this._lastRangeEventSeq < event.eventSeq) {
-//            console.log("EVENT SEQ", event.eventSeq);
-            this._lastRangeEventSeq = event.eventSeq;
-            return this._rangeChanged(event);
-          }
-          else {
-            debugger;
-            return;
-          }
-        case 'prefetch':
-          return this._prefetch(event);
+//          this._lastRangeEventSeq = event.eventSeq;
+          return this._rangeChanged(event);
+//        case 'prefetch':
+//          return this._prefetch(event);
         default:
           throw "not implemented yet";
       }
@@ -179,13 +170,16 @@ define('views/ResourceListView', [
     
     _rangeChanged: function(data) {
       var currentRange = this._displayedRange,
+//          expectedCurrentRange = data.currentRange,
           range = data.range,
           info = data.info;
       
+//      if (!_.isEqual(currentRange, expectedCurrentRange))
+//        debugger; // for testing, should never happen
+      
       if (range.from == currentRange.from && range.to == currentRange.to) {
         // should never happen
-        debugger;
-        this.mason.wake();
+        this.mason['continue']();
         return;
       }
       
@@ -203,18 +197,18 @@ define('views/ResourceListView', [
         this._removeBricks(range.to, currentRange.to);
         this._addBricks(range.from, currentRange.from);
       }
-      /////////////////////////////////////////////////////////////////////////////////////////////////       |-----------------------|  // impossible as we only add bricks to one side at a time
-//      else if (range.from < currentRange.from && range.to > currentRange.to) {
-//        debugger;
-//        this._addBricks(range.from, currentRange.from);
-//        this._addBricks(currentRange.to, range.to);
-//      }
+      /////////////////////////////////////////////////////////////////////////////////////////////////       |-----------------------|  //  we should really only add bricks to one side at a time
+      else if (range.from < currentRange.from && range.to > currentRange.to) {
+        if (currentRange.from - range.from > range.to - currentRange.to)
+          this._addBricks(range.from, currentRange.from);
+        else
+          this._addBricks(currentRange.to, range.to);
+      }
       /////////////////////////////////////////////////////////////////////////////////////////////////                |----|            // impossible (?) as we only get called if bricks need to be added
       else if (range.from > currentRange.from && range.to < currentRange.to) {
-//        debugger;
         this._removeBricks(currentRange.from, range.from);
         this._removeBricks(range.to, currentRange.to);
-        this.mason.wake(); // otherwise it'll wait forever
+        this.mason['continue'](); // otherwise it'll wait forever
       }
       /////////////////////////////////////////////////////////////////////////////////////////////////                  |---------------|
       else if (range.from >= currentRange.from && range.to >= currentRange.to) {
@@ -222,15 +216,13 @@ define('views/ResourceListView', [
         this._addBricks(currentRange.to, range.to);
       }
       else
-        debugger /////////////////////////////////////////////////////////////////////////////////////   THIS SHOULD NEVER HAPPEN ///////////////////////////////////////////////////////////////
+        debugger; /////////////////////////////////////////////////////////////////////////////////////   THIS SHOULD NEVER HAPPEN ///////////////////////////////////////////////////////////////
     },
 
-    _prefetch: function(data) {
-      this.fetchResources(data.num);
-    },
-
-//    ondestroyed: function() {
-//      this.off(this.getBodyId());
+//    _prefetch: function(data) {
+//      debugger;
+//      this.fetchResources(data.num);
+//      this.mason['continue']();
 //    },
     
     click: function(e) {
@@ -617,7 +609,7 @@ define('views/ResourceListView', [
     */
     _addBricks: function(from, to, force) {
       if (from >= to) {
-        this.mason.wake();
+        this.mason['continue']();
         return;
       }
       
@@ -632,19 +624,19 @@ define('views/ResourceListView', [
           to = col.length;
         }
         else {
-          if (this._outOfData) {
-            this.mason.setLimit(this.collection.length);
-            return;
-          }
+//          if (this._outOfData) {
+//            this.mason.setLimit(this.collection.length);
+//            return;
+//          }
           
           var numToFetch = to - col.length;
-          return this.fetchResources(numToFetch).then(this._addBricks.bind(this, from, to, force), this._addBricks.bind(this, from, to, force));
+          return this.fetchResources(numToFetch).then(this._addBricks.bind(this, from, to, force), this._addBricks.bind(this, from, to, true));
         }
       }
       
       if (from >= to) {
         debugger;
-        this.mason.wake()
+        this.mason['continue']()
         return;
       }
             
@@ -700,7 +692,7 @@ define('views/ResourceListView', [
       
       if (!added.length) {
         debugger
-        this.mason.wake()
+        this.mason['continue']()
         return;
       }
       
@@ -856,7 +848,7 @@ define('views/ResourceListView', [
       
       nextPagePromise = col.getNextPage({
         params: {
-          $limit: numResourcesToFetch || this.options.bricksPerPage
+          $limit: Math.max(numResourcesToFetch || this.options.bricksPerPage, 5)
         },
         success: function() {
           if (col.length > before)
@@ -864,11 +856,15 @@ define('views/ResourceListView', [
           else {
             if (!col.isFetching(nextPageUrl)) // we've failed to fetch anything from the db, wait for the 2nd call to success/error after pinging the server
               defer.reject();
+            else
+              self.log("fetching more list items from the server...");
           }
         },
         error: function() {
           if (!col.isFetching(nextPageUrl))
             defer.reject();
+          else
+            debugger;
         }
       });
       
@@ -877,14 +873,15 @@ define('views/ResourceListView', [
       
       this._isPaging = true;
       
-      // if we fail to page, then keep isPaging true to prevent more paging
       this._pagingPromise = defer.promise().always(function() {
         self._isPaging = false;
       }).fail(function() {
         self._outOfData = true;
+        self.mason.setLimit(self.collection.length);
       }); 
       
       this._pagingPromise._range = 'from: ' + before + ', to: ' + (before + numResourcesToFetch);
+      this.log("Fetching next page: " + this._pagingPromise._range);
       return this._pagingPromise;
     },
    

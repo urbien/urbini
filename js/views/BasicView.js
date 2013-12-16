@@ -671,7 +671,7 @@ define('views/BasicView', [
           refreshArgs = this._refreshArgs;
       
       if (this.mason) {
-        this.mason.wake();
+        this.mason['continue']();
         if (this._draggable)
           Physics.addDraggables(this.getBodyContainerId());
       }
@@ -1090,7 +1090,7 @@ define('views/BasicView', [
       });
 
       this.addContainerBodyToWorld(true);
-      this.mason = Physics.there.masonry.newMason(options, this._onPhysicsMessage);
+      this.mason = Physics.there.layout.newLayout(options, this._onPhysicsMessage);
 
       $.when.apply($, this.pageView._getLoadingPromises()).done(function() { // maybe this is a bit wasteful?
         if (self._updateSize())
@@ -1155,6 +1155,9 @@ define('views/BasicView', [
       };
       
       this.addBricksToWorld([this._viewBrick]);
+      
+      // TODO: get rid of this when we make everything into bricks 
+      this.mason.setLimit(this._numBricks);
     },
     
     addBricksToWorld: function(bricks, atTheHead) {
