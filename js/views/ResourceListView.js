@@ -30,8 +30,8 @@ define('views/ResourceListView', [
     bricksPerPage: 10,
     averageBrickScrollDim: 80,
     averageBrickNonScrollDim: 80,  
-    minPagesInSlidingWindow: 3,
-    maxPagesInSlidingWindow: 6,
+//    minPagesInSlidingWindow: 6,
+//    maxPagesInSlidingWindow: 12,
     gutterWidth: 10
     // </ MASONRY INITIAL CONFIG>      
   };
@@ -204,12 +204,14 @@ define('views/ResourceListView', [
         this._addBricks(range.from, currentRange.from);
       }
       /////////////////////////////////////////////////////////////////////////////////////////////////       |-----------------------|  // impossible as we only add bricks to one side at a time
-//    else if (range.from <= currentRange.from && range.to >= currentRange.to) {
-//      this._addBricks(range.from, currentRange.from);
-//      this._addBricks(currentRange.to, range.to);
-//    }
+//      else if (range.from < currentRange.from && range.to > currentRange.to) {
+//        debugger;
+//        this._addBricks(range.from, currentRange.from);
+//        this._addBricks(currentRange.to, range.to);
+//      }
       /////////////////////////////////////////////////////////////////////////////////////////////////                |----|            // impossible (?) as we only get called if bricks need to be added
-      else if (range.from >= currentRange.from && range.to <= currentRange.to) {
+      else if (range.from > currentRange.from && range.to < currentRange.to) {
+//        debugger;
         this._removeBricks(currentRange.from, range.from);
         this._removeBricks(range.to, currentRange.to);
         this.mason.wake(); // otherwise it'll wait forever
@@ -1091,7 +1093,7 @@ define('views/ResourceListView', [
         this._displayedRange.to = Math.max(this._displayedRange.to, to);
       }
       
-      this.addBricks(bricks, atTheHead);
+      this.addBricksToWorld(bricks, atTheHead); // mason
     },
     
     hasMasonry: function() {

@@ -1120,8 +1120,10 @@ define('views/BasicView', [
 //            x: thisTransform[3][0],
 //            y: thisTransform[3][1],
 //            z: thisTransform[3][2],
-          x: this._offsetLeft,
-          y: this._offsetTop,
+//          x: this._offsetLeft,
+//          y: this._offsetTop,
+          x: 0,
+          y: 0,
           lock: {
             x: 0 // no movement along the x axis
           }
@@ -1152,10 +1154,10 @@ define('views/BasicView', [
         restitution: 0.3
       };
       
-      this.addBricks([this._viewBrick]);
+      this.addBricksToWorld([this._viewBrick]);
     },
     
-    addBricks: function(bricks, atTheHead) {
+    addBricksToWorld: function(bricks, atTheHead) {
       this._numBricks += bricks.length;
       this.mason.addBricks(bricks, atTheHead);
 //      this.mason.setLimit(this._numBricks);
