@@ -26,6 +26,8 @@ var ArrayProto = Array.prototype,
 		DEBUG = true,
 		DIR_UP,
 		DIR_DOWN,
+		HEAD_STR = "head (top / left)",
+		TAIL_STR = "tail (bottom / right)",
 		touchFollowers = [];
 
 function index(obj, i) {
@@ -297,7 +299,7 @@ function initWorld(_world, stepSelf) {
 //			body.state.vel.zero();
 //      body.state.acc.zero();
 		}
-	});
+	}, null, 100);
 
 	world.subscribe('dragend', function(data) {
 		var stop = data.stop,
@@ -305,6 +307,7 @@ function initWorld(_world, stepSelf) {
   			body,
   			i = bodies.length;
 			
+		log('dragend vector: ' + data.vector.toString());
 		while (i--) {
 			body = bodies[i];
       body.fixed = false;
@@ -312,7 +315,7 @@ function initWorld(_world, stepSelf) {
 		  if (!stop)
 			  body.state.vel.clone( data.vector.mult( 1 / 10 ) );
 		}
-	});
+	}, null, 100);
 	
 	Physics.util.ticker.start();
 	DIR_UP = Physics.vector(0, -1);
@@ -321,17 +324,17 @@ function initWorld(_world, stepSelf) {
 
 function stopBody(body, atPos) {
   var state = body.state;
-  body.fixed = true;
+//  body.fixed = true;
   if (atPos)
     state.pos.clone(atPos);
   
-  state.old.pos.clone(state.pos);
+//  state.old.pos.clone(state.pos);
   state.acc.zero();
-  state.old.acc.zero();
+//  state.old.acc.zero();
 
   state.vel.zero();
-  state.old.vel.zero();
-  body.fixed = false;
+//  state.old.vel.zero();
+//  body.fixed = false;
 };
 
 function getBodies(/* ids */) {
@@ -532,9 +535,9 @@ function pick(obj) {
       log("SET TOP EDGE TO " + this.headEdge.state.pos.get(1));
       this.headEdgeConstraint = API.distanceConstraint(this.offsetBody, this.headEdge, this.edgeConstraintStiffness, 0);
       world.subscribe('drag', function(data) {
-        if (~data.bodies.indexOf(self.offsetBody) && self.offsetBody.state.pos.get(self.axisIdx) < self.headEdge.state.pos.get(self.axisIdx))
-          self.headEdgeConstraint['break']();
-      });
+        if (~data.bodies.indexOf(this.offsetBody) && this.offsetBody.state.pos.get(this.axisIdx) < this.headEdge.state.pos.get(this.axisIdx))
+          this.headEdgeConstraint['break']();
+      }, this, 10);
       
       this.headEdgeConstraint.armOnDistance(Infinity, DIR_UP); // no matter how far out of bounds we are, we should snap back
 //      this.headEdgeConstraint.breakOnDistance(50, DIR_DOWN);
@@ -725,9 +728,9 @@ function pick(obj) {
           this.tailEdgeConstraint.armOnDistance(Infinity, DIR_DOWN); // no matter how far out of bounds we are, we should snap back
 //          this.tailEdgeConstraint.breakOnDistance(50, DIR_UP);
           world.subscribe('drag', function(data) {
-            if (~data.bodies.indexOf(self.offsetBody) && self.offsetBody.state.pos.get(self.axisIdx) > self.tailEdge.state.pos.get(self.axisIdx))
-              self.tailEdgeConstraint['break']();
-          });
+            if (~data.bodies.indexOf(this.offsetBody) && this.offsetBody.state.pos.get(this.axisIdx) > this.tailEdge.state.pos.get(this.axisIdx))
+              this.tailEdgeConstraint['break']();
+          }, this, 10);
         }
         else
           this.tailEdge.state.pos.set(coords[0], coords[1]);
@@ -1039,7 +1042,8 @@ function pick(obj) {
           maxPrepend = this.range.from,
           maxAppend = Math.max(this.brickLimit - this.range.to, 0),
           canAdd,
-          defaultDelta = Math.max(this.bricksPerPage, 4), //Math.max(Math.ceil(this.bricksPerPage / 2), 4),
+          defaultAddDelta = Math.max(this.bricksPerPage, 4), //Math.max(Math.ceil(this.bricksPerPage / 2), 4),
+          defaultRemoveDelta = Math.max(this.bricksPerPage, 1), //Math.max(Math.ceil(this.bricksPerPage / 2), 4),
           headDiff,
           tailDiff;
   
@@ -1064,6 +1068,7 @@ function pick(obj) {
       if (this.range.from > 0 && this.numBricks && viewport.max <= slidingWindow.min) { 
         // sliding window is completely below viewport
         // remove all bricks and request new ones
+        log("DECISION: sliding window is completely below viewport, removing all bricks");
         this.removeBricks(this.numBricks);
         
         // TODO: uncomment this and implement resetting of mason to new viewport position
@@ -1073,37 +1078,47 @@ function pick(obj) {
 //        this.range.to -= diff; 
         
         Physics.util.extend(range, this.range); // reclone
-        range.from -= Math.min(maxPrepend, defaultDelta);
+        range.from -= Math.min(maxPrepend, defaultAddDelta);
         return this.requestNewRange(range);
       }
       ////////////////////////////////////////////////////////                                          |----|        (VIEWPORT)
       else if (this.range.to < this.brickLimit && this.numBricks && viewport.min >= slidingWindow.max) { 
         // sliding window is completely above viewport
         // remove all bricks and request new ones
+        log("DECISION: sliding window is completely above viewport, removing all bricks");
         this.removeBricks(this.numBricks, true);
         Physics.util.extend(range, this.range); // reclone
-        range.to += Math.min(maxAppend, defaultDelta);
+        range.to += Math.min(maxAppend, defaultAddDelta);
         return this.requestNewRange(range);
       }
       ////////////////////////////////////////////////////////
       else if (canAdd && this.slidingWindowDimension < this.minSlidingWindowDimension) { // should this be measured in pages or in pixels or viewports?
         // grow window
-        if (maxPrepend && (headDiff < tailDiff || !maxAppend))
-          range.from -= Math.min(maxPrepend, defaultDelta);
+        if (maxPrepend && (headDiff < tailDiff || !maxAppend)) {
+          log("DECISION: growing sliding window towards the " + HEAD_STR);
+          range.from -= Math.min(maxPrepend, defaultAddDelta);
+        }
 //        else if (tailDiff <= headDiff && maxAppend > 0)
-        else if (maxAppend)
-          range.to += Math.min(maxAppend, defaultDelta);
-        else
+        else if (maxAppend) {
+          log("DECISION: growing sliding window towards the " + TAIL_STR);
+          range.to += Math.min(maxAppend, defaultAddDelta);
+        }
+        else {
+          log("DECISION: UH OH, SLIDING WINDOW IS CONFUSED!");
           debugger;
+        }
         
         return this.requestNewRange(range);
       }
       else if (this.slidingWindowDimension > this.maxSlidingWindowDimension) { // should this be measured in pages or in pixels or viewports?
         // shrink window
-        var toRemove;
+        var toRemove, fromTheHead;
         while (this.numBricks && this.slidingWindowDimension > this.maxSlidingWindowDimension) {
-          toRemove = Math.min(defaultDelta, this.numBricks);
-          this.removeBricks(toRemove, headDiff > tailDiff);
+          
+          toRemove = Math.min(defaultRemoveDelta, this.numBricks);
+          fromTheHead = headDiff > tailDiff;
+          log("DECISION: shrinking sliding window by " + toRemove + " at the " + (fromTheHead ? HEAD_STR : TAIL_STR));
+          this.removeBricks(toRemove, fromTheHead);
           headDiff = this.getHeadDiff();
           tailDiff = this.getTailDiff();
         }
@@ -1113,14 +1128,20 @@ function pick(obj) {
       // grow the window in the direction where it has the least padding, if necessary
       else if (maxAppend && tailDiff < this.slidingWindowInsideBuffer) {
         if (tailDiff < this.slidingWindowOutsideBuffer) {
-          range.to += Math.min(maxAppend, defaultDelta);
+          var toAdd = Math.min(maxAppend, defaultAddDelta);
+          range.to += toAdd;
+          log("DECISION: growing sliding window by " + toAdd + " at the " + TAIL_STR);
           return this.requestNewRange(range);
         }
+        else
+          log("DECISION: not doing anything to sliding window");
 //        else if (this.brickLimit - range.to < this.bricksPerPage * 2) /// doesn't make any sense because if brick limit is set, we already have all those resources in the main thread, no need to fetch them from anywhere
 //          this.prefetch();
       }
       else if (range.from > 0 && headDiff < this.slidingWindowOutsideBuffer) {
-        range.from -= Math.min(maxPrepend, defaultDelta, this.numBricks);
+        var toAdd = Math.min(maxPrepend, defaultAddDelta);
+        range.from -= toAdd;
+        log("DECISION: growing sliding window by " + toAdd + " at the " + HEAD_STR);
         return this.requestNewRange(range);
       }
         
