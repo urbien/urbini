@@ -59,6 +59,7 @@ define('views/ResourceListView', [
     _scrollable: false, // is set to true when the content is bigger than the container
     _lastRangeEventSeq: -Infinity,
     _lastPrefetchEventSeq: -Infinity,
+    className: 'scrollable',
 
     initialize: function(options) {
       _.bindAll(this, 'render', 'fetchResources', 'refresh', 'setMode', 'onResourceChanged', '_onPhysicsMessage');
@@ -914,13 +915,12 @@ define('views/ResourceListView', [
       }
       else if (this.isMultiValueChooser) {
         params.mv = true;
+        params.tagName = 'div';
         if (G.isJQM()) {
-          params.tagName = 'div';
           params.className = "ui-controlgroup-controls";
         }
         else {
           params.className = G.isTopcoat() ? "topcoat-list__item" : (G.isBootstrap() ? "list-group-item" : "");
-
         }
         params.mvProp = this.mvProp;
       }
