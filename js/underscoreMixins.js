@@ -71,6 +71,12 @@ define('underscoreMixins', ['_underscore'], function(_) {
   };
   
   _.extend(Array, {
+    copy: function (from, to) {
+      var i = from.length;
+      while (i--) {
+        to[i] = from[i];
+      }
+    },
     prepend: function(arr, more) {
       var orgLen = arr.length,
           addLen = more.length;

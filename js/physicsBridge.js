@@ -327,16 +327,17 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       this.touchPos = zeroVector.slice();
       this.touchPosOld = zeroVector.slice();
       this.tmp = zeroVector.slice();
-      this.dragged = zeroVector.slice();
+      this.dragVector = zeroVector.slice();
+      this.lastDragVector = zeroVector.slice();
       this.offset = zeroVector.slice();
       
-      this.dragging = false;      
+      this.drag = false;      
       this._ondrag = this._ondrag.bind(this);
       this._ondragend = this._ondragend.bind(this);
     },
     
     _onmouseout: function(e) {
-      if (this.dragging) {
+      if (this.drag) {
         // check if the user swiped offscreen (in which case we can't detect 'mouseup' so we will simulate 'mouseup' NOW)
         e = e ? e : window.event;
         var from = e.fromElement || e.relatedTarget || e.toElement;
@@ -359,13 +360,13 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           touch = e.gesture.touches[0];
         
       gesture.preventDefault();
-      if (this.dragging) {
+      if (this.drag) {
         _.extend(this.touchPosOld, this.touchPos);
         this.touchPos[0] = touch.pageX;
         this.touchPos[1] = touch.pageY;
       }
       else {
-        this.dragging = true;
+        this.drag = true;
         this.touchPos[0] = touch.pageX;
         this.touchPos[1] = touch.pageY;
         _.extend(this.tmp, this.touchPos);
@@ -376,18 +377,23 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       
       _.extend(this.tmp, this.touchPos);
       sub(this.tmp, this.touchPosOld);
-      add(this.dragged, mult(this.tmp, 0.5)); // do we need this?
+      add(this.dragVector, this.tmp);
+//      add(this.dragVector, mult(this.tmp, 0.5)); // do we need this? And if so, why??
+      
+      THERE.drag(this.dragVector, DRAGGABLES);
+      Array.copy(this.dragVector, this.lastDragVector);
+      zero(this.dragVector);
     },
 
     _ondragend: function(e) {
       e.gesture.preventDefault();
-      if (this.dragging) {
-        this.dragging = false;
-//        log("DRAG RELEASE, speed: (" + this.dragged[0] + ", " + this.dragged[1] + ")");
-        THERE.dragend(this.dragged, DRAGGABLES);
-      }
+      THERE.dragend(this.lastDragVector, DRAGGABLES);        
     },
 
+//    _onswipe: function(e) {
+//      this.log('swipe');
+//    },
+    
     connect: function( hammer ){        
       hammer.on('drag', this._ondrag);
       hammer.on('dragend', this._ondragend);
@@ -397,14 +403,6 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       // unsubscribe when disconnected
       hammer.off('drag', this._ondrag);
       hammer.off('dragend', this._ondragend);
-    },
-    
-    tick: function( data ) {
-      if (this.dragging && !isEqual(this.dragged, zeroVector)) {
-//        log("DRAG, distance: (" + this.dragged[0] + ", " + this.dragged[1] + ")");
-        THERE.drag(this.dragged, DRAGGABLES);
-        zero(this.dragged);
-      }
     }
   };
 
@@ -510,7 +508,6 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           }
           
           DOM.processRenderQueue();
-          DragProxy.tick();
           if (LOCK_STEP) {
             var newNow = _.now(),
             delay = TIMESTEP > newNow - NOW;    
