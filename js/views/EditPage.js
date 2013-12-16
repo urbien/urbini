@@ -17,6 +17,7 @@ define('views/EditPage', [
   var editParams = ['action', 'viewId'];
   return BasicPageView.extend({
     autoFinish: false,
+    className: 'scrollable',
     initialize: function(options) {
       _.bindAll(this, 'render', 'edit', 'home', 'set', 'resetForm');
       BasicPageView.prototype.initialize.apply(this, arguments);
@@ -113,6 +114,7 @@ define('views/EditPage', [
       var self = this;
       this.getFetchPromise().done(function() {
         self.renderHelper(options);
+        self.addToWorld(null, true);
         self.finish();
       });
     },

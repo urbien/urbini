@@ -55,6 +55,7 @@ define('views/ChatPage', [
 
   return BasicPageView.extend({
     autoFinish: false,
+    className: 'scrollable',
     initialize: function(options) {
       _.bindAll(this, 'render', 'toggleChat', 'videoFadeIn', 'videoFadeOut', 'chatFadeIn', 'chatFadeOut', 'resize', 'restyleGoodies', 'pagehide', 'enableChat', 'disableChat',
                       'onMediaAdded', 'onMediaRemoved', 'onDataChannelOpened', 'onDataChannelClosed', 'onDataChannelMessage', 'onDataChannelError', 'shareLocation', 
