@@ -1036,6 +1036,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     
     /**
      * @param renderData - e.g. {
+     *    innerHTML: <blah>...</blah>
      *    style: {
      *      add: {
      *        width: '100px'
@@ -1067,6 +1068,8 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
         item = renderQueue[i];
         this.render(item[0] /* el */, item[1] /* renderData */);  // see queueRender method
       }
+      
+      renderQueue.length = 0;
     },
     
     blankRenderData: function() {
@@ -1081,11 +1084,15 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
      * changes an element's styles, attributes, classes (see queueRender method signature for parameter definitions)
      */
     render: function(el, renderData) {
-      var style = renderData.style, 
+      var html = renderData.innerHTML,
+          style = renderData.style, 
           attrs = renderData.attributes, 
           classes = renderData['class'], 
           add, remove, replace,
           i;
+      
+      if (html)
+        el.innerHTML = html;
       
       if (style) {
         if ((add = style.add))
