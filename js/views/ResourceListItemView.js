@@ -9,7 +9,7 @@ define('views/ResourceListItemView', [
   'vocManager'
 ], function(G, _, Events, Errors, U, BasicView, Voc) {
   var RLIV = BasicView.extend({
-    tagName: "li",
+    tagName: "div",
     className: 'masonry-brick ' + (G.isTopcoat() ? "topcoat-list__item" : (G.isBootstrap() ? "list-group-item" : "")),
     style: {
       'min-width': '100%',
@@ -738,6 +738,9 @@ define('views/ResourceListItemView', [
       
       if (cloneOf == 'Intersection.a') {
         prop = clonedX.a;
+        if (prop instanceof Array) 
+          prop = prop[0];
+        
         ab = atts[prop];
         var imageP = clonedX.aThumb;
         var hasAImageProps;
