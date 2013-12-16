@@ -236,9 +236,9 @@ function renderBody(body) {
 		
 		if (isTranslated) {
 		  aabb = body.geometry._aabb;
-  		x = (pos.get(0) - (aabb._hw || 0)).toFixed(10);
-      y = (pos.get(1) - (aabb._hh || 0)).toFixed(10);
-      z = (pos.get(2) - (aabb._hd || 0)).toFixed(10);
+  		x = pos.get(0) - (aabb._hw || 0);
+      y = pos.get(1) - (aabb._hh || 0);
+      z = pos.get(2) - (aabb._hd || 0);
       transform.translate = [x, y, z];
 		}
 		

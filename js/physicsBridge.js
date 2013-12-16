@@ -277,7 +277,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         transform = transforms[id];
         transformStr = 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, ';
         if ((translate = transform.translate)) {
-          transformStr += translate.join(', ');
+          transformStr += translate[0].toFixed(10) + ', ' + translate[1].toFixed(10) + ', ' + translate[2].toFixed(10);
           oldTranslate = oldTransform.translate || ZERO_TRANSLATION;
           dtx = translate[0] - oldTranslate[0];
           dty = translate[1] - oldTranslate[1];
@@ -294,7 +294,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         if ((rotate = transform.rotate)) {
           // TODO: all axes, no need for now
 //          transformStr += 'rotateX(' + rotate[0] + 'rad) ' + 'rotateY(' + rotate[1] + 'rad)' + 'rotateZ(' + rotate[2] + 'rad)';
-          transformStr += 'rotate(' + rotate[2] + 'rad)'; // for now, only around Z axis
+          transformStr += 'rotate(' + rotate[2].toFixed(10) + 'rad)'; // for now, only around Z axis
           oldRotate = oldTransform.rotate || ZERO_ROTATION;
 //          drx = rotate[0] - oldRotate[0];
 //          dry = rotate[1] - oldRotate[1];
