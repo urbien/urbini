@@ -520,6 +520,10 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
                 callback(e.data.data);
               
               break;
+            case 'log':
+            case 'debug':
+              console[topic].apply(console, e.data.args);
+              break;
           }
         };
         
