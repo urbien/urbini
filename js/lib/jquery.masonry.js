@@ -90,8 +90,8 @@
         min: Math.min.apply(Math, this.topColYs),
         max: Math.max.apply(Math, this.bottomColYs)
       } : {
-        min: 0,
-        max: 0
+        min: this.offset[this.axis],
+        max: this.offset[this.axis]
       }
     },
   
@@ -222,32 +222,6 @@
         return brick.aabb().halfHeight * 2;
     },
 
-    // _calcOuterDimensions: function( brick ) {
-      // var outerWidth, outerHeight;
-      // if (!brick.dataset.outerHeight) {        
-        // if (this.options.stretchCol)
-          // outerHeight = this.element.$data('height');
-        // else {
-          // var offsetHeight = brick.offsetHeight;
-          // outerHeight = offsetHeight + this._brickMarginY;
-        // }
-        
-        // brick.dataset.outerHeight = outerHeight; 
-      // }
-
-      // if (!brick.dataset.outerWidth) {        
-        // if (this.options.stretchRow)
-          // outerWidth = this.element.$data('width');
-        // else {
-          // var offsetWidth = brick.offsetWidth;
-          // outerWidth = offsetWidth + this._brickMarginX;
-        // }
-        
-        // brick.dataset.outerWidth = outerWidth; 
-      // }
-
-    // },
-  
     _placeBrick: function( brick, setCount, setY ) {
       // get the minimum Y value from the columns
       var view = brick.view,
@@ -295,7 +269,7 @@
           top = extremeY + this.offset.y + brick.geometry._aabb._hh + this._getOffsetDueToFlexigroup();
       }
 
-      console.log("adding", brick.geometry._aabb._hw * 2, "x", brick.geometry._aabb._hh * 2, "brick at (" + left + ", " + top + ")");
+//      console.log("adding", brick.geometry._aabb._hw * 2, "x", brick.geometry._aabb._hh * 2, "brick at (" + left + ", " + top + ")");
       lock = brick.state.pos.unlock();
       brick.state.pos.set(left, top);
       if (lock)
@@ -322,7 +296,16 @@
       }
     },
   
-  
+//    reset: function(bricks) {
+//      this._resetColYs();
+//      if (bricks) {
+//        this.bricks = bricks;
+//        this.reLayout();
+//      }
+//      else
+//        this.bricks.length = 0;
+//    },
+    
     reLayout: function() {
       if (this.bricks.length) {
         this._getColumns('masonry');
@@ -405,27 +388,13 @@
     },
   
     _getLeftmostColumn: function(brick) {
-    var coordIdx = this.options.horizontal ? 1 : 0;
-    var dimProp = this.options.horizontal ? '_hh' : '_hw';
+      var coordIdx = this.options.horizontal ? 1 : 0;
+      var dimProp = this.options.horizontal ? '_hh' : '_hw';
       var offset = brick.state.pos.get(coordIdx) - brick.geometry._aabb[dimProp];
       var edgeCol = Math.round(offset / this.columnWidth);
       return edgeCol;
     },
 
-  /*
-    _calcColSpan: function(brick) {
-      var span;
-      if (this.options.horizontal && this.options.oneElementPerCol || !this.options.horizontal && this.options.oneElementPerRow)
-        span = 1;
-      else {
-        var colSpan = Math.ceil( this[this.options.horizontal ? '_getOuterHeight' : '_getOuterWidth'](brick) / this.columnWidth );
-        span = Math.min( colSpan, this.cols );
-      }
-      
-      brick.view.dataset.masonryColSpan = span;
-    },
-  */
-  
     _getColSpan: function(brick) {
       var colSpan = Math.ceil( this._getOuterWidth(brick) / this.columnWidth );
       return Math.min( colSpan, this.cols );
@@ -466,6 +435,54 @@
     
       this.topColYs = topColYs;
       this.bottomColYs = bottomColYs;
+    },
+
+    removedFromHead: function(bricks) {
+      this.bricks = difference(this.bricks, bricks);
+      var dimensionMethod = this.options.horizontal ? '_getOuterWidth' : '_getOuterHeight',
+          gutterWidth = this.options.gutterWidth,
+          i = bricks.length,
+          brick,
+          dim,
+          colSpan,
+          col,
+          fromCol,
+          colYs = this.topColYs;
+      
+      while (i--) {
+        brick = bricks[i];
+        fromCol = this._getLeftmostColumn(brick);
+        colSpan = this._getColSpan(brick);
+        dim = this[dimensionMethod](brick) + gutterWidth;
+        while (colSpan--) {
+          col = fromCol + colSpan;
+          colYs[col] += dim;
+        }
+      }
+    },
+
+    removedFromTail: function(bricks) {
+      this.bricks = difference(this.bricks, bricks);
+      var dimensionMethod = this.options.horizontal ? '_getOuterWidth' : '_getOuterHeight',
+          gutterWidth = this.options.gutterWidth,
+          i = bricks.length,
+          brick,
+          dim,
+          colSpan,
+          col,
+          fromCol,
+          colYs = this.bottomColYs;
+      
+      for (var i = 0; i < bricks.length; i++) {
+        brick = bricks[i];
+        fromCol = this._getLeftmostColumn(brick);
+        colSpan = this._getColSpan(brick);
+        dim = this[dimensionMethod](brick) + gutterWidth;
+        while (colSpan--) {
+          col = fromCol + colSpan;
+          colYs[col] -= dim;
+        }
+      }
     },
 
     removed: function(bricks) {
