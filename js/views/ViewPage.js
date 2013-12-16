@@ -12,6 +12,7 @@ define('views/ViewPage', [
 ], function(G, U, Events, BasicPageView, Header, ResourceView, ControlPanel, Q, Physics) {
   return BasicPageView.extend({
     clicked: false,
+    className: 'scrollable',
     initialize: function(options) {
       _.bindAll(this, 'render', 'home', 'edit', 'pageChange');
       BasicPageView.prototype.initialize.apply(this, arguments);
