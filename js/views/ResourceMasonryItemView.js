@@ -217,6 +217,7 @@ define('views/ResourceMasonryItemView', [
           atts = this.resource.attributes,
           imgSrc = obj.resourceMediumImage,
           cloned = this.clonedProperties,
+          gridCols = this.el.querySelector('.gridCols');
           blankImg = G.getBlankImgSrc();
           
 //          comments = data.v_showCommentsFor && nabRLSocial.firstChild,
@@ -237,10 +238,10 @@ define('views/ResourceMasonryItemView', [
       else
         gItemImg.src = imgSrc || blankImg;
       
-      if (obj.width)
-        gItemImg.style.width = obj.width;
-      if (obj.height)
-        gItemImg.style.height = obj.height;
+      if (obj.imgWidth)
+        gItemImg.style.width = obj.imgWidth + 'px';
+      if (obj.imgHeight)
+        gItemImg.style.height = obj.imgHeight + 'px';
 
       if (!appBadge) {
         if (_.has(obj, 'friendMeCount')) {
@@ -261,6 +262,7 @@ define('views/ResourceMasonryItemView', [
       }
       
 //      nabRLGridCols.innerHTML = obj.gridCols;
+      /*
       var grid = U.getCols(this.resource, 'grid');
       if (grid) {
         var mediumImageProp = cloned['ImageResource'].mediumImage,
@@ -300,7 +302,13 @@ define('views/ResourceMasonryItemView', [
 //          gridCols += s;
         }
       }
-      
+      */
+      if (obj.gridCols) {
+        gridCols.innerHTML = obj.gridCols;  
+      }
+      else {
+        gridCols.style.visibility = 'hidden';
+      }
       if (obj.v_showCommentsFor) {
         var a = nabRLSocial.$('a'),
             aMake = a[0],
@@ -327,7 +335,9 @@ define('views/ResourceMasonryItemView', [
             if (aList && obj.v_showVotesFor.count) {
               var aList = nabRLSocial.querySelector('div');
               aList.href = U.makePageUrl('list', 'aspects/tags/Vote', {votable: obj.v_showVotesFor.uri, $title: davDisplayName + ' liked by'});
-              aList.childNodes[1].textContent = obj.v_showVotesFor.count;          
+              var countNode = aList.childNodes[1];
+              if (countNode)
+                countNode.textContent = obj.v_showVotesFor.count;          
             }
           }
         }
@@ -565,12 +575,13 @@ define('views/ResourceMasonryItemView', [
         tmpl_data.v_showRenabFor = uri;
       }
       this.el.style.setProperty('width', (self.IMG_MAX_WIDTH + 17) + 'px', 'important'); // 17 is all paddings around the image
-      var h = tmpl_data['imgHeight'] ? tmpl_data['imgHeight'] : 0;
-      var linesHeight = (linesCount * 15); // 15 is the font height of 12px with surrounding space;
-      this.el.style.setProperty('height', h + linesHeight + 50 + 'px'); // + 50 to include comments and likes
-      tmpl_data['commentLikeTop'] = linesHeight - 4; 
-      if (typeof img == 'undefined')  //  if there is no image the title is too close to the to border and comments do not touch bottom border
-        tmpl_data['commentLikeTop'] += 19;
+      this.el.style.setProperty('height', tmpl_data['height']);
+//      var h = tmpl_data['imgHeight'] ? tmpl_data['imgHeight'] : 0;
+//      var linesHeight = (linesCount * 15); // 15 is the font height of 12px with surrounding space;
+//      this.el.style.setProperty('height', h + linesHeight + 50 + 'px'); // + 50 to include comments and likes
+//      tmpl_data['commentLikeTop'] = linesHeight - 4; 
+//      if (typeof img == 'undefined')  //  if there is no image the title is too close to the to border and comments do not touch bottom border
+//        tmpl_data['commentLikeTop'] += 19;
 //      if (!this.postRender) {
 //        this.postRender = function() {        
 //    //      this.$el.attr('style', 'width:' + (this.IMG_MAX_WIDTH + 20) + 'px !important;');

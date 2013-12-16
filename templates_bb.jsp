@@ -137,7 +137,7 @@
      <div style="display:inline;position:absolute;right:4rem;font-size: 11px;top:1.5rem;border-radius:1rem;border: 1px solid #777;padding: 0.1rem 0.3rem;">{{= value }}</div>
 </p>     
      {{ if (typeof comment != 'undefined') { }}
-       <br/><p style="padding-top: 0.7rem;font-size:1.3rem;color:#808080; line-height:1.5rem;">{{= comment }}</p>
+       <br/><p style="padding: 0.7rem 0;font-size:1.3rem;color:#808080; line-height:1.5rem;">{{= comment }}</p>
      {{ } }}
    </li>
 </script>
@@ -640,9 +640,9 @@
     {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }} 
   {{ } }}
   <section>
-  <label class="pack-switch" style="right: 3rem;top:-1rem;left:auto;position:absolute;">
+  <label class="pack-switch" style="right: 2rem;top:0rem;left:auto;position:absolute;">
     <input type="checkbox" name="{{= shortName }}" id="{{= id }}" class="formElement boolean" />
-    <span></span>
+    <span style="top:2rem"></span>
   </label>
   </section>
 <!--  {{= typeof comment == 'undefined' ? '' : '<span class="comment">' + comment + '</span>' }} -->
