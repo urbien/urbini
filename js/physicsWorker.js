@@ -13,7 +13,7 @@ var ArrayProto = Array.prototype,
 		GROUPS = {},
 		MEMBER_CONSTRAINT_STIFFNESS = 0.3,
 		DEFAULT_CONSTRAINT_STIFFNESS = 0.01,
-    SNAP_TO_EDGE_CONSTRAINT_STIFFNESS = 0.1,
+    SNAP_TO_EDGE_CONSTRAINT_STIFFNESS = 0.01, /* 0.005, // mid bounce */ /* 0.001, // loosy goosy */
     PUBSUB_SNAP_CANCELED = 'snap-canceled',
 		proxiedObjects,
 		masons = {},
@@ -31,13 +31,26 @@ function leaf(obj, path, separator) {
 	return path.split(separator||'.').reduce(index, obj);
 }
 
-function log() {
-  DEBUG && console.log.apply(console, arguments);
-}
+self.console = self.console || {
+  log: function() {
+  //  DEBUG && console && console.log.apply(console, arguments);
+    DEBUG && postMessage({
+      topic: 'log',
+      args: slice.call(arguments)
+    });
+  },
 
-function debug() {
-  DEBUG && console.debug.apply(console, arguments);
-}
+  debug: function() {
+  //  DEBUG && console && console.debug.apply(console, arguments);
+    DEBUG && postMessage({
+      topic: 'debug',
+      args: slice.call(arguments)
+    });
+  }
+};
+
+self.log = console.log.bind(console);
+self.debug = console.debug.bind(console);
 
 this.onmessage = function(e){
 //  try {
