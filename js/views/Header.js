@@ -152,14 +152,16 @@ define('views/Header', [
     },
     events: {
       'change #fileUpload'         : 'fileUpload',
-      'change .physics > input'     : 'changePhysics',
-      'click #categories'         : 'showCategories',
+      'change .physics > input'    : 'changePhysics',
+      'click #categories'          : 'showCategories',
 //      'click #installApp'         : 'installApp',
-      'click #moreRanges'         : 'showMoreRanges'
+      'click #moreRanges'          : 'showMoreRanges'
     },
     
     changePhysics: function(e) {
-      Physics.there.set(e.target.name, parseInt(e.target.value) / 100);
+      var val = parseInt(e.target.value) / 100;
+      this.log('PHYSICS: ' + e.target.name + ' = ' + val);
+      Physics.there.set(e.target.name, val);
     },
     
     fileUpload: function(e) {

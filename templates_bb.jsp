@@ -437,11 +437,11 @@
       <h4 id="pageTitle" style="font-weight:normal;">{{= this.title }}</h4>
       <div class="physics" style="background-color:white">
         <label for="drag">Air drag</label>
-        0<input type="range" name="drag" value={{= drag * 100 }} min="0" max="100">100
+        1<input type="range" name="drag" value={{= drag * 100 }} min="1" max="99">100
         <label for="springFriction">Spring friction</label>
-        0<input type="range" name="springFriction" value={{= springFriction * 100 }} min="0" max="100">100
+        1<input type="range" name="springFriction" value={{= springFriction * 100 }} min="1" max="99">100
         <label for="springStiffness">Spring stiffness</label>
-        0<input type="range" name="springStiffness" value={{= springStiffness * 100 }} min="0" max="100">100
+        1<input type="range" name="springStiffness" value={{= springStiffness * 100 }} min="1" max="99">100
       </div>
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
         <button style="max-width:200px; display: inline-block;" id="doTryBtn">
