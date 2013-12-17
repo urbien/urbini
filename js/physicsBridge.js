@@ -2,7 +2,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   var worker,
       physicsModuleInfo = G.files['lib/physicsjs-custom.js'],
       masonryModuleInfo = G.files['lib/jquery.masonry.js'],
-      commonMethods = ['step', 'addBody', 'removeBody', 'distanceConstraint', 'drag', 'dragend', 'resize', 'benchBodies', 'unbenchBodies'],
+      commonMethods = ['step', 'addBody', 'removeBody', 'distanceConstraint', 'drag', 'dragend', 'resize', 'benchBodies', 'unbenchBodies', 'set'],
       layoutMethods = ['addBricks', 'setLimit', 'sleep', 'wake', 'continue', 'resize', 'home', 'end'],
       TIMESTEP = 1000/60,
       LOCK_STEP = false, // if true, step the world through postMessage, if false let the world run its own clock
@@ -49,7 +49,14 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       subscriptions = {},
       INPUT_TAGS = ['input', 'textarea'],
       TRANSFORM_PROP = DOM.prefix('transform'),
-      TRANSITION_PROP = DOM.prefix('transition');
+      TRANSITION_PROP = DOM.prefix('transition'),
+      CONSTANTS = {
+        drag: 0.1,
+        groupMemberConstraintStiffness: 0.3,
+        springFriction: 0.5,
+        springStiffness: 0.1 // stiff bounce: 0.1, // mid bounce: 0.005, // loosy goosy: 0.001,
+      };
+
 
   function log() {
 //    var args = [].slice.call(arguments);
@@ -361,7 +368,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         
       gesture.preventDefault();
       if (this.drag) {
-        _.extend(this.touchPosOld, this.touchPos);
+        Array.copy(this.touchPos, this.touchPosOld);
         this.touchPos[0] = touch.pageX;
         this.touchPos[1] = touch.pageY;
       }
@@ -369,31 +376,49 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         this.drag = true;
         this.touchPos[0] = touch.pageX;
         this.touchPos[1] = touch.pageY;
-        _.extend(this.tmp, this.touchPos);
+        Array.copy(this.touchPos, this.tmp);
+        
         this.tmp[0] -= gesture.deltaX / 2;
         this.tmp[1] -= gesture.deltaY / 2;
-        _.extend(this.touchPosOld, this.tmp);
+        Array.copy(this.tmp, this.touchPosOld);
       }
       
-      _.extend(this.tmp, this.touchPos);
+      Array.copy(this.touchPos, this.tmp);
       sub(this.tmp, this.touchPosOld);
       add(this.dragVector, this.tmp);
-//      add(this.dragVector, mult(this.tmp, 0.5)); // do we need this? And if so, why??
-      
-      THERE.drag(this.dragVector, DRAGGABLES);
       Array.copy(this.dragVector, this.lastDragVector);
-      zero(this.dragVector);
+//      add(this.dragVector, mult(this.tmp, 0.5)); // do we need this?
     },
 
     _ondragend: function(e) {
       e.gesture.preventDefault();
-      THERE.dragend(this.lastDragVector, DRAGGABLES);        
+      if (this.drag) {
+        this.drag = false;
+        this.dragEnd = true;
+//        log("DRAG RELEASE, speed: (" + this.dragVector[0] + ", " + this.dragVector[1] + ")");
+      }
     },
 
-//    _onswipe: function(e) {
-//      this.log('swipe');
+//    //  add(this.dragVector, mult(this.tmp, 0.5)); // do we need this? And if so, why??
+//    _ondrag: function(e) {    
+//      log("DRAG", this.dragVector[1]);
+//      THERE.drag(this.dragVector, DRAGGABLES);
+//      Array.copy(this.dragVector, this.lastDragVector);
+//      zero(this.dragVector);
 //    },
-    
+//    
+//    _ondragend: function(e) {
+//      e.gesture.preventDefault();
+//      log("DRAGEND", this.lastDragVector[1]);
+//      THERE.dragend(this.lastDragVector, DRAGGABLES);        
+//      zero(this.lastDragVector);
+//    },
+//    
+//    //_onswipe: function(e) {
+//    //  this.log('swipe');
+//    //},
+//    
+
     connect: function( hammer ){        
       hammer.on('drag', this._ondrag);
       hammer.on('dragend', this._ondragend);
@@ -403,6 +428,20 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       // unsubscribe when disconnected
       hammer.off('drag', this._ondrag);
       hammer.off('dragend', this._ondragend);
+    },
+    
+    tick: function( data ) {
+      if (this.dragEnd) {
+        this.dragEnd = false;
+        THERE.dragend(this.lastDragVector, DRAGGABLES);        
+        zero(this.lastDragVector);
+      }
+      
+      if (this.drag && !isEqual(this.dragVector, zeroVector)) {
+//        log("DRAG, distance: (" + this.dragVector[0] + ", " + this.dragVector[1] + ")");
+        THERE.drag(this.dragVector, DRAGGABLES);
+        zero(this.dragVector);
+      }
     }
   };
 
@@ -416,6 +455,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   }
   
   bridge = {
+    defaultConstants: CONSTANTS,
     init: function() {
       if (!worker) {
         this.here.init();
@@ -508,6 +548,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           }
           
           DOM.processRenderQueue();
+          DragProxy.tick();
           if (LOCK_STEP) {
             var newNow = _.now(),
             delay = TIMESTEP > newNow - NOW;    
@@ -586,12 +627,13 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           physicsJSUrl: physicsModuleInfo.fullName || physicsModuleInfo.name,
           masonryUrl: masonryModuleInfo.fullName || masonryModuleInfo.name,
           debug: G.DEBUG,
-          stepSelf: !LOCK_STEP
+          stepSelf: !LOCK_STEP,
+          constants: CONSTANTS
         });
         
         this.updateBounds();
       },
-      
+
       updateBounds: function() {
         calcBounds();
         worker.postMessage({

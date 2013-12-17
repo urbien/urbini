@@ -4,31 +4,27 @@ var ArrayProto = Array.prototype,
 		slice = ArrayProto.slice,
 		benchedBodies = {},
 		world,
+		integrator,
+		CONSTANTS,
 		WORLD_CONFIG = {
       positionRenderResolution: 0.2,
       angleRenderResolution: 0.001,
-      timestep: 1000 / 60
+      timestep: 1000 / 60,
+      maxIPF: 6
     },
 		constrainer,
 		LEFT,
 		RIGHT,
     ORIGIN,
 		BOUNDS,
-    BODIES = {},
-		GROUPS = {},
-		AIR_DRAG = 0.1,
-		MEMBER_CONSTRAINT_STIFFNESS = 0.3,
-		DEFAULT_CONSTRAINT_STIFFNESS = 0.01,
-    SNAP_TO_EDGE_CONSTRAINT_STIFFNESS = 0.1, // stiff bounce: 0.1, // mid bounce: 0.005, // loosy goosy: 0.001,
     PUBSUB_SNAP_CANCELED = 'snap-canceled',
 		proxiedObjects,
-		masons = {},
+		layoutManagers = {},
 		DEBUG = true,
 		DIR_UP,
 		DIR_DOWN,
 		HEAD_STR = "head (top / left)",
-		TAIL_STR = "tail (bottom / right)",
-		touchFollowers = [];
+		TAIL_STR = "tail (bottom / right)";
 
 function index(obj, i) {
 	return obj[i];
@@ -37,7 +33,11 @@ function index(obj, i) {
 // resolve string path to object, e.g. 'Physics.util' to Physics.util
 function leaf(obj, path, separator) {
 	return path.split(separator||'.').reduce(index, obj);
-}
+};
+
+function sign(number) {
+  return number ? number < 0 ? -1 : 1 : 0;
+};
 
 self.console = self.console || {
   log: function() {
@@ -72,6 +72,7 @@ function _onmessage(e){
 	if (!world) {
 	  importScripts(e.data.physicsJSUrl, e.data.masonryUrl);
 	  DEBUG = e.data.debug;
+	  CONSTANTS = e.data.constants;
 		world = Physics( WORLD_CONFIG, function(world, Physics) {
 			initWorld(world, e.data.stepSelf);
 		});
@@ -281,7 +282,8 @@ function renderBody(body) {
 
 function initWorld(_world, stepSelf) {
 	world = _world;
-	world.add(Physics.integrator('verlet', { drag: AIR_DRAG }));
+	integrator = Physics.integrator('verlet', { drag: CONSTANTS.drag });
+	world.add(integrator);
 	
 	if (stepSelf)
 	  Physics.util.ticker.subscribe(API.step);
@@ -467,8 +469,9 @@ function pick(obj) {
       to: 0
     },
     slidingWindowDimension: 0,
-    horizontal: false,
-    edgeConstraintStiffness: SNAP_TO_EDGE_CONSTRAINT_STIFFNESS
+    horizontal: false
+//    ,
+//    edgeConstraintStiffness: CONSTANTS.constraintStiffness
   };
   
   function LayoutManager(id, options, callbackId) {
@@ -528,16 +531,64 @@ function pick(obj) {
       this.headEdge = Physics.body('point', {
         fixed: true,
         x: this._lastOffset.get(0),
-        y: this._lastOffset.get(1)
+        y: this._lastOffset.get(1),
+        mass: 1
       });
   
       this.headEdge._id = Physics.util.uniqueId('headEdge');
       log("SET TOP EDGE TO " + this.headEdge.state.pos.get(1));
-      this.headEdgeConstraint = API.distanceConstraint(this.offsetBody, this.headEdge, this.edgeConstraintStiffness, 0);
+      this.headEdgeConstraint = API.distanceConstraint(this.offsetBody, this.headEdge, CONSTANTS.constraintStiffness, 0);
+      this.headEdgeConstraint.friction = CONSTANTS.springFriction;
+//      var dirSign,
+//          lastSign,
+//          timesCrossedThreshold,
+//          MAX_BOUNCES = 1;
+//  
+//      function resetConstraint() {
+//        dirSign = lastSign = null;
+//        timesCrossedThreshold = 0;
+//      };
+//      
+//      resetConstraint();
+      // TODO: subscribe/unsubscribe on arm/break
       world.subscribe('drag', function(data) {
+//        resetConstraint();
         if (~data.bodies.indexOf(this.offsetBody) && this.offsetBody.state.pos.get(this.axisIdx) < this.headEdge.state.pos.get(this.axisIdx))
           this.headEdgeConstraint['break']();
       }, this, 10);
+      
+      world.subscribe('springFriction', function(data) {
+        this.headEdgeConstraint.friction = data.value;
+        if (this.tailEdgeConstraint)
+          this.tailEdgeConstraint.frictio = data.value;
+      }, this);
+
+      world.subscribe('springStiffness', function(data) {
+        this.headEdgeConstraint.stiffness = data.value;
+        if (this.tailEdgeConstraint)
+          this.tailEdgeConstraint.stiffness = data.value;
+      }, this);
+
+      // TODO: subscribe/unsubscribe on arm/break
+//      world.subscribe('step', function bounceCheck() {
+//        dirSign = sign(this.headEdge.state.pos.get(this.axisIdx) - this.offsetBody.state.pos.get(this.axisIdx));
+//        if (!lastSign) {
+//          lastSign = dirSign;
+//          return;
+//        }
+//        
+//        if (lastSign != dirSign) {
+//          timesCrossedThreshold++;
+//          lastSign = dirSign;
+//        }
+//        else
+//          return;
+//          
+//        if (timesCrossedThreshold > MAX_BOUNCES) {
+//          stopBody(this.offsetBody, this.headEdge.state.pos);
+//          resetConstraint();
+//        }
+//      }, this, 10);
       
       this.headEdgeConstraint.armOnDistance(Infinity, DIR_UP); // no matter how far out of bounds we are, we should snap back
 //      this.headEdgeConstraint.breakOnDistance(50, DIR_DOWN);
@@ -719,18 +770,20 @@ function pick(obj) {
           this.tailEdge = Physics.body('point', {
             fixed: true,
             x: coords[0],
-            y: coords[1]
+            y: coords[1],
+            mass: 1
           });
           
           this.tailEdge._id = Physics.util.uniqueId('tailEdge');
-          this.tailEdgeConstraint = API.distanceConstraint(this.offsetBody, this.tailEdge, this.edgeConstraintStiffness, 0);
+          this.tailEdgeConstraint = API.distanceConstraint(this.offsetBody, this.tailEdge, CONSTANTS.constraintStiffness, 0);
+          this.tailEdgeConstraint.friction = CONSTANTS.springFriction;
           this.tailEdgeConstraint['break']();
           this.tailEdgeConstraint.armOnDistance(Infinity, DIR_DOWN); // no matter how far out of bounds we are, we should snap back
 //          this.tailEdgeConstraint.breakOnDistance(50, DIR_UP);
           world.subscribe('drag', function(data) {
             if (~data.bodies.indexOf(this.offsetBody) && this.offsetBody.state.pos.get(this.axisIdx) > this.tailEdge.state.pos.get(this.axisIdx))
               this.tailEdgeConstraint['break']();
-          }, this, 10);
+          }, this, 10);          
         }
         else
           this.tailEdge.state.pos.set(coords[0], coords[1]);
@@ -1276,7 +1329,6 @@ var API = {
         constraint = this.distanceConstraint(body, anchor, 0.01, 0, Physics.vector(1, 0)); // only snap along X axis
     
     world.publish(PUBSUB_SNAP_CANCELED); // finish (fast-forward or cancel?) any current snaps
-    
     world.subscribe(PUBSUB_SNAP_CANCELED, endSnap);
     world.subscribe('step', checkStopped);
     
@@ -1394,7 +1446,30 @@ var API = {
       if (typeof Mason == 'undefined')
         importScripts('lib/jquery.masonry.js');
     
-	    proxiedObjects[id] = new LayoutManager(id, options, callbackId);
+	    proxiedObjects[id] = layoutManagers[id] = new LayoutManager(id, options, callbackId);
+    }
+  },
+  
+  set: function(constantName, value) {
+    switch (constantName) {
+    case 'drag':
+      integrator.options.drag = value;
+      break;
+    case 'springFriction':
+      world.publish({
+        topic: 'springFriction',
+        value: value
+      });
+      
+      break;
+      
+    case 'springStiffness':
+      world.publish({
+        topic: 'springStiffness',
+        value: value
+      });
+      
+      break;
     }
   }
 }

@@ -1111,7 +1111,7 @@ define('views/BasicView', [
           lock: {
             x: 0
           }, 
-          mass: 1000          
+          mass: 1
         };
       }
       else {

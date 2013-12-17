@@ -4,7 +4,8 @@ define('views/Header', [
   'events', 
   'utils',
   'vocManager',
-  'views/BasicView'
+  'views/BasicView',
+  'physicsBridge'
 //  ,
 //  'views/BackButton',
 //  'views/LoginButton',
@@ -13,7 +14,7 @@ define('views/Header', [
 //  'views/AroundMeButton',
 //  'views/MenuButton',
 //  'views/PublishButton'
-], function(G, Events, U, Voc, BasicView/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
+], function(G, Events, U, Voc, BasicView, Physics/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
   var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate', 'installApp'];
   var REGULAR_BUTTONS = ['back', 'mapIt', 'add', 'video', 'chat', 'login', 'rightMenu'];
   var commonTypes = G.commonTypes;
@@ -151,9 +152,14 @@ define('views/Header', [
     },
     events: {
       'change #fileUpload'         : 'fileUpload',
+      'change .physics > input'     : 'changePhysics',
       'click #categories'         : 'showCategories',
 //      'click #installApp'         : 'installApp',
       'click #moreRanges'         : 'showMoreRanges'
+    },
+    
+    changePhysics: function(e) {
+      Physics.there.set(e.target.name, parseInt(e.target.value) / 100);
     },
     
     fileUpload: function(e) {
@@ -438,6 +444,7 @@ define('views/Header', [
       }
 
       var templateSettings = this.getBaseTemplateData();
+      _.extend(templateSettings, Physics.defaultConstants);
       if (U.isChatPage()) {
 //        templateSettings.more = $.param({
 //          "data-position": "fixed"

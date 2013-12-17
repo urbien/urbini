@@ -881,7 +881,7 @@ define('views/ResourceListView', [
       }); 
       
       this._pagingPromise._range = 'from: ' + before + ', to: ' + (before + numResourcesToFetch);
-      this.log("Fetching next page: " + this._pagingPromise._range);
+//      this.log("Fetching next page: " + this._pagingPromise._range);
       return this._pagingPromise;
     },
    
