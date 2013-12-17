@@ -394,6 +394,9 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     },
 
     _ondragend: function(e) {
+      if (isUserInputTag(e.target.tagName))
+        return;
+      
       e.gesture.preventDefault();
       if (this.drag) {
         this.drag = false;
