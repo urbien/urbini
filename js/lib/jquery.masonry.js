@@ -94,7 +94,7 @@
         max: this.offset[this.axis]
       }
     },
-  
+
     _getOffsetDueToFlexigroup: function() {
       if (this.options.flexigroup)
         return this.flexigroup.state.pos.get(1) - this.initialYOffset;
@@ -170,33 +170,33 @@
     // },
     
     // calculates number of columns
-    // i.e. this.columnWidth = 200
+    // i.e. this.alleyDim = 200
     _getColumns: function() {
       if (this.options.oneElementPerRow || this.options.stretchRow) {
-        this.columnWidth = this.bounds._hw * 2;
+        this.alleyDim = this.bounds._hw * 2;
         this.cols = 1;
         return;
       }
       else if (this.options.oneElementPerCol || this.options.stretchCol) {
-        this.columnWidth = this.bounds._hh * 2;
+        this.alleyDim = this.bounds._hh * 2;
         this.cols = 1;
         return;
       }
       
       var brick = this.bricks[0],
           dimensionMethod = this.options.horizontal ? '_getOuterHeight' : '_getOuterWidth',
-          containerWidth = this.bounds._hw * 2;
+          containerDim = this.horizontal ? this.bounds._hh * 2 : this.bounds._hw * 2;
   
       // this._calcBrickMargin();
-      this.columnWidth = this.options.columnWidth ||
+      this.alleyDim = this.options.alleyDim ||
                          // or use the size of the first item
                          this[dimensionMethod](brick) ||
                          // if there's no items, use size of container
-                         containerWidth;
+                         containerDim;
   
-      this.columnWidth += this.options.gutterWidth;
+      this.alleyDim += this.options.gutterWidth;
   
-      this.cols = Math.floor( ( containerWidth + this.options.gutterWidth ) / this.columnWidth );
+      this.cols = Math.floor( ( containerDim + this.options.gutterWidth ) / this.alleyDim );
       this.cols = Math.max( this.cols, 1 );
   
       return this;
@@ -227,9 +227,9 @@
       var view = brick.view,
           dimensionMethod = this.options.horizontal ? '_getOuterWidth' : '_getOuterHeight',
           extreme = this.options.fromBottom ? Math.max : Math.min,
-          extremeY  = extreme.apply( Math, setY ),
+          extremeDepth  = extreme.apply( Math, setY ),
           multiplier = this.options.fromBottom ? -1 : 1,
-          setHeight = extremeY + multiplier * (this[dimensionMethod](brick) + this.options.gutterWidth),
+          setHeight = extremeDepth + multiplier * (this[dimensionMethod](brick) + this.options.gutterWidth),
           i = setY.length,
           shortCol  = i,
           setSpan   = this.cols + 1 - i,
@@ -241,7 +241,7 @@
       //         closest to the left/right, 
       // based on if we're appending/prepending
       while (i--) {
-        if ( setY[i] === extremeY ) {
+        if ( setY[i] === extremeDepth ) {
           shortCol = i;
           if (this.options.fromBottom)
             break;
@@ -253,20 +253,20 @@
           left;
       
       if (this.options.horizontal) {        
-        top = this.columnWidth * shortCol + this.offset.y;
+        top = this.alleyDim * shortCol + this.offset.y + brick.geometry._aabb._hh; // alleyDim includes gutterWidth
         
         if (this.options.fromBottom)
-          left = setHeight - this.offset.x;
+          left = extremeDepth - this.offset.x - brick.geometry._aabb._hw + this._getOffsetDueToFlexigroup();
         else
-          left = extremeY + this.offset.x;
+          left = extremeDepth + this.offset.x + brick.geometry._aabb._hw + this._getOffsetDueToFlexigroup();
       }
       else {
-        left = this.columnWidth * shortCol + this.offset.x + brick.geometry._aabb._hw; // columnWidth includes gutterWidth
+        left = this.alleyDim * shortCol + this.offset.x + brick.geometry._aabb._hw; // alleyDim includes gutterWidth
       
         if (this.options.fromBottom)
-          top = extremeY - this.offset.y - brick.geometry._aabb._hh + this._getOffsetDueToFlexigroup();
+          top = extremeDepth - this.offset.y - brick.geometry._aabb._hh + this._getOffsetDueToFlexigroup();
         else
-          top = extremeY + this.offset.y + brick.geometry._aabb._hh + this._getOffsetDueToFlexigroup();
+          top = extremeDepth + this.offset.y + brick.geometry._aabb._hh + this._getOffsetDueToFlexigroup();
       }
 
 //      console.log("adding", brick.geometry._aabb._hw * 2, "x", brick.geometry._aabb._hh * 2, "brick at (" + left + ", " + top + ")");
@@ -391,12 +391,12 @@
       var coordIdx = this.options.horizontal ? 1 : 0;
       var dimProp = this.options.horizontal ? '_hh' : '_hw';
       var offset = brick.state.pos.get(coordIdx) - brick.geometry._aabb[dimProp];
-      var edgeCol = Math.round(offset / this.columnWidth);
+      var edgeCol = Math.round(offset / this.alleyDim);
       return edgeCol;
     },
 
     _getColSpan: function(brick) {
-      var colSpan = Math.ceil( this._getOuterWidth(brick) / this.columnWidth );
+      var colSpan = Math.ceil( this._getOuterWidth(brick) / this.alleyDim );
       return Math.min( colSpan, this.cols );
     },
 
