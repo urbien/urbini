@@ -314,7 +314,7 @@ function initWorld(_world, stepSelf) {
   			body,
   			i = bodies.length;
 			
-		log('dragend vector: ' + data.vector.toString());
+//		log('dragend vector: ' + data.vector.toString());
 		while (i--) {
 			body = bodies[i];
       body.fixed = false;

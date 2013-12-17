@@ -140,6 +140,13 @@ define('views/ResourceListView', [
       };
       
 //      Physics.here.on('translate.' + this.axis.toLowerCase(), this.getBodyId(), this.onScroll);
+      
+      this.listenTo(this.collection, 'endOfList', function() {
+        this._outOfData = true;
+        if (this.isActive())
+          this.mason['continue']();
+      }, this);
+      
       return this;
     },
 
@@ -696,6 +703,7 @@ define('views/ResourceListView', [
 
         if (liView == false) {
           this._failedToRenderCount++;
+          console.log("FAILED: " + res.attributes.id);
           failed.push(res);
         }
         else {
@@ -708,6 +716,7 @@ define('views/ResourceListView', [
       if (failed.length) {
         this.collection.remove(failed);        
         to -= failed.length;
+        this.log("TOTAL FAILED TO RENDER SO FAR: " + this._failedToRenderCount);
 //        this.stashed.push.apply(this.stashed, added);
 //        return this._addBricks(to, to + failed.length);
       }
