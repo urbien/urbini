@@ -335,21 +335,21 @@ function stopBody(body, atPos) {
   var state = body.state,
       lock = body.state.pos.unlock();
   
-  body.fixed = true;
+//  body.fixed = true;
   
   if (atPos)
     state.pos.clone(atPos);
   
-  state.old.pos.clone(state.pos);
+//  state.old.pos.clone(state.pos);
   state.acc.zero();
-  state.old.acc.zero();
+//  state.old.acc.zero();
   state.vel.zero();
-  state.old.vel.zero();
+//  state.old.vel.zero();
 
   if (lock)
     body.state.pos.lock(lock);
   
-  body.fixed = false;
+//  body.fixed = false;
 };
 
 function getBodies(/* ids */) {

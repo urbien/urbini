@@ -12,7 +12,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       tickerId,
       hammer,
       hammerOptions = {},
-      bridge,
+      Physics,
       HERE,
       THERE,
       KeyHandler,
@@ -75,10 +75,14 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       
       log('events', 'ALLOWING CLICK', _.now());
     } finally {
-      G.enableClick();
+      enableClick();
     }
   }, true);
 
+  function enableClick() {
+    G.enableClick();
+  };
+  
   function isUserInputTag(tag) {
     return INPUT_TAGS.indexOf(tag.toLowerCase()) != -1;
   };
@@ -472,8 +476,10 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
             
       if (this.dragEnd) {
         this.dragEnd = false;
-        THERE.dragend(this.lastDragVector, this.id);        
+        THERE.dragend(this.lastDragVector, this.id);
         zero(this.lastDragVector);
+        
+        Physics.echo(enableClick) // async and faster than setTimeout
       }
       
       if (this.drag && !isEqual(this.dragVector, zeroVector)) {
@@ -493,7 +499,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       return _.leaf(renderListeners, event);
   }
   
-  bridge = {
+  Physics = {
     constants: CONSTANTS,
     init: function() {
       if (!worker) {
@@ -750,7 +756,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       },
       
       set: function(constantName, value) {
-        bridge.constants[constantName] = value;
+        Physics.constants[constantName] = value;
         return this.rpc(null, 'set', _.toArray(arguments));
       }
     }
@@ -765,8 +771,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     THERE.rpc(null, 'layout.init', [this.id, options, addSubscription(callback)]);
   };
   
-  HERE = bridge.here;
-  THERE = bridge.there;
+  HERE = Physics.here;
+  THERE = Physics.there;
   
   commonMethods.forEach(function(method) {
     THERE[method] = function() {
@@ -780,5 +786,5 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     };
   });
   
-  return bridge;
+  return Physics;
 });
