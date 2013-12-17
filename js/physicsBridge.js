@@ -81,7 +81,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   }, true);
 
   function isUserInputTag(tag) {
-    return INPUT_TAGS.indexOf(tag) != -1;
+    return INPUT_TAGS.indexOf(tag.toLowerCase()) != -1;
   };
   
   function getLayoutManagers(/* ids */) {
@@ -361,6 +361,9 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     },
 
     _ondrag: function(e) {
+      if (isUserInputTag(e.target.tagName))
+        return;
+      
       G.disableClick();
       var gesture = e.gesture,
           center = gesture.center,
