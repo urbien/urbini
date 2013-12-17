@@ -10,8 +10,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       NOW = PHYSICS_TIME,     // these diverge
       UNRENDERED = {},
       tickerId,
-      hammer,
       hammerOptions = {},
+      hammer = new Hammer(document, hammerOptions),
       Physics,
       HERE,
       THERE,
@@ -64,6 +64,24 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     console.log.apply(console, arguments);
   };
       
+  hammer.on('drag', function() {
+    var draggable;
+    for (var id in DRAGGABLES) {
+      draggable = DRAGGABLES[id];
+      if (draggable.isOn())
+        draggable._ondrag.apply(draggable, arguments);
+    }
+  });
+
+  hammer.on('dragend', function() {
+    var draggable;
+    for (var id in DRAGGABLES) {
+      draggable = DRAGGABLES[id];
+      if (draggable.isOn())
+        draggable._ondragend.apply(draggable, arguments);
+    }
+  });
+
   document.addEventListener('click', function(e) {
     try {
       if (!G.canClick()) {
@@ -424,8 +442,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       if (isUserInputTag(e.target.tagName))
         return;
       
-      stopDragEvent(e);
       if (this.drag) {
+        stopDragEvent(e);
         this.drag = false;
         this.dragEnd = true;
 //        log("DRAG RELEASE, speed: (" + this.dragVector[0] + ", " + this.dragVector[1] + ")");
