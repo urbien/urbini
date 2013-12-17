@@ -8,7 +8,21 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       resizeTimeout,
       cssPrefix = {},
       renderQueue = [],
-      tmpdiv = document.createElement("div");
+      tmpdiv = document.createElement("div"),
+      SHOW_STYLE = {
+        style: {
+          add: {
+            opacity: 1
+          }
+        }
+      },
+      HIDE_STYLE = {
+        style: {
+          add: {
+            opacity: 0
+          }
+        }
+      };
 
 //      TRANSITION_PROP = G.browser.webkit ? '-webkit-transition' : 'transition';
 
@@ -200,8 +214,20 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
         
         return this;
       },
+
+      $onremove: function(fn) {
+        if (!this._removeListeners)
+          this._removeListeners = [];
+        
+        this._removeListeners.push(fn);
+      },
       
       $remove: function() {
+        if (this._removeListeners) {
+          this._removeListeners.forEach(function(fn) { fn() });
+          delete this._removeListeners;
+        }
+          
         if (this.parentNode)
           this.parentNode.removeChild(this);
         
@@ -891,8 +917,10 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     },
     
     lazifyImages: function(images, immediately) {
-      var images = arguments,
-          infos = [],
+      if (!G.lazifyImages)
+        return images;
+      
+      var infos = [],
           lazyImgAttr = G.lazyImgSrcAttr,
           blankImg = G.getBlankImgSrc(),
           img,
@@ -1138,6 +1166,9 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           el.setAttribute('class', replace);
         }
       }
-    }
+    },
+    
+    transparentStyle: SHOW_STYLE,
+    opaqueStyle: HIDE_STYLE
   };
 });

@@ -54,10 +54,12 @@ define('views/ResourceListView', [
     _adjustmentQueued: false,
     _hiddenBricksAtHead: 0,
     _hiddenBricksAtTail: 0,
+    _failedToRenderCount: 0,
     _scrollable: false, // is set to true when the content is bigger than the container
 //    _lastRangeEventSeq: -Infinity,
 //    _lastPrefetchEventSeq: -Infinity,
     className: 'scrollable',
+    stashed: [],
 
     initialize: function(options) {
       _.bindAll(this, 'render', 'fetchResources', 'refresh', 'setMode', 'onResourceChanged', '_onPhysicsMessage');
@@ -151,6 +153,14 @@ define('views/ResourceListView', [
     events: {
       'click': 'click'
     },
+    
+//    myEvents: {
+//      'active': '_onActive'
+//    },
+//    
+//    _onActive: function() {
+//      return BasicView.prototype._onActive.apply(this, arguments);
+//    },
     
 //    windowEvents: {
 //      'viewportwidthchanged': '_onWidthChanged'
@@ -353,7 +363,7 @@ define('views/ResourceListView', [
             else if (self.hashParams[b])
               Events.trigger('navigate', U.makeMobileUrl('view', self.resource.get(a))); //, {trigger: true, forceFetch: true});
             else
-              dfd.reject();
+              return G.getRejectedPromise();
 //            else
 //              Events.trigger('navigate', U.makeMobileUrl('view', self.resource.getUri())); //, {trigger: true, forceFetch: true});
               
@@ -432,7 +442,8 @@ define('views/ResourceListView', [
       if (this._outOfData) {
         this._outOfData = false;
         if (this.mason) {
-          this.mason.setLimit(this.collection.length);
+          this.mason.setLimit(this.collection.length); // - this._failedToRenderCount);
+          this.mason['continue']();
         }
       }
 //      this.adjustSlidingWindow();
@@ -622,6 +633,11 @@ define('views/ResourceListView', [
         if (force) {
           // settle for loading an incomplete page
           to = col.length;
+          if (to <= from) {
+            // we're out of candy, no need to continue
+//            this.mason['continue']();
+            return;
+          }
         }
         else {
 //          if (this._outOfData) {
@@ -633,13 +649,7 @@ define('views/ResourceListView', [
           return this.fetchResources(numToFetch).then(this._addBricks.bind(this, from, to, force), this._addBricks.bind(this, from, to, true));
         }
       }
-      
-      if (from >= to) {
-        debugger;
-        this.mason['continue']()
-        return;
-      }
-            
+                  
       preRenderPromise = this.preRender(from, to);
       if (_.isPromise(preRenderPromise))
         return preRenderPromise.then(this._doAddBricks.bind(this, from, to));
@@ -655,6 +665,7 @@ define('views/ResourceListView', [
           displayed = this._displayedRange,
           atTheHead = from < displayed.from,
           col = this.collection,
+          failed = [],
           added = [],
           addedEls,
           childView;
@@ -683,43 +694,57 @@ define('views/ResourceListView', [
         var res = col.models[i],
             liView = this.renderItem(res, atTheHead);
 
-        if (liView !== false) {
+        if (liView == false) {
+          this._failedToRenderCount++;
+          failed.push(res);
+        }
+        else {
           this.listenTo(liView.resource, 'change', this.onResourceChanged);
           this.listenTo(liView.resource, 'saved', this.onResourceChanged);
           added.push(liView);
         }
       }        
       
-      if (!added.length) {
-        debugger
-        this.mason['continue']()
-        return;
+      if (failed.length) {
+        this.collection.remove(failed);        
+        to -= failed.length;
+//        this.stashed.push.apply(this.stashed, added);
+//        return this._addBricks(to, to + failed.length);
       }
       
+      if (added.length) {      
 //          self.log("PAGER", "ADDING PAGE, FRAME", window.fastdom.frameNum);
-      addedEls = added.map(function(c) { return c.el });
-      if (atTheHead)
-        Array.prepend(childEls, addedEls);
-      else
-        childEls.push.apply(childEls, addedEls);
-      
-      added.forEach(function(childView) {
-        if (childView.postRender)
-          childView.postRender();
-       
-        childView.el.style.opacity = 0;
-        if (!childView.el.parentNode) {
-          // need to append right away, otherwise we can't figure out its size
-          el.appendChild(childView.el); // we don't care about its position in the list, as it's absolutely positioned
-        }
+        addedEls = added.map(function(c) { return c.el });
+        if (atTheHead)
+          Array.prepend(childEls, addedEls);
+        else
+          childEls.push.apply(childEls, addedEls);
         
-        Physics.here.once('render', childView.getBodyId(), function(childEl) {
-          childEl.style.opacity = 1;
+        added.forEach(function(childView) {
+          if (childView.postRender)
+            childView.postRender();
+         
+          childView.el.style.opacity = 0;
+          if (!childView.el.parentNode) {
+            // need to append right away, otherwise we can't figure out its size
+            el.appendChild(childView.el); // we don't care about its position in the list, as it's absolutely positioned
+          }
+    
+  //        DOM.queueRender(view.el, DOM.opaqueStyle);
+  
+          Physics.here.once('render', childView.getBodyId(), function(childEl) {
+            childEl.style.opacity = 1;
+          });
         });
-      });
-       
-//      this._showAndHideBricks();
-      this.postRender(from, to, added);
+        
+        return this.postRender(from, to, added);
+      }       
+      else {
+        if (this._outOfData)
+          this.mason.setLimit(this.collection.length);
+        else
+          return this._addBricks(to, to + failed.length);
+      }
     },
     
     /**
@@ -816,6 +841,7 @@ define('views/ResourceListView', [
         view = removedViews[i];
         this.stopListening(view.resource);
         view.undelegateAllEvents();
+        DOM.queueRender(view.el, DOM.transparentStyle);
         ids.push(view.getBodyId());
       }
 
@@ -839,6 +865,7 @@ define('views/ResourceListView', [
       else if (this._outOfData)
         return G.getRejectedPromise();
       
+      numResourcesToFetch = Math.max(numResourcesToFetch || this.options.bricksPerPage, 5);
       var self = this,
           col = this.collection,
           before = col.length,
@@ -848,23 +875,24 @@ define('views/ResourceListView', [
       
       nextPagePromise = col.getNextPage({
         params: {
-          $limit: Math.max(numResourcesToFetch || this.options.bricksPerPage, 5)
+          $offset: col.length + this._failedToRenderCount,
+          $limit: numResourcesToFetch
         },
         success: function() {
           if (col.length > before)
             defer.resolve();
           else {
-            if (!col.isFetching(nextPageUrl)) // we've failed to fetch anything from the db, wait for the 2nd call to success/error after pinging the server
+            if (!nextPageUrl || !col.isFetching(nextPageUrl)) // we've failed to fetch anything from the db, wait for the 2nd call to success/error after pinging the server
               defer.reject();
             else
               self.log("fetching more list items from the server...");
           }
         },
         error: function() {
-          if (!col.isFetching(nextPageUrl))
+          if (!nextPageUrl || !col.isFetching(nextPageUrl))
             defer.reject();
-          else
-            debugger;
+//          else
+//            debugger;
         }
       });
       
@@ -875,9 +903,9 @@ define('views/ResourceListView', [
       
       this._pagingPromise = defer.promise().always(function() {
         self._isPaging = false;
-      }).fail(function() {
-        self._outOfData = true;
-        self.mason.setLimit(self.collection.length);
+        if (defer.state() == 'rejected') {
+          self._outOfData = true;
+        }        
       }); 
       
       this._pagingPromise._range = 'from: ' + before + ', to: ' + (before + numResourcesToFetch);
@@ -1066,6 +1094,11 @@ define('views/ResourceListView', [
     },
 
     postRender: function(from, to, added) {
+//      if (this.stashed.length) {
+//        Array.prepend(added, this.stashed);
+//        this.stashed.length = 0;
+//      }
+      
       var atTheHead = from < this._displayedRange.from,
           bricks = this.toBricks(added, this.options),
           i = bricks.length,
@@ -1090,12 +1123,15 @@ define('views/ResourceListView', [
         this._displayedRange.to = Math.max(this._displayedRange.to, to);
       }
       
+      if (this._outOfData && this.collection.length == to)
+        this.mason.setLimit(this.collection.length); // - this._failedToRenderCount);
+      
       this.addBricksToWorld(bricks, atTheHead); // mason
     },
     
     hasMasonry: function() {
       return this.type == 'masonry';
-    }
+    }    
   }, {
     displayName: 'ResourceListView'
 //      ,

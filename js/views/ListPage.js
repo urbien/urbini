@@ -18,6 +18,7 @@ define('views/ListPage', [
     template: 'resource-list',
     clicked: false,
     autoFinish: false,
+    _draggable: false,
     initialize: function(options) {
       _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'setMode', /*'orientationchange',*/ 'onFilter');
       BasicPageView.prototype.initialize.apply(this, arguments);
@@ -413,7 +414,7 @@ define('views/ListPage', [
         });
       }
       
-      this.addContainerBodyToWorld(false); // not draggable
+      this.addContainerBodyToWorld(); // not draggable
       this.finish();
       return this;
     }

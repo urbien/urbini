@@ -270,10 +270,10 @@ define('collections/ResourceList', [
 //    },
     
     getNextPage: function(options) {
-      var numToFetch = options.params && options.params.$limit || this.perPage;
-//      this.setOffset(this.offset + numToFetch);
-      this.setOffset(this.length);
-//      this.setOffset(Math.min(this.offset, this.models.length));
+      var params = options.params,
+          offset = params && params.$offset || this.length;
+      
+      this.setOffset(offset);
       return this.pager(options);
     },
     getPreviousPage: function () {

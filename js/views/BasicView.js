@@ -410,6 +410,9 @@ define('views/BasicView', [
       if (this.pageView)
         delete this.pageView;
       
+      if (this._draggable)
+        Physics.removeDraggable(this.getBodyContainerId());
+
       this.el.$remove();
       this.$el = this.el = this._hammer = this._hammered = null;
       
@@ -671,9 +674,10 @@ define('views/BasicView', [
           refreshArgs = this._refreshArgs;
       
       if (this.mason) {
-        this.mason['continue']();
+        this.mason.wake();
+//        DOM.queueRender(this.el, DOM.opaqueStyle);
         if (this._draggable)
-          Physics.addDraggables(this.getBodyContainerId());
+          Physics.addDraggable(this._hammer || this.el, this.getBodyContainerId());
       }
       
       this.active = true;
@@ -693,10 +697,12 @@ define('views/BasicView', [
       
       this.active = false;
       if (this._draggable)
-        Physics.removeDraggables(this.getBodyContainerId());
+        Physics.suspendDraggable(this.getBodyContainerId());
 
-      if (this.mason)
+      if (this.mason) {
         this.mason.sleep();
+//        DOM.queueRender(this.el, DOM.transparentStyle);
+      }
       
       this.triggerChildren('inactive');      
     },
@@ -1020,13 +1026,13 @@ define('views/BasicView', [
 //      Physics.here.addDraggable(id);
 //      this._draggables.push(id);
 //    },
-    
-    addBody: function(id, type, options, el, draggable) {
-      Physics.addBody.apply(Physics, arguments);
-      this._bodies.push(id);
-      if (draggable)
-        this._draggables.push(id);
-    },
+//    
+//    addBody: function(id, type, options, el, draggable) {
+//      Physics.addBody.apply(Physics, arguments);
+//      this._bodies.push(id);
+//      if (draggable)
+//        this._draggables.push(id);
+//    },
     
     _updateSize: function() {
       // TODO - move this to domUtils - it's per DOM element, not per view
@@ -1089,7 +1095,7 @@ define('views/BasicView', [
         flexigroup: this._flexigroup
       });
 
-      this.addContainerBodyToWorld(true);
+      this.addContainerBodyToWorld();
       this.mason = Physics.there.layout.newLayout(options, this._onPhysicsMessage);
 
       $.when.apply($, this.pageView._getLoadingPromises()).done(function() { // maybe this is a bit wasteful?
@@ -1101,10 +1107,12 @@ define('views/BasicView', [
         this.addViewBrick();
     },
     
-    addContainerBodyToWorld: function(draggable) {
-      var containerId = this.getBodyContainerId();
+    getContainerBodyOptions: function() {
+      var containerId = this.getBodyContainerId(),
+          options;
+      
       if (this._flexigroup) {
-        this.containerBody = {
+        options = {
           _id: containerId,
           x: this._offsetLeft + this._width / 2,
           y: -G.viewport.height * 5,
@@ -1115,7 +1123,7 @@ define('views/BasicView', [
         };
       }
       else {
-        this.containerBody = {
+        options = {
           _id: containerId,
 //            x: thisTransform[3][0],
 //            y: thisTransform[3][1],
@@ -1130,7 +1138,11 @@ define('views/BasicView', [
         };
       }
       
-      Physics.addBody(containerId, 'point', this.containerBody, this.el, draggable);
+      return options;
+    },
+    
+    addContainerBodyToWorld: function() {      
+      Physics.addBody(this.getBodyContainerId(), 'point', this.getContainerBodyOptions(), this.el, this._draggable && this.hammer());
     },
     
     addViewBrick: function() {

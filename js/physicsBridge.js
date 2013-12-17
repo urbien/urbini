@@ -2,8 +2,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   var worker,
       physicsModuleInfo = G.files['lib/physicsjs-custom.js'],
       masonryModuleInfo = G.files['lib/jquery.masonry.js'],
-      commonMethods = ['step', 'addBody', 'removeBody', 'distanceConstraint', 'drag', 'dragend', 'resize', 'benchBodies', 'unbenchBodies', 'set'],
-      layoutMethods = ['addBricks', 'setLimit', 'sleep', 'wake', 'continue', 'resize', 'home', 'end'],
+      commonMethods = ['step', 'addBody', 'removeBody', 'distanceConstraint', 'drag', 'dragend', 'resize', 'benchBodies', 'unbenchBodies'],
+      layoutMethods = ['addBricks', 'setLimit', 'sleep', 'wake', 'continue', 'resize', 'home', 'end', 'setBounds'],
       TIMESTEP = 1000/60,
       LOCK_STEP = false, // if true, step the world through postMessage, if false let the world run its own clock
       PHYSICS_TIME = _.now(), // from here on in,
@@ -15,7 +15,6 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       bridge,
       HERE,
       THERE,
-      DragProxy,
       KeyHandler,
       ID_TO_LAYOUT_MANAGER = {},
       ID_TO_EL = {},
@@ -28,7 +27,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
                             0, 0, 0, 1];
   
       zeroVector = [0, 0, 0],
-      DRAGGABLES = [],
+      DRAGGABLES = {}, // id to DragProxy
       bounds = [0, 0, 0, 0],
       renderListeners = {
         render: {},
@@ -53,7 +52,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       CONSTANTS = {
         drag: 0.1,
         groupMemberConstraintStiffness: 0.3,
-        springFriction: 0.5,
+        springDamping: 0.5,
         springStiffness: 0.1 // stiff bounce: 0.1, // mid bounce: 0.005, // loosy goosy: 0.001,
       };
 
@@ -82,6 +81,13 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 
   function isUserInputTag(tag) {
     return INPUT_TAGS.indexOf(tag.toLowerCase()) != -1;
+  };
+
+  function stopDragEvent(e) {
+    e.gesture.preventDefault();
+    e.gesture.stopPropagation();
+    e.stopPropagation();
+//    e.preventDefault();
   };
   
   function getLayoutManagers(/* ids */) {
@@ -119,14 +125,15 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     },
     
     _onKeyDown: function(e) {
-      if (!DRAGGABLES.length)
+      if (!_.size(DRAGGABLES))
         return;
       
       var keyCode = U.getKeyEventCode(e),
           vector = this._dragged,
           viewport = G.viewport,
           axisIdx = 1, // generalize to X, Y
-          dimProp = axisIdx == 0 ? 'width' : 'height';
+          dimProp = axisIdx == 0 ? 'width' : 'height',
+          draggable;
           
       if (this._keyHeld && this._keyHeld != keyCode)
         return;
@@ -148,7 +155,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         if (this._keyHeld)
           return;
         
-        var managers = getLayoutManagers.apply(null, DRAGGABLES),
+        var managers = getLayoutManagers.apply(null, _.keys(DRAGGABLES)),
             i = managers.length;
         
         while (i--) {
@@ -160,7 +167,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         if (this._keyHeld)
           return;
         
-        var managers = getLayoutManagers.apply(null, DRAGGABLES),
+        var managers = getLayoutManagers.apply(null, _.keys(DRAGGABLES)),
             i = managers.length;
         
         while (i--) {
@@ -181,12 +188,22 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       }        
       
       this._keyHeld = keyCode;
-      THERE.drag(this._dragged, DRAGGABLES);
+      for (var id in DRAGGABLES) {
+        draggable = DRAGGABLES[id];
+        if (draggable.isOn())
+          THERE.drag(this._dragged, id);
+      }
     },
     
     _onKeyUp: function(e) {
-      if (DRAGGABLES.length && this._keyHeld && U.getKeyEventCode(e) == this._keyHeld) {
-        THERE.dragend(this._dragged, DRAGGABLES, !this._coast);
+      if (this._keyHeld && U.getKeyEventCode(e) == this._keyHeld) {
+        var draggable;
+        for (var id in DRAGGABLES) {
+          draggable = DRAGGABLES[id];
+          if (draggable.isOn())
+            THERE.dragend(this._dragged, id, !this._coast);
+        }
+
         this._coast = false;
         this._keyHeld = null;
         var i = this._dragged.length;
@@ -323,28 +340,33 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //          groupEl.appendChild(el);
       }
     }
+    
+    invokeListeners(renderListeners.render['']);
   };
 
   /**
    * currently only sends drag data once a frame (maybe it should send every time it gets a drag event)
    * TODO: make it work for nested draggables
    */
-  DragProxy = {
-    init: function(){
-      this.touchPos = zeroVector.slice();
-      this.touchPosOld = zeroVector.slice();
-      this.tmp = zeroVector.slice();
-      this.dragVector = zeroVector.slice();
-      this.lastDragVector = zeroVector.slice();
-      this.offset = zeroVector.slice();
-      
-      this.drag = false;      
-      this._ondrag = this._ondrag.bind(this);
-      this._ondragend = this._ondragend.bind(this);
-    },
+  function DragProxy(hammerOrElement, id) {
+    this.id = id;
+    this.touchPos = zeroVector.slice();
+    this.touchPosOld = zeroVector.slice();
+    this.tmp = zeroVector.slice();
+    this.dragVector = zeroVector.slice();
+    this.lastDragVector = zeroVector.slice();
+    this.offset = zeroVector.slice();
     
+    this.drag = false;      
+    this._ondrag = this._ondrag.bind(this);
+    this._ondragend = this._ondragend.bind(this);
+    this.hammer = hammerOrElement instanceof Hammer.Instance ? hammerOrElement : new Hammer(hammerOrElement);
+    this.connect();
+  };
+    
+  DragProxy.prototype = {
     _onmouseout: function(e) {
-      if (this.drag) {
+      if (this.drag && this.hammer) {
         // check if the user swiped offscreen (in which case we can't detect 'mouseup' so we will simulate 'mouseup' NOW)
         e = e ? e : window.event;
         var from = e.fromElement || e.relatedTarget || e.toElement;
@@ -352,7 +374,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   //      console.debug("FROM:", from);
         if (!from || from.nodeName == "HTML") {
           log("MOUSEOUT, attempting to trigger drag end");
-          hammer.element.dispatchEvent(new MouseEvent('mouseup', {
+          this.hammer.element.dispatchEvent(new MouseEvent('mouseup', {
             cancelable: true,
             bubbles: true
           }));
@@ -369,7 +391,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           center = gesture.center,
           touch = e.gesture.touches[0];
         
-      gesture.preventDefault();
+      stopDragEvent(e);
       if (this.drag) {
         Array.copy(this.touchPos, this.touchPosOld);
         this.touchPos[0] = touch.pageX;
@@ -390,6 +412,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       sub(this.tmp, this.touchPosOld);
       add(this.dragVector, this.tmp);
       Array.copy(this.dragVector, this.lastDragVector);
+//      return false;
 //      add(this.dragVector, mult(this.tmp, 0.5)); // do we need this?
     },
 
@@ -397,12 +420,14 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       if (isUserInputTag(e.target.tagName))
         return;
       
-      e.gesture.preventDefault();
+      stopDragEvent(e);
       if (this.drag) {
         this.drag = false;
         this.dragEnd = true;
 //        log("DRAG RELEASE, speed: (" + this.dragVector[0] + ", " + this.dragVector[1] + ")");
       }
+      
+//      return false;
     },
 
 //    //  add(this.dragVector, mult(this.tmp, 0.5)); // do we need this? And if so, why??
@@ -425,27 +450,35 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //    //},
 //    
 
-    connect: function( hammer ){        
-      hammer.on('drag', this._ondrag);
-      hammer.on('dragend', this._ondragend);
+    connect: function() {
+      this._connected = true;
+      this.hammer.on('drag', this._ondrag);
+      this.hammer.on('dragend', this._ondragend);
     },
-
-    disconnect: function( hammer ){
-      // unsubscribe when disconnected
-      hammer.off('drag', this._ondrag);
-      hammer.off('dragend', this._ondragend);
+    
+    disconnect: function() {
+      this._connected = false;
+      this.hammer.off('drag', this._ondrag);
+      this.hammer.off('dragend', this._ondragend);
+    },
+    
+    isOn: function() {
+      return this._connected;
     },
     
     tick: function( data ) {
+      if (!this.isOn())
+        return
+            
       if (this.dragEnd) {
         this.dragEnd = false;
-        THERE.dragend(this.lastDragVector, DRAGGABLES);        
+        THERE.dragend(this.lastDragVector, this.id);        
         zero(this.lastDragVector);
       }
       
       if (this.drag && !isEqual(this.dragVector, zeroVector)) {
 //        log("DRAG, distance: (" + this.dragVector[0] + ", " + this.dragVector[1] + ")");
-        THERE.drag(this.dragVector, DRAGGABLES);
+        THERE.drag(this.dragVector, this.id);
         zero(this.dragVector);
       }
     }
@@ -461,7 +494,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   }
   
   bridge = {
-    defaultConstants: CONSTANTS,
+    constants: CONSTANTS,
     init: function() {
       if (!worker) {
         this.here.init();
@@ -473,11 +506,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       THERE.rpc(null, 'echo', [addCallback(callback)]);
     },
     
-    addBody: function(id, type, options, el, draggable) {
+    addBody: function(id, type, options, el, hammer) {
       if (el)
         HERE.addBody(el, id);
-      if (draggable)
-        this.addDraggables(id);
+      if (hammer)
+        this.addDraggable(hammer || el, id);
       
       THERE.addBody(type, options, id);
     },
@@ -490,11 +523,24 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       THERE.unbenchBodies.apply(THERE, arguments);
     },
     
-    addDraggables: function(/* ids */) {
-      DRAGGABLES.push.apply(DRAGGABLES, arguments);
+    addDraggable: function(hammerOrElement, id) {
+      var proxy = new DragProxy(hammerOrElement, id);
+      DRAGGABLES[id] = proxy;
+      return proxy;
     },
-    removeDraggables: function(/* ids */) {
-      DRAGGABLES = _.difference(DRAGGABLES, _.toArray(arguments));
+    
+    suspendDraggable: function(id) {
+      var draggable = DRAGGABLES[id];
+      if (draggable)
+        draggable.disconnect();
+      
+//      DRAGGABLES = _.difference(DRAGGABLES, _.toArray(arguments));
+    },
+
+    removeDraggable: function(id) {
+      this.suspendDraggable(id);
+      delete DRAGGABLES[id];
+//      DRAGGABLES = _.difference(DRAGGABLES, _.toArray(arguments));
     },
 
     here: {
@@ -502,6 +548,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         return ID_TO_LAST_TRANSFORM[id];
       },      
       on: function(event, id, callback) {
+        if (arguments.length == 2) {
+          callback = id;
+          id = '';
+        }
+        
         var byEvent = getRenderListeners(event),
             cbs;
         
@@ -542,10 +593,14 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         debugger;
       },
       init: function() {
-        hammer = new Hammer(document, hammerOptions);
-        DragProxy.init();
-        DragProxy.connect(hammer);
-        document.addEventListener('mouseout', DragProxy._onmouseout.bind(DragProxy));
+//        hammer = new Hammer(document, hammerOptions);
+//        DragProxy.init();
+//        DragProxy.connect(hammer);
+        document.addEventListener('mouseout', function() {
+          for (var id in DRAGGABLES) {
+            DRAGGABLES[id]._onmouseout();
+          }
+        });
         
         tickerId = FrameWatch.listenToTick(function(lastFrameDuration) {
           if (_.size(UNRENDERED)) {            
@@ -554,7 +609,10 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           }
           
           DOM.processRenderQueue();
-          DragProxy.tick();
+          for (var id in DRAGGABLES) {
+            DRAGGABLES[id].tick();
+          }
+          
           if (LOCK_STEP) {
             var newNow = _.now(),
             delay = TIMESTEP > newNow - NOW;    
@@ -604,6 +662,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           debugger;
         };
       },
+      
       addBody: function(el, id) {
         ID_TO_EL[id] = el;
       },
@@ -688,6 +747,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         newLayout: function() {
           return LayoutManager.apply(null, arguments);
         }
+      },
+      
+      set: function(constantName, value) {
+        bridge.constants[constantName] = value;
+        return this.rpc(null, 'set', _.toArray(arguments));
       }
     }
   };

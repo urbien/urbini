@@ -8,26 +8,26 @@ define('views/HorizontalListView', [
   'views/mixins/Scrollable',
   'views/mixins/LazyImageLoader'
 ], function(G, U, Events, ResourceListView, HorizontalListItemView, Scrollable, LazyImageLoader) {
-  var mixins = [Scrollable];
+  var mixins = [];
   if (G.lazifyImages)
     mixins.unshift(LazyImageLoader);
   
   return ResourceListView.extend({
     mixins: mixins,
+    className: 'thumb-gal',
     _renderedIntersectionUris: null,
-    _scrollableOptions: {
-      axis: 'X',
-      keyboard: false
-    },
+//    _scrollableOptions: {
+//      axis: 'X',
+//      keyboard: false
+//    },
     _horizontal: true,
     _visible: false,
     _elementsPerPage: 6,
-    className: 'thumbnail-gallery',
 
     initialize: function(options) {
 //      _.bindAll(this, 'renderItem');
       ResourceListView.prototype.initialize.apply(this, arguments);
-      _.extend(this._masonryOptions, {
+      _.extend(this.options, {
         horizontal: true, 
         oneElementPerRow: false,
         oneElementPerCol: true,
@@ -61,14 +61,6 @@ define('views/HorizontalListView', [
       }    
     },
     
-    getPageTag: function() {
-      return 'div';
-    },
-
-    setPageAttributes: function(el) {
-      el.style.display = 'inline-block';
-    },
-
     preinitializeItem: function(res) {
       var source = this.parentView.resource;
       return HorizontalListItemView.preinitialize({
@@ -118,10 +110,18 @@ define('views/HorizontalListView', [
       if (!this._visible) {
         this._visible = true;
         this.el.dataset.viewid = this.cid;
-        this.$el.trigger("create");
+        if (G.isJQM())
+          this.$el.trigger("create");
       }
       
       return ResourceListView.prototype.postRender.apply(this, arguments);
+    },
+    
+    getContainerBodyOptions: function() {
+      var options = ResourceListView.prototype.getContainerBodyOptions.apply(this, arguments);
+      delete options.lock.x;
+      options.lock.y = 0;
+      return options;
     }
   }, {
     displayName: "HorizontalListView",

@@ -4000,7 +4000,7 @@ Physics.behavior('verlet-constraints', function( parent ){
   ConditionalConstraint.prototype = {
     _armed: true,
     _disabled: false,
-    friction: 0.75,
+    damping: 0.75,
       
     isDisabled: function() {
       return this._disabled;
@@ -4524,7 +4524,7 @@ Physics.behavior('verlet-constraints', function( parent ){
                         BA.mult( proportion );
                     }
 
-                    BA.mult(1 - con.friction);
+                    BA.mult(1 - con.damping);
                     con.bodyA.state.pos.vadd( BA );
 
                     if ( !con.bodyB.fixed ){
@@ -4538,7 +4538,7 @@ Physics.behavior('verlet-constraints', function( parent ){
                         BA.mult( 1 - proportion );
                     }
 
-                    BA.mult(1 - con.friction);
+                    BA.mult(1 - con.damping);
                     con.bodyB.state.pos.vsub( BA );
                 }
             }

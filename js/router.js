@@ -1606,10 +1606,18 @@ define('router', [
         
 //        if (G.isJQM()) 
       
-      Physics.echo(function() {
-        console.log("CHANGING PAGE");
+//      Physics.echo(function() {
+//        console.log("CHANGING PAGE");
         this.$changePage({changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});
-      }.bind(this));
+//      }.bind(this));
+        
+//        Physics.echo(function() {
+//          console.log("CHANGING PAGE");
+//          this.$changePage({changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});
+//          this.nextTransition = null;
+//          Events.trigger('pageChange', prev, view);
+//        }.bind(this));
+
 /*
         if (G.currentApp.widgetLibrary  && G.currentApp.widgetLibrary == 'Building Blocks') {
           var hdr = $('div.ui-page-active .hdr');

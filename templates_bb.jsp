@@ -435,14 +435,6 @@
     {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
     <div id="name" class="resTitle" {{= this.categories ? 'style="width: 100%;background:#757575;"' : 'style="min-height: 20px;background:#757575;"' }} align="center">
       <h4 id="pageTitle" style="font-weight:normal;">{{= this.title }}</h4>
-      <div class="physics" style="background-color:white">
-        <label for="drag">Air drag</label>
-        1<input type="range" name="drag" value={{= drag * 100 }} min="1" max="99">100
-        <label for="springFriction">Spring friction</label>
-        1<input type="range" name="springFriction" value={{= springFriction * 100 }} min="1" max="99">100
-        <label for="springStiffness">Spring stiffness</label>
-        1<input type="range" name="springStiffness" value={{= springStiffness * 100 }} min="1" max="99">100
-      </div>
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
         <button style="max-width:200px; display: inline-block;" id="doTryBtn">
           {{ if (obj.tryApp) { }}
@@ -481,6 +473,46 @@
         </button>
       </div>
     </div>
+    <div class="physics" style="background-color:#8BA2EE; color:#FFFFFF; padding:5px;">
+      <!--section role="region">
+        <div role="slider" aria-valuemin="1" aria-valuenow="{{= drag }}" aria-valuemax="99" aria-valuetext="Air drag">
+          <div>
+            <progress value="{{= drag }}" max="99"></progress>
+            <button>handler</button>
+          </div>
+        </div>
+        <div role="slider" aria-valuemin="1" aria-valuenow="{{= springDamping }}" aria-valuemax="99" aria-valuetext="Spring damping">
+          <div>
+            <progress value="{{= springDamping }}" max="99"></progress>
+            <button>handler</button>
+          </div>
+        </div>
+        <div role="slider" aria-valuemin="1" aria-valuenow="{{= springStiffness }}" aria-valuemax="99" aria-valuetext="Spring stiffness">
+          <div>
+            <progress value="{{= springStiffness }}" max="99"></progress>
+            <button>handler</button>
+          </div>
+        </div>
+      </section-->
+      <div class="physics">
+        <label for="drag">Air drag</label>
+        1<input type="range" id="drag" name="drag" value={{= drag * 100 }} min="1" max="99">100
+        <label for="springDamping">Spring damping</label>
+        1<input type="range" id="springDamping" name="springDamping" value={{= springDamping * 100 }} min="1" max="99">100
+        <label for="springStiffness">Spring stiffness</label>
+        1<input type="range" id="springStiffness" name="springStiffness" value={{= springStiffness * 100 }} min="1" max="99">100
+      </div>
+      <!--div class="physicsLabels">
+        <label for="drag" style="min-width:10%;">Air drag</label>
+        <label for="springDamping" style="min-width:10%">Spring damping</label>
+        <label for="springStiffness" style="min-width:10%">Spring stiffness</label><br />      
+      </div>
+      <div class="physicsProps">
+        1<input type="range" style="min-width:10%" name="drag" value={{= drag * 100 }} min="1" max="99">100
+        1<input type="range" style="min-width:10%" name="springDamping" value={{= springDamping * 100 }} min="1" max="99">100
+        1<input type="range" style="min-width:10%" name="springStiffness" value={{= springStiffness * 100 }} min="1" max="99">100
+      </div-->
+    </div>    
   </div>
 </script>
 

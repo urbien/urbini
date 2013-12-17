@@ -7,7 +7,7 @@ var ArrayProto = Array.prototype,
 		integrator,
 		CONSTANTS,
 		WORLD_CONFIG = {
-      positionRenderResolution: 0.2,
+      positionRenderResolution: 1,
       angleRenderResolution: 0.001,
       timestep: 1000 / 60,
       maxIPF: 6
@@ -20,9 +20,11 @@ var ArrayProto = Array.prototype,
     PUBSUB_SNAP_CANCELED = 'snap-canceled',
 		proxiedObjects,
 		layoutManagers = {},
-		DEBUG = true,
+		DEBUG,
 		DIR_UP,
 		DIR_DOWN,
+    DIR_LEFT,
+    DIR_RIGHT,
 		HEAD_STR = "head (top / left)",
 		TAIL_STR = "tail (bottom / right)";
 
@@ -198,6 +200,9 @@ function render() {
 			transform = renderBody(body);
 			if (transform) {
 				update = true;
+				if (/container/.test(body._id))
+				  log(body._id + ": " + transform.translate[0] + ", " + transform.translate[1]);
+				
 				transforms[body._id] = transform;
 			}
 		}
@@ -322,21 +327,29 @@ function initWorld(_world, stepSelf) {
 	Physics.util.ticker.start();
 	DIR_UP = Physics.vector(0, -1);
   DIR_DOWN = Physics.vector(0, 1);
+  DIR_LEFT = Physics.vector(-1, 0);
+  DIR_RIGHT = Physics.vector(1, 0);
 };
 
 function stopBody(body, atPos) {
-  var state = body.state;
-//  body.fixed = true;
+  var state = body.state,
+      lock = body.state.pos.unlock();
+  
+  body.fixed = true;
+  
   if (atPos)
     state.pos.clone(atPos);
   
-//  state.old.pos.clone(state.pos);
+  state.old.pos.clone(state.pos);
   state.acc.zero();
-//  state.old.acc.zero();
-
+  state.old.acc.zero();
   state.vel.zero();
-//  state.old.vel.zero();
-//  body.fixed = false;
+  state.old.vel.zero();
+
+  if (lock)
+    body.state.pos.lock(lock);
+  
+  body.fixed = false;
 };
 
 function getBodies(/* ids */) {
@@ -517,9 +530,21 @@ function pick(obj) {
     init: function() {
       var self = this,
           masonryOptions = this.masonryOptions,
-          doSlidingWindow = this.slidingWindow,
-          dirDown = Physics.vector(0, 1);
+          doSlidingWindow = this.slidingWindow;
       
+      if (this.horizontal) {
+        this.dirHead = DIR_LEFT;
+        this.dirTail = DIR_RIGHT;
+        this.axisIdx = 0;
+        this.orthoAxisIdx = 1;
+      }
+      else {
+        this.dirHead = DIR_UP;
+        this.dirTail = DIR_DOWN;
+        this.axisIdx = 1;
+        this.orthoAxisIdx = 0;
+      }
+        
       this._rangeChangeListeners = [];
       this.container = getBodies(this.container)[0];
       if (this.flexigroup)
@@ -536,9 +561,9 @@ function pick(obj) {
       });
   
       this.headEdge._id = Physics.util.uniqueId('headEdge');
-      log("SET TOP EDGE TO " + this.headEdge.state.pos.get(1));
-      this.headEdgeConstraint = API.distanceConstraint(this.offsetBody, this.headEdge, CONSTANTS.constraintStiffness, 0);
-      this.headEdgeConstraint.friction = CONSTANTS.springFriction;
+      log("SET TOP EDGE TO " + this.headEdge.state.pos.get(this.axisIdx));
+      this.headEdgeConstraint = API.distanceConstraint(this.offsetBody, this.headEdge, CONSTANTS.springStiffness, 0);
+      this.headEdgeConstraint.damping = CONSTANTS.springDamping;
 //      var dirSign,
 //          lastSign,
 //          timesCrossedThreshold,
@@ -557,10 +582,10 @@ function pick(obj) {
           this.headEdgeConstraint['break']();
       }, this, 10);
       
-      world.subscribe('springFriction', function(data) {
-        this.headEdgeConstraint.friction = data.value;
+      world.subscribe('springDamping', function(data) {
+        this.headEdgeConstraint.damping = data.value;
         if (this.tailEdgeConstraint)
-          this.tailEdgeConstraint.frictio = data.value;
+          this.tailEdgeConstraint.damping = data.value;
       }, this);
 
       world.subscribe('springStiffness', function(data) {
@@ -590,22 +615,13 @@ function pick(obj) {
 //        }
 //      }, this, 10);
       
-      this.headEdgeConstraint.armOnDistance(Infinity, DIR_UP); // no matter how far out of bounds we are, we should snap back
+      this.headEdgeConstraint.armOnDistance(Infinity, this.dirHead); // no matter how far out of bounds we are, we should snap back
 //      this.headEdgeConstraint.breakOnDistance(50, DIR_DOWN);
       if (this.bounds)
         this.setBounds(this.bounds); // convert to Physics AABB
       
       this._calcSlidingWindowDimensionRange();
       Physics.util.extend(masonryOptions, pick(this, 'bounds', 'horizontal', 'oneElementPerRow', 'oneElementPerCol', 'gutterWidth'));
-      if (this.horizontal) {
-        this.axisIdx = 0;
-        this.orthoAxisIdx = 1;
-      }
-      else {
-        this.axisIdx = 1;
-        this.orthoAxisIdx = 0;
-      }
-        
       if (this.oneElementPerRow || this.oneElementPerCol)
         this.averageBrickNonScrollDim = this.pageNonScrollDim;
         
@@ -621,7 +637,7 @@ function pick(obj) {
         delete this.bricks; // let mason keep track
       }
       
-      this.adjustSlidingWindow();
+      this['continue']();
     },
     
     updateBricks: function(data, skipResize) {
@@ -658,13 +674,13 @@ function pick(obj) {
         return;
       
       range = range ? this._capRange(range) : this.range;
-      if (this.lastRequestedRange.from == range.from && this.lastRequestedRange.to == range.to) {
-//        log("REQUESTING SAME RANGE AGAIN...what's the holdup?");
-//        if (this.range.from == this.lastRequestedRange.from && this.range.to == this.lastRequestedRange.to) {
-          log("IGNORING DUPLICATE RANGE REQUEST: " + this.lastRequestedRange.from + '-' + this.lastRequestedRange.to);
-          return;
-//        }
-      }
+//      if (this.lastRequestedRange.from == range.from && this.lastRequestedRange.to == range.to) { // TODO: if we received less bricks than we wanted, then a repeat request is not out of the question
+////        log("REQUESTING SAME RANGE AGAIN...what's the holdup?");
+////        if (this.range.from == this.lastRequestedRange.from && this.range.to == this.lastRequestedRange.to) {
+//          log("IGNORING DUPLICATE RANGE REQUEST: " + this.lastRequestedRange.from + '-' + this.lastRequestedRange.to);
+//          return;
+////        }
+//      }
       
       log("CURRENT RANGE: " + this.lastRequestedRange.from + '-' + this.lastRequestedRange.to + ", REQUESTING RANGE: " + range.from + '-' + range.to);
       this._waiting = true;
@@ -687,7 +703,19 @@ function pick(obj) {
 //    },
   
     setBounds: function(bounds) {
+//      if (this.bounds && this.bounds._pos) {
+//        var offsetHeadX = bounds[0] - this.bounds._pos._[0], 
+//            offsetHeadY = bounds[1] - this.bounds._pos._[1],
+//            offsetTailX = bounds[2] - this.bounds._pos._[0] - this.pageWidth, 
+//            offsetTailY = bounds[3] - this.bounds._pos._[1] - this.pageHeight;
+//        
+//        this.headEdge.state.pos.add(offsetHeadX, offsetHeadY);
+//        if (this.tailEdge)
+//          this.tailEdge.state.pos.add(offsetTailX, offsetTailY);
+//      }
+      
       this.bounds = Physics.aabb.apply(Physics, bounds);
+      
   //    this.pageOffset = [this.bounds._pos.get(0) - this.bounds._hw, 
   //                       this.bounds._pos.get(1) - this.bounds._hh];
       
@@ -717,7 +745,7 @@ function pick(obj) {
       if (Math.abs(diff) > 50) {
         this._lastScrollDirection = diff < 0 ? 'tail' : 'head';
         this._lastOffset.clone(this.offsetBody.state.pos);
-        this.adjustSlidingWindow();
+        this['continue']();
       }
     },
   
@@ -766,7 +794,6 @@ function pick(obj) {
             coords = this.getTailEdgeCoords();
         
         if (!this.tailEdge) {
-          var dirUp = Physics.vector(0, -1);
           this.tailEdge = Physics.body('point', {
             fixed: true,
             x: coords[0],
@@ -775,10 +802,10 @@ function pick(obj) {
           });
           
           this.tailEdge._id = Physics.util.uniqueId('tailEdge');
-          this.tailEdgeConstraint = API.distanceConstraint(this.offsetBody, this.tailEdge, CONSTANTS.constraintStiffness, 0);
-          this.tailEdgeConstraint.friction = CONSTANTS.springFriction;
+          this.tailEdgeConstraint = API.distanceConstraint(this.offsetBody, this.tailEdge, CONSTANTS.springStiffness, 0);
+          this.tailEdgeConstraint.damping = CONSTANTS.springDamping;
           this.tailEdgeConstraint['break']();
-          this.tailEdgeConstraint.armOnDistance(Infinity, DIR_DOWN); // no matter how far out of bounds we are, we should snap back
+          this.tailEdgeConstraint.armOnDistance(Infinity, this.dirTail); // no matter how far out of bounds we are, we should snap back
 //          this.tailEdgeConstraint.breakOnDistance(50, DIR_UP);
           world.subscribe('drag', function(data) {
             if (~data.bodies.indexOf(this.offsetBody) && this.offsetBody.state.pos.get(this.axisIdx) > this.tailEdge.state.pos.get(this.axisIdx))
@@ -794,10 +821,10 @@ function pick(obj) {
     
     setLimit: function(len) {
       log("SETTING BRICK LIMIT: " + len);
-      this._waiting = false;
+//      this._waiting = false;
       this.brickLimit = len;
       this.checkTailEdge();
-      this.adjustSlidingWindow();
+//      this.adjustSlidingWindow();
     },
     
     resize: function(bounds, updatedBricks) {
@@ -826,7 +853,7 @@ function pick(obj) {
       this.checkHeadEdge(true); // force adjustment
       this.checkTailEdge();
       this.enableEdgeConstraints();
-      this.adjustSlidingWindow();
+      this['continue']();
     },
     
     recalc: function() {
@@ -982,7 +1009,6 @@ function pick(obj) {
 //    },
 
     addBricks: function(optionsArr, prepend) {
-      this._waiting = false;
       var bricks = [],
           l = optionsArr.length,
           options;
@@ -1017,7 +1043,7 @@ function pick(obj) {
       
       log("ADDING " + l + " BRICKS TO THE " + (prepend ? "HEAD" : "TAIL") + " FOR A TOTAL OF " + (this.range.to - this.range.from));
       //    log("ACTUAL TOTAL AFTER ADD: " + this.mason.bricks.length);
-      this.adjustSlidingWindow();
+      this['continue']();
     },
 
     removeBricks: function(n, fromTheHead) {
@@ -1059,7 +1085,8 @@ function pick(obj) {
 
     'continue': function() {
       this._sleeping = this._waiting = false;
-      this.adjustSlidingWindow();
+      Physics.util.extend(this.lastRequestedRange, this.range);
+      this._adjustSlidingWindow();
     },
     
     wake: function() {
@@ -1080,7 +1107,7 @@ function pick(obj) {
     /**
      * determine if viewport is too close to one of the sliding window boundaries, in which case slide the sliding window, and grow it if it's too cramped
      */
-    adjustSlidingWindow: function() {
+    _adjustSlidingWindow: function() {
       if (!this.slidingWindow)
         return;
       
@@ -1248,13 +1275,6 @@ function pick(obj) {
 * API
 */
 
-function isInvalidVector(v) {
-  if (v.filter(function(x) {return isNaN(x)}).length) {
-    debugger;
-    return true;
-  }
-};
-  
 var API = {
   // almost verbatim from physicsjs
 /*  add: function(thing) {
@@ -1306,15 +1326,20 @@ var API = {
 
   teleport: function(bodyId /*[, another body's id] or [, x, y, z]*/) {
     var body = getBodies(bodyId)[0],
-        posLock = body.state.pos.unlock();
+//        posLock = body.state.pos.unlock(),
+        destination;
     
-    if (typeof arguments[1] == 'string')
-      body.state.pos.clone(getBodies(arguments[1])[0]);
-    else
-      body.state.pos.set(arguments[1], arguments[2], arguments[3]);
+    if (typeof arguments[1] == 'string') {
+      destination = getBodies(arguments[1])[0].state.pos;
+    }
+    else {
+      destination = Physics.vector.apply(Physics.vector, slice.call(arguments, 1));
+    }
     
-    if (posLock)
-      body.state.pos.lock(posLock);
+//    if (posLock)
+//      body.state.pos.lock(posLock);
+    log("Teleporting " + bodyId + " to " + destination.toString());
+    stopBody(body, destination);
   },
 
   /**
@@ -1322,12 +1347,14 @@ var API = {
    * @param id of anchor to snap to
    */
   snap: function(bodyId, anchorId) {
+    log("Snapping " + bodyId + " " + anchorId);
     var self = this,
         body = getBodies(bodyId)[0],
         posLock = body.state.pos.unlock(),
         anchor = getBodies(anchorId)[0],
-        constraint = this.distanceConstraint(body, anchor, 0.01, 0, Physics.vector(1, 0)); // only snap along X axis
+        constraint = this.distanceConstraint(body, anchor, CONSTANTS.springStiffness, 0, anchorId == 'left' ? DIR_LEFT : DIR_RIGHT); // only snap along X axis
     
+    constraint.damping = CONSTANTS.damping;
     world.publish(PUBSUB_SNAP_CANCELED); // finish (fast-forward or cancel?) any current snaps
     world.subscribe(PUBSUB_SNAP_CANCELED, endSnap);
     world.subscribe('step', checkStopped);
@@ -1386,11 +1413,8 @@ var API = {
 
 	drag: function drag(dragVector, ids) {
 		var v,
-			  bodies = getBodies.apply(null, ids);
+			  bodies = typeof ids == 'string' ? getBodies(ids) : getBodies.apply(null, ids);
 
-		if (isInvalidVector(dragVector))
-		  debugger;
-		
 		if (bodies.length) {
 			v = Physics.vector();
 			v._ = dragVector;
@@ -1404,10 +1428,7 @@ var API = {
 
 	dragend: function dragend(dragVector, ids, stop) {
 		var v,
-			  bodies = getBodies.apply(null, ids);
-		
-    if (isInvalidVector(dragVector))
-      debugger;
+        bodies = typeof ids == 'string' ? getBodies(ids) : getBodies.apply(null, ids);
 		
 		if (bodies.length) {
 			v = Physics.vector();
@@ -1451,13 +1472,15 @@ var API = {
   },
   
   set: function(constantName, value) {
+    CONSTANTS[constantName] = value;
+    
     switch (constantName) {
     case 'drag':
       integrator.options.drag = value;
       break;
-    case 'springFriction':
+    case 'springDamping':
       world.publish({
-        topic: 'springFriction',
+        topic: 'springDamping',
         value: value
       });
       

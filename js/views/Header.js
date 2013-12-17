@@ -20,6 +20,9 @@ define('views/Header', [
   var commonTypes = G.commonTypes;
   return BasicView.extend({
 //    viewType: 'any',
+    style: {
+      'z-index': 10001
+    },
     autoFinish: false,
     template: 'headerTemplate',
     initialize: function(options) {
@@ -446,7 +449,7 @@ define('views/Header', [
       }
 
       var templateSettings = this.getBaseTemplateData();
-      _.extend(templateSettings, Physics.defaultConstants);
+      _.extend(templateSettings, Physics.constants);
       if (U.isChatPage()) {
 //        templateSettings.more = $.param({
 //          "data-position": "fixed"
