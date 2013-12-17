@@ -735,14 +735,18 @@ function pick(obj) {
     },
     
     _onmove: function() {
-      if (this._sleeping || this._waiting)
+      if (this._sleeping)
         return;
       
       var offset = this.offsetBody.state.pos.get(this.axisIdx),
           lastOffset = this._lastOffset.get(this.axisIdx),
-          diff = offset - lastOffset;
-      
-      if (Math.abs(diff) > 50) {
+          diff = offset - lastOffset,
+          absDiff = Math.abs(diff);
+
+      if (absDiff > 50) {
+        if (this._waiting && absDiff < 100)
+          return;
+        
         this._lastScrollDirection = diff < 0 ? 'tail' : 'head';
         this._lastOffset.clone(this.offsetBody.state.pos);
         this['continue']();

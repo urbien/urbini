@@ -52,7 +52,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       CONSTANTS = {
         drag: 0.1,
         groupMemberConstraintStiffness: 0.3,
-        springDamping: 0.5,
+        springDamping: 0.1,
         springStiffness: 0.1 // stiff bounce: 0.1, // mid bounce: 0.005, // loosy goosy: 0.001,
       };
 

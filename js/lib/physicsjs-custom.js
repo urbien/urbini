@@ -4000,7 +4000,7 @@ Physics.behavior('verlet-constraints', function( parent ){
   ConditionalConstraint.prototype = {
     _armed: true,
     _disabled: false,
-    damping: 0.75,
+    damping: 0,
       
     isDisabled: function() {
       return this._disabled;
@@ -4208,6 +4208,7 @@ Physics.behavior('verlet-constraints', function( parent ){
             }
 
             world.subscribe('integrate:positions', this.resolve, this);
+            world.subscribe('integrate:velocities', this.dampen, this);
         },
 
         /**
@@ -4218,6 +4219,7 @@ Physics.behavior('verlet-constraints', function( parent ){
         disconnect: function( world ){
 
             world.unsubscribe('integrate:positions', this.resolve);
+            world.unsubscribe('integrate:velocities', this.dampen);
         },
 
         /**
@@ -4484,6 +4486,30 @@ Physics.behavior('verlet-constraints', function( parent ){
             scratch.done();
         },
 
+        dampenDistanceConstraints: function( coef ) {
+          var constraints = this._distanceConstraints
+              ,dt = this._world._opts.timestep / 1000
+              ,damping
+              ,con
+              ;
+
+          for ( var i = 0, l = constraints.length; i < l; ++i ) {
+              con = constraints[ i ];
+              if (con.isDisabled() || !con.isArmed() && !testArm(con))
+                continue;
+            
+              if (testBreak(con))
+                continue;
+              
+              damping = Math.pow(1 - con.damping, dt * coef * 10);
+              if ( !con.bodyA.fixed )
+                con.bodyA.state.vel.mult(damping);
+              
+              if ( !con.bodyB.fixed )
+                con.bodyB.state.vel.mult(damping);
+          }
+        },
+        
         resolveDistanceConstraints: function( coef ){
             var constraints = this._distanceConstraints
                 ,scratch = Physics.scratchpad()
@@ -4497,34 +4523,33 @@ Physics.behavior('verlet-constraints', function( parent ){
             for ( var i = 0, l = constraints.length; i < l; ++i ){
             
                 con = constraints[ i ];
-        if (con.isDisabled() || !con.isArmed() && !testArm(con))
-          continue;
-      
-        if (testBreak(con))
-          continue;
-      
+                if (con.isDisabled() || !con.isArmed() && !testArm(con))
+                  continue;
+              
+                if (testBreak(con))
+                  continue;
+              
                 // move constrained bodies to target length based on their
                 // mass proportions
                 BA.clone( con.bodyB.state.pos ).vsub( con.bodyA.state.pos );
-        if (con.dir) {
-          BA = BA.vproj(con.dir);
-          if (Math.abs(BA.norm()) < 1e-6)
-            continue;
-        }
+                if (con.dir) {
+                  BA = BA.vproj(con.dir);
+                  if (Math.abs(BA.norm()) < 1e-6)
+                    continue;
+                }
         
                 len = BA.normSq() || Math.random() * 0.0001;
                 corr = coef * con.stiffness * ( len - con.targetLengthSq ) / len;
-                
+                  
                 BA.mult( corr );
                 proportion = (con.bodyA.fixed || con.bodyB.fixed) ? 1 : con.bodyB.mass / (con.bodyA.mass + con.bodyB.mass);
 
                 if ( !con.bodyA.fixed ){
-
                     if ( !con.bodyB.fixed ){
                         BA.mult( proportion );
                     }
 
-                    BA.mult(1 - con.damping);
+//                    BA.mult(1 - con.damping);
                     con.bodyA.state.pos.vadd( BA );
 
                     if ( !con.bodyB.fixed ){
@@ -4533,12 +4558,11 @@ Physics.behavior('verlet-constraints', function( parent ){
                 }
 
                 if ( !con.bodyB.fixed ){
-
                     if ( !con.bodyA.fixed ){
                         BA.mult( 1 - proportion );
                     }
 
-                    BA.mult(1 - con.damping);
+//                    BA.mult(1 - con.damping);
                     con.bodyB.state.pos.vsub( BA );
                 }
             }
@@ -4551,7 +4575,20 @@ Physics.behavior('verlet-constraints', function( parent ){
             this._distanceConstraints = Physics.util.shuffle( this._distanceConstraints );
             this._angleConstraints = Physics.util.shuffle( this._angleConstraints );
         },
-    
+
+        dampen: function() {
+          var its = this.options.iterations
+              ,coef = 1 / its
+              ;
+
+          for (var i = 0; i < its; i++){
+
+              // this.shuffleConstraints();
+              this.dampenDistanceConstraints( coef );
+//              this.dampenAngleConstraints( coef );
+          }
+        },
+
         /**
          * Resolve constraints
          * @return {void}
