@@ -828,7 +828,7 @@ function pick(obj) {
     },
     
     resize: function(bounds, updatedBricks) {
-      if (this._sleeping || this._waiting) {
+      if (this._sleeping) {
         this._resizeArgs = arguments;
         return;
       }
