@@ -669,12 +669,8 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       if (!transformStr || transformStr == 'none')
         return _.clone(this._zeroTranslation);
       
-      var match = transformStr.match(/^matrix(3d)?/);
+      var match = transformStr.match(/^matrix/);
       if (match) {
-        if (match[1]) { // 3d
-          return 
-        }
-        
         var matrix = this.parseTransform(transformStr);
         return {
           X: matrix[3][0],

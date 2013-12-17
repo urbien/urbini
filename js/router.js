@@ -54,13 +54,12 @@ define('router', [
     
     while (i--) {
       page = pages[i];
-      translation = DOM.parseTranslation(page.style[transformLookup]);
-      if (translation && (x = translation.X)) {
+      transform = DOM.getTransform(page);
+      if (transform && (x = transform[3][0])) {
         var sign = x < 0 ? -1 : 1;
-        DOM.setStylePropertyValues(page.style, {
-          transform: DOM.getTranslationString(newWidth * sign),
-          transition: null
-        });
+        transform[3][0] = newWidth * sign;
+        page.style[transformLookup] = DOM.toMatrix3DString(transform);
+        page.style[DOM.prefix('transition')] = '';
       }
     }
   }, 20));

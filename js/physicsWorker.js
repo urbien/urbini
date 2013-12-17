@@ -200,8 +200,8 @@ function render() {
 			transform = renderBody(body);
 			if (transform) {
 				update = true;
-				if (/container/.test(body._id))
-				  log(body._id + ": " + transform.translate[0] + ", " + transform.translate[1]);
+//				if (/container/.test(body._id))
+//				  log(body._id + ": " + transform.translate[0] + ", " + transform.translate[1]);
 				
 				transforms[body._id] = transform;
 			}
