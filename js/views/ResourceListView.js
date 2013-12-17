@@ -773,10 +773,15 @@ define('views/ResourceListView', [
       this.log("PAGER", "REMOVING", to - from, "BRICKS FROM THE", fromTheHead ? "HEAD" : "TAIL", "FOR A TOTAL OF", this._displayedRange.to - this._displayedRange.from - (to - from));
       for (var i = fromTheHead ? 0 : childNodes.length - numToRemove, 
                end = fromTheHead ? numToRemove : childNodes.length; i < end; i++) {
+        
         var childEl = childNodes[i],
-            childView = this.children[childEl.dataset.viewid];
+            childView;
 
-        removedViews.push(childView);
+        if (childEl) {
+          childView = this.children[childEl.dataset.viewid];
+          if (childView)
+            removedViews.push(childView);
+        }
       }
 
       this.doRemove(removedViews);
