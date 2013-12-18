@@ -54,7 +54,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         groupMemberConstraintStiffness: 0.3,
         springDamping: 0.1,
         springStiffness: 0.1 // stiff bounce: 0.1, // mid bounce: 0.005, // loosy goosy: 0.001,
-      };
+      },
+      MOUSE_OUTED = false;
 
 
   function log() {
@@ -390,17 +391,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     _onmouseout: function(e) {
       if (this.drag && this.hammer) {
         // check if the user swiped offscreen (in which case we can't detect 'mouseup' so we will simulate 'mouseup' NOW)
-        e = e ? e : window.event;
-        var from = e.fromElement || e.relatedTarget || e.toElement;
-        
-  //      console.debug("FROM:", from);
-        if (!from || from.nodeName == "HTML") {
-          log("MOUSEOUT, attempting to trigger drag end");
-          this.hammer.element.dispatchEvent(new MouseEvent('mouseup', {
-            cancelable: true,
-            bubbles: true
-          }));
-        }
+        MOUSE_OUTED = true;
+        this.hammer.element.dispatchEvent(new MouseEvent('mouseup', {
+          cancelable: true,
+          bubbles: true
+        }));
       }
     },
 
@@ -620,9 +615,18 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //        hammer = new Hammer(document, hammerOptions);
 //        DragProxy.init();
 //        DragProxy.connect(hammer);
-        document.addEventListener('mouseout', function() {
-          for (var id in DRAGGABLES) {
-            DRAGGABLES[id]._onmouseout();
+        document.addEventListener('mouseout', function(e) {
+          e = e ? e : window.event;
+          var from = e.fromElement || e.relatedTarget || e.toElement;
+          if (!from || from.nodeName == "HTML") {
+            log("MOUSEOUT, attempting to trigger drag end");
+            for (var id in DRAGGABLES) {
+              DRAGGABLES[id]._onmouseout();
+              if (MOUSE_OUTED)
+                break;
+            }
+            
+            MOUSE_OUTED = false;
           }
         });
         
