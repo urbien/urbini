@@ -14,11 +14,14 @@ Urbini network, or appnet is inspired by IFTTT:
 
 4. Unlike IFTTT it is more programmable. IFTTT's trigger/action is just one of the ways to connect apps and devices, and in Urbini actions are written in JavaScript. In addition, all connections are unified via [backbone] data models. This allows to add scripts for any user actions.
 
+Physics UI
+========
+For this new idea to take off, it must be dead gorgeous. In 2013 the design went flat. In 2014 the focus in mobile web apps will be moving to motion, to realistic, fluid, intuitive motion. iOS and native apps serve to us as a shiny beacon. To give web apps an edge here, we integrated a physics engine into Urbini and are working with another physics engine developer to offer you more choices. We started with a very difficult control, an infinite scroll with momentum and edge bounces. It works for a full page vertically or horizontally or as a strip, like still shots in IMDB app. What is cool is that you control the physics, the air drag, the spring stiffness and damping, with more like mass, gravity, friction, magnetic snaps and lego-like constructions to come. We want devs to choose from a gallery of buttery smooth cool movements to drop into their apps. See more on physics later ... 
 
 The Appnet
 ==================
 See an [article on Appnet and its goals](https://github.com/urbien/urbini/wiki/Appnet).
-Think of Appnet as mashups++. Instead of custom ad hoc code connecting the apps, the Appnet offers a unified method of mapping any web api into a browser-based database. Apps can now use data from multiple sites as if it was one site.
+Now back to architecture for a bit. Think of Appnet as mashups++. Instead of custom ad hoc code connecting the apps, the Appnet offers a unified method of mapping any web api into a browser-based database. Apps can now use data from multiple sites as if it was one site.
 
 Here are the steps:
 
