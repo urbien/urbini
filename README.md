@@ -4,11 +4,11 @@ Urbini is a mobile web framework that helps web apps and native apps work togeth
 
 Physics UI
 ========
-For this new idea to take off, it must be dead gorgeous. In 2013 the design went flat. In 2014 the focus in mobile web apps will be moving to motion, to realistic, fluid, intuitive motion. iOS and native apps serve to us as a shiny beacon. To give web apps an edge here, we integrated a physics engine into Urbini and are working with another physics engine developer to offer you more choices. We started with a very difficult control, an infinite scroll with momentum and edge bounces. It works for a full page vertically or horizontally or as a strip, like still shots in IMDB app. What is cool is that you control the physics, the air drag, the spring stiffness and damping, with more like mass, gravity, friction, magnetic snaps and lego-like constructions to come. We want devs to choose from a gallery of buttery smooth cool movements to drop into their apps. See more on physics later ... 
+In 2013 the design went flat. In 2014 the focus in mobile web apps is on realistic, fluid, intuitive motion. iOS and native apps serve to us as a shiny beacon. To give web apps an edge here, we integrated a physics engine into Urbini (and are working with another physics engine developer to offer you more choices). We started with a very difficult control, an infinite scroll with momentum and edge bounces. It works for a full page vertically or horizontally or as a strip, like still shots in IMDB app. Not only it handles millions of rows on the tinyest of mobile devices, it provides cool way to  control its physics, the air drag, the spring stiffness and damping, with more simulas like mass, gravity, friction, magnetic snaps and even the lego-like constructions to come. We want devs to choose from a gallery of buttery smooth cool movements to drop into their apps. Read up, we'll talk about physics more a bit later. 
 
 Each app is a platform 
 =================
-IFTTT inspired us to turn each app into a hub for the complementary apps. For those familiar with IFTTT, here is a checklist how Urbini is similar and different.
+What developer does not secretly hope to turn his app into a platform? The IFTTT inspired our design that opens each app as a hub to the complementary apps. For those familiar with IFTTT, here is a compare and contrast checklist for Urbini and IFTTT:
 
 1. Like IFTTT, Urbini aspires to connect apps and devices (Internet of Things)
 
