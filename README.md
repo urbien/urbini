@@ -20,8 +20,7 @@ For this new idea to take off, it must be dead gorgeous. In 2013 the design went
 
 The Appnet
 ==================
-See an [article on Appnet and its goals](https://github.com/urbien/urbini/wiki/Appnet).
-Now back to architecture for a bit. Think of Appnet as mashups++. Instead of custom ad hoc code connecting the apps, the Appnet offers a unified method of mapping any web api into a browser-based database. Apps can now use data from multiple sites as if it was one site.
+We can't get far just on the looks. So back to architecture for a bit. Think of Appnet as mashups++. Instead of the custom ad-hoc code connecting the apps, the Appnet offers a unified method of mapping any web api into a browser-based database. Apps can now use data from multiple sites as if it was one site (see an [article on Appnet and its goals](https://github.com/urbien/urbini/wiki/Appnet)).
 
 Here are the steps:
 
@@ -37,7 +36,7 @@ App dev for the rest of us
 ====================
 Urbini lifts web apps to the level of native apps and then helps them work together in one network, thus making the mobile app dev field more open. @urbien we set out to build tools for ourselves to produce mobile web apps much faster. Then we realized that others could use the same tools. Thus Urbini was conceived. But we wanted to take Urbini much further. Our vision is to open mobile app dev to non-professional developers. Here is the architecture that we created to make this happen.
 
-Models drive app dev
+Models driven app dev
 =================
 Backbone and other MVC framewoks are drastically changing the way we build Web apps, allowing to move app dev from the server, where it traditionally happened, to the browser side. Require.js and other AMD loaders emerged to address the greater weight and complexity of such web apps. UI frameworks, like jQuery Mobile, Bootstrap, Brick emerged to lift such apps to a decent usability level, and the JS libraries, like the masonry (isotope, infinity, packery, etc.), mobiscroll, leaflet, d3, etc. are making writing apps entirely on the client side possible. Push notifications for Chrome, Firefox and Safari establish parity with the native apps for background operations. And HTML5 WebRTC gives web apps Skype-like functionality, something that only a handful of native apps can do.
 
