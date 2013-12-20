@@ -4,7 +4,11 @@ Urbini is a mobile web framework that helps web apps and native apps work togeth
 
 Physics UI
 ========
-In 2013 the design went flat. In 2014 the focus in mobile web apps is on realistic, fluid, intuitive motion. iOS and native apps serve to us as a shiny beacon here. To give web apps an edge, we integrated Urbini with a physics engine (and are working with another physics engine developer to offer you more choices). We started with a very difficult control, an infinite scroll with momentum and edge bounces. It works for a full page vertically or horizontally, or as a strip, like still shots in IMDB app. Not only this control handles millions of rows on the tinyest of mobile devices, it provides the cool way to control its physics, the air drag, the spring stiffness and damping. More controls with simulas to mass, gravity, friction, magnetic snaps and even the lego-like constructions will follow. We want devs to choose from a gallery of buttery smooth cool movements to drop into their apps. Read up, we'll talk about physics more a bit later. 
+In 2013 the design went flat. In 2014 the focus in mobile web apps is on realistic, fluid, intuitive motion. iOS and native apps serve to us as a shiny beacon here. To give web apps an edge, we integrated Urbini with a physics engine (and are working with another physics engine developer to offer you more choices). 
+
+We started with a very difficult control, an infinite scroll with momentum and edge bounces. It works for a full page vertically or horizontally, or as a strip, like still shots in IMDB app. Not only this control handles millions of rows on the tinyest of mobile devices, it provides the cool way to control its physics, the air drag, the spring stiffness and damping. 
+
+More controls with simulas for mass, gravity, friction, magnetic snaps will follow. We want devs to choose from a gallery of buttery smooth cool movements to drop into their apps. Read up, we'll talk about physics more a bit later. 
 
 Each app is a platform 
 =================
