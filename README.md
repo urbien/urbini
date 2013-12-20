@@ -2,25 +2,26 @@ Urbini
 ======
 Urbini is a mobile web framework that helps web apps and native apps work together in one network. 
 
-First we will describe this network, and then how Urbini lifts web apps to the level of native apps so that they can be equal peers in that network.
-
-Urbini network, or appnet is inspired by IFTTT:
-
-1. Like IFTTT it aspires to connect apps and devices (internet of things)
-
-2. Unlike IFTTT it is mobile, making app and device connections on smartphones and tablets.
-
-3. Unlike IFTTT it is open, all client code is here on github. And unlike IFTTT, channels (maps to existing apps) can be created by anyone.
-
-4. Unlike IFTTT it is more programmable. IFTTT's trigger/action is just one of the ways to connect apps and devices, and in Urbini actions are written in JavaScript. In addition, all connections are unified via [backbone] data models. This allows to add scripts for any user actions.
-
 Physics UI
 ========
 For this new idea to take off, it must be dead gorgeous. In 2013 the design went flat. In 2014 the focus in mobile web apps will be moving to motion, to realistic, fluid, intuitive motion. iOS and native apps serve to us as a shiny beacon. To give web apps an edge here, we integrated a physics engine into Urbini and are working with another physics engine developer to offer you more choices. We started with a very difficult control, an infinite scroll with momentum and edge bounces. It works for a full page vertically or horizontally or as a strip, like still shots in IMDB app. What is cool is that you control the physics, the air drag, the spring stiffness and damping, with more like mass, gravity, friction, magnetic snaps and lego-like constructions to come. We want devs to choose from a gallery of buttery smooth cool movements to drop into their apps. See more on physics later ... 
 
+Each app is a platform 
+=================
+IFTTT inspired us to turn each app into a hub for the complementary apps. For those familiar with IFTTT, here is a checklist how Urbini is similar and different.
+
+1. Like IFTTT, Urbini aspires to connect apps and devices (Internet of Things)
+
+2. Unlike IFTTT, Urbini is for mobile web, facilitating app and device connections on smartphones and tablets.
+
+3. Unlike IFTTT it is open, all connectivity code is here on github. And unlike IFTTT, channels (maps to existing apps) can be created by anyone.
+
+4. Unlike IFTTT it is more programmable. IFTTT's trigger/action is just one of the ways to connect apps and devices, and in Urbini actions are written in JavaScript. In addition, all connections are unified via [backbone] data models. This allows to add scripts for any user actions.
+
+
 The Appnet
 ==================
-We can't get far just on the looks. So back to architecture for a bit. Think of Appnet as mashups++. Instead of the custom ad-hoc code connecting the apps, the Appnet offers a unified method of mapping any web api into a browser-based database. Apps can now use data from multiple sites as if it was one site (see an [article on Appnet and its goals](https://github.com/urbien/urbini/wiki/Appnet)).
+Think of app networking in Urbini, as mashups++. Instead of the custom ad-hoc code connecting the apps, the Appnet offers a unified method of mapping any webapi into a browser-based database. Apps can now use data from multiple sites as if it was one site (see an [article on Appnet and its goals](https://github.com/urbien/urbini/wiki/Appnet)).
 
 Here are the steps:
 
@@ -34,19 +35,19 @@ Here are the steps:
 
 App dev for the rest of us
 ====================
-Urbini lifts web apps to the level of native apps and then helps them work together in one network, thus making the mobile app dev field more open. @urbien we set out to build tools for ourselves to produce mobile web apps much faster. Then we realized that others could use the same tools. Thus Urbini was conceived. But we wanted to take Urbini much further. Our vision is to open mobile app dev to non-professional developers. Here is the architecture that we created to make this happen.
+Urbini lifts mobile web apps to the level of native apps and then helps them work together in one network, thus making the mobile app dev field more open. @urbien we set out to build tools for ourselves to produce mobile web apps much faster. Then we realized that others could use the same tools. Thus Urbini was conceived. But we wanted to take Urbini much further. Our vision is to open mobile app dev to non-professional developers. Here is the architecture that we created to make this happen.
 
-Models driven app dev
+Data binding ++ 
 =================
-Backbone and other MVC framewoks are drastically changing the way we build Web apps, allowing to move app dev from the server, where it traditionally happened, to the browser side. Require.js and other AMD loaders emerged to address the greater weight and complexity of such web apps. UI frameworks, like jQuery Mobile, Bootstrap, Brick emerged to lift such apps to a decent usability level, and the JS libraries, like the masonry (isotope, infinity, packery, etc.), mobiscroll, leaflet, d3, etc. are making writing apps entirely on the client side possible. Push notifications for Chrome, Firefox and Safari establish parity with the native apps for background operations. And HTML5 WebRTC gives web apps Skype-like functionality, something that only a handful of native apps can do.
+MVC framewokslike Backbone have drastically changed the way we build Web apps, moving most of app dev from the server to the browser side. Require.js and other AMD loaders emerged to address the greater weight and complexity of such web apps. UI frameworks, like Bootstrap, Topcoat, Building Blocks, jQuery Mobile have offered great skins, and the JS libraries, like the masonry (isotope, infinity, packery, etc.), mobiscroll, leaflet, d3, etc. are making writing apps entirely on the client side possible. Now Push notifications for Chrome, Firefox and Safari are establishing the parity with the native apps for background operations. And pushing forward, HTML5 WebRTC gives web apps Skype-like functionality, something that only a handful of native apps can do.
 
 HTML5 on mobile is 10x more complex
 ===============================
-While this tech helps, the complexity of putting together all the pieces has gone up 10x times. And the major problem has not been solved. How do we make web apps catch up with native? The first thing we need to achieve is bootstrapping the new much fatter client; the second, we must cache it persistently and do not let browser wipe it out. Then we need to find a way to incrementally upgrade the app, without user noticing. And then the big task comes in, how do we make the app responsive and butter smooth? 
+While this tech helps, the complexity of putting together all the pieces has gone up 10x times. And the major problem has not been solved. How do we make web apps catch up with native? The first thing we now must worry about is bootstrapping the new, much fatter, client, store it on mobile and incrementally update it.
 
-The first answer to these questions is - we paint from the local data store, like native apps do. In the HTML5 world that means we have to use all of the offline storage methods available, as each has its own limitations: IndexedDB/WebSQL/LocalStorage/Appcache/FileSystem. We need to sync the data between the web site and local storage and do it efficiently. We need to upgrade the local db schema gradually and in the way that user does not notice it. And we must at all cost keep away from the main UI thread, as much as possible, since Javascript UI is singlethreaded.
+Then, like native apps we must paint from the local data store (in the current HTML5 world that means using a hodge podge of offline storage methods, each with its own limitations: IndexedDB/WebSQL/LocalStorage/Appcache/FileSystem). Then we need to sync the data seamlessly between the web site and local storage. We need to upgrade local db schema gradually and in the way that user does not notice it. And we must at all cost keep away from the main UI thread, since Javascript UI is singlethreaded.
 
-We have been solving all these problems and some more (e.g. UI for MVC models creation) at Urbien and we wanted to give back to the community. We think of Urbini as a first ever distro for Javascript. A boot loader, a packager, build tools, web db sync, and a UI package for apps. As a distro we made choices to pre-integrate certain packages and not their, possibly superior, alternatives. Please bear with us. We will try to add the flexibility to the packaging process to satisfy wider set of needs and tastes. 
+Urbini is solving all these problems. We think of Urbini as a first distro for Javascript. A boot loader, a packager, build tools, web db sync, an a UI package for apps. We want as much of it as possible to be replaceble with open source components that you prefer, e.g. a Pure CSS framework of your choice.
 
 Mobile HTML5 performance gap
 =========================
