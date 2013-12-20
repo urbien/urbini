@@ -43,13 +43,20 @@ Urbini lifts mobile web apps to the level of native apps and then helps them wor
 
 Data binding ++ 
 =================
-MVC framewokslike Backbone have drastically changed the way we build Web apps, moving most of app dev from the server to the browser side. Require.js and other AMD loaders emerged to address the greater weight and complexity of such web apps. UI frameworks, like Bootstrap, Topcoat, Building Blocks, jQuery Mobile have offered great skins, and the JS libraries, like the masonry (isotope, infinity, packery, etc.), mobiscroll, leaflet, d3, etc. are making writing apps entirely on the client side possible. Now Push notifications for Chrome, Firefox and Safari are establishing the parity with the native apps for background operations. And pushing forward, HTML5 WebRTC gives web apps Skype-like functionality, something that only a handful of native apps can do.
+MVC framewokslike Backbone have drastically changed the way we build Web apps, moving most of app dev from the server to the browser side. 
+
+Require.js and other AMD loaders emerged to address the greater weight and complexity of such web apps.
+UI frameworks, like Bootstrap, Topcoat, Building Blocks, jQuery Mobile have offered great skins, and the JS libraries, like the masonry (isotope, infinity, packery, etc.), mobiscroll, leaflet, d3, etc. are making writing apps entirely on the client side possible. 
+
+Now Push notifications have arrived for web apps. With push notifications Chrome, Firefox and Safari are establishing the parity with the native apps for background operations. And pushing forward, HTML5 WebRTC gives web apps Skype-like functionality, something that only a handful of native apps can do.
 
 HTML5 on mobile is 10x more complex
 ===============================
-While this tech helps, the complexity of putting together all the pieces has gone up 10x times. And the major problem has not been solved. How do we make web apps catch up with native? The first thing we now must worry about is bootstrapping the new, much fatter, client, store it on mobile and incrementally update it.
+While all this web tech helps, the complexity of putting all the pieces together has gone up 10x times. Yet the major problem of reaching native performance has still not been solved. To get there Urbini offers several components. 
 
-Then, like native apps we must paint from the local data store (in the current HTML5 world that means using a hodge podge of offline storage methods, each with its own limitations: IndexedDB/WebSQL/LocalStorage/Appcache/FileSystem). Then we need to sync the data seamlessly between the web site and local storage. We need to upgrade local db schema gradually and in the way that user does not notice it. And we must at all cost keep away from the main UI thread, since Javascript UI is singlethreaded.
+First one is bootstrapping all app assets, storing them on mobile and incrementally updating them without bothering the user. This achieves the offline support basis and speeds up app startup.
+
+Then, to be fast like native apps we must paint from the local data store (in the current HTML5 world that means using a hodge podge of offline storage methods, each with its own limitations: IndexedDB/WebSQL/LocalStorage/Appcache/FileSystem). Then we need to sync the data between the web site and local storage, seamlessly behind the scenes. Then we need to upgrade local db schema gradually and in the way that user does not notice it. And we must at all cost keep away from the main UI thread, since Javascript UI is singlethreaded.
 
 Urbini is solving all these problems. We think of Urbini as a first distro for Javascript. A boot loader, a packager, build tools, web db sync, an a UI package for apps. We want as much of it as possible to be replaceble with open source components that you prefer, e.g. a Pure CSS framework of your choice.
 
