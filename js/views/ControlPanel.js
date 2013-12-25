@@ -487,8 +487,9 @@ define('views/ControlPanel', [
             
             var doShow = false;
             var cnt;
-            var pValue = json[p];
+            var pValue = this.resource.get(p); //json[p];
             if (!_.has(json, p)) { 
+              var count = pValue ? pValue.count : 0;
               cnt = count > 0 ? count : 0;
               
               if (cnt != 0 || isPropEditable)
@@ -527,7 +528,7 @@ define('views/ControlPanel', [
               
               tmpl_data.icon = null;
               tmpl_data.range = range;
-              tmpl_data.backlink = prop.backlink;
+              tmpl_data.backlink = prop.backLink;
               tmpl_data.shortName = p;
               tmpl_data.name = n;
               tmpl_data.value = cnt;

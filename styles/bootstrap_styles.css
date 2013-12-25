@@ -6,7 +6,9 @@ li {
   position: relative;
 }
 #categories {font-size:20px;}
-
+.masonry-brick div[data-viewid] {
+  border: none;
+}
 #headerUl div {
   text-align:center;
   font-size:30px;

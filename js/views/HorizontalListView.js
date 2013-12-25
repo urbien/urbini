@@ -110,6 +110,7 @@ define('views/HorizontalListView', [
       if (!this._visible) {
         this._visible = true;
         this.el.dataset.viewid = this.cid;
+        this.el.style.height = '140px';
         if (G.isJQM())
           this.$el.trigger("create");
       }

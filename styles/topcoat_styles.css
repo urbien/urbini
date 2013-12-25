@@ -296,3 +296,6 @@ fieldset .listPage .topcoat-list__container {
   top:1.5rem;
   overflow:hidden;
 }
+.masonry-brick div[data-viewid] {
+  border: none;
+}

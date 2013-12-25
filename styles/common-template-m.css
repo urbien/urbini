@@ -19,6 +19,10 @@ input {
 
 html { height: 100%; }
 
+.masonry-brick div[data-viewid] {
+  border-bottom: 1px solid #aaa;
+}
+
 [data-role="page"] {
   min-height: 100%;
   overflow:hidden;
@@ -128,7 +132,6 @@ html { height: 100%; }
 .scrollable {
   -webkit-transform-style: preserve-3d;
   transform-style: preserve-3d;
-/*  overflow: hidden;*/
 }
 
 .nab { 
@@ -956,7 +959,7 @@ div.nabBtn {
 }
 
 .thumb-gal {
-  padding: 10px 0px 0px 5px;
+  padding: 0px 0px 0px 0px;
   width: 100%;
   white-space: nowrap;
 }
@@ -966,6 +969,7 @@ div.nabBtn {
   display: inline-block;
   background: none;
   background-image:none;
+  cursor: pointer;
 }
 
 .thumb-inner {
@@ -990,14 +994,15 @@ div.nabBtn {
 }
 .phOverlay h3 {
   font-size:14px;
-  margin-left: -5px;
+  margin-left: 5px;
+  color: #ddd;
 }
 .phOverlay {
   position:absolute;
   bottom:-1px;
   margin:0;
-  height:20%;
-  width:93.5%;
+  height:30%;
+  width:140px;
   background:rgba(21,21,21, 0.7);
 }
 .thumb-inner div {

@@ -155,7 +155,7 @@ define('views/Header', [
     },
     events: {
       'change #fileUpload'         : 'fileUpload',
-      'change .physics > input'    : 'changePhysics',
+      'change .physics input'    : 'changePhysics',
       'click #categories'          : 'showCategories',
 //      'click #installApp'         : 'installApp',
       'click #moreRanges'          : 'showMoreRanges'
@@ -163,7 +163,9 @@ define('views/Header', [
     
     changePhysics: function(e) {
       var val = parseInt(e.target.value);
-      if (e.target.name != 'degree')
+      if (e.target.name == 'degree')
+        val *= -1;
+      else
         val /= 100;
       
       this.log('PHYSICS: ' + e.target.name + ' = ' + val);

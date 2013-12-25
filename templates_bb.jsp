@@ -6,10 +6,10 @@
 <!-- Templates -->
 <script type="text/template" id="resource-list">
   <!-- Resource list page -->
-  <section id="{{= viewId }}" data-type="sidebar" data-position="right" style="left:auto;right:0;visibility:hidden;z-index:10001"></section>
-  <section id="{{= viewId + 'r' }}" data-type="sidebar" data-position="right" style="left:auto;right:0;visibility:hidden;z-index:10001"></section> 
+  <section id="{{= viewId }}" data-type="sidebar" data-position="right" style="left:auto;right:0;visibility:hidden;z-index:10002"></section>
+  <section id="{{= viewId + 'r' }}" data-type="sidebar" data-position="right" style="left:auto;right:0;visibility:hidden;z-index:10002"></section> 
   <!-- div id="headerMessageBar"></div -->
-  <div id="headerDiv" style="position:relative; z-index:10000000;"></div>
+  <div id="headerDiv" style="position:relative;"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" role="main">
   <!--
@@ -67,7 +67,6 @@
     
     <div id="photogrid" data-inset="true" data-filter="false" class="thumb-gal hidden">
     </div>
-    <br/>
     {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
        <div style="padding:10px;"><a data-role="button" class="{{= 'ui-btn-hover-' + G.theme.swatch }}" data-icon="heart" data-theme="{{= G.theme.swatch }}" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></div>
     {{ } }}
@@ -231,7 +230,7 @@
       style="padding: .7em 10px 10px 0px;"
     {{ } }}
     {{ if (!obj.isJst  &&  (obj._hasSubmittedBy || !obj.v_submitToTournament)) { }}
-      style="padding-left: 1rem;min-height:59px"
+      style="padding: 1rem; border-bottom:1px solid #aaa;"
     {{ } }}
   {{ } }}
   {{ if (obj.v_submitToTournament) { }}
@@ -254,7 +253,7 @@
   {{ } }}
   {{= obj.showCount ? '<span class="ui-li-count">' + obj[showCount].count + '</span>' : '' }} 
   {{ if (obj.comment) { }}
-    <p style="padding-top:0.5rem;">{{= comment }}</p>
+    <p style="padding:0.5rem 0 0 1.5rem;">{{= comment }}</p>
   {{ } }}
   </div>
   </div>
@@ -473,7 +472,7 @@
         </button>
       </div>
     </div>
-    <div class="physics" style="background-color:#8BA2EE; color:#FFFFFF; padding:5px;">
+    <div class="physics" style="display:none; background-color:#606060; color:#FFFFFF; padding:5px;">
       <!--section role="region">
         <div role="slider" aria-valuemin="1" aria-valuenow="{{= drag }}" aria-valuemax="99" aria-valuetext="Air drag">
           <div>
@@ -494,16 +493,26 @@
           </div>
         </div>
       </section-->
-      <div class="physics">
-        <label for="drag">Air drag</label>
-        1<input type="range" id="drag" name="drag" value={{= drag * 100 }} min="1" max="99">100
-        <label for="springDamping">Spring damping</label>
-        1<input type="range" id="springDamping" name="springDamping" value={{= springDamping * 100 }} min="1" max="99">100
-        <label for="springStiffness">Spring stiffness</label>
-        1<input type="range" id="springStiffness" name="springStiffness" value={{= springStiffness * 100 }} min="1" max="99">100
-        <label for="degree">Polynomial degree</label>
-        -10<input type="range" id="degree" name="degree" value={{= degree }} min="-10" max="10">10
-      </div>
+      <table class="physics" cellspacing="0" celladding="2" width="100%" style="background-color:#606060;display:none; ">
+        <tr>
+        <td>
+          <label for="drag">Air drag</label><br/>
+          <input type="range" id="drag" name="drag" value={{= drag * 100 }} min="1" max="99">
+        </td>  
+        <td>
+          <label for="springDamping">Spring damping</label><br/>
+          <input type="range" id="springDamping" name="springDamping" value={{= springDamping * 100 }} min="1" max="99">
+        </td>  
+        <td>
+          <label for="springStiffness">Spring stiffness</label><br/>
+          <input type="range" id="springStiffness" name="springStiffness" value={{= springStiffness * 100 }} min="1" max="99">
+        </td>
+        <td>
+          <label for="degree">Sensitivity</label>
+          <input type="range" id="degree" name="degree" value={{= degree }} min="-10" max="10">
+        </td>
+        </tr>
+      </table>
       <!--div class="physicsLabels">
         <label for="drag" style="min-width:10%;">Air drag</label>
         <label for="springDamping" style="min-width:10%">Spring damping</label>

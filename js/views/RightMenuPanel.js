@@ -12,7 +12,7 @@ define('views/RightMenuPanel', [
   
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'grab', 'release', 'chat');
+      _.bindAll(this, 'render', 'grab', 'release', 'chat', 'physics');
       BasicView.prototype.initialize.apply(this, arguments);
   //    this.resource.on('change', this.render, this);
       var type = this.modelType;
@@ -33,6 +33,7 @@ define('views/RightMenuPanel', [
       'click #subscribe'         : 'subscribe',
       'click .chattee'           : 'chat',
       'click #urbien123'         : 'home',
+      'click #physics123'        : 'physics',
       'click #login'             : 'login',
       'click [data-href]'        : BasicView.clickDataHref
 //        ,
@@ -42,6 +43,22 @@ define('views/RightMenuPanel', [
     home: function(e) {
       Events.stopEvent(e);
       window.location.href = G.serverName + '/app/UrbienApp';
+    },
+    physics: function(e) {
+      Events.stopEvent(e);
+      
+      var elm = this.el.parentElement;
+      while (!elm.id  ||  elm.id.indexOf('page') == -1)
+        elm = elm.parentElement;
+      var p = elm.querySelectorAll('.physics');
+      for (var i=0; i<p.length; i++) {
+        p[i].style.display = 'block';
+      }
+      window.dispatchEvent(new Event("viewportdimensions"));
+//      p.forEach(function(element) {
+//        element.style.visibility = 'visible';  
+//      });
+      
     },
     
 //    click: function(e) {
@@ -357,7 +374,10 @@ define('views/RightMenuPanel', [
 //        this.buildGrabbed(frag);
 //        this.buildGrab(frag);
         this.buildActionsMenu(frag);
-        
+
+        if (G.isBB()) {
+          U.addToFrag(frag, this.menuItemTemplate({title: this.loc("Physics"), id: 'physics123'}));          
+        }
         if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory')) {
           var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.allowedChangeHistory');
           if (!ch  ||  !ch.length)

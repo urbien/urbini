@@ -168,7 +168,7 @@ define('globals', function() {
   //  console.log("evaling/injecting", text.slice(text.lastIndexOf('# sourceURL')));
     // Script Injection
     
-    var idx = text.indexOf('//# sourceURL');
+    var idx = text.indexOf('//@ sourceURL');
     idx = idx == -1 ? 0 : idx;
     var length = idx ? 100 : text.length - idx;
 //    Lablz.log(Lablz.TAG, 'module load', text.slice(idx, idx + length));
@@ -205,7 +205,7 @@ define('globals', function() {
         
       switch (ext) {
         case '.css':
-          text += '\r\n/*//# sourceURL=' + url + '*/';
+          text += '\r\n/*//@ sourceURL=' + url + '*/';
           if (appcache[name])
             G.linkCSS(G.serverName + '/' + url);
           else
@@ -228,9 +228,9 @@ define('globals', function() {
             text += '/*\n'; // see http://bugs.jquery.com/ticket/13274#comment:6
 //          temp commment out as profiler says sourceMappingURL slows down app load          
 //          if (G.minify)
-//            text += '\n//# sourceMappingURL=' + url.match(/\/([^\/]*)\.js$/)[1] + '.min.js.map';
+//            text += '\n//@ sourceMappingURL=' + url.match(/\/([^\/]*)\.js$/)[1] + '.min.js.map';
           
-          text += '\n//# sourceURL=' + url;
+          text += '\n//@ sourceURL=' + url;
           if (browser.msie) 
             text += '*/\n';
 

@@ -909,7 +909,10 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     },
     
     lazifyImage: function(img, immediately) {
-      return this.lazifyImages([img], immediately);
+      if (!G.lazifyImages)
+        return img;
+      
+      return this.lazifyImages([img], immediately)[0];
     },
     
     lazifyImages: function(images, immediately) {

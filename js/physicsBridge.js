@@ -501,18 +501,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 
       stopDragEvent(e);
       DRAG_LOCK = null;
-      endAllDrags(this);
-      
-//      console.log("DRAG END");      
-//      for (var id in DRAGGABLES) {
-//        if (this.id != id) {
-//          var draggable = DRAGGABLES[id];
-//          if (draggable.drag) { // cross-over drag
-//            log("CROSS OVER DRAG");
-//            draggable._ondragend(e);
-//          }
-//        }
-//      }
+      endAllDrags(this);      
     },
 
 //    //  add(this.dragVector, mult(this.tmp, 0.5)); // do we need this? And if so, why??

@@ -266,7 +266,7 @@ define('views/ResourceListView', [
         return;
       
       self = this.children[viewId]; // list item view
-      if (self.mvProp) 
+      if (self.mvProp  ||  self.TAG == 'HorizontalListItemView') 
         return;
       
       Events.stopEvent(e);
@@ -279,8 +279,9 @@ define('views/ResourceListView', [
       if (self.doesModelSubclass('model/workflow/Alert')) {
         Events.stopEvent(e);
         var atype = self.resource.get('alertType');
-        var action = atype  &&  atype == 'SyncFail' ? 'edit' : 'view';   
-        Events.trigger('navigate', U.makeMobileUrl(action, self.resource.get('forum'), {'-info': self.resource.get('davDisplayName')}));//, {trigger: true, forceFetch: true});
+        var action = atype  &&  atype == 'SyncFail' ? 'edit' : 'view';
+        var uri = self.resource.get('forum') || self.resource.getUri();
+        Events.trigger('navigate', U.makeMobileUrl(action, uri, {'-info': self.resource.get('davDisplayName')}));//, {trigger: true, forceFetch: true});
         return;
       }
       if (self.doesModelSubclass('model/social/QuizQuestion')) {
@@ -319,6 +320,7 @@ define('views/ResourceListView', [
             return;
           }
         }
+        
         var pModel = type ? U.getModel(type) : null;
         if (params  &&  type  &&   p1  &&  p2/*isIntersection*/) {
           Events.stopEvent(e);

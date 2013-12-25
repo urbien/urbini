@@ -365,6 +365,8 @@ define('views/ResourceImageView', [
         this.el.style.height = h + 'px';
       }
       
+      // HACK to update scroll bounds, remove when we start using mutation observer
+      this.pageView._onViewportDimensionsChanged();
       this.pageView.trigger('loadLazyImages', this.el);
       return this;
     }

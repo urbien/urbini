@@ -620,7 +620,7 @@
   {{ } }}
     <img data-lazysrc="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : G.getBlankImgSrc()}}" 
     {{ if (obj.right) { }}  
-      class="lazyImage" style="
+      class="lazyImage" style="position:absolute;
         left:-{{= left }}px; top:-{{= top }}px;
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px); {{= obj.mH ? 'max-height:' + mH + 'px;' : '' }}"
     {{ } }}
@@ -701,7 +701,7 @@
   -->  
   
   {{ if (obj.comment) { }}
-    <p>{{= comment }}</p>
+    <p style="padding-left: 5px; margin:7px 0 0 0; font-size:12px">{{= comment }}</p>
   {{ } }}
   </div>
   </div>
@@ -1335,8 +1335,7 @@
 </script>
 
 <script type="text/template" id="horizontalListItem">
-  <a href="{{= target }}">
-  </a> 
+  <a style="position:absolute" href="{{= target }}">
     {{ if (obj.image) { }}
       <img data-lazysrc="{{= image }}" class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" 
       {{ if (obj.right) { }}  
@@ -1345,6 +1344,7 @@
       {{ } }}
       />    
     {{ }              }}
+  </a> 
   <div class="phOverlay">
     {{= obj.title ? '<h3>{0}</h3>'.format(obj.title) : '' }}
     {{= obj.caption  &&  obj.caption.trim() ? '<p>{0}</p>'.format(obj.caption) : '' }}

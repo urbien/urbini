@@ -768,9 +768,9 @@ function pick(obj) {
       this.pageHeight = this.bounds._hh * 2;
       this.pageArea = this.pageWidth * this.pageHeight;
       if (this.pageArea < 400 * 400)
-        this.minPagesInSlidingWindow = 3;
+        this.minPagesInSlidingWindow = 7;
       else if (this.pageArea < 800 * 800)
-        this.minPagesInSlidingWindow = 5;
+        this.minPagesInSlidingWindow = 7;
       else
         this.minPagesInSlidingWindow = 7;
       
@@ -916,18 +916,18 @@ function pick(obj) {
           numBricks = this.numBricks(),
           i = numBricks;
       
-      while (i--) {
-        aabb = bricks[i].aabb();
-        avgWidth += aabb.halfWidth;
-        avgHeight += aabb.halfHeight;
-      };
-      
       Physics.util.extend(this.slidingWindowBounds, this.mason.getContentBounds());
       this.slidingWindowDimension = this.slidingWindowBounds.max - this.slidingWindowBounds.min;
       
       // TODO: prune unused props
 //      this.numBricks = bricks.length;
       if (numBricks) {
+        while (i--) {
+          aabb = bricks[i].aabb();
+          avgWidth += aabb.halfWidth;
+          avgHeight += aabb.halfHeight;
+        };
+        
         this.averageBrickWidth = avgWidth * 2 / numBricks + gutterWidth;
         this.averageBrickHeight = avgHeight * 2 / numBricks + gutterWidth;
         this.averageBrickScrollDim = this.horizontal ? this.averageBrickWidth : this.averageBrickHeight;
@@ -1281,7 +1281,7 @@ function pick(obj) {
 //        else if (this.brickLimit - range.to < this.bricksPerPage * 2) /// doesn't make any sense because if brick limit is set, we already have all those resources in the main thread, no need to fetch them from anywhere
 //          this.prefetch();
       }
-      else if (range.from > 0 && headDiff < this.slidingWindowOutsideBuffer) {
+      else if (maxPrepend && range.from > 0 && headDiff < this.slidingWindowOutsideBuffer) {
         var toAdd = Math.min(maxPrepend, defaultAddDelta);
         range.from -= toAdd;
         log("DECISION: growing sliding window by " + toAdd + " at the " + HEAD_STR);
