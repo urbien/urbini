@@ -318,6 +318,18 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     bounds[3] = bounds[3] + viewport.height;
   };
 
+  function replaceCallbacks(args) {
+    var i = args.length,
+        arg;
+    
+    while (i--) {
+      arg = args[i];
+      if (typeof arg == 'function') {
+        args[i] = addCallback(arg);
+      }
+    }
+  };
+  
   function addCallback(callback) {
     var cbId = _.uniqueId('physicsCallback');
     callbacks[cbId] = callback;
@@ -819,18 +831,25 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         this.rpc(objectName, 'unsubscribe', [event, callbackId]);
       },
 
-      rpc: function(objectName, method, args) {
-        if (args) {
-          var i = args.length,
-              arg;
-          
-          while (i--) {
-            arg = args[i];
-            if (typeof arg == 'function') {
-              args[i] = addCallback(arg);
-            }
-          }
+      chain: function() {
+        var rpcs = _.toArray(arguments),
+            rpc;
+        
+        for (var i = 0, l = rpcs.length; i < l; i++) {
+          rpc = rpcs[i];
+          if (rpc.args)
+            replaceCallbacks(rpc.args);
         }
+        
+        worker.postMessage({
+          method: 'chain',
+          args: rpcs
+        });
+      },
+      
+      rpc: function(objectName, method, args) {
+        if (args)
+          replaceCallbacks(args);
         
         worker.postMessage({
           object: objectName,

@@ -21,6 +21,8 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
         toDir = transition,
         fromDir = getOppositeDir(transition);
 
+    springStiffness = springStiffness || null;
+    springDamping = springDamping || null;
     if ($from)
       $from.trigger('page_beforehide');
       
@@ -30,9 +32,23 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
       var dfd = $.Deferred();
       toView.onload(function() {
         Physics.disableDrag();
-        Physics.there.rpc(null, 'teleport' + fromDir.capitalizeFirst(), [to, fromDir]); // teleportLeft, teleportRight, etc.
-        Physics.there.rpc(null, 'snap', [from, toDir, springStiffness, springDamping, finish]);
-        Physics.there.rpc(null, 'snap', [to, 'center', springStiffness, springDamping, finish]);
+        Physics.there.chain({
+            method: 'teleport' + fromDir.capitalizeFirst(), 
+            args: [to, fromDir]
+          },
+          {
+            method: 'snap', 
+            args: [from, toDir, springStiffness, springDamping, finish]
+          },
+          {
+            method: 'snap', 
+            args: [to, 'center', springStiffness, springDamping, finish]
+          }
+        );
+        
+//        Physics.there.rpc(null, 'teleport' + fromDir.capitalizeFirst(), [to, fromDir]); // teleportLeft, teleportRight, etc.
+//        Physics.there.rpc(null, 'snap', [from, toDir, springStiffness, springDamping, finish]);
+//        Physics.there.rpc(null, 'snap', [to, 'center', springStiffness, springDamping, finish]);
         
         function finish() {
           if (dfd.state() != 'resolved') {
