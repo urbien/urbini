@@ -107,6 +107,7 @@ define('views/HomePage', [
         this.removeInstallBtn();
       
       document.title = G.currentApp.title;
+      this.addToWorld(null, true);
       return this;
     },
     
