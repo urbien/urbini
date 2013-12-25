@@ -162,7 +162,10 @@ define('views/Header', [
     },
     
     changePhysics: function(e) {
-      var val = parseInt(e.target.value) / 100;
+      var val = parseInt(e.target.value);
+      if (e.target.name != 'degree')
+        val /= 100;
+      
       this.log('PHYSICS: ' + e.target.name + ' = ' + val);
       Physics.there.set(e.target.name, val);
     },

@@ -782,6 +782,9 @@ define('views/ResourceListView', [
           if (childView)
             removedViews.push(childView);
         }
+        else {
+          debugger; // this should never happen...
+        }
       }
 
       this.doRemove(removedViews);

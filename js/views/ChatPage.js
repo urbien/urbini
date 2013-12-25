@@ -509,6 +509,7 @@ define('views/ChatPage', [
         'opacity': 0.7
       });
       
+      this.addToWorld(null, true);
       this.finish();
     },
 

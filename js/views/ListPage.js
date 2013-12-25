@@ -349,7 +349,7 @@ define('views/ListPage', [
       var args = arguments,
           self = this;
       
-      this.ready.done(function() {
+      return this.ready.done(function() {
         Q.write(self.renderHelper, self, args);
       });
     },

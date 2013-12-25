@@ -56,10 +56,10 @@ define('views/ViewPage', [
         if (res.isA('Intersection')) {
           var aFeatured = U.getCloneOf(this.vocModel, 'Intersection.aFeatured')[0];
           var bFeatured = U.getCloneOf(this.vocModel, 'Intersection.bFeatured')[0];
-          if ((aFeatured  &&  res.get(aFeatured))  || (bFeatured  &&  res.get(bFeatured))) {
-            viewType = 'views/PhotogridView';
-            this.imgDiv = 'div#resourceImageGrid';
-          }
+//          if ((aFeatured  &&  res.get(aFeatured))  || (bFeatured  &&  res.get(bFeatured))) {
+//            viewType = 'views/PhotogridView';
+//            this.imgDiv = 'div#resourceImageGrid';
+//          }
         }
         if (!this.imgDiv) {
           viewType = 'views/ResourceImageView';
@@ -82,6 +82,7 @@ define('views/ViewPage', [
           self.imageView = new viewMod(_.extend({el: this.$(this.imgDiv)[0], arrows: false}, commonParams));
           self.addChild(self.imageView);
           self.imgReadyDfd.resolve();
+//          self._onViewportDimensionsChanged();
   //        renderDfd.done(self.imageView.finalize);
         });
       }
@@ -337,26 +338,32 @@ define('views/ViewPage', [
         });
       }     
 
-      this.onload(function() {
-        Q.write(function() {
-          if (!self.isAbout) {
-            if (G.currentUser.guest) {
-              self.$('#edit').$hide();
-            }
-          }       
-          
-          if (!self.el.parentNode) {
-            document.body.appendChild(self.el);
-            self.addToWorld(null, true); // auto-add view page brick
-          }
-        
-          self.el.dataset.theme = G.theme.swatch;
-          if (G.theme.backgroundImage) 
-            self.$('#resourceViewHolder').$css('background-image', 'url(' + G.theme.backgroundImage +')');
-    
-          self.$('#chatbox').$hide();      
-        });
-      });
+      if (!this.isAbout) {
+        if (G.currentUser.guest) {
+          this.$('#edit').$hide();
+        }
+      }       
+      
+      this.el.dataset.theme = G.theme.swatch;
+      if (G.theme.backgroundImage) 
+        this.$('#resourceViewHolder').$css('background-image', 'url(' + G.theme.backgroundImage +')');
+
+      this.$('#chatbox').$hide();
+      
+      if (!this.el.parentNode) {
+        document.body.appendChild(this.el);
+        this.addToWorld(null, true); // auto-add view page brick
+      }
+      
+//      this.onload(function() {
+//        Q.write(function() {
+//          if (!self.el.parentNode) {
+//            document.body.appendChild(self.el);
+//            self.addToWorld(null, true); // auto-add view page brick
+//          }
+//        
+//        });
+//      });
       
       return this;
     }

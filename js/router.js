@@ -13,7 +13,7 @@ define('router', [
   '@widgets',
   'appAuth',
   'redirecter',
-  'transitions',
+  'physicsTransitions',
   'domUtils',
   'lib/fastdom',
   'physicsBridge'
@@ -1314,11 +1314,13 @@ define('router', [
       if (fromView == toView)
         return;
       
+      var toBlur,
+          dir = options && options.reverse ? 'right' : 'left';
+      
       this._previousView = toView;
       
       // kill the keybord, from JQM
       try {
-        var toBlur;
         Q.read(function() {          
           if ( document.activeElement && document.activeElement.nodeName.toLowerCase() !== 'body' ) {
             toBlur = document.activeElement;
@@ -1332,7 +1334,12 @@ define('router', [
         });
       } catch( e ) {}
       
-      Transitioner[options && options.reverse ? 'right' : 'left'](fromView, toView, null, this.firstPage ? 0 : 400).done(function() {
+//      Transitioner[options && options.reverse ? 'right' : 'left'](fromView, toView, null, this.firstPage ? 0 : 400).done(function() {
+//        G.$activePage = $m.activePage = toView.$el;
+//        G.activePage = toView.el;
+//      });
+      
+      Transitioner.transition(dir, fromView, toView /*[, springStiffness, springDamping]*/).done(function() {
         G.$activePage = $m.activePage = toView.$el;
         G.activePage = toView.el;
       });
@@ -1533,12 +1540,14 @@ define('router', [
     },
     
     changePage1: function(view) {
-      var activated = false,
+      var self = this,
+          activated = false,
           prev = this.currentView,
           options = this.getChangePageOptions(),
           replace = options.replace,
           transition = 'slide',
-          isReverse = false;
+          isReverse = false,
+          renderPromise;
       
       if (view == this.currentView) {
         G.log(this.TAG, "render", "Not replacing view with itself, but will refresh it");
@@ -1561,7 +1570,7 @@ define('router', [
       if (!view.rendered) {
 //        view.trigger('active', true);
         activated = true;
-        view.render();
+        renderPromise = view.render();
 //        view.onload(function() {          
 //          view.$el.attr({
 //            id: 'page' + G.nextId(),
@@ -1607,7 +1616,13 @@ define('router', [
       
 //      Physics.echo(function() {
 //        console.log("CHANGING PAGE");
-        this.$changePage({changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});
+      this.$changePage({changeHash: false, transition: self.nextTransition || transition, reverse: self.backClicked});
+      
+//      if (_.isPromise(renderPromise))
+//        renderPromise.done(doChangePage);
+//      else
+//        doChangePage();
+      
 //      }.bind(this));
         
 //        Physics.echo(function() {

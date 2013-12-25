@@ -406,9 +406,9 @@ define('modelLoader', [
     // new promise
     var promise = loadModels(changedModels); 
 //      setTimeout(function() {
-    G.whenNotRendering(function() {
-      Q.whenIdle('nonDom', storeModels.bind(null, newModels));
-    });
+//    G.whenNotRendering(function() {
+      Q.defer(30, 'nonDom', storeModels.bind(null, newModels));
+//    });
 //      }, 100);
     
 //        Voc.setupPlugs(data.plugs);
@@ -440,10 +440,10 @@ define('modelLoader', [
   }
 
   function loadModel(m, sync) {
-    if (sync)
+//    if (sync)
       _loadModel(m);
-    else
-      Q.whenIdle('nonDom', _loadModel.bind(null, m));
+//    else
+//      Q.whenIdle('nonDom', _loadModel, null, [m]);
   }
   
   function _loadModel(m) {
@@ -551,7 +551,8 @@ define('modelLoader', [
     });
       
     m.prototype.initialize = getInit.call(m);
-    Q.whenIdle('nonDom', function triggerInitPlugs() {
+//    Q.whenIdle('nonDom', function triggerInitPlugs() {
+    Q.nonDom(function triggerInitPlugs() {
       Events.trigger('initPlugs', type);
     });
     

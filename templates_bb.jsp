@@ -501,6 +501,8 @@
         1<input type="range" id="springDamping" name="springDamping" value={{= springDamping * 100 }} min="1" max="99">100
         <label for="springStiffness">Spring stiffness</label>
         1<input type="range" id="springStiffness" name="springStiffness" value={{= springStiffness * 100 }} min="1" max="99">100
+        <label for="degree">Polynomial degree</label>
+        -10<input type="range" id="degree" name="degree" value={{= degree }} min="-10" max="10">10
       </div>
       <!--div class="physicsLabels">
         <label for="drag" style="min-width:10%;">Air drag</label>

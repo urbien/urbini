@@ -1082,6 +1082,8 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
      */
     queueRender: function(el, renderData) {
       renderQueue[renderQueue.length] = arguments;
+      if (renderQueue.length == 1) // no need to queue processing multiple times
+        Q.write(this.processRenderQueue, this);
     },
 
     processRenderQueue: function() {

@@ -3,6 +3,7 @@ define('FrameWatch', ['underscore'], function() {
       caf = window.caf,
       taskCounter = 0,
       listeners = {},
+      numListeners = 0,
       tickListeners = [],
       lastFrameStart,
       lastFrameDuration,
@@ -21,20 +22,26 @@ define('FrameWatch', ['underscore'], function() {
   
   function listenToTick(fn) {
     tickListeners.push(fn);
+    start();
   };
 
   function stopListeningToTick(fn) {
     Array.remove(tickListeners, fn);
   };
 
-  function subscribe(fn /*, ctx, args */) {
-    var id = taskCounter++;
-    listeners[id] = arguments;
-    arguments._taskId = id;
+  function start() {
     if (frameId === undefined) {
       frameId = raf(publish);
       lastFrameStart = _.now();
     }
+  }
+  
+  function subscribe(fn /*, ctx, args */) {
+    var id = taskCounter++;
+    listeners[id] = arguments;
+    numListeners++;
+    arguments._taskId = id;
+    start();
     
     return arguments;
   }
@@ -42,6 +49,7 @@ define('FrameWatch', ['underscore'], function() {
   function unsubscribe(id) {
     if (listeners[id]) {
       delete listeners[id];
+      numListeners--;
       return true;
     }
   }
@@ -64,7 +72,7 @@ define('FrameWatch', ['underscore'], function() {
       invoke(listeners[id]);
     }
     
-    if (!(_.size(listeners) + tickListeners.length)) {
+    if (!(numListeners + tickListeners.length)) {
       //      caf(frameId);
       frameId = undefined;
     }

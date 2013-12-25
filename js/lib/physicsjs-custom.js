@@ -1389,6 +1389,17 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
   };
 
   /**
+   * Sets a component of this Vector.
+   */
+  Vector.prototype.setComponent = function(componentIndex, value) {
+
+      this.recalc = true;
+
+      this._[componentIndex] = value || 0.0;
+      return this;
+  };
+
+  /**
    * Get component
    * @param  {Integer} n The nth component. x is 1, y is 2, ...
    * @return {Integer} component value
@@ -4001,7 +4012,9 @@ Physics.behavior('verlet-constraints', function( parent ){
     _armed: true,
     _disabled: false,
     damping: 0,
-      
+    damp: function(damping) {
+      this.damping = damping || 0;
+    },
     isDisabled: function() {
       return this._disabled;
     },
@@ -4208,7 +4221,6 @@ Physics.behavior('verlet-constraints', function( parent ){
             }
 
             world.subscribe('integrate:positions', this.resolve, this);
-            world.subscribe('integrate:velocities', this.dampen, this);
         },
 
         /**
@@ -4219,7 +4231,6 @@ Physics.behavior('verlet-constraints', function( parent ){
         disconnect: function( world ){
 
             world.unsubscribe('integrate:positions', this.resolve);
-            world.unsubscribe('integrate:velocities', this.dampen);
         },
 
         /**
@@ -4243,7 +4254,9 @@ Physics.behavior('verlet-constraints', function( parent ){
          * @return {object}              The constraint object, which holds .bodyA and .bodyB references to the bodies, .id the string ID of the constraint, .targetLength the target length
          */
         distanceConstraint: function( bodyA, bodyB, stiffness, targetLength, dirVector ){
-      var cst;
+      var cst,
+        dir = dirVector && Physics.vector().clone(dirVector).normalize();
+        
       if (bodyA instanceof ConditionalConstraint)
         cst = bodyA;
       else {
@@ -4254,7 +4267,7 @@ Physics.behavior('verlet-constraints', function( parent ){
         cst = new ConditionalConstraint(this, {
           id: Physics.util.uniqueId('dis-constraint'),
           type: 'dis',
-          dir: dirVector && dirVector.normalize(),
+          dir: dir,
           bodyA: bodyA,
           bodyB: bodyB,
           stiffness: stiffness || 0.5,
@@ -4486,30 +4499,6 @@ Physics.behavior('verlet-constraints', function( parent ){
             scratch.done();
         },
 
-        dampenDistanceConstraints: function( coef ) {
-          var constraints = this._distanceConstraints
-              ,dt = this._world._opts.timestep / 1000
-              ,damping
-              ,con
-              ;
-
-          for ( var i = 0, l = constraints.length; i < l; ++i ) {
-              con = constraints[ i ];
-              if (con.isDisabled() || !con.isArmed() && !testArm(con))
-                continue;
-            
-              if (testBreak(con))
-                continue;
-              
-              damping = Math.pow(1 - con.damping, dt * coef * 10);
-              if ( !con.bodyA.fixed )
-                con.bodyA.state.vel.mult(damping);
-              
-              if ( !con.bodyB.fixed )
-                con.bodyB.state.vel.mult(damping);
-          }
-        },
-        
         resolveDistanceConstraints: function( coef ){
             var constraints = this._distanceConstraints
                 ,scratch = Physics.scratchpad()
@@ -4523,33 +4512,34 @@ Physics.behavior('verlet-constraints', function( parent ){
             for ( var i = 0, l = constraints.length; i < l; ++i ){
             
                 con = constraints[ i ];
-                if (con.isDisabled() || !con.isArmed() && !testArm(con))
-                  continue;
-              
-                if (testBreak(con))
-                  continue;
-              
+        if (con.isDisabled() || !con.isArmed() && !testArm(con))
+          continue;
+      
+        if (testBreak(con))
+          continue;
+      
                 // move constrained bodies to target length based on their
                 // mass proportions
                 BA.clone( con.bodyB.state.pos ).vsub( con.bodyA.state.pos );
-                if (con.dir) {
-                  BA = BA.vproj(con.dir);
-                  if (Math.abs(BA.norm()) < 1e-6)
-                    continue;
-                }
+        if (con.dir) {
+              BA = BA.vproj(con.dir);
+            if (Math.abs(BA.norm()) < 1e-6)
+            continue;
+        }
         
                 len = BA.normSq() || Math.random() * 0.0001;
                 corr = coef * con.stiffness * ( len - con.targetLengthSq ) / len;
-                  
+                
                 BA.mult( corr );
+        BA.mult(1 - con.damping);
                 proportion = (con.bodyA.fixed || con.bodyB.fixed) ? 1 : con.bodyB.mass / (con.bodyA.mass + con.bodyB.mass);
 
                 if ( !con.bodyA.fixed ){
+
                     if ( !con.bodyB.fixed ){
                         BA.mult( proportion );
                     }
 
-//                    BA.mult(1 - con.damping);
                     con.bodyA.state.pos.vadd( BA );
 
                     if ( !con.bodyB.fixed ){
@@ -4558,11 +4548,11 @@ Physics.behavior('verlet-constraints', function( parent ){
                 }
 
                 if ( !con.bodyB.fixed ){
+
                     if ( !con.bodyA.fixed ){
                         BA.mult( 1 - proportion );
                     }
 
-//                    BA.mult(1 - con.damping);
                     con.bodyB.state.pos.vsub( BA );
                 }
             }
@@ -4575,20 +4565,7 @@ Physics.behavior('verlet-constraints', function( parent ){
             this._distanceConstraints = Physics.util.shuffle( this._distanceConstraints );
             this._angleConstraints = Physics.util.shuffle( this._angleConstraints );
         },
-
-        dampen: function() {
-          var its = this.options.iterations
-              ,coef = 1 / its
-              ;
-
-          for (var i = 0; i < its; i++){
-
-              // this.shuffleConstraints();
-              this.dampenDistanceConstraints( coef );
-//              this.dampenAngleConstraints( coef );
-          }
-        },
-
+    
         /**
          * Resolve constraints
          * @return {void}

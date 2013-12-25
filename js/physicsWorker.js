@@ -25,6 +25,12 @@ var ArrayProto = Array.prototype,
 		DIR_DOWN,
     DIR_LEFT,
     DIR_RIGHT,
+    DIR_MAP = {
+      left: null,
+      right: null,
+      up: null,
+      down: null
+    },
 		HEAD_STR = "head (top / left)",
 		TAIL_STR = "tail (bottom / right)";
 
@@ -75,6 +81,25 @@ function _onmessage(e){
 	  importScripts(e.data.physicsJSUrl, e.data.masonryUrl);
 	  DEBUG = e.data.debug;
 	  CONSTANTS = e.data.constants;
+	  Object.keys(CONSTANTS).forEach(function(c) {
+	    if (c != 'degree') {
+	      CONSTANTS['_' + c] = CONSTANTS[c];
+  	    CONSTANTS.__defineGetter__(c, function() {
+  	      var deg = CONSTANTS.degree;
+  	      if (deg == 0)
+  	        deg = 1;
+  	      else if (deg < 0)
+  	        deg = -1 / deg;
+  	        
+	        return Math.pow(CONSTANTS['_' + c], deg);
+  	    });
+  	    
+        CONSTANTS.__defineSetter__(c, function(val) {
+          CONSTANTS['_' + c] = val;
+        });
+	    }
+	  });
+	  
 		world = Physics( WORLD_CONFIG, function(world, Physics) {
 			initWorld(world, e.data.stepSelf);
 		});
@@ -231,8 +256,8 @@ function renderBody(body) {
 				
 	if (!wasRendered || isTranslated || isRotated) {
 		if (!wasRendered) {
-			if (body.options.lock) // lock on first render
-  			body.state.pos.lock(body.options.lock);
+//			if (body.options.lock) // lock on first render
+//  			body.state.pos.lock(body.options.lock);
 			
 			body.rendered(true);
 		}
@@ -293,6 +318,7 @@ function initWorld(_world, stepSelf) {
 	if (stepSelf)
 	  Physics.util.ticker.subscribe(API.step);
 	
+	Physics.util.now = Physics.util.now || (typeof performance == 'undefined' ? Date.now.bind(Date) : performance.now.bind(performance));
 	world.subscribe('drag', function(data) {
 		var bodies = data.bodies,
   			body,
@@ -303,6 +329,7 @@ function initWorld(_world, stepSelf) {
 			body.fixed = true;
 			body.state.pos.vadd(data.vector);
 			stopBody(body);
+//      log("DRAGGING");
 //			body.state.vel.zero();
 //      body.state.acc.zero();
 		}
@@ -319,16 +346,17 @@ function initWorld(_world, stepSelf) {
 			body = bodies[i];
       body.fixed = false;
       stopBody(body);
+//      log("DRAG END");
 		  if (!stop)
 			  body.state.vel.clone( data.vector.mult( 1 / 10 ) );
 		}
 	}, null, 100);
 	
 	Physics.util.ticker.start();
-	DIR_UP = Physics.vector(0, -1);
-  DIR_DOWN = Physics.vector(0, 1);
-  DIR_LEFT = Physics.vector(-1, 0);
-  DIR_RIGHT = Physics.vector(1, 0);
+	DIR_MAP.up = DIR_UP = Physics.vector(0, -1);
+	DIR_MAP.down = DIR_DOWN = Physics.vector(0, 1);
+	DIR_MAP.left = DIR_LEFT = Physics.vector(-1, 0);
+	DIR_MAP.right = DIR_RIGHT = Physics.vector(1, 0);
 };
 
 function stopBody(body, atPos) {
@@ -562,8 +590,8 @@ function pick(obj) {
   
       this.headEdge._id = Physics.util.uniqueId('headEdge');
       log("SET TOP EDGE TO " + this.headEdge.state.pos.get(this.axisIdx));
-      this.headEdgeConstraint = API.distanceConstraint(this.offsetBody, this.headEdge, CONSTANTS.springStiffness, 0);
-      this.headEdgeConstraint.damping = CONSTANTS.springDamping;
+      this.headEdgeConstraint = API.distanceConstraint(this.offsetBody, this.headEdge, CONSTANTS.springStiffness, 0, DIR_DOWN);
+      this.headEdgeConstraint.damp(CONSTANTS.springDamping);
 //      var dirSign,
 //          lastSign,
 //          timesCrossedThreshold,
@@ -578,20 +606,20 @@ function pick(obj) {
       // TODO: subscribe/unsubscribe on arm/break
       world.subscribe('drag', function(data) {
 //        resetConstraint();
-        if (~data.bodies.indexOf(this.offsetBody) && this.offsetBody.state.pos.get(this.axisIdx) < this.headEdge.state.pos.get(this.axisIdx))
+//        if (~data.bodies.indexOf(this.offsetBody) && this.offsetBody.state.pos.get(this.axisIdx) < this.headEdge.state.pos.get(this.axisIdx))
           this.headEdgeConstraint['break']();
       }, this, 10);
       
-      world.subscribe('springDamping', function(data) {
-        this.headEdgeConstraint.damping = data.value;
+      world.subscribe('constants.springDamping', function() {
+        this.headEdgeConstraint.damp(CONSTANTS.springDamping);
         if (this.tailEdgeConstraint)
-          this.tailEdgeConstraint.damping = data.value;
+          this.tailEdgeConstraint.damp(CONSTANTS.springDamping);
       }, this);
 
-      world.subscribe('springStiffness', function(data) {
-        this.headEdgeConstraint.stiffness = data.value;
+      world.subscribe('constants.springStiffness', function() {
+        this.headEdgeConstraint.stiffness = CONSTANTS.springStiffness;
         if (this.tailEdgeConstraint)
-          this.tailEdgeConstraint.stiffness = data.value;
+          this.tailEdgeConstraint.stiffness = CONSTANTS.springStiffness;
       }, this);
 
       // TODO: subscribe/unsubscribe on arm/break
@@ -674,13 +702,13 @@ function pick(obj) {
         return;
       
       range = range ? this._capRange(range) : this.range;
-//      if (this.lastRequestedRange.from == range.from && this.lastRequestedRange.to == range.to) { // TODO: if we received less bricks than we wanted, then a repeat request is not out of the question
-////        log("REQUESTING SAME RANGE AGAIN...what's the holdup?");
-////        if (this.range.from == this.lastRequestedRange.from && this.range.to == this.lastRequestedRange.to) {
-//          log("IGNORING DUPLICATE RANGE REQUEST: " + this.lastRequestedRange.from + '-' + this.lastRequestedRange.to);
-//          return;
-////        }
-//      }
+      if (this.lastRequestedRange.from == range.from && this.lastRequestedRange.to == range.to) { // TODO: if we received less bricks than we wanted, then a repeat request is not out of the question
+//        log("REQUESTING SAME RANGE AGAIN...what's the holdup?");
+//        if (this.range.from == this.lastRequestedRange.from && this.range.to == this.lastRequestedRange.to) {
+          log("IGNORING DUPLICATE RANGE REQUEST: " + this.lastRequestedRange.from + '-' + this.lastRequestedRange.to);
+          return;
+//        }
+      }
       
       log("CURRENT RANGE: " + this.lastRequestedRange.from + '-' + this.lastRequestedRange.to + ", REQUESTING RANGE: " + range.from + '-' + range.to);
       this._waiting = true;
@@ -806,13 +834,13 @@ function pick(obj) {
           });
           
           this.tailEdge._id = Physics.util.uniqueId('tailEdge');
-          this.tailEdgeConstraint = API.distanceConstraint(this.offsetBody, this.tailEdge, CONSTANTS.springStiffness, 0);
-          this.tailEdgeConstraint.damping = CONSTANTS.springDamping;
+          this.tailEdgeConstraint = API.distanceConstraint(this.offsetBody, this.tailEdge, CONSTANTS.springStiffness, 0, DIR_DOWN);
+          this.tailEdgeConstraint.damp(CONSTANTS.springDamping);
           this.tailEdgeConstraint['break']();
           this.tailEdgeConstraint.armOnDistance(Infinity, this.dirTail); // no matter how far out of bounds we are, we should snap back
 //          this.tailEdgeConstraint.breakOnDistance(50, DIR_UP);
           world.subscribe('drag', function(data) {
-            if (~data.bodies.indexOf(this.offsetBody) && this.offsetBody.state.pos.get(this.axisIdx) > this.tailEdge.state.pos.get(this.axisIdx))
+//            if (~data.bodies.indexOf(this.offsetBody) && this.offsetBody.state.pos.get(this.axisIdx) > this.tailEdge.state.pos.get(this.axisIdx))
               this.tailEdgeConstraint['break']();
           }, this, 10);          
         }
@@ -1082,9 +1110,12 @@ function pick(obj) {
     },
     
     sleep: function() {
+      log("putting Mason to sleep");
       this._sleeping = this._waiting = true;
       if (this.numBricks)
         world.remove(this.mason.bricks);
+      
+      this.disableEdgeConstraints();
     },
 
     'continue': function() {
@@ -1094,9 +1125,11 @@ function pick(obj) {
     },
     
     wake: function() {
+      log("waking up Mason");
       if (this._sleeping && this.numBricks)
         world.add(this.mason.bricks);
       
+      this.enableEdgeConstraints();
       this['continue']();
     },
     
@@ -1328,13 +1361,48 @@ var API = {
     doCallback(callbackId);
   },
 
+  teleportLeft: function(bodyId) {
+    getBodies(bodyId)[0].state.pos.setComponent(0, LEFT.state.pos.get(0));
+  },
+
+  teleportRight: function(bodyId) {
+    getBodies(bodyId)[0].state.pos.setComponent(0, RIGHT.state.pos.get(0));
+  },
+
+  teleportCenterX: function(bodyId) {
+    getBodies(bodyId)[0].state.pos.setComponent(0, CENTER.state.pos.get(0));
+  },
+
+  teleportCenterY: function(bodyId) {
+    getBodies(bodyId)[0].state.pos.setComponent(1, CENTER.state.pos.get(1));
+  },
+
+  setPosition: function(bodyId, x, y, z) {
+    var pos = getBodies(bodyId)[0].state.pos;
+    if (typeof x == 'undefined')
+      x = pos.get(0);
+    
+    if (typeof y == 'undefined')
+      y = pos.get(1);
+    
+    if (typeof z == 'undefined')
+      z = pos.get(2);
+    
+    pos.set(x, y, z);
+  },
+
   teleport: function(bodyId /*[, another body's id] or [, x, y, z]*/) {
     var body = getBodies(bodyId)[0],
 //        posLock = body.state.pos.unlock(),
+        anchor,
         destination;
     
     if (typeof arguments[1] == 'string') {
-      destination = getBodies(arguments[1])[0].state.pos;
+      anchor = getBodies(arguments[1])[0];
+      if (anchor == LEFT || anchor == RIGHT || anchor == ORIGIN) // only teleport along X axis
+        destination = Physics.vector().clone(body.state.pos).setComponent(0, anchor.state.pos.get(0));
+      else
+        destination = anchor.state.pos;
     }
     else {
       destination = Physics.vector.apply(Physics.vector, slice.call(arguments, 1));
@@ -1347,37 +1415,52 @@ var API = {
   },
 
   /**
-   * @param idFrom id of body to snap
-   * @param id of anchor to snap to
+   * @param bodyId {String}               id of body to snap
+   * @param anchordId {String}            id of anchor to snap to
+   * @param springStiffness {Number 0-1}
+   * @param springDamping {Number 0-1}
    */
-  snap: function(bodyId, anchorId) {
-    log("Snapping " + bodyId + " " + anchorId);
+  snap: function(bodyId, anchorId, springStiffness, springDamping, callback) {
+    springStiffness = springStiffness == null ? CONSTANTS.springStiffness : springStiffness;
+    springDamping = springDamping == null ? CONSTANTS.springDamping : springDamping;
     var self = this,
+//        snapId = Physics.util.uniqueId('snap'),
+        startTime = Physics.util.now(),
         body = getBodies(bodyId)[0],
         posLock = body.state.pos.unlock(),
         anchor = getBodies(anchorId)[0],
-        constraint = this.distanceConstraint(body, anchor, CONSTANTS.springStiffness, 0, anchorId == 'left' ? DIR_LEFT : DIR_RIGHT); // only snap along X axis
+        distanceAxis = anchorId == 'left' || anchorId == 'right' || anchorId == 'center' ? 0 : 1,
+        orthoAxis = distanceAxis ^ 1, // flip bit
+        coords = new Array(2),
+        constraintEndpoint = coords[distanceAxis] = anchor.state.pos.get(distanceAxis),
+        constraint = this.distanceConstraint(body, anchor, springStiffness, 0, distanceAxis == 0 ? DIR_MAP.right : DIR_MAP.down); // only snap along one axis
     
-    constraint.damping = CONSTANTS.damping;
-    world.publish(PUBSUB_SNAP_CANCELED); // finish (fast-forward or cancel?) any current snaps
-    world.subscribe(PUBSUB_SNAP_CANCELED, endSnap);
+    log("Snapping " + bodyId + " " + anchorId + " over a distance of " + body.state.pos.get(distanceAxis - constraintEndpoint) + ", with spring stiffness " + springStiffness + " and springDamping " + springDamping);
+    constraint.damp(springDamping);
+//    world.publish(PUBSUB_SNAP_CANCELED); // finish (fast-forward or cancel?) any current snaps
+//    world.subscribe(PUBSUB_SNAP_CANCELED, endSnap);
     world.subscribe('step', checkStopped);
     
     function checkStopped() {
-      if (body.state.vel.norm() < 0.1 && body.state.acc.norm() < 0.1) {
+      if (Math.abs(body.state.pos.get(distanceAxis) - constraintEndpoint) < 10 && body.state.vel.norm() < 0.1 && body.state.acc.norm() < 0.1) {
         endSnap();
       }
     }
     
     function endSnap() {
-      world.unsubscribe(PUBSUB_SNAP_CANCELED, endSnap);
+      log("Snapping " + bodyId + " took " + (Physics.util.now() - startTime) + " milliseconds");
+//      world.unsubscribe(PUBSUB_SNAP_CANCELED, endSnap);
       world.unsubscribe('step', checkStopped);
       self.removeConstraint(constraint);
-      body.state.pos.clone(anchor.state.pos);
+      coords[orthoAxis] = body.state.pos.get(orthoAxis);
+      body.state.pos.set.apply(body.state.pos, coords);
       body.state.vel.zero();
       body.state.acc.zero();
       if (posLock)
         body.state.pos.lock(posLock);
+      
+      if (callback)
+        doCallback(callback);
     };
   },
   
@@ -1411,6 +1494,9 @@ var API = {
 		if (id)
 			body._id = id;
 		
+    if (options.lock) // lock on first render
+      body.state.pos.lock(options.lock);
+    
 		world.add( body );
 		return body;
 	},
@@ -1447,13 +1533,14 @@ var API = {
 	},
 	
 	removeConstraint: function(cstOrId) {
-	  if (typeof cstOrId == 'string')
-	    cstOrId = getBodies(cstOrId)[0];
-	  
+    log("Removing constraint");
+	  var numConstraints = constrainer._distanceConstraints.length;
 	  constrainer.remove(cstOrId);
+	  if (numConstraints != constrainer._distanceConstraints.length + 1)
+	    log("Failed to remove constraint");
 	},
 	
-	distanceConstraint: function(bodyAOrId, bodyBOrId, stiffness, targetLength) {
+	distanceConstraint: function(bodyAOrId, bodyBOrId, stiffness, targetLength, dir) {
 		if (!constrainer) {
 			constrainer = Physics.behavior('verlet-constraints');
 			world.add(constrainer);
@@ -1461,7 +1548,7 @@ var API = {
 		
 		bodyAOrId = typeof bodyAOrId == 'string' ? getBodies(bodyAOrId)[0] : bodyAOrId;
 		bodyBOrId = typeof bodyBOrId == 'string' ? getBodies(bodyBOrId)[0] : bodyBOrId;
-		return constrainer.distanceConstraint(bodyAOrId, bodyBOrId, stiffness, typeof targetLength == 'number' ? targetLength : ab[0].state.pos.dist(ab[1].state.pos));
+		return constrainer.distanceConstraint(bodyAOrId, bodyBOrId, stiffness, typeof targetLength == 'number' ? targetLength : ab[0].state.pos.dist(ab[1].state.pos), dir);
 	},
 	
 	updateBounds: updateBounds,
@@ -1479,21 +1566,29 @@ var API = {
     CONSTANTS[constantName] = value;
     
     switch (constantName) {
+    case 'degree':
+      for (var id in CONSTANTS) {
+        if (/^_/.test(id)) {
+          world.publish({
+            topic: 'constants.' + id.slice(1)
+          })
+        }
+      }
+      
+      break;
     case 'drag':
       integrator.options.drag = value;
       break;
     case 'springDamping':
       world.publish({
-        topic: 'springDamping',
-        value: value
+        topic: 'constants.springDamping'
       });
       
       break;
       
     case 'springStiffness':
       world.publish({
-        topic: 'springStiffness',
-        value: value
+        topic: 'constants.springStiffness'
       });
       
       break;

@@ -182,11 +182,6 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
   };
 
   FastDom.prototype.scheduleFrame = function() {
-    if (this.pending) { // sanity check, to make sure we're not running the queue in two callbacks
-      debugger;
-      return;
-    }
-    
     this.pending = true;
     var task = FrameWatch.subscribe(function() {
       FrameWatch.unsubscribe(task._taskId);
@@ -406,12 +401,12 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
     return total;
   };
   
-  FastDom.prototype.whenIdle = function(type, fn, ctx, args, options) {
-    if (BYPASS || this.queueLength() == 0)
-      this[type](fn, ctx, args, options);
-    else
-      this.defer(5, 'nonDom', this.whenIdle.bind(this, type, fn, ctx, args, options));
-  };
+//  FastDom.prototype.whenIdle = function(type, fn, ctx, args, options) {
+//    if (BYPASS || this.queueLength() == 0)
+//      this[type](fn, ctx, args, options);
+//    else
+//      this.defer(5, 'nonDom', this.whenIdle.bind(this, type, fn, ctx, args, options));
+//  };
   
   /**
    * Called when a callback errors.

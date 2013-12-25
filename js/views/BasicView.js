@@ -39,7 +39,7 @@ define('views/BasicView', [
     _flexigroup: false,
     _draggable: false,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_render',  '_refresh', 'finish', '_onViewportDimensionsChanged');
+      _.bindAll(this, 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_render',  '_refresh', 'finish', '_onViewportDimensionsChanged', '_recheckDimensions', '_onMutation');
       this._initializedCounter++;
       this.TAG = this.TAG || this.constructor.displayName;
 //      this.log('newView', ++this.constructor._instanceCounter);
@@ -652,8 +652,12 @@ define('views/BasicView', [
     },
     
     _onViewportDimensionsChanged: function() {
+      Q.read(this._recheckDimensions, this);
+    },
+    
+    _recheckDimensions: function() {
       if (this.mason && this._updateSize())
-        this.updateMason();
+        this.updateMason();      
     },
     
 //    _onActive: function() {
@@ -977,7 +981,8 @@ define('views/BasicView', [
       }
 
       if (this._mutationObserver) {
-        this._mutationObserver.observe(this.$el, _.defaults(options || {}, {
+        this._mutationObserver.observe(this.el, _.defaults(options || {}, {
+          attributes: true,
           childList: true,
           characterData: true,
           subtree: true
@@ -1098,13 +1103,36 @@ define('views/BasicView', [
       this.addContainerBodyToWorld();
       this.mason = Physics.there.layout.newLayout(options, this._onPhysicsMessage);
 
-      $.when.apply($, this.pageView._getLoadingPromises()).done(function() { // maybe this is a bit wasteful?
-        if (self._updateSize())
-          self.updateMason();
-      });
+//      $.when.apply($, this.pageView._getLoadingPromises()).done(function() { // maybe this is a bit wasteful?
+//        if (self._updateSize())
+//          self.updateMason();
+//      });
 
       if (addViewBrick)
         this.addViewBrick();
+      
+      this.observeMutations(null, this._onMutation);
+    },
+    
+    _onMutation: function(mutations) {
+      if (this._mutationTimeout) {
+        if (resetTimeout(this._mutationTimeout))
+          return;
+        else
+          clearTimeout(this._mutationTimeout);
+      }
+      
+      this._mutationTimeout = setTimeout(this._onViewportDimensionsChanged);
+//      if (this.mason && this._updateSize()) {
+//        this.updateMason();
+//      }
+//      
+//      var self = this;
+//      mutations.forEach(function(mutation) {
+//        if (self.mason && self._updateSize() {
+//          self.updateMason();
+//        }
+//      });
     },
     
     getContainerBodyOptions: function() {
