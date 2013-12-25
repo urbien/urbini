@@ -318,7 +318,20 @@ function initWorld(_world, stepSelf) {
 	if (stepSelf)
 	  Physics.util.ticker.subscribe(API.step);
 	
-	Physics.util.now = Physics.util.now || (typeof performance == 'undefined' ? Date.now.bind(Date) : performance.now.bind(performance));
+	Physics.util.extend(Physics.util, {	  
+	  now: Physics.util.now || (typeof performance == 'undefined' ? Date.now.bind(Date) : performance.now.bind(performance)),
+	  unique: function(arr) {
+	    var seen = [];
+	    arr.forEach(function(value, index) {
+	      if (seen.indexOf(value) == -1) {
+	        seen[seen.length] = value;
+	      }
+	    });
+	    
+	    return seen;
+	  }
+	});
+	
 	world.subscribe('drag', function(data) {
 		var bodies = data.bodies,
   			body,
@@ -494,7 +507,7 @@ function pick(obj) {
     minBricks: 10,
     maxBricks: 10,
     bricksPerPage: 10,
-    numBricks: 0,
+//    numBricks: 0,
     brickLimit: Infinity,
     gutterWidth: 0,
     slidingWindowBounds: {
@@ -502,6 +515,10 @@ function pick(obj) {
       max: 0
     },
     range: {
+      from: 0,
+      to: 0
+    },
+    lastObtainedRange: {
       from: 0,
       to: 0
     },
@@ -866,7 +883,7 @@ function pick(obj) {
       }
       
       this._resizeArgs = null;
-      this._waiting = false;
+//      this._waiting = false;
       if (bounds)
         this.setBounds(bounds);
       
@@ -875,26 +892,29 @@ function pick(obj) {
       
       this.disableEdgeConstraints();
       this.mason.setBounds(this.bounds);
-      if (this.numBricks) {
+      if (this.numBricks()) {
         // TODO: find brick X currently in view so we can re-find it after masonry reload
         this.mason.reload();
         // TODO: reposition around brick X
       }
       
       this.recalc();
-      this.checkHeadEdge(true); // force adjustment
+      this.checkHeadEdge(); // force adjustment
       this.checkTailEdge();
       this.enableEdgeConstraints();
-      this['continue']();
+      if (!this._waiting)
+        this._adjustSlidingWindow();
+//      this['continue']();
     },
     
     recalc: function() {
       var gutterWidth = this.mason.option('gutterWidth'),
-          bricks = this.mason.bricks,
           aabb,
           avgWidth = 0,
           avgHeight = 0,
-          i = bricks.length;
+          bricks = this.mason.bricks,
+          numBricks = this.numBricks(),
+          i = numBricks;
       
       while (i--) {
         aabb = bricks[i].aabb();
@@ -906,10 +926,10 @@ function pick(obj) {
       this.slidingWindowDimension = this.slidingWindowBounds.max - this.slidingWindowBounds.min;
       
       // TODO: prune unused props
-      this.numBricks = bricks.length;
-      if (this.numBricks) {
-        this.averageBrickWidth = avgWidth * 2 / this.numBricks + gutterWidth;
-        this.averageBrickHeight = avgHeight * 2 / this.numBricks + gutterWidth;
+//      this.numBricks = bricks.length;
+      if (numBricks) {
+        this.averageBrickWidth = avgWidth * 2 / numBricks + gutterWidth;
+        this.averageBrickHeight = avgHeight * 2 / numBricks + gutterWidth;
         this.averageBrickScrollDim = this.horizontal ? this.averageBrickWidth : this.averageBrickHeight;
         this.averageBrickNonScrollDim = this.horizontal ? this.averageBrickHeight : this.averageBrickWidth;
         this.averageBricksPerScrollDim = this.pageScrollDim / this.averageBrickScrollDim;
@@ -983,7 +1003,7 @@ function pick(obj) {
 //      
 //      log("ADDING " + headLength + " BRICKS TO THE HEAD");
 //      log("ADDING " + tailLength + " BRICKS TO THE TAIL" + (prepend ? "HEAD" : "TAIL") + " FOR A TOTAL OF " + (this.range.to - this.range.from));
-//  //    log("ACTUAL TOTAL AFTER ADD: " + this.mason.bricks.length);
+//  //    log("ACTUAL TOTAL AFTER ADD: " + this.numBricks());
 //      this.recalc();
 //      this.checkTailEdge();
 //      this.adjustSlidingWindow();
@@ -1020,7 +1040,7 @@ function pick(obj) {
 //      this.lastBrickSeen = Math.max(this.range.to, this.lastBrickSeen || 0);
 //      
 //      log("ADDING " + l + " BRICKS TO THE " + (prepend ? "HEAD" : "TAIL") + " FOR A TOTAL OF " + (this.range.to - this.range.from));
-//  //    log("ACTUAL TOTAL AFTER ADD: " + this.mason.bricks.length);
+//  //    log("ACTUAL TOTAL AFTER ADD: " + this.numBricks());
 //    },
 //
 //    addBricks: function(head, tail) {
@@ -1040,6 +1060,10 @@ function pick(obj) {
 //      this.adjustSlidingWindow();
 //    },
 
+    numBricks: function() {
+      return this.mason.bricks.length;
+    },
+    
     addBricks: function(optionsArr, prepend) {
       var bricks = [],
           l = optionsArr.length,
@@ -1067,6 +1091,7 @@ function pick(obj) {
         this.lastBrickSeen = Math.max(this.range.to, this.lastBrickSeen || 0);
       }
       
+      Physics.util.extend(this.lastObtainedRange, this.range); 
       this.recalc();
       if (prepend)
         this.checkHeadEdge();
@@ -1074,7 +1099,7 @@ function pick(obj) {
         this.checkTailEdge();
       
       log("ADDING " + l + " BRICKS TO THE " + (prepend ? "HEAD" : "TAIL") + " FOR A TOTAL OF " + (this.range.to - this.range.from));
-      //    log("ACTUAL TOTAL AFTER ADD: " + this.mason.bricks.length);
+      //    log("ACTUAL TOTAL AFTER ADD: " + this.numBricks());
       this['continue']();
     },
 
@@ -1082,7 +1107,7 @@ function pick(obj) {
       if (n == 0)
         return;
       
-      var bricks = fromTheHead ? this.mason.bricks.slice(0, n) : this.mason.bricks.slice(this.numBricks - n),
+      var bricks = fromTheHead ? this.mason.bricks.slice(0, n) : this.mason.bricks.slice(this.numBricks() - n),
           el;
       
       if (bricks.length == 0) {
@@ -1103,7 +1128,7 @@ function pick(obj) {
         this.range.to -= n;
       
       log("REMOVING " + n + " BRICKS FROM THE " + (fromTheHead ? "HEAD" : "TAIL") + " FOR A TOTAL OF " + (this.range.to - this.range.from));
-  //    log("ACTUAL TOTAL AFTER REMOVE: " + this.mason.bricks.length);
+  //    log("ACTUAL TOTAL AFTER REMOVE: " + this.numBricks());
       this.recalc();
   //    if (readjust)
   //      this.adjustSlidingWindow();
@@ -1112,7 +1137,7 @@ function pick(obj) {
     sleep: function() {
       log("putting Mason to sleep");
       this._sleeping = this._waiting = true;
-      if (this.numBricks)
+      if (this.numBricks())
         world.remove(this.mason.bricks);
       
       this.disableEdgeConstraints();
@@ -1126,7 +1151,7 @@ function pick(obj) {
     
     wake: function() {
       log("waking up Mason");
-      if (this._sleeping && this.numBricks)
+      if (this._sleeping && this.numBricks())
         world.add(this.mason.bricks);
       
       this.enableEdgeConstraints();
@@ -1154,6 +1179,7 @@ function pick(obj) {
       var slidingWindow = this.slidingWindowBounds,
           viewport = this.getViewport(),
           range = Physics.util.clone(this.range),
+          numBricks = this.numBricks(),
           scrollingTowardsHead = this._lastScrollDirection == 'head',
   //        favor = this.minSlidingWindowDimension * 0.25 * (scrollingTowardsHead ? -1 : 1),
           maxPrepend = this.range.from,
@@ -1182,11 +1208,11 @@ function pick(obj) {
       ////////////////////////////////////////////////////////    <----------------------------------------->         (SLIDING WINDOW MAX SIZE)
       ////////////////////////////////////////////////////////               <---------------------->                 (SLIDING WINDOW CURRENT SIZE)
       ////////////////////////////////////////////////////////   |----|                                               (VIEWPORT)
-      if (this.range.from > 0 && this.numBricks && viewport.max <= slidingWindow.min) { 
+      if (this.range.from > 0 && numBricks && viewport.max <= slidingWindow.min) { 
         // sliding window is completely below viewport
         // remove all bricks and request new ones
         log("DECISION: sliding window is completely below viewport, removing all bricks");
-        this.removeBricks(this.numBricks);
+        this.removeBricks(numBricks);
         
         // TODO: uncomment this and implement resetting of mason to new viewport position
 //        var diff = this.bricksPerPage * (slidingWindow.min - viewport.min) / this.pageScrollDim;
@@ -1199,11 +1225,11 @@ function pick(obj) {
         return this.requestNewRange(range);
       }
       ////////////////////////////////////////////////////////                                          |----|        (VIEWPORT)
-      else if (this.range.to < this.brickLimit && this.numBricks && viewport.min >= slidingWindow.max) { 
+      else if (this.range.to < this.brickLimit && numBricks && viewport.min >= slidingWindow.max) { 
         // sliding window is completely above viewport
         // remove all bricks and request new ones
         log("DECISION: sliding window is completely above viewport, removing all bricks");
-        this.removeBricks(this.numBricks, true);
+        this.removeBricks(numBricks, true);
         Physics.util.extend(range, this.range); // reclone
         range.to += Math.min(maxAppend, defaultAddDelta);
         return this.requestNewRange(range);
@@ -1230,9 +1256,9 @@ function pick(obj) {
       else if (this.slidingWindowDimension > this.maxSlidingWindowDimension) { // should this be measured in pages or in pixels or viewports?
         // shrink window
         var toRemove, fromTheHead;
-        while (this.numBricks && this.slidingWindowDimension > this.maxSlidingWindowDimension) {
+        while (numBricks && this.slidingWindowDimension > this.maxSlidingWindowDimension) {
           
-          toRemove = Math.min(defaultRemoveDelta, this.numBricks);
+          toRemove = Math.min(defaultRemoveDelta, numBricks);
           fromTheHead = headDiff > tailDiff;
           log("DECISION: shrinking sliding window by " + toRemove + " at the " + (fromTheHead ? HEAD_STR : TAIL_STR));
           this.removeBricks(toRemove, fromTheHead);

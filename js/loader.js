@@ -379,6 +379,7 @@ define('globals', function() {
       sqlUrl: G.serverNameHttp + '/' + G.sqlUri,
       modelsUrl: G.serverName + '/backboneModel',
       storeFilesInFileSystem: G.hasBlobs && G.hasFileSystem && G.browser.chrome,
+      useInlineWorkers: G.hasBlobs && G.hasWebWorkers && true,
       apiUrl: G.serverName + '/api/v1/',
       timeOffset: G.localTime - G.serverTime,
       firefoxManifestPath: G.serverName + '/wf/' + G.currentApp.attachmentsUrl + '/firefoxManifest.webapp',
@@ -1774,15 +1775,28 @@ define('globals', function() {
 //        }
 //      }).promise();
 //    },
+    
+    loadWorker: function(relUrl) {
+      var worker;
+      if (G.useInlineWorkers) {
+        var blob = new Blob([G.modules[relUrl]], { type: "text/javascript" });
+        worker = new Worker(window.URL.createObjectURL(blob));
+      }
+      else {
+        var xw = G.files[relUrl.slice(relUrl.lastIndexOf('/') + 1)];
+        worker = new Worker(G.serverName + '/js/' + (xw.fullName || xw.name));
+      }
+      
+      return worker;
+    },
+    
     getXhrWorker: function() {
       return $.Deferred(function(dfd) {
         var worker;
         if (G.workers.length)
           worker = G.workers.shift();
-        else {
-          var xw = G.files['xhrWorker.js'];
-          worker = new Worker(G.serverName + '/js/' + (xw.fullName || xw.name));
-        }
+        else
+          worker = G.loadWorker('js/xhrWorker.js');
         
         dfd.resolve(worker);
       }).promise();

@@ -1,5 +1,6 @@
 define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', 'hammer', 'domUtils', 'utils'], function(G, _, FrameWatch, Q, Hammer, DOM, U) {
   var worker,
+      jsBase = G.serverName + '/js/',
       physicsModuleInfo = G.files['lib/physicsjs-custom.js'],
       masonryModuleInfo = G.files['lib/jquery.masonry.js'],
       commonMethods = ['step', 'addBody', 'removeBody', 'distanceConstraint', 'drag', 'dragend', 'resize', 'benchBodies', 'unbenchBodies'],
@@ -719,8 +720,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           }
         });
         
-        var fileInfo = G.files['physicsWorker.js'];
-        worker = new Worker(G.serverName + '/js/' + (fileInfo.fullName || fileInfo.name));
+        worker = G.loadWorker('js/physicsWorker.js');        
         worker.onmessage = function(e) {
           var topic = e.data.topic,
               callback;
@@ -785,8 +785,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       init: function() {
         window.addEventListener('viewportdimensions', this.updateBounds.bind(this));
         this.postMessage({
-          physicsJSUrl: physicsModuleInfo.fullName || physicsModuleInfo.name,
-          masonryUrl: masonryModuleInfo.fullName || masonryModuleInfo.name,
+          physicsJSUrl: jsBase + (physicsModuleInfo.fullName || physicsModuleInfo.name),
+          masonryUrl: jsBase + (masonryModuleInfo.fullName || masonryModuleInfo.name),
           debug: G.DEBUG,
           stepSelf: !LOCK_STEP,
           constants: CONSTANTS

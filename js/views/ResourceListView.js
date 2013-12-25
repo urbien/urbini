@@ -144,12 +144,17 @@ define('views/ResourceListView', [
       this.listenTo(this.collection, 'endOfList', function() {
         this._outOfData = true;
         if (this.isActive())
-          this.mason['continue']();
+          this.setBrickLimit();
       }, this);
       
       return this;
     },
 
+    setBrickLimit: function(limit) {
+      this.mason.setLimit(limit || this.collection.length);
+      this.mason['continue']();      
+    },
+    
     modelEvents: {
       'reset': '_resetSlidingWindow',
       'added': '_onAddedResources'
@@ -187,7 +192,7 @@ define('views/ResourceListView', [
     
     _rangeChanged: function(data) {
       var currentRange = this._displayedRange,
-//          expectedCurrentRange = data.currentRange,
+          expectedCurrentRange = data.currentRange,
           range = data.range,
           info = data.info;
       
@@ -449,8 +454,7 @@ define('views/ResourceListView', [
       if (this._outOfData) {
         this._outOfData = false;
         if (this.mason) {
-          this.mason.setLimit(this.collection.length); // - this._failedToRenderCount);
-          this.mason['continue']();
+          this.setBrickLimit(); 
         }
       }
 //      this.adjustSlidingWindow();
@@ -642,7 +646,7 @@ define('views/ResourceListView', [
           to = col.length;
           if (to <= from) {
             // we're out of candy, no need to continue
-//            this.mason['continue']();
+            this.setBrickLimit();
             return;
           }
         }
@@ -750,7 +754,7 @@ define('views/ResourceListView', [
       }       
       else {
         if (this._outOfData)
-          this.mason.setLimit(this.collection.length);
+          this.setBrickLimit();
         else
           return this._addBricks(to, to + failed.length);
       }
@@ -850,30 +854,32 @@ define('views/ResourceListView', [
           numLeft = this._childEls.length,
           numMax = this.options.maxBricks,
           numToRecycle = numMax * 2 - numLeft,
+          numYetToRecycle = numToRecycle,
           ids = [],
-//          dfd = $.Deferred(),
+          recycled = [],
           view;
       
       while (i--) {
         view = removedViews[i];
         this.stopListening(view.resource);
-        view.undelegateAllEvents();
-        DOM.queueRender(view.el, DOM.transparentStyle);
+        if (numYetToRecycle-- >= 0) {
+          view.undelegateAllEvents();
+          DOM.queueRender(view.el, DOM.transparentStyle);
+          recycled[recycled.length] = view;
+        }
+        else {
+          Physics.here.removeBody(view.getBodyId());
+          view.destroy();
+        }
+        
         ids.push(view.getBodyId());
       }
 
-      if (numToRecycle == removedViews.length || numToRecycle / removedViews.length >= 0.9)
-        this.recycleItemViews(removedViews);
-      else if (numToRecycle > 0)
-        this.recycleItemViews(removedViews.slice(0, numToRecycle));
+      if (recycled.length)
+        this.recycleItemViews(recycled);
       
-//      this.mason._removeBricks(removedViews.map(BasicView.prototype.getBodyId), function() {
-//        debugger;
-//        dfd.resolve();
-//      });
-//      
-//      return dfd.promise();
       this.pageView._bodies = _.difference(this.pageView._bodies, ids); // TODO: unyuck the yuck
+      this._numBricks -= removedViews.length;
     },
     
     fetchResources: function(numResourcesToFetch) {

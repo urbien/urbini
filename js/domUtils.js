@@ -1166,7 +1166,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       }
     },
     
-    transparentStyle: SHOW_STYLE,
-    opaqueStyle: HIDE_STYLE
+    transparentStyle: HIDE_STYLE,
+    opaqueStyle: SHOW_STYLE
   };
 });
