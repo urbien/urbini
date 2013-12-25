@@ -76,7 +76,7 @@ this.onmessage = function(e){
 //  }
 };
 
-function _onmessage(e){
+function _onmessage(e) {
 	if (!world) {
 	  importScripts(e.data.physicsJSUrl, e.data.masonryUrl);
 	  DEBUG = e.data.debug;
@@ -112,24 +112,28 @@ function _onmessage(e){
 		return;
 	}
 	
-	var obj = e.data.object ? leaf(proxiedObjects, e.data.object) : API,
-  		method = leaf(obj, e.data.method),
-  		args = e.data.args || [],
-  		callbackId = e.data.callback,
-  		result;
-
-	if (obj instanceof Physics.util.pubsub) {
-		if (method == 'subscribe')
-			return subscribe.apply(obj, args);
-		else if (method == 'unsubscribe')
-			return unsubscribe.apply(obj, args);
-	}
-	
-	if (callbackId)
-	  args.push(callbackId);
-	
-	method.apply(obj, args);
+	executeRPC(e.data);
 };
+
+function executeRPC(rpc) {
+  var obj = rpc.object ? leaf(proxiedObjects, rpc.object) : API,
+      method = leaf(obj, rpc.method),
+      args = rpc.args || [],
+      callbackId = rpc.callback,
+      result;
+
+  if (obj instanceof Physics.util.pubsub) {
+    if (method == 'subscribe')
+      return subscribe.apply(obj, args);
+    else if (method == 'unsubscribe')
+      return unsubscribe.apply(obj, args);
+  }
+  
+  if (callbackId)
+    args.push(callbackId);
+  
+  method.apply(obj, args);
+}
 
 function doCallback(callbackId, data) {
   postMessage({
@@ -1376,6 +1380,10 @@ var API = {
   },
 */
       
+  chain: function() {
+    ArrayProto.forEach.call(arguments, executeRPC);
+  },
+  
   step: function(time, dt) {
     world.step(time);
     // only render if not paused
