@@ -611,7 +611,7 @@ function pick(obj) {
   
       this.headEdge._id = Physics.util.uniqueId('headEdge');
       log("SET TOP EDGE TO " + this.headEdge.state.pos.get(this.axisIdx));
-      this.headEdgeConstraint = API.distanceConstraint(this.offsetBody, this.headEdge, CONSTANTS.springStiffness, 0, DIR_DOWN);
+      this.headEdgeConstraint = API.distanceConstraint(this.offsetBody, this.headEdge, CONSTANTS.springStiffness, 0, this.dirHead);
       this.headEdgeConstraint.damp(CONSTANTS.springDamping);
 //      var dirSign,
 //          lastSign,
@@ -855,7 +855,7 @@ function pick(obj) {
           });
           
           this.tailEdge._id = Physics.util.uniqueId('tailEdge');
-          this.tailEdgeConstraint = API.distanceConstraint(this.offsetBody, this.tailEdge, CONSTANTS.springStiffness, 0, DIR_DOWN);
+          this.tailEdgeConstraint = API.distanceConstraint(this.offsetBody, this.tailEdge, CONSTANTS.springStiffness, 0, this.dirTail);
           this.tailEdgeConstraint.damp(CONSTANTS.springDamping);
           this.tailEdgeConstraint['break']();
           this.tailEdgeConstraint.armOnDistance(Infinity, this.dirTail); // no matter how far out of bounds we are, we should snap back
