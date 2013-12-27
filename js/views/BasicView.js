@@ -413,7 +413,9 @@ define('views/BasicView', [
       if (this._draggable)
         Physics.removeDraggable(this.getBodyContainerId());
 
-      this.el.$remove();
+      if (this.el)
+        this.el.$remove();
+      
       this.$el = this.el = this._hammer = this._hammered = null;
       
 //      if (this._bodies.length)

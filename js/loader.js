@@ -838,7 +838,7 @@ define('globals', function() {
         source = 'indexedDB';
       
       if (!modules.length)
-        return $.Deferred().resolve(modules).promise;
+        return $.Deferred().resolve(modules).promise();
       
       var minify = G.minify,
           def = G.minifyByDefault;
