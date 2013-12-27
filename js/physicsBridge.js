@@ -71,27 +71,29 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //    console.log.apply(console, arguments);
   };
 
-  function isDragAlongAxis(drag, axis) {
-    switch (axis) {
-    case null:
-      return true;
-    case 'x':
-      return /left|right/.test(drag);
-    case 'y':
-      return /up|down/.test(drag);
-    default:
-      return false;
-    }
-  };
-  
-  hammer.on('dragleft dragright dragup dragdown', function(e) {
-    var draggable;
-    for (var id in DRAGGABLES) {
-      draggable = DRAGGABLES[id];
-      if (draggable.isOn() && isDragAlongAxis(e.type, draggable.axis))
-        draggable._ondrag.apply(draggable, arguments);
-    }
-  });
+//  function isDragAlongAxis(drag, axis) {
+//    switch (axis) {
+//    case null:
+//      return true;
+//    case 'x':
+//      return /left|right/.test(drag);
+//    case 'y':
+//      return /up|down/.test(drag);
+//    default:
+//      return false;
+//    }
+//  };
+//  
+//  hammer.on('dragleft dragright dragup dragdown', function(e) {
+//    var draggable;
+//    for (var id in DRAGGABLES) {
+//      draggable = DRAGGABLES[id];
+//      if (draggable.isOn() && isDragAlongAxis(e.type, draggable.axis)) {
+//        if (draggable.hammer.element.contains(e.target))
+//          draggable._ondrag.apply(draggable, arguments);
+//      }
+//    }
+//  });
 
   hammer.on('dragend', function() {
     var draggable;
@@ -859,8 +861,6 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       updateBounds: function() {
         calcBounds();
         var self = this,
-//            draggable = this.containerId && Physics.disconnectDraggable(this.containerId),
-            args = _.toArray(arguments),
             disconnected = [],
             chain = [{
               method: 'updateBounds',
