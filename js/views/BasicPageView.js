@@ -45,6 +45,7 @@ define('views/BasicPageView', [
 //    mixins: [Scrollable],
     _fetchPromise: null,
     _draggable: true,
+    _dragAxis: 'y',
     _flexigroup: false,
     viaHammer: true,
     style: {

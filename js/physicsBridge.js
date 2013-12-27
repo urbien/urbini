@@ -3,8 +3,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       jsBase = G.serverName + '/js/',
       physicsModuleInfo = G.files['lib/physicsjs-custom.js'],
       masonryModuleInfo = G.files['lib/jquery.masonry.js'],
-      commonMethods = ['step', 'addBody', 'removeBody', 'distanceConstraint', 'drag', 'dragend', 'resize', 'benchBodies', 'unbenchBodies'],
-      layoutMethods = ['addBricks', 'setLimit', 'sleep', 'wake', 'continue', 'resize', 'home', 'end', 'setBounds'],
+      commonMethods = ['step', 'addBody', 'removeBody', 'distanceConstraint', 'drag', 'dragend', 'benchBodies', 'unbenchBodies'],
+      layoutMethods = ['addBricks', 'setLimit', 'sleep', 'wake', 'continue', 'home', 'end', 'resize', 'setBounds', 'lock', 'unlock', 'isLocked'],
       TIMESTEP = 1000/60,
       LOCK_STEP = false, // if true, step the world through postMessage, if false let the world run its own clock
       PHYSICS_TIME = _.now(), // from here on in,
@@ -70,12 +70,25 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     G.log.apply(G, args);
 //    console.log.apply(console, arguments);
   };
-      
-  hammer.on('drag', function() {
+
+  function isDragAlongAxis(drag, axis) {
+    switch (axis) {
+    case null:
+      return true;
+    case 'x':
+      return /left|right/.test(drag);
+    case 'y':
+      return /up|down/.test(drag);
+    default:
+      return false;
+    }
+  };
+  
+  hammer.on('dragleft dragright dragup dragdown', function(e) {
     var draggable;
     for (var id in DRAGGABLES) {
       draggable = DRAGGABLES[id];
-      if (draggable.isOn())
+      if (draggable.isOn() && isDragAlongAxis(e.type, draggable.axis))
         draggable._ondrag.apply(draggable, arguments);
     }
   });
@@ -456,8 +469,14 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
    * currently only sends drag data once a frame (maybe it should send every time it gets a drag event)
    * TODO: make it work for nested draggables
    */
-  function DragProxy(hammerOrElement, id) {
+  function DragProxy(hammer, id, axis) {
     this.id = id;
+    this.axis = axis;
+    if (axis)
+      this.dragEventName = axis == 'x' ? 'dragleft dragright' : 'dragup dragdown';
+    else
+      this.dragEventName = 'drag';
+    
     this.touchPos = zeroVector.slice();
     this.touchPosOld = zeroVector.slice();
     this.tmp = zeroVector.slice();
@@ -468,7 +487,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     this.drag = false;      
     this._ondrag = this._ondrag.bind(this);
     this._ondragend = this._ondragend.bind(this);
-    this.hammer = hammerOrElement instanceof Hammer.Instance ? hammerOrElement : new Hammer(hammerOrElement);
+//    this.hammer = hammerOrElement instanceof Hammer.Instance ? hammerOrElement : new Hammer(hammerOrElement);
+    this.hammer = hammer;
     this.connect();
   };
     
@@ -559,15 +579,19 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //    
 
     connect: function() {
-      this._connected = true;
-      this.hammer.on('drag', this._ondrag);
-      this.hammer.on('dragend', this._ondragend);
+      if (!this._connected) {
+        this._connected = true;
+        this.hammer.on(this.dragEventName, this._ondrag);
+        this.hammer.on('dragend', this._ondragend);
+      }
     },
     
     disconnect: function() {
-      this._connected = false;
-      this.hammer.off('drag', this._ondrag);
-      this.hammer.off('dragend', this._ondragend);
+      if (this._connected) {
+        this._connected = false;
+        this.hammer.off(this.dragEventName, this._ondrag);
+        this.hammer.off('dragend', this._ondragend);
+      }
     },
     
     isOn: function() {
@@ -618,14 +642,14 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       THERE.rpc(null, 'echo', [addCallback(callback)]);
     },
     
-    addBody: function(id, type, options, el, hammer) {
-      if (el)
-        HERE.addBody(el, id);
-      if (hammer)
-        this.addDraggable(hammer || el, id);
-      
-      THERE.addBody(type, options, id);
-    },
+//    addBody: function(id, type, options, el, hammer) {
+//      if (el)
+//        HERE.addBody(el, id);
+//      if (hammer)
+//        this.addDraggable(hammer || el, id);
+//      
+//      THERE.addBody(type, options, id);
+//    },
     
     benchBodies: function(/* ids */) {
       THERE.benchBodies.apply(THERE, arguments);
@@ -635,25 +659,39 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       THERE.unbenchBodies.apply(THERE, arguments);
     },
     
-    addDraggable: function(hammerOrElement, id) {
-      var proxy = new DragProxy(hammerOrElement, id);
-      if (!DRAGGABLES[id])
+    addDraggable: function(hammer, id, axis) {
+      var proxy = DRAGGABLES[id];
+      if (proxy) {
+        this.connectDraggable(proxy);
+      }
+      else {
         numDraggables++;
+        proxy = DRAGGABLES[id] = new DragProxy(hammer, id, axis);
+      }
       
-      DRAGGABLES[id] = proxy;
       return proxy;
     },
     
-    suspendDraggable: function(id) {
+    connectDraggable: function(id) {
       var draggable = DRAGGABLES[id];
-      if (draggable)
+      if (draggable) {
+        draggable.connect();
+        return draggable;
+      }
+    },
+    
+    disconnectDraggable: function(id) {
+      var draggable = DRAGGABLES[id];
+      if (draggable) {
         draggable.disconnect();
+        return draggable;
+      }
       
 //      DRAGGABLES = _.difference(DRAGGABLES, _.toArray(arguments));
     },
 
     removeDraggable: function(id) {
-      this.suspendDraggable(id);
+      this.disconnectDraggable(id);
       if (DRAGGABLES[id]) {
         delete DRAGGABLES[id];
         numDraggables--;
@@ -664,14 +702,14 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     disableDrag: function() {
       DRAG_ENABLED = false;
 //      for (var id in DRAGGABLES) {
-//        this.suspendDraggable(id);
+//        this.disconnectDraggable(id);
 //      }
     },
 
     enableDrag: function() {
       DRAG_ENABLED = true;
 //      for (var id in DRAGGABLES) {
-//        this.suspendDraggable(id);
+//        this.disconnectDraggable(id);
 //      }
     },
     
@@ -820,10 +858,45 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 
       updateBounds: function() {
         calcBounds();
-        worker.postMessage({
-          method: 'updateBounds',
-          args: bounds
+        var self = this,
+//            draggable = this.containerId && Physics.disconnectDraggable(this.containerId),
+            args = _.toArray(arguments),
+            disconnected = [],
+            chain = [{
+              method: 'updateBounds',
+              args: bounds
+            }];
+        
+        _.each(DRAGGABLES, function(draggable, id) {
+          if (draggable.isOn() && draggable.drag) { // currently dragging
+            Physics.disconnectDraggable(id);
+            disconnected.push(id);
+            chain.push({
+              method: 'dragend',
+              args: [ZERO_VECTOR, this.containerId]
+            });
+          }          
         });
+        
+        if (disconnected.length > 1) {
+          chain.push({
+            method: 'echo',
+            args: [function() {
+              var i = disconnected.length;
+              while (i--) {
+                Physics.connectDraggable(disconnected[i]);
+              }
+            }]
+          });
+        };
+        
+        return THERE.chain.apply(THERE, chain);
+
+        THERE.chain.apply(THERE, chain);
+//        worker.postMessage({
+//          method: 'updateBounds',
+//          args: bounds
+//        });
       },
       
       postMessage: function() {
@@ -888,8 +961,40 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     
     ID_TO_LAYOUT_MANAGER[options.container] = this;
     this.id = _.uniqueId('layoutManager');
+    this.containerId = options.container;
     THERE.rpc(null, 'layout.init', [this.id, options, addSubscription(callback)]);
   };
+  
+//  LayoutManager.prototype = {
+//    resize: function() {
+//      var self = this,
+//          draggable = this.containerId && Physics.disconnectDraggable(this.containerId),
+//          args = _.toArray(arguments),
+//          chain = [{
+//            object: this.id,
+//            method: 'resize',
+//            args: args
+//          }];
+//      
+//      if (draggable) {
+//        if (draggable.drag) { // currently dragging
+//          chain.push({
+//            method: 'dragend',
+//            args: [ZERO_VECTOR, this.containerId]
+//          });
+//        }
+//
+//        chain.push({
+//          method: 'echo',
+//          args: [function() {
+//            Physics.connectDraggable(self.containerId);
+//          }]
+//        });
+//      }
+//      
+//      return THERE.chain.apply(THERE, chain);
+//    }  
+//  };
   
   HERE = Physics.here;
   THERE = Physics.there;
@@ -902,6 +1007,21 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   
   layoutMethods.forEach(function(method) {
     LayoutManager.prototype[method] = function() {
+      switch (method) {
+      case 'continue':
+      case 'addBricks':
+        this.unlock();
+        break;
+      case 'lock':
+        this._handlingRangeRequest = true;
+        return;
+      case 'unlock':
+        this._handlingRangeRequest = false;
+        return;
+      case 'isLocked':
+        return this._handlingRangeRequest;
+      }
+      
       return THERE.rpc(this.id, method, _.toArray(arguments));
     };
   });

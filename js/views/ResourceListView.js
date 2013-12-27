@@ -81,6 +81,7 @@ define('views/ResourceListView', [
       }
       
       this.transformIdx = this.options.horizontal ? 12 : 13;
+      this._dragIdx = this.options.horizontal ? 'x' : 'y';
       this.mode = options.mode || G.LISTMODES.DEFAULT;
       var type = this.modelType;
       this.makeTemplate('fileUpload', 'fileUploadTemplate', type);
@@ -199,6 +200,12 @@ define('views/ResourceListView', [
 //      if (!_.isEqual(currentRange, expectedCurrentRange))
 //        debugger; // for testing, should never happen
       
+      if (this.mason.isLocked()) {
+        debugger; // should never happen
+        return;
+      }
+        
+      this.mason.lock();
       if (range.from == currentRange.from && range.to == currentRange.to) {
         // should never happen
         this.mason['continue']();

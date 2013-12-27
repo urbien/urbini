@@ -21,6 +21,7 @@ define('views/HorizontalListView', [
 //      keyboard: false
 //    },
     _horizontal: true,
+    _dragAxis: 'x',
     _visible: false,
     _elementsPerPage: 6,
 

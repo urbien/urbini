@@ -38,6 +38,7 @@ define('views/BasicView', [
     _initializedCounter: 0,
     _flexigroup: false,
     _draggable: false,
+    _dragAxis: null, // 'x' or 'y' if you want to limit it to one axis
     initialize: function(options) {
       _.bindAll(this, 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_render',  '_refresh', 'finish', '_onViewportDimensionsChanged', '_recheckDimensions', '_onMutation');
       this._initializedCounter++;
@@ -683,7 +684,7 @@ define('views/BasicView', [
         this.mason.wake();
 //        DOM.queueRender(this.el, DOM.opaqueStyle);
         if (this._draggable)
-          Physics.addDraggable(this._hammer || this.el, this.getBodyContainerId());
+          this.addDraggable();
       }
       
       this.active = true;
@@ -703,7 +704,7 @@ define('views/BasicView', [
       
       this.active = false;
       if (this._draggable)
-        Physics.suspendDraggable(this.getBodyContainerId());
+        Physics.disconnectDraggable(this.getBodyContainerId());
 
       if (this.mason) {
         this.mason.sleep();
@@ -1008,12 +1009,16 @@ define('views/BasicView', [
     },
     
     getBodyId: function() {
-      return this.cid + '.' + this._initializedCounter;
-//      return this.cid;
+//      return this.cid + '.' + this._initializedCounter;
+      return this.cid;
     },
 
     getBodyContainerId: function() {
-      return 'container' + this.cid + '.' + this._initializedCounter;
+      return this.TAG + '.' + this.cid; // + '.' + this._initializedCounter;
+    },
+    
+    addDraggable: function() {
+      Physics.addDraggable(this.hammer(), this.getBodyContainerId(), this._dragAxis);
     },
 
 //    reconnectToWorld: function() {
@@ -1172,8 +1177,12 @@ define('views/BasicView', [
       return options;
     },
     
-    addContainerBodyToWorld: function() {      
-      Physics.addBody(this.getBodyContainerId(), 'point', this.getContainerBodyOptions(), this.el, this._draggable && this.hammer());
+    addContainerBodyToWorld: function() {
+      var id = this.getBodyContainerId();
+      Physics.here.addBody(this.el, id);
+      Physics.there.addBody('point', this.getContainerBodyOptions(), id);
+      if (this._draggable)
+        this.addDraggable();
     },
     
     getViewBrick: function() {

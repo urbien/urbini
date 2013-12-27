@@ -201,13 +201,13 @@ function addBehavior(behavior, options) {
 };
 
 function updateVector(v, x, y, z) {
-  if (typeof x == 'undefined')
+  if (x == null)
     x = v.get(0);
   
-  if (typeof y == 'undefined')
+  if (y == null)
     y = v.get(1);
   
-  if (typeof z == 'undefined')
+  if (z == null)
     z = v.get(2);
   
   v.set(x, y, z);
@@ -1130,7 +1130,7 @@ function pick(obj) {
 //      this.adjustSlidingWindow();
     },
     
-    resize: function(bounds, updatedBricks) {
+    resize: function(bounds, updatedBricks, callback) {
       if (this._sleeping) {
         this._resizeArgs = arguments;
         return;
@@ -1162,6 +1162,10 @@ function pick(obj) {
       this.checkHeadEdge();
       this.checkTailEdge();
       this.enableEdgeConstraints();
+      
+      if (callback)
+        doCallback(callback);
+      
       if (!this._waiting)
         this._adjustSlidingWindow();
 //      this['continue']();
