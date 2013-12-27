@@ -226,31 +226,50 @@ function removeAction(body, action) {
     if (~idx)
       body._actions.splice(idx, 1);
   }
-  
-  world.unsubscribe('step', action.onstep);
 };
 
 function Action(name, onstep) {
   var complete = false,
-      canceled = false;
+      canceled = false,
+      started = false,
+      _onstep = onstep,
+      action;
 
-  return {
+  onstep = function() {
+    if (!started) {
+      started = true;
+      log("Started action: " + name);
+      if (action.onstart)
+        action.onstart();
+    }
+    
+    if (_onstep)
+      _onstep();
+  };
+  
+  return action = {
     name: name,
-    onstep: onstep,
+    start: function() {
+      world.subscribe('step', onstep);
+    },
     cancel: function() {
       if (!complete && !canceled) {
         canceled = true;
         log("Canceled action: " + this.name);
+        world.unsubscribe('step', onstep)
         if (this.oncancel)
           this.oncancel.apply(null, arguments);
+        
       }
     },
     complete: function() {
       if (!complete && !canceled) {
         complete = true;      
         log("Completed action: " + this.name);
+        world.unsubscribe('step', onstep);
         if (this.oncomplete)
-          this.oncomplete.apply(null, arguments);      
+          this.oncomplete.apply(null, arguments);
+        
       }
     }
   };
@@ -264,8 +283,6 @@ function addAction(body, action) { //, exclusive) {
   API.cancelPendingActions(body);
   body._actions = body._actions || [];
   body._actions.push(action);
-  if (action.onstep)
-    world.subscribe('step', action.onstep);
   
   action.oncomplete = function() {
     removeAction(body, action);
@@ -400,7 +417,7 @@ function render() {
     body = bodies[i];
     if (body._id) {
       body.state.rendered.isTranslated = isTranslationRenderable(body);
-      body.state.rendered.isRotated = isRotationRenderable(body);
+//      body.state.rendered.isRotated = isRotationRenderable(body);
     }
   };
   
@@ -450,7 +467,7 @@ function isRotationRenderable(body) {
 };
 
 function hasMovedSinceLastRender(body) {
-  if (!RENDERED_SINCE_BOUNDS_CHANGE || body.state.rendered.isTranslated || body.state.rendered.isRotated)
+  if (!RENDERED_SINCE_BOUNDS_CHANGE || body.state.rendered.isTranslated) // || body.state.rendered.isRotated)
     return true;
   
   if (body.options.frame)
@@ -481,10 +498,8 @@ function renderBody(body) {
   		angle = state.angular.pos,
   		rendered = state.rendered,
   		wasRendered = body.rendered(),
-//  		isTranslated = pos.dist(rendered.pos) > world._opts.positionRenderResolution,
-//  		isRotated = Math.abs(angle - rendered.angular.pos) > world._opts.angleRenderResolution,
   		isTranslated = body.state.rendered.isTranslated,
-	    isRotated = body.state.rendered.isRotated,
+//	    isRotated = body.state.rendered.isRotated,
   		newOpacity = getOpacity(body),
 	    changedOpacity = !wasRendered || newOpacity !== body.state.rendered.opacity,
   		style,
@@ -493,7 +508,7 @@ function renderBody(body) {
   		x, y, z,
   		rx, ry, rz;
 				
-	if (!wasRendered || isTranslated || isRotated || changedOpacity) {
+	if (!wasRendered || changedOpacity || isTranslated /*|| isRotated*/) {
     style = {};
     transform = {};
     
@@ -520,10 +535,10 @@ function renderBody(body) {
     else if (!wasRendered)
       transform.translate = [0, 0, 0];
 		
-		if (isRotated)
-		  transform.rotate = [rx, ry, rz];
-		else if (!wasRendered)
-		  transform.rotate = [0, 0, 0];
+//		if (isRotated)
+//		  transform.rotate = [rx, ry, rz];
+//		else if (!wasRendered)
+//		  transform.rotate = [0, 0, 0];
 
 		if (transform.translate || transform.rotate)
 		  style.transform = transform;
@@ -901,8 +916,8 @@ function pick(obj) {
         this.averageBrickNonScrollDim = this.pageNonScrollDim;
         
       if (doSlidingWindow) {
-        world.subscribe('integrate:positions', this._onmove, this, -Infinity); // lowest priority
-        this._onmove = Physics.util.throttle(this._onmove.bind(this), 30);
+        world.subscribe('integrate:positions', this._onstep, this, -Infinity); // lowest priority
+        this._onstep = Physics.util.throttle(this._onstep.bind(this), 30);
       }
       
       this.mason = new Mason(masonryOptions);
@@ -1009,7 +1024,7 @@ function pick(obj) {
       this.pageNonScrollDim = this.horizontal ? this.pageHeight : this.pageWidth;  
     },
     
-    _onmove: function() {
+    _onstep: function() {
       if (this._sleeping || this._waiting)
         return;
       
@@ -1646,19 +1661,27 @@ var API = {
   },
 
   teleportLeft: function(bodyId) {
-    getBody(bodyId).state.pos.setComponent(0, LEFT.state.pos.get(0));
+    var body = getBody(bodyId);
+    body.state.pos.setComponent(0, LEFT.state.pos.get(0));
+    stopBody(body);
   },
 
   teleportRight: function(bodyId) {
-    getBody(bodyId).state.pos.setComponent(0, RIGHT.state.pos.get(0));
+    var body = getBody(bodyId);
+    body.state.pos.setComponent(0, RIGHT.state.pos.get(0));
+    stopBody(body);
   },
 
   teleportCenterX: function(bodyId) {
-    getBody(bodyId).state.pos.setComponent(0, CENTER.state.pos.get(0));
+    var body = getBody(bodyId);
+    body.state.pos.setComponent(0, ORIGIN.state.pos.get(0));
+    stopBody(body);
   },
 
   teleportCenterY: function(bodyId) {
-    getBody(bodyId).state.pos.setComponent(1, CENTER.state.pos.get(1));
+    var body = getBody(bodyId);
+    body.state.pos.setComponent(1, ORIGIN.state.pos.get(1));
+    stopBody(body);
   },
 
   setPosition: function(bodyId, x, y, z) {
@@ -1700,7 +1723,7 @@ var API = {
   flyTo: function(bodyId, x, y, z, speed, callback) {
     var body = getBody(bodyId),
         destination = updateVector(Physics.vector().clone(body.state.pos), x, y, z),
-        posLock = body.state.pos.unlock(),
+        posLock,
         distance,
         lastDistance = Infinity,
         flyAction = new Action(
@@ -1732,8 +1755,12 @@ var API = {
     
     flyAction.oncomplete = oncomplete;
     flyAction.oncancel = cleanUp;
+    flyAction.onstart = function() {
+      posLock = body.state.pos.unlock();
+    };
     
     addAction(body, flyAction);
+    flyAction.start();
   },
   
   teleport: function(bodyId /*[, another body's id] or [, x, y, z]*/) {
@@ -1772,13 +1799,13 @@ var API = {
 //        snapId = Physics.util.uniqueId('snap'),
         startTime = Physics.util.now(),
         body = getBody(bodyId),
-        posLock = body.state.pos.unlock(),
         anchor = getBody(anchorId),
         distanceAxis = anchorId == 'left' || anchorId == 'right' || anchorId == 'center' ? 0 : 1,
         orthoAxis = distanceAxis ^ 1, // flip bit
         coords = new Array(2),
         constraintEndpoint = coords[distanceAxis] = anchor.state.pos.get(distanceAxis),
         constraint = this.distanceConstraint(body, anchor, springStiffness, 0, distanceAxis == 0 ? DIR_MAP.right : DIR_MAP.down), // only snap along one axis
+        posLock,
         snapAction = new Action(
           'snap ' + bodyId + ' ' + anchorId,
           checkStopped,
@@ -1786,7 +1813,7 @@ var API = {
           cleanUp
         );
     
-    log("Snapping " + bodyId + " " + anchorId + " over a distance of " + body.state.pos.get(distanceAxis - constraintEndpoint) + ", with spring stiffness " + springStiffness + " and springDamping " + springDamping);
+    log("Snapping " + bodyId + " " + anchorId + " over a distance of " + (body.state.pos.get(distanceAxis) - constraintEndpoint) + ", with spring stiffness " + springStiffness + " and springDamping " + springDamping);
     constraint.damp(springDamping);
 //    world.publish(PUBSUB_SNAP_CANCELED); // finish (fast-forward or cancel?) any current snaps
 //    world.subscribe(PUBSUB_SNAP_CANCELED, endSnap);
@@ -1799,7 +1826,6 @@ var API = {
     };
 
     function cleanUp() {
-      world.unsubscribe('step', checkStopped);
       self.removeConstraint(constraint);      
       if (posLock)
         body.state.pos.lock(posLock);
@@ -1819,7 +1845,12 @@ var API = {
     
     snapAction.oncomplete = endSnap;
     snapAction.oncancel = cleanUp;
+    snapAction.onstart = function() {
+      posLock = body.state.pos.unlock();
+    };
+    
     addAction(body, snapAction);
+    snapAction.start();
   },
   
 	removeBodies: function(/* ids */) {

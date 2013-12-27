@@ -355,14 +355,15 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     }
   };
   
-  function render(styles) {
+  function render() {
     var el,
         style,
+        styles = UNRENDERED,
         transform,
         translate,
-        rotate,
+//        rotate,
         oldTranslate,
-        oldRotate,
+//        oldRotate,
         transformStr,
         listeners,
         dtx, dty, dtz,
@@ -403,21 +404,23 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         }
         
         transformStr += ', 1) ';
-        if ((rotate = transform.rotate)) {
-          // TODO: all axes, no need for now
-//          transformStr += 'rotateX(' + rotate[0] + 'rad) ' + 'rotateY(' + rotate[1] + 'rad)' + 'rotateZ(' + rotate[2] + 'rad)';
-          if (rotate[2])
-            transformStr += 'rotate(' + rotate[2].toFixed(10) + 'rad)'; // for now, only around Z axis
-          
-          oldRotate = oldTransform.rotate || ZERO_ROTATION;
-//          drx = rotate[0] - oldRotate[0];
-//          dry = rotate[1] - oldRotate[1];
-          drz = rotate[2] - oldRotate[2];
-          invokeListeners(renderListeners.rotate[''][id], el, drx, dry, drz);
-//          invokeListeners(renderListeners.rotate.z[id], drx);
-//          invokeListeners(renderListeners.rotate.y[id], dry);
-          invokeListeners(renderListeners.rotate.z[id], drz);
-        }
+        
+        // ROTATION
+//        if ((rotate = transform.rotate)) {
+//          // TODO: all axes, no need for now
+////          transformStr += 'rotateX(' + rotate[0] + 'rad) ' + 'rotateY(' + rotate[1] + 'rad)' + 'rotateZ(' + rotate[2] + 'rad)';
+//          if (rotate[2])
+//            transformStr += 'rotate(' + rotate[2].toFixed(10) + 'rad)'; // for now, only around Z axis
+//          
+//          oldRotate = oldTransform.rotate || ZERO_ROTATION;
+////          drx = rotate[0] - oldRotate[0];
+////          dry = rotate[1] - oldRotate[1];
+//          drz = rotate[2] - oldRotate[2];
+//          invokeListeners(renderListeners.rotate[''][id], el, drx, dry, drz);
+////          invokeListeners(renderListeners.rotate.z[id], drx);
+////          invokeListeners(renderListeners.rotate.y[id], dry);
+//          invokeListeners(renderListeners.rotate.z[id], drz);
+//        }
         
 //        el.style[TRANSFORM_PROP] = 'matrix3d(' + transform.join(',') + ')';
         el.style[TRANSFORM_PROP] = transformStr;
@@ -747,10 +750,10 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           
           switch (topic) {
             case 'render':
-              _.extend(UNRENDERED, e.data.bodies);
-              Q.write(render, this, [UNRENDERED], {
-                throttle: true,
-                last: true
+              _.deepExtend(UNRENDERED, e.data.bodies);
+              Q.write(render, this, null, {
+//                throttle: true,
+//                last: true
               });
               
               break;
