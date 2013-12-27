@@ -891,12 +891,6 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         };
         
         return THERE.chain.apply(THERE, chain);
-
-        THERE.chain.apply(THERE, chain);
-//        worker.postMessage({
-//          method: 'updateBounds',
-//          args: bounds
-//        });
       },
       
       postMessage: function() {
