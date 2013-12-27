@@ -1059,9 +1059,17 @@ define('views/BasicView', [
       this._offsetLeft = this.el.offsetLeft;
       this._offsetTop = this.el.offsetTop;
       this._outerWidth = this.el.$outerWidth() || viewport.width - this._offsetLeft;
+      if (this._outerWidth)
+        this._width = Math.min(this._outerWidth, viewport.width);
+      else
+        this._width = viewport.width > this._offsetLeft ? viewport.width - this._offsetLeft : viewport.width;
+      
       this._outerHeight = this.el.$outerHeight() || viewport.height - this._offsetTop;
-      this._width = Math.min(this._outerWidth, viewport.width - this._offsetLeft);
-      this._height = Math.min(this._outerHeight, viewport.height - this._offsetTop);
+      if (this._outerHeight)
+        this._height = Math.min(this._outerHeight, viewport.height);
+      else
+        this._height = viewport.height > this._offsetTop ? viewport.height - this._offsetTop : viewport.height;
+          
       if (this._width != oldWidth || this._height != oldHeight)
         doUpdate = true;
       
@@ -1130,7 +1138,7 @@ define('views/BasicView', [
           clearTimeout(this._mutationTimeout);
       }
       
-      this._mutationTimeout = setTimeout(this._onViewportDimensionsChanged);
+      this._mutationTimeout = setTimeout(this._onViewportDimensionsChanged, 20);
 //      if (this.mason && this._updateSize()) {
 //        this.updateMason();
 //      }

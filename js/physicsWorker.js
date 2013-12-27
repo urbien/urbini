@@ -1009,8 +1009,8 @@ function pick(obj) {
   //    this.pageOffset = [this.bounds._pos.get(0) - this.bounds._hw, 
   //                       this.bounds._pos.get(1) - this.bounds._hh];
       
-      this.pageWidth = this.bounds._hw * 2;
-      this.pageHeight = this.bounds._hh * 2;
+      this.pageWidth = Math.abs(this.bounds._hw * 2);
+      this.pageHeight = Math.abs(this.bounds._hh * 2);
       this.pageArea = this.pageWidth * this.pageHeight;
       if (this.pageArea < 400 * 400)
         this.minPagesInSlidingWindow = 7;
