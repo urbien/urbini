@@ -2153,7 +2153,8 @@ Vector.prototype.unlock = function() {
                     }
                 },
 				// last rendered - we may not want to render as precisely as we calculate
-				rendered: {
+                rendered: {
+                    opacity: 0,
                     pos: vector(),
                     vel: vector(),
                     acc: vector(),

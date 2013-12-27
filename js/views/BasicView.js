@@ -1007,6 +1007,7 @@ define('views/BasicView', [
     
     getBodyId: function() {
       return this.cid + '.' + this._initializedCounter;
+//      return this.cid;
     },
 
     getBodyContainerId: function() {
@@ -1173,28 +1174,50 @@ define('views/BasicView', [
       Physics.addBody(this.getBodyContainerId(), 'point', this.getContainerBodyOptions(), this.el, this._draggable && this.hammer());
     },
     
-    addViewBrick: function() {
-      var width = this._outerWidth,
+    getViewBrick: function() {
+      return this._viewBrick;
+    },
+    
+    buildViewBrick: function() {
+      var brick = this._viewBrick = this._viewBrick || {},
+          width = this._outerWidth,
           height = this._outerHeight,
-          id = this.getBodyId();
+          id = this.getBodyId(),
+          el = this.el;
+          
+      brick._id = id;
+      brick.fixed = !this._flexigroup;
       
-      this._viewBrick = { // TODO: separate this into real bricks, like subviews
-        _id: id,
-        fixed: !this._flexigroup,
-        lock: {
-          x: 0 // add gutterWidth/5
-        },
-        mass: 0.1,
-        vertices: [
-          {x: 0, y: height},
-          {x: width, y: height},
-          {x: width, y: 0},
-          {x: 0, y: 0}
-        ],
-        restitution: 0.3
-      };
+      // HACK
+      brick.lock = brick.lock || {};
+      brick.lock.x = 0;
+      // END HACK
       
-      this.addBricksToWorld([this._viewBrick]);
+      brick.mass = 0.1;
+      brick.restitution = 0.3;
+      
+      // vertices
+      brick.vertices = brick.vertices || [];
+      brick.vertices[0] = brick.vertices[0] || {};
+      brick.vertices[0].x = 0;
+      brick.vertices[0].y = height;
+
+      brick.vertices[1] = brick.vertices[1] || {};
+      brick.vertices[1].x = width;
+      brick.vertices[1].y = height;
+
+      brick.vertices[2] = brick.vertices[2] || {};
+      brick.vertices[2].x = width;
+      brick.vertices[2].y = 0;
+
+      brick.vertices[3] = brick.vertices[3] || {};
+      brick.vertices[3].x = 0;
+      brick.vertices[3].y = 0;
+      return brick;
+    },
+    
+    addViewBrick: function() {
+      this.addBricksToWorld([this.buildViewBrick()]);
       
       // TODO: get rid of this when we make everything into bricks 
       this.mason.setLimit(this._numBricks);

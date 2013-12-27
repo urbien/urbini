@@ -4,6 +4,7 @@ define('views/BasicPageView', [
   'underscore',
   'utils',
   'events',
+  'error',
   'views/BasicView',
   'views/mixins/LazyImageLoader',
 //  'views/mixins/Scrollable',
@@ -12,7 +13,7 @@ define('views/BasicPageView', [
   'domUtils'
 //  ,
 //  'jqueryImagesLoaded'
-], function(G, _, U, Events, BasicView, LazyImageLoader, Q, $m, DOM) {
+], function(G, _, U, Events, Errors, BasicView, LazyImageLoader, Q, $m, DOM) {
   var MESSAGE_BAR_TYPES = ['info', 'error', 'tip', 'countdown'],
       pageEvents = ['page_show', 'page_hide', 'page_beforeshow'],
       doc = document,
@@ -124,8 +125,12 @@ define('views/BasicPageView', [
         var fetchDfd = $.Deferred();
         this._fetchPromise = fetchDfd.promise();
         this.model.fetch(_.extend({
+          sync: true,
           success: fetchDfd.resolve,
-          error: fetchDfd.reject
+          error: function() {
+            fetchDfd.reject();
+            return Errors.getBackboneErrorHandler().apply(null, arguments);
+          }
         }, options.fetchOptions));
       }
     },

@@ -3,6 +3,7 @@ var ArrayProto = Array.prototype,
     concat = ArrayProto.concat,
 		slice = ArrayProto.slice,
 		benchedBodies = {},
+		JUST_HIDDEN = [],
 		world,
 		integrator,
 		CONSTANTS,
@@ -17,6 +18,8 @@ var ArrayProto = Array.prototype,
 		RIGHT,
     ORIGIN,
 		BOUNDS,
+		BOUNDS_AREA,
+		RENDERED_SINCE_BOUNDS_CHANGE = false,
     PUBSUB_SNAP_CANCELED = 'snap-canceled',
 		proxiedObjects,
 		layoutManagers = {},
@@ -152,7 +155,9 @@ function triggerEvent(callbackId, data) {
 };
 
 function updateBounds(minX, minY, maxX, maxY) {
-	BOUNDS = Physics.aabb.apply(Physics, arguments);
+  RENDERED_SINCE_BOUNDS_CHANGE = false;
+  BOUNDS = Physics.aabb.apply(Physics, arguments);
+  BOUNDS_AREA = (maxX - minX) * (maxY - minY);
 	var leftX = minX - (maxX - minX),
 	    leftY = minY,
 	    rightX = maxX,
@@ -195,6 +200,84 @@ function addBehavior(behavior, options) {
 	world.add( Physics.behavior(behavior, options) );
 };
 
+function updateVector(v, x, y, z) {
+  if (typeof x == 'undefined')
+    x = v.get(0);
+  
+  if (typeof y == 'undefined')
+    y = v.get(1);
+  
+  if (typeof z == 'undefined')
+    z = v.get(2);
+  
+  v.set(x, y, z);
+  return v;
+}
+
+function removeActions(/*, action, action */) {
+  for (var i = 0, l = arguments.length; i < l; i++) {
+    removeAction(body, arguments[i]);
+  }
+}
+
+function removeAction(body, action) {
+  if (body._actions) {
+    var idx = body._actions.indexOf(action);
+    if (~idx)
+      body._actions.splice(idx, 1);
+  }
+  
+  world.unsubscribe('step', action.onstep);
+};
+
+function Action(name, onstep) {
+  var complete = false,
+      canceled = false;
+
+  return {
+    name: name,
+    onstep: onstep,
+    cancel: function() {
+      if (!complete && !canceled) {
+        canceled = true;
+        log("Canceled action: " + this.name);
+        if (this.oncancel)
+          this.oncancel.apply(null, arguments);
+      }
+    },
+    complete: function() {
+      if (!complete && !canceled) {
+        complete = true;      
+        log("Completed action: " + this.name);
+        if (this.oncomplete)
+          this.oncomplete.apply(null, arguments);      
+      }
+    }
+  };
+}
+
+function addAction(body, action) { //, exclusive) {
+//  if (exclusive)
+  var oncomplete = action.oncomplete,
+      oncancel = action.oncancel;
+  
+  API.cancelPendingActions(body);
+  body._actions = body._actions || [];
+  body._actions.push(action);
+  if (action.onstep)
+    world.subscribe('step', action.onstep);
+  
+  action.oncomplete = function() {
+    removeAction(body, action);
+    oncomplete && oncomplete.apply(this, arguments);
+  };
+  
+  action.oncancel = function() {
+    removeAction(body, action);
+    oncancel && oncancel.apply(this, arguments);
+  };
+};
+
 function pluck(obj, prop1, prop2 /* etc. */) {
 	var subset = {};
 	for (var prop in obj) {
@@ -216,34 +299,181 @@ function toJSON(obj) {
 	return json;
 };
 
+///**
+// * NOTE: assumes rectangles are not rotated
+// */
+//function _getOverlapArea(aabb1, aabb2) {
+//  aabb1 = aabb1.get ? aabb1.get() : aabb1;
+//  aabb2 = aabb2.get ? aabb2.get() : aabb2;
+//  var left1 = aabb1.pos.x - aabb1.halfWidth,
+//      right1 = aabb1.pos.x + aabb1.halfWidth,
+//      top1 = aabb1.pos.y - aabb1.halfHeight,
+//      bottom1 = aabb1.pos.y + aabb1.halfHeight,
+//      left2 = aabb2.pos.x - aabb2.halfWidth,
+//      right2 = aabb2.pos.x + aabb2.halfWidth,
+//      top2 = aabb2.pos.y - aabb2.halfHeight,
+//      bottom2 = aabb2.pos.y + aabb2.halfHeight;
+//  
+////  return !(left1 > right2 || 
+////           left2 > right1 ||
+////           top1 > bottom2 ||
+////           top2 > bottom1);
+//  
+//  return left1 > right2 || left2 > right1 || top1 > bottom2 || top2 > bottom1 
+//          ? 0 
+//          : Math.min(Math.max(right2 - left1, right1 - left2, bottom2 - top1, bottom1 - top2, 0), Math.max(aabb1.halfWidth, aabb1.halfHeight) * 2, Math.max(aabb2.halfWidth, aabb2.halfHeight) * 2);
+//};
+
+function _getOverlapArea(aabbA, aabbB, areaA, areaB) {
+  aabbA = aabbA.get ? aabbA.get() : aabbA;
+  aabbB = aabbB.get ? aabbB.get() : aabbB;
+  var x1A = aabbA.pos.x - aabbA.halfWidth,
+      y1A = aabbA.pos.y - aabbA.halfHeight,
+      x2A = aabbA.pos.x + aabbA.halfWidth,
+      y2A = aabbA.pos.y + aabbA.halfHeight,
+      x1B = aabbB.pos.x - aabbB.halfWidth,
+      y1B = aabbB.pos.y - aabbB.halfHeight,
+      x2B = aabbB.pos.x + aabbB.halfWidth,
+      y2B = aabbB.pos.y + aabbB.halfHeight,
+      left = Math.max(x1A, x1B),
+      right = Math.min(x2A, x2B),
+      top = Math.max(y1A, y1B),
+      bottom = Math.min(y2A, y2B);
+  
+  if (right > left && bottom > top)
+    return (right - left) * (bottom - top);
+  else
+    return 0;
+  
+//      ,
+//      intersection,
+//      union;
+//  
+//  
+//  if (!(x1A > x2B || x2A > x1B || y1A > y2B || y2B > y1A))
+//    return 0;
+//  
+//  areaA = areaA || aabbA.halfWidth * aabbA.halfHeight * 4;
+//  areaB = areaB || aabbB.halfWidth * aabbB.halfHeight * 4;
+//  intersection = Math.max(0, Math.max(x2A, x2B) - Math.min(x1A, x1B)) * Math.max(0, Math.max(y2A, y2B) - Math.min(y1A, y1B));
+//  union = areaA + areaB - intersection;
+  
+};
+
+/**
+ * NOTE: assumes rectangles are not rotated
+ */
+function getOverlapArea(body, bounds, bodyArea, boundsArea) {
+  bounds = bounds || BOUNDS;
+  var aabb = body.aabb(),
+      frame = body.options.frame,
+      xOffset,
+      yOffset;
+  
+  if (frame) {
+    switch (frame.geometry.name) {
+    case 'point':
+      xOffset = frame.state.pos.get(0);
+      yOffset = frame.state.pos.get(1);
+      break;
+    default:
+      xOffset = frame.state.pos.get(0) - frame.geometry._aabb._hw;
+      yOffset = frame.state.pos.get(1) - frame.geometry._aabb._hh;
+      break;
+    }
+    
+    aabb.pos.x += xOffset;
+    aabb.pos.y += yOffset;
+  }
+    
+  return _getOverlapArea(aabb, bounds, bodyArea, boundsArea);
+};
+
 function render() {
 	var bodies = world.getBodies(),
   		body,
-  		transforms = {},
-  		transform,
+  		styles = {},
+  		style,
   		update = false;
 
+  for (var i = 0; i < bodies.length; i++) {
+    body = bodies[i];
+    if (body._id) {
+      body.state.rendered.isTranslated = isTranslationRenderable(body);
+      body.state.rendered.isRotated = isRotationRenderable(body);
+    }
+  };
+  
 	for (var i = 0; i < bodies.length; i++) {
 		body = bodies[i];
 		if (body._id) {
-			transform = renderBody(body);
-			if (transform) {
+			style = renderBody(body);
+			if (style) {
 				update = true;
-//				if (/container/.test(body._id))
-//				  log(body._id + ": " + transform.translate[0] + ", " + transform.translate[1]);
-				
-				transforms[body._id] = transform;
+				styles[body._id] = style;
 			}
 		}
-	}
+	};
 
+	if (JUST_HIDDEN.length) {
+	  var i = JUST_HIDDEN.length,
+	      style,
+	      id;
+	  
+	  while (i--) {
+	    id = JUST_HIDDEN[i];
+	    style = styles[id];
+	    if (!style)
+	      style = styles[id] = {};
+	    
+	    style.opacity = 0;
+	  }
+	  
+	  JUST_HIDDEN.length = 0;
+	}
+	
+	RENDERED_SINCE_BOUNDS_CHANGE = true;
 	if (update) {
 		postMessage({
 			topic: 'render',
-			bodies: transforms
+			bodies: styles
 		});	
 	}
-}
+};
+
+function isTranslationRenderable(body) {
+  return body.state.pos.dist(body.state.rendered.pos) > world._opts.positionRenderResolution;
+};
+
+function isRotationRenderable(body) {
+  return Math.abs(body.state.angular.pos - body.state.rendered.angular.pos) > world._opts.angleRenderResolution;
+};
+
+function hasMovedSinceLastRender(body) {
+  if (!RENDERED_SINCE_BOUNDS_CHANGE || body.state.rendered.isTranslated || body.state.rendered.isRotated)
+    return true;
+  
+  if (body.options.frame)
+    return hasMovedSinceLastRender(body.options.frame);
+  else
+    return false;
+};
+
+function getOpacity(body) {
+  if (body.geometry.name == 'point') // HACK for now, as we use points to represent all kinds of shapes for now
+    return 1;
+  
+  if (~JUST_HIDDEN.indexOf(body._id))
+    return 0;
+  
+  if (hasMovedSinceLastRender(body)) {
+    var overlap = getOverlapArea(body, BOUNDS, body.geometry._area, BOUNDS_AREA);
+//    return overlap / body.geometry._area;
+    return overlap > 0 ? 1 : 0;
+  }
+  else
+    return body.state.rendered.opacity;
+};
 
 function renderBody(body) {
 	var state = body.state,
@@ -251,21 +481,32 @@ function renderBody(body) {
   		angle = state.angular.pos,
   		rendered = state.rendered,
   		wasRendered = body.rendered(),
-  		isTranslated = pos.dist(rendered.pos) > world._opts.positionRenderResolution,
-  		isRotated = Math.abs(angle - rendered.angular.pos) > world._opts.angleRenderResolution,
-  		transform = {},
+//  		isTranslated = pos.dist(rendered.pos) > world._opts.positionRenderResolution,
+//  		isRotated = Math.abs(angle - rendered.angular.pos) > world._opts.angleRenderResolution,
+  		isTranslated = body.state.rendered.isTranslated,
+	    isRotated = body.state.rendered.isRotated,
+  		newOpacity = getOpacity(body),
+	    changedOpacity = !wasRendered || newOpacity !== body.state.rendered.opacity,
+  		style,
+  		transform,
   		aabb,
   		x, y, z,
   		rx, ry, rz;
 				
-	if (!wasRendered || isTranslated || isRotated) {
+	if (!wasRendered || isTranslated || isRotated || changedOpacity) {
+    style = {};
+    transform = {};
+    
 		if (!wasRendered) {
-//			if (body.options.lock) // lock on first render
-//  			body.state.pos.lock(body.options.lock);
-			
+////			if (body.options.lock) // lock on first render
+////  			body.state.pos.lock(body.options.lock);
 			body.rendered(true);
 		}
-		
+
+		if (changedOpacity) {
+		  body.state.rendered.opacity = style.opacity = newOpacity;
+		}
+		  
 		rendered.angular.pos = angle;
 		rendered.pos.clone(pos);
 		
@@ -276,41 +517,18 @@ function renderBody(body) {
       z = pos.get(2) - (aabb._hd || 0);
       transform.translate = [x, y, z];
 		}
+    else if (!wasRendered)
+      transform.translate = [0, 0, 0];
 		
 		if (isRotated)
 		  transform.rotate = [rx, ry, rz];
+		else if (!wasRendered)
+		  transform.rotate = [0, 0, 0];
 
-		/*
-		// compute translation matrix * z rotation matrix
-		// TODO: adjust for 3d (x, y rotation matrices, z translation)
-		var cosC = Math.cos(angle),
-				sinC = Math.sin(angle),
-				sinNC = Math.sin(-angle),
-//				transform = 'matrix3d(',
-				aabb = body.geometry._aabb,
-				x = pos.get(0) - (aabb._hw || 0),
-				y = pos.get(1) - (aabb._hh || 0);
-			
-		// 4 rows of the transform matrix
-//		transform += cosC + ', ' + sinNC + ', 0, 0, ';
-//		transform += sinC + ', ' + cosC + ', 0, 0, ';
-//		transform += '0, 0, 1, 0, ';
-//		transform += (x * cosC + y * sinC) + ', ' + (x * sinNC + y * cosC) + ', 0, 1)';
-		transform = [cosC, sinNC, 0, 0, 
-		        sinC, cosC, 0, 0, 
-		        0, 0, 1, 0,
-		        x * cosC + y * sinC, x * sinNC + y * cosC, 0, 1];
-		 */
-		
-//    log("Translation: " + transform[12] + ", " + transform[13]);
 		if (transform.translate || transform.rotate)
-		  return transform;
-		else if (!wasRendered) {
-		  return {
-		    translate: [0, 0, 0],
-        rotate: [0, 0, 0]
-		  }
-		}
+		  style.transform = transform;
+		
+		return style;
 	}
 };
 
@@ -396,6 +614,10 @@ function stopBody(body, atPos) {
   
 //  body.fixed = false;
 };
+
+function getBody(bodyId) {
+  return typeof bodyId == 'string' ? getBodies(bodyId)[0] : bodyId;
+}
 
 function getBodies(/* ids */) {
 	var bodies = world.getBodies(),
@@ -584,20 +806,24 @@ function pick(obj) {
       if (this.horizontal) {
         this.dirHead = DIR_LEFT;
         this.dirTail = DIR_RIGHT;
+        this.axis = 'x';
+        this.orthoAxis = 'y';
         this.axisIdx = 0;
         this.orthoAxisIdx = 1;
       }
       else {
         this.dirHead = DIR_UP;
         this.dirTail = DIR_DOWN;
+        this.axis = 'y';
+        this.orthoAxis = 'x';
         this.axisIdx = 1;
         this.orthoAxisIdx = 0;
       }
         
       this._rangeChangeListeners = [];
-      this.container = getBodies(this.container)[0];
+      this.container = getBody(this.container);
       if (this.flexigroup)
-        this.flexigroup = masonryOptions.flexigroup = getBodies(this.flexigroup)[0];
+        this.flexigroup = masonryOptions.flexigroup = getBody(this.flexigroup);
   
       this.offsetBody = this.flexigroup || this.container;
       this._initialOffsetBodyPos = Physics.vector().clone(this.offsetBody.state.pos);
@@ -822,12 +1048,13 @@ function pick(obj) {
     },
     
     checkHeadEdge: function() {
-      if (this.range.from == 0) {
+//      if (this.range.from == 0) {
         var coords = new Array(2);
         coords[this.orthoAxisIdx] = this.headEdge.state.pos.get(this.orthoAxisIdx);
+//        coords[this.axisIdx] = Math.max(this.headEdge.state.pos.get(this.axisIdx), -this.slidingWindowBounds.min);
         coords[this.axisIdx] = -this.slidingWindowBounds.min;
         this.headEdge.state.pos.set(coords[0], coords[1]);
-      }
+//      }
     },
 
     getTailEdgeCoords: function() {
@@ -868,8 +1095,16 @@ function pick(obj) {
         else
           this.tailEdge.state.pos.set(coords[0], coords[1]);
         
+        this.tailEdgeConstraint.enable();
         log("SET BOTTOM EDGE TO " + coords[this.axisIdx]);
       }
+//      else {
+//        if (this.tailEdge) {
+//          this.tailEdgeConstraint['break']();
+//          this.tailEdgeConstraint.disable();
+//          API.removeConstraint(this.tailEdgeConstraint);
+//        }
+//      }
     },
     
     setLimit: function(len) {
@@ -898,12 +1133,18 @@ function pick(obj) {
       this.mason.setBounds(this.bounds);
       if (this.numBricks()) {
         // TODO: find brick X currently in view so we can re-find it after masonry reload
+//        var viewport = this.getViewport(),
+//            offset = {};
+//        
+//        offset[this.axis] = viewport.min | 0;
+//        offset[this.orthoAxis] = 0;
+//        this.mason.reload(offset);
         this.mason.reload();
         // TODO: reposition around brick X
       }
       
       this.recalc();
-      this.checkHeadEdge(); // force adjustment
+      this.checkHeadEdge();
       this.checkTailEdge();
       this.enableEdgeConstraints();
       if (!this._waiting)
@@ -1075,6 +1316,7 @@ function pick(obj) {
       
       for (var i = 0; i < l; i++) {
         options = optionsArr[i];
+        options.frame = this.container;
         bricks[i] = API.addBody('convex-polygon', options, options._id);
       }
       
@@ -1112,14 +1354,22 @@ function pick(obj) {
         return;
       
       var bricks = fromTheHead ? this.mason.bricks.slice(0, n) : this.mason.bricks.slice(this.numBricks() - n),
-          el;
+          el,
+          id,
+          i;
       
-      if (bricks.length == 0) {
+      if ((i = bricks.length) == 0) {
         debugger;
         return;
       }
       
       world.remove(bricks);
+      while (i--) {
+        id = bricks[i]._id;
+        if (id)
+          JUST_HIDDEN.push(id);
+      }
+      
 //      if (n == bricks.length)
 //        this.mason.reset();
 //      else
@@ -1396,43 +1646,104 @@ var API = {
   },
 
   teleportLeft: function(bodyId) {
-    getBodies(bodyId)[0].state.pos.setComponent(0, LEFT.state.pos.get(0));
+    getBody(bodyId).state.pos.setComponent(0, LEFT.state.pos.get(0));
   },
 
   teleportRight: function(bodyId) {
-    getBodies(bodyId)[0].state.pos.setComponent(0, RIGHT.state.pos.get(0));
+    getBody(bodyId).state.pos.setComponent(0, RIGHT.state.pos.get(0));
   },
 
   teleportCenterX: function(bodyId) {
-    getBodies(bodyId)[0].state.pos.setComponent(0, CENTER.state.pos.get(0));
+    getBody(bodyId).state.pos.setComponent(0, CENTER.state.pos.get(0));
   },
 
   teleportCenterY: function(bodyId) {
-    getBodies(bodyId)[0].state.pos.setComponent(1, CENTER.state.pos.get(1));
+    getBody(bodyId).state.pos.setComponent(1, CENTER.state.pos.get(1));
   },
 
   setPosition: function(bodyId, x, y, z) {
-    var pos = getBodies(bodyId)[0].state.pos;
-    if (typeof x == 'undefined')
-      x = pos.get(0);
-    
-    if (typeof y == 'undefined')
-      y = pos.get(1);
-    
-    if (typeof z == 'undefined')
-      z = pos.get(2);
-    
-    pos.set(x, y, z);
+    updateVector(getBody(bodyId)['pos'], x, y, z);
   },
 
+  setVelocity: function(bodyId, x, y, z) {
+    updateVector(getBody(bodyId)['vel'], x, y, z);
+  },
+
+  setAcceleration: function(bodyId, x, y, z) {
+    updateVector(getBody(bodyId)['acc'], x, y, z);
+  },
+
+  cancelPendingActions: function(body) {
+    body = getBody(body);
+    var actions = body._actions,
+        i = actions && actions.length;
+    
+    if (i) {
+      while (i--) {
+        body._actions[i].cancel();
+      }
+    }
+  },
+  
+  flyLeft: function(bodyId, speed, callback) {
+    this.flyTo(bodyId, LEFT.state.pos.get(0), null, null, speed, callback);
+  },
+
+  flyRight: function(bodyId, speed, callback) {
+    this.flyTo(bodyId, RIGHT.state.pos.get(0), null, null, speed, callback);
+  },
+
+  flyCenter: function(bodyId, speed, callback) {
+    this.flyTo(bodyId, ORIGIN.state.pos.get(0), null, null, speed, callback);
+  },
+  
+  flyTo: function(bodyId, x, y, z, speed, callback) {
+    var body = getBody(bodyId),
+        destination = updateVector(Physics.vector().clone(body.state.pos), x, y, z),
+        posLock = body.state.pos.unlock(),
+        distance,
+        lastDistance = Infinity,
+        flyAction = new Action(
+          'fly ' + bodyId + ' to ' + destination.toString(),
+          function onstep() {
+            body.state.acc.zero();
+            if ((distance = body.state.pos.dist(destination)) <= lastDistance && distance > 0) {
+              lastDistance = distance;
+              body.state.vel.clone(destination).vsub(body.state.pos).normalize().mult(speed);
+            }
+            else
+              flyAction.complete();
+          }
+        );
+    
+    function cleanUp() {
+      if (posLock)
+        body.state.pos.lock(posLock);
+    };
+    
+    function oncomplete() {
+      body.state.pos.clone(destination);
+      body.state.vel.zero();
+      cleanUp();
+      if (callback)
+        doCallback(callback);
+    };
+    
+    
+    flyAction.oncomplete = oncomplete;
+    flyAction.oncancel = cleanUp;
+    
+    addAction(body, flyAction);
+  },
+  
   teleport: function(bodyId /*[, another body's id] or [, x, y, z]*/) {
-    var body = getBodies(bodyId)[0],
+    var body = getBody(bodyId),
 //        posLock = body.state.pos.unlock(),
         anchor,
         destination;
     
     if (typeof arguments[1] == 'string') {
-      anchor = getBodies(arguments[1])[0];
+      anchor = getBody(arguments[1]);
       if (anchor == LEFT || anchor == RIGHT || anchor == ORIGIN) // only teleport along X axis
         destination = Physics.vector().clone(body.state.pos).setComponent(0, anchor.state.pos.get(0));
       else
@@ -1447,7 +1758,7 @@ var API = {
     log("Teleporting " + bodyId + " to " + destination.toString());
     stopBody(body, destination);
   },
-
+  
   /**
    * @param bodyId {String}               id of body to snap
    * @param anchordId {String}            id of anchor to snap to
@@ -1460,42 +1771,55 @@ var API = {
     var self = this,
 //        snapId = Physics.util.uniqueId('snap'),
         startTime = Physics.util.now(),
-        body = getBodies(bodyId)[0],
+        body = getBody(bodyId),
         posLock = body.state.pos.unlock(),
-        anchor = getBodies(anchorId)[0],
+        anchor = getBody(anchorId),
         distanceAxis = anchorId == 'left' || anchorId == 'right' || anchorId == 'center' ? 0 : 1,
         orthoAxis = distanceAxis ^ 1, // flip bit
         coords = new Array(2),
         constraintEndpoint = coords[distanceAxis] = anchor.state.pos.get(distanceAxis),
-        constraint = this.distanceConstraint(body, anchor, springStiffness, 0, distanceAxis == 0 ? DIR_MAP.right : DIR_MAP.down); // only snap along one axis
+        constraint = this.distanceConstraint(body, anchor, springStiffness, 0, distanceAxis == 0 ? DIR_MAP.right : DIR_MAP.down), // only snap along one axis
+        snapAction = new Action(
+          'snap ' + bodyId + ' ' + anchorId,
+          checkStopped,
+          endSnap,
+          cleanUp
+        );
     
     log("Snapping " + bodyId + " " + anchorId + " over a distance of " + body.state.pos.get(distanceAxis - constraintEndpoint) + ", with spring stiffness " + springStiffness + " and springDamping " + springDamping);
     constraint.damp(springDamping);
 //    world.publish(PUBSUB_SNAP_CANCELED); // finish (fast-forward or cancel?) any current snaps
 //    world.subscribe(PUBSUB_SNAP_CANCELED, endSnap);
-    world.subscribe('step', checkStopped);
+//    world.subscribe('step', checkStopped);
     
     function checkStopped() {
       if (Math.abs(body.state.pos.get(distanceAxis) - constraintEndpoint) < 10 && body.state.vel.norm() < 0.1 && body.state.acc.norm() < 0.1) {
-        endSnap();
+        snapAction.complete();
       }
-    }
+    };
+
+    function cleanUp() {
+      world.unsubscribe('step', checkStopped);
+      self.removeConstraint(constraint);      
+      if (posLock)
+        body.state.pos.lock(posLock);
+    };
     
     function endSnap() {
       log("Snapping " + bodyId + " took " + (Physics.util.now() - startTime) + " milliseconds");
 //      world.unsubscribe(PUBSUB_SNAP_CANCELED, endSnap);
-      world.unsubscribe('step', checkStopped);
-      self.removeConstraint(constraint);
       coords[orthoAxis] = body.state.pos.get(orthoAxis);
       body.state.pos.set.apply(body.state.pos, coords);
       body.state.vel.zero();
-      body.state.acc.zero();
-      if (posLock)
-        body.state.pos.lock(posLock);
-      
+      body.state.acc.zero();      
+      cleanUp();
       if (callback)
         doCallback(callback);
     };
+    
+    snapAction.oncomplete = endSnap;
+    snapAction.oncancel = cleanUp;
+    addAction(body, snapAction);
   },
   
 	removeBodies: function(/* ids */) {
@@ -1574,15 +1898,15 @@ var API = {
 	    log("Failed to remove constraint");
 	},
 	
-	distanceConstraint: function(bodyAOrId, bodyBOrId, stiffness, targetLength, dir) {
+	distanceConstraint: function(bodyA, bodyB, stiffness, targetLength, dir) {
 		if (!constrainer) {
 			constrainer = Physics.behavior('verlet-constraints');
 			world.add(constrainer);
 		}
 		
-		bodyAOrId = typeof bodyAOrId == 'string' ? getBodies(bodyAOrId)[0] : bodyAOrId;
-		bodyBOrId = typeof bodyBOrId == 'string' ? getBodies(bodyBOrId)[0] : bodyBOrId;
-		return constrainer.distanceConstraint(bodyAOrId, bodyBOrId, stiffness, typeof targetLength == 'number' ? targetLength : ab[0].state.pos.dist(ab[1].state.pos), dir);
+		bodyA = getBody(bodyA);
+    bodyB = getBody(bodyB);
+		return constrainer.distanceConstraint(bodyA, bodyB, stiffness, typeof targetLength == 'number' ? targetLength : ab[0].state.pos.dist(ab[1].state.pos), dir);
 	},
 	
 	updateBounds: updateBounds,

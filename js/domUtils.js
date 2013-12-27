@@ -171,8 +171,11 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           var arg0 = arguments[0];
           if (typeof arg0 == 'string')
             return this.style[arg0];
-          else
-            _.extend(this.style, arg0);
+          else {
+            for (var prop in arg0) {
+              this.style[prop] = arg0[prop];
+            }
+          }
           
           break;
         case 2:
@@ -1109,6 +1112,11 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       };
     },
     
+    _renderCallbacks: [],
+    onNextRender: function(callback) {
+      this._renderCallbacks.push(callback);
+    },
+    
     /**
      * changes an element's styles, attributes, classes (see queueRender method signature for parameter definitions)
      */
@@ -1118,7 +1126,15 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           attrs = renderData.attributes, 
           classes = renderData['class'], 
           add, remove, replace,
-          i;
+          i = this._renderCallbacks.length;
+      
+      if (i) {
+        while (i--) {
+          this._renderCallbacks[i]();
+        }
+        
+        this._renderCallbacks.length = 0;
+      }
       
       if (html)
         el.innerHTML = html;

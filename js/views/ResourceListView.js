@@ -747,9 +747,9 @@ define('views/ResourceListView', [
     
   //        DOM.queueRender(view.el, DOM.opaqueStyle);
   
-          Physics.here.once('render', childView.getBodyId(), function(childEl) {
-            childEl.style.opacity = 1;
-          });
+//          Physics.here.once('render', childView.getBodyId(), function(childEl) {
+//            childEl.style.opacity = 1;
+//          });
         });
         
         return this.postRender(from, to, added);
@@ -866,7 +866,7 @@ define('views/ResourceListView', [
         this.stopListening(view.resource);
         if (numYetToRecycle-- >= 0) {
           view.undelegateAllEvents();
-          DOM.queueRender(view.el, DOM.transparentStyle);
+//          DOM.queueRender(view.el, DOM.transparentStyle);
           recycled[recycled.length] = view;
         }
         else {
@@ -877,8 +877,15 @@ define('views/ResourceListView', [
         ids.push(view.getBodyId());
       }
 
-      if (recycled.length)
+      if (recycled.length) {
         this.recycleItemViews(recycled);
+        DOM.onNextRender(function() {
+          i = recycled.length;
+          while (i--) {
+            recycled[i].el.style.opacity = 0;
+          }
+        });        
+      }
       
       this.pageView._bodies = _.difference(this.pageView._bodies, ids); // TODO: unyuck the yuck
       this._numBricks -= removedViews.length;
@@ -1085,34 +1092,17 @@ define('views/ResourceListView', [
     },
     
     toBricks: function(views, options) {
-      var bricks = [], 
-          view, 
-          id, 
-          el, 
-          width, 
-          height;
+      var bricks = [],
+          brick,
+          view;
       
       for (var i = 0, l = views.length; i < l; i++) {
         view = views[i];
-        el = view.el;
-        id = view.getBodyId();
-        width = el.$outerWidth(true);
-        height = el.$outerHeight(true);
-        bricks.push({
-          _id: id,
-          fixed: !options.flexigroup,
-          lock: {
-            x: options.gutterWidth / 5
-          },
-          mass: 0.1,
-          vertices: [
-            {x: 0, y: height},
-            {x: width, y: height},
-            {x: width, y: 0},
-            {x: 0, y: 0}
-          ],
-          restitution: 0.3
-        });
+        view._updateSize();
+        brick = view.buildViewBrick();
+        brick.lock.x = options.gutterWidth / 5;
+        brick.fixed = !options.flexigroup;
+        bricks.push(brick);
       };
       
       return bricks;

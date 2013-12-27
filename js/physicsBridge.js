@@ -61,6 +61,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       DRAG_LOCK = null,
       MOUSE_OUTED = false,
       TICKING = false;
+//      ,
+//      STYLE_ORDER = ['opacity', 'translation', 'rotation'];
 
   function log() {
     var args = [].slice.call(arguments);
@@ -353,8 +355,9 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     }
   };
   
-  function render(transforms) {
+  function render(styles) {
     var el,
+        style,
         transform,
         translate,
         rotate,
@@ -365,14 +368,26 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         dtx, dty, dtz,
         drx, dry, drz;
     
-    for (var id in transforms) {
+    for (var id in styles) {
       el = ID_TO_EL[id];
       if (el) {
         oldTransform = ID_TO_LAST_TRANSFORM[id] || IDENTITY_TRANSFORM;
-        transform = transforms[id];
+        style = styles[id];
+        for (var prop in style) {
+          if (prop !== 'transform') {
+            el.style[prop] = style[prop];
+          }
+        }
+        
+        transform = style.transform;
+        if (!transform)
+          continue;
+        
         transformStr = 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, ';
+//        transformStr = 'translate(';
         if ((translate = transform.translate)) {
           transformStr += translate[0].toFixed(10) + ', ' + translate[1].toFixed(10) + ', ' + translate[2].toFixed(10);
+//          transformStr += translate[0].toFixed(10) + 'px, ' + translate[1].toFixed(10) + 'px)';
           oldTranslate = oldTransform.translate || ZERO_TRANSLATION;
           dtx = translate[0] - oldTranslate[0];
           dty = translate[1] - oldTranslate[1];
@@ -382,14 +397,18 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           invokeListeners(renderListeners.translate.y[id], el, dty);
           invokeListeners(renderListeners.translate.z[id], el, dtz);
         }
-        else
+        else {
           transformStr += '0, 0, 0';
+//          transformStr += '0px, 0px)';
+        }
         
         transformStr += ', 1) ';
         if ((rotate = transform.rotate)) {
           // TODO: all axes, no need for now
 //          transformStr += 'rotateX(' + rotate[0] + 'rad) ' + 'rotateY(' + rotate[1] + 'rad)' + 'rotateZ(' + rotate[2] + 'rad)';
-          transformStr += 'rotate(' + rotate[2].toFixed(10) + 'rad)'; // for now, only around Z axis
+          if (rotate[2])
+            transformStr += 'rotate(' + rotate[2].toFixed(10) + 'rad)'; // for now, only around Z axis
+          
           oldRotate = oldTransform.rotate || ZERO_ROTATION;
 //          drx = rotate[0] - oldRotate[0];
 //          dry = rotate[1] - oldRotate[1];
