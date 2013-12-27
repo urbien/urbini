@@ -852,7 +852,7 @@ function pick(obj) {
       });
   
       this.headEdge._id = Physics.util.uniqueId('headEdge');
-      log("SET " + this.containerId + " HEAD EDGE TO " + this.headEdge.state.pos.get(this.axisIdx));
+      this.log("SET HEAD EDGE TO " + this.headEdge.state.pos.get(this.axisIdx));
       this.headEdgeConstraint = API.distanceConstraint(this.offsetBody, this.headEdge, CONSTANTS.springStiffness, 0, this.dirHead);
       this.headEdgeConstraint.damp(CONSTANTS.springDamping);
 //      var dirSign,
@@ -931,6 +931,12 @@ function pick(obj) {
       this['continue']();
     },
     
+    log: function() {
+      var args = slice.call(arguments);
+      args[0] = this.containerId + " " + args[0];
+      log.apply(null, args);
+    },
+    
     updateBricks: function(data, skipResize) {
       var bricks = this.mason.bricks,
           brick,
@@ -968,12 +974,12 @@ function pick(obj) {
       if (this.lastRequestedRange.from == range.from && this.lastRequestedRange.to == range.to) { // TODO: if we received less bricks than we wanted, then a repeat request is not out of the question
 //        log("REQUESTING SAME RANGE AGAIN...what's the holdup?");
 //        if (this.range.from == this.lastRequestedRange.from && this.range.to == this.lastRequestedRange.to) {
-          log("IGNORING DUPLICATE RANGE REQUEST: " + this.lastRequestedRange.from + '-' + this.lastRequestedRange.to);
+          this.log("IGNORING DUPLICATE RANGE REQUEST: " + this.lastRequestedRange.from + '-' + this.lastRequestedRange.to);
           return;
 //        }
       }
       
-      log("CURRENT RANGE: " + this.lastRequestedRange.from + '-' + this.lastRequestedRange.to + ", REQUESTING RANGE: " + range.from + '-' + range.to);
+      this.log("CURRENT RANGE: " + this.lastRequestedRange.from + '-' + this.lastRequestedRange.to + ", REQUESTING RANGE: " + range.from + '-' + range.to);
       this._waiting = true;
       triggerEvent(this._callbackId, {
         type: 'range',
@@ -1112,7 +1118,7 @@ function pick(obj) {
           this.tailEdge.state.pos.set(coords[0], coords[1]);
         
         this.tailEdgeConstraint.enable();
-        log("SET " + this.containerId + " TAIL EDGE TO " + coords[this.axisIdx]);
+        this.log("SET TAIL EDGE TO " + coords[this.axisIdx]);
       }
 //      else {
 //        if (this.tailEdge) {
@@ -1124,7 +1130,7 @@ function pick(obj) {
     },
     
     setLimit: function(len) {
-      log("SETTING BRICK LIMIT: " + len);
+      this.log("SETTING BRICK LIMIT: " + len);
 //      this._waiting = false;
       this.brickLimit = len;
       this.checkTailEdge();
@@ -1364,7 +1370,7 @@ function pick(obj) {
       else
         this.checkTailEdge();
       
-      log("ADDING " + l + " BRICKS TO THE " + (prepend ? "HEAD" : "TAIL") + " FOR A TOTAL OF " + (this.range.to - this.range.from));
+      this.log("ADDING " + l + " BRICKS TO THE " + (prepend ? "HEAD" : "TAIL") + " FOR A TOTAL OF " + (this.range.to - this.range.from));
       //    log("ACTUAL TOTAL AFTER ADD: " + this.numBricks());
       this['continue']();
     },
@@ -1401,7 +1407,7 @@ function pick(obj) {
       else
         this.range.to -= n;
       
-      log("REMOVING " + n + " BRICKS FROM THE " + (fromTheHead ? "HEAD" : "TAIL") + " FOR A TOTAL OF " + (this.range.to - this.range.from));
+      this.log("REMOVING " + n + " BRICKS FROM THE " + (fromTheHead ? "HEAD" : "TAIL") + " FOR A TOTAL OF " + (this.range.to - this.range.from));
   //    log("ACTUAL TOTAL AFTER REMOVE: " + this.numBricks());
       this.recalc();
   //    if (readjust)
@@ -1409,7 +1415,7 @@ function pick(obj) {
     },
     
     sleep: function() {
-      log("putting Mason to sleep");
+      this.log("putting Mason to sleep");
       this._sleeping = this._waiting = true;
       if (this.numBricks())
         world.remove(this.mason.bricks);
@@ -1424,7 +1430,7 @@ function pick(obj) {
     },
     
     wake: function() {
-      log("waking up Mason");
+      this.log("waking up Mason");
       if (this._sleeping && this.numBricks())
         world.add(this.mason.bricks);
       
@@ -1485,7 +1491,7 @@ function pick(obj) {
       if (this.range.from > 0 && numBricks && viewport.max <= slidingWindow.min) { 
         // sliding window is completely below viewport
         // remove all bricks and request new ones
-        log("DECISION: sliding window is completely below viewport, removing all bricks");
+        this.log("DECISION: sliding window is completely below viewport, removing all bricks");
         this.removeBricks(numBricks);
         
         // TODO: uncomment this and implement resetting of mason to new viewport position
@@ -1502,7 +1508,7 @@ function pick(obj) {
       else if (this.range.to < this.brickLimit && numBricks && viewport.min >= slidingWindow.max) { 
         // sliding window is completely above viewport
         // remove all bricks and request new ones
-        log("DECISION: sliding window is completely above viewport, removing all bricks");
+        this.log("DECISION: sliding window is completely above viewport, removing all bricks");
         this.removeBricks(numBricks, true);
         Physics.util.extend(range, this.range); // reclone
         range.to += Math.min(maxAppend, defaultAddDelta);
@@ -1512,16 +1518,16 @@ function pick(obj) {
       else if (canAdd && this.slidingWindowDimension < this.minSlidingWindowDimension) { // should this be measured in pages or in pixels or viewports?
         // grow window
         if (maxPrepend && (headDiff < tailDiff || !maxAppend)) {
-          log("DECISION: growing sliding window towards the " + HEAD_STR);
+          this.log("DECISION: growing sliding window towards the " + HEAD_STR);
           range.from -= Math.min(maxPrepend, defaultAddDelta);
         }
 //        else if (tailDiff <= headDiff && maxAppend > 0)
         else if (maxAppend) {
-          log("DECISION: growing sliding window towards the " + TAIL_STR);
+          this.log("DECISION: growing sliding window towards the " + TAIL_STR);
           range.to += Math.min(maxAppend, defaultAddDelta);
         }
         else {
-          log("DECISION: UH OH, SLIDING WINDOW IS CONFUSED!");
+          this.log("DECISION: UH OH, SLIDING WINDOW IS CONFUSED!");
           debugger;
         }
         
@@ -1534,7 +1540,7 @@ function pick(obj) {
           
           toRemove = Math.min(defaultRemoveDelta, numBricks);
           fromTheHead = headDiff > tailDiff;
-          log("DECISION: shrinking sliding window by " + toRemove + " at the " + (fromTheHead ? HEAD_STR : TAIL_STR));
+          this.log("DECISION: shrinking sliding window by " + toRemove + " at the " + (fromTheHead ? HEAD_STR : TAIL_STR));
           this.removeBricks(toRemove, fromTheHead);
           headDiff = this.getHeadDiff();
           tailDiff = this.getTailDiff();
@@ -1547,18 +1553,18 @@ function pick(obj) {
         if (tailDiff < this.slidingWindowOutsideBuffer) {
           var toAdd = Math.min(maxAppend, defaultAddDelta);
           range.to += toAdd;
-          log("DECISION: growing sliding window by " + toAdd + " at the " + TAIL_STR);
+          this.log("DECISION: growing sliding window by " + toAdd + " at the " + TAIL_STR);
           return this.requestNewRange(range);
         }
         else
-          log("DECISION: not doing anything to sliding window");
+          this.log("DECISION: not doing anything to sliding window");
 //        else if (this.brickLimit - range.to < this.bricksPerPage * 2) /// doesn't make any sense because if brick limit is set, we already have all those resources in the main thread, no need to fetch them from anywhere
 //          this.prefetch();
       }
       else if (maxPrepend && range.from > 0 && headDiff < this.slidingWindowOutsideBuffer) {
         var toAdd = Math.min(maxPrepend, defaultAddDelta);
         range.from -= toAdd;
-        log("DECISION: growing sliding window by " + toAdd + " at the " + HEAD_STR);
+        this.log("DECISION: growing sliding window by " + toAdd + " at the " + HEAD_STR);
         return this.requestNewRange(range);
       }
         
@@ -1576,7 +1582,7 @@ function pick(obj) {
     },
     
     home: function() {
-      log("JUMPING HOME");
+      this.log("JUMPING HOME");
 //      this.requestNewRange({
 //        from: 0,
 //        to: this.bricksPerPage
@@ -1588,7 +1594,7 @@ function pick(obj) {
     },
     
     end: function() {
-      log("JUMPING TO THE END");
+      this.log("JUMPING TO THE END");
       var end = Math.min(this.brickLimit, this.lastBrickSeen),
           coords = this.getTailEdgeCoords();
       
