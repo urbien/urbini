@@ -1339,7 +1339,7 @@ define('router', [
 //        G.activePage = toView.el;
 //      });
       
-      Transitioner.transition(dir, fromView, toView /*[, springStiffness, springDamping]*/).done(function() {
+      Transitioner.transition(dir, 'slide', fromView, toView /*[, springStiffness, springDamping]*/).done(function() {
         G.$activePage = $m.activePage = toView.$el;
         G.activePage = toView.el;
       });

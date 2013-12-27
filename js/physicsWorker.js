@@ -836,6 +836,7 @@ function pick(obj) {
       }
         
       this._rangeChangeListeners = [];
+      this.containerId = this.container;
       this.container = getBody(this.container);
       if (this.flexigroup)
         this.flexigroup = masonryOptions.flexigroup = getBody(this.flexigroup);
@@ -851,7 +852,7 @@ function pick(obj) {
       });
   
       this.headEdge._id = Physics.util.uniqueId('headEdge');
-      log("SET TOP EDGE TO " + this.headEdge.state.pos.get(this.axisIdx));
+      log("SET " + this.containerId + " HEAD EDGE TO " + this.headEdge.state.pos.get(this.axisIdx));
       this.headEdgeConstraint = API.distanceConstraint(this.offsetBody, this.headEdge, CONSTANTS.springStiffness, 0, this.dirHead);
       this.headEdgeConstraint.damp(CONSTANTS.springDamping);
 //      var dirSign,
@@ -1111,7 +1112,7 @@ function pick(obj) {
           this.tailEdge.state.pos.set(coords[0], coords[1]);
         
         this.tailEdgeConstraint.enable();
-        log("SET BOTTOM EDGE TO " + coords[this.axisIdx]);
+        log("SET " + this.containerId + " TAIL EDGE TO " + coords[this.axisIdx]);
       }
 //      else {
 //        if (this.tailEdge) {
