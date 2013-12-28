@@ -95,6 +95,12 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //    }
 //  });
 
+  hammer.on('touch', enableClick);
+  hammer.on('drag', function(e) {
+    stopDragEvent(e);
+    G.disableClick();
+  });
+  
   hammer.on('dragend', function() {
     var draggable;
     for (var id in DRAGGABLES) {
@@ -606,10 +612,19 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
             
       if (this.dragEnd) {
         this.dragEnd = false;
+//        THERE.chain({
+//            method: 'dragend',
+//            args: [this.lastDragVector, this.id]
+//          }, {
+//            method: 'echo',
+//            args: [enableClick] // async and faster than setTimeout
+//          }
+//        );
+
         THERE.dragend(this.lastDragVector, this.id);
         zero(this.lastDragVector);
         
-        Physics.echo(enableClick) // async and faster than setTimeout
+//        Physics.echo(enableClick); // async and faster than setTimeout 
       }
       
       if (this.drag && !isEqual(this.dragVector, zeroVector)) {
@@ -664,7 +679,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     addDraggable: function(hammer, id, axis) {
       var proxy = DRAGGABLES[id];
       if (proxy) {
-        this.connectDraggable(proxy);
+        this.connectDraggable(id);
       }
       else {
         numDraggables++;
