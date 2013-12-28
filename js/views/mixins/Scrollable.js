@@ -1,3 +1,4 @@
+debugger; // we shouldn't be using this source anymore
 define('views/mixins/Scrollable', ['globals', 'underscore', 'utils', 'domUtils', 'events', 'lib/fastdom'].concat(Lablz.tween ? 'lib/tween' : []), function(G, _, U, DOM, Events, Q, CreateJS) {
   var AXES = ['X', 'Y'],
       beziers = {

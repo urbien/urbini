@@ -5,8 +5,8 @@ define('views/IntersectionListView', [
   'events',
   'views/ResourceListView',
   'views/IntersectionListItemView',
-  'views/mixins/Scrollable'
-], function(G, U, Events, ResourceListView, IntersectionListItemView, Scrollable) {
+//  'views/mixins/Scrollable'
+], function(G, U, Events, ResourceListView, IntersectionListItemView) {
   return ResourceListView.extend({
     _renderedIntersectionUris: [],
     initialize: function(options) {

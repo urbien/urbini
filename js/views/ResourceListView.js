@@ -141,12 +141,12 @@ define('views/ResourceListView', [
       };
       
 //      Physics.here.on('translate.' + this.axis.toLowerCase(), this.getBodyId(), this.onScroll);
-      
-      this.listenTo(this.collection, 'endOfList', function() {
-        this._outOfData = true;
-        if (this.isActive())
-          this.setBrickLimit();
-      }, this);
+//      
+//      this.listenTo(this.collection, 'endOfList', function() {
+//        this._outOfData = true;
+//        if (this.isActive())
+//          this.setBrickLimit();
+//      }, this);
       
       return this;
     },

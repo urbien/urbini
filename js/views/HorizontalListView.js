@@ -5,9 +5,9 @@ define('views/HorizontalListView', [
   'events',
   'views/ResourceListView',
   'views/HorizontalListItemView',
-  'views/mixins/Scrollable',
+//  'views/mixins/Scrollable',
   'views/mixins/LazyImageLoader'
-], function(G, U, Events, ResourceListView, HorizontalListItemView, Scrollable, LazyImageLoader) {
+], function(G, U, Events, ResourceListView, HorizontalListItemView, LazyImageLoader) {
   var mixins = [];
   if (G.lazifyImages)
     mixins.unshift(LazyImageLoader);
