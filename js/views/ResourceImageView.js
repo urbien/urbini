@@ -314,7 +314,7 @@ define('views/ResourceImageView', [
         if (l)
           iTemplate += '<a href="#cameraPopup" class="cameraCapture" target="#" data-icon="camera" data-prop="'+ cOf[0] + '"></a>';
 //        imgAtts.style = 'position:absolute; clip: rect(' + t + 'px,' + r + 'px,' + b + 'px,' + l + 'px); left:' + left + 'px; '; // + (top ? 'top: ' + top + 'px;' : '');   
-        imgAtts.style = 'position:absolute; clip: rect(' + clip.clip_top + 'px,' + clip.clip_right + 'px,' + clip.clip_bottom + 'px,' + clip.clip_left + 'px); left:-' + clip.clip_left + 'px; top:-' + clip.clip_top; // + (top ? 'top: ' + top + 'px;' : '');
+        imgAtts.style = 'position:absolute; clip: rect(' + clip.clip_top + 'px,' + clip.clip_right + 'px,' + clip.clip_bottom + 'px,' + clip.clip_left + 'px); left:-' + clip.clip_left + 'px; top:-' + clip.clip_top + 'px;'; // + (top ? 'top: ' + top + 'px;' : '');
       }
       else if (!isIntersection) {
         if (w) imgAtts.width = w;
