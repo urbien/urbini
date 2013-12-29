@@ -1906,8 +1906,8 @@ var API = {
 			  bodies = typeof ids == 'string' ? getBodies(ids) : getBodies.apply(null, ids);
 
 		if (bodies.length) {
-			v = Physics.vector();
-			v._ = dragVector;
+      v = Physics.vector().set(dragVector[0], dragVector[1]);
+			log("DRAG: " + v.toString());
 			world.publish({
 				topic: 'drag', 
 				vector: v,
@@ -1921,8 +1921,8 @@ var API = {
         bodies = typeof ids == 'string' ? getBodies(ids) : getBodies.apply(null, ids);
 		
 		if (bodies.length) {
-			v = Physics.vector();
-			v._ = dragVector;
+      v = Physics.vector().set(dragVector[0], dragVector[1]);
+      log("DRAG END: " + v.toString());
 			world.publish({
 				topic: 'dragend', 
 				stop: stop,

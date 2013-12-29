@@ -109,17 +109,17 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         draggable._ondragend.apply(draggable, arguments);
     }
   });
-
-  document.addEventListener('click', function(e) {
+  
+  document.addEventListener('tap', function(e) {
     try {
       if (!G.canClick()) {
-        log('events', 'PREVENTING CLICK', _.now());
+        log('events', 'PREVENTING TAP', _.now());
         e.preventDefault();
         e.stopPropagation();
         return false;
       }
       
-      log('events', 'ALLOWING CLICK', _.now());
+      log('events', 'ALLOWING TAP', _.now());
     } finally {
       enableClick();
     }
@@ -171,6 +171,13 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     e.stopPropagation();
 //    e.preventDefault();
   };
+  
+  window.onscroll = function(e) {
+    console.log("NATIVE SCROLL: " + window.pageXOffset + ", " + window.pageYOffset);
+//    if (window.pageYOffset != 1 || window.pageXOffset)
+//      window.scrollTo(0, 1);
+  };
+//  window.scrollTo(0, 1);
   
   function getLayoutManagers(/* ids */) {
     var i = arguments.length,
@@ -881,14 +888,15 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
               method: 'updateBounds',
               args: bounds
             }];
-        
+        /*
+        // disconnect/reconnect draggables before/after resize handling
         _.each(DRAGGABLES, function(draggable, id) {
           if (draggable.isOn() && draggable.drag) { // currently dragging
             Physics.disconnectDraggable(id);
             disconnected.push(id);
             chain.push({
               method: 'dragend',
-              args: [ZERO_VECTOR, this.containerId]
+              args: [ZERO_VECTOR, id]
             });
           }          
         });
@@ -904,7 +912,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
             }]
           });
         };
-        
+        // end draggable hack
+        */
         return THERE.chain.apply(THERE, chain);
       },
       
