@@ -319,6 +319,8 @@ define('views/ResourceListView', [
       Voc.getModels(t).then(function() {
         var type = t;
         var isIntersection = type ? U.isA(U.getModel(type), 'Intersection') : false;
+        isImplementor = type && type.endsWith('system/designer/InterfaceImplementor');
+
         if (!isImplementor && parentView && parentView.mode == G.LISTMODES.CHOOSER) {
           if (!isIntersection  &&  (!p1  &&  !p2)) {
             debugger;
@@ -373,7 +375,10 @@ define('views/ResourceListView', [
           return;
   //        self.router.navigate('make/' + encodeURIComponent(type) + '?' + p2 + '=' + encodeURIComponent(self.resource.get('_uri')) + '&' + p1 + '=' + encodeURIComponent(params['$forResource']) + '&' + p2 + '.davClassUri=' + encodeURIComponent(self.resource.get('davClassUri')) +'&$title=' + encodeURIComponent(self.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
         }
-        else if (isIntersection  &&  type.indexOf('/dev/') == -1) {
+        if (isImplementor  &&  self.resource.get('implementor.davClassUri').toLowerCase().indexOf('/' + G.currentApp.appPath.toLowerCase() + '/') != -1) {
+          return G.getRejectedPromise();
+        }
+        if (isIntersection  &&  type.indexOf('/dev/') == -1) {
           var clonedI = cloned.Intersection;
           var a = clonedI.a;
           var b = clonedI.b;
