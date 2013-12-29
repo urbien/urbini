@@ -65,8 +65,8 @@ define('views/MenuPanel', [
           DOM.queueRender(self.el, {
             style: {
               add: {
-                opacity: 1,
-                'z-index': 10002              
+                'z-index': 10002,
+                visibility: 'visible'
               }
             }
           });
@@ -83,7 +83,7 @@ define('views/MenuPanel', [
           this.$el.closest('[data-role="panel"]').panel('close');
         
         Physics.there.rpc(null, 'flyTo', [this.getContainerBodyId(), G.viewport.width, 0, 0, this._flySpeed, function() {
-          DOM.queueRender(self.el, DOM.transparentStyle);
+          DOM.queueRender(self.el, DOM.hideStyle);
         }]);
       }
     },

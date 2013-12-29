@@ -9,20 +9,35 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       cssPrefix = {},
       renderQueue = [],
       tmpdiv = document.createElement("div"),
-      SHOW_STYLE = {
+      OPAQUE_STYLE = {
         style: {
           add: {
             opacity: 1
           }
         }
       },
-      HIDE_STYLE = {
+      TRANSPARENT_STYLE = {
         style: {
           add: {
             opacity: 0
           }
         }
+      },
+      SHOW_STYLE = {
+        style: {
+          add: {
+            visibility: 'visible'
+          }
+        }
+      },
+      HIDE_STYLE = {
+        style: {
+          add: {
+            visibility: 'hidden'
+          }
+        }
       };
+
 
 //      TRANSITION_PROP = G.browser.webkit ? '-webkit-transition' : 'transition';
 
@@ -1185,7 +1200,9 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       }
     },
     
-    transparentStyle: HIDE_STYLE,
-    opaqueStyle: SHOW_STYLE
+    transparentStyle: TRANSPARENT_STYLE,
+    opaqueStyle: OPAQUE_STYLE,
+    hideStyle: HIDE_STYLE,
+    showStyle: SHOW_STYLE
   };
 });
