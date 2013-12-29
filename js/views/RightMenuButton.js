@@ -6,7 +6,7 @@ define('views/RightMenuButton', [
   'utils',
   'views/BasicView'
 ], function(G, _, Events, U, BasicView) {
-  var MenuPanel,
+  var MainMenuPanel,
       RightMenuPanel;
   
   return BasicView.extend({
@@ -25,15 +25,17 @@ define('views/RightMenuButton', [
     hideLeftPanel: function() {
       if (this.leftMenuPanel) {
 //      this.leftMenuPanel.destroy();
-        this.leftMenuEl.style.visibility = 'hidden';
+//        this.leftMenuEl.style.visibility = 'hidden';
 //      this.leftMenuPanel = null;
+        this.leftMenuPanel.hide();
       }
     },
     hideRightPanel: function() {
       if (this.rightMenuPanel) {
 //      this.rightMenuPanel.destroy();
-        this.rightMenuEl.style.visibility = 'hidden';
+//        this.rightMenuEl.style.visibility = 'hidden';
   //      this.rightMenuPanel = null;
+        this.rightMenuPanel.hide();
       }
     },
     
@@ -65,19 +67,20 @@ define('views/RightMenuButton', [
 
    _leftMenu: function(e) {
       var self = this;
-      var p = this.leftMenuEl; //$('#' + this.viewId);
-      // HACK
-      var tagName = (p  &&  p.tagName.toLowerCase() == 'section') ? 'nav' : 'div'; 
+//      var p = this.leftMenuEl; //$('#' + this.viewId);
+//      // HACK
+//      var tagName = (p  &&  p.tagName.toLowerCase() == 'section') ? 'nav' : 'div'; 
 
 //      if (!this.initialLeftMenuStyle)
 //        this.initialLeftMenuStyle = p[0].style;
       if (this.leftMenuPanel) {
         if (G.isJQM())
           $(this.leftMenuEl).panel('open');
-        this.leftMenuEl.style.visibility = 'visible';
+        this.leftMenuPanel.show();
+//        this.leftMenuEl.style.visibility = 'visible';
       }
       else {
-        this.leftMenuPanel = new MenuPanel({viewId: this.viewId, model: this.model, tagName: tagName, parentView: this.getPageView()});
+        this.leftMenuPanel = new MainMenuPanel({viewId: this.viewId, model: this.model, el: this.leftMenuEl, parentView: this.getPageView()});
         this.leftMenuPanel.render();
         this.leftMenuPanel.on('destroyed', function del() {
           self.leftMenuPanel.off('destroyed', del);
@@ -92,11 +95,11 @@ define('views/RightMenuButton', [
     leftMenu: function(e) {
       Events.stopEvent(e);
       var self = this;
-      if (MenuPanel)
+      if (MainMenuPanel)
         return this._leftMenu(e);
       else {
-        U.require('views/MenuPanel', function(mp) {
-          MenuPanel = mp;
+        U.require('views/MainMenuPanel', function(mp) {
+          MainMenuPanel = mp;
           self._leftMenu(e);
         });
       }
@@ -105,20 +108,21 @@ define('views/RightMenuButton', [
     },
     
     _rightMenu: function(e) {
-      var p = this.rightMenuEl; //$('#' + this.viewId + 'r');
-      // HACK
-      var tagName = (G.isBB()  ||  G.isBootstrap()) ? 'nav' : 'div'; 
+//      var p = this.rightMenuEl; //$('#' + this.viewId + 'r');
+//      // HACK
+//      var tagName = (G.isBB()  ||  G.isBootstrap()) ? 'nav' : 'div'; 
 //      if (!this.initialRightMenuStyle)
 //        this.initialRightMenuStyle = p[0].style;
 
       if (this.rightMenuPanel) {
         if (G.isJQM())
           $(this.rightMenuEl).panel('open');
-        this.rightMenuEl.style.visibility = 'visible';
+        this.rightMenuPanel.show();
+//        this.rightMenuEl.style.visibility = 'visible';
       }
       else {
         var self = this;
-        this.rightMenuPanel = new RightMenuPanel({viewId: this.viewId, model: this.model, tagName: tagName, parentView: this.getPageView()});
+        this.rightMenuPanel = new RightMenuPanel({viewId: this.viewId, model: this.model, el: this.rightMenuEl, parentView: this.getPageView()});
         this.rightMenuPanel.render();
         this.rightMenuPanel.on('destroyed', function del() {
           self.rightMenuPanel.off('destroyed', del);

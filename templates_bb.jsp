@@ -6,8 +6,8 @@
 <!-- Templates -->
 <script type="text/template" id="resource-list">
   <!-- Resource list page -->
-  <section id="{{= viewId }}" data-type="sidebar" data-position="right" style="left:auto;right:0;visibility:hidden;z-index:10002"></section>
-  <section id="{{= viewId + 'r' }}" data-type="sidebar" data-position="right" style="left:auto;right:0;visibility:hidden;z-index:10002"></section> 
+  <section id="{{= viewId }}" data-type="sidebar" data-position="right" style="opacity:0;z-index:0;"></section>
+  <section id="{{= viewId + 'r' }}" data-type="sidebar" data-position="right" style="opacity:0;z-index:0;"></section> 
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv" style="position:relative;"></div>
   <div id="mapHolder" data-role="none"></div>
@@ -48,8 +48,8 @@
  
 <script type="text/template" id="resource">
   <!-- Single resource view -->  
-  <section id="{{= viewId }}" data-type="sidebar" style="left:auto;right:0;visibility:hidden;z-index:10001"></section>
-  <section id="{{= viewId + 'r' }}" data-type="sidebar" style="left:auto;right:0;visibility:hidden;z-index:10001"></section> 
+  <section id="{{= viewId }}" data-type="sidebar" style="opacity:0;z-index:0;"></section>
+  <section id="{{= viewId + 'r' }}" data-type="sidebar" style="opacity:0;z-index:0;"></section> 
 
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
@@ -614,8 +614,8 @@
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">
 <!-- the edit page for any particular resource -->
-  <section id="{{= viewId }}" data-type="sidebar" style="left:auto;right:0;visibility:hidden;z-index:10001"></section>
-  <section id="{{= viewId + 'r' }}" data-type="sidebar" style="left:auto;right:0;visibility:hidden;z-index:10001"></section> 
+  <section id="{{= viewId }}" data-type="sidebar" style="opacity:0;z-index:0;"></section>
+  <section id="{{= viewId + 'r' }}" data-type="sidebar" style="opacity:0;z-index:0;"></section> 
 <!--div id="headerMessageBar"></div-->
   <div id="headerDiv"></div>
   <div id="resourceEditView">

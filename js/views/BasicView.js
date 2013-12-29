@@ -399,7 +399,7 @@ define('views/BasicView', [
       if (this.pageView)
         this.stopListening(this.pageView);
       
-      this.undelegateEvents();
+      this.undelegateAllEvents();
       this.stopListening(); // last cleanup
       this.unobserveMutations();
       
@@ -412,7 +412,7 @@ define('views/BasicView', [
         delete this.pageView;
       
       if (this._draggable)
-        Physics.removeDraggable(this.getBodyContainerId());
+        Physics.removeDraggable(this.getContainerBodyId());
 
       if (this.el)
         this.el.$remove();
@@ -704,7 +704,7 @@ define('views/BasicView', [
       
       this.active = false;
       if (this._draggable)
-        Physics.disconnectDraggable(this.getBodyContainerId());
+        Physics.disconnectDraggable(this.getContainerBodyId());
 
       if (this.mason) {
         this.mason.sleep();
@@ -1013,12 +1013,12 @@ define('views/BasicView', [
       return this.cid;
     },
 
-    getBodyContainerId: function() {
+    getContainerBodyId: function() {
       return this.TAG + '.' + this.cid; // + '.' + this._initializedCounter;
     },
     
     addDraggable: function() {
-      Physics.addDraggable(this.hammer(), this.getBodyContainerId(), this._dragAxis);
+      Physics.addDraggable(this.hammer(), this.getContainerBodyId(), this._dragAxis);
     },
 
 //    reconnectToWorld: function() {
@@ -1059,8 +1059,12 @@ define('views/BasicView', [
       this._offsetLeft = this.el.offsetLeft;
       this._offsetTop = this.el.offsetTop;
       this._outerWidth = this.el.$outerWidth() || viewport.width - this._offsetLeft;
-      if (this._outerWidth)
+      if (this._outerWidth) {
+//        if (this._outerWidth > viewport.width + 10)
+//          debugger;
+        
         this._width = Math.min(this._outerWidth, viewport.width);
+      }
       else
         this._width = viewport.width > this._offsetLeft ? viewport.width - this._offsetLeft : viewport.width;
       
@@ -1105,7 +1109,7 @@ define('views/BasicView', [
       this._updateSize();
       var self = this,
           thisTransform = DOM.getTransform(this.el),
-          containerId = this.getBodyContainerId(),
+          containerId = this.getContainerBodyId(),
           topEdgeId = _.uniqueId('topEdge');
     
       options = options || {};      
@@ -1152,7 +1156,7 @@ define('views/BasicView', [
     },
     
     getContainerBodyOptions: function() {
-      var containerId = this.getBodyContainerId(),
+      var containerId = this.getContainerBodyId(),
           options;
       
       if (this._flexigroup) {
@@ -1186,7 +1190,7 @@ define('views/BasicView', [
     },
     
     addContainerBodyToWorld: function() {
-      var id = this.getBodyContainerId();
+      var id = this.getContainerBodyId();
       Physics.here.addBody(this.el, id);
       Physics.there.addBody('point', this.getContainerBodyOptions(), id);
       if (this._draggable)

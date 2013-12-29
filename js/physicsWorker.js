@@ -1731,6 +1731,16 @@ var API = {
     this.flyTo(bodyId, ORIGIN.state.pos.get(0), null, null, speed, callback);
   },
   
+  flyBy: function(bodyId, x, y, z, speed, callback) {
+    var body = getBody(bodyId);
+    return this.flyTo(body, 
+                      body.state.pos.get(0) + (x || 0),
+                      body.state.pos.get(1) + (y || 0),
+                      body.state.pos.get(2) + (z || 0),
+                      speed,
+                      callback);
+  },
+  
   flyTo: function(bodyId, x, y, z, speed, callback) {
     var body = getBody(bodyId),
         destination = updateVector(Physics.vector().clone(body.state.pos), x, y, z),
@@ -1796,7 +1806,7 @@ var API = {
     log("Teleporting " + bodyId + " to " + destination.toString());
     stopBody(body, destination);
   },
-  
+
   /**
    * @param bodyId {String}               id of body to snap
    * @param anchordId {String}            id of anchor to snap to
@@ -1890,6 +1900,7 @@ var API = {
   },
 
 	addBody: function(type, options, id) {
+    log("ADDING BODY: " + id);
 		var body = Physics.body(type, options);
 		if (id)
 			body._id = id;
@@ -1948,7 +1959,7 @@ var API = {
 		
 		bodyA = getBody(bodyA);
     bodyB = getBody(bodyB);
-		return constrainer.distanceConstraint(bodyA, bodyB, stiffness, typeof targetLength == 'number' ? targetLength : ab[0].state.pos.dist(ab[1].state.pos), dir);
+		return constrainer.distanceConstraint(bodyA, bodyB, stiffness, typeof targetLength == 'number' ? targetLength : bodyA.state.pos.dist(bodyB.state.pos), dir);
 	},
 	
 	updateBounds: updateBounds,

@@ -4,16 +4,16 @@ define('views/RightMenuPanel', [
   'utils',
   'events',
   'vocManager',
-  'views/BasicView'
-], function(G, U, Events, Voc, BasicView) {
+  'views/MenuPanel'
+], function(G, U, Events, Voc, MenuPanel) {
   function isCreatorOrAdmin(res) {
     return (G.currentUser._uri == G.currentApp.creator  ||  U.isUserInRole(U.getUserRole(), 'admin', res));
   };
   
-  return BasicView.extend({
+  return MenuPanel.extend({
     initialize: function(options) {
       _.bindAll(this, 'render', 'grab', 'release', 'chat', 'physics');
-      BasicView.prototype.initialize.apply(this, arguments);
+      MenuPanel.prototype.initialize.apply(this, arguments);
   //    this.resource.on('change', this.render, this);
       var type = this.modelType;
       this.makeTemplate('rightMenuP', 'template', type);
@@ -22,7 +22,7 @@ define('views/RightMenuPanel', [
       this.makeTemplate('menuHeaderTemplate', 'headerTemplate', type);
       this.viewId = options.viewId + 'r';
       this.isPanel = true;
-      this.listenToOnce(Events, 'pageChange', this.destroy);
+//      this.listenToOnce(Events, 'pageChange', this.destroy);
     },
     events: {
       'click [data-grab]'        : 'grab',
@@ -35,15 +35,17 @@ define('views/RightMenuPanel', [
       'click #urbien123'         : 'home',
       'click #physics123'        : 'physics',
       'click #login'             : 'login',
-      'click [data-href]'        : BasicView.clickDataHref
+      'click [data-href]'        : MenuPanel.clickDataHref
 //        ,
 //      'click'                    : 'click'
 //      'click #logout': 'logout',
     },
+
     home: function(e) {
       Events.stopEvent(e);
       window.location.href = G.serverName + '/app/UrbienApp';
     },
+    
     physics: function(e) {
       Events.stopEvent(e);
       
@@ -211,8 +213,6 @@ define('views/RightMenuPanel', [
     
     renderChatParticipants: function() {
       this.el.$empty();
-      var p = document.getElementById(this.viewId);
-      p.$empty();
       
       this.html(this.template());
       var frag = document.createDocumentFragment();
@@ -276,14 +276,14 @@ define('views/RightMenuPanel', [
       
       var ul = this.$('#rightMenuItems')[0];
       ul.appendChild(frag);
-      var p = document.getElementById(this.viewId);
-      p.appendChild(this.el);
+//      var p = document.getElementById(this.viewId);
+//      p.appendChild(this.el);
       
       if (!G.isJQM()) 
-        p.style.visibility = 'visible';
+        this.el.style.visibility = 'visible';
       else {
 //        p.panel().panel("open");
-        $(p).panel("open");
+        this.$el.panel("open");
         $(ul).listview();
       }
     },
@@ -294,12 +294,13 @@ define('views/RightMenuPanel', [
         return;
       }
       
-      var menu = document.getElementById(this.viewId);
-      var mi = menu.querySelector('ul#rightMenuItems');
-      if (mi) {
-        $(menu).panel("open");
-//        $('#' + this.viewId).panel().panel("open");
-        return;
+      if (G.isJQM()) {
+        var mi = this.el.querySelector('ul#rightMenuItems');
+        if (mi) {
+          this.$el.panel("open");
+  //        $('#' + this.viewId).panel().panel("open");
+          return;
+        }
       }
       
       var self = this,
@@ -425,14 +426,14 @@ define('views/RightMenuPanel', [
 
       var ul = this.$('#rightMenuItems')[0];
       ul.appendChild(frag);
-      var p = document.getElementById(this.viewId);
-      p.appendChild(this.el);
+//      var p = document.getElementById(this.viewId);
+//      p.appendChild(this.el);
       
       if (!G.isJQM()) 
-        p.style.visibility = 'visible';
+        this.el.style.visibility = 'visible';
       else {
 
-        $(p).panel().panel("open");
+        this.$el.panel().panel("open");
 //      p.panel().panel("open");
         $(ul).listview();
 //      p.trigger("updatelayout")

@@ -273,7 +273,7 @@ define('views/ResourceListView', [
         return;
       
       self = this.children[viewId]; // list item view
-      if (self.mvProp  ||  self.TAG == 'HorizontalListItemView') 
+      if (self.mvProp) // ||  self.TAG == 'HorizontalListItemView') 
         return;
       
       Events.stopEvent(e);

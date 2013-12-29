@@ -95,6 +95,13 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //    }
 //  });
 
+//  window.onscroll = function(e) {
+//    if (window.pageYOffset != 1 || window.pageXOffset)
+//      window.scrollTo(0, 1);
+//  };
+//  
+//  window.scrollTo(0, 1); // may not be possible if document content is smaller than viewport
+  
   hammer.on('touch', enableClick);
   hammer.on('drag', function(e) {
     stopDragEvent(e);
@@ -814,8 +821,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
             case 'render':
               _.deepExtend(UNRENDERED, e.data.bodies);
               Q.write(render, this, null, {
-//                throttle: true,
-//                last: true
+                throttle: true,
+                last: true
               });
               
               break;

@@ -13,8 +13,8 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
   function doTransition(direction, transition, fromView, toView, springStiffness, springDamping) {
     var dfd = $.Deferred(),
         promise = dfd.promise(),
-        from = fromView && fromView.getBodyContainerId(),
-        to = toView.getBodyContainerId(),
+        from = fromView && fromView.getContainerBodyId(),
+        to = toView.getContainerBodyId(),
         $from = fromView && fromView.$el,
         $to = toView && toView.$el,
         isJQM = G.isJQM(),
@@ -26,16 +26,15 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
       $from.trigger('page_beforehide');
       
     $to.trigger('page_beforeshow');
-    Q.write(function() {      
+    toView.el.style.opacity = 0;
+    function switchRoles() {
       toView.el.style.opacity = 1;
-    });
+      toView.el.style['z-index'] = 1000;
+      if (fromView)
+        fromView.el.style['z-index'] = 999;
+    }
     
     if (from) {
-      Q.write(function() {        
-        toView.el.style['z-index'] = 1000;
-        fromView.el.style['z-index'] = 999;
-      });
-      
       var dfd = $.Deferred();
       toView.onload(function() {
         Physics.disableDrag();
@@ -73,6 +72,10 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
           );
         }
         
+        Physics.echo(function() {
+          Physics.here.once('render', toView.getContainerBodyId(), switchRoles);
+        });
+        
 //        Physics.there.rpc(null, 'teleport' + fromDir.capitalizeFirst(), [to, fromDir]); // teleportLeft, teleportRight, etc.
 //        Physics.there.rpc(null, 'snap', [from, toDir, springStiffness, springDamping, finish]);
 //        Physics.there.rpc(null, 'snap', [to, 'center', springStiffness, springDamping, finish]);
@@ -81,18 +84,19 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
           if (++finished == 2) {
             Physics.enableDrag();
 //            G.enableClick();
-            if (fromView)
-              fromView.el.style.opacity = 0;
-            
             dfd.resolve();
           }
         };
       });
-      
-      return dfd.promise();
     }
-    else
-      return G.getResolvedPromise();
+    else {
+      Q.write(function() {
+        switchRoles();
+        dfd.resolve();
+      });
+    }
+    
+    return dfd.promise();
   }
 
   return {
