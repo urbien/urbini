@@ -4,7 +4,7 @@ define('views/IntersectionListView', [
   'utils',
   'events',
   'views/ResourceListView',
-  'views/IntersectionListItemView',
+  'views/IntersectionListItemView'
 //  'views/mixins/Scrollable'
 ], function(G, U, Events, ResourceListView, IntersectionListItemView) {
   return ResourceListView.extend({
