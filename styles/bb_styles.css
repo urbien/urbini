@@ -67,6 +67,7 @@ html {
 #headerUl li:last-child {
   border-right: none;
 }
+
 [data-type="list"] li.u-noimg {
   cursor:pointer;
   padding:0.5rem;
@@ -212,7 +213,9 @@ section[data-type="sidebar"] > nav > ul > header {
 section[data-type="sidebar"]:after {
   background: none;
 }
-
+#sidebar div {
+  font-size: 1.6rem;
+}
 .home {
   float:right; 
   position:relative; 
@@ -456,4 +459,7 @@ section#login_popup {
 }
 .commonLI {
   padding-left: 1rem;
+}
+#sidebar .ui-li-count {
+  float: right;
 }
