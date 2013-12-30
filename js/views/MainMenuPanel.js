@@ -243,7 +243,7 @@ define('views/MainMenuPanel', [
       options.x += G.viewport.width;
       options.lock.y = 0;
       return options;
-    },
+    }
 //    ,
 //    _onViewportDimensionsChanged: function() {
 //      return BasicView.prototype._onViewportDimensionsChanged.apply(this, arguments);
