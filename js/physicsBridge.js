@@ -95,12 +95,12 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //    }
 //  });
 
-//  window.onscroll = function(e) {
+  window.onscroll = function(e) {
+    console.log("NATIVE SCROLL: " + window.pageXOffset + ", " + window.pageYOffset);
 //    if (window.pageYOffset != 1 || window.pageXOffset)
 //      window.scrollTo(0, 1);
-//  };
-//  
-//  window.scrollTo(0, 1); // may not be possible if document content is smaller than viewport
+  };
+//  window.scrollTo(0, 1);
   
   hammer.on('touch', enableClick);
   hammer.on('drag', function(e) {
@@ -178,13 +178,6 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     e.stopPropagation();
 //    e.preventDefault();
   };
-  
-  window.onscroll = function(e) {
-    console.log("NATIVE SCROLL: " + window.pageXOffset + ", " + window.pageYOffset);
-//    if (window.pageYOffset != 1 || window.pageXOffset)
-//      window.scrollTo(0, 1);
-  };
-//  window.scrollTo(0, 1);
   
   function getLayoutManagers(/* ids */) {
     var i = arguments.length,
@@ -351,8 +344,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   function calcBounds() {
     var viewport = G.viewport;
     bounds[0] = bounds[1] = 0;
-    bounds[2] = bounds[2] + viewport.width;
-    bounds[3] = bounds[3] + viewport.height;
+    bounds[2] = bounds[0] + viewport.width;
+    bounds[3] = bounds[1] + viewport.height;
   };
 
   function replaceCallbacks(args) {
