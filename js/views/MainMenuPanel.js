@@ -72,22 +72,22 @@ define('views/MainMenuPanel', [
           href,
           text = U.removeHTML(t.innerHTML).trim();
       
-      this.hide();
       if ((href = this.tabs[text]) != null) {
+        this.hide();
         e.originalEvent.preventDefault();
         Events.trigger('navigate', U.replaceParam(href, '$title', text));
         return;
       }
 
-      if (!href)
-        return;
-            
-      debugger; // we should really get rid of this block
-      if (href.indexOf("Alert?") != -1) 
-        G.currentUser.newAlertsCount = 0;
-      
-      Events.stopEvent(e);
-      Events.trigger('navigate', href);
+//      if (!href)
+//        return;
+//            
+//      debugger; // we should really get rid of this block
+//      if (href.indexOf("Alert?") != -1) 
+//        G.currentUser.newAlertsCount = 0;
+//      
+//      Events.stopEvent(e);
+//      Events.trigger('navigate', href);
     },
 //    tap: Events.defaultTapHandler,
     render:function (eventName) {

@@ -156,7 +156,14 @@ define('views/RightMenuButton', [
     },
     
     render: function(options) {
-      this.html(this.template({viewId: this.viewId}));
+      if (this.el.childElementCount && !this.icon) {
+        this.icon = this.el.querySelector('i').className;
+      }
+      
+      this.html(this.template({
+        viewId: this.viewId, icon: this.icon
+      }));
+      
       this.findMenuBadge();
       if (!this.rendered) {
         this.leftMenuEl = this.pageView.$('#' + this.viewId)[0];

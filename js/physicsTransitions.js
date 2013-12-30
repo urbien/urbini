@@ -26,7 +26,6 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
       $from.trigger('page_beforehide');
       
     $to.trigger('page_beforeshow');
-    toView.el.style.opacity = 0;
     function switchRoles() {
       toView.el.style.opacity = 1;
       toView.el.style['z-index'] = 1000;
@@ -35,6 +34,7 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
     }
     
     if (from) {
+      toView.el.style.opacity = 0;
       var dfd = $.Deferred();
       toView.onload(function() {
         Physics.disableDrag();

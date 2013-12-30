@@ -382,11 +382,7 @@ define('router', [
           delete G.homePage;
         }
         
-        var homePageEl = doc.querySelector('#homePage');
-        if (!homePageEl)
-          debugger;
-        
-        homePage = new HomePage({el: homePageEl });
+        homePage = new HomePage({el: doc.querySelector('#homePage') });
       }
       
       this.changePage(homePage);

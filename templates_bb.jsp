@@ -300,7 +300,7 @@
 
 <script type="text/template" id="rightMenuButtonTemplate">
   <!-- button that toggles the object properties panel -->
-  <a target="#" href="#{{= viewId }}"><i class="ui-icon-reorder"></i></a><!-- {{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }} -->
+  <a target="#" href="#{{= viewId }}"><i class="{{= obj.icon || 'ui-icon-reorder' }}"></i></a><!-- {{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }} -->
     {{= '<span class="menuBadge">{0}</span>'.format(obj.newAlerts || '') }}
   </a>
 </script>
