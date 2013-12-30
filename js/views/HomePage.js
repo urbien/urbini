@@ -38,7 +38,7 @@ define('views/HomePage', [
       if (!id.startsWith('hpRightPanel'))
         return;
       Events.stopEvent(e);
-      U.require(["views/RightMenuPanel"]).done(function(MP) {
+      U.require(["views/ContextMenuPanel"]).done(function(MP) {
         self.menuPanel = new MP({
           viewId: 'viewHome'
         });

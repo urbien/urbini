@@ -7,7 +7,7 @@ define('views/RightMenuButton', [
   'views/BasicView'
 ], function(G, _, Events, U, BasicView) {
   var MainMenuPanel,
-      RightMenuPanel;
+      ContextMenuPanel;
   
   return BasicView.extend({
     tagName: 'li',
@@ -31,11 +31,11 @@ define('views/RightMenuButton', [
       }
     },
     hideRightPanel: function() {
-      if (this.rightMenuPanel) {
-//      this.rightMenuPanel.destroy();
+      if (this.contextMenuPanel) {
+//      this.ContextMenuPanel.destroy();
 //        this.rightMenuEl.style.visibility = 'hidden';
-  //      this.rightMenuPanel = null;
-        this.rightMenuPanel.hide();
+  //      this.ContextMenuPanel = null;
+        this.contextMenuPanel.hide();
       }
     },
     
@@ -114,20 +114,20 @@ define('views/RightMenuButton', [
 //      if (!this.initialRightMenuStyle)
 //        this.initialRightMenuStyle = p[0].style;
 
-      if (this.rightMenuPanel) {
+      if (this.contextMenuPanel) {
         if (G.isJQM())
           $(this.rightMenuEl).panel('open');
-        this.rightMenuPanel.show();
+        this.contextMenuPanel.show();
 //        this.rightMenuEl.style.visibility = 'visible';
       }
       else {
         var self = this;
-        this.rightMenuPanel = new RightMenuPanel({viewId: this.viewId, model: this.model, el: this.rightMenuEl, parentView: this.getPageView()});
-        this.rightMenuPanel.render();
-        this.rightMenuPanel.on('destroyed', function del() {
-          self.rightMenuPanel.off('destroyed', del);
+        this.contextMenuPanel = new ContextMenuPanel({viewId: this.viewId, model: this.model, el: this.rightMenuEl, parentView: this.getPageView()});
+        this.contextMenuPanel.render();
+        this.contextMenuPanel.on('destroyed', function del() {
+          self.contextMenuPanel.off('destroyed', del);
           self.hideRightPanel();
-          delete self.rightMenuPanel;
+          delete self.contextMenuPanel;
         });
       }
     },
@@ -137,12 +137,12 @@ define('views/RightMenuButton', [
       if (G.currentUser.guest)
         return;
       
-      if (RightMenuPanel)
+      if (ContextMenuPanel)
         return this._rightMenu(e);
       else {
         var self = this;
-        U.require('views/RightMenuPanel', function(rmp) {
-          RightMenuPanel = rmp;
+        U.require('views/ContextMenuPanel', function(rmp) {
+          ContextMenuPanel = rmp;
           self._rightMenu(e);
         });
       }

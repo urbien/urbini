@@ -261,6 +261,6 @@ define('views/MainMenuPanel', [
 //    }
   }, 
   {
-    displayName: 'MenuPanel'
+    displayName: 'MainMenuPanel'
   });
 });

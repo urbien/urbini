@@ -1,5 +1,5 @@
 //'use strict';
-define('views/RightMenuPanel', [
+define('views/ContextMenuPanel', [
   'globals',
   'utils',
   'events',
@@ -749,6 +749,6 @@ define('views/RightMenuPanel', [
     }    
   }, 
   {
-    displayName: 'RightMenuPanel'
+    displayName: 'ContextMenuPanel'
   });
 });
