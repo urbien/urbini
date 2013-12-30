@@ -71,19 +71,19 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //    console.log.apply(console, arguments);
   };
 
-//  function isDragAlongAxis(drag, axis) {
-//    switch (axis) {
-//    case null:
-//      return true;
-//    case 'x':
-//      return /left|right/.test(drag);
-//    case 'y':
-//      return /up|down/.test(drag);
-//    default:
-//      return false;
-//    }
-//  };
-//  
+  function isDragAlongAxis(drag, axis) {
+    switch (axis) {
+    case null:
+      return true;
+    case 'x':
+      return /left|right/.test(drag);
+    case 'y':
+      return /up|down/.test(drag);
+    default:
+      return false;
+    }
+  };
+  
 //  hammer.on('dragleft dragright dragup dragdown', function(e) {
 //    var draggable;
 //    for (var id in DRAGGABLES) {
@@ -103,9 +103,16 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //  window.scrollTo(0, 1);
   
   hammer.on('touch', enableClick);
-  hammer.on('drag', function(e) {
-    stopDragEvent(e);
+  hammer.on('dragleft dragright dragup dragdown', function(e) {
     G.disableClick();
+    var draggable;
+    for (var id in DRAGGABLES) {
+      draggable = DRAGGABLES[id];
+      if (draggable.isOn() && isDragAlongAxis(e.type, draggable.axis)) {
+        if (draggable.hammer.element.contains(e.target))
+          draggable._ondrag.apply(draggable, arguments);
+      }
+    }
   });
   
   hammer.on('dragend', function() {
