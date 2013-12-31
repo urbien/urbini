@@ -84,6 +84,12 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
           if (++finished == 2) {
             Physics.enableDrag();
 //            G.enableClick();
+            if (fromView) {
+              Q.write(function() {
+                fromView.el.style.opacity = 0;
+              });
+            }
+            
             dfd.resolve();
           }
         };

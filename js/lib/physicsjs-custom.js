@@ -2134,6 +2134,7 @@ Vector.prototype.unlock = function() {
 
             // physical properties
             this.state = {
+                renderData: {},
                 pos: vector( options.x, options.y ),
                 vel: vector( options.vx, options.vy ),
                 acc: vector(),
@@ -2154,7 +2155,7 @@ Vector.prototype.unlock = function() {
                 },
 				// last rendered - we may not want to render as precisely as we calculate
                 rendered: {
-                    opacity: 0,
+                    renderData: {},
                     pos: vector(),
                     vel: vector(),
                     acc: vector(),
@@ -2165,6 +2166,35 @@ Vector.prototype.unlock = function() {
                     }
                 }
             };
+            
+            Physics.util.extend(this.state.renderData, {
+              changed: [],
+              json: {
+                opacity: 0
+              },
+              isChanged: function(prop) {
+                if (prop)
+                  return this.changed.indexOf(prop) != -1;
+                else
+                  return !!this.changed.length;
+              },
+              clearChanges: function() {
+                this.changed.length = 0;
+              },
+              get: function(prop) {
+                return this.json[prop];
+              },
+              set: function(prop, val) {
+                if (this.json[prop] != val) {
+                  this.json[prop] = val;
+                  if (!this.isChanged(prop))
+                    this.changed.push(prop);
+                }
+              },
+              toJSON: function() {
+                return this.json;
+              }
+            });
 
             if (this.mass === 0){
                 throw "Error: Bodies must have non-zero mass";

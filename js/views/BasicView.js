@@ -1009,12 +1009,12 @@ define('views/BasicView', [
     },
     
     getBodyId: function() {
-//      return this.cid + '.' + this._initializedCounter;
-      return this.cid;
+      return this.cid + '.' + this._initializedCounter;
+//      return this.cid;
     },
 
     getContainerBodyId: function() {
-      return this.TAG + '.' + this.cid; // + '.' + this._initializedCounter;
+      return this.TAG + '.' + this.cid + '.' + this._initializedCounter;
     },
     
     addDraggable: function() {
@@ -1059,12 +1059,8 @@ define('views/BasicView', [
       this._offsetLeft = this.el.offsetLeft;
       this._offsetTop = this.el.offsetTop;
       this._outerWidth = this.el.$outerWidth() || viewport.width - this._offsetLeft;
-      if (this._outerWidth) {
-//        if (this._outerWidth > viewport.width + 10)
-//          debugger;
-        
+      if (this._outerWidth)
         this._width = Math.min(this._outerWidth, viewport.width);
-      }
       else
         this._width = viewport.width > this._offsetLeft ? viewport.width - this._offsetLeft : viewport.width;
       

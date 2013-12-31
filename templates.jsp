@@ -959,7 +959,7 @@
 
 <script type="text/template" id="rightMenuButtonTemplate">
   <!-- button that toggles the object properties panel -->
-  <a target="#" href="#{{= viewId }}" data-icon="reorder"><!--{{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}-->
+  <a target="#" href="#{{= viewId }}" data-icon="{{= obj.icon || 'reorder' }}"><!--{{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}-->
     {{= '<span class="menuBadge">{0}</span>'.format(obj.newAlerts || '') }}
   </a>
 </script>
