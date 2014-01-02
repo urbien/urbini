@@ -1379,12 +1379,13 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
   /**
    * Sets the components of this Vector.
    */
-  Vector.prototype.set = function(x, y) {
+  Vector.prototype.set = function(x, y, z) {
 
       this.recalc = true;
 
       this._[0] = x || 0.0;
       this._[1] = y || 0.0;
+      this._[2] = z || 0.0;
       return this;
   };
 
@@ -1809,6 +1810,7 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
 
           this._[0] = v._[0];
           this._[1] = v._[1];
+          this._[2] = v._[2];
 
           return this;
       }
@@ -2134,6 +2136,7 @@ Vector.prototype.unlock = function() {
 
             // physical properties
             this.state = {
+                renderData: {},
                 pos: vector( options.x, options.y ),
                 vel: vector( options.vx, options.vy ),
                 acc: vector(),
@@ -2154,7 +2157,7 @@ Vector.prototype.unlock = function() {
                 },
 				// last rendered - we may not want to render as precisely as we calculate
                 rendered: {
-                    opacity: 0,
+                    renderData: {},
                     pos: vector(),
                     vel: vector(),
                     acc: vector(),
@@ -2165,6 +2168,35 @@ Vector.prototype.unlock = function() {
                     }
                 }
             };
+            
+            Physics.util.extend(this.state.renderData, {
+              changed: [],
+              json: {
+                opacity: 0
+              },
+              isChanged: function(prop) {
+                if (prop)
+                  return this.changed.indexOf(prop) != -1;
+                else
+                  return !!this.changed.length;
+              },
+              clearChanges: function() {
+                this.changed.length = 0;
+              },
+              get: function(prop) {
+                return this.json[prop];
+              },
+              set: function(prop, val) {
+                if (this.json[prop] != val) {
+                  this.json[prop] = val;
+                  if (!this.isChanged(prop))
+                    this.changed.push(prop);
+                }
+              },
+              toJSON: function() {
+                return this.json;
+              }
+            });
 
             if (this.mass === 0){
                 throw "Error: Bodies must have non-zero mass";

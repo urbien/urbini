@@ -3,7 +3,7 @@ var ArrayProto = Array.prototype,
     concat = ArrayProto.concat,
 		slice = ArrayProto.slice,
 		benchedBodies = {},
-		JUST_HIDDEN = [],
+//		JUST_HIDDEN = [],
 		world,
 		integrator,
 		CONSTANTS,
@@ -34,6 +34,8 @@ var ArrayProto = Array.prototype,
       up: null,
       down: null
     },
+    RERENDER = false,
+    MAX_OPACITY = 0.999999,
 		HEAD_STR = "head (top / left)",
 		TAIL_STR = "tail (bottom / right)";
 
@@ -166,18 +168,21 @@ function updateBounds(minX, minY, maxX, maxY) {
 	if (!LEFT) {
     LEFT = Physics.body('point', {
       fixed: true,
+      hidden: true,
       x: leftX,
       y: leftY
     });
 
     RIGHT = Physics.body('point', {
       fixed: true,
+      hidden: true,
       x: rightX,
       y: rightY
     });
     
     ORIGIN = Physics.body('point', {
       fixed: true,
+      hidden: true,
       x: minX,
       y: minY
     });
@@ -355,12 +360,20 @@ function _getOverlapArea(aabbA, aabbB, areaA, areaB) {
       left = Math.max(x1A, x1B),
       right = Math.min(x2A, x2B),
       top = Math.max(y1A, y1B),
-      bottom = Math.min(y2A, y2B);
+      bottom = Math.min(y2A, y2B),
+      rl = right - left,
+      bt = bottom - top;
   
-  if (right > left && bottom > top)
-    return (right - left) * (bottom - top);
-  else
-    return 0;
+  if (rl > 0 && bt > 0)
+    return rl * bt;
+  else {
+    if (rl > 0)
+      return bt;
+    else if (bt > 0)
+      return rl;
+    else
+      return Math.max(rl, bt); // distance
+  }
   
 //      ,
 //      intersection,
@@ -403,7 +416,13 @@ function getOverlapArea(body, bounds, bodyArea, boundsArea) {
     aabb.pos.y += yOffset;
   }
     
-  return _getOverlapArea(aabb, bounds, bodyArea, boundsArea);
+  var area = _getOverlapArea(aabb, bounds, bodyArea, boundsArea);
+  if (area < 0)
+    body.state.distanceFromBounds = area;
+  else
+    body.state.distanceFromBounds = 0;
+  
+  return area;
 };
 
 function render() {
@@ -415,7 +434,7 @@ function render() {
 
   for (var i = 0; i < bodies.length; i++) {
     body = bodies[i];
-    if (body._id) {
+    if (!body.hidden && body._id) {
       body.state.rendered.isTranslated = isTranslationRenderable(body);
 //      body.state.rendered.isRotated = isRotationRenderable(body);
     }
@@ -423,7 +442,7 @@ function render() {
   
 	for (var i = 0; i < bodies.length; i++) {
 		body = bodies[i];
-		if (body._id) {
+		if (!body.hidden && body._id) {
 			style = renderBody(body);
 			if (style) {
 				update = true;
@@ -432,24 +451,8 @@ function render() {
 		}
 	};
 
-	if (JUST_HIDDEN.length) {
-	  var i = JUST_HIDDEN.length,
-	      style,
-	      id;
-	  
-	  while (i--) {
-	    id = JUST_HIDDEN[i];
-	    style = styles[id];
-	    if (!style)
-	      style = styles[id] = {};
-	    
-	    style.opacity = 0;
-	  }
-	  
-	  JUST_HIDDEN.length = 0;
-	}
-	
 	RENDERED_SINCE_BOUNDS_CHANGE = true;
+	RERENDER = !update;
 	if (update) {
 		postMessage({
 			topic: 'render',
@@ -467,7 +470,7 @@ function isRotationRenderable(body) {
 };
 
 function hasMovedSinceLastRender(body) {
-  if (!RENDERED_SINCE_BOUNDS_CHANGE || body.state.rendered.isTranslated) // || body.state.rendered.isRotated)
+  if (!RENDERED_SINCE_BOUNDS_CHANGE || !body.rendered() || body.state.rendered.isTranslated) // || body.state.rendered.isRotated)
     return true;
   
   if (body.options.frame)
@@ -476,73 +479,102 @@ function hasMovedSinceLastRender(body) {
     return false;
 };
 
-function getOpacity(body) {
+function preRender(body) {
+  calcOpacity(body);
+};
+
+function calcOpacity(body) {
+  if (body.state.renderData.isChanged('opacity'))
+    return;
+  
+//  var opacity = 1;
+  var opacity;
   if (body.geometry.name == 'point') // HACK for now, as we use points to represent all kinds of shapes for now
-    return 1;
-  
-  if (~JUST_HIDDEN.indexOf(body._id))
-    return 0;
-  
-  if (hasMovedSinceLastRender(body)) {
+    opacity = MAX_OPACITY;
+  else if (hasMovedSinceLastRender(body)) {
     var overlap = getOverlapArea(body, BOUNDS, body.geometry._area, BOUNDS_AREA);
 //    return overlap / body.geometry._area;
-    return overlap > 0 ? 1 : 0;
+//    opacity = overlap > 0 ? 1 : 0;
+    if (overlap > 0)
+      opacity = MAX_OPACITY;
+    else {
+      if (body.state.renderData.get('opacity') >= MAX_OPACITY) {
+        if (overlap < -2 * Math.max(BOUNDS._hw, BOUNDS._hh))
+          opacity = 0;
+      }
+      else {
+        if (overlap > -10)
+          opacity = MAX_OPACITY;
+      }
+    }
   }
-  else
-    return body.state.rendered.opacity;
+  
+  if (typeof opacity != 'undefined')
+    body.state.renderData.set('opacity', opacity);
+};
+
+function getTranslation(body) {
+  var aabb = body.geometry._aabb,
+      pos = body.state.pos;
+  
+  x = pos.get(0) - (aabb._hw || 0);
+  y = pos.get(1) - (aabb._hh || 0);
+  z = getZ(body); //pos.get(2) - (aabb._hd || 0);
+  return [x, y, z];
+};
+
+function getZ(body) {
+//  if (body.geometry.name == 'point')
+//    return -1;
+//  else
+//    return 0;
+  return body.state.pos.get(2);
 };
 
 function renderBody(body) {
+  preRender(body);
 	var state = body.state,
-  		pos = state.pos,
-  		angle = state.angular.pos,
   		rendered = state.rendered,
   		wasRendered = body.rendered(),
   		isTranslated = body.state.rendered.isTranslated,
-//	    isRotated = body.state.rendered.isRotated,
-  		newOpacity = getOpacity(body),
-	    changedOpacity = !wasRendered || newOpacity !== body.state.rendered.opacity,
-  		style,
+	    opacityChanged = !wasRendered || body.state.renderData.isChanged('opacity'), 
+	    styleChanged = opacityChanged || body.state.renderData.isChanged(),
+  		style = styleChanged && body.state.renderData.toJSON(),
   		transform,
-  		aabb,
-  		x, y, z,
   		rx, ry, rz;
 				
-	if (!wasRendered || changedOpacity || isTranslated /*|| isRotated*/) {
-    style = {};
+	if (!wasRendered || styleChanged || isTranslated /*|| isRotated*/) {
     transform = {};
+    if (!style)
+      style = {};
     
-		if (!wasRendered) {
-////			if (body.options.lock) // lock on first render
-////  			body.state.pos.lock(body.options.lock);
+		if (!wasRendered)
 			body.rendered(true);
-		}
 
-		if (changedOpacity) {
-		  body.state.rendered.opacity = style.opacity = newOpacity;
-		}
-		  
-		rendered.angular.pos = angle;
-		rendered.pos.clone(pos);
+		rendered.angular.pos = state.angular.pos;
+		rendered.pos.clone(state.pos);
 		
-		if (isTranslated) {
-		  aabb = body.geometry._aabb;
-  		x = pos.get(0) - (aabb._hw || 0);
-      y = pos.get(1) - (aabb._hh || 0);
-      z = pos.get(2) - (aabb._hd || 0);
-      transform.translate = [x, y, z];
-		}
-    else if (!wasRendered)
-      transform.translate = [0, 0, 0];
+		if (isTranslated)
+		  transform.translate = getTranslation(body);
 		
-//		if (isRotated)
-//		  transform.rotate = [rx, ry, rz];
-//		else if (!wasRendered)
-//		  transform.rotate = [0, 0, 0];
-
-		if (transform.translate || transform.rotate)
-		  style.transform = transform;
-		
+    if (styleChanged) {
+      Physics.util.extend(body.state.rendered.renderData, style);
+      if (opacityChanged) {
+        style.transform = transform;
+        if (body.state.renderData.get('opacity') == 0)
+          transform.scale = [0.0001, 0.0001, 1];
+        else {
+          transform.scale = [1, 1, 1];
+          transform.translate = getTranslation(body);
+        }
+      }
+      
+      body.state.renderData.clearChanges();
+    }
+      
+    if (transform.translate || transform.scale)
+      style.transform = transform;
+    
 		return style;
 	}
 };
@@ -557,6 +589,19 @@ function initWorld(_world, stepSelf) {
 	
 	Physics.util.extend(Physics.util, {	  
 	  now: Physics.util.now || (typeof performance == 'undefined' ? Date.now.bind(Date) : performance.now.bind(performance)),
+	  loop: function(arr, iterator, reverse) {
+	    if (reverse) {
+	      var i = arr.length;
+	      while (i--) {
+	        iterator(arr[i]);
+	      }
+	    }
+	    else {
+	      for (var i = 0, l = arr.length; i < l; i++) {
+	        iterator(arr[i]);
+	      }
+	    }
+	  },
 	  unique: function(arr) {
 	    var seen = [];
 	    arr.forEach(function(value, index) {
@@ -759,26 +804,18 @@ function pick(obj) {
       from: 0,
       to: 0
     },
-    lastObtainedRange: {
-      from: 0,
-      to: 0
-    },
-    lastRequestedRange: {
-      from: 0,
-      to: 0
-    },
+//    lastObtainedRange: {
+//      from: 0,
+//      to: 0
+//    },
+//    lastRequestedRange: {
+//      from: 0,
+//      to: 0
+//    },
     slidingWindowDimension: 0,
     horizontal: false
 //    ,
 //    edgeConstraintStiffness: CONSTANTS.constraintStiffness
-  };
-  
-  function LayoutManager(id, options, callbackId) {
-    this.id = id;
-    this._callbackId = callbackId;
-    Physics.util.extend(this, Physics.util.clone(defaultSlidingWindowOptions, true), options);
-    this.masonryOptions = {};
-    this.init();
   };
   
   function updateBrick(brick, data) {
@@ -803,10 +840,18 @@ function pick(obj) {
     
     brick.recalc();
   };
-  
+
   /**
    * Layout Manager (supports sliding window, uses masonry to lay out bricks)
    */
+  function LayoutManager(id, options, callbackId) {
+    this.id = id;
+    this._callbackId = callbackId;
+    Physics.util.extend(this, Physics.util.clone(defaultSlidingWindowOptions, true), options);
+    this.masonryOptions = {};
+    this.init();
+  };
+  
   LayoutManager.prototype = {
     // TODO: sleep / wake sliding window
     _sleeping: false,
@@ -837,7 +882,11 @@ function pick(obj) {
         
       this._rangeChangeListeners = [];
       this.containerId = this.container;
-      this.container = getBody(this.container);
+      this.container = getBody(this.containerId);
+      this.scrollbarId = this.scrollbar;
+      if (this.scrollbarId)
+        this.scrollbar = getBody(this.scrollbarId);
+      
       if (this.flexigroup)
         this.flexigroup = masonryOptions.flexigroup = getBody(this.flexigroup);
   
@@ -966,38 +1015,48 @@ function pick(obj) {
       };
     },
     
-    requestNewRange: function(range) {
+    requestMore: function(n, atTheHead) {
       if (this._waiting)
         return;
       
-      range = range ? this._capRange(range) : this.range;
-      if (this.lastRequestedRange.from == range.from && this.lastRequestedRange.to == range.to) { // TODO: if we received less bricks than we wanted, then a repeat request is not out of the question
-//        log("REQUESTING SAME RANGE AGAIN...what's the holdup?");
-//        if (this.range.from == this.lastRequestedRange.from && this.range.to == this.lastRequestedRange.to) {
-          this.log("IGNORING DUPLICATE RANGE REQUEST: " + this.lastRequestedRange.from + '-' + this.lastRequestedRange.to);
-          return;
-//        }
+      if (atTheHead) {
+        if (this.range.from == 0)
+          debugger;
+      }
+      else {
+        if (this.range.to == this.brickLimit)
+          debugger;
       }
       
-      this.log("CURRENT RANGE: " + this.lastRequestedRange.from + '-' + this.lastRequestedRange.to + ", REQUESTING RANGE: " + range.from + '-' + range.to);
       this._waiting = true;
       triggerEvent(this._callbackId, {
-        type: 'range',
-        eventSeq: this._eventSeq++, 
-        range: range, 
-        currentRange: this.lastObtainedRange,
+        type: 'more',
+        quantity: n, 
+        head: atTheHead,
         info: this._getInfo()
       });
-      
-      this.lastRequestedRange = Physics.util.extend({}, range);
     },
-    
-//    prefetch: function(n) {
-//      triggerEvent(this._callbackId, {
-//        type: 'prefetch',
-//        num: n || this.bricksPerPage
-//      });
-//    },
+
+    requestLess: function(head, tail) {
+      if (this._waiting)
+        return;
+      
+      this._waiting = true;
+      triggerEvent(this._callbackId, {
+        type: 'less',
+        head: head,
+        tail: tail,
+        info: this._getInfo()
+      });
+    },
+
+    prefetch: function(n, atTheHead) {
+      triggerEvent(this._callbackId, {
+        type: 'prefetch',
+        head: atTheHead,
+        quantity: n || this.bricksPerPage
+      });
+    },
   
     setBounds: function(bounds) {
 //      if (this.bounds && this.bounds._pos) {
@@ -1029,6 +1088,22 @@ function pick(obj) {
       this.maxPagesInSlidingWindow = this.minPagesInSlidingWindow * 2;
       this.pageScrollDim = this.horizontal ? this.pageWidth : this.pageHeight;
       this.pageNonScrollDim = this.horizontal ? this.pageHeight : this.pageWidth;  
+    },
+    
+    getDistanceFromHeadToTail: function() {
+      var head = this.headEdge.state.pos.get(this.axisIdx),
+          tail = this.tailEdge ? this.tailEdge.state.pos.get(this.axisIdx) : this.slidingWindowBounds.max;
+          
+      return tail - head;
+    },
+    
+    _updateScrollbar: function() {
+      if (this.scrollbar) {
+        var dim = Math.max(6, Math.round(this.pageScrollDim * (this.pageScrollDim / this.getDistanceFromHeadToTail()) - 4));
+        this.scrollbar.style[this.horizontal ? 'width' : 'height'] = Math.max(6, Math.round(this.pageWidth * (this.pageWidth / this.getDistanceFromHeadToTail()) - 4)) + 'px';
+        
+//        _scrollbarNodes[axis].style[_transformProperty] = _translateRulePrefix + _transformPrefixes[axis] + (-position * _metrics.container[axis] / _metrics.content[axis]) + 'px' + _transformSuffixes[axis];
+      }
     },
     
     _onstep: function() {
@@ -1129,14 +1204,25 @@ function pick(obj) {
 //      }
     },
     
-    setLimit: function(len) {
-      this.log("SETTING BRICK LIMIT: " + len);
-//      this._waiting = false;
-      this.brickLimit = len;
+//    setLimit: function(len) {
+//      this.log("SETTING BRICK LIMIT: " + len);
+////      this._waiting = false;
+//      this.brickLimit = len;
+//      this.checkTailEdge();
+////      this.adjustSlidingWindow();
+//    },
+
+    setLimit: function() {
+      this.brickLimit = this.lastBrickSeen;
+      this.log("SETTING BRICK LIMIT: " + this.brickLimit);
       this.checkTailEdge();
-//      this.adjustSlidingWindow();
     },
-    
+
+    unsetLimit: function() {
+      this.brickLimit = Infinity;
+      this.log("UNSETTING BRICK LIMIT");
+    },
+
     resize: function(bounds, updatedBricks, callback) {
       if (this._sleeping) {
         this._resizeArgs = arguments;
@@ -1232,104 +1318,6 @@ function pick(obj) {
       this.viewport.max = this.viewport.min + this.pageScrollDim;
       return this.viewport;
     },
-    
-  //  brickify: function(optionsArr) {
-  //    for (var i = 0; i < l; i++) {
-  //      options = optionsArr[i];
-  //      optionsArr[i] = API.addBody('convex-polygon', options, options._id);
-  //    }
-  //    
-  //    return optionsArr;
-  //  },
-  //  
-  //  leash: function(bricks) {
-  //    if (this.flexigroup) {
-  //      for (var i = 0, l = bricks.length; i < l; i++) {
-  //        API.distanceConstraint(bricks[i]._id, this.flexigroup._id, 0.5);
-  //      }
-  //    }    
-  //  },
-//    
-//    addBricks: function(head, tail) {
-//      this._waiting = false;
-//      var headLength = head ? head.length : 0,
-//          tailLength = tail ? tail.length : 0,
-//          options;
-//  
-//      if (headLength) {
-//        head = this.brickify(head);
-//        head.reverse();
-//        this.mason.prepended(head);
-//        this.leash(head);
-//      }
-//      
-//      if (tailLength) {      
-//        tail = toBricks(tail);
-//        this.mason.appended(tail);
-//        this.leash(tail);
-//      }
-//      
-//      this.range.from -= headLength;
-//      this.range.to += tailLength;
-//      
-//      log("ADDING " + headLength + " BRICKS TO THE HEAD");
-//      log("ADDING " + tailLength + " BRICKS TO THE TAIL" + (prepend ? "HEAD" : "TAIL") + " FOR A TOTAL OF " + (this.range.to - this.range.from));
-//  //    log("ACTUAL TOTAL AFTER ADD: " + this.numBricks());
-//      this.recalc();
-//      this.checkTailEdge();
-//      this.adjustSlidingWindow();
-//  //    if (readjust)
-//  //      this.adjustSlidingWindow();
-//    },
-
-//    doAddBricks: function(optionsArr, prepend) {
-//      this._waiting = false;
-//      var bricks = [],
-//          l = optionsArr.length,
-//          options;
-//      
-//      for (var i = 0; i < l; i++) {
-//        options = optionsArr[i];
-//        bricks[i] = API.addBody('convex-polygon', options, options._id);
-//      }
-//      
-//      if (prepend)
-//        bricks.reverse();
-//      
-//      this.mason[prepend ? 'prepended' : 'appended'](bricks);
-//      if (this.flexigroup) {
-//        for (var i = 0; i < l; i++) {
-//          API.distanceConstraint(bricks[i]._id, this.flexigroup._id, 0.5);
-//        }
-//      }
-//      
-//      if (prepend)
-//        this.range.from -= l;
-//      else
-//        this.range.to += l;
-//
-//      this.lastBrickSeen = Math.max(this.range.to, this.lastBrickSeen || 0);
-//      
-//      log("ADDING " + l + " BRICKS TO THE " + (prepend ? "HEAD" : "TAIL") + " FOR A TOTAL OF " + (this.range.to - this.range.from));
-//  //    log("ACTUAL TOTAL AFTER ADD: " + this.numBricks());
-//    },
-//
-//    addBricks: function(head, tail) {
-//      if (head)
-//        this.doAddBricks(head, true);
-//      if (tail) {
-//        this.doAddBricks(tail);
-//        this.lastBrickSeen = Math.max(this.range.to, this.lastBrickSeen || 0);
-//      }
-//      
-//      this.recalc();
-//      if (prepend)
-//        this.checkHeadEdge();
-//      else
-//        this.checkTailEdge();
-//      
-//      this.adjustSlidingWindow();
-//    },
 
     numBricks: function() {
       return this.mason.bricks.length;
@@ -1340,14 +1328,15 @@ function pick(obj) {
           l = optionsArr.length,
           options;
       
+//      log("ADDING BRICKS: " + optionsArr.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
       for (var i = 0; i < l; i++) {
         options = optionsArr[i];
         options.frame = this.container;
         bricks[i] = API.addBody('convex-polygon', options, options._id);
       }
       
-      if (prepend)
-        bricks.reverse();
+//      if (prepend)
+//        bricks.reverse();
       
       this.mason[prepend ? 'prepended' : 'appended'](bricks);
       if (this.flexigroup) {
@@ -1361,26 +1350,32 @@ function pick(obj) {
       else {
         this.range.to += l;
         this.lastBrickSeen = Math.max(this.range.to, this.lastBrickSeen || 0);
+        this.brickLimit = Math.max(this.brickLimit, this.lastBrickSeen);
       }
       
-      Physics.util.extend(this.lastObtainedRange, this.range); 
+//      Physics.util.extend(this.lastObtainedRange, this.range); 
       this.recalc();
       if (prepend)
         this.checkHeadEdge();
       else
         this.checkTailEdge();
       
-      this.log("ADDING " + l + " BRICKS TO THE " + (prepend ? "HEAD" : "TAIL") + " FOR A TOTAL OF " + (this.range.to - this.range.from));
+      this.log("ADDED " + l + " BRICKS TO THE " + (prepend ? "HEAD" : "TAIL") + " FOR A TOTAL OF " + (this.range.to - this.range.from));
+//      this.printState();
       //    log("ACTUAL TOTAL AFTER ADD: " + this.numBricks());
       this['continue']();
     },
 
+    printState: function() {
+      this.log("STATE: " + this.mason.bricks.map(function(b) { return parseInt(b._id.match(/\d+/)[0])})/*.sort(function(a, b) {return a - b})*/.join(","));
+    },
+    
     removeBricks: function(n, fromTheHead) {
       if (n == 0)
         return;
       
       var bricks = fromTheHead ? this.mason.bricks.slice(0, n) : this.mason.bricks.slice(this.numBricks() - n),
-          el,
+          brick,
           id,
           i;
       
@@ -1391,23 +1386,32 @@ function pick(obj) {
       
       world.remove(bricks);
       while (i--) {
-        id = bricks[i]._id;
+        brick = bricks[i];
+        id = brick._id;
         if (id)
-          JUST_HIDDEN.push(id);
+          brick.state.renderData.set('opacity', 0);
       }
       
 //      if (n == bricks.length)
 //        this.mason.reset();
 //      else
-        this.mason[fromTheHead ? 'removedFromHead' : 'removedFromTail'](bricks);
+    
+//      this.mason[fromTheHead ? 'removedFromHead' : 'removedFromTail'](bricks);
 //      this.mason.removed(bricks);
+      this.mason[fromTheHead ? 'removedFromHead' : 'removedFromTail'](n, bricks);
       
-      if (fromTheHead)
+      if (fromTheHead) {
+        this.log("REMOVING BRICK RANGE " + this.range.from + '-' + (this.range.from+n));
         this.range.from += n;
-      else
+      }
+      else {
+        this.log("REMOVING BRICK RANGE " + (this.range.to-n) + '-' + this.range.to);
         this.range.to -= n;
+      }
       
-      this.log("REMOVING " + n + " BRICKS FROM THE " + (fromTheHead ? "HEAD" : "TAIL") + " FOR A TOTAL OF " + (this.range.to - this.range.from));
+      this.log("REMOVED BRICKS: " + bricks.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
+//      this.printState();
+//      this.log("REMOVING " + n + " BRICKS FROM THE " + (fromTheHead ? "HEAD" : "TAIL") + " FOR A TOTAL OF " + (this.range.to - this.range.from));
   //    log("ACTUAL TOTAL AFTER REMOVE: " + this.numBricks());
       this.recalc();
   //    if (readjust)
@@ -1501,8 +1505,10 @@ function pick(obj) {
 //        this.range.to -= diff; 
         
         Physics.util.extend(range, this.range); // reclone
-        range.from -= Math.min(maxPrepend, defaultAddDelta);
-        return this.requestNewRange(range);
+        return this.requestLess(0, numBricks);
+//        return this.requestMore(Math.min(maxPrepend, defaultAddDelta), true);
+//        range.from -= Math.min(maxPrepend, defaultAddDelta);
+//        return this.requestNewRange(range);
       }
       ////////////////////////////////////////////////////////                                          |----|        (VIEWPORT)
       else if (this.range.to < this.brickLimit && numBricks && viewport.min >= slidingWindow.max) { 
@@ -1511,33 +1517,38 @@ function pick(obj) {
         this.log("DECISION: sliding window is completely above viewport, removing all bricks");
         this.removeBricks(numBricks, true);
         Physics.util.extend(range, this.range); // reclone
-        range.to += Math.min(maxAppend, defaultAddDelta);
-        return this.requestNewRange(range);
+//        range.to += Math.min(maxAppend, defaultAddDelta);
+//        return this.requestNewRange(range);
+        return this.requestLess(numBricks, 0);
       }
       ////////////////////////////////////////////////////////
       else if (canAdd && this.slidingWindowDimension < this.minSlidingWindowDimension) { // should this be measured in pages or in pixels or viewports?
         // grow window
         if (maxPrepend && (headDiff < tailDiff || !maxAppend)) {
           this.log("DECISION: growing sliding window towards the " + HEAD_STR);
-          range.from -= Math.min(maxPrepend, defaultAddDelta);
+//          range.from -= Math.min(maxPrepend, defaultAddDelta);
+          return this.requestMore(Math.min(maxPrepend, defaultAddDelta), true);
         }
 //        else if (tailDiff <= headDiff && maxAppend > 0)
         else if (maxAppend) {
           this.log("DECISION: growing sliding window towards the " + TAIL_STR);
-          range.to += Math.min(maxAppend, defaultAddDelta);
+//          range.to += Math.min(maxAppend, defaultAddDelta);
+          return this.requestMore(Math.min(maxAppend, defaultAddDelta));
         }
         else {
           this.log("DECISION: UH OH, SLIDING WINDOW IS CONFUSED!");
           debugger;
         }
         
-        return this.requestNewRange(range);
+//        return this.requestNewRange(range);
       }
       else if (this.slidingWindowDimension > this.maxSlidingWindowDimension) { // should this be measured in pages or in pixels or viewports?
         // shrink window
-        var toRemove, fromTheHead;
+        var toRemove, 
+            fromTheHead,
+            range = Physics.util.extend({}, this.range);
+        
         while (numBricks && this.slidingWindowDimension > this.maxSlidingWindowDimension) {
-          
           toRemove = Math.min(defaultRemoveDelta, numBricks);
           fromTheHead = headDiff > tailDiff;
           this.log("DECISION: shrinking sliding window by " + toRemove + " at the " + (fromTheHead ? HEAD_STR : TAIL_STR));
@@ -1546,40 +1557,50 @@ function pick(obj) {
           tailDiff = this.getTailDiff();
         }
         
-        return this.requestNewRange();
+        return this.requestLess(this.range.from - range.from, range.to - this.range.to);
+//        return this.requestNewRange();
       }
       // grow the window in the direction where it has the least padding, if necessary
       else if (maxAppend && tailDiff < this.slidingWindowInsideBuffer) {
         if (tailDiff < this.slidingWindowOutsideBuffer) {
           var toAdd = Math.min(maxAppend, defaultAddDelta);
-          range.to += toAdd;
+//          range.to += toAdd;
           this.log("DECISION: growing sliding window by " + toAdd + " at the " + TAIL_STR);
-          return this.requestNewRange(range);
+//          return this.requestNewRange(range);
+          return this.requestMore(toAdd);
         }
-        else
-          this.log("DECISION: not doing anything to sliding window");
+        else {
+//          if (this.brickLimit == Infinity) {
+//            var toAdd = Math.min(maxAppend, defaultAddDelta);
+//            this.log("DECISION: prefetching " + toAdd + " items");
+//            this.prefetch(toAdd, false); // add sth similar for head
+//          }
+//          else
+            this.log("DECISION: not doing anything to sliding window");
+        }
 //        else if (this.brickLimit - range.to < this.bricksPerPage * 2) /// doesn't make any sense because if brick limit is set, we already have all those resources in the main thread, no need to fetch them from anywhere
 //          this.prefetch();
       }
       else if (maxPrepend && range.from > 0 && headDiff < this.slidingWindowOutsideBuffer) {
         var toAdd = Math.min(maxPrepend, defaultAddDelta);
-        range.from -= toAdd;
+//        range.from -= toAdd;
         this.log("DECISION: growing sliding window by " + toAdd + " at the " + HEAD_STR);
-        return this.requestNewRange(range);
+//        return this.requestNewRange(range);
+        return this.requestMore(toAdd, true);
       }
         
   //    if (range.from != this.range.from || range.to != this.range.to)
   //      this.requestNewRange(range);
     },
 
-    _capRange: function(range) {
-      if (range.from < 0 || range.to < 0 || range.to < range.from)
-        debugger;
-      
-      range.from = Math.max(0, range.from);
-      range.to = Math.min(range.to, this.brickLimit);
-      return range;
-    },
+//    _capRange: function(range) {
+//      if (range.from < 0 || range.to < 0 || range.to < range.from)
+//        debugger;
+//      
+//      range.from = Math.max(0, range.from);
+//      range.to = Math.min(range.to, this.brickLimit);
+//      return range;
+//    },
     
     home: function() {
       this.log("JUMPING HOME");
@@ -1663,7 +1684,8 @@ var API = {
   step: function(time, dt) {
     world.step(time);
     // only render if not paused
-    if ( !world.isPaused() ) {
+    if ( RERENDER && !world.isPaused() ) {
+//      log("RERENDERING");
       render();
     }
   },
@@ -1743,6 +1765,7 @@ var API = {
   
   flyTo: function(bodyId, x, y, z, speed, callback) {
     var body = getBody(bodyId),
+//        fixed = body.fixed,
         destination = updateVector(Physics.vector().clone(body.state.pos), x, y, z),
         posLock,
         distance,
@@ -1763,6 +1786,11 @@ var API = {
     function cleanUp() {
       if (posLock)
         body.state.pos.lock(posLock);
+      
+//      if (fixed) {
+//        debugger;
+//        body.fixed = true;
+//      }
     };
     
     function oncomplete() {
@@ -1778,6 +1806,7 @@ var API = {
     flyAction.oncancel = cleanUp;
     flyAction.onstart = function() {
       posLock = body.state.pos.unlock();
+//      body.fixed = false;
     };
     
     addAction(body, flyAction);
@@ -1798,7 +1827,9 @@ var API = {
         destination = anchor.state.pos;
     }
     else {
-      destination = Physics.vector.apply(Physics.vector, slice.call(arguments, 1));
+      var args = slice.call(arguments, 1);
+      args.unshift(Physics.vector().clone(body.state.pos));
+      destination = updateVector.apply(null, args);
     }
     
 //    if (posLock)
@@ -1900,7 +1931,7 @@ var API = {
   },
 
 	addBody: function(type, options, id) {
-    log("ADDING BODY: " + id);
+//    log("ADDING BODY: " + id);
 		var body = Physics.body(type, options);
 		if (id)
 			body._id = id;
@@ -1918,7 +1949,7 @@ var API = {
 
 		if (bodies.length) {
       v = Physics.vector().set(dragVector[0], dragVector[1]);
-			log("DRAG: " + v.toString());
+//			log("DRAG: " + v.toString());
 			world.publish({
 				topic: 'drag', 
 				vector: v,
@@ -1933,7 +1964,7 @@ var API = {
 		
 		if (bodies.length) {
       v = Physics.vector().set(dragVector[0], dragVector[1]);
-      log("DRAG END: " + v.toString());
+//      log("DRAG END: " + v.toString());
 			world.publish({
 				topic: 'dragend', 
 				stop: stop,
@@ -2004,5 +2035,7 @@ var API = {
       
       break;
     }
-  }
+  },
+  
+  render: render
 }

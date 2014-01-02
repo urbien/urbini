@@ -157,11 +157,12 @@ define('views/ViewPage', [
           U.require(['collections/ResourceList', 'vocManager', 'views/HorizontalListView'], function(ResourceList, Voc, HorizontalListView) {
             Voc.getModels(friendType).done(function(friendModel) {
               var friendProps = {};
-              friendProps[friend1] = friendProps[friend2] = uri;
+              friendProps[friend1] = uri; //friendProps[friend2] = uri;
               self.friends = new ResourceList(null, {
-                params: {
-                  $or: U.getQueryString(friendProps, {delimiter: '||'})
-                },
+//                params: {
+//                  $or: U.getQueryString(friendProps, {delimiter: '||'})
+//                },
+                params: friendProps,
                 model: friendModel,
                 title: title //U.getDisplayName(res) + "'s " + U.getPlural(friendName)
               });
@@ -279,7 +280,7 @@ define('views/ViewPage', [
       this.html(this.template(this.getBaseTemplateData()));
       
       this.photogridPromise.done(function() {        
-        var pHeader = self.$('#photogridHeader')[0];
+        var pHeader = self.$('.thumb-gal-header')[0];
         var h3 = pHeader.querySelector('h3');
         if (h3)
           h3.innerHTML = self.friends.title;

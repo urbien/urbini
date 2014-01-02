@@ -3508,10 +3508,10 @@ define('utils', [
      * sends a remote procedure call to the packaged app code
      */
     rpc: function(method) {
-      log('app', method);
+//      log('app', method);
       var args = slice.call(arguments, 1),
           msg = {
-              type: 'rpc:' + method
+            type: 'rpc:' + method
           };
       
       if (args && args.length)

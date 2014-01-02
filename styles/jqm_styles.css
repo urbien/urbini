@@ -414,7 +414,7 @@
 .listPage li {
   border-bottom: solid 0.1rem #e3e3e3;
 }
-#photogridHeader {
+.thumb-gal-header {
   border: 1px solid #707070;
   background: #eee;
   color: #f9f9f9;
@@ -424,7 +424,7 @@
   text-align: center;
   top: -3px;
 }
-#photogridHeader h3 {
+.thumb-gal-header h3 {
   font-size: 18px;
   margin: 10px;
 }

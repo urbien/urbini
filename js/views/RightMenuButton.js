@@ -93,6 +93,13 @@ define('views/RightMenuButton', [
     },
     
     leftMenu: function(e) {
+      if (!this.leftMenuEl) {
+        if (this.rightMenuEl)
+          this.rightMenu.apply(this, arguments);
+        
+        return;
+      }
+      
       Events.stopEvent(e);
       var self = this;
       if (MainMenuPanel)
@@ -133,6 +140,13 @@ define('views/RightMenuButton', [
     },
     
     rightMenu: function(e) {
+      if (!this.rightMenuEl) {
+        if (this.leftMenuEl)
+          this.leftMenu.apply(this, arguments);
+        
+        return;
+      }
+      
       Events.stopEvent(e);
       if (G.currentUser.guest)
         return;

@@ -982,7 +982,7 @@
   // Creating a Backbone.View creates its initial element outside of the DOM,
   // if an existing element is not provided...
   var View = Backbone.View = function(options) {
-    this.cid = _.uniqueId('view');
+    this.cid = this._getCID(options);
     this._configure(options || {});
     this._ensureElement(options);
     this.initialize.apply(this, arguments);
@@ -1008,6 +1008,10 @@
       return this.$el.find(selector);
     },
 
+    _getCID: function(options) {
+      return _.uniqueId('view');
+    },
+    
     // Initialize is an empty function by default. Override it with your own
     // initialization logic.
     initialize: function(){},
