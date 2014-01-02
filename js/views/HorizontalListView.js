@@ -30,6 +30,7 @@ define('views/HorizontalListView', [
       ResourceListView.prototype.initialize.apply(this, arguments);
       _.extend(this.options, {
         horizontal: true, 
+        scrollerType: 'horizontal',
         oneElementPerRow: false,
         oneElementPerCol: true,
         stretchRow: false,

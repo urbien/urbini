@@ -162,14 +162,31 @@ define('views/Header', [
     },
     
     changePhysics: function(e) {
-      var val = parseInt(e.target.value);
+      var val = parseInt(e.target.value),
+          type = 'verticalMain';
+      
       if (e.target.name == 'degree')
         val *= -1;
       else
         val /= 100;
       
+      switch (this._hashInfo.route) {
+        case 'view':
+          var friendly = [G.commonTypes.Urbien, 'classifieds/movies/Movie', 'classifieds/movies/Artist', 'model/social/App'],
+              i = friendly.length;
+          
+          while (i--) {
+            if (U.isAssignableFrom(this.vocModel, friendly[i])) {
+              type = 'horizontal';
+              break;
+            }
+          }
+          
+        break;
+      }
+      
       this.log('PHYSICS: ' + e.target.name + ' = ' + val);
-      Physics.there.set(e.target.name, val);
+      Physics.there.set(type, e.target.name, val);
     },
     
     fileUpload: function(e) {
