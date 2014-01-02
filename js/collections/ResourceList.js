@@ -15,7 +15,6 @@ define('collections/ResourceList', [
   var tsProp = 'davGetLastModified';
   var listParams = ['perPage', 'offset'];
   var ResourceList = Backbone.Collection.extend({
-    _fetchDeferreds: {},
     initialize: function(models, options) {
       if (!models && !options.model)
         throw new Error("resource list must be initialized with options.model or an array of models");
@@ -134,8 +133,66 @@ define('collections/ResourceList', [
       
       this.monitorQueryChanges();
       this.enablePaging();
-      this.on('endOfList', this.disablePaging);      
+      this.on('endOfList', this.disablePaging);
+      this.resetRange();
+      this._fetchDeferreds = {};
       log("info", "init " + this.shortName + " resourceList");      
+    },
+    
+    resetRange: function() {
+      if (!this.range)
+        this.range = new Array(2);
+      
+      this.range[0] = 0;
+      this.range[1] = this.models.length;
+    },
+    
+    setRange: function(from, to) {
+      if (from > this.range[0])
+        this.collection.remove(this.collection.slice(this.from, from));
+      
+      this.range[0] = from;
+      if (to < this.range[1])
+        this.collection.remove(this.collection.slice(to, this.range[1]));
+      
+      this.range[1] = to;
+    },
+
+    getRange: function() {
+      this.range[1] = this.models.length;
+      return this.range;
+    },
+    
+//    clearRange: function(from, to) {
+//      for (var i = from; i < to; i++) {
+//        this.models[i] = null;
+//      }
+//
+//      if (from == this.range[0])
+//        this.range[0] = to;
+//      else if (to == this.range[1])
+//        this.range[1] = from;
+//    },
+
+    setStartIndex: function(start) {
+      var range = this.getRange();
+      if (start < range[0])
+        throw "Can't set start index to where there are no models";
+      
+      if (start > range[1])
+        throw "Start index must be lower than end index";
+      
+      this.remove(this.models.slice(this.range[0], start));
+      this.range[0] = start;
+    },
+
+    setEndIndex: function(end) {
+      var range = this.getRange();
+      if (end > range[1])
+        throw "Can't set end index to where there are no models";
+      
+      this.remove(this.models.slice(this.range[1]));
+      this.range[1] = end;
     },
 
     filterAndAddResources: function(resources) {
