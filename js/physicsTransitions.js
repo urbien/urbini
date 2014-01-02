@@ -28,12 +28,23 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
     $to.trigger('page_beforeshow');
     function switchRoles() {
       toView.el.style.opacity = 1;
-      toView.el.style['z-index'] = 1000;
-      if (fromView)
-        fromView.el.style['z-index'] = 999;
+//      toView.el.style['z-index'] = 1000;
+//      if (fromView)
+//        fromView.el.style['z-index'] = -1;
     }
     
     if (from) {
+      Physics.there.chain(
+        {
+          method: 'teleport', 
+          args: [from, null, null, -1]
+        },
+        {
+          method: 'teleport', 
+          args: [to, null, null, 1]
+        }
+      );
+      
       toView.el.style.opacity = 0;
       var dfd = $.Deferred();
       toView.onload(function() {

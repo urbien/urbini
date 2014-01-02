@@ -4,6 +4,9 @@ body {
     -webkit-user-select: none;
     -webkit-backface-visibility: hidden;
     -webkit-font-smoothing: antialiased;
+    -webkit-transform-style: preserve-3d;
+    -moz-transform-style: preserve-3d;
+    transform-style: preserve-3d;
     -moz-user-select: none;
     -ms-user-select: none;
     user-select: none;
@@ -39,6 +42,7 @@ html { height: 100%; }
 
 /* .galleryItem_css3 img { float: left;} */
 .galleryItem_container .galleryItem, .galleryItem_container .galleryItem_css3 { margin: 0px; }
+#.nab  { -webkit-transition: all 300ms; }
 .nab  { box-shadow: none; position: absolute; }
 .nab  span { padding-right: 12px; }
 .nab  .b span { padding-right: 0px; padding-left: 0px; color: #393939; font-weight: normal;}
@@ -1235,6 +1239,27 @@ div {
   bottom: 2px;
 }
 
+.scrollbar { 
+  pointer-events: none; 
+  position: absolute; 
+  width: 5px; 
+  height: 5px; 
+  border: 1px solid rgba(255, 255, 255, 0.15); 
+  -webkit-border-radius: 3px; 
+  border-radius: 6px; 
+  opacity: 0; 
+  -webkit-transition: opacity 350ms; 
+  -moz-transition: opacity 350ms; 
+  transition: opacity 350ms; 
+  z-index: 10; 
+  -webkit-box-sizing: content-box; 
+  -moz-box-sizing: content-box; 
+  box-sizing: content-box 
+}
+
+.scrollbarx { bottom: 2px; left: 2px }
+.scrollbary { right: 2px; top: 2px }
+.scrollbarinner { height: 100%; background: rgba(0,0,0,0.5); -webkit-border-radius: 2px; border-radius: 4px / 6px }
 
 /*
 .nabBoard {

@@ -165,13 +165,13 @@ define('views/ListPage', [
       this.canSearch = !this.isSpecialIntersection; // for now - search + photogrid results in something HORRIBLE, try it if you're feeling brave
       
       // setup filtering
-      this.listenTo(filtered, 'endOfList', function() {
-        self.pageView.trigger('endOfList');
-      });
-      
-      this.listenTo(filtered, 'reset', function() {
-        self.pageView.trigger('newList');
-      });      
+//      this.listenTo(filtered, 'endOfList', function() {
+//        self.pageView.trigger('endOfList');
+//      });
+//      
+//      this.listenTo(filtered, 'reset', function() {
+//        self.pageView.trigger('newList');
+//      });      
     },
     
     setMode: function(mode) {
@@ -349,6 +349,7 @@ define('views/ListPage', [
       var args = arguments,
           self = this;
       
+      this.addContainerBodyToWorld(); // not draggable
       return this.ready.done(function() {
         Q.write(self.renderHelper, self, args);
       });
@@ -414,7 +415,7 @@ define('views/ListPage', [
         });
       }
       
-      this.addContainerBodyToWorld(); // not draggable
+//      this.addToWorld(null, true);
       this.finish();
       return this;
     }

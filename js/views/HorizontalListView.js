@@ -15,7 +15,7 @@ define('views/HorizontalListView', [
   return ResourceListView.extend({
     mixins: mixins,
     className: 'thumb-gal',
-    _renderedIntersectionUris: null,
+//    _renderedIntersectionUris: null,
 //    _scrollableOptions: {
 //      axis: 'X',
 //      keyboard: false
@@ -36,14 +36,14 @@ define('views/HorizontalListView', [
         stretchCol: false
       });
       
-      this._renderedIntersectionUris = [],
+//      this._renderedIntersectionUris = [],
       _.extend(this, options);
     },
 
-    refresh: function() {
-      this._renderedIntersectionUris.length = 0;
-      return ResourceListView.prototype.refresh.apply(this, arguments);
-    },
+//    refresh: function() {
+//      this._renderedIntersectionUris.length = 0;
+//      return ResourceListView.prototype.refresh.apply(this, arguments);
+//    },
     
     preRender: function() {
       try {
@@ -53,9 +53,9 @@ define('views/HorizontalListView', [
               first = this.collection.models[0];
           
           this.isIntersection = U.isA(vocModel, 'Intersection');
-          this._isIntersectingWithCollection = source && 
-                                               this.isIntersection && 
-                                               source.vocModel.type == U.getTypeUri(first.get('Intersection.a') || first.get('Intersection.b'));
+//          this._isIntersectingWithCollection = source && 
+//                                               this.isIntersection && 
+//                                               source.vocModel.type == U.getTypeUri(first.get('Intersection.a') || first.get('Intersection.b'));
         }
       } finally {
         return ResourceListView.prototype.preRender.apply(this, arguments);
@@ -73,35 +73,36 @@ define('views/HorizontalListView', [
     
     renderItem: function(res, info) {
       var source = this.parentView.resource,
-          xUris = this._renderedIntersectionUris,
+//          xUris = this._renderedIntersectionUris,
           a,
           b;
 
       source = source && source.getUri();
-      if (this._isIntersectingWithCollection) {
-        a = res.get('Intersection.a');
-        b = res.get('Intersection.b');
-        if ((source == a && ~xUris.indexOf(b)) ||
-            (source == b && ~xUris.indexOf(a))) {
-          // if we're in a resource view and are showing intersections with this resource, there may be cases like Friend where there are two intersections to represent the relationship. In that case, only paint one (to avoid having two of the same image) 
-          return false;
-        }
-      }
+//      if (this._isIntersectingWithCollection) {
+//        a = res.get('Intersection.a');
+//        b = res.get('Intersection.b');
+//        if ((source == a && ~xUris.indexOf(b)) ||
+//            (source == b && ~xUris.indexOf(a))) {
+//          // if we're in a resource view and are showing intersections with this resource, there may be cases like Friend where there are two intersections to represent the relationship. In that case, only paint one (to avoid having two of the same image) 
+//          return false;
+//        }
+//      }
       
       var liView = new this._preinitializedItem({
         resource: res
       });
       
-      var rendered = liView.render(this._itemRenderOptions);
-      if (rendered === false)
-        return false;
+      liView.render(this._itemRenderOptions);
+//      if (rendered === false)
+//        debugger;
+//        return false;
             
-      if (this._isIntersectingWithCollection) {
-        if (source !== a)
-          xUris.push(a);
-        if (source !== b)
-          xUris.push(b);
-      }
+//      if (this._isIntersectingWithCollection) {
+//        if (source !== a)
+//          xUris.push(a);
+//        if (source !== b)
+//          xUris.push(b);
+//      }
       
       this.addChild(liView);
       return liView;

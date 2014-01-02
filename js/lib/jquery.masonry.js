@@ -23,13 +23,15 @@
   
 //  function intersection(a, b) {
 //    var common = [],
-//        id;
+//        id,
+//        idInt;
 //    
 //    for (var i = 0; i < a.length; i++) {
 //      id = a[i]._id;
+//      idInt = parseInt(a[i]._id.match(/\d+/)[0]);
 //      for (var j = 0; j < b.length; j++) {
-//        if (id == b[j]._id)
-//          common.push([i, j]);
+//        if (id == b[j]._id || idInt == parseInt(b[j]._id.match(/\d+/)[0]))
+//          common.push([i, j, id]);
 //      }      
 //    }
 //    
@@ -129,22 +131,23 @@
     // used on collection of atoms (should be filtered, and sorted before )
     // accepts atoms-to-be-laid-out to start with
     layout: function( bricks ) {
-      var brick, colSpan, groupCount, groupY, groupColY, j, 
-      colYs = this._getColYs(), 
-      extreme = this.options.fromBottom ? Math.min : Math.max;
+      var self = this,
+          brick, colSpan, groupCount, groupY, groupColY, j, 
+          colYs = this._getColYs(), 
+          extreme = this.options.fromBottom ? Math.min : Math.max;
   
-      for (var i=0, len = bricks.length; i < len; i++) {
-        brick = bricks[i];
+//      for (var i=0, len = bricks.length; i < len; i++) {
+      Physics.util.loop(bricks, function(brick) {        
         // how many columns does this brick span
-        colSpan = this._getColSpan(brick);
+        colSpan = self._getColSpan(brick);
   
         if ( colSpan === 1 ) {
           // if brick spans only one column, just like singleMode
-          this._placeBrick( brick, this.cols, colYs );
+          self._placeBrick( brick, self.cols, colYs );
         } else {
           // brick spans more than one column
           // how many different places could this brick fit horizontally
-          groupCount = this.cols + 1 - colSpan;
+          groupCount = self.cols + 1 - colSpan;
           groupY = [];
   
           // for each group potential horizontal position
@@ -155,9 +158,9 @@
             groupY[j] = extreme.apply( Math, groupColY );
           }
   
-          this._placeBrick( brick, groupCount, groupY );
+          self._placeBrick( brick, groupCount, groupY );
         }
-      }  
+      }, this.options.fromBottom);
     },
   
     // _calcBrickMargin: function() {
@@ -358,8 +361,11 @@
       }
     },
     
-    reload: function() {
+    reload: function(offset) {
       // this.reloadItems();
+      if (offset)
+        this.offset = offset;
+      
       this.reLayout();
     },
   
@@ -377,10 +383,12 @@
     _appended: function( newBricks ) {
       // add new bricks to brick pool
 //      var common = intersection(this.bricks, newBricks);
-//      if (common.length)
-//        debugger;
-      
       this.bricks = this.options.fromBottom ? newBricks.concat(this.bricks) : this.bricks.concat( newBricks );
+//      if (common.length) {
+////        if (Physics.util.unique(this.bricks.map(function(b) {return b.options._uri})).length)
+//          debugger;
+//      }
+      
       if (!this._initialized)
         this._init();
       else
@@ -437,8 +445,9 @@
       this.bottomColYs = bottomColYs;
     },
 
-    removedFromHead: function(bricks) {
-      this.bricks = difference(this.bricks, bricks);
+    removedFromHead: function(n, bricks) {
+//      this.bricks = difference(this.bricks, bricks);
+      this.bricks = this.bricks.slice(Math.min(this.bricks.length, n), this.bricks.length);
       var dimensionMethod = this.options.horizontal ? '_getOuterWidth' : '_getOuterHeight',
           gutterWidth = this.options.gutterWidth,
           i = bricks.length,
@@ -461,8 +470,9 @@
       }
     },
 
-    removedFromTail: function(bricks) {
-      this.bricks = difference(this.bricks, bricks);
+    removedFromTail: function(n, bricks) {
+//      this.bricks = difference(this.bricks, bricks);
+      this.bricks.length = Math.max(0, this.bricks.length - n);
       var dimensionMethod = this.options.horizontal ? '_getOuterWidth' : '_getOuterHeight',
           gutterWidth = this.options.gutterWidth,
           i = bricks.length,

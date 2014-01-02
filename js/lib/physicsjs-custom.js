@@ -1379,12 +1379,13 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
   /**
    * Sets the components of this Vector.
    */
-  Vector.prototype.set = function(x, y) {
+  Vector.prototype.set = function(x, y, z) {
 
       this.recalc = true;
 
       this._[0] = x || 0.0;
       this._[1] = y || 0.0;
+      this._[2] = z || 0.0;
       return this;
   };
 
@@ -1809,6 +1810,7 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
 
           this._[0] = v._[0];
           this._[1] = v._[1];
+          this._[2] = v._[2];
 
           return this;
       }

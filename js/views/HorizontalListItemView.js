@@ -165,7 +165,6 @@ define('views/HorizontalListItemView', [
           caption,
           plugs,
           intersection,
-          targetProp,
           rect,
           oW, 
           oH,
@@ -196,8 +195,9 @@ define('views/HorizontalListItemView', [
         var iProp = side == 'a' ? a : b; 
         imgProp = imgProp[side];
         image = resource.get(imgProp);
-        if (!image)
-          return false;
+//        if (!image)
+//          debugger;
+//          return false;
         
         target = iValues[side];
 //        if (_.contains(uris, target)) // we don't want to display 2 friend resources representing two sides of a friendship
@@ -205,7 +205,7 @@ define('views/HorizontalListItemView', [
 
         target = U.getLongUri1(target);
 //        uris.push(target);
-        title = resource.get(iProp + '.displayName');
+        title = resource.get(iProp + '.displayName');// || this.loc('nameless');
         if (isFriendApp)
           caption = ' ';
         else
@@ -215,7 +215,7 @@ define('views/HorizontalListItemView', [
           caption = ' ';
         
         if (!image && !title)
-          return;
+          debugger;
         
         if (this.linkToIntersection)
           target = U.makePageUrl('view', resource);
@@ -239,38 +239,36 @@ define('views/HorizontalListItemView', [
             target = U.makePageUrl('view', target);
           }
         }
-        if (typeof target == 'undefined') 
-          return;
+        
         oW = clonedI[side + 'OriginalWidth'];
         oH = clonedI[side + 'OriginalHeight'];
 
-        var range = this.vocModel.properties[iProp].range;
-        var m = U.getModel(U.getLongUri1(range));
-        var meta = m.properties;
-        
-        var iProp = this.vocModel.properties[this.imageProperty[side]];
-        var imgP = iProp  &&  iProp.cloneOf  &&  iProp.cloneOf.indexOf('Featured') == -1 ? meta[U.getCloneOf(m, 'ImageResource.smallImage')] : meta[U.getCloneOf(m, 'ImageResource.mediumImage')]; 
-        
-        if (isIntersection) 
-          maxDim = imgP && imgP.maxImageDimension;
+        if (image) {
+          var range = this.vocModel.properties[iProp].range;
+          var m = U.getModel(U.getLongUri1(range));
+          var meta = m.properties;
+          
+          var iProp = this.vocModel.properties[this.imageProperty[side]];
+          var imgP = iProp  &&  iProp.cloneOf  &&  iProp.cloneOf.indexOf('Featured') == -1 ? meta[U.getCloneOf(m, 'ImageResource.smallImage')] : meta[U.getCloneOf(m, 'ImageResource.mediumImage')]; 
+          
+//          if (isIntersection) 
+            maxDim = imgP && imgP.maxImageDimension;
+        }
       }
       else {
-        var props = clonedIR.smallImage;
-        if (!props.length)
-          return this;
-        else
-          targetProp = props[0];
-        
-        target = U.makePageUrl(resource);
+        imgProp = imgProp || clonedIR.smallImage;
         image = resource.get(imgProp);
-        title = resoure.get(title);
+        imgProp = this.vocModel.properties[imgProp];
+        target = U.makePageUrl(resource);
+        title = U.getDisplayName(resource);
         oW = clonedIR.originalWidth;
         oH = clonedIR.originalHeight;
-        maxDim = this.imageProperty['maxImageDimention'] || this.imageProperty['imageWidth']; 
+        maxDim = imgProp['maxImageDimension'] || imgProp['imageWidth']; 
       }
       
-      if (typeof target == 'undefined') 
-        return false;
+      if (typeof target == 'undefined')
+        debugger; // should never happen
+//        return false;
 
       plugs = resource.get('plugs') || {count: undefined};
       superscript = isFriendApp ? plugs.count : undefined;
@@ -286,10 +284,8 @@ define('views/HorizontalListItemView', [
           titleLink: '#'
       };
       
-      
-      
       maxDim = maxDim || 200;
-      if (oH  &&  oW) {
+      if (image  &&  oH  &&  oW) {
         rect = this.clipRect(resource, image, oW, oH, maxDim);
               _.extend(props, {top: rect.top, bottom: rect.bottom, left: rect.left, right: rect.right});
       }

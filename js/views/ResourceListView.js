@@ -54,7 +54,7 @@ define('views/ResourceListView', [
     _adjustmentQueued: false,
     _hiddenBricksAtHead: 0,
     _hiddenBricksAtTail: 0,
-    _failedToRenderCount: 0,
+//    _failedToRenderCount: 0,
     _scrollable: false, // is set to true when the content is bigger than the container
 //    _lastRangeEventSeq: -Infinity,
 //    _lastPrefetchEventSeq: -Infinity,
@@ -84,6 +84,7 @@ define('views/ResourceListView', [
       this._dragIdx = this.options.horizontal ? 'x' : 'y';
       this.mode = options.mode || G.LISTMODES.DEFAULT;
       var type = this.modelType;
+      this.makeTemplate('scrollbarTemplate', 'scrollbarTemplate', this.vocModel.type);
       this.makeTemplate('fileUpload', 'fileUploadTemplate', type);
       var commonTypes = G.commonTypes;
       this.isPhotogrid = this.type == 'photogrid'; //this.parentView.isPhotogrid;
@@ -134,7 +135,7 @@ define('views/ResourceListView', [
 
       this.itemViewCache = [];
       this._childEls = [];
-      this._spareEls = [];
+//      this._spareEls = [];
       this._viewport = {
         head: 0,
         tail: G.viewport[this.options.horizontal ? 'width' : 'height']
@@ -151,11 +152,16 @@ define('views/ResourceListView', [
       return this;
     },
 
-    setBrickLimit: function(limit) {
-      this.mason.setLimit(limit || this.collection.length);
+    setBrickLimit: function() {
+      this.mason.setLimit();
       this.mason['continue']();      
     },
-    
+
+    unsetBrickLimit: function() {
+      this.mason.unsetLimit();
+      this.mason['continue']();      
+    },
+
     modelEvents: {
       'reset': '_resetSlidingWindow',
       'added': '_onAddedResources'
@@ -178,81 +184,86 @@ define('views/ResourceListView', [
 //    windowEvents: {
 //      'viewportwidthchanged': '_onWidthChanged'
 //    },
+//    
+//    _onPhysicsMessage: function(event) {
+//      var self = this,
+//          result;
+//      
+//      function report() {
+//        self.log("STATE: " + self._childEls.map(function(b) { return parseInt(b.dataset.viewid.match(/\d+/)[0])})/*.sort(function(a, b) {return a - b})*/.join(","));
+//      };
+//      
+//      try {
+//        result = this.handlePhysicsMessage.apply(this, arguments);
+//      } finally {
+//        if (_.isPromise(result))
+//          result.always(report);
+//        else
+//          report();
+//      }
+//    },
     
     _onPhysicsMessage: function(event) {
+      if (event.info)
+        _.extend(this.options, event.info);
+
+      if (event.type != 'prefetch') {
+        if (this.mason.isLocked()) {
+          debugger; // should never happen
+          return;
+        }
+          
+        this.mason.lock();
+      }
+
       switch (event.type) {
-        case 'range':
+        case 'prefetch':
+          if (this._isPaging)
+            return;
+          
+          // fall through to 'more'
+        case 'more':
 //          this._lastRangeEventSeq = event.eventSeq;
-          return this._rangeChanged(event);
-//        case 'prefetch':
-//          return this._prefetch(event);
+          var num = event.quantity,
+              from, 
+              to;
+          
+          if (event.head) {
+            from = Math.max(this._displayedRange.from - num, 0);
+            to = this._displayedRange.from;
+          }
+          else {
+            from = this._displayedRange.to;
+            to = from + num;
+          }
+          
+          if (event.type == 'more')
+            return this._addBricks(from, to);
+          else
+            return this.fetchResources(from, to);
+          
+        case 'less':
+          var from, to;
+          if (event.head) {
+            from = this._displayedRange.from;
+            to = Math.min(from + event.head, this._displayedRange.to);
+            this._removeBricks(from, to);
+            this._displayedRange.from += (to - from);
+          }
+          
+          if (event.tail) {
+            from = Math.max(this._displayedRange.to - event.tail, this._displayedRange.from);
+            to = Math.min(from + event.tail, this._displayedRange.to);
+            this._removeBricks(from, to);
+            this._displayedRange.to -= (to - from);
+          }
+          
+          this.mason['continue']();
+          return;
         default:
           throw "not implemented yet";
       }
     },
-    
-    _rangeChanged: function(data) {
-      var currentRange = this._displayedRange,
-          expectedCurrentRange = data.currentRange,
-          range = data.range,
-          info = data.info;
-      
-//      if (!_.isEqual(currentRange, expectedCurrentRange))
-//        debugger; // for testing, should never happen
-      
-      if (this.mason.isLocked()) {
-        debugger; // should never happen
-        return;
-      }
-        
-      this.mason.lock();
-      if (range.from == currentRange.from && range.to == currentRange.to) {
-        // should never happen
-        this.mason['continue']();
-        return;
-      }
-      
-      console.debug("CURRENT RANGE", currentRange, "NEW RANGE", range);
-      _.extend(this.options, info);
-      /////////////////////////////////////////////////////////////////////////////////////////////// <> = current range, || = new range
-      ///////////////////////////////////////////////////////////////////////////////////////////////               <----------->
-      if (range.to <= currentRange.from || range.from >= currentRange.to) {   
-        // remove all                                                     /////////////////////////////  |-------|         OR         |-------|
-        this._removeBricks(currentRange.from, currentRange.to);
-        this._addBricks(range.from, range.to);
-      }
-      /////////////////////////////////////////////////////////////////////////////////////////////////  |---------------|
-      else if (range.from <= currentRange.from && range.to <= currentRange.to) {
-        this._removeBricks(range.to, currentRange.to);
-        this._addBricks(range.from, currentRange.from);
-      }
-      /////////////////////////////////////////////////////////////////////////////////////////////////       |-----------------------|  //  we should really only add bricks to one side at a time
-      else if (range.from < currentRange.from && range.to > currentRange.to) {
-        if (currentRange.from - range.from > range.to - currentRange.to)
-          this._addBricks(range.from, currentRange.from);
-        else
-          this._addBricks(currentRange.to, range.to);
-      }
-      /////////////////////////////////////////////////////////////////////////////////////////////////                |----|            // impossible (?) as we only get called if bricks need to be added
-      else if (range.from > currentRange.from && range.to < currentRange.to) {
-        this._removeBricks(currentRange.from, range.from);
-        this._removeBricks(range.to, currentRange.to);
-        this.mason['continue'](); // otherwise it'll wait forever
-      }
-      /////////////////////////////////////////////////////////////////////////////////////////////////                  |---------------|
-      else if (range.from >= currentRange.from && range.to >= currentRange.to) {
-        this._removeBricks(currentRange.from, range.from);
-        this._addBricks(currentRange.to, range.to);
-      }
-      else
-        debugger; /////////////////////////////////////////////////////////////////////////////////////   THIS SHOULD NEVER HAPPEN ///////////////////////////////////////////////////////////////
-    },
-
-//    _prefetch: function(data) {
-//      debugger;
-//      this.fetchResources(data.num);
-//      this.mason['continue']();
-//    },
     
     click: function(e) {
       var top = e.target,
@@ -468,7 +479,7 @@ define('views/ResourceListView', [
       if (this._outOfData) {
         this._outOfData = false;
         if (this.mason) {
-          this.setBrickLimit(); 
+          this.unsetBrickLimit(); 
         }
       }
 //      this.adjustSlidingWindow();
@@ -509,21 +520,21 @@ define('views/ResourceListView', [
     },
     
     render: function() {
-      var self = this,
-          viewport = G.viewport,
-          numEls;
-
-      if (!this.mason)
+      if (!this.rendered) {
+        this.imageProperty = U.getImageProperty(this.collection);
+        var scrollbarId = this.options.scrollbar = this.getBodyId() + 'scrollbar';
+        this.html(this.scrollbarTemplate({
+          axis: this.options.horizontal ? 'x' : 'y',
+          id: scrollbarId
+        }));
+        
+        this.scrollbar = this.el.$('#scrollbar')[0];
+        Physics.here.addBody(this.scrollbar, scrollbarId);
+        Physics.there.addBody('point', this.getContainerBodyOptions(), scrollbarId);
         this.addToWorld(this.options);
-            
-//      numEls = this.getElementsPerViewport() * this._maxViewportsInSlidingWindow;
-//      this.el.innerHTML = new Array(numEls).join("<div></div>");
-//      this.el.$data(viewport); // set width/height to viewport's width/height
-//      this._spareEls.push.apply(this._spareEls, this.el.childNodes);
-      if (this.rendered)
-        return this.refresh();
-            
-      this.imageProperty = U.getImageProperty(this.collection);
+      }
+      else 
+        this.refresh();
     },
   
     /**
@@ -644,21 +655,31 @@ define('views/ResourceListView', [
     * @return a promise
     */
     _addBricks: function(from, to, force) {
+      if (this._outOfData)
+        to = Math.min(to, this.collection.length);
+      
       if (from >= to) {
-        this.mason['continue']();
+        if (this._outOfData)
+          this.setBrickLimit();
+        else {
+          debugger;
+          this.mason['continue']();
+        }
+        
         return;
       }
       
       var self = this,
           col = this.collection,
+          availableRange = col.getRange(),
           displayed = this._displayedRange,
           preRenderPromise;
       
-      if (to > col.length) {
+      if (to > availableRange[1]) {
         if (force) {
           // settle for loading an incomplete page
-          to = col.length;
-          if (to <= from) {
+          to = availableRange[1];
+          if (form >= to) {
             // we're out of candy, no need to continue
             this.setBrickLimit();
             return;
@@ -670,10 +691,15 @@ define('views/ResourceListView', [
 //            return;
 //          }
           
-          var numToFetch = to - col.length;
-          return this.fetchResources(numToFetch).then(this._addBricks.bind(this, from, to, force), this._addBricks.bind(this, from, to, true));
+//          var numToFetch = to - col.length,
+//              fetchFrom = col.length, // + this._failedToRenderCount,
+//              fetchTo = fetchFrom + numToFetch;
+          
+          return this.fetchResources(availableRange[1], to).then(this._addBricks.bind(this, from, to, force), this._addBricks.bind(this, from, to, true));
         }
       }
+      else if (from < availableRange[0])
+        return this.fetchResources(from, availableRange[0]).then(this._addBricks.bind(this, from, to, force), this._addBricks.bind(this, from, to, true));        
                   
       preRenderPromise = this.preRender(from, to);
       if (_.isPromise(preRenderPromise))
@@ -696,82 +722,40 @@ define('views/ResourceListView', [
           childView;
       
       this.log("PAGER", "ADDING", to - from, "BRICKS AT THE", atTheHead ? "HEAD" : "TAIL", "FOR A TOTAL OF", this._displayedRange.to - this._displayedRange.from + to - from);
-//      promise.done(function() {
-//        self._recalcPaging();
-//      });
-//      
-//      function renderOneListItem(resNum) {
-//        var res = col.models[resNum],
-//            liView = this.renderItem(res, atTheHead);
-//
-//        if (liView !== false) {
-//          self.listenTo(liView.resource, 'change', self.onResourceChanged);
-//          self.listenTo(liView.resource, 'saved', self.onResourceChanged);
-//          added.push(liView);
-//        }
-//      }
-//      
-//      for (var i = colRange.from; i < colRange.to; i++) {
-//        Q.write(renderOneListItem, this, [i]);
-//      }
 
       for (var i = from; i < to; i++) {
         var res = col.models[i],
             liView = this.renderItem(res, atTheHead);
 
-        if (liView == false) {
-          this._failedToRenderCount++;
-          console.log("FAILED: " + res.attributes.id);
-          failed.push(res);
-        }
-        else {
-          this.listenTo(liView.resource, 'change', this.onResourceChanged);
-          this.listenTo(liView.resource, 'saved', this.onResourceChanged);
-          added.push(liView);
-        }
+        this.listenTo(liView.resource, 'change', this.onResourceChanged);
+        this.listenTo(liView.resource, 'saved', this.onResourceChanged);
+        added.push(liView);
       }        
       
-      if (failed.length) {
-        this.collection.remove(failed);        
-        to -= failed.length;
-        this.log("TOTAL FAILED TO RENDER SO FAR: " + this._failedToRenderCount);
-//        this.stashed.push.apply(this.stashed, added);
-//        return this._addBricks(to, to + failed.length);
-      }
+      addedEls = added.map(function(c) { return c.el });
+      if (atTheHead)
+        Array.prepend(childEls, addedEls);
+      else
+        childEls.push.apply(childEls, addedEls);
       
-      if (added.length) {      
-//          self.log("PAGER", "ADDING PAGE, FRAME", window.fastdom.frameNum);
-        addedEls = added.map(function(c) { return c.el });
-        if (atTheHead)
-          Array.prepend(childEls, addedEls);
-        else
-          childEls.push.apply(childEls, addedEls);
-        
-        added.forEach(function(childView) {
-          if (childView.postRender)
-            childView.postRender();
-         
-          childView.el.style.opacity = 0;
-          if (!childView.el.parentNode) {
-            // need to append right away, otherwise we can't figure out its size
-            el.appendChild(childView.el); // we don't care about its position in the list, as it's absolutely positioned
-          }
-    
-  //        DOM.queueRender(view.el, DOM.opaqueStyle);
+      added.forEach(function(childView) {
+        if (childView.postRender)
+          childView.postRender();
+       
+        childView.el.style.opacity = 0;
+        if (!childView.el.parentNode) {
+          // need to append right away, otherwise we can't figure out its size
+          el.appendChild(childView.el); // we don't care about its position in the list, as it's absolutely positioned
+        }
   
+//        DOM.queueRender(view.el, DOM.opaqueStyle);
+
 //          Physics.here.once('render', childView.getBodyId(), function(childEl) {
 //            childEl.style.opacity = 1;
 //          });
-        });
-        
-        return this.postRender(from, to, added);
-      }       
-      else {
-        if (this._outOfData)
-          this.setBrickLimit();
-        else
-          return this._addBricks(to, to + failed.length);
-      }
+      });
+      
+      return this.postRender(from, to, added);
     },
     
     /**
@@ -788,7 +772,7 @@ define('views/ResourceListView', [
           displayed = this._displayedRange,
           removedViews = [];
 
-      this.log("PAGER", "REMOVING", to - from, "BRICKS FROM THE", fromTheHead ? "HEAD" : "TAIL", "FOR A TOTAL OF", this._displayedRange.to - this._displayedRange.from - (to - from));
+//      this.log("PAGER", "REMOVING", to - from, "BRICKS FROM THE", fromTheHead ? "HEAD" : "TAIL", "FOR A TOTAL OF", this._displayedRange.to - this._displayedRange.from - (to - from));
       for (var i = fromTheHead ? 0 : childNodes.length - numToRemove, 
                end = fromTheHead ? numToRemove : childNodes.length; i < end; i++) {
         
@@ -799,26 +783,30 @@ define('views/ResourceListView', [
           childView = this.children[childEl.dataset.viewid];
           if (childView)
             removedViews.push(childView);
+          else
+            debugger; // this should never happen...
         }
         else {
           debugger; // this should never happen...
         }
       }
 
+//      this.collection.clearRange(from, to);
+      this.log("REMOVING BRICK RANGE " + from + "-" + to); 
       this.doRemove(removedViews);
       if (fromTheHead) {
         Array.removeFromTo(this._childEls, 0, numToRemove);
-        displayed.from += removedViews.length;
+//        displayed.from += removedViews.length;
       }
       else {
         this._childEls.length -= numToRemove;
-        displayed.to -= removedViews.length;
+//        displayed.to -= removedViews.length;
       }
 
-      if (displayed.from > displayed.to) {
-        debugger;
-        displayed.from = displayed.to;
-      }
+//      if (displayed.from > displayed.to) {
+//        debugger;
+//        displayed.from = displayed.to;
+//      }
     },
 
     onResourceChanged: function(res) { // attach/detach when sliding window moves
@@ -867,12 +855,13 @@ define('views/ResourceListView', [
       var i = removedViews.length,
           numLeft = this._childEls.length,
           numMax = this.options.maxBricks,
-          numToRecycle = numMax * 2 - numLeft,
+          numToRecycle = Math.min(numMax * 2 - numLeft, i),
           numYetToRecycle = numToRecycle,
           ids = [],
           recycled = [],
           view;
       
+//      this.log("REMOVED BRICKS: " + removedViews.map(function(b) { return parseInt(b.getBodyId().match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
       while (i--) {
         view = removedViews[i];
         this.stopListening(view.resource);
@@ -891,36 +880,37 @@ define('views/ResourceListView', [
 
       if (recycled.length) {
         this.recycleItemViews(recycled);
-        DOM.onNextRender(function() {
-          i = recycled.length;
-          while (i--) {
-            recycled[i].el.style.opacity = 0;
-          }
-        });        
+//        this.log("RECYCLED BRICKS: " + recycled.map(function(b) { return parseInt(b.getBodyId().match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
+//        DOM.onNextRender(function() {
+//          i = recycled.length;
+//          while (i--) {
+//            recycled[i].el.style.opacity = 0;
+//          }
+//        });        
       }
       
       this.pageView._bodies = _.difference(this.pageView._bodies, ids); // TODO: unyuck the yuck
       this._numBricks -= removedViews.length;
     },
     
-    fetchResources: function(numResourcesToFetch) {
+    fetchResources: function(from, to) {
       if (this._isPaging)
         return this._pagingPromise;
       else if (this._outOfData)
         return G.getRejectedPromise();
       
-      numResourcesToFetch = Math.max(numResourcesToFetch || this.options.bricksPerPage, 5);
       var self = this,
           col = this.collection,
           before = col.length,
           defer = $.Deferred(),
           nextPagePromise,
-          nextPageUrl;
+          nextPageUrl,
+          limit = Math.max(to - from || this.options.bricksPerPage, 10);
       
       nextPagePromise = col.getNextPage({
         params: {
-          $offset: col.length + this._failedToRenderCount,
-          $limit: numResourcesToFetch
+          $offset: from,
+          $limit: limit
         },
         success: function() {
           if (col.length > before)
@@ -952,7 +942,7 @@ define('views/ResourceListView', [
         }        
       }); 
       
-      this._pagingPromise._range = 'from: ' + before + ', to: ' + (before + numResourcesToFetch);
+      this._pagingPromise._range = 'from: ' + before + ', to: ' + (before + limit);
 //      this.log("Fetching next page: " + this._pagingPromise._range);
       return this._pagingPromise;
     },
@@ -1011,7 +1001,6 @@ define('views/ResourceListView', [
             resource: res
           },
           liView = this.getCachedItemView(),
-          viewName,
           preinitializedItem;
       
       if (this.isMultiValueChooser) {
@@ -1022,13 +1011,12 @@ define('views/ResourceListView', [
       }
       
       if (liView) {
-//        console.log("RECYCLING LIST ITEM");
+//        this.log("USING RECYCLED LIST ITEM: " + liView.getBodyId());
         liView.reset().initialize(options);
       }
       else {
-//        console.log("CREATING NEW LIST ITEM, TOTAL CHILD VIEWS:", _.size(this.children));
-        if (this._spareEls.length)
-          options.el = this._spareEls.shift();
+//        if (this._spareEls.length)
+//          options.el = this._spareEls.shift();
         
         if (this._itemTemplateElement) {
           if (!options.el)
@@ -1041,24 +1029,19 @@ define('views/ResourceListView', [
           }
         }
         
-        viewName = 'listItem' + G.nextId();
         preinitializedItem = this._preinitializedItem;
         liView = new preinitializedItem(options);
+//        this.log("CREATED NEW LIST ITEM: " + liView.getBodyId());
         this.addChild(liView, prepend);      
       }
       
       liView.render({
         unlazifyImages: !this._scrollable
-//        ,
-//        style: {
-//          opacity: 0
-//        }
       });
       
       if (!this._itemTemplateElement && this.displayMode == 'masonry') // remove this when we change ResourceListItemView to update DOM instead of replace it
         this._itemTemplateElement = liView.el;
         
-//      liView.el.dataset.indexInCollection = liView.resource.collection.indexOf(liView.resource);
       return liView;
     },
     
@@ -1151,8 +1134,9 @@ define('views/ResourceListView', [
       }
       
       if (this._outOfData && this.collection.length == to)
-        this.mason.setLimit(this.collection.length); // - this._failedToRenderCount);
-      
+        this.mason.setLimit();
+
+//      this.log("ADDING BRICK RANGE " + from + "-" + to + ": " + bricks.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
       this.addBricksToWorld(bricks, atTheHead); // mason
     },
     

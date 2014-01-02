@@ -1058,13 +1058,15 @@ define('views/BasicView', [
 
       this._offsetLeft = this.el.offsetLeft;
       this._offsetTop = this.el.offsetTop;
-      this._outerWidth = this.el.$outerWidth() || viewport.width - this._offsetLeft;
+
+      // TODO: fix this nonsense
+      this._outerWidth = this.el.$outerWidth();
       if (this._outerWidth)
         this._width = Math.min(this._outerWidth, viewport.width);
       else
         this._width = viewport.width > this._offsetLeft ? viewport.width - this._offsetLeft : viewport.width;
       
-      this._outerHeight = this.el.$outerHeight() || viewport.height - this._offsetTop;
+      this._outerHeight = this.el.$outerHeight();
       if (this._outerHeight)
         this._height = Math.min(this._outerHeight, viewport.height);
       else
@@ -1197,14 +1199,89 @@ define('views/BasicView', [
       return this._viewBrick;
     },
     
+//    buildViewBrick: function() {
+//      var brick = this._viewBrick = this._viewBrick || {},
+//          width = this._outerWidth,
+//          height = this._outerHeight,
+//          id = this.getBodyId(),
+//          el = this.el;
+//          
+//      brick._id = id;
+//      if (this.resource)
+//        brick._uri = U.getShortUri(this.resource.getUri(), this.vocModel);
+//      
+//      brick.fixed = !this._flexigroup;
+//      
+//      // HACK
+//      brick.lock = brick.lock || {};
+//      brick.lock.x = 0;
+//      // END HACK
+//      
+//      brick.mass = 0.1;
+//      brick.restitution = 0.3;
+//      
+//      // vertices
+//      brick.vertices = brick.vertices || [];
+//      brick.vertices[0] = brick.vertices[0] || {};
+//      brick.vertices[0].x = 0;
+//      brick.vertices[0].y = height;
+//
+//      brick.vertices[1] = brick.vertices[1] || {};
+//      brick.vertices[1].x = width;
+//      brick.vertices[1].y = height;
+//
+//      brick.vertices[2] = brick.vertices[2] || {};
+//      brick.vertices[2].x = width;
+//      brick.vertices[2].y = 0;
+//
+//      brick.vertices[3] = brick.vertices[3] || {};
+//      brick.vertices[3].x = 0;
+//      brick.vertices[3].y = 0;
+//      return brick;
+//    },
+    
     buildViewBrick: function() {
-      var brick = this._viewBrick = this._viewBrick || {},
-          width = this._outerWidth,
-          height = this._outerHeight,
-          id = this.getBodyId(),
-          el = this.el;
-          
-      brick._id = id;
+      if (!this._viewBrick) {
+        this._viewBrick = {
+          _id: this.getBodyId(),
+          width: this._outerWidth,
+          height: this._outerHeight
+        };
+        
+        if (this.resource)
+          this._viewBrick.resource = this.resource;
+      }
+      
+      return this._viewBrick = this.buildBrick(this._viewBrick);
+    },
+    
+    buildBrick: function(options) {
+      var brick = options,
+          width, 
+          height;
+      
+      if (!_.has(brick, 'width'))
+        width = brick.el ? brick.el.$outerWidth() : this._outerWidth;
+      else
+        width = brick.width;
+      
+      if (!_.has(brick, 'height'))
+        height = brick.el ? brick.el.$outerHeight() : this._outerHeight;
+      else
+        height = brick.height;
+
+      if (!_.has(brick, '_id'))
+        brick._id = this.getBodyId();
+      if (!_.has(brick, '_uri')) {
+        if (_.has(brick, 'resource')) {
+          brick._uri = U.getShortUri(this.resource.getUri(), this.vocModel);
+          delete brick.resource;
+        }
+      }
+        
+      if (brick.el)
+        delete brick.el;
+      
       brick.fixed = !this._flexigroup;
       
       // HACK
@@ -1212,11 +1289,11 @@ define('views/BasicView', [
       brick.lock.x = 0;
       // END HACK
       
-      brick.mass = 0.1;
-      brick.restitution = 0.3;
+      brick.mass = _.has(brick, 'mass') ? brick.mass : 0.1;
+      brick.restitution = _.has(brick, 'restitution') ? brick.restitution : 0.3;
       
       // vertices
-      brick.vertices = brick.vertices || [];
+      brick.vertices = brick.vertices || []; // overwrite
       brick.vertices[0] = brick.vertices[0] || {};
       brick.vertices[0].x = 0;
       brick.vertices[0].y = height;
