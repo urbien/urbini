@@ -36,7 +36,14 @@
     </form>  
   </div>
 </script>  
- 
+
+<script type="text/template" id="scrollbarTemplate">
+  <div id="{{= obj.id || 'scrollbar' + G.nextId() }}" class="scrollbar {{= 'scrollbar' + obj.axis || 'y' }}" style="height: 70px;">
+    <div class="scrollbarinner">
+    </div>
+  </div>
+</script>
+
 <script type="text/template" id="resource">
   <!-- Single resource view -->  
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div>
