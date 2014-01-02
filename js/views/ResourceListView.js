@@ -32,7 +32,8 @@ define('views/ResourceListView', [
     averageBrickNonScrollDim: 80,  
 //    minPagesInSlidingWindow: 6,
 //    maxPagesInSlidingWindow: 12,
-    gutterWidth: 10
+    gutterWidth: 10,
+    scrollerType: 'verticalMain'
     // </ MASONRY INITIAL CONFIG>      
   };
   
@@ -522,7 +523,10 @@ define('views/ResourceListView', [
     render: function() {
       if (!this.rendered) {
         this.imageProperty = U.getImageProperty(this.collection);
-        var scrollbarId = this.options.scrollbar = this.getBodyId() + 'scrollbar';
+        var scrollbarId = this.options.scrollbar = this.getBodyId() + 'scrollbar',
+            containerOptions = this.getContainerBodyOptions();
+        
+        containerOptions._id = containerOptions._id + 'scrollbar';
         this.html(this.scrollbarTemplate({
           axis: this.options.horizontal ? 'x' : 'y',
           id: scrollbarId
@@ -530,7 +534,7 @@ define('views/ResourceListView', [
         
         this.scrollbar = this.el.$('#scrollbar')[0];
         Physics.here.addBody(this.scrollbar, scrollbarId);
-        Physics.there.addBody('point', this.getContainerBodyOptions(), scrollbarId);
+        Physics.there.addBody('point', containerOptions, scrollbarId);
         this.addToWorld(this.options);
       }
       else 

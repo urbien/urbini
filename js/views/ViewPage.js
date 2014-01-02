@@ -127,37 +127,41 @@ define('views/ViewPage', [
       var isMovie = U.isAssignableFrom(res, U.getTypeUri('classifieds/movies/Movie')) || res.type.endsWith("/Movie");
       if (isApp || isUrbien || isArtist  ||  isMovie) {
         var uri = res.getUri();
-        var friendType, friendName, title = 'Friends', friend1 = 'friend1', friend2 = 'friend2';
+        var friendType, friendName, title = 'Friends', friendProp; //, friend1 = 'friend1', friend2 = 'friend2';
         if (isApp) {
           friendType = commonTypes.FriendApp;
-          friendName = 'Connection'
+          friendName = 'Connection';
+          friendProp = 'friend1';
         }
         else if (isUrbien) {
           friendType = commonTypes.Friend;
           friendName = 'Friend';
+          friendProp = 'friend1';
         }
         else if (isArtist) {
 //          friendType = 'http://urbien.com/voc/dev/Impress/ArtistImpression';
           friendType = 'http://urbien.com/voc/dev/ImpressBackup/ArtistImpression';
           friendName = 'ArtistImpression';
           title = 'Impressions';
-          friend1 = 'impression';
-          friend2 = 'artist';
+//          friend1 = 'impression';
+//          friend2 = 'artist';
+          friendProp = isArtist ? 'artist' : 'impression';
         }
         else if (isMovie) {
   //        friendType = 'http://urbien.com/voc/dev/Impress/ArtistImpression';
           friendType = 'http://urbien.com/voc/dev/ImpressBackup/MovieImpression';
           friendName = 'MovieImpression';
           title = 'Impressions';
-          friend1 = 'impression';
-          friend2 = 'movie';
+//          friend1 = 'impression';
+//          friend2 = 'movie';
+          friendProp = isMovie ? 'movie' : 'impression';
         }
 
         this.onload(function() {          
           U.require(['collections/ResourceList', 'vocManager', 'views/HorizontalListView'], function(ResourceList, Voc, HorizontalListView) {
             Voc.getModels(friendType).done(function(friendModel) {
               var friendProps = {};
-              friendProps[friend1] = uri; //friendProps[friend2] = uri;
+              friendProps[friendProp] = uri; //friendProps[friend2] = uri;
               self.friends = new ResourceList(null, {
 //                params: {
 //                  $or: U.getQueryString(friendProps, {delimiter: '||'})
@@ -280,14 +284,17 @@ define('views/ViewPage', [
       this.html(this.template(this.getBaseTemplateData()));
       
       this.photogridPromise.done(function() {        
-        var pHeader = self.$('.thumb-gal-header')[0];
-        var h3 = pHeader.querySelector('h3');
-        if (h3)
-          h3.innerHTML = self.friends.title;
-        
-        pHeader.classList.remove('hidden');
         self.assign({
           '#photogrid': self.photogrid
+        });
+        
+        self.photogrid.onload(function() {
+          var pHeader = self.$('.thumb-gal-header')[0];
+          var h3 = pHeader.querySelector('h3');
+          if (h3)
+            h3.innerHTML = self.friends.title;
+          
+          pHeader.classList.remove('hidden');
         });
       });
 

@@ -50,12 +50,15 @@ define('views/ContextMenuPanel', [
       Events.stopEvent(e);
       
       var elm = this.el.parentElement;
-      while (!elm.id  ||  elm.id.indexOf('page') == -1)
+      while (!elm.id  ||  elm.id.indexOf('page') == -1) {
         elm = elm.parentElement;
+      }
+      
       var p = elm.querySelectorAll('.physics');
       for (var i=0; i<p.length; i++) {
         p[i].style.display = 'block';
       }
+      
       window.dispatchEvent(new Event("viewportdimensions"));
 //      p.forEach(function(element) {
 //        element.style.visibility = 'visible';  
