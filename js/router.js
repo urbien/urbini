@@ -1321,12 +1321,14 @@ define('router', [
           if ( document.activeElement && document.activeElement.nodeName.toLowerCase() !== 'body' ) {
             toBlur = document.activeElement;
           } else {
-            toBlur = $( "input:focus, textarea:focus, select:focus" );
+            toBlur = fromView && fromView.$( "input:focus, textarea:focus, select:focus" );
           }
           
-          Q.write(function() {
-            toBlur.blur();
-          });
+          if (toBlur && toBlur.length) {
+            Q.write(function() {
+              toBlur.blur();
+            });
+          }
         });
       } catch( e ) {}
       

@@ -240,6 +240,9 @@
           colYs = this._getColYs(),
           lock;
   
+      if (isNaN(setHeight))
+        debugger;
+      
       //    Which column has the min/max Y value, 
       //         closest to the left/right, 
       // based on if we're appending/prepending
@@ -475,7 +478,6 @@
       this.bricks.length = Math.max(0, this.bricks.length - n);
       var dimensionMethod = this.options.horizontal ? '_getOuterWidth' : '_getOuterHeight',
           gutterWidth = this.options.gutterWidth,
-          i = bricks.length,
           brick,
           dim,
           colSpan,

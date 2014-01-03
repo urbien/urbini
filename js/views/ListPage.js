@@ -19,6 +19,9 @@ define('views/ListPage', [
     clicked: false,
     autoFinish: false,
     _draggable: false,
+    style: {
+      'background-color': 'white'
+    },
     initialize: function(options) {
       _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'setMode', /*'orientationchange',*/ 'onFilter');
       BasicPageView.prototype.initialize.apply(this, arguments);

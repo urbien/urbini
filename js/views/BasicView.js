@@ -120,6 +120,14 @@ define('views/BasicView', [
         this.listenTo(Events, 'preparingModelForDestruction.' + this.model.cid, this._preventModelDeletion);
       
       this._dimensions = {};
+      this._viewBrick = {
+        _id: this.getBodyId()
+      };
+      
+      this._bounds = new Array(4);
+      if (this.resource)
+        this._viewBrick._uri = U.getShortUri(this.resource.getUri(), this.vocModel);
+
 //      G.log(this.TAG, 'new view', this.getPageTitle());
       return this;
     },
@@ -369,15 +377,15 @@ define('views/BasicView', [
         this.render.apply(this, arguments);      
     },
     
-    destroy: function() {
+    destroy: function(keepEl) {
       if (this._destroyed)
         return;
       
       this._destroyed = true;
-      this.trigger('destroyed');
+      this.trigger('destroyed', keepEl);
     },
     
-    _onDestroyed: function() {
+    _onDestroyed: function(keepEl) {
 //      Events.trigger('garbage', this);
       this.trigger('inactive');
       for (var cid in this.children) {
@@ -413,8 +421,10 @@ define('views/BasicView', [
       
       if (this._draggable)
         Physics.removeDraggable(this.getContainerBodyId());
+      if (this.mason)
+        this.mason.destroy();
 
-      if (this.el)
+      if (!keepEl && this.el)
         this.el.$remove();
       
       this.$el = this.el = this._hammer = this._hammered = null;
@@ -1009,14 +1019,19 @@ define('views/BasicView', [
     },
     
     getBodyId: function() {
-      return this.cid + '.' + this._initializedCounter;
-//      return this.cid;
+//      return this.cid + '.' + this._initializedCounter;
+      return this.cid;
     },
 
     getContainerBodyId: function() {
-      return this.TAG + '.' + this.cid + '.' + this._initializedCounter;
+//      return this.TAG + '.' + this.cid + '.' + this._initializedCounter;
+      return this.TAG + '.' + this.cid;
     },
-    
+
+//    getFlexigroupId: function() {
+//      return this.TAG + '.' + this.cid + '.' + this._initializedCounter + '.flexigroup';
+//    },
+
     addDraggable: function() {
       Physics.addDraggable(this.hammer(), this.getContainerBodyId(), this._dragAxis);
     },
@@ -1077,20 +1092,23 @@ define('views/BasicView', [
       
       if (this._outerWidth != oldOuterWidth || this._outerHeight != oldOuterHeight) {
         doUpdate = true;
-        if (this._viewBrick) {
-          this._viewBrick.vertices = [
-            {x: 0, y: this._outerHeight},
-            {x: this._outerWidth, y: this._outerHeight},
-            {x: this._outerWidth, y: 0},
-            {x: 0, y: 0}
-          ];
-        }        
+//        this._viewBrick.vertices = [
+//          {x: 0, y: this._outerHeight},
+//          {x: this._outerWidth, y: this._outerHeight},
+//          {x: this._outerWidth, y: 0},
+//          {x: 0, y: 0}
+//        ];
       }
       
 //      this._bounds = [this._offsetLeft, this._offsetTop, 
 //                      this._offsetLeft + this._width, this._offsetTop + this._height];
-      this._bounds = [0, 0, 
-                      this._width, this._height];
+      
+      this._bounds[0] = this._bounds[1] = 0;
+      this._bounds[2] = this._width;
+      this._bounds[3] = this._height;
+      
+      if (doUpdate)
+        this.buildViewBrick();
       
       return doUpdate;
     },
@@ -1115,7 +1133,7 @@ define('views/BasicView', [
         slidingWindow: false,
         container: containerId,
         bounds: this._bounds,
-        flexigroup: this._flexigroup
+        flexigroup: this._flexigroup ? containerId : false
       });
 
       this.addContainerBodyToWorld();
@@ -1155,32 +1173,34 @@ define('views/BasicView', [
     
     getContainerBodyOptions: function() {
       var containerId = this.getContainerBodyId(),
-          options;
+          options,
+          lock = {};
+      
+      if (this._horizontal)
+        lock.y = 0;
+      else
+        lock.x = 0;
       
       if (this._flexigroup) {
+        if (!this.hasOwnProperty('_offsetWidth'))
+          this._updateSize();
+        
         options = {
           _id: containerId,
-          x: this._offsetLeft + this._width / 2,
-          y: -G.viewport.height * 5,
-          lock: {
-            x: 0
-          }, 
-          mass: 1
+          x: 0,
+          y: 0,
+//          x: this._horizontal ? -G.viewport.width * 5 : this._offsetLeft + this._width / 2,
+//          y: this._horizontal ? this._offsetTop + this._height / 2 : -G.viewport.height * 5,
+          lock: lock, 
+          mass: 10
         };
       }
       else {
         options = {
           _id: containerId,
-//            x: thisTransform[3][0],
-//            y: thisTransform[3][1],
-//            z: thisTransform[3][2],
-//          x: this._offsetLeft,
-//          y: this._offsetTop,
           x: 0,
           y: 0,
-          lock: {
-            x: 0 // no movement along the x axis
-          }
+          lock: lock
         };
       }
       
@@ -1189,7 +1209,9 @@ define('views/BasicView', [
     
     addContainerBodyToWorld: function() {
       var id = this.getContainerBodyId();
-      Physics.here.addBody(this.el, id);
+      if (!this._flexigroup)
+        Physics.here.addBody(this.el, id);
+      
       Physics.there.addBody('point', this.getContainerBodyOptions(), id);
       if (this._draggable)
         this.addDraggable();
@@ -1241,42 +1263,34 @@ define('views/BasicView', [
 //    },
     
     buildViewBrick: function() {
-      if (!this._viewBrick) {
-        this._viewBrick = {
-          _id: this.getBodyId(),
-          width: this._outerWidth,
-          height: this._outerHeight
-        };
-        
-        if (this.resource)
-          this._viewBrick.resource = this.resource;
-      }
+      if (this.resource)
+        this._viewBrick.resource = this.resource;
       
-      return this._viewBrick = this.buildBrick(this._viewBrick);
+      return this.buildBrick(this._viewBrick);
     },
     
     buildBrick: function(options) {
       var brick = options,
+          v,
           width, 
           height;
       
-      if (!_.has(brick, 'width'))
-        width = brick.el ? brick.el.$outerWidth() : this._outerWidth;
-      else
+      if (_.has(brick, 'width'))
         width = brick.width;
-      
-      if (!_.has(brick, 'height'))
-        height = brick.el ? brick.el.$outerHeight() : this._outerHeight;
       else
+        width = brick.el ? brick.el.$outerWidth() : this._outerWidth;
+      
+      if (_.has(brick, 'height'))
         height = brick.height;
+      else
+        height = brick.el ? brick.el.$outerHeight() : this._outerHeight;
 
       if (!_.has(brick, '_id'))
         brick._id = this.getBodyId();
-      if (!_.has(brick, '_uri')) {
-        if (_.has(brick, 'resource')) {
-          brick._uri = U.getShortUri(this.resource.getUri(), this.vocModel);
-          delete brick.resource;
-        }
+      
+      if (_.has(brick, 'resource')) {
+        brick._uri = U.getShortUri(brick.resource.getUri(), brick.resource.vocModel);
+        delete brick.resource;
       }
         
       if (brick.el)
@@ -1286,29 +1300,29 @@ define('views/BasicView', [
       
       // HACK
       brick.lock = brick.lock || {};
-      brick.lock.x = 0;
+      brick.lock[this._horizontal ? 'y' : 'x'] = 0;
       // END HACK
       
       brick.mass = _.has(brick, 'mass') ? brick.mass : 0.1;
       brick.restitution = _.has(brick, 'restitution') ? brick.restitution : 0.3;
       
       // vertices
-      brick.vertices = brick.vertices || []; // overwrite
-      brick.vertices[0] = brick.vertices[0] || {};
-      brick.vertices[0].x = 0;
-      brick.vertices[0].y = height;
+      v = brick.vertices = brick.vertices || [];
+      v[0] = v[0] || {};
+      v[0].x = 0;
+      v[0].y = height;
 
-      brick.vertices[1] = brick.vertices[1] || {};
-      brick.vertices[1].x = width;
-      brick.vertices[1].y = height;
+      v[1] = v[1] || {};
+      v[1].x = width;
+      v[1].y = height;
 
-      brick.vertices[2] = brick.vertices[2] || {};
-      brick.vertices[2].x = width;
-      brick.vertices[2].y = 0;
+      v[2] = v[2] || {};
+      v[2].x = width;
+      v[2].y = 0;
 
-      brick.vertices[3] = brick.vertices[3] || {};
-      brick.vertices[3].x = 0;
-      brick.vertices[3].y = 0;
+      v[3] = v[3] || {};
+      v[3].x = 0;
+      v[3].y = 0;
       return brick;
     },
     

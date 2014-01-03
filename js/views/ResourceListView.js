@@ -25,6 +25,8 @@ define('views/ResourceListView', [
     // <MASONRY INITIAL CONFIG>
     slidingWindow: true,
     horizontal: false,
+    flyIn: true,
+    animateOpacity: true,
     minBricks: 10,
     maxBricks: 10,
     bricksPerPage: 10,
@@ -60,6 +62,11 @@ define('views/ResourceListView', [
 //    _lastRangeEventSeq: -Infinity,
 //    _lastPrefetchEventSeq: -Infinity,
     className: 'scrollable',
+    style: (function() {
+      var style = {};
+      style[DOM.prefix('perspective')] = '200px';
+      return style;
+    })(),
     stashed: [],
 
     initialize: function(options) {
@@ -210,7 +217,7 @@ define('views/ResourceListView', [
 
       if (event.type != 'prefetch') {
         if (this.mason.isLocked()) {
-          debugger; // should never happen
+//          debugger; // should never happen
           return;
         }
           
@@ -711,8 +718,14 @@ define('views/ResourceListView', [
       else
         return this._doAddBricks(from, to);
     },
-
+    
     _doAddBricks: function(from, to) {
+      Q.write(function() {
+        this._doAddBricksFoReal(from, to);
+      }, this);
+    },
+      
+    _doAddBricksFoReal: function(from, to) {
       var self = this,
           el = this.el,
           childEls = this._childEls,
@@ -1022,16 +1035,16 @@ define('views/ResourceListView', [
 //        if (this._spareEls.length)
 //          options.el = this._spareEls.shift();
         
-        if (this._itemTemplateElement) {
-          if (!options.el)
-            options.el = this._itemTemplateElement.cloneNode(true);
-          else {
-            var childNodes = this._itemTemplateElement.childNodes;
-            for (var i = 0; i < childNodes.length; i++) {
-              options.el.appendChild(childNodes[i].cloneNode(true));
-            }
-          }
-        }
+//        if (this._itemTemplateElement) {
+//          if (!options.el)
+//            options.el = this._itemTemplateElement.cloneNode(true);
+//          else {
+//            var childNodes = this._itemTemplateElement.childNodes;
+//            for (var i = 0; i < childNodes.length; i++) {
+//              options.el.appendChild(childNodes[i].cloneNode(true));
+//            }
+//          }
+//        }
         
         preinitializedItem = this._preinitializedItem;
         liView = new preinitializedItem(options);
@@ -1043,8 +1056,8 @@ define('views/ResourceListView', [
         unlazifyImages: !this._scrollable
       });
       
-      if (!this._itemTemplateElement && this.displayMode == 'masonry') // remove this when we change ResourceListItemView to update DOM instead of replace it
-        this._itemTemplateElement = liView.el;
+//      if (!this._itemTemplateElement && this.displayMode == 'masonry') // remove this when we change ResourceListItemView to update DOM instead of replace it
+//        this._itemTemplateElement = liView.el;
         
       return liView;
     },
@@ -1093,13 +1106,14 @@ define('views/ResourceListView', [
     toBricks: function(views, options) {
       var bricks = [],
           brick,
+          lockAxis = this._horizontal ? 'y' : 'x',
           view;
       
       for (var i = 0, l = views.length; i < l; i++) {
         view = views[i];
         view._updateSize();
         brick = view.buildViewBrick();
-        brick.lock.x = options.gutterWidth / 5;
+        brick.lock[lockAxis] = options.gutterWidth / 5;
         brick.fixed = !options.flexigroup;
         bricks.push(brick);
       };
@@ -1108,6 +1122,12 @@ define('views/ResourceListView', [
     },
 
     postRender: function(from, to, added) {
+      Q.read(function() {        
+        this._doPostRender(from, to, added); // need to get new brick sizes
+      }, this);
+    },
+    
+    _doPostRender: function(from, to, added) {
 //      if (this.stashed.length) {
 //        Array.prepend(added, this.stashed);
 //        this.stashed.length = 0;

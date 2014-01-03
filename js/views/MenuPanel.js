@@ -17,6 +17,7 @@ define('views/MenuPanel', [
       opacity: 0
     },
     _hidden: true,
+    _horizontal: true, // only moves horizontally
     _draggable: true,
     _dragAxis: 'x',
 //    style: (function() {
@@ -82,7 +83,7 @@ define('views/MenuPanel', [
         if (G.isJQM())
           this.$el.closest('[data-role="panel"]').panel('close');
         
-        Physics.there.rpc(null, 'flyTo', [this.getContainerBodyId(), G.viewport.width, 0, 0, this._flySpeed, function() {
+        Physics.there.rpc(null, 'flyTo', [this.getContainerBodyId(), G.viewport.width, 0, 0, this._flySpeed, null, function() {
           DOM.queueRender(self.el, DOM.hideStyle);
         }]);
       }
@@ -97,7 +98,7 @@ define('views/MenuPanel', [
       var options = BasicView.prototype.getContainerBodyOptions.apply(this, arguments);
       
       // make sure it starts just offscreen
-      options.x += G.viewport.width;
+      options.x = G.viewport.width;
       options.lock.y = 0;
       return options;
     }

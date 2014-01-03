@@ -195,6 +195,7 @@ define('views/ControlPanel', [
           info = this._backlinkInfo[pName];
       
       if (info.scroller) {
+        info.scroller.destroy(true); // don't remove element
         li.$empty();
         for (var i = 0; i < info.originalContent.length; i++) {
           li.appendChild(info.originalContent[i]);

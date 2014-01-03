@@ -28,24 +28,24 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
     $to.trigger('page_beforeshow');
     function switchRoles() {
       toView.el.style.opacity = 1;
-//      toView.el.style['z-index'] = 1000;
-//      if (fromView)
-//        fromView.el.style['z-index'] = -1;
+      toView.el.style['z-index'] = 1000;
+      if (fromView)
+        fromView.el.style['z-index'] = 1;
     }
     
     if (from) {
-      Physics.there.chain(
-        {
-          method: 'teleport', 
-          args: [from, null, null, -1]
-        },
-        {
-          method: 'teleport', 
-          args: [to, null, null, 1]
-        }
-      );
+//      Physics.there.chain(
+//        {
+//          method: 'teleport', 
+//          args: [from, null, null, -1]
+//        },
+//        {
+//          method: 'teleport', 
+//          args: [to, null, null, 1]
+//        }
+//      );
       
-      toView.el.style.opacity = 0;
+//      toView.el.style.opacity = 0;
       var dfd = $.Deferred();
       toView.onload(function() {
         Physics.disableDrag();
@@ -74,11 +74,11 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
             },
             {
               method: 'fly' + toDir.capitalizeFirst(), 
-              args: [from, 1, finish]
+              args: [from, 1, 0, finish]
             },
             {
               method: 'flyCenter', 
-              args: [to, 2, finish]
+              args: [to, 2, 1, finish]
             }
           );
         }
@@ -95,12 +95,15 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
           if (++finished == 2) {
             Physics.enableDrag();
 //            G.enableClick();
+            
             if (fromView) {
               Q.write(function() {
+                $from.trigger('page_hide');
                 fromView.el.style.opacity = 0;
               });
-            }
+            }              
             
+            $to.trigger('page_show');
             dfd.resolve();
           }
         };

@@ -35,6 +35,7 @@ define('views/HorizontalListItemView', [
   }
   
   var SIV = BasicView.extend({
+    _horizontal: true,
     tagName: 'div',
     template: 'horizontalListItem',
     className: 'masonry-brick thumb-gal-item',

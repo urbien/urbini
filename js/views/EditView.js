@@ -735,7 +735,8 @@ define('views/EditView', [
     },
 
     reset: function() {
-      this.getInputs().$attr('disabled', null);
+      if (this.rendered)
+        this.getInputs().$attr('disabled', null);
     },
     
     submit: function(e, options) {

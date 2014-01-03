@@ -4,7 +4,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       physicsModuleInfo = G.files['lib/physicsjs-custom.js'],
       masonryModuleInfo = G.files['lib/jquery.masonry.js'],
       commonMethods = ['step', 'addBody', 'removeBody', 'distanceConstraint', 'drag', 'dragend', 'benchBodies', 'unbenchBodies'],
-      layoutMethods = ['addBricks', 'setLimit', 'unsetLimit', 'sleep', 'wake', 'continue', 'home', 'end', 'resize', 'setBounds', 'lock', 'unlock', 'isLocked'],
+      layoutMethods = ['addBricks', 'setLimit', 'unsetLimit', 'sleep', 'wake', 'continue', 'home', 'end', 'resize', 'setBounds', 'lock', 'unlock', 'isLocked', 'destroy'],
       TIMESTEP = 1000/60,
       LOCK_STEP = false, // if true, step the world through postMessage, if false let the world run its own clock
       PHYSICS_TIME = _.now(), // from here on in,
@@ -57,6 +57,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       subscriptions = {},
       INPUT_TAGS = ['input', 'textarea'],
       TRANSFORM_PROP = DOM.prefix('transform'),
+      TRANSFORM_ORIGIN_PROP = DOM.prefix('transform-origin'),
       TRANSITION_PROP = DOM.prefix('transition'),
       CONSTANTS = {
         degree: 1,
@@ -285,11 +286,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         return; 
       case 38: // up arrow
         this._coast = true;
-        vector[axisIdx] = 40;
+        vector[axisIdx] = 80;
         break;
       case 40: // down arrow
         this._coast = true;
-        vector[axisIdx] = -40;
+        vector[axisIdx] = -80;
         break;
       default:
         return;
@@ -410,9 +411,9 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         transform,
         translate,
         scale,
-//        rotate,
+        rotate,
         oldTranslate,
-//        oldRotate,
+        oldRotate,
         oldScale,
         transformStr,
         listeners,
@@ -436,6 +437,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 
         translate = transform.translate;
         scale = transform.scale;
+        rotate = transform.rotate;
         transformStr = null;
         if (translate || scale) {
           transformStr = '';
@@ -468,13 +470,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
             invokeListeners(renderListeners.translate.x[id], el, dtx);
             invokeListeners(renderListeners.translate.y[id], el, dty);
             invokeListeners(renderListeners.translate.z[id], el, dtz);
-          }
-          
-          el.style[TRANSFORM_PROP] = transformStr;
-          el.style[TRANSITION_PROP] = '';
+          }          
         }
-        else
-          debugger;
           
 //        else {
 //          transformStr += '0, 0, 0';
@@ -483,21 +480,35 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //        
         
         // ROTATION
-//        if ((rotate = transform.rotate)) {
-//          // TODO: all axes, no need for now
-////          transformStr += 'rotateX(' + rotate[0] + 'rad) ' + 'rotateY(' + rotate[1] + 'rad)' + 'rotateZ(' + rotate[2] + 'rad)';
+        if (rotate) {
+          // TODO: all axes, no need for now
+          transformStr = transformStr || '';
+          var unit = rotate.unit || 'rad';
+          if (rotate[0])
+            transformStr += ' rotateX(' + rotate[0].toFixed(10) + unit +')';
+          if (rotate[1])
+            transformStr += ' rotateY(' + rotate[1].toFixed(10) + unit +')';
+          if (rotate[2])
+            transformStr += ' rotateZ(' + rotate[2].toFixed(10) + unit +')';
+          
 //          if (rotate[2])
 //            transformStr += 'rotate(' + rotate[2].toFixed(10) + 'rad)'; // for now, only around Z axis
-//          
-//          oldRotate = oldTransform.rotate || ZERO_ROTATION;
-////          drx = rotate[0] - oldRotate[0];
-////          dry = rotate[1] - oldRotate[1];
-//          drz = rotate[2] - oldRotate[2];
-//          invokeListeners(renderListeners.rotate[''][id], el, drx, dry, drz);
-////          invokeListeners(renderListeners.rotate.z[id], drx);
-////          invokeListeners(renderListeners.rotate.y[id], dry);
-//          invokeListeners(renderListeners.rotate.z[id], drz);
-//        }
+          
+          oldRotate = oldTransform.rotate || ZERO_ROTATION;
+//          drx = rotate[0] - oldRotate[0];
+//          dry = rotate[1] - oldRotate[1];
+          drz = rotate[2] - oldRotate[2];
+          invokeListeners(renderListeners.rotate[''][id], el, drx, dry, drz);
+//          invokeListeners(renderListeners.rotate.z[id], drx);
+//          invokeListeners(renderListeners.rotate.y[id], dry);
+          invokeListeners(renderListeners.rotate.z[id], drz);
+        }
+        
+        if (transformStr != null) {
+          el.style[TRANSFORM_PROP] = transformStr;
+          el.style[TRANSITION_PROP] = '';
+          el.style[TRANSFORM_ORIGIN_PROP] = '0%; 0%';
+        }
         
 //        el.style[TRANSFORM_PROP] = 'matrix3d(' + transform.join(',') + ')';
         
