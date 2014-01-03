@@ -1393,7 +1393,8 @@
       if (this._hasPushState) {
         Backbone.$(window).on('popstate', this.checkUrl);
       } else if (this._wantsHashChange && ('onhashchange' in window) && !oldIE) {
-        Backbone.$(window).on('hashchange', this.checkUrl);
+//        Backbone.$(window).on('hashchange', this.checkUrl);
+        window.addEventListener('hashchange', this.checkUrl);
       } else if (this._wantsHashChange) {
         this._checkUrlInterval = setInterval(this.checkUrl, this.interval);
       }

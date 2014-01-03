@@ -6,8 +6,9 @@ define('views/HorizontalListView', [
   'views/ResourceListView',
   'views/HorizontalListItemView',
 //  'views/mixins/Scrollable',
-  'views/mixins/LazyImageLoader'
-], function(G, U, Events, ResourceListView, HorizontalListItemView, LazyImageLoader) {
+  'views/mixins/LazyImageLoader',
+  'domUtils'
+], function(G, U, Events, ResourceListView, HorizontalListItemView, LazyImageLoader, DOM) {
   var mixins = [];
   if (G.lazifyImages)
     mixins.unshift(LazyImageLoader);
@@ -20,6 +21,16 @@ define('views/HorizontalListView', [
 //      axis: 'X',
 //      keyboard: false
 //    },
+//    _flexigroup: true,
+    style: (function() {
+      var style = {
+        height: '150px',
+        'padding-top': '3px'
+      };
+      
+      style[DOM.prefix('perspective')] = '300px';
+      return style;
+    })(),
     _horizontal: true,
     _dragAxis: 'x',
     _visible: false,
@@ -30,6 +41,8 @@ define('views/HorizontalListView', [
       ResourceListView.prototype.initialize.apply(this, arguments);
       _.extend(this.options, {
         horizontal: true, 
+        gutterWidth: 15,
+        jiggle: true,
         scrollerType: 'horizontal',
         oneElementPerRow: false,
         oneElementPerCol: true,
@@ -113,19 +126,12 @@ define('views/HorizontalListView', [
       if (!this._visible) {
         this._visible = true;
         this.el.dataset.viewid = this.cid;
-        this.el.style.height = '140px';
+//        this.el.style.height = '150px';
         if (G.isJQM())
           this.$el.trigger("create");
       }
       
       return ResourceListView.prototype.postRender.apply(this, arguments);
-    },
-    
-    getContainerBodyOptions: function() {
-      var options = ResourceListView.prototype.getContainerBodyOptions.apply(this, arguments);
-      delete options.lock.x;
-      options.lock.y = 0;
-      return options;
     }
   }, {
     displayName: "HorizontalListView",

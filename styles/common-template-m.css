@@ -1,4 +1,6 @@
-body { 
+body {
+    -webkit-perspective: 100px;
+            perspective: 100px;
     -webkit-text-size-adjust: none; 
     -webkit-touch-callout: none;
     -webkit-user-select: none;
@@ -6,10 +8,10 @@ body {
     -webkit-font-smoothing: antialiased;
     -webkit-transform-style: preserve-3d;
     -moz-transform-style: preserve-3d;
-    transform-style: preserve-3d;
+         transform-style: preserve-3d;
     -moz-user-select: none;
     -ms-user-select: none;
-    user-select: none;
+        user-select: none;
 }
 
 input {
@@ -974,6 +976,10 @@ div.nabBtn {
   background: none;
   background-image:none;
   cursor: pointer;
+  border-radius: 10px;
+  -webkit-border-radius: 10px;
+  border: solid black;
+  overflow:hidden;
 }
 
 .thumb-inner {

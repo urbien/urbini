@@ -304,7 +304,9 @@ define('views/ResourceMasonryItemView', [
       }
       */
       if (obj.gridCols) {
-        gridCols.innerHTML = obj.gridCols;  
+        DOM.queueRender(gridCols, {          
+          innerHTML: obj.gridCols  
+        });
       }
       else {
         gridCols.style.visibility = 'hidden';
@@ -363,11 +365,11 @@ define('views/ResourceMasonryItemView', [
       var imgWidth = meta[imgP].imageWidth;
       this.IMG_MAX_WIDTH = imgWidth ||  this.maxImageDimension;
       var rUri = m.getUri();
-      if (!rUri) {
-        // <debug>
-        debugger;
-        // </debug>
-      }
+//      if (!rUri) {
+//        // <debug>
+//        debugger;
+//        // </debug>
+//      }
       
       var tmpl_data = this.getBaseTemplateData();
         
@@ -906,6 +908,12 @@ define('views/ResourceMasonryItemView', [
       
       return this.doRender(options, tmpl_data);
     }
+//    ,
+//    
+//    _getCID: function(options) {
+//      var res = options.resource;
+//      return 'li' + res.collection.indexOf(res);
+//    }
   }, {
     displayName: 'ResourceMasonryItemView',
     preinitData: {
