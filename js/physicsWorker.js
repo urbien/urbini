@@ -107,6 +107,7 @@ function _onmessage(e) {
 	    }
 	  });
 	  
+	  Physics.util.extend(WORLD_CONFIG, CONSTANTS.worldConfig);
 		world = Physics( WORLD_CONFIG, function(world, Physics) {
 			initWorld(world, e.data.stepSelf);
 		});
@@ -182,7 +183,8 @@ function updateBounds(minX, minY, maxX, maxY) {
 	var leftX = minX - (maxX - minX),
 	    leftY = minY,
 	    rightX = maxX,
-	    rightY = minY;
+	    rightY = minY,
+	    back = 10;
 	
 	if (!LEFT) {
     LEFT = Physics.body('point', {
@@ -190,7 +192,7 @@ function updateBounds(minX, minY, maxX, maxY) {
       hidden: true,
       x: leftX,
       y: leftY,
-      z: -10
+      z: -back
     });
 
     RIGHT = Physics.body('point', {
@@ -198,7 +200,7 @@ function updateBounds(minX, minY, maxX, maxY) {
       hidden: true,
       x: rightX,
       y: rightY,
-      z: -10
+      z: -back
     });
     
     ORIGIN = Physics.body('point', {
@@ -486,6 +488,10 @@ function render() {
 			bodies: styles
 		});	
 	}
+	
+	world.publish({
+    topic: 'postRender'
+  });
 };
 
 function isTranslationRenderable(body) {
@@ -555,6 +561,11 @@ function getZ(body) {
 //    return -1;
 //  else
 //    return 0;
+//  if (/Page/.test(body._id)) {
+//    if (Math.abs(body.state.pos.get(2)) > 15)
+//      debugger;
+//  }
+    
   return body.state.pos.get(2);
 };
 
@@ -572,7 +583,6 @@ function arrayEquals(a, b) {
 }
 
 function renderBody(body) {
-  preRender(body);
 	var state = body.state,
   		rendered = state.rendered,
   		wasRendered = body.rendered(),
@@ -589,8 +599,9 @@ function renderBody(body) {
     if (!style)
       style = {};
     
-		if (!wasRendered)
+		if (!wasRendered) {
 			body.rendered(true);
+		}
 
 		rendered.angular.pos = state.angular.pos;
 		rendered.pos.clone(state.pos);
@@ -667,7 +678,8 @@ function initWorld(_world, stepSelf) {
 		var bodies = data.bodies,
   			body,
   			i = bodies.length;
-			
+	
+//		log('DRAG ' + data.vector.toString());
 		while (i--) {
 			body = bodies[i];
 			body.fixed = true;
@@ -683,7 +695,7 @@ function initWorld(_world, stepSelf) {
   			v = data.vector.mult( 1 / 10 ),
   			i = bodies.length;
 			
-//		log('dragend vector: ' + data.vector.toString());
+//		log('DRAGEND ' + data.vector.toString());
 		while (i--) {
 			body = bodies[i];
       body.fixed = false;
@@ -708,14 +720,20 @@ function initWorld(_world, stepSelf) {
 	
 	world.subscribe('add:body', function(data) {
 	  var body = data.body;
-	  if (body.options._id)
+	  if (body.options._id) {
 	    body._id = body.options._id;
+	    if (world.getBodies().filter(function(b) {return b._id == data.body._id}).length > 1)
+	      debugger;
+	  }
 	    
     if (body.options.lock)
       body.state.pos.lock(body.options.lock);
 
 	  if (body.options.drag)
 	    airDragBodies.push(body);
+	  
+	  if (body.geometry.name == 'point' && body.options.render)
+	    body.state.renderData.set('opacity', 1);
 	});
 
 	world.subscribe('remove:body', function(data) {
@@ -744,11 +762,11 @@ function stopBody(body, atPos) {
       state.pos.set.apply(state.pos, atPos);
   }
   
-//  state.old.pos.clone(state.pos);
+  state.old.pos.clone(state.pos);
   state.acc.zero();
-//  state.old.acc.zero();
+  state.old.acc.zero();
   state.vel.zero();
-//  state.old.vel.zero();
+  state.old.vel.zero();
 
   if (lock)
     body.state.pos.lock(lock);
@@ -1078,39 +1096,33 @@ function pick(obj) {
         }
       }, this);
 
-      if (this.jiggle) {
-        this._subscribe('preRender', function() {
-          if (!this._sleeping) {
-            var vel = this.offsetBody.state.pos.get(this.axisIdx) - this.offsetBody.state.old.pos.get(this.axisIdx),
-                thresh = 1,
-                absVel = Math.sqrt(Math.abs(vel)),
-                rotation = absVel > thresh ? ((absVel - thresh) * 100000 | 0) / 100000 : 0,
-                rArr = [null, null, 0],
-                brick,
-                i = this.mason.bricks.length;
-
-            rotation = Math.min(rotation, 5);
-            rotation *= sign(vel);
-            rArr[this.orthoAxisIdx] = rotation;
-            rArr[this.axisIdx] = 0;
-            
-            while (i--) {
-              brick = this.mason.bricks[i];
-              brick.state.rotation = rArr;
-            }
-          }
-        }, this);
+      this._subscribe('preRender', function() {
+        var bricks = this.mason.bricks,
+            i = bricks.length;
         
-        this._subscribe('sleep:' + this.id, function() {
-          var bricks = this.mason.bricks,
-              brick,
-              i = this.mason.bricks.length;
-          
-          while (i--) {
-            bricks[i].state.rotation = ZERO_ROTATION;
+        if (this._sleeping) {
+          if (i) {
+            world.remove(bricks);
           }
-        });
-      }
+          
+          return;
+        }
+        
+        while (i--) {
+          preRender(bricks[i]);
+        }
+        
+        if (this.jiggle) {
+          this.tiltBricksInertially();
+        }
+      }, this);
+      
+      this._subscribe('postRender', function() {
+        if (this._sleeping && this.mason.bricks.length) {
+          world.remove(this.mason.bricks);
+          return;
+        }        
+      });
       
       // TODO: subscribe/unsubscribe on arm/break
 //      world.subscribe('step', function bounceCheck() {
@@ -1181,6 +1193,36 @@ function pick(obj) {
           handlers.length--;
         }
       }
+    },
+    
+    tiltBricksInertially: function() {
+      var vel = this.offsetBody.state.pos.get(this.axisIdx) - this.offsetBody.state.old.pos.get(this.axisIdx),
+          thresh = 1,
+          absVel = Math.sqrt(Math.abs(vel)),
+          rotation = absVel > thresh ? ((absVel - thresh) * 100000 | 0) / 100000 : 0,
+          rArr = [null, null, 0],
+          brick,
+          i = this.mason.bricks.length;
+
+      rotation = Math.min(rotation, 5);
+      rotation *= sign(vel);
+      rArr[this.orthoAxisIdx] = rotation;
+      rArr[this.axisIdx] = 0;
+      
+      while (i--) {
+        brick = this.mason.bricks[i];
+        brick.state.rotation = rArr;
+      }
+      
+      this._subscribe('sleep:' + this.id, function() {
+        var bricks = this.mason.bricks,
+            brick,
+            i = this.mason.bricks.length;
+        
+        while (i--) {
+          bricks[i].state.rotation = ZERO_ROTATION;
+        }
+      });
     },
 
     destroy: function() {
@@ -1557,7 +1599,8 @@ function pick(obj) {
       var bricks = [],
           brick,
           viewport = this.getViewport(),
-          viewportDim = BOUNDS[this.aabbOrthoAxisDim] * 2,
+          viewportDim = BOUNDS[this.aabbAxisDim] * 2,
+          viewportOrthoDim = BOUNDS[this.aabbOrthoAxisDim] * 2,
           coords = new Array(3),
           destX, destY, destZ,
           l = optionsArr.length,
@@ -1600,21 +1643,27 @@ function pick(obj) {
         };
         
         var scrollAxisPos,
-            changeOpacity = this.animateOpacity;
+            changeOpacity = this.animateOpacity,
+            args;
         
         for (var i = 0; i < l; i++) {
           brick = bricks[i];
           scrollAxisPos = brick.state.pos.get(this.axisIdx);
-          if (scrollAxisPos > viewport.min - viewportDim && scrollAxisPos < viewport.max + viewportDim) {
-            destX = brick.state.pos.get(0);
-            destY = brick.state.pos.get(1);
+          if (scrollAxisPos > viewport.min && scrollAxisPos < viewport.max) {
+            destAxis = brick.state.pos.get(this.axisIdx);
+            destOrthoAxis = brick.state.pos.get(this.orthoAxisIdx);
             destZ = brick.state.pos.get(2);
-            coords[this.axisIdx] = Math.random() * 300 | 0 + viewport.max;
-            coords[this.orthoAxisIdx] = Math.random() * viewportDim * 2.5 - viewportDim;
-            coords[2] = Math.random() * 1000 - 500;
+            coords[this.axisIdx] = destAxis + (Math.random() * viewportDim * 2 - viewportDim);
+            coords[this.orthoAxisIdx] = destOrthoAxis + (Math.random() * viewportOrthoDim * 2 - viewportOrthoDim);
+            coords[2] = destZ + (Math.random() * viewportDim * 2 - viewportDim);
             stopBody(brick, coords);
             brick.fixed = false;
-            API.flyTo(brick, destX, destY, destZ, 1, changeOpacity ? 1 : null, fix.bind(null, brick));
+            args = [brick, null, null, null, 1, changeOpacity ? 1 : null, fix.bind(null, brick)];
+            args[this.axisIdx + 1] = destAxis;
+            args[this.orthoAxisIdx + 1] = destOrthoAxis;
+            args[3] = destZ;
+//            this.log("Flying brick " + brick.options._id + " in");
+            API.flyTo.apply(API, args);
           }
           
           world.addBody(brick);
@@ -1709,9 +1758,14 @@ function pick(obj) {
       this.log("putting Mason to sleep");
       world.publish('sleep:' + this.id);
       this._sleeping = this._waiting = true;
-      if (this.numBricks())
-        world.remove(this.mason.bricks);
+      var bricks = this.mason.bricks,
+          i = bricks.length;
       
+      while (i--) {        
+        API.completePendingActions(bricks[i]);
+      }
+      
+      // will remove bricks on prerender
       this.disableEdgeConstraints();
     },
 
@@ -2006,6 +2060,7 @@ var API = {
   teleportCenterY: function(bodyId) {
     var body = getBody(bodyId);
     body.state.pos.setComponent(1, ORIGIN.state.pos.get(1));
+    body.state.pos.setComponent(2, ORIGIN.state.pos.get(2));
     stopBody(body);
   },
 
@@ -2069,20 +2124,25 @@ var API = {
   },
   
   flyTo: function(bodyId, x, y, z, speed, opacity, callback) {
+//    if (z > 0 || speed < 0)
+//      debugger;
+    
     var body = getBody(bodyId),
 //        fixed = body.fixed,
         changeOpacity = opacity != null,
         goalOpacity = opacity,
         destination = updateVector(Physics.vector().clone(body.state.pos), x, y, z),
+        acceleration = Physics.vector(),
+        thresh = speed * 100,
         initialDistance = body.state.pos.dist(destination),
         lastDistance = initialDistance,
         distance,
         posLock,
         flyAction = new Action(
-          'fly ' + bodyId + ' to ' + destination.toString(),
+          'fly ' + body._id + ' to ' + destination.toString(),
           function onstep() {
             body.state.acc.zero();
-            if ((distance = body.state.pos.dist(destination)) <= lastDistance && distance > 0) {
+            if ((distance = body.state.pos.dist(destination)) && distance <= lastDistance || distance > thresh) {
               lastDistance = distance;
               if (changeOpacity) {
                 opacity = distance / initialDistance;
@@ -2092,8 +2152,10 @@ var API = {
                 opacity = Math.min(opacity, MAX_OPACITY);
                 body.state.renderData.set('opacity', opacity);
               }
-              
-              body.state.vel.clone(destination).vsub(body.state.pos).normalize().mult(speed);
+
+//              body.state.vel.clone(destination).vsub(body.state.pos).normalize().mult(speed);
+//              body.state.vel.clone(destination).vsub(body.state.pos).normalize().mult(speed * Math.min(distance, 100) / 100);
+              body.accelerate(acceleration.clone(destination).vsub(body.state.pos).mult(speed * Math.min(distance * distance, 300) / 2000 / 10000 )); // slow down when you get closer
             }
             else
               flyAction.complete();
@@ -2103,6 +2165,9 @@ var API = {
     function cleanUp() {
       if (posLock)
         body.state.pos.lock(posLock);
+      
+      if (changeOpacity)
+        body.state.renderData.set('opacity', goalOpacity);
       
 //      if (fixed) {
 //        debugger;
@@ -2122,6 +2187,7 @@ var API = {
     flyAction.oncancel = cleanUp;
     flyAction.onstart = function() {
       posLock = body.state.pos.unlock();
+      stopBody(body);
 //      body.fixed = false;
     };
     

@@ -12,14 +12,14 @@ define('views/MenuPanel', [
 //    role: 'data-panel',
 //    id: 'menuPanel',
 //    theme: 'd',
-    _flySpeed: 2,
+    _flySpeed: 5,
     style: {
       opacity: 0
     },
     _hidden: true,
     _horizontal: true, // only moves horizontally
-    _draggable: true,
-    _dragAxis: 'x',
+    _draggable: false,
+//    _dragAxis: 'y',
 //    style: (function() {
 //      var style = {};
 //      style[DOM.prefix('transform')] = DOM.positionToMatrix3DString(0, 0, -100);
@@ -56,13 +56,23 @@ define('views/MenuPanel', [
       return this._hidden;
     },
     
+    _finishTransition: function() {
+      this._transitioning = false;
+      if (this._repositionAfterTransition) {
+        this._repositionAfterTransition = false;
+        this._repositionPanel();
+      }
+    },
+    
     show: function() {
       if (this._hidden) {
         var self = this;
         
         this._hidden = false;
+        this._transitioning = true;
         Physics.there.rpc(null, 'flyBy', [this.getContainerBodyId(), -this._outerWidth, 0, 0, this._flySpeed]);
         Physics.here.once('render', this.getContainerBodyId(), function() {
+          self._finishTransition();
           DOM.queueRender(self.el, {
             style: {
               add: {
@@ -80,18 +90,27 @@ define('views/MenuPanel', [
         var self = this;
         
         this._hidden = true;
+        this._transitioning = true;
         if (G.isJQM())
           this.$el.closest('[data-role="panel"]').panel('close');
         
         Physics.there.rpc(null, 'flyTo', [this.getContainerBodyId(), G.viewport.width, 0, 0, this._flySpeed, null, function() {
+          self._finishTransition();
           DOM.queueRender(self.el, DOM.hideStyle);
         }]);
       }
     },
     
+//    _recheckDimensions: function() {
+//      BasicView.prototype._recheckDimensions.apply(this, arguments);
+//      this._repositionPanel();
+//    },
+    
     repositionPanel: function() {
-      BasicView.prototype._onViewportDimensionsChanged.apply(this, arguments);
-      Physics.there.rpc(null, 'teleport', [this.getContainerBodyId(), this.isHidden() ? G.viewport.width : G.viewport.width - this._outerWidth]);
+      if (this._transitioning)
+        this._repositionAfterTransition = true;
+      else
+        Physics.there.rpc(null, 'teleport', [this.getContainerBodyId(), this.isHidden() ? G.viewport.width : G.viewport.width - this._outerWidth]);
     },
     
     getContainerBodyOptions: function() {
