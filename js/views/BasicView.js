@@ -34,6 +34,7 @@ define('views/BasicView', [
   
   var BasicView = Backbone.View.extend({
 //    viewType: 'resource',
+    _scrollerType: 'verticalMain',
     _numBricks: 0,
     _initializedCounter: 0,
     _flexigroup: false,
@@ -1134,7 +1135,8 @@ define('views/BasicView', [
         slidingWindow: false,
         container: containerId,
         bounds: this._bounds,
-        flexigroup: this._flexigroup ? containerId : false
+        flexigroup: this._flexigroup ? containerId : false,
+        scrollerType: this._scrollerType
       });
 
       this.addContainerBodyToWorld();
