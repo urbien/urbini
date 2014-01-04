@@ -1,4 +1,5 @@
 body {
+    overflow: hidden;
     -webkit-perspective: 100px;
             perspective: 100px;
     -webkit-text-size-adjust: none; 
@@ -29,6 +30,7 @@ html { height: 100%; }
 }
 
 [data-role="page"] {
+  background-color: inherit;
   min-height: 100%;
   overflow:hidden;
 }

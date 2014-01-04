@@ -11,6 +11,8 @@ define('events', [
     stopEvent: function(e) {
       e.preventDefault();
       e.stopImmediatePropagation();
+      if (e.type == 'tap')
+        G.disableClick();
     },
     getEventName: function(event) {
 //      if (!G.browser.touch)

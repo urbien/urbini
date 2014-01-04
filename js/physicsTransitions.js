@@ -78,7 +78,7 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
             },
             {
               method: 'flyCenter', 
-              args: [to, 2, 1, finish]
+              args: [to, 2, Physics.constants.maxOpacity, finish]
             }
           );
         }

@@ -661,6 +661,7 @@ define('views/BasicView', [
           args.push([this._viewBrick])
         
         this.mason.resize.apply(this.mason, args);
+        return true;
       }        
     },
     
@@ -670,7 +671,7 @@ define('views/BasicView', [
     
     _recheckDimensions: function() {
       if (this.mason && this._updateSize())
-        this.updateMason();      
+        return this.updateMason();
     },
     
 //    _onActive: function() {
@@ -1198,6 +1199,7 @@ define('views/BasicView', [
       else {
         options = {
           _id: containerId,
+          render: true,
           x: 0,
           y: 0,
           lock: lock
@@ -1266,6 +1268,7 @@ define('views/BasicView', [
       if (this.resource)
         this._viewBrick.resource = this.resource;
       
+      this._viewBrick.render = true;
       return this.buildBrick(this._viewBrick);
     },
     
