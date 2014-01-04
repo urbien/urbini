@@ -1978,7 +1978,7 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
      */
     Vector.prototype.toString = function(){
 
-        return '('+this._[0] + ', ' + this._[1]+')';
+        return '('+this._[0] + ', ' + this._[1] + ', ' + this._[2] +')';
     };
 
 
