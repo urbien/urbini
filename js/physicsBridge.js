@@ -5,7 +5,6 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       masonryModuleInfo = G.files['lib/jquery.masonry.js'],
       commonMethods = ['step', 'addBody', 'removeBody', 'distanceConstraint', 'drag', 'dragend', 'benchBodies', 'unbenchBodies'],
       layoutMethods = ['addBricks', 'setLimit', 'unsetLimit', 'sleep', 'wake', 'continue', 'home', 'end', 'resize', 'setBounds', 'lock', 'unlock', 'isLocked', 'destroy'],
-      TIMESTEP = 1000/60,
       LOCK_STEP = false, // if true, step the world through postMessage, if false let the world run its own clock
       PHYSICS_TIME = _.now(), // from here on in,
       NOW = PHYSICS_TIME,     // these diverge
@@ -60,6 +59,10 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       TRANSFORM_ORIGIN_PROP = DOM.prefix('transform-origin'),
       TRANSITION_PROP = DOM.prefix('transition'),
       CONSTANTS = {
+        worldConfig: {
+          timestep: 1000 / 60,
+        },
+        maxOpacity: 0.999999,
         degree: 1,
         drag: 0.1,
         groupMemberConstraintStiffness: 0.3,
@@ -91,7 +94,18 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       return false;
     }
   };
-  
+
+//  function getDragAlongAxis(vector, axis) {
+//    switch (axis) {
+//    case 'x':
+//      vector[1] = vector[2] = 0;
+//    case 'y':
+//      vector[0] = vector[2] = 0;
+//    default:
+//      return drag;
+//    }    
+//  };
+
   window.onscroll = function(e) {
     console.log("NATIVE SCROLL: " + window.pageXOffset + ", " + window.pageYOffset);
     if (window.pageYOffset != 1 || window.pageXOffset)
@@ -100,10 +114,15 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   
   window.scrollTo(0, 1);
   
-  hammer.on('touch', enableClick);
+  hammer.on('touchstart', enableClick);
+//  hammer.on('tap', disableClick);
   hammer.on('dragleft dragright dragup dragdown', function(e) {
     G.disableClick();
-    var draggable;
+    var draggable,
+        rejects,
+        twiceRejects,
+        i;
+    
     for (var id in DRAGGABLES) {
       draggable = DRAGGABLES[id];
       if (draggable.isOn() && isDragAlongAxis(e.type, draggable.axis)) {
@@ -111,21 +130,40 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           if (draggable._ondrag.apply(draggable, arguments) !== false)
             return;
         }
-      }
-    }
-
-    // get desperate
-    for (var id in DRAGGABLES) {
-      draggable = DRAGGABLES[id];
-      if (draggable.isOn() && isDragAlongAxis(e.type, draggable.axis)) {
-        if (e.target.contains(draggable.hammer.element)) {
-          if (draggable._ondrag.apply(draggable, arguments) !== false)
-            return;
+        else {
+          if (!rejects)
+            rejects = [];
+          
+          rejects.push(draggable);
         }
       }
     }
 
-    // shit
+    // get desperate
+    i = rejects ? rejects.length : 0;
+    while (i--) {
+      draggable = rejects[i];
+      if (e.target.contains(draggable.hammer.element)) {
+        if (draggable._ondrag.apply(draggable, arguments) !== false)
+          return;
+      }      
+      else {
+        if (!twiceRejects)
+          twiceRejects = [];
+        
+        twiceRejects.push(draggable);
+      }
+    }
+
+    // get really desperate
+    i = twiceRejects ? twiceRejects.length : 0;
+    while (i--) {
+      draggable = twiceRejects[i];
+      if (draggable._ondrag.apply(draggable, arguments) !== false)
+        return;
+    }
+
+    // oh well, we tried harder than they deserve
   });
   
   hammer.on('dragend', function() {
@@ -137,16 +175,16 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     }
   });
   
-  document.addEventListener('tap', function(e) {
+  document.addEventListener('click', function(e) {
     try {
       if (!G.canClick()) {
-        log('events', 'PREVENTING TAP', _.now());
+        log('events', 'PREVENTING CLICK', _.now());
         e.preventDefault();
         e.stopPropagation();
         return false;
       }
       
-      log('events', 'ALLOWING TAP', _.now());
+      log('events', 'ALLOWING CLICK', _.now());
     } finally {
       enableClick();
     }
@@ -187,7 +225,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   function enableClick() {
     G.enableClick();
   };
-  
+
+  function disableClick() {
+    G.disableClick();
+  };
+
   function isUserInputTag(tag) {
     return INPUT_TAGS.indexOf(tag.toLowerCase()) != -1;
   };
@@ -608,9 +650,15 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         this.touchPos[0] = touch.pageX;
         this.touchPos[1] = touch.pageY;
         Array.copy(this.touchPos, this.tmp);
+
+        if (this.axis != 'y')
+          this.tmp[0] -= gesture.deltaX / 2;
+        if (this.axis != 'x')
+          this.tmp[1] -= gesture.deltaY / 2;
         
-        this.tmp[0] -= gesture.deltaX / 2;
-        this.tmp[1] -= gesture.deltaY / 2;
+        if (this.tmp[0] == this.tmp[1] && this.tmp[0] == 0)
+          return false;
+        
         Array.copy(this.tmp, this.touchPosOld);
       }
       
