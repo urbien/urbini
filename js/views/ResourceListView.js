@@ -285,6 +285,9 @@ define('views/ResourceListView', [
           viewId;
 
       while (top && top != this.el && !(viewId = top.dataset.viewid)) {
+        if (top.tagName == 'A')
+          return;
+        
         top = top.parentNode;
       }
       
@@ -1035,16 +1038,16 @@ define('views/ResourceListView', [
 //        if (this._spareEls.length)
 //          options.el = this._spareEls.shift();
         
-//        if (this._itemTemplateElement) {
-//          if (!options.el)
-//            options.el = this._itemTemplateElement.cloneNode(true);
-//          else {
-//            var childNodes = this._itemTemplateElement.childNodes;
-//            for (var i = 0; i < childNodes.length; i++) {
-//              options.el.appendChild(childNodes[i].cloneNode(true));
-//            }
-//          }
-//        }
+        if (this._itemTemplateElement) {
+          if (!options.el)
+            options.el = this._itemTemplateElement.cloneNode(true);
+          else {
+            var childNodes = this._itemTemplateElement.childNodes;
+            for (var i = 0; i < childNodes.length; i++) {
+              options.el.appendChild(childNodes[i].cloneNode(true));
+            }
+          }
+        }
         
         preinitializedItem = this._preinitializedItem;
         liView = new preinitializedItem(options);
@@ -1056,8 +1059,8 @@ define('views/ResourceListView', [
         unlazifyImages: !this._scrollable
       });
       
-//      if (!this._itemTemplateElement && this.displayMode == 'masonry') // remove this when we change ResourceListItemView to update DOM instead of replace it
-//        this._itemTemplateElement = liView.el;
+      if (!this._itemTemplateElement && this.displayMode == 'masonry') // remove this when we change ResourceListItemView to update DOM instead of replace it
+        this._itemTemplateElement = liView.el;
         
       return liView;
     },
