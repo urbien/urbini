@@ -57,7 +57,7 @@ function sign(number) {
 self.console = self.console || {
   log: function() {
   //  DEBUG && console && console.log.apply(console, arguments);
-    DEBUG && postMessage({
+    postMessage({
       topic: 'log',
       args: slice.call(arguments)
     });
@@ -65,15 +65,22 @@ self.console = self.console || {
 
   debug: function() {
   //  DEBUG && console && console.debug.apply(console, arguments);
-    DEBUG && postMessage({
+    postMessage({
       topic: 'debug',
       args: slice.call(arguments)
     });
   }
 };
 
-self.log = console.log.bind(console);
-self.debug = console.debug.bind(console);
+self.log = function() {
+  if (DEBUG)
+    console.log.apply(console, arguments);
+};
+
+self.log = function() {
+  if (DEBUG)
+    console.debug.apply(console, arguments);
+};
 
 this.onmessage = function(e){
 //  try {
@@ -1075,24 +1082,24 @@ function pick(obj) {
             this.tailEdgeConstraint.stiffness = value;
           
           break;
-        case 'drag':
-          var bricks = this.mason.bricks,
-              i = bricks.length,
-              brick;
-          
-          while (i--) {
-            brick = bricks[i];
-            if (!brick.options.hasOwnProperty('drag'))
-              airDragBodies.push(bricks[i]);
-              
-            brick.options.drag = value;
-          }
-
-          if (!this.container.options.hasOwnProperty('drag'))
-            airDragBodies.push(this.container);
-
-          this.container.options.drag = value;
-          break;
+//        case 'drag':
+//          var bricks = this.mason.bricks,
+//              i = bricks.length,
+//              brick;
+//          
+//          while (i--) {
+//            brick = bricks[i];
+//            if (!brick.options.hasOwnProperty('drag'))
+//              airDragBodies.push(bricks[i]);
+//              
+//            brick.options.drag = value;
+//          }
+//
+//          if (!this.container.options.hasOwnProperty('drag'))
+//            airDragBodies.push(this.container);
+//
+//          this.container.options.drag = value;
+//          break;
         }
       }, this);
 
@@ -1611,8 +1618,8 @@ function pick(obj) {
         options = optionsArr[i];
         if (!this.flexigroup)
           options.frame = this.container;
-        if (!options.hasOwnProperty('drag') && this.hasOwnProperty('drag'))
-          options.drag = this.drag;
+//        if (!options.hasOwnProperty('drag') && this.hasOwnProperty('drag'))
+//          options.drag = this.drag;
         
         bricks[i] = Physics.body('convex-polygon', options);
       }
@@ -2139,7 +2146,7 @@ var API = {
         distance,
         posLock,
         flyAction = new Action(
-          'fly ' + body._id + ' to ' + destination.toString(),
+          'fly ' + body.options._id + ' to ' + destination.toString(),
           function onstep() {
             body.state.acc.zero();
             if ((distance = body.state.pos.dist(destination)) && distance <= lastDistance || distance > thresh) {
@@ -2153,9 +2160,9 @@ var API = {
                 body.state.renderData.set('opacity', opacity);
               }
 
-//              body.state.vel.clone(destination).vsub(body.state.pos).normalize().mult(speed);
+              body.state.vel.clone(destination).vsub(body.state.pos).normalize().mult(speed);
 //              body.state.vel.clone(destination).vsub(body.state.pos).normalize().mult(speed * Math.min(distance, 100) / 100);
-              body.accelerate(acceleration.clone(destination).vsub(body.state.pos).mult(speed * Math.min(distance * distance, 300) / 2000 / 10000 )); // slow down when you get closer
+//              body.accelerate(acceleration.clone(destination).vsub(body.state.pos).mult(speed * Math.min(distance * distance, 300) / 2000 / 10000 )); // slow down when you get closer
             }
             else
               flyAction.complete();
@@ -2408,14 +2415,14 @@ var API = {
       
       break;
     case 'drag':
-      if (arguments.length == 2)
-        integrator.options.drag = value;
-      else {
-        world.publish({
-          topic: prefix + "constants:drag",
-          drag: value
-        });
-      }
+//      if (arguments.length == 2)
+        integrator.options.drag = arguments[arguments.length - 1];
+//      else {
+//        world.publish({
+//          topic: prefix + "constants:drag",
+//          drag: value
+//        });
+//      }
       
       break;
     case 'springDamping':

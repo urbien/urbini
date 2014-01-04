@@ -58,10 +58,12 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       TRANSFORM_PROP = DOM.prefix('transform'),
       TRANSFORM_ORIGIN_PROP = DOM.prefix('transform-origin'),
       TRANSITION_PROP = DOM.prefix('transition'),
+      SCROLLER_TYPES = ['verticalMain', 'horizontal'],
       CONSTANTS = {
         worldConfig: {
-          timestep: 1000 / 60,
+          timestep: 1000 / 60
         },
+        byScrollerType: {},
         maxOpacity: 0.999999,
         degree: 1,
         drag: 0.1,
@@ -69,6 +71,13 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         springDamping: 0.1,
         springStiffness: 0.1 // stiff bounce: 0.1, // mid bounce: 0.005, // loosy goosy: 0.001,
       },
+//      SCROLLER_CONSTANTS = {
+//        degree: 1,
+//        drag: 0.1,
+//        groupMemberConstraintStiffness: 0.3,
+//        springDamping: 0.1,
+//        springStiffness: 0.1 // stiff bounce: 0.1, // mid bounce: 0.005, // loosy goosy: 0.001,
+//      },
       DRAG_LOCK = null,
       MOUSE_OUTED = false,
       TICKING = false;
@@ -895,6 +904,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         debugger;
       },
       init: function() {
+//        var clone = _.deepExtend({}, Physics.constants);
+//        for (var i = 0; i < SCROLLER_TYPES.length; i++) {
+//          Physics.constants.byScrollerType[SCROLLER_TYPES[i]] = _.deepExtend({}, clone);
+//        }        
+
 //        hammer = new Hammer(document, hammerOptions);
 //        DragProxy.init();
 //        DragProxy.connect(hammer);
@@ -1078,8 +1092,14 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         }
       },
       
-      set: function(constantName, value) {
-        Physics.constants[constantName] = value;
+      set: function(type, constantName, value) {
+        var constants;
+//        if (type)
+//          constants = Physics.constants.byScrollerType[type];
+//        else
+          constants = Physics.constants;
+        
+        constants[constantName] = value;
         return this.rpc(null, 'set', _.toArray(arguments));
       }
     }
