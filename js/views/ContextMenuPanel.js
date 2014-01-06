@@ -60,6 +60,7 @@ define('views/ContextMenuPanel', [
       }
       
       window.dispatchEvent(new Event("viewportdimensions"));
+      this.hide();
 //      p.forEach(function(element) {
 //        element.style.visibility = 'visible';  
 //      });
@@ -379,9 +380,7 @@ define('views/ContextMenuPanel', [
 //        this.buildGrab(frag);
         this.buildActionsMenu(frag);
 
-        if (G.isBB()) {
-          U.addToFrag(frag, this.menuItemTemplate({title: this.loc("Physics"), id: 'physics123'}));          
-        }
+        U.addToFrag(frag, this.menuItemTemplate({title: this.loc("Physics"), id: 'physics123'}));          
         if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory')) {
           var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.allowedChangeHistory');
           if (!ch  ||  !ch.length)
