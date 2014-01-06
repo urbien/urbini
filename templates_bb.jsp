@@ -6,10 +6,10 @@
 <!-- Templates -->
 <script type="text/template" id="resource-list">
   <!-- Resource list page -->
-  <section id="{{= viewId }}" data-type="sidebar" data-position="right" style="visibility:hidden;"></section>
-  <section id="{{= viewId + 'r' }}" data-type="sidebar" data-position="right" style="visibility:hidden;"></section> 
+  <section id="{{= viewId }}" data-type="sidebar"></section>
+  <section id="{{= viewId + 'r' }}" data-type="sidebar"></section> 
   <!-- div id="headerMessageBar"></div -->
-  <div id="headerDiv" style="position:relative;"></div>
+  <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" role="main">
   <!--
@@ -47,8 +47,8 @@
 
 <script type="text/template" id="resource">
   <!-- Single resource view -->  
-  <section id="{{= viewId }}" data-type="sidebar" style="visibility:hidden;"></section>
-  <section id="{{= viewId + 'r' }}" data-type="sidebar" style="visibility:hidden;"></section> 
+  <section id="{{= viewId }}" data-type="sidebar"></section>
+  <section id="{{= viewId + 'r' }}" data-type="sidebar"></section> 
 
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
@@ -287,7 +287,7 @@
 
 <script type="text/template" id="addButtonTemplate">
   <!-- button used for creating new resources -->
-  <a target="#" {{= obj.empty ? 'class="hint--bottom hint--always" data-hint="Add item"' : '' }}><i class="ui-icon-plus-sign"></i></a>
+  <a target="#"><i class="ui-icon-plus-sign"></i></a>
 </script>
 
 <script type="text/template" id="menuButtonTemplate">
@@ -418,7 +418,7 @@
 <script type="text/template" id="headerTemplate">
   <!-- the page header, including buttons and the page title, used for all pages except the home page -->
   <div id="callInProgress"></div>
-  <div id="header" {{= obj.style ? style + ';z-index:1000;': 'style="z-index:1000;"' }} {{= obj.more || '' }} >
+  <div id="header" {{= obj.style ? style : '' }} {{= obj.more || '' }} >
     <div class="hdr">
     <section role="region">
       <header>
@@ -506,10 +506,10 @@
           <label for="springStiffness">Spring stiffness</label><br/>
           <input type="range" id="springStiffness" name="springStiffness" value={{= springStiffness * 100 }} min="1" max="99">
         </td>
-        <td>
-          <label for="degree">Sensitivity</label>
+        <!--td>
+          <label for="degree">Sensitivity</label><br/>
           <input type="range" id="degree" name="degree" value={{= degree }} min="-10" max="10">
-        </td>
+        </td-->
         </tr>
       </table>
       <!--div class="physicsLabels">
@@ -540,7 +540,7 @@
 
 <script type="text/template" id="menuItemTemplate">
   <!-- one item on the left-side slide-out menu panel -->
-  <li style="{{= obj.image ? 'padding-top: 0;padding-right:0px;padding-bottom: 7px;' : 'padding-bottom:0px;' }}"  id="{{= obj.id ? obj.id : G.nextId() }}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
+  <li style="{{= obj.image ? 'padding-top: 0;padding-right:0px;' : 'padding-bottom:0px;' }}"  id="{{= obj.id ? obj.id : G.nextId() }}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
       {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl) + '"' : '' }} >
     
     <!-- {{ if (!obj.homePage) { }} -->   
@@ -613,8 +613,8 @@
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">
 <!-- the edit page for any particular resource -->
-  <section id="{{= viewId }}" data-type="sidebar" style="visibility:hidden;"></section>
-  <section id="{{= viewId + 'r' }}" data-type="sidebar" style="visibility:hidden;"></section> 
+  <section id="{{= viewId }}" data-type="sidebar"></section>
+  <section id="{{= viewId + 'r' }}" data-type="sidebar"></section> 
 <!--div id="headerMessageBar"></div-->
   <div id="headerDiv"></div>
   <div id="resourceEditView">

@@ -2,16 +2,10 @@ html {
   font-size: 10px;
 }
 
-[data-role="page"] { 
-  top: 0; 
-  left: 0;
- /* bottom: 0; */ 
-  width: 100%; 
-  min-height: 100%; 
-  position: absolute; 
-  border: 0; 
+.menuItems {
+  list-style: none;
+  padding-left: 0;
 }
-
 [data-type="list"] {
   padding: 0;
   background: #eee;
@@ -161,7 +155,7 @@ section[data-type="sidebar"] {
   width: 21rem; 
   text-shadow: none;
 }
-section[data-type="sidebar"] > nav > ul > li {
+section[data-type="sidebar"] > ul > li {
   border-bottom: 0.1rem solid #000000;
 }
 
@@ -169,7 +163,7 @@ section[data-type="sidebar"] > nav > ul > li {
   border:none;
 }
 
-section[data-type="sidebar"] > nav > ul > header {
+section[data-type="sidebar"] >  ul > header {
   position: relative;
   z-index: 10;
   height: 3rem;
