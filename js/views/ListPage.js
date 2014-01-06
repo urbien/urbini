@@ -75,13 +75,15 @@ define('views/ListPage', [
                             U.isUserInRole(U.getUserRole(), 'siteOwner');
             if (!showAddButton) {
               var p = U.getContainerProperty(vocModel);
-              if (p && _.getParamMap[p])
+              if (p && params[p])
                 showAddButton = true;
             }
           }
     //                           (vocModel.skipAccessControl  &&  (isOwner  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'))));
           if (showAddButton) { 
-            if (U.isA(this.vocModel, "Reference")  ||  U.isAssignableFrom(this.vocModel, "Assessment"))
+            if (U.isAssignableFrom(this.vocModel, "Assessment"))
+              showAddButton = false;
+            else if (U.isA(this.vocModel, "Reference")  &&  this.vocModel.type.toLowerCase().indexOf("/voc/dev/" + G.currentApp.appPath.toLowerCase()) == -1)  
               showAddButton = false;
           }
           else if (isOwner  &&  !isChooser) {
