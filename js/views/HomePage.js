@@ -83,6 +83,7 @@ define('views/HomePage', [
       var self = this;
       
       if (!this.rendered) {
+        this.addToWorld(null, true);
 //      this.$el.trigger('page_beforeshow');
         
         // only allow tap and hold events, click muddies the waters
@@ -125,7 +126,6 @@ define('views/HomePage', [
         this.removeInstallBtn();
       
       document.title = G.currentApp.title;
-      this.addToWorld(null, true);
       return this;
     },
     

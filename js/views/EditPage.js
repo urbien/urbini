@@ -111,10 +111,12 @@ define('views/EditPage', [
     },
 
     render: function(options) {
+      if (!this.rendered) 
+        this.addToWorld(null, true);
+      
       var self = this;
       this.getFetchPromise().done(function() {
         self.renderHelper(options);
-        self.addToWorld(null, true);
         self.finish();
       });
     },
@@ -130,9 +132,6 @@ define('views/EditPage', [
         views['div#resourceImage'] = this.imageView;
 
       this.assign(views);      
-
-      if (!this.el.parentNode) 
-        document.body.appendChild(this.el);
       if (G.theme.backgroundImage) 
         this.$('#resourceEditView').$css('background-image', 'url(' + G.theme.backgroundImage +')');
 

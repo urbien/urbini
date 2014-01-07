@@ -172,7 +172,7 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
 //        var qLimit = query.limit,
         var qOffset = query.offset,
             direction = query.direction || direction,
-            sort = query.sortFunction || function(items) {return items};
+            sort = query.sortFunction;
         
         var index = store.index(indexName);
         var range = makeRange();
@@ -181,7 +181,7 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
           if (!negate) {
 //            defer.resolve(arrayLimit(arrayOffset(result.sort(sort), qOffset), qLimit));
             // we don't want to LIMIT every time, until we're done with the whole operation (this may be a subquery and by limiting now, we may not have enough later)
-            defer.resolve(arrayOffset(result.sort(sort), qOffset));
+            defer.resolve(arrayOffset(sort ? result.sort(sort) : result, qOffset));
             return;
           }
 

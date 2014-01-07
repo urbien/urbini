@@ -633,8 +633,12 @@ function renderBody(body) {
         style.transform = transform;
         if (body.state.renderData.get('opacity') == 0)
           transform.scale = [0.0001, 0.0001, 1];
-        else {
-          transform.scale = [1, 1, 1];
+        else { 
+          if (body.state.renderData.isChanged('scale'))
+            transform.scale = body.state.renderData.get('scale');
+          else
+            transform.scale = [1, 1, 1];
+          
           if (!transform.translate)
             transform.translate = getTranslation(body);
         }
@@ -1236,13 +1240,67 @@ function pick(obj) {
       });
     },
 
-    destroy: function() {
-      delete layoutManagers[this.id];
-      if (this.mason.bricks.length)
-        world.remove(this.mason.bricks);
+    destroy: function(animate, callback) {
+      var self = this,
+          bricks = this.mason.bricks,
+          l = bricks.length,
+          destroyed = false;
       
-      for (var event in this._listeners) {
-        this._unsubscribe(event);
+      function doDestroy() {
+        if (!destroyed) {
+          destroyed = true;
+          delete layoutManagers[self.id];
+          if (l)
+            world.remove(bricks);
+          
+          for (var event in self._listeners) {
+            self._unsubscribe(event);
+          }
+          
+          if (callback)
+            doCallback(callback);
+        }
+      }
+      
+      if (!animate || !l)
+        return doDestroy();
+      
+      var time = 0,
+          viewport = this.getViewport(),
+          brick,
+          scrollAxisPos;
+      
+      if (this.pop) {
+        var random = this.pop == 'random' ? true : false;
+            
+        for (var i = 0; i < l; i++) {
+          brick = bricks[i];
+          scrollAxisPos = brick.state.pos.get(this.axisIdx);
+          if (scrollAxisPos > viewport.min && scrollAxisPos < viewport.max) {
+            if (random)
+              time = Math.random() * 3000;
+            else
+              time += 200;
+            
+            API.scale(brick, 0.0001, 0.0001, time, doDestroy);
+          }
+        }        
+      }
+      else if (this.fade) {
+        var random = this.fade == 'random' ? true : false;
+        
+        for (var i = 0; i < l; i++) {
+          brick = bricks[i];
+          scrollAxisPos = brick.state.pos.get(this.axisIdx);
+          if (scrollAxisPos > viewport.min && scrollAxisPos < viewport.max) {
+            if (random)
+              time = Math.random() * 3000;
+            else
+              time += 200;
+            
+            API.opacity(brick, 0, time, doDestroy);
+          }
+        }        
       }
     },
     
@@ -1389,6 +1447,7 @@ function pick(obj) {
     },
     
     _onstep: function() {
+//      this.offsetBody.state.renderData.set('perspective-origin-y', (-offset|0) + 'px');
       if (this._sleeping || this._waiting)
         return;
       
@@ -1502,6 +1561,10 @@ function pick(obj) {
 
     unsetLimit: function() {
       this.brickLimit = Infinity;
+      self.removeConstraint(this.tailEdgeConstraint);
+      world.removeBody(this.tailEdge);
+      delete this.tailEdgeConstraint;
+      delete this.tailEdge;
       this.log("UNSETTING BRICK LIMIT");
     },
 
@@ -1625,6 +1688,7 @@ function pick(obj) {
 //        if (!options.hasOwnProperty('drag') && this.hasOwnProperty('drag'))
 //          options.drag = this.drag;
         
+//        options.z = -1;
         bricks[i] = Physics.body('convex-polygon', options);
       }
       
@@ -1648,7 +1712,7 @@ function pick(obj) {
         this.brickLimit = Math.max(this.brickLimit, this.lastBrickSeen);
       }
       
-      if (this.flyIn) {
+      if (this.fly) {
         function fix(brick) {
           brick.fixed = true;
         };
@@ -1679,6 +1743,47 @@ function pick(obj) {
           
           world.addBody(brick);
         }
+      }
+      else if (this.pop) {
+        var time = 0,
+            random = this.pop == 'random' ? true : false;
+            
+        for (var i = 0; i < l; i++) {
+          brick = bricks[i];
+          scrollAxisPos = brick.state.pos.get(this.axisIdx);
+          if (scrollAxisPos > viewport.min && scrollAxisPos < viewport.max) {
+            brick.state.renderData.set('scale', [0.0001, 0.0001, 1]);
+            if (random)
+              time = Math.random() * 3000;
+            else
+              time += 200;
+            
+            API.scale(brick, 1, 1, time);
+//            API.opacity(brick, 1, time/10);
+          }
+          
+          world.addBody(brick);
+        }        
+      }
+      else if (this.fade) {
+        var time = 0,
+            random = this.fade == 'random' ? true : false;
+        
+        for (var i = 0; i < l; i++) {
+          brick = bricks[i];
+          scrollAxisPos = brick.state.pos.get(this.axisIdx);
+          if (scrollAxisPos > viewport.min && scrollAxisPos < viewport.max) {
+            brick.state.renderData.set('opacity', 0);
+            if (random)
+              time = Math.random() * 3000;
+            else
+              time += 200;
+            
+            API.opacity(brick, 1, time);
+          }
+          
+          world.addBody(brick);
+        }        
       }
       else
         world.add(bricks);
@@ -1770,11 +1875,33 @@ function pick(obj) {
       world.publish('sleep:' + this.id);
       this._sleeping = this._waiting = true;
       var bricks = this.mason.bricks,
+//      this._waiting = true;
+//      var self = this,
+//          viewport = this.getViewport(),
+//          bricks = this.mason.bricks,
+//          brick,
+//          scrollAxisPos,
           i = bricks.length;
       
       while (i--) {        
         API.completePendingActions(bricks[i]);
       }
+//      while (i--) {        
+//        API.cancelPendingActions(bricks[i]);
+//      }
+//
+//      function sleep() {
+//        self._readyToSleep = true;
+//      };
+//      
+//      i = bricks.length;
+//      while (i--) {
+//        brick = bricks[i];
+//        scrollAxisPos = brick.state.pos.get(this.axisIdx);
+//        if (scrollAxisPos > viewport.min && scrollAxisPos < viewport.max) {
+//          API.flyTo(brick, null, null, -500, Math.max(1, Math.random() * 5), 0, sleep);
+//        }
+//      }
       
       // will remove bricks on prerender
       this.disableEdgeConstraints();
@@ -1787,11 +1914,23 @@ function pick(obj) {
     },
     
     wake: function() {
+      // reposition bricks if necessary
       this.log("waking up Mason");
       world.publish('wake:' + this.id);
-      if (this._sleeping && this.numBricks())
+      if (this._sleeping && this.numBricks()) {
         world.add(this.mason.bricks);
-      
+/*        var bricks = this.mason.bricks,
+            brick,
+            i = bricks.length;
+        
+        while (i--) {
+          brick = bricks[i];
+          if (brick.state.pos.get(2)) {
+            API.flyTo(brick, null, null, 0, Math.max(1, Math.random() * 5), 1);
+          }
+        }
+ */      
+      }
       this.enableEdgeConstraints();
       this['continue']();
     },
@@ -2111,6 +2250,86 @@ var API = {
     }
   },
 
+  opacity: function(bodyId, opacity, time, callback) {
+    var body = getBody(bodyId),
+        steps = time / WORLD_CONFIG.timestep,
+        step = 0,
+        factor,
+        goalOpacity = opacity,
+        initialOpacity = body.state.renderData.get('opacity'),
+        opacityAction = new Action(
+          'opacity' + body.options._id + ' to ' + goalOpacity,
+          function onstep() {
+            if (step++ >= steps)
+              opacityAction.complete();
+            else {
+              factor = step / steps;
+              body.state.renderData.set('opacity', initialOpacity + factor * (goalOpacity - initialOpacity));
+            }
+          }
+        );
+    
+    function cleanUp() {
+      body.state.renderData.set('opacity', goalOpacity);
+    };
+    
+    function oncomplete() {
+      cleanUp();
+      if (callback)
+        doCallback(callback);
+    };
+    
+    
+    opacityAction.oncomplete = oncomplete;
+    opacityAction.oncancel = cleanUp;
+    addAction(body, opacityAction);
+    opacityAction.start();
+  },
+
+  scale: function(bodyId, x, y, time, callback) {
+    var body = getBody(bodyId),
+        steps = time / WORLD_CONFIG.timestep,
+        step = 0,
+        factor,
+        i,
+        originalScale = body.state.renderData.get('scale') || [1, 1, 1],
+        currentScale = originalScale.slice(),
+        goalScale = [typeof x == 'number' ? x : originalScale[0],
+                     typeof y == 'number' ? y : originalScale[1],
+                     1],
+        scaleAction = new Action(
+          'scale' + body.options._id + ' to ' + goalScale.toString(),
+          function onstep() {
+            if (step++ >= steps)
+              scaleAction.complete();
+            else {
+              factor = step / steps;
+              i = currentScale.length;
+              while (i--) {
+                currentScale[i] = originalScale[i] + factor * (goalScale[i] - originalScale[i]);
+              }
+              
+              body.state.renderData.set('scale', currentScale);
+            }
+          }
+        );
+    
+    function cleanUp() {
+      body.state.renderData.set('scale', goalScale);
+    };
+    
+    function oncomplete() {
+      cleanUp();
+      if (callback)
+        doCallback(callback);
+    };
+    
+    scaleAction.oncomplete = oncomplete;
+    scaleAction.oncancel = cleanUp;
+    addAction(body, scaleAction);
+    scaleAction.start();
+  },
+  
   flyLeft: function(bodyId, speed, opacity, callback) {
     this.flyTo(bodyId, LEFT.state.pos.get(0), null, LEFT.state.pos.get(2), speed, opacity, callback);
   },
@@ -2139,7 +2358,7 @@ var API = {
 //      debugger;
     
     var body = getBody(bodyId),
-//        fixed = body.fixed,
+        fixed = body.fixed,
         changeOpacity = opacity != null,
         goalOpacity = opacity,
         destination = updateVector(Physics.vector().clone(body.state.pos), x, y, z),
@@ -2164,9 +2383,9 @@ var API = {
                 body.state.renderData.set('opacity', opacity);
               }
 
-              body.state.vel.clone(destination).vsub(body.state.pos).normalize().mult(speed);
+//              body.state.vel.clone(destination).vsub(body.state.pos).normalize().mult(speed);
 //              body.state.vel.clone(destination).vsub(body.state.pos).normalize().mult(speed * Math.min(distance, 100) / 100);
-//              body.accelerate(acceleration.clone(destination).vsub(body.state.pos).mult(speed * Math.min(distance * distance, 300) / 2000 / 10000 )); // slow down when you get closer
+              body.accelerate(acceleration.clone(destination).vsub(body.state.pos).mult(speed * Math.min(distance * distance, 300) / 2000 / 10000 )); // slow down when you get closer
             }
             else
               flyAction.complete();
@@ -2174,6 +2393,7 @@ var API = {
         );
     
     function cleanUp() {
+      body.fixed = fixed;
       if (posLock)
         body.state.pos.lock(posLock);
       
@@ -2199,7 +2419,7 @@ var API = {
     flyAction.onstart = function() {
       posLock = body.state.pos.unlock();
       stopBody(body);
-//      body.fixed = false;
+      body.fixed = false;
     };
     
     addAction(body, flyAction);

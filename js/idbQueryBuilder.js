@@ -139,7 +139,7 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'indexedDB'], funct
     
     if (params) {
       orderBy = params.$orderBy;
-      asc = U.isTrue(params.$asc);
+      asc = !_.has(params, '$asc') || U.isTrue(params.$asc);
     }
     
     if (orderBy) {

@@ -276,6 +276,9 @@ define('views/ViewPage', [
     },
 
     render: function() {
+      if (!this.rendered)
+        this.addToWorld(null, true); // auto-add view page brick
+      
       var self = this,
           res = this.resource;
           viewTag = this.isAbout  &&  this.isApp ? '#about' : '#resourceView',
@@ -357,12 +360,7 @@ define('views/ViewPage', [
         this.$('#resourceViewHolder').$css('background-image', 'url(' + G.theme.backgroundImage +')');
 
       this.$('#chatbox').$hide();
-      
-      if (!this.el.parentNode) {
-        document.body.appendChild(this.el);
-        this.addToWorld(null, true); // auto-add view page brick
-      }
-      
+            
 //      this.onload(function() {
 //        Q.write(function() {
 //          if (!self.el.parentNode) {

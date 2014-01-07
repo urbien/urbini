@@ -19,6 +19,8 @@ define('error', [
         Events.trigger('req-login', {onDismiss: function() {
           Events.trigger('back');
         }});
+        
+        return false;
       }
     },
     "304": function() {

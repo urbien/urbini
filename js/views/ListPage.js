@@ -371,8 +371,6 @@ define('views/ListPage', [
 //      this.$el.attr("data-scrollable", "true");
       tmpl_data.isMasonry = this.isMasonry;
       this.html(this.template(tmpl_data));
-      if (!this.el.parentNode)  
-        document.body.appendChild(this.el);
       
       views[this.listContainer] = this.listView;
       this.assign(views);

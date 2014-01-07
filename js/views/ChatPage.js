@@ -501,9 +501,6 @@ define('views/ChatPage', [
         this.startChat();
       }
       
-      if (!this.el.parentNode) 
-        document.body.appendChild(this.el);
-
       this.$('#header').$css({
         'z-index': 1000,
         'opacity': 0.7

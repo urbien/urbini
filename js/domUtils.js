@@ -6,7 +6,10 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       vendorPrefixes = ['-moz-', '-ms-', '-o-', '-webkit-'],
       ArrayProto = Array.prototype,
       resizeTimeout,
-      cssPrefix = {},
+      cssPrefix = {
+        read: {},
+        write: {}
+      },
       renderQueue = [],
       tmpdiv = document.createElement("div"),
       OPAQUE_STYLE = {
@@ -38,9 +41,6 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
         }
       };
 
-
-//      TRANSITION_PROP = G.browser.webkit ? '-webkit-transition' : 'transition';
-
   window.addEventListener('resize', function(e) {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(fireResizeEvent, 100);
@@ -49,6 +49,12 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
   window.addEventListener('debouncedresize', function() {
     console.log("debounced resize event");
   });
+
+  function toTitleCase(str) {
+    return str.replace(/(?:^|\s|-)\w/g, function(match) {
+        return match.toUpperCase();
+    });
+  };
 
   function fireResizeEvent() {
     var v = G.viewport,
@@ -1056,24 +1062,29 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     /**
      * From wellcaffeinated's PhysicsJS
      */
-    prefix: function(prop) {
-      if (cssPrefix[prop]){
-        return cssPrefix[prop];
+    prefix: function(prop, write) {
+      var val;
+      if (val = cssPrefix[write ? 'write' : 'read'][prop]) {
+        return val;
       }
 
       var arrayOfPrefixes = ['Webkit', 'Moz', 'Ms', 'O'],
           name;
 
       for (var i = 0, l = arrayOfPrefixes.length; i < l; ++i) {
-        name = arrayOfPrefixes[i] + prop.toTitleCase();
+        name = arrayOfPrefixes[i] + toTitleCase(prop);
 
         if (name in tmpdiv.style){
-          return cssPrefix[prop] = name;
+          cssPrefix.read[prop] = name;
+          cssPrefix.write[prop] = '-' + arrayOfPrefixes[i].toLowerCase() + '-' + prop.toLowerCase();
+          return this.prefix(prop, write);
         }
       }
 
       if (name in tmpdiv.style){
-        return cssPrefix[prop] = prop;
+        cssPrefix.read[prop] = prop;
+        cssPrefix.write[prop] = '-' + arrayOfPrefixes[i].toLowerCase() + '-' + prop.toLowerCase();
+        return this.prefix(prop, write);
       }
 
       return false;
@@ -1197,6 +1208,17 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           
           el.setAttribute('class', replace);
         }
+      }
+    },
+    
+    /**
+     * Replaces all of a's child nodes with b's
+     */
+    replaceChildNodes: function(a, b) {
+      a.$empty();
+      var nodes = b.childNodes;
+      for (var i = 0, l = nodes.length; i < l; i++) {
+        a.appendChild(nodes[i]);
       }
     },
     

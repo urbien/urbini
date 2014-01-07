@@ -103,6 +103,9 @@ define('views/BasicPageView', [
       
       var render = this.render;
       this.render = function() {
+        if (!this.el.parentNode)
+          document.body.appendChild(this.el);
+        
         render.apply(self, arguments);
 //        self.checkError();
         if (G.callInProgress)
