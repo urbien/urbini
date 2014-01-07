@@ -80,7 +80,7 @@ define('views/ControlPanel', [
       if (t.tagName != 'A')
         return;
       
-      e.preventDefault();
+      Events.stopEvent(e);
       if ($(t).parents('.__dragged__').length)
         return;
       

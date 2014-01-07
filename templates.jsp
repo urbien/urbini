@@ -954,7 +954,8 @@
 
 <script type="text/template" id="addButtonTemplate">
   <!-- button used for creating new resources -->
-  <a target="#" data-icon="plus-sign" {{= obj.empty ? 'class="hint--bottom hint--always" data-hint="Add item"' : '' }}>Create</a>
+  <!--a target="#" data-icon="plus-sign" {{= obj.empty ? 'class="hint--bottom hint--always" data-hint="Add item"' : '' }}>Create</a-->
+  <a target="#" data-icon="plus-sign">Create</a>
 </script>
 
 <script type="text/template" id="menuButtonTemplate">
@@ -1102,7 +1103,7 @@
 <script type="text/template" id="headerTemplate">
   <!-- the page header, including buttons and the page title, used for all pages except the home page -->
   <div id="callInProgress" data-theme="{{= G.theme.header}}"></div>
-  <div data-role="header" class="ui-header" data-theme="{{= G.theme.header}}" id="header" {{= obj.style ? style + ';z-index:1000;': 'style="z-index:1000;"' }} {{= obj.more || '' }} >
+  <div data-role="header" class="ui-header" data-theme="{{= G.theme.header}}" id="header" {{= obj.style ? style : '' }} {{= obj.more || '' }} >
     <div data-role="navbar">
       <ul id="headerUl" class="navbarUl">
       </ul>
@@ -1201,7 +1202,6 @@
 </script>
 
 <script type="text/template" id="masonry-mod-list-item">
-<div>
   <div class="anab" data-viewid="{{= viewId }}">
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
@@ -1215,6 +1215,7 @@
       </a>
     </div>
   </div>
+  <div class="nabRL">
   <table width="100%" class="modP">
     <tr>
       <td class="urbien" width="55px">
@@ -1230,50 +1231,44 @@
       </td>
     </tr>
   </table>
-  <table width="100%">
-    <tr>
-    <td colspan="2">
-      <div class="nabBtn" style="background:#eeeeee; padding: 10px 0 0 5px;margin:-3px;">
-        {{ if (typeof v_showCommentsFor != 'undefined') { }}
-          <!--a data-icon="comments" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor, '-makeId': G.nextId()}) }}">
-          </a -->
-          <a style="float:left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor.uri, '-makeId': G.nextId()}) }}">Comment
-          </a>
-          {{ if (v_showCommentsFor.count) { }}
-            <a style="float:right; font-size:12px;" href="{{= U.makePageUrl('list', 'model/portal/Comment', {forum: v_showCommentsFor.uri}) }} "><span class="ui-icon-comment-alt"></span>{{= v_showCommentsFor.count }}</a>
-          {{ } }}
-          
-        {{ } }}
-        {{ if (typeof v_showVotesFor != 'undefined') { }}
-          <!--a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}"> 
-          </a -->
-          <a class="like" style="float: left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}">
-          {{ if (typeof v_showCommentsFor != 'undefined') { }}
-             &#160;&#160;&#8226;
-          {{ } }}
-          &#160;&#160;Like 
-          </a>
-          {{ if (v_showVotesFor.count) { }}
-          <div style="float:right; font-size:12px;"> 
-            <a href="{{= U.makePageUrl('list', 'aspects/tags/Vote', {votable: v_showVotesFor.uri, $title: davDisplayName + ' liked by'}) }}"><span class="ui-icon-heart-empty"></span>{{= v_showVotesFor.count }}</a> 
-          </div>
-          {{ } }}
+  <div class="nabBtn" style="background:#eeeeee; padding: 10px 0 0 5px;margin:-3px;">
+    {{ if (typeof v_showCommentsFor != 'undefined') { }}
+      <!--a data-icon="comments" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor, '-makeId': G.nextId()}) }}">
+      </a -->
+      <a style="float:left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor.uri, '-makeId': G.nextId()}) }}">Comment
+      </a>
+      {{ if (v_showCommentsFor.count) { }}
+        <a style="float:right; font-size:12px;" href="{{= U.makePageUrl('list', 'model/portal/Comment', {forum: v_showCommentsFor.uri}) }} "><span class="ui-icon-comment-alt"></span>{{= v_showCommentsFor.count }}</a>
+      {{ } }}
+      
+    {{ } }}
+    {{ if (typeof v_showVotesFor != 'undefined') { }}
+      <!--a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}"> 
+      </a -->
+      <a class="like" style="float: left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}">
+      {{ if (typeof v_showCommentsFor != 'undefined') { }}
+         &#160;&#160;&#8226;
+      {{ } }}
+      &#160;&#160;Like 
+      </a>
+      {{ if (v_showVotesFor.count) { }}
+      <div style="float:right; font-size:12px;"> 
+        <a href="{{= U.makePageUrl('list', 'aspects/tags/Vote', {votable: v_showVotesFor.uri, $title: davDisplayName + ' liked by'}) }}"><span class="ui-icon-heart-empty"></span>{{= v_showVotesFor.count }}</a> 
+      </div>
+      {{ } }}
 <!--          {{ if (v_showVotesFor.count) { }}
              v_showVotesFor.count
           {{ } }}
 -->          
-        {{ } }}
-        <!--
-        {{ if (typeof v_showRenabFor != 'undefined') { }}
-          <a data-icon="pushpin" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'nabit?originalImageUrl=' + encodeURIComponent(v_showRenabFor) + '&amp;sourceUrl=' + encodeURIComponent(rUri) }}">
-          </a>
-        {{ } }}
-        -->
-        </div>
-    </td>
-    </tr>
-  </table>
-</div>  
+    {{ } }}
+    <!--
+    {{ if (typeof v_showRenabFor != 'undefined') { }}
+      <a data-icon="pushpin" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'nabit?originalImageUrl=' + encodeURIComponent(v_showRenabFor) + '&amp;sourceUrl=' + encodeURIComponent(rUri) }}">
+      </a>
+    {{ } }}
+    -->
+    </div>
+  </div>
 </script>
 
 <script type="text/template" id="masonry-list-item">

@@ -19,6 +19,7 @@ define('views/Header', [
   var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate', 'installApp'];
   var REGULAR_BUTTONS = ['back', 'mapIt', 'add', 'video', 'chat', 'login', 'rightMenu'];
   var commonTypes = G.commonTypes;
+  var friendlyTypes = [G.commonTypes.Urbien, 'http://urbien.com/voc/dev/ImpressBackup/Movie', 'http://urbien.com/voc/dev/ImpressBackup/Artist', 'model/social/App'];
   return BasicView.extend({
 //    viewType: 'any',
     style: {
@@ -173,11 +174,10 @@ define('views/Header', [
       
       switch (this._hashInfo.route) {
         case 'view':
-          var friendly = [G.commonTypes.Urbien, 'classifieds/movies/Movie', 'classifieds/movies/Artist', 'model/social/App'],
-              i = friendly.length;
+          var i = friendlyTypes.length;
           
           while (i--) {
-            if (U.isAssignableFrom(this.vocModel, friendly[i])) {
+            if (U.isAssignableFrom(this.vocModel, friendlyTypes[i])) {
               type = 'horizontal';
               break;
             }
@@ -559,7 +559,7 @@ define('views/Header', [
           // this.$el.find('#pageTitle').css('margin-bottom', '0px'); 
         }
       }      
-      if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges  &&  !this.isEdit) {
+      if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges  &&  !this.isEdit  &&  !G.isBB()) {
         this.$('#name.resTitle').$css('padding-bottom', '0px');
       }
 //      var wl = G.currentApp.widgetLibrary;

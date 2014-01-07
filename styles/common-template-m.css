@@ -14,7 +14,15 @@ body {
     -ms-user-select: none;
         user-select: none;
 }
-
+[data-role="page"] { 
+  top: 0; 
+  left: 0;
+ /* bottom: 0; */ 
+  width: 100%; 
+  min-height: 100%; 
+  position: absolute; 
+  border: 0; 
+}
 input {
     -webkit-touch-callout: auto;
     -webkit-user-select: auto;
@@ -160,16 +168,19 @@ html { height: 100%; }
 .masonry > li, .masonry > div { visibility: hidden; }
 .masonry .masonry-brick { visibility: visible; }
 
-.nab .modP .urbien { padding-left: 10px; }
+table.modP {
+  position: relative;
+}
+
 .nab .modP .urbien img {
-    width: 50px;
+    #width: 50px;
+    left: -20px;
+    top: -10px;
     position: absolute;
-    clip: rect(0px, 50px, 70px, 0px);
+    clip: rect(20px, 75px, 75px, 30px);
 }
 .nab .nabP .urbien { padding-left: 10px; }
 .nab .nabP .urbien img {width: 50px;}
-
-
 
 .gnab { font-size: 11px; }
 /* .nab .galleryItem_css3 img {max-width: 205px;} */
@@ -971,6 +982,13 @@ div.nabBtn {
   width: 100%;
   white-space: nowrap;
 }
+section[id^="view"] {
+  position: absolute;
+  height: 100%;
+  visibility:hidden;
+  z-index:10001;
+}
+
 
 .thumb-gal-item {
   padding: 0px;
@@ -1192,6 +1210,14 @@ div.nabBtn {
   margin-top:0;
   margin-bottom:0;
   padding:0;
+}
+#sidebar .masonry-brick {
+  width:100%;
+}
+
+#headerDiv {
+  z-index:1001;
+  position: relative;
 }
 .menuItems {
   cursor: pointer;
