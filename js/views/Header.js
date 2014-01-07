@@ -5,7 +5,8 @@ define('views/Header', [
   'utils',
   'vocManager',
   'views/BasicView',
-  'physicsBridge'
+  'physicsBridge',
+  'domUtils'
 //  ,
 //  'views/BackButton',
 //  'views/LoginButton',
@@ -14,7 +15,7 @@ define('views/Header', [
 //  'views/AroundMeButton',
 //  'views/MenuButton',
 //  'views/PublishButton'
-], function(G, Events, U, Voc, BasicView, Physics/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
+], function(G, Events, U, Voc, BasicView, Physics, DOM/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
   var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate', 'installApp'];
   var REGULAR_BUTTONS = ['back', 'mapIt', 'add', 'video', 'chat', 'login', 'rightMenu'];
   var commonTypes = G.commonTypes;
@@ -397,25 +398,36 @@ define('views/Header', [
         var returnUri = this.hashParams['$returnUri'];
         var pr = this.hashParams['$prop'];
         if (forResource  &&  location  &&  pr) {
-          var type = U.getTypeUri(forResource);      
-          var cModel = U.getModel(type);
-          var self = this;
+          var self = this,
+              type = U.getTypeUri(forResource),      
+              cModel = U.getModel(type);
+          
           if (!cModel) {
             Voc.getModels(type).done(function() {
               cModel = U.getModel(type);
               if (cModel  &&  !cModel.properties[pr].readOnly) {
-                var frag = document.createDocumentFragment();
-                var rules = ' data-formEl="true"';
+                var frag = document.createDocumentFragment(),
+                    existing = self.$('#fileUpload')[0],
+                    rules = ' data-formEl="true"';
+                
                 U.addToFrag(frag, self.fileUploadTemplate({name: pr, forResource: forResource, rules: rules, type: type, location: location, returnUri: returnUri }));
-                self.$el.append(frag);
+                if (existing)
+                  DOM.replaceChildNodes(existing, frag);
+                else
+                  self.$el.append(frag);
               }
             });
           }
           else {
-            var frag = document.createDocumentFragment();
-            var rules = ' data-formEl="true"';
+            var frag = document.createDocumentFragment(),
+                existing = self.$('#fileUpload')[0],
+                rules = ' data-formEl="true"';
+            
             U.addToFrag(frag, self.fileUploadTemplate({name: pr, forResource: forResource, rules: rules, type: type, location: location }));
-            self.$el.append(frag);
+            if (existing)
+              DOM.replaceChildNodes(existing, frag);
+            else
+              self.$el.append(frag);
           }
           
         }
@@ -471,7 +483,7 @@ define('views/Header', [
       }
 
       var templateSettings = this.getBaseTemplateData();
-      _.extend(templateSettings, Physics.constants);
+      _.extend(templateSettings, Physics.constants); //Physics.scrollerConstants[this._scrollerType]);
       if (U.isChatPage()) {
 //        templateSettings.more = $.param({
 //          "data-position": "fixed"
