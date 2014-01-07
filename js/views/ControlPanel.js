@@ -35,8 +35,8 @@ define('views/ControlPanel', [
     },
     events: {
       'click a[data-shortName]': 'add',
-      'pinchout li[data-propname]': 'insertInlineScroller',
-      'pinchin li[data-propname]': 'removeInlineScroller',
+//      'pinchout li[data-propname]': 'insertInlineScroller',
+//      'pinchin li[data-propname]': 'removeInlineScroller',
       'hold li[data-propname]': 'toggleInlineScroller'
 //        ,
 //      'click': 'click'
@@ -190,20 +190,24 @@ define('views/ControlPanel', [
       e.gesture.stopDetect();
       e.stopPropagation();
       
-      var li = e.currentTarget,
+      var self = this,
+          li = e.currentTarget,
           pName = li.dataset.propname,
           info = this._backlinkInfo[pName];
       
       if (info.scroller) {
-        info.scroller.destroy(true); // don't remove element
-        li.$empty();
-        for (var i = 0; i < info.originalContent.length; i++) {
-          li.appendChild(info.originalContent[i]);
-        }
-        
-        this.removeChild(info.scroller);
-        info.scroller = null;
-        info.originalContent = null;
+        info.scroller.mason.destroy(true, function() {
+          info.scroller.mason = null;
+          info.scroller.destroy(true); // don't remove element
+          li.$empty();
+          for (var i = 0; i < info.originalContent.length; i++) {
+            li.appendChild(info.originalContent[i]);
+          }
+          
+          self.removeChild(info.scroller);
+          info.scroller = null;
+          info.originalContent = null;
+        });
       }
     },
 

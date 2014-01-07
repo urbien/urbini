@@ -1,4 +1,4 @@
-define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', 'hammer', 'domUtils', 'utils'], function(G, _, FrameWatch, Q, Hammer, DOM, U) {
+define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', 'hammer', 'domUtils', 'utils', 'events'], function(G, _, FrameWatch, Q, Hammer, DOM, U, Events) {
   var worker,
       jsBase = G.serverName + '/js/',
       physicsModuleInfo = G.files['lib/physicsjs-custom.js'],
@@ -20,6 +20,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       ID_TO_LAST_TRANSFORM = {},
       ZERO_TRANSLATION = [0, 0, 0],
       DEFAULT_SCALE = [1, 1, 1],
+      MIN_SCALE = [0.0001, 0.0001, 1],
       ZERO_ROTATION = [0, 0, 0],
       IDENTITY_TRANSFORM = [1, 0, 0, 0,
                             0, 1, 0, 0,
@@ -55,9 +56,9 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       callbacks = {},
       subscriptions = {},
       INPUT_TAGS = ['input', 'textarea'],
-      TRANSFORM_PROP = DOM.prefix('transform'),
-      TRANSFORM_ORIGIN_PROP = DOM.prefix('transform-origin'),
-      TRANSITION_PROP = DOM.prefix('transition'),
+      TRANSFORM_PROP = DOM.prefix('transform', true),
+      TRANSFORM_ORIGIN_PROP = DOM.prefix('transform-origin', true),
+      TRANSITION_PROP = DOM.prefix('transition', true),
       SCROLLER_TYPES = ['verticalMain', 'horizontal'],
       CONSTANTS = {
         worldConfig: {
@@ -114,6 +115,23 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //      return drag;
 //    }    
 //  };
+
+  // prevent click on capture phase
+  document.$on('click', function(e) {
+    if (!G.canClick()) {
+      log('events', 'PREVENTING CLICK', _.now());
+      e.preventDefault();
+      e.stopPropagation();
+//      e.stopImmediatePropagation();
+      G.enableClick();
+      return false;
+    }
+    else
+      log('events', 'ALLOWING CLICK', _.now());
+  }, true);
+
+//  // re-enable click on bubble phase
+//  document.addEventListener('click', enableClick);
 
   window.onscroll = function(e) {
     console.log("NATIVE SCROLL: " + window.pageXOffset + ", " + window.pageYOffset);
@@ -183,21 +201,6 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         draggable._ondragend.apply(draggable, arguments);
     }
   });
-  
-  document.addEventListener('click', function(e) {
-    try {
-      if (!G.canClick()) {
-        log('events', 'PREVENTING CLICK', _.now());
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      }
-      
-      log('events', 'ALLOWING CLICK', _.now());
-    } finally {
-      enableClick();
-    }
-  }, true);
 
   function dragOnTick() {
     if (TICKING)
@@ -478,7 +481,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         style = styles[id];
         for (var prop in style) {
           if (prop !== 'transform') {
-            el.style[prop] = style[prop];
+            el.style[DOM.prefix(prop, true)] = style[prop];
           }
         }
         
@@ -495,7 +498,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           if (scale) {
             if (!_.isEqual(scale, DEFAULT_SCALE)) {
               transformStr = 'scale3d(' + scale[0] + ', ' + scale[1] + ', ' + scale[2] + ')';
-              translate = null;
+              if (_.isEqual(scale, MIN_SCALE)) 
+                translate = null;
             }
             
             oldScale = oldTransform.scale || DEFAULT_SCALE;
@@ -507,9 +511,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
             invokeListeners(renderListeners.scale.y[id], el, dsy);
             invokeListeners(renderListeners.scale.z[id], el, dsz);
           }
+          else
+            scale = DEFAULT_SCALE;
           
           if (translate) {
-            transformStr = 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, ';
+            transformStr = 'matrix3d(' + scale[0] + ', 0, 0, 0, 0, ' + scale[1] + ', 0, 0, 0, 0, ' + scale[2] + ', 0, ';
   //        transformStr = 'translate(';
             transformStr += translate[0].toFixed(10) + ', ' + translate[1].toFixed(10) + ', ' + translate[2].toFixed(10) + ', 1)';
   //          transformStr += translate[0].toFixed(10) + 'px, ' + translate[1].toFixed(10) + 'px)';
@@ -629,7 +635,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     },
 
     _canHandle: function(e) {
-      if (DRAG_ENABLED && (!DRAG_LOCK || DRAG_LOCK == this.id) && !isUserInputTag(e.target.tagName))
+      if (DRAG_ENABLED && (!DRAG_LOCK || DRAG_LOCK == this.id)) // && !isUserInputTag(e.target.tagName))
         return true;
       
 //      if (!isUserInputTag(e.target.tagName))
@@ -771,6 +777,9 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   }
   
   Physics = {
+    isDragging: function() {
+      return !!DRAG_LOCK;
+    },
     constants: CONSTANTS,
     init: function() {
       if (!worker) {

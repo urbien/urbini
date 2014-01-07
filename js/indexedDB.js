@@ -173,7 +173,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     if (returnObj)
       _items = [_items];
 
-    items = _.map(_items, function(_item) {
+    items = _items.map(function(_item) {
       var item = {};
       _.each(_item, function(val, prop) {
         var parsedPropName = parsePropName(prop),

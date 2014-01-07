@@ -2206,10 +2206,36 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
                 return this.json[prop];
               },
               set: function(prop, val) {
-                if (this.json[prop] != val) {
+                if (!this.json[prop]) {
+                  this.changed.push(prop);
                   this.json[prop] = val;
-                  if (!this.isChanged(prop))
-                    this.changed.push(prop);
+                  return;
+                }
+                  
+                if (this.json[prop] == val)
+                  return;
+                
+                switch (Object.prototype.toString.call(val)) {
+                  case '[object Array]':
+                  case '[object Object]':
+                    var diff = false;
+                    for (var i in val) {
+                      if (val[i] !== this.json[prop][i]) {
+                        diff = true;
+                        break;
+                      }
+                    }
+                    
+                    if (diff) {
+                      Physics.util.extend(this.json[prop], val);
+                      this.changed.push(prop);
+                    }
+                    
+                    break;
+                  default:
+                    this.json[prop] = val;
+                    if (!this.isChanged(prop))
+                      this.changed.push(prop);
                 }
               },
               toJSON: function() {
