@@ -94,7 +94,7 @@ function _onmessage(e) {
 	if (!world) {
 	  importScripts(e.data.physicsJSUrl, e.data.masonryUrl);
 	  DEBUG = e.data.debug;
-	  CONSTANTS = e.data.constants;
+	  CONSTANTS = {};
 	  Object.keys(CONSTANTS).forEach(function(c) {
 	    if (c != 'degree') {
 	      CONSTANTS['_' + c] = CONSTANTS[c];
@@ -109,12 +109,16 @@ function _onmessage(e) {
   	    });
   	    
         CONSTANTS.__defineSetter__(c, function(val) {
+          if (c == 'drag')
+            val /= 2;
+          
           CONSTANTS['_' + c] = val;
         });
 	    }
 	  });
 	  
 	  Physics.util.extend(WORLD_CONFIG, CONSTANTS.worldConfig);
+	  Physics.util.extend(CONSTANTS, e.data.constants);
 		world = Physics( WORLD_CONFIG, function(world, Physics) {
 			initWorld(world, e.data.stepSelf);
 		});
@@ -1435,7 +1439,7 @@ function pick(obj) {
     getTailEdgeCoords: function() {
       var coords = new Array(2);  
       coords[this.orthoAxisIdx] = this.headEdge.state.pos.get(this.orthoAxisIdx);
-      if (this.range.from == 0 && this.range.to == this.brickLimit && this.slidingWindowDimension < this.pageHeight)
+      if (this.range.from == 0 && this.range.to == this.brickLimit && this.slidingWindowDimension < this.pageScrollDim)
         coords[this.axisIdx] = this.headEdge.state.pos.get(this.axisIdx);
       else
         coords[this.axisIdx] = -this.slidingWindowBounds.max + this.pageScrollDim; // - this.pageOffset[this.axisIdx];
@@ -1444,7 +1448,7 @@ function pick(obj) {
     },
     
     checkTailEdge: function() {
-      if (this.range.to >= this.brickLimit) {
+      if (this.numBricks() && this.range.to >= this.brickLimit) {
         var self = this,
             coords = this.getTailEdgeCoords();
         
