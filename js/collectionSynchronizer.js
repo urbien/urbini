@@ -79,13 +79,13 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
     
     if (this._isUpdate()) {
       if (this._isForceFetch() || this._isStale())
-        this._delayedFetch(); // shortPage ? null : lf); // if shortPage, don't set If-Modified-Since header
-      else if (this.data.length)
-        this._success(null, 'success', addEmptyResponseHeaderFn({
-          status: 304
-        })); // the data is fresh, let's get out of here
-      
-      return;
+        return this._delayedFetch(); // shortPage ? null : lf); // if shortPage, don't set If-Modified-Since header
+//      else if (this.data.length) {
+//        this._success(null, 'success', addEmptyResponseHeaderFn({
+//          status: 304
+//        })); // the data is fresh, let's get out of here
+//        return;
+//      }
     }
     else {
       if (this.data.isOutOfResources()) {
@@ -127,24 +127,26 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
 //          }
 //        };
 
-    this._success(results, 'success', {
-      getResponseHeader: function(p) {
-        if (p == 'X-Pagination')
-          return JSON.stringify(pagination);
-      }
-    }); // add to / update collection
-
-    if (this._isForceFetch())
-      return this._fetchFromServer();
-        
-    numAfter = this.data.length;
-    info.isUpdate = info.isUpdate || numAfter >= info.end; // || shortPage;
-    if (!info.isUpdate && numAfter === numBefore) // db results are useless
-      return this._delayedFetch();
-    
-    lastFetchedTS = Synchronizer.getLastFetched(results, this._getNow());
-    if (this._isStale(lastFetchedTS, this._getNow()))
-      return this._delayedFetch();
+    try {
+      if (this._isForceFetch())
+        return this._fetchFromServer();
+          
+      numAfter = this.data.length;
+      info.isUpdate = info.isUpdate || numAfter >= info.end; // || shortPage;
+      if (!info.isUpdate && numAfter === numBefore) // db results are useless
+        return this._delayedFetch();
+      
+      lastFetchedTS = Synchronizer.getLastFetched(results, this._getNow());
+      if (this._isStale(lastFetchedTS, this._getNow()))
+        return this._delayedFetch();
+    } finally {
+      this._success(results, 'success', {
+        getResponseHeader: function(p) {
+          if (p == 'X-Pagination')
+            return JSON.stringify(pagination);
+        }
+      }); // add to / update collection
+    }
   };
 
   CollectionSynchronizer.prototype._getItems = function(options) {
