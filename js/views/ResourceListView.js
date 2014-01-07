@@ -25,7 +25,9 @@ define('views/ResourceListView', [
     // <MASONRY INITIAL CONFIG>
     slidingWindow: true,
     horizontal: false,
-    flyIn: true,
+//    fly: true,
+    pop: 'sequential', //other option is 'random'
+//    fade: 'random', //other option is 'sequential'
     animateOpacity: true,
     minBricks: 10,
     maxBricks: 10,
@@ -55,8 +57,6 @@ define('views/ResourceListView', [
     _childEls: null,
     _outOfData: false,
     _adjustmentQueued: false,
-    _hiddenBricksAtHead: 0,
-    _hiddenBricksAtTail: 0,
 //    _failedToRenderCount: 0,
     _scrollable: false, // is set to true when the content is bigger than the container
 //    _lastRangeEventSeq: -Infinity,
@@ -64,7 +64,7 @@ define('views/ResourceListView', [
     className: 'scrollable',
     style: (function() {
       var style = {};
-      style[DOM.prefix('perspective')] = '200px';
+      style[DOM.prefix('perspective')] = '50px';
       return style;
     })(),
     stashed: [],
@@ -285,8 +285,11 @@ define('views/ResourceListView', [
           viewId;
 
       while (top && top != this.el && !(viewId = top.dataset.viewid)) {
-        if (top.tagName == 'A')
+        if (top.tagName == 'A') {
+          Events.stopEvent(e);
+          Events.trigger('navigate', top.href);
           return;
+        }
         
         top = top.parentNode;
       }
@@ -558,111 +561,6 @@ define('views/ResourceListView', [
       debugger;
     },
         
-    _hideBricks: function(head, tail) {
-      var numHidden = 0,
-          childNodes = this._childEls,
-          childNode,
-          i;
-      
-      if (!childNodes.length)
-        return;
-      
-      if (head) {
-        while (head--) {
-          childNode = childNodes[head];
-          if (!childNode.dataset.hidden) {
-            numHidden++;
-            childNode.dataset.hidden = true;
-          }
-          
-          childNode.style.visibility = 'hidden';
-        }
-        
-        this._hiddenBricksAtHead += numHidden;
-      }
-       
-      if (tail) {
-        var lastElIdx = childNodes.length - 1,
-            idx;
-        
-        while (tail-- && (idx = lastElIdx - tail)) {
-          childNode = childNodes[idx];
-          if (!childNode.dataset.hidden) {
-            numHidden++;
-            chidlNode.dataset.hidden = true;
-          }
-          
-          childNode.style.visibility = 'hidden';
-          numHidden++;
-        }
-        
-        this._hiddenBricksAtTail += numHidden;
-      }
-    },
-    
-    _showAndHideBricks: function() {
-      var invisibleLayer = this._invisibleLayerThickness;
-      if (invisibleLayer) {
-        var viewport = this.getViewport(),
-            slidingWindow = this.getSlidingWindow(), // should be relative to this view, i.e. head==0 means we're at the top/left of the page
-            slidingWindowDim = slidingWindow.tail - slidingWindow.head,
-            headDiff = viewport.head - slidingWindow.head,
-            tailDiff = slidingWindow.tail - viewport.tail,
-            scrollingTowardsHead = this.getLastScrollDirection() == 'head',
-            elSize = this.getAverageElementSize(),
-            head,
-            tail;
-        
-        this._showHiddenBricks();
-        if (scrollingTowardsHead) {
-          tail = tailDiff - invisibleLayer * elSize;
-          tail = tail > 0 ? Math.min(invisibleLayer, tail / elSize | 0, this._childEls.length / 2 | 0) : 0;
-        }
-        else {
-          head = headDiff - invisibleLayer * elSize;
-          head = head > 0 ? Math.min(invisibleLayer, head / elSize | 0, this._childEls.length / 2 | 0) : 0;
-        }
-      
-        if (head || tail)
-          this._hideBricks(head, tail);
-      }
-    },
-    
-    _showHiddenBricks: function() {
-      var numUnhidden = 0,
-          childNodes = this._childEls,
-          childNode;
-      
-      if (this.getLastScrollDirection() == 'head') {
-        for (var i = 0; i < childNodes.length; i++) {
-          childNode = childNodes[i];
-          if (!childNode.dataset.hidden)
-            break;
-          
-          childNode.style.removeProperty('visibility');
-          delete childNode.dataset.hidden;
-          numUnhidden++;
-        }
-        
-        this._hiddenBricksAtHead -= numUnhidden;
-      }
-      else {
-        var i = childNodes.length;
-        while (i--) {
-          childNode = childNodes[i];
-//          if (page.style.visibility != 'hidden') // we've reached the visible part
-          if (!childNode.dataset.hidden)
-            break;
-          
-          childNode.style.removeProperty('visibility');
-          delete childNode.dataset.hidden;
-          numUnhidden++;
-        }
-        
-        this._hiddenBricksAtTail -= numUnhidden;
-      }
-    },
-        
     /** 
     * shorten the dummy div below this page by this page's height/width (if there's a dummy div to shorten)
     * @param force - will add as much as it can, including a half page
@@ -673,8 +571,10 @@ define('views/ResourceListView', [
         to = Math.min(to, this.collection.length);
       
       if (from >= to) {
-        if (this._outOfData)
+        if (this._outOfData) {
+          this.log("1. BRICK LIMIT");
           this.setBrickLimit();
+        }
         else {
           debugger;
           this.mason['continue']();
@@ -695,6 +595,7 @@ define('views/ResourceListView', [
           to = availableRange[1];
           if (form >= to) {
             // we're out of candy, no need to continue
+            this.log("2. BRICK LIMIT");
             this.setBrickLimit();
             return;
           }
@@ -936,17 +837,25 @@ define('views/ResourceListView', [
           if (col.length > before)
             defer.resolve();
           else {
-            if (!nextPageUrl || !col.isFetching(nextPageUrl)) // we've failed to fetch anything from the db, wait for the 2nd call to success/error after pinging the server
+            if (!nextPageUrl || !col.isFetching(nextPageUrl)) { // we've failed to fetch anything from the db, wait for the 2nd call to success/error after pinging the server
+              self.log("couldn't get the next page for collection...");
               defer.reject();
+            }
             else
               self.log("fetching more list items from the server...");
           }
         },
-        error: function() {
-          if (!nextPageUrl || !col.isFetching(nextPageUrl))
-            defer.reject();
-//          else
-//            debugger;
+        error: function(col, resp, options) {
+          switch (resp.code) {
+            case 401:
+              Events.trigger('req-login');
+              return;
+            default:
+              if (!nextPageUrl || !col.isFetching(nextPageUrl))
+                defer.reject();
+              
+              return;
+          }
         }
       });
       
