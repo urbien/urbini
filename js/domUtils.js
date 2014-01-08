@@ -53,7 +53,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
   function toTitleCase(str) {
     return str.replace(/(?:^|\s|-)\w/g, function(match) {
         return match.toUpperCase();
-    });
+    }).replace(/-/, ''); 
   };
 
   function fireResizeEvent() {
@@ -1069,25 +1069,26 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       }
 
       var arrayOfPrefixes = ['Webkit', 'Moz', 'Ms', 'O'],
+          docElStyle = document.documentElement.style,
           name;
 
       for (var i = 0, l = arrayOfPrefixes.length; i < l; ++i) {
         name = arrayOfPrefixes[i] + toTitleCase(prop);
 
-        if (name in tmpdiv.style){
+        if (name in docElStyle) {
           cssPrefix.read[prop] = name;
           cssPrefix.write[prop] = '-' + arrayOfPrefixes[i].toLowerCase() + '-' + prop.toLowerCase();
           return this.prefix(prop, write);
         }
       }
 
-      if (name in tmpdiv.style){
+      if (prop in docElStyle) {
         cssPrefix.read[prop] = prop;
-        cssPrefix.write[prop] = '-' + arrayOfPrefixes[i].toLowerCase() + '-' + prop.toLowerCase();
+        cssPrefix.write[prop] = prop;
         return this.prefix(prop, write);
       }
-
-      return false;
+      
+      throw "no such CSS prop: " + prop;
     },
     
     /**

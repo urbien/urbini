@@ -56,6 +56,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       callbacks = {},
       subscriptions = {},
       INPUT_TAGS = ['input', 'textarea'],
+      TRANSFORM_PROPS = ['rotate', 'translate', 'scale'],
       TRANSFORM_PROP = DOM.prefix('transform', true),
       TRANSFORM_ORIGIN_PROP = DOM.prefix('transform-origin', true),
       TRANSITION_PROP = DOM.prefix('transition', true),
@@ -81,7 +82,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //      },
       DRAG_LOCK = null,
       MOUSE_OUTED = false,
-      TICKING = false;
+      TICKING = false,
+      isMoz = G.browser.firefox;
 //      ,
 //      STYLE_ORDER = ['opacity', 'translation', 'rotation'];
 
@@ -480,7 +482,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         oldTransform = ID_TO_LAST_TRANSFORM[id] || IDENTITY_TRANSFORM;
         style = styles[id];
         for (var prop in style) {
-          if (prop !== 'transform') {
+          if (TRANSFORM_PROPS.indexOf(prop) == -1) {
             el.style[DOM.prefix(prop, true)] = style[prop];
           }
         }
@@ -565,6 +567,12 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           el.style[TRANSFORM_PROP] = transformStr;
           el.style[TRANSITION_PROP] = '';
           el.style[TRANSFORM_ORIGIN_PROP] = '0%; 0%';
+          if (isMoz) {
+            el.style.transform = transformStr;
+            el.style.transition = '';
+            el.style['transform-origin'] = '0% 0%';
+          }
+          
         }
         
 //        el.style[TRANSFORM_PROP] = 'matrix3d(' + transform.join(',') + ')';
