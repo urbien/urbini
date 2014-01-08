@@ -2701,7 +2701,7 @@ define('utils', [
       var primaryKeys = U.getPrimaryKeys(model),
           keyVals = _.pick(atts, primaryKeys);
       
-      if (!_.size(keyVals))
+      if (_.size(keyVals) != primaryKeys.length)
         return null;
       
       for (var key in keyVals) {

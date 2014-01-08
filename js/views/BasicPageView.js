@@ -114,7 +114,7 @@ define('views/BasicPageView', [
       
       if (this.model) {
         if (this.resource) {
-          if (this.resource.loaded || !this.resource.getUri()) {
+          if (this.resource.loaded || this.resource.isNew() || !this.resource.getUri()) {
             this._fetchPromise = G.getResolvedPromise();
             return;
           }
