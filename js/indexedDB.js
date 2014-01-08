@@ -290,13 +290,13 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     
     instance._wasEmpty = !currentStores.length;
     
-    // Commented out because decided to not delete stores, just clear them (key path never changes, so deleting all the items is better as it doesn't require a version change transaction)
+    // Delete stores instead of just clearing them, because indices may have changed
     for (var i = 0, len = toDelete.length; i < len; i++) {
       var storeName = toDelete[i];
       if (instance.hasStore(storeName)) {
         try {
-          versionTrans.objectStore(storeName).clear(); //deleteObjectStore(storeName);
-//          delete instance.stores[storeName];
+          versionTrans.deleteObjectStore(storeName);
+          delete instance.stores[storeName];
           log('db', 'cleared object store: ' + storeName);
         } catch (err) {
           debugger;
@@ -305,14 +305,14 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       }
     }
     
-//    if (doDelete && _.intersection(instance.storesToKill, _.pluck(instance.storesToMake, 'name')).length) {
-//      // run delete and create separately to make sure stores are deleted before they are recreated 
-//      // this hack is for the benefit of WebSQL
-//      // obviously this crap shouldn't be this high in the abstraction level, as this module shouldn't need to care about WebSQL, so better move it to IndexedDBShim
-//      instance.storesToKill = [];
-//      instance.restart(instance.getVersion() + 2); 
-//      return;
-//    }
+    if (doDelete && _.intersection(instance.storesToKill, _.pluck(instance.storesToMake, 'name')).length) {
+      // run delete and create separately to make sure stores are deleted before they are recreated 
+      // this hack is for the benefit of WebSQL
+      // obviously this crap shouldn't be this high in the abstraction level, as this module shouldn't need to care about WebSQL, so better move it to IndexedDBShim
+      instance.storesToKill = [];
+      instance.restart(instance.getVersion() + 2); 
+      return;
+    }
     
     for (var i = 0, len = toMake.length; i < len; i++) {
       var storeObj = toMake[i],
