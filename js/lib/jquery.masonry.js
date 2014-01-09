@@ -259,20 +259,20 @@
           left;
       
       if (this.options.horizontal) {        
-        top = this.alleyDim * shortCol + this.offset.y + brick.geometry._aabb._hh; // alleyDim includes gutterWidth
+        top = this.alleyDim * shortCol + /*this.offset.y +*/ brick.geometry._aabb._hh; // alleyDim includes gutterWidth
         
         if (this.options.fromBottom)
-          left = extremeDepth - this.offset.x - brick.geometry._aabb._hw + this._getOffsetDueToFlexigroup();
+          left = extremeDepth /*- this.offset.x*/ - brick.geometry._aabb._hw + this._getOffsetDueToFlexigroup();
         else
-          left = extremeDepth + this.offset.x + brick.geometry._aabb._hw + this._getOffsetDueToFlexigroup();
+          left = extremeDepth /*+ this.offset.x*/ + brick.geometry._aabb._hw + this._getOffsetDueToFlexigroup();
       }
       else {
         left = this.alleyDim * shortCol + this.offset.x + brick.geometry._aabb._hw; // alleyDim includes gutterWidth
       
         if (this.options.fromBottom)
-          top = extremeDepth - this.offset.y - brick.geometry._aabb._hh + this._getOffsetDueToFlexigroup();
+          top = extremeDepth /*- this.offset.y*/ - brick.geometry._aabb._hh + this._getOffsetDueToFlexigroup();
         else
-          top = extremeDepth + this.offset.y + brick.geometry._aabb._hh + this._getOffsetDueToFlexigroup();
+          top = extremeDepth /*+ this.offset.y*/ + brick.geometry._aabb._hh + this._getOffsetDueToFlexigroup();
       }
 
 //      console.log("adding", brick.geometry._aabb._hw * 2, "x", brick.geometry._aabb._hh * 2, "brick at (" + left + ", " + top + ")");

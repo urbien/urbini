@@ -10,7 +10,7 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
     return _oppositeDir[dir]; 
   }
   
-  function doTransition(direction, transition, fromView, toView, springStiffness, springDamping) {
+  function doTransition(direction, transition, fromView, toView, options) {//, springStiffness, springDamping) {
     var dfd = $.Deferred(),
         promise = dfd.promise(),
         from = fromView && fromView.getContainerBodyId(),
@@ -34,23 +34,62 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
     }
     
     if (from) {
-//      Physics.there.chain(
-//        {
-//          method: 'teleport', 
-//          args: [from, null, null, -1]
-//        },
-//        {
-//          method: 'teleport', 
-//          args: [to, null, null, 1]
-//        }
-//      );
+      var dfd = $.Deferred(),
+          numCallbacks = 2;
       
-//      toView.el.style.opacity = 0;
-      var dfd = $.Deferred();
       toView.onload(function() {
         Physics.disableDrag();
 //        G.disableClick();
-        if (transition == 'snap') {
+        if (options.via) {
+          var bodyId = options.via.getBodyId(),
+              mason = options.via.parentView.mason,
+              time = 1000;
+          
+          numCallbacks = 1;
+          Physics.there.chain(
+//            {
+//              method: 'teleport', 
+//              args: [bodyId, null, null, 1]
+//            },
+            {
+              object: mason.id,
+              method: 'saveState' 
+            },
+            {
+              object: mason.id,
+              method: 'isolate',
+              args: [bodyId, 'pop']
+            },            
+//            {
+//              object: mason.id,
+//              method: 'flyToTopCenter',
+//              args: [bodyId, 3, null, function() {
+//                Physics.there.rpc(null, 'opacity', [to, Physics.constants.maxOpacity, time, finish]);
+//              }]
+//            },
+            {
+              object: mason.id,
+              method: 'center',
+              args: [bodyId, 500, function() {
+                Physics.there.rpc(null, 'opacity', [to, Physics.constants.maxOpacity, time, finish]);
+              }]
+            },
+//            {
+//              object: mason.id,
+//              method: 'maximize', 
+//              args: [bodyId, time, finish]
+//            },
+            {
+              method: 'opacity', 
+              args: [to, 0, 0]
+            },
+            {
+              method: 'teleportCenterX', 
+              args: [to]
+            }
+          );
+        }
+        else if (transition == 'snap') {
           Physics.there.chain({
               method: 'teleport' + fromDir.capitalizeFirst(), 
               args: [to, fromDir]
@@ -58,12 +97,12 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
             {
               method: 'snap', 
   //            args: [from, toDir, 0.5, 0.995, finish]
-              args: [from, toDir, springStiffness, springDamping, finish]
+              args: [from, toDir, options.springStiffness, options.springDamping, finish]
             },
             {
               method: 'snap', 
   //            args: [to, 'center', 0.8, 0.995, finish]
-              args: [to, 'center', springStiffness, springDamping, finish]
+              args: [to, 'center', options.springStiffness, options.springDamping, finish]
             }
           );
         }
@@ -92,16 +131,20 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
 //        Physics.there.rpc(null, 'snap', [to, 'center', springStiffness, springDamping, finish]);
         
         function finish() {
-          if (++finished == 2) {
+          if (++finished >= numCallbacks) {
             Physics.enableDrag();
 //            G.enableClick();
             
             if (fromView) {
+              fromView.turnOffPhysics();
               Q.write(function() {
                 $from.trigger('page_hide');
                 fromView.el.style.opacity = 0;
               });
-            }              
+              
+              if (options.via)
+                Physics.there.rpc(mason.id, 'loadState');
+            }
             
             $to.trigger('page_show');
             dfd.resolve();

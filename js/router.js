@@ -296,7 +296,7 @@ define('router', [
       
       
       options = options || {};
-      var adjustedOptions = _.extend({}, this.defaultOptions, _.pick(options, 'forceFetch', 'errMsg', 'info', 'replace', 'postChangePageRedirect')),
+      var adjustedOptions = _.extend({}, this.defaultOptions, _.pick(options, 'forceFetch', 'errMsg', 'info', 'replace', 'postChangePageRedirect', 'via')),
           hashInfo = G.currentHashInfo,
           pageRoot = G.pageRoot;
       
@@ -1337,7 +1337,7 @@ define('router', [
 //        G.activePage = toView.el;
 //      });
       
-      Transitioner.transition(dir, 'slide', fromView, toView /*[, springStiffness, springDamping]*/).done(function() {
+      Transitioner.transition(dir, 'slide', fromView, toView, _.extend({}, this.getChangePageOptions(), options)).done(function() {
         G.$activePage = $m.activePage = toView.$el;
         G.activePage = toView.el;
       });

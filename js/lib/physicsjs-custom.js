@@ -2206,9 +2206,9 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
                 return this.json[prop];
               },
               set: function(prop, val) {
-                if (!this.json[prop]) {
+                if (!this.json.hasOwnProperty(prop)) {
                   this.changed.push(prop);
-                  this.json[prop] = val;
+                  this.json[prop] = typeof val == 'object' ? Physics.util.clone(val) : val;
                   return;
                 }
                   
@@ -2238,8 +2238,8 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
                       this.changed.push(prop);
                 }
               },
-              toJSON: function() {
-                return this.json;
+              toJSON: function(clone) {
+                return clone ? Physics.util.clone(this.json, true) : this.json;
               }
             });
 
