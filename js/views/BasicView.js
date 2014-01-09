@@ -1130,6 +1130,15 @@ define('views/BasicView', [
       if (doUpdate && this._viewBrick)
         this.buildViewBrick();
       
+      if (this._horizontal) {
+        if (this._width > viewport.width)
+          this.log("BAD BAD BAD BAD WIDTH for " + this.TAG + ": " + this._width);
+      }
+      else {
+        if (this._height > viewport.height)
+          this.log("BAD BAD BAD BAD HEIGHT for " + this.TAG + ": " + this._height);        
+      }
+        
       return doUpdate;
     },
     
@@ -1154,7 +1163,7 @@ define('views/BasicView', [
         scrollbarId = this.getScrollbarId();
         scrollbarOptions = _.defaults({
           _id: scrollbarId,
-          vertices: Physics.getRectVertices(this._scrollbarThickness, this._scrollbarThickness),
+          vertices: Physics.getRectVertices(this._scrollbarThickness, this._scrollbarThickness)
         }, this.getContainerBodyOptions());
         
         Physics.there.addBody('convex-polygon', scrollbarOptions, scrollbarId);
