@@ -232,7 +232,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   
   function IDB(name, options) {
     var self = this;
-    this.name = 'hello';//name;
+    this.name = name;
     _.extend(this, options);
     filePropertyName = this.filePropertyName;
     fileTypePropertyName = this.fileTypePropertyName;
