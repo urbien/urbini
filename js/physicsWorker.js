@@ -1197,6 +1197,18 @@ function pick(obj) {
         }        
       });
       
+      if (this.jiggle) {
+        this._subscribe('sleep:' + this.id, function() {
+          var bricks = this.mason.bricks,
+              brick,
+              i = this.mason.bricks.length;
+          
+          while (i--) {
+            bricks[i].state.rotation = ZERO_ROTATION;
+          }
+        });
+      }
+      
       this['continue']();
     },
     
@@ -1242,17 +1254,7 @@ function pick(obj) {
       while (i--) {
         brick = this.mason.bricks[i];
         brick.state.rotation = rArr;
-      }
-      
-      this._subscribe('sleep:' + this.id, function() {
-        var bricks = this.mason.bricks,
-            brick,
-            i = this.mason.bricks.length;
-        
-        while (i--) {
-          bricks[i].state.rotation = ZERO_ROTATION;
-        }
-      });
+      }      
     },
 
     center: function(bodyId, time, callback) {
