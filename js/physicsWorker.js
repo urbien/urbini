@@ -18,6 +18,7 @@ var ArrayProto = Array.prototype,
 		ZERO_ROTATION = [0, 0, 0],
 		UNSCALED = [1, 1, 1],
     MIN_SCALE = [0.0001, 0.0001, 1],
+    OPACITY_INC = 0.05,
 		LEFT,
 		RIGHT,
     ORIGIN,
@@ -146,6 +147,7 @@ function executeRPC(rpc) {
       return unsubscribe.apply(obj, args);
   }
   
+//  log("RPC " + method + (args ? args.join(",") : ''));
   if (callbackId)
     args.push(callbackId);
   
@@ -184,6 +186,12 @@ function vectorToCenter(fromPos) {
   return Physics.vector().clone(ORIGIN).vsub(fromPos).set(v.get(0), 0).normalize();
 };
 
+function getAABB(body) {
+  if (body.geometry._aabb == false)
+    body.geometry.aabb();
+  
+  return body.geometry._aabb;
+};
 
 function updateBounds(minX, minY, maxX, maxY) {
   RENDERED_SINCE_BOUNDS_CHANGE = false;
@@ -446,8 +454,9 @@ function _getOverlapArea(aabbA, aabbB, areaA, areaB) {
  */
 function getOverlapArea(body, bounds, bodyArea, boundsArea) {
   bounds = bounds || BOUNDS;
-  var aabb = body.aabb(),
+  var aabb = body.aabb(), // don't use getAABB() because it returns the original copy, and we want to adjust the aabb we receive for our calculations without changing the body's actual aabb
       frame = body.options.frame,
+      frameAABB = frame && getAABB(frame),
       xOffset,
       yOffset;
   
@@ -458,8 +467,8 @@ function getOverlapArea(body, bounds, bodyArea, boundsArea) {
       yOffset = frame.state.pos.get(1);
       break;
     default:
-      xOffset = frame.state.pos.get(0) - frame.geometry._aabb._hw;
-      yOffset = frame.state.pos.get(1) - frame.geometry._aabb._hh;
+      xOffset = frame.state.pos.get(0) - frameAABB._hw;
+      yOffset = frame.state.pos.get(1) - frameAABB._hh;
       break;
     }
     
@@ -574,7 +583,7 @@ function calcOpacity(body) {
 };
 
 function getTranslation(body) {
-  var aabb = body.geometry._aabb,
+  var aabb = getAABB(body),
       pos = body.state.pos;
   
   x = pos.get(0) - (aabb._hw || 0);
@@ -883,6 +892,14 @@ function unsubscribe(topic, handlerName) {
 		_unsubscribed.call(this, subscribed.splice(idx, 1));
 };
 
+function getRectVertices(width, height) {
+  return [
+    {x: 0, y: 0},
+    {x: width, y: 0},
+    {x: width, y: height},
+    {x: 0, y: height}
+  ];
+};
 
 /** END Event system hack **/
 
@@ -916,7 +933,8 @@ function pick(obj) {
     bricksPerPage: 10,
 //    numBricks: 0,
     brickLimit: Infinity,
-    gutterWidth: 0,
+    gutterWidthHorizontal: 0,
+    gutterWidthVertical: 0,
     slidingWindowBounds: {
       min: 0,
       max: 0
@@ -941,19 +959,15 @@ function pick(obj) {
   
   function updateBrick(brick, data) {
     var width, height, 
-        geo = brick.geometry;
+        aabb;
     
     if (data.hasOwnProperty('vertices'))
       brick.geometry.setVertices(data.vertices);
     else if (data.hasOwnProperty('width') || data.hasOwnProperty('height')) {
-      width = data.hasOwnProperty('width') ? data.width : geo._aabb._hw * 2;
-      height = data.hasOwnProperty('height') ? data.height : geo._aabb._hh * 2;
-      brick.geometry.setVertices([
-        {x: 0, y: height},
-        {x: width, y: height},
-        {x: width, y: 0},
-        {x: 0, y: 0}
-      ]);
+      aabb = getAABB(brick);
+      width = data.hasOwnProperty('width') ? data.width : aabb._hw * 2;
+      height = data.hasOwnProperty('height') ? data.height : aabb._hh * 2;
+      brick.geometry.setVertices(getRectVertices(width, height));
     }
     
     if (data.hasOwnProperty('mass'))
@@ -1047,6 +1061,28 @@ function pick(obj) {
       this.log("SET HEAD EDGE TO " + this.headEdge.state.pos.get(this.axisIdx));
       this.headEdgeConstraint = API.distanceConstraint(this.offsetBody, this.headEdge, this.getSpringStiffness(), this.flexigroup ? null : 0, this.dirHead);
       this.headEdgeConstraint.damp(this.getSpringDamping());
+      this.headEdgeConstraint.armOnDistance(Infinity, this.dirHead); // no matter how far out of bounds we are, we should snap back
+  //    this.headEdgeConstraint.breakOnDistance(50, DIR_DOWN);
+      if (this.bounds)
+        this.setBounds(this.bounds); // convert to Physics AABB
+      
+      this._calcSlidingWindowDimensionRange();
+      Physics.util.extend(masonryOptions, pick(this, 'bounds', 'horizontal', 'oneElementPerRow', 'oneElementPerCol', 'gutterWidth', 'gutterWidthHorizontal', 'gutterWidthVertical'));
+      if (this.oneElementPerRow || this.oneElementPerCol)
+        this.averageBrickNonScrollDim = this.pageNonScrollDim;
+        
+      if (doSlidingWindow) {
+        this._subscribe('integrate:positions', this._onstep, this, -Infinity); // lowest priority
+        this._onstep = Physics.util.throttle(this._onstep.bind(this), 30);
+      }
+      
+      this.mason = new Mason(masonryOptions);
+      if (this.bricks) {
+        this.range.to = this.bricks.length;
+        this.addBricks(this.bricks);
+        delete this.bricks; // let mason keep track
+      }
+      
 //      var dirSign,
 //          lastSign,
 //          timesCrossedThreshold,
@@ -1132,15 +1168,21 @@ function pick(obj) {
             }
           }
           
+          if (this.scrollbar)
+            world.removeBody(this.scrollbar);
+
           return;
         }
-        
-        while (i--) {
-          preRender(bricks[i]);
-        }
-        
-        if (this.jiggle) {
-          this.tiltBricksInertially();
+        else {
+          while (i--) {
+            preRender(bricks[i]);
+          }
+          
+          if (this.jiggle)
+            this.tiltBricksInertially();
+          
+          if (this.scrollbar)
+            this._updateScrollbar();
         }
       }, this);
       
@@ -1150,49 +1192,6 @@ function pick(obj) {
           return;
         }        
       });
-      
-      // TODO: subscribe/unsubscribe on arm/break
-//      world.subscribe('step', function bounceCheck() {
-//        dirSign = sign(this.headEdge.state.pos.get(this.axisIdx) - this.offsetBody.state.pos.get(this.axisIdx));
-//        if (!lastSign) {
-//          lastSign = dirSign;
-//          return;
-//        }
-//        
-//        if (lastSign != dirSign) {
-//          timesCrossedThreshold++;
-//          lastSign = dirSign;
-//        }
-//        else
-//          return;
-//          
-//        if (timesCrossedThreshold > MAX_BOUNCES) {
-//          stopBody(this.offsetBody, this.headEdge.state.pos);
-//          resetConstraint();
-//        }
-//      }, this, 10);
-      
-      this.headEdgeConstraint.armOnDistance(Infinity, this.dirHead); // no matter how far out of bounds we are, we should snap back
-//      this.headEdgeConstraint.breakOnDistance(50, DIR_DOWN);
-      if (this.bounds)
-        this.setBounds(this.bounds); // convert to Physics AABB
-      
-      this._calcSlidingWindowDimensionRange();
-      Physics.util.extend(masonryOptions, pick(this, 'bounds', 'horizontal', 'oneElementPerRow', 'oneElementPerCol', 'gutterWidth'));
-      if (this.oneElementPerRow || this.oneElementPerCol)
-        this.averageBrickNonScrollDim = this.pageNonScrollDim;
-        
-      if (doSlidingWindow) {
-        this._subscribe('integrate:positions', this._onstep, this, -Infinity); // lowest priority
-        this._onstep = Physics.util.throttle(this._onstep.bind(this), 30);
-      }
-      
-      this.mason = new Mason(masonryOptions);
-      if (this.bricks) {
-        this.range.to = this.bricks.length;
-        this.addBricks(this.bricks);
-        delete this.bricks; // let mason keep track
-      }
       
       this['continue']();
     },
@@ -1255,7 +1254,7 @@ function pick(obj) {
     center: function(bodyId, time, callback) {
       var self = this,
           body = this.getBrick(bodyId),
-          aabb = body.geometry._aabb,
+          aabb = getAABB(body),
           fixed = body.fixed,
           posLock,
           pos = body.state.pos,
@@ -1364,11 +1363,12 @@ function pick(obj) {
     
     maximize: function(bodyId, time, callback) {
       var body = this.getBrick(bodyId),
+          aabb = getAABB(body),
           originalScale = body.state.renderData.get('scale') || UNSCALED,
           vWidth = BOUNDS._hw * 2,
           vHeight = BOUNDS._hh * 2,
-          bodyWidth = body.geometry._aabb._hw * 2 * originalScale[0],
-          bodyHeight = body.geometry._aabb._hh * 2 * originalScale[1],
+          bodyWidth = aabb._hw * 2 * originalScale[0],
+          bodyHeight = aabb._hh * 2 * originalScale[1],
           bricks = this.mason.bricks.slice();
 
       bricks.splice(bricks.indexOf(body), 1);
@@ -1479,6 +1479,9 @@ function pick(obj) {
         this.popOut(bricks, doDestroy);
       else if (this.fade)
         this.fadeOut(bricks, doDestroy);
+      
+      if (this.scrollbar)
+        world.removeBody(this.scrollbar);
     },
     
     actionOut: function(bricks, totalTime, action, actionFn, callback) {
@@ -1710,15 +1713,32 @@ function pick(obj) {
       var head = this.headEdge.state.pos.get(this.axisIdx),
           tail = this.tailEdge ? this.tailEdge.state.pos.get(this.axisIdx) : this.slidingWindowBounds.max;
           
-      return tail - head;
+      return Math.abs(tail - head) + this.pageScrollDim;
     },
     
     _updateScrollbar: function() {
-      if (this.scrollbar) {
-        var dim = Math.max(6, Math.round(this.pageScrollDim * (this.pageScrollDim / this.getDistanceFromHeadToTail()) - 4));
-        this.scrollbar.style[this.horizontal ? 'width' : 'height'] = Math.max(6, Math.round(this.pageWidth * (this.pageWidth / this.getDistanceFromHeadToTail()) - 4)) + 'px';
+      if (this.scrollbar && this.scrollable) {
+        var viewport = this.getViewport(),
+            viewportDim = viewport.max - viewport.min,
+            slidingWindow = this.slidingWindowBounds,
+            slidingWindowDimension = this.slidingWindowDimension,
+            dim = Math.max(6, Math.round(this.pageScrollDim * (this.pageArea / this.averageBrickArea) / this.lastBrickSeen - 4)),
+            aabb = getAABB(this.scrollbar),
+            vel = this.scrollbar.state.vel.norm(),
+            currentOpacity = this.scrollbar.state.renderData.get('opacity'),
+            opacity,
+            percentOffset;
         
-//        _scrollbarNodes[axis].style[_transformProperty] = _translateRulePrefix + _transformPrefixes[axis] + (-position * _metrics.container[axis] / _metrics.content[axis]) + 'px' + _transformSuffixes[axis];
+        opacity = Math.max(Math.min(MAX_OPACITY, Math.pow(vel, 0.33), currentOpacity + OPACITY_INC),
+                                                                      currentOpacity - OPACITY_INC/2);
+            
+        percentOffset = (this.range.from + ((viewport.min - slidingWindow.min) / slidingWindowDimension) * (this.range.to - this.range.from)) / this.lastBrickSeen; // estimate which tiles we're looking at
+        
+        this.scrollbar.state.renderData.set(this.horizontal ? 'width' : 'height', dim + 'px');
+        this.scrollbar.state.pos.setComponent(this.axisIdx, viewport.min + viewportDim * percentOffset);
+        this.scrollbar.state.pos.setComponent(this.orthoAxisIdx, this.bounds._pos.get(this.orthoAxisIdx) + this.bounds[this.aabbOrthoAxisDim] - aabb[this.aabbOrthoAxisDim] * 2);
+        if (Math.abs(opacity - currentOpacity) > 0.01)
+          this.scrollbar.state.renderData.set('opacity', opacity);
       }
     },
     
@@ -1763,21 +1783,31 @@ function pick(obj) {
     
     checkHeadEdge: function() {
 //      if (this.range.from == 0) {
+      if (this.slidingWindow) {
+        // head and tail edge swim around
         var coords = new Array(2);
         coords[this.orthoAxisIdx] = this.headEdge.state.pos.get(this.orthoAxisIdx);
 //        coords[this.axisIdx] = Math.max(this.headEdge.state.pos.get(this.axisIdx), -this.slidingWindowBounds.min);
         coords[this.axisIdx] = -this.slidingWindowBounds.min;
         this.headEdge.state.pos.set(coords[0], coords[1]);
+      }
 //      }
     },
 
     getTailEdgeCoords: function() {
       var coords = new Array(2);  
       coords[this.orthoAxisIdx] = this.headEdge.state.pos.get(this.orthoAxisIdx);
-      if (this.range.from == 0 && this.range.to == this.brickLimit && this.slidingWindowDimension < this.pageScrollDim)
-        coords[this.axisIdx] = this.headEdge.state.pos.get(this.axisIdx);
-      else
-        coords[this.axisIdx] = -this.slidingWindowBounds.max + this.pageScrollDim; // - this.pageOffset[this.axisIdx];
+      if (this.slidingWindow) {
+        // head and tail edge swim around
+        if (this.range.from == 0 && this.range.to == this.brickLimit && this.slidingWindowDimension < this.pageScrollDim)
+          coords[this.axisIdx] = this.headEdge.state.pos.get(this.axisIdx);
+        else
+          coords[this.axisIdx] = -this.slidingWindowBounds.max + this.pageScrollDim; // - this.pageOffset[this.axisIdx];
+      }
+      else {
+        // tail edge depends only on size of the layout and the size of the paint bounds
+        coords[this.axisIdx] = -this.slidingWindowDimension + this.pageScrollDim;
+      }
       
       return coords;
     },
@@ -1836,13 +1866,20 @@ function pick(obj) {
       var viewport = this.getViewport(),
           multiplier = reverse ? 1 : -1,
           edge = (reverse ? viewport.max : viewport.min) | 0,
-          offset = {};
+          offset;
       
       log("Reloading layout: " + this.id + (reverse ? " tail to head" : ""));
-      offset[this.axis] = edge; //Math.max(edge + multiplier * this.pageScrollDim, 0);
-      offset[this.orthoAxis] = 0;
-      this.mason.option('fromBottom', reverse);
-      this.mason.reload(offset);
+      if (this.slidingWindow) {
+        offset = {};
+        offset[this.axis] = edge; //Math.max(edge + multiplier * this.pageScrollDim, 0);
+        offset[this.orthoAxis] = 0;
+        this.mason.option('fromBottom', reverse);
+        this.mason.reload(offset);
+      }
+      else {
+        this.mason.option('fromBottom', false);
+        this.mason.reload();
+      }
     },
 
     setLimit: function() {
@@ -1853,7 +1890,7 @@ function pick(obj) {
 
     unsetLimit: function() {
       this.brickLimit = Infinity;
-      self.removeConstraint(this.tailEdgeConstraint);
+      API.removeConstraint(this.tailEdgeConstraint);
       world.removeBody(this.tailEdge);
       delete this.tailEdgeConstraint;
       delete this.tailEdge;
@@ -1904,28 +1941,31 @@ function pick(obj) {
     },
     
     recalc: function() {
-      var gutterWidth = this.mason.option('gutterWidth'),
+      var gutterWidthH = this.mason.option('gutterWidthHorizontal'),
+          gutterWidthV = this.mason.option('gutterWidthVertical'),
           aabb,
           avgWidth = 0,
           avgHeight = 0,
           bricks = this.mason.bricks,
           numBricks = this.numBricks(),
+          viewport = this.getViewport(),
           i = numBricks;
       
       Physics.util.extend(this.slidingWindowBounds, this.mason.getContentBounds());
       this.slidingWindowDimension = this.slidingWindowBounds.max - this.slidingWindowBounds.min;
+      this.scrollable = this.slidingWindowDimension > viewport.max - viewport.min;
       
       // TODO: prune unused props
 //      this.numBricks = bricks.length;
       if (numBricks) {
         while (i--) {
-          aabb = bricks[i].aabb();
-          avgWidth += aabb.halfWidth;
-          avgHeight += aabb.halfHeight;
+          aabb = getAABB(bricks[i]);
+          avgWidth += aabb._hw;
+          avgHeight += aabb._hh;
         };
         
-        this.averageBrickWidth = avgWidth * 2 / numBricks + gutterWidth;
-        this.averageBrickHeight = avgHeight * 2 / numBricks + gutterWidth;
+        this.averageBrickWidth = avgWidth * 2 / numBricks + gutterWidthH;
+        this.averageBrickHeight = avgHeight * 2 / numBricks + gutterWidthV;
         this.averageBrickScrollDim = this.horizontal ? this.averageBrickWidth : this.averageBrickHeight;
         this.averageBrickNonScrollDim = this.horizontal ? this.averageBrickHeight : this.averageBrickWidth;
         this.averageBricksPerScrollDim = this.pageScrollDim / this.averageBrickScrollDim;
@@ -1985,7 +2025,7 @@ function pick(obj) {
           options;
       
       this.biggestViewportMin = Math.max(viewport.min, this.biggestViewportMin || 0);
-//      log("ADDING BRICKS: " + optionsArr.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
+      log("ADDING BRICKS: " + optionsArr.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
       for (var i = 0; i < l; i++) {
         options = optionsArr[i];
         if (!this.flexigroup)
@@ -2111,6 +2151,9 @@ function pick(obj) {
       this.log("ADDED " + l + " BRICKS TO THE " + (prepend ? "HEAD" : "TAIL") + " FOR A TOTAL OF " + (this.range.to - this.range.from));
 //      this.printState();
       //    log("ACTUAL TOTAL AFTER ADD: " + this.numBricks());
+      if (this.scrollbar && this.scrollable)
+        this.scrollbar.state.renderData.set('opacity', MAX_OPACITY);
+      
       this.checkRep();
       this['continue']();
     },
@@ -2293,6 +2336,9 @@ function pick(obj) {
 //        }
         
         world.add(this.mason.bricks);
+        if (this.scrollbar)
+          world.addBody(this.scrollbar);
+
 /*        var bricks = this.mason.bricks,
             brick,
             i = bricks.length;
@@ -2305,6 +2351,7 @@ function pick(obj) {
         }
  */      
       }
+      
       this.enableEdgeConstraints();
       this['continue']();
     },

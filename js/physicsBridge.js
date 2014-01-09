@@ -15,6 +15,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       HERE,
       THERE,
       KeyHandler,
+      ARROW_KEY_VECTOR_MAG = 80,
       ID_TO_LAYOUT_MANAGER = {},
       ID_TO_EL = {},
       ID_TO_LAST_TRANSFORM = {},
@@ -296,8 +297,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       var keyCode = U.getKeyEventCode(e),
           vector = this._dragged,
           viewport = G.viewport,
-          axisIdx = 1, // generalize to X, Y
-          dimProp = axisIdx == 0 ? 'width' : 'height',
+//          axisIdx = 1, // generalize to X, Y
+//          dimProp = axisIdx == 0 ? 'width' : 'height',
           draggable;
           
       if (this._keyHeld && this._keyHeld != keyCode)
@@ -308,13 +309,15 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         if (this._keyHeld)
           return;
         
-        vector[axisIdx] = viewport[dimProp];
+        vector[0] = viewport.width;
+        vector[1] = viewport.height;
         break;
       case 34: // page down
         if (this._keyHeld)
           return;
         
-        vector[axisIdx] = -viewport[dimProp];
+        vector[0] = -viewport.width;
+        vector[1] = -viewport.height;
         break;
       case 35: // end
         if (this._keyHeld)
@@ -340,13 +343,21 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         }
         
         return; 
+      case 37: // left arrow
+        this._coast = true;
+        vector[0] = ARROW_KEY_VECTOR_MAG;
+        break;
       case 38: // up arrow
         this._coast = true;
-        vector[axisIdx] = 80;
+        vector[1] = ARROW_KEY_VECTOR_MAG;
+        break;
+      case 39: // right arrow
+        this._coast = true;
+        vector[0] = -ARROW_KEY_VECTOR_MAG;
         break;
       case 40: // down arrow
         this._coast = true;
-        vector[axisIdx] = -80;
+        vector[1] = -ARROW_KEY_VECTOR_MAG;
         break;
       default:
         return;
@@ -785,6 +796,28 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   }
   
   Physics = {
+    getRectVertices: function(width, height) {
+      return [
+        {x: 0, y: 0},
+        {x: width, y: 0},
+        {x: width, y: height},
+        {x: 0, y: height}
+      ];
+    },
+    updateRectVertices: function(vertices, width, height) {
+      if (!vertices)
+        return Physics.getRectVertices(width, height);
+      
+      var v0 = vertices[0],
+          v1 = vertices[1],
+          v2 = vertices[2],
+          v3 = vertices[3];
+      
+      v0.x = v0.y = v1.y = v3.x = 0;
+      v1.x = v2.x = width;
+      v2.y = v3.y = height;
+      return vertices;
+    },
     isDragging: function() {
       return !!DRAG_LOCK;
     },
@@ -1096,6 +1129,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         if (args)
           replaceCallbacks(args);
         
+//        G.log("events", "RPC", method, (args ? args.join(",") : ''));
         worker.postMessage({
           object: objectName,
           method: method,

@@ -39,7 +39,10 @@ define('views/BasicView', [
     _initializedCounter: 0,
     _flexigroup: false,
     _draggable: false,
+    _scrollbar: false,
+    _scrollbarThickness: 5,
     _dragAxis: null, // 'x' or 'y' if you want to limit it to one axis
+    _scrollAxis: 'y',
     initialize: function(options) {
       _.bindAll(this, 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_render',  '_refresh', 'finish', '_onViewportDimensionsChanged', '_recheckDimensions', '_onMutation');
       this._initializedCounter++;
@@ -321,6 +324,8 @@ define('views/BasicView', [
         this._doRefresh.apply(this, arguments);
         if (rOptions.delegateEvents !== false)
           this.redelegateEvents();
+        
+        this._checkScrollbar();
       }
       else
         this._refreshArgs = arguments;
@@ -342,6 +347,36 @@ define('views/BasicView', [
 //      return this;
 //    },
 
+    _checkScrollbar: function() {
+      if (this._scrollbar) {
+        this.scrollbar = this.el.$('.scrollbar')[0];
+        if (!this.scrollbar) {
+          var self = this,
+              scrollbarId = this.getScrollbarId(),
+              tmpl_data = {
+                axis: this._scrollAxis,
+                id: scrollbarId
+              },
+              frag = document.createDocumentFragment();
+          
+          if (!this.scrollbarTemplate)
+            this.makeTemplate('scrollbarTemplate', 'scrollbarTemplate', this.vocModel.type);
+
+          tmpl_data[this._scrollAxis == 'x' ? 'height' : 'width'] = this._scrollbarThickness;
+          U.addToFrag(frag, this.scrollbarTemplate(tmpl_data));
+          
+          this.scrollbar = frag.childNodes[0];
+          this.el.$prepend(this.scrollbar);
+          Physics.here.addBody(this.scrollbar, scrollbarId);
+//          Q.read(function() {
+//            Physics.there.updateBody(scrollbarId, {
+//              //.. new vertices based on new ortho-axis dim of scrollbar
+//            });
+//          }, this);
+        }
+      }
+    },
+    
     _render: function(rOptions) {
   //    this.log('render', 'page title:', this.getPageTitle());
       rOptions = rOptions || {};
@@ -354,7 +389,8 @@ define('views/BasicView', [
         
         if (this.el && G.browser.mobile) // TODO disable hover when el appears
           disableHover(this.el);
-        
+
+        this._checkScrollbar();
         return result;
       }
       else {
@@ -1028,6 +1064,10 @@ define('views/BasicView', [
       }
     },
     
+    getScrollbarId: function() {
+      return this.getBodyId() + '-scrollbar';
+    },
+    
     getBodyId: function() {
 //      return this.cid + '.' + this._initializedCounter;
       return this.cid;
@@ -1106,12 +1146,26 @@ define('views/BasicView', [
       var self = this,
           thisTransform = DOM.getTransform(this.el),
           containerId = this.getContainerBodyId(),
-          topEdgeId = _.uniqueId('topEdge');
-    
+          topEdgeId = _.uniqueId('topEdge'),
+          scrollbarId,
+          scrollbarOptions;
+
+      if (this._scrollbar) {
+        scrollbarId = this.getScrollbarId();
+        scrollbarOptions = _.defaults({
+          _id: scrollbarId,
+          vertices: Physics.getRectVertices(this._scrollbarThickness, this._scrollbarThickness),
+        }, this.getContainerBodyOptions());
+        
+        Physics.there.addBody('convex-polygon', scrollbarOptions, scrollbarId);
+      }
+      
+
       options = options || {};      
       _.defaults(options, {
         slidingWindow: false,
         container: containerId,
+        scrollbar: scrollbarId, 
         bounds: this._bounds,
         flexigroup: this._flexigroup ? containerId : false,
         scrollerType: this._scrollerType
@@ -1157,10 +1211,8 @@ define('views/BasicView', [
           options,
           lock = {};
       
-      if (this._horizontal)
-        lock.y = 0;
-      else
-        lock.x = 0;
+      if (this._dragAxis)
+        lock[_.oppositeAxis(this._dragAxis)] = 0;
       
       if (this._flexigroup) {
         if (!this.hasOwnProperty('_offsetWidth'))
@@ -1223,18 +1275,11 @@ define('views/BasicView', [
           width, 
           height;
       
-//      if (_.has(brick, 'width'))
-//        width = brick.width;
-//      else
-//        width = brick.el ? brick.el.$outerWidth() : this._outerWidth;
-//      
-//      if (_.has(brick, 'height'))
-//        height = brick.height;
-//      else
-//        height = brick.el ? brick.el.$outerHeight() : this._outerHeight;
-//
-//      if (!_.has(brick, '_id'))
-//        brick._id = this.getBodyId();
+      brick.fixed = !this._flexigroup;
+      brick.mass = _.has(brick, 'mass') ? brick.mass : 0.1;
+      brick.restitution = _.has(brick, 'restitution') ? brick.restitution : 0.3;
+      brick.lock = brick.lock || {};      
+      
       if (thisView) {
         width = this._outerWidth;
         height = this._outerHeight;
@@ -1242,12 +1287,18 @@ define('views/BasicView', [
         if (this.resource)
           brick._uri = U.getShortUri(this.resource.getUri(), this.vocModel);
         
+        // HACK
+        if (this._dragAxis)
+          brick.lock[_.oppositeAxis(this._dragAxis)] = 0;
+        // END HACK
+
         brick.offset = brick.offset || {};
         brick.offset.x = this._offsetLeft;
         brick.offset.y = this._offsetTop;
       }
       else {
         if (brick.el) {
+          debugger;
           width = brick.el.$outerWidth();
           height = brick.el.$outerHeight();
           brick.offset = brick.offset || {};
@@ -1264,35 +1315,9 @@ define('views/BasicView', [
 //        brick._uri = U.getShortUri(brick.resource.getUri(), brick.resource.vocModel);
         delete brick.resource;
 //      }
-        
-      
-      brick.fixed = !this._flexigroup;
-      
-      // HACK
-      brick.lock = brick.lock || {};
-      brick.lock[this._horizontal ? 'y' : 'x'] = 0;
-      // END HACK
-      
-      brick.mass = _.has(brick, 'mass') ? brick.mass : 0.1;
-      brick.restitution = _.has(brick, 'restitution') ? brick.restitution : 0.3;
       
       // vertices
-      v = brick.vertices = brick.vertices || [];
-      v[0] = v[0] || {};
-      v[0].x = 0;
-      v[0].y = height;
-
-      v[1] = v[1] || {};
-      v[1].x = width;
-      v[1].y = height;
-
-      v[2] = v[2] || {};
-      v[2].x = width;
-      v[2].y = 0;
-
-      v[3] = v[3] || {};
-      v[3].x = 0;
-      v[3].y = 0;
+      brick.vertices = Physics.updateRectVertices(brick.vertices, width, height);
       return brick;
     },
     

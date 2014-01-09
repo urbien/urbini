@@ -24,15 +24,17 @@ define('views/HorizontalListView', [
 //    _flexigroup: true,
     style: (function() {
       var style = {
-        height: '150px',
-        'padding-top': '3px'
+        height: '155px' // 150 + 5 for scrollbar
+//          ,
+//        'padding-top': '3px'
       };
       
       style[DOM.prefix('perspective')] = '300px';
       return style;
     })(),
-    _horizontal: true,
+//    _horizontal: true,
     _dragAxis: 'x',
+    _scrollAxis: 'x',
     _visible: false,
     _elementsPerPage: 6,
 
@@ -41,7 +43,8 @@ define('views/HorizontalListView', [
       ResourceListView.prototype.initialize.apply(this, arguments);
       _.extend(this.options, {
         horizontal: true, 
-        gutterWidth: 15,
+        gutterWidthHorizontal: 15,
+        gutterWidthVertical: 0,
         jiggle: true,
         scrollerType: 'horizontal',
         oneElementPerRow: false,
@@ -50,6 +53,7 @@ define('views/HorizontalListView', [
         stretchCol: false
       });
       
+      delete this.options['gutterWidth'];
 //      this._renderedIntersectionUris = [],
       _.extend(this, options);
     },

@@ -424,6 +424,21 @@ define('underscoreMixins', ['_underscore'], function(_) {
         }
       }
     },
+    
+    oppositeAxis: function(axis) {
+      switch (axis) {
+      case 'x':
+        return 'y';
+      case 'X':
+        return 'Y';
+      case 'y':
+        return 'x';
+      case 'Y':
+        return 'X';
+      default:
+        throw "unsupported axis " + axis;
+      }
+    },
   
     now: window.performance ? window.performance.now.bind(window.performance) : Date.now.bind(Date)
   });

@@ -330,7 +330,7 @@ div.nabBtn {
 /*  #sidebarDiv #nabs_grid {left: -15px;} */
 }
 
-#nabs_grid {padding: 0 5px;}
+#nabs_grid {padding: 0;}
 .u-desc {
   padding-top:7px; font-size: 14px;
 }
@@ -1277,22 +1277,24 @@ div {
   pointer-events: none; 
   position: absolute; 
   width: 5px; 
-  height: 5px; 
-  border: 1px solid rgba(255, 255, 255, 0.15); 
+  height: 5px;
+#  background: rgba(0, 0, 255, 0.99);
+#  border: 1px solid rgba(255, 255, 255, 0.15); 
   -webkit-border-radius: 3px; 
   border-radius: 6px; 
-  opacity: 0; 
-  -webkit-transition: opacity 350ms; 
-  -moz-transition: opacity 350ms; 
-  transition: opacity 350ms; 
+  opacity: 0;
+  z-index:10002;
+#  -webkit-transition: opacity 350ms; 
+#  -moz-transition: opacity 350ms; 
+#  transition: opacity 350ms; 
   z-index: 10; 
   -webkit-box-sizing: content-box; 
   -moz-box-sizing: content-box; 
   box-sizing: content-box 
 }
 
-.scrollbarx { bottom: 2px; left: 2px }
-.scrollbary { right: 2px; top: 2px }
+#.scrollbarx { bottom: 2px; left: 2px }
+#.scrollbary { right: 2px; top: 2px }
 .scrollbarinner { height: 100%; background: rgba(0,0,0,0.5); -webkit-border-radius: 2px; border-radius: 4px / 6px }
 
 /*

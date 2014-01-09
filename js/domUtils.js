@@ -1211,6 +1211,10 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
         }
       }
     },
+
+    parseHTML: function(html) {
+      return $.parseHTML(html.trim());
+    },
     
     /**
      * Replaces all of a's child nodes with b's

@@ -2207,7 +2207,8 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
               },
               set: function(prop, val) {
                 if (!this.json.hasOwnProperty(prop)) {
-                  this.changed.push(prop);
+                  if (!this.isChanged(prop))
+                    this.changed.push(prop);
                   this.json[prop] = typeof val == 'object' ? Physics.util.clone(val) : val;
                   return;
                 }

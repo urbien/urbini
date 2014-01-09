@@ -56,18 +56,23 @@
     stretchCol: false,
     fromBottom: false,
     isResizable: true,
-    gutterWidth: 0
+    gutterWidthHorizontal: 0,
+    gutterWidthVertical: 0
   };
 
   Mason.prototype = {
     // sets up widget
     _create: function( options ) {
   
+      if (options.hasOwnProperty('gutterWidth'))
+        options.gutterWidthHorizontal = options.gutterWidthVertical = options.gutterWidth;
+        
       this.options = Physics.util.extend( {}, Mason.settings, options );
+        
       this.axis = this.options.horizontal ? 'x' : 'y';
 //      this.AXIS = this.axis.toUpperCase();
       this.originalFromBottom = this.options.fromBottom;
-      this.setBounds(options.bounds)
+      this.setBounds(options.bounds);
     },
   
     // _init fires when your instance is first created
@@ -121,6 +126,8 @@
         // signature: $('#foo').bar('option', 'baz', false);
       } else {
         this.options[ key ] = value;
+        if (key == 'gutterWidth')
+          this.options.gutterWidthHorizontal = this.options.gutterWidthVertical = value;
       }
   
       return this; // make sure to return the instance!
@@ -172,23 +179,30 @@
       // }
     // },
     
+    getGutterWidth: function(ortho) {
+      if (this.options.horizontal && ortho || (!this.options.horizontal && !ortho))
+        return this.options.gutterWidthVertical;
+      else
+        return this.options.gutterWidthHorizontal;
+    },
+    
     // calculates number of columns
     // i.e. this.alleyDim = 200
     _getColumns: function() {
       if (this.options.oneElementPerRow || this.options.stretchRow) {
-        this.alleyDim = this.bounds._hw * 2;
+        this.alleyDim = this.bounds._hw * 2 - this.getGutterWidth(true);
         this.cols = 1;
         return;
       }
       else if (this.options.oneElementPerCol || this.options.stretchCol) {
-        this.alleyDim = this.bounds._hh * 2;
+        this.alleyDim = this.bounds._hh * 2 - this.getGutterWidth(true);
         this.cols = 1;
         return;
       }
       
       var brick = this.bricks[0],
           dimensionMethod = this.options.horizontal ? '_getOuterHeight' : '_getOuterWidth',
-          containerDim = this.horizontal ? this.bounds._hh * 2 : this.bounds._hw * 2;
+          containerDim = this.options.horizontal ? this.bounds._hh * 2 : this.bounds._hw * 2;
   
       // this._calcBrickMargin();
       this.alleyDim = this.options.alleyDim ||
@@ -197,9 +211,9 @@
                          // if there's no items, use size of container
                          containerDim;
   
-      this.alleyDim += this.options.gutterWidth;
+      this.alleyDim += this.getGutterWidth(true);
   
-      this.cols = Math.floor( ( containerDim + this.options.gutterWidth ) / this.alleyDim );
+      this.cols = Math.floor( ( containerDim - this.getGutterWidth(true) ) / this.alleyDim );
       this.cols = Math.max( this.cols, 1 );
   
       return this;
@@ -232,7 +246,7 @@
           extreme = this.options.fromBottom ? Math.max : Math.min,
           extremeDepth  = extreme.apply( Math, setY ),
           multiplier = this.options.fromBottom ? -1 : 1,
-          setHeight = extremeDepth + multiplier * (this[dimensionMethod](brick) + this.options.gutterWidth),
+          setHeight = extremeDepth + multiplier * (this[dimensionMethod](brick) + this.getGutterWidth()),
           i = setY.length,
           shortCol  = i,
           setSpan   = this.cols + 1 - i,
@@ -259,7 +273,7 @@
           left;
       
       if (this.options.horizontal) {        
-        top = this.alleyDim * shortCol + /*this.offset.y +*/ brick.geometry._aabb._hh; // alleyDim includes gutterWidth
+        top = this.getGutterWidth(true) + this.alleyDim * shortCol + /*this.offset.y +*/ brick.geometry._aabb._hh; // alleyDim includes gutterWidth
         
         if (this.options.fromBottom)
           left = extremeDepth /*- this.offset.x*/ - brick.geometry._aabb._hw + this._getOffsetDueToFlexigroup();
@@ -267,7 +281,7 @@
           left = extremeDepth /*+ this.offset.x*/ + brick.geometry._aabb._hw + this._getOffsetDueToFlexigroup();
       }
       else {
-        left = this.alleyDim * shortCol + this.offset.x + brick.geometry._aabb._hw; // alleyDim includes gutterWidth
+        left = this.getGutterWidth(true) + this.alleyDim * shortCol + this.offset.x + brick.geometry._aabb._hw; // alleyDim includes gutterWidth
       
         if (this.options.fromBottom)
           top = extremeDepth /*- this.offset.y*/ - brick.geometry._aabb._hh + this._getOffsetDueToFlexigroup();
@@ -282,7 +296,7 @@
         brick.state.pos.lock(lock);
       else {
         brick.state.pos.lock({
-          x: this.options.gutterWidth / 2
+          x: this.getGutterWidth(true) / 2
         }); 
       }
 
@@ -340,7 +354,7 @@
       
       while (i--) {
         this.topColYs[i] = offset;
-        this.bottomColYs[i] = offset + this.options.gutterWidth;
+        this.bottomColYs[i] = offset + this.getGutterWidth();
       }
       
       this.topColYs.length = this.bottomColYs.length = this.cols;
@@ -439,8 +453,8 @@
         top = brick.state.pos.get(1) - brick.geometry._aabb._hh - flexigroupOffset;
         while (colSpan--) {
           col = fromCol + colSpan;
-          topColYs[col] = Math.min(top - this.options.gutterWidth, topColYs[col]);
-          bottomColYs[col] = Math.max(top + height + this.options.gutterWidth, bottomColYs[col]);
+          topColYs[col] = Math.min(top - this.getGutterWidth(), topColYs[col]);
+          bottomColYs[col] = Math.max(top + height + this.getGutterWidth(), bottomColYs[col]);
         }
       }
     
@@ -452,7 +466,7 @@
 //      this.bricks = difference(this.bricks, bricks);
       this.bricks = this.bricks.slice(Math.min(this.bricks.length, n), this.bricks.length);
       var dimensionMethod = this.options.horizontal ? '_getOuterWidth' : '_getOuterHeight',
-          gutterWidth = this.options.gutterWidth,
+          gutterWidth = this.getGutterWidth(),
           i = bricks.length,
           brick,
           dim,
@@ -477,7 +491,7 @@
 //      this.bricks = difference(this.bricks, bricks);
       this.bricks.length = Math.max(0, this.bricks.length - n);
       var dimensionMethod = this.options.horizontal ? '_getOuterWidth' : '_getOuterHeight',
-          gutterWidth = this.options.gutterWidth,
+          gutterWidth = this.getGutterWidth(),
           brick,
           dim,
           colSpan,
