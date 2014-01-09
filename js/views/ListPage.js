@@ -19,6 +19,7 @@ define('views/ListPage', [
     clicked: false,
     autoFinish: false,
     _draggable: false,
+    _scrollbar: false, 
     style: {
       'background-color': 'white'
     },

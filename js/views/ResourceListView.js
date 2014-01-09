@@ -44,6 +44,7 @@ define('views/ResourceListView', [
   return BasicView.extend({
     // CONFIG
     _draggable: true,
+    _scrollbar: true,
     _invisibleLayerThickness: 0, // in pages, 1 == 1 page, 2 == 2 pages, etc. (3 == 3 pages fool!)
     displayMode: 'vanillaList', // other options: 'masonry'
     // END CONFIG
@@ -92,7 +93,6 @@ define('views/ResourceListView', [
       this._dragIdx = this.options.horizontal ? 'x' : 'y';
       this.mode = options.mode || G.LISTMODES.DEFAULT;
       var type = this.modelType;
-      this.makeTemplate('scrollbarTemplate', 'scrollbarTemplate', this.vocModel.type);
       this.makeTemplate('fileUpload', 'fileUploadTemplate', type);
       var commonTypes = G.commonTypes;
       this.isPhotogrid = this.type == 'photogrid'; //this.parentView.isPhotogrid;
@@ -541,18 +541,22 @@ define('views/ResourceListView', [
     render: function() {
       if (!this.rendered) {
         this.imageProperty = U.getImageProperty(this.collection);
-        var scrollbarId = this.options.scrollbar = this.getBodyId() + 'scrollbar',
-            containerOptions = this.getContainerBodyOptions();
-        
-        containerOptions._id = containerOptions._id + 'scrollbar';
-        this.html(this.scrollbarTemplate({
-          axis: this.options.horizontal ? 'x' : 'y',
-          id: scrollbarId
-        }));
-        
-        this.scrollbar = this.el.$('#scrollbar')[0];
-        Physics.here.addBody(this.scrollbar, scrollbarId);
-        Physics.there.addBody('point', containerOptions, scrollbarId);
+//        var scrollbarId = this.options.scrollbar = this.getBodyId() + 'scrollbar',
+//            scrollbarOptions = _.clone(this.getContainerBodyOptions());
+////        ,
+////            containerOptions = this.getContainerBodyOptions();
+//        
+////        containerOptions._id = containerOptions._id + 'scrollbar';
+//        scrollbarOptions._id = scrollbarId;
+//        this.html(this.scrollbarTemplate({
+//          axis: this.options.horizontal ? 'x' : 'y',
+//          id: scrollbarId
+//        }));
+//        
+//        this.scrollbar = this.el.$('#' + scrollbarId)[0];
+//        Physics.here.addBody(this.scrollbar, scrollbarId);
+////        Physics.there.addBody('point', containerOptions, scrollbarId);
+//        Physics.there.addBody('point', scrollbarOptions, scrollbarId);
         this.addToWorld(this.options);
       }
       else 
@@ -1023,7 +1027,7 @@ define('views/ResourceListView', [
     toBricks: function(views, options) {
       var bricks = [],
           brick,
-          lockAxis = this._horizontal ? 'y' : 'x',
+          lockAxis = _.oppositeAxis(this._scrollAxis),
           view;
       
       for (var i = 0, l = views.length; i < l; i++) {
