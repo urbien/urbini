@@ -277,6 +277,8 @@ define('views/ResourceListView', [
       var top = e.target,
           params = this.hashParams,
           parentView = this,
+          navOptions = {},
+          link,
           self,
           type,
           isWebCl,
@@ -285,20 +287,21 @@ define('views/ResourceListView', [
           viewId;
 
       while (top && top != this.el && !(viewId = top.dataset.viewid)) {
-        if (top.tagName == 'A') {
-          Events.stopEvent(e);
-          Events.trigger('navigate', top.href);
-          return;
-        }
+        if (top.tagName == 'A')
+          link = top;
         
         top = top.parentNode;
       }
-      
-      if (!viewId)
+
+      self = viewId && this.children[viewId]; // list item view
+//      navOptions.via = self;
+      if (link) {
+        Events.stopEvent(e);
+        Events.trigger('navigate', link.href, navOptions);
         return;
+      }
       
-      self = this.children[viewId]; // list item view
-      if (self.mvProp) // ||  self.TAG == 'HorizontalListItemView') 
+      if (!self || self.mvProp) // ||  self.TAG == 'HorizontalListItemView') 
         return;
       
       Events.stopEvent(e);
@@ -313,25 +316,27 @@ define('views/ResourceListView', [
         var atype = self.resource.get('alertType');
         var action = atype  &&  atype == 'SyncFail' ? 'edit' : 'view';
         var uri = self.resource.get('forum') || self.resource.getUri();
-        Events.trigger('navigate', U.makeMobileUrl(action, uri, {'-info': self.resource.get('davDisplayName')}));//, {trigger: true, forceFetch: true});
+        navOptions['-info'] = self.resource.get('davDisplayName');
+        Events.trigger('navigate', U.makeMobileUrl(action, uri, navOptions));//, {trigger: true, forceFetch: true});
         return;
       }
       if (self.doesModelSubclass('model/social/QuizQuestion')) {
         var title = _.getParamMap(window.location.hash).$title;
         if (!title)
           title = U.makeHeaderTitle(self.resource.get('davDisplayName'), pModel.displayName);
-        var prm = {
-            '-info': 'Please choose the answer', 
-            $forResource: self.resource.get('_uri'), 
-            $propA: 'question',
-            $propB: 'answer',
-            quiz: self.resource.get('quiz'),
-            question: self.resource.get('_uri'),
+        _.extend(navOptions, {
+          '-info': 'Please choose the answer', 
+          $forResource: self.resource.get('_uri'), 
+          $propA: 'question',
+          $propB: 'answer',
+          quiz: self.resource.get('quiz'),
+          question: self.resource.get('_uri'),
 //            user: G.currentUser._uri,
-            $type: self.vocModel.properties['answers'].range,
-            $title: self.resource.get('davDisplayName')
-        };
-        Events.trigger('navigate', U.makeMobileUrl('chooser', self.vocModel.properties['options'].range, prm)); //, {trigger: true, forceFetch: true});
+          $type: self.vocModel.properties['answers'].range,
+          $title: self.resource.get('davDisplayName')
+        });
+        
+        Events.trigger('navigate', U.makeMobileUrl('chooser', self.vocModel.properties['options'].range, navOptions)); //, {trigger: true, forceFetch: true});
         return;
       }
 
@@ -378,7 +383,7 @@ define('views/ResourceListView', [
                 var props = {interfaceClass: uri, implementor: self.forResource};
                 m.save(props, {
                   success: function() {
-                    Events.trigger('navigate', U.makeMobileUrl('view', self.forResource)); //, {trigger: true, forceFetch: true});        
+                    Events.trigger('navigate', U.makeMobileUrl('view', self.forResource), navOptions); //, {trigger: true, forceFetch: true});        
                   }
                 });
   //            });
@@ -390,13 +395,13 @@ define('views/ResourceListView', [
             var m = new pModel();
             m.save(rParams, {
               success: function() {
-                Events.trigger('navigate', U.makeMobileUrl('view', self.forResource)); //, {trigger: true, forceFetch: true});        
+                Events.trigger('navigate', U.makeMobileUrl('view', self.forResource), navOptions); //, {trigger: true, forceFetch: true});        
               }
             });
             return;
           }
           
-          Events.trigger('navigate', U.makeMobileUrl('make', type, rParams)); //, {trigger: true, forceFetch: true});
+          Events.trigger('navigate', U.makeMobileUrl('make', type, rParams), navOptions); //, {trigger: true, forceFetch: true});
           return;
   //        self.router.navigate('make/' + encodeURIComponent(type) + '?' + p2 + '=' + encodeURIComponent(self.resource.get('_uri')) + '&' + p1 + '=' + encodeURIComponent(params['$forResource']) + '&' + p2 + '.davClassUri=' + encodeURIComponent(self.resource.get('davClassUri')) +'&$title=' + encodeURIComponent(self.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
         }
@@ -410,9 +415,9 @@ define('views/ResourceListView', [
 
           if (a  &&  b) {
             if (self.hashParams[a]) 
-              Events.trigger('navigate', U.makeMobileUrl('view', self.resource.get(b))); //, {trigger: true, forceFetch: true});
+              Events.trigger('navigate', U.makeMobileUrl('view', self.resource.get(b)), navOptions); //, {trigger: true, forceFetch: true});
             else if (self.hashParams[b])
-              Events.trigger('navigate', U.makeMobileUrl('view', self.resource.get(a))); //, {trigger: true, forceFetch: true});
+              Events.trigger('navigate', U.makeMobileUrl('view', self.resource.get(a)), navOptions); //, {trigger: true, forceFetch: true});
             else
               return G.getRejectedPromise();
 //            else
@@ -456,7 +461,7 @@ define('views/ResourceListView', [
                 if (tagProp  &&  tt != '* Not Specified *') {
                   params[tagProp] = '*' + tt + '*';
         
-                  Events.trigger('navigate', U.makeMobileUrl('list', app, params));//, {trigger: true, forceFetch: true});
+                  Events.trigger('navigate', U.makeMobileUrl('list', app, params), navOptions);//, {trigger: true, forceFetch: true});
                   return;
                 }
               }
@@ -466,13 +471,13 @@ define('views/ResourceListView', [
             var forResource = U.getCloneOf(m, 'Reference.forResource')[0];
             var uri = forResource && self.resource.get(forResource);
             if (uri) {
-              Events.trigger('navigate', U.makeMobileUrl('view', uri)); //, {trigger: true, forceFetch: true});
+              Events.trigger('navigate', U.makeMobileUrl('view', uri), navOptions); //, {trigger: true, forceFetch: true});
               return;
             }
           }
     
           var action = U.isAssignableFrom(m, "InterfaceImplementor") ? 'edit' : 'view';
-          Events.trigger('navigate', U.makeMobileUrl(action, self.resource.getUri())); //, {trigger: true, forceFetch: true});
+          Events.trigger('navigate', U.makeMobileUrl(action, self.resource.getUri()), navOptions); //, {trigger: true, forceFetch: true});
     //          else {
     //            var r = _.getParamMap(window.location.href);
     //            this.router.navigate('view/' + encodeURIComponent(r[pr[0]]), {trigger: true, forceFetch: true});

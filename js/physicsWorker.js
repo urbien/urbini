@@ -16,6 +16,8 @@ var ArrayProto = Array.prototype,
     airDragBodies = [],
 		constrainer,
 		ZERO_ROTATION = [0, 0, 0],
+		UNSCALED = [1, 1, 1],
+    MIN_SCALE = [0.0001, 0.0001, 1],
 		LEFT,
 		RIGHT,
     ORIGIN,
@@ -260,11 +262,30 @@ function removeActions(/*, action, action */) {
   }
 }
 
+//function onOutOfActions(body, callback) {
+//  if (!body._actions || !body._actions.length)
+//    callback();
+//  else
+//    (body._outOfActionsCallbacks = body._outOfActionsCallbacks || []).push(callback);
+//};
+
 function removeAction(body, action) {
   if (body._actions) {
     var idx = body._actions.indexOf(action);
     if (~idx)
       body._actions.splice(idx, 1);
+    
+//    if (!body._actions.length) {
+//      var callbacks = body._outOfActionsCallbacks;
+//      body._outOfActionsCallbacks = [];
+//      if (callbacks) {
+//        var i = callbacks.length;
+//        while (i--) {
+//          callbacks[i]();
+//          callbacks.length--;
+//        }
+//      }
+//    }
   }
 };
 
@@ -299,7 +320,6 @@ function Action(name, onstep) {
         world.unsubscribe('step', onstep)
         if (this.oncancel)
           this.oncancel.apply(null, arguments);
-        
       }
     },
     complete: function() {
@@ -320,7 +340,7 @@ function addAction(body, action) { //, exclusive) {
   var oncomplete = action.oncomplete,
       oncancel = action.oncancel;
   
-  API.cancelPendingActions(body);
+//  API.cancelPendingActions(body);  
   body._actions = body._actions || [];
   body._actions.push(action);
   
@@ -617,31 +637,19 @@ function renderBody(body) {
 		rendered.angular.pos = state.angular.pos;
 		rendered.pos.clone(state.pos);
 		
-		if (isTranslated)
-		  transform.translate = getTranslation(body);
+		transform.scale = body.state.renderData.get('scale');
+		transform.translate = getTranslation(body);		
 		if (isRotated) {
 		  transform.rotate = body.state.rendered.rotation = body.state.rotation;
       transform.rotate.unit = 'deg';
-      if (!transform.translate)
-        transform.translate = getTranslation(body);
 		}
 
-		
     if (styleChanged) {
       Physics.util.extend(body.state.rendered.renderData, style);
       if (opacityChanged) {
         style.transform = transform;
         if (body.state.renderData.get('opacity') == 0)
-          transform.scale = [0.0001, 0.0001, 1];
-        else { 
-          if (body.state.renderData.isChanged('scale'))
-            transform.scale = body.state.renderData.get('scale');
-          else
-            transform.scale = [1, 1, 1];
-          
-          if (!transform.translate)
-            transform.translate = getTranslation(body);
-        }
+          transform.scale = MIN_SCALE;
       }
       
       body.state.renderData.clearChanges();
@@ -749,6 +757,9 @@ function initWorld(_world, stepSelf) {
 	  
 	  if (body.geometry.name == 'point' && body.options.render)
 	    body.state.renderData.set('opacity', 1);
+	  
+	  body.state.beforeAction = {};
+    body.state.renderDataBeforeAction = {};
 	});
 
 	world.subscribe('remove:body', function(data) {
@@ -1113,11 +1124,16 @@ function pick(obj) {
 
       this._subscribe('preRender', function() {
         var bricks = this.mason.bricks,
+            brick,
             i = bricks.length;
         
         if (this._sleeping) {
           if (i) {
-            world.remove(bricks);
+            while (i--) {
+              brick = bricks[i];
+              API.completePendingActions(brick);
+              world.removeBody(brick);
+            }
           }
           
           return;
@@ -1240,6 +1256,204 @@ function pick(obj) {
       });
     },
 
+    center: function(bodyId, time, callback) {
+      var self = this,
+          body = this.getBrick(bodyId),
+          aabb = body.geometry._aabb,
+          fixed = body.fixed,
+          posLock,
+          pos = body.state.pos,
+          orgX = pos.get(0),
+          orgY = pos.get(1),
+          steps = Math.ceil(time / WORLD_CONFIG.timestep),
+          step = 0,
+          x, 
+          y,
+          factor,
+          renderData = body.state.renderData,
+//          viewportOffsetX = this.offsetBody.state.offset.get(0),
+//          viewportOffsetY = this.offsetBody.state.offset.get(1),
+          boundsScrollDim = BOUNDS[this.aabbAxisDim] * 2,
+          viewportDim,
+          goalPos = [null, null, 0],
+          centerAction;
+      
+      body.state.beforeAction['center'] = {
+        pos: Physics.vector().clone(pos)
+      };
+      
+      centerAction = new Action(
+        'center' + body.options._id,
+        function onstep() {
+          viewport = self.getViewport();
+          scale = body.state.renderData.get('scale') || UNSCALED,
+          bodyAxisHalfDim = aabb[self.aabbAxisDim] * scale[self.axisIdx],
+          bodyOrthoHalfDim = aabb[self.aabbOrthoAxisDim] * scale[self.orthoAxisIdx],
+          goalPos[self.orthoAxisIdx] = boundsScrollDim / 2;
+          viewportDim = viewport.max - viewport.min;
+          goalPos[self.axisIdx] = (viewport.max + viewport.min - (boundsScrollDim - viewportDim)) / 2; // in case things are moving while we're centering, we should recalculate this every time
+          if (step++ >= steps)
+            centerAction.complete();
+          else {
+            factor = step / steps;
+            x = orgX + factor * (goalPos[0] - orgX);
+            y = orgY + factor * (goalPos[1] - orgY);
+//            log('centering ' + body._id + ' to ' + x + ', ' + y);
+//            log('centering: step size: ' + factor * (goalPos[0] - pos.get(0)) + ', ' + factor * (goalPos[1] - pos.get(1)));
+            pos.set(x, y);
+          }
+        }
+      );
+      
+      function cleanUp() {
+        pos.set.apply(pos, goalPos);
+        body.fixed = fixed;
+        if (posLock)
+          body.state.pos.lock(posLock);
+      };
+      
+      function oncomplete() {
+        cleanUp();
+        if (callback)
+          doCallback(callback);
+      };
+      
+      centerAction.oncomplete = oncomplete;
+      centerAction.oncancel = cleanUp;
+      centerAction.onstart = function() {
+        posLock = body.state.pos.unlock();
+        stopBody(body);
+        body.fixed = false;
+      };
+
+      addAction(body, centerAction);
+      centerAction.start();
+    },
+    
+    getBrick: function(bodyId) {
+      if (typeof bodyId != 'string')
+        return bodyId;
+      
+      var bricks = this.mason.bricks,
+          brick,
+          i = bricks.length;
+      
+      while (i--) {
+        brick = bricks[i];
+        if (brick._id == bodyId)
+          return brick;
+      }
+      
+      return null;
+    },
+
+    isolate: function(bodyId, type, time, callback) {
+      var body = this.getBrick(bodyId),
+          bricks = this.mason.bricks.slice();
+
+      bricks.splice(bricks.indexOf(body), 1);
+      this[(type || 'pop') + 'Out'].call(this, bricks, time);
+    },    
+
+    flyToTopCenter: function(bodyId, speed, opacity, callback) {
+      var body = this.getBrick(bodyId),
+          pos = body.state.pos,
+          viewport = this.getViewport(),
+          dest = [0, 0, 0];
+      
+      dest[this.axisIdx] = viewport.min;
+      dest[this.orthoAxisIdx] = this.bounds._pos.get(this.orthoAxisIdx);
+      API.flyTo(body, dest[0], dest[1], 0, speed, opacity, callback);
+    },
+    
+    maximize: function(bodyId, time, callback) {
+      var body = this.getBrick(bodyId),
+          originalScale = body.state.renderData.get('scale') || UNSCALED,
+          vWidth = BOUNDS._hw * 2,
+          vHeight = BOUNDS._hh * 2,
+          bodyWidth = body.geometry._aabb._hw * 2 * originalScale[0],
+          bodyHeight = body.geometry._aabb._hh * 2 * originalScale[1],
+          bricks = this.mason.bricks.slice();
+
+      bricks.splice(bricks.indexOf(body), 1);
+      if (this.pop)
+        this.popOut(bricks, time);
+      else if (this.fade)
+        this.fadeOut(bricks, time);
+      
+      body.state.beforeAction['maximize'] = {
+        pos: Physics.vector().clone(body.state.pos)
+      };
+      
+      body.state.renderDataBeforeAction['maximize'] = {
+        scale: originalScale.slice()          
+      };
+
+      API.scale(body, vWidth / bodyWidth, vHeight / bodyHeight, time/*, callback*/); // one callback is enough
+      this.center(body, time, callback);
+    },    
+    
+//    maximize1: function(bodyId, time, callback) {
+//      var self = this,
+//          body = getBody(bodyId),
+//          pos = body.state.pos,
+//          steps = time / WORLD_CONFIG.timestep,
+//          step = 0,
+//          factor,
+//          originalScale = body.state.renderData.get('scale') || UNSCALED,
+//          renderData = body.state.renderData,
+////          viewportOffsetX = this.offsetBody.state.offset.get(0),
+////          viewportOffsetY = this.offsetBody.state.offset.get(1),
+//          vWidth = BOUNDS._hw * 2,
+//          vHeight = BOUNDS._hh * 2,
+//          boundsScrollDim = BOUNDS[this.aabbAxisDim] * 2,
+//          bodyWidth = body.geometry._aabb._hw * 2 * originalScale[0],
+//          bodyHeight = body.geometry._aabb._hh * 2 * originalScale[1],
+//          goalPos = [null, null, 0],
+//          goalScale,
+//          maximizeAction;
+//      
+//      goalPos[self.orthoAxisIdx] = boundsScrollDim / 2;
+//      goalScale = [vWidth / bodyWidth, vHeight / bodyHeight, 1];
+//      maximizeAction = new Action( // maybe use scaleAction internally
+//        'maximize' + body.options._id,
+//        function onstep() {
+//          viewport = self.getViewport();
+//          goalPos[self.axisIdx] = (viewport.max - viewport.min) / 2; // in case things are moving while we're maximizing, we should recalculate this every time
+//          if (step++ >= steps)
+//            maximizeAction.complete();
+//          else {
+//            factor = step / steps;
+//            i = currentScale.length;
+//            while (i--) {
+//              currentScale[i] = originalScale[i] + factor * (goalScale[i] - originalScale[i]);
+//            }
+//           
+//            pos.set(pos.get(0) + factor * (goalPos[0] - pos.get(0)), 
+//                    pos.get(1) + factor * (goalPos[1] - pos.get(1)));
+//            
+//            renderData.set('scale', currentScale);
+//          }
+//        }
+//      );
+//      
+//      function cleanUp() {
+//        body.state.renderData.set('scale', goalScale);
+//        pos.set.apply(pos, goalPos);
+//      };
+//      
+//      function oncomplete() {
+//        cleanUp();
+//        if (callback)
+//          doCallback(callback);
+//      };
+//      
+//      maximizeAction.oncomplete = oncomplete;
+//      maximizeAction.oncancel = cleanUp;
+//      addAction(body, maximizeAction);
+//      maximizeAction.start();
+//    },    
+
     destroy: function(animate, callback) {
       var self = this,
           bricks = this.mason.bricks,
@@ -1265,43 +1479,109 @@ function pick(obj) {
       if (!animate || !l)
         return doDestroy();
       
-      var time = 0,
-          viewport = this.getViewport(),
+      if (this.pop)
+        this.popOut(bricks, doDestroy);
+      else if (this.fade)
+        this.fadeOut(bricks, doDestroy);
+    },
+    
+    actionOut: function(bricks, totalTime, action, actionFn, callback) {
+      var random = this[action] == 'random' ? true : false,
+          runCallback = function() {
+            if (callback) {
+              callback();
+              callback = null;
+            }
+          },
+          time = 0,
+          timeInc,
+          viewport = this.getViewport(2),
           brick,
           scrollAxisPos;
       
-      if (this.pop) {
-        var random = this.pop == 'random' ? true : false;
-            
-        for (var i = 0; i < l; i++) {
-          brick = bricks[i];
-          scrollAxisPos = brick.state.pos.get(this.axisIdx);
-          if (scrollAxisPos > viewport.min && scrollAxisPos < viewport.max) {
-            if (random)
-              time = Math.random() * 3000;
-            else
-              time += 200;
-            
-            API.scale(brick, 0.0001, 0.0001, time, doDestroy);
-          }
-        }        
-      }
-      else if (this.fade) {
-        var random = this.fade == 'random' ? true : false;
-        
-        for (var i = 0; i < l; i++) {
-          brick = bricks[i];
-          scrollAxisPos = brick.state.pos.get(this.axisIdx);
-          if (scrollAxisPos > viewport.min && scrollAxisPos < viewport.max) {
-            if (random)
-              time = Math.random() * 3000;
-            else
-              time += 200;
-            
-            API.opacity(brick, 0, time, doDestroy);
-          }
-        }        
-      }
+      bricks = bricks || this.mason.bricks;
+      if (totalTime)
+        timeInc = totalTime / bricks.length;
+      else
+        timeInc = 200;
+      
+      for (var i = 0, l = bricks.length; i < l; i++) {
+        brick = bricks[i];
+        scrollAxisPos = brick.state.pos.get(this.axisIdx);
+        if (scrollAxisPos > viewport.min && scrollAxisPos < viewport.max) {
+          if (random)
+            time = Math.random() * 3000;
+          else
+            time += timeInc;
+          
+          actionFn(brick, time, runCallback);
+//          API.scale(brick, MIN_SCALE[0], MIN_SCALE[1], time, runCallback);
+        }
+      }              
+    },
+    
+    popOut: function(bricks, time, callback) {
+      this.actionOut(bricks, time, 'pop', function(brick, time, callback) {
+        API.scale(brick, MIN_SCALE[0], MIN_SCALE[1], time, callback);
+      }, callback);
+      
+//      var random = this.pop == 'random' ? true : false,
+//          runCallback = function() {
+//            if (callback) {
+//              callback();
+//              callback = null;
+//            }
+//          },
+//          time = 0,
+//          viewport = this.getViewport(),
+//          brick,
+//          scrollAxisPos;
+//      
+//      bricks = bricks || this.mason.bricks;
+//      for (var i = 0, l = bricks.length; i < l; i++) {
+//        brick = bricks[i];
+//        scrollAxisPos = brick.state.pos.get(this.axisIdx);
+//        if (scrollAxisPos > viewport.min && scrollAxisPos < viewport.max) {
+//          if (random)
+//            time = Math.random() * 3000;
+//          else
+//            time += 200;
+//          
+//          API.scale(brick, MIN_SCALE[0], MIN_SCALE[1], time, runCallback);
+//        }
+//      }        
+    },
+    
+    fadeOut: function(bricks, time, callback) {
+      this.actionOut(bricks, time, 'fade', function(brick, time, callback) {
+        API.opacity(brick, 0, time, callback);
+      }, callback);
+      
+//      var random = this.fade == 'random' ? true : false,
+//          runCallback = function() {
+//            if (callback) {
+//              callback();
+//              callback = null;
+//            }
+//          },
+//          time = 0,
+//          viewport = this.getViewport(),
+//          brick,
+//          scrollAxisPos;      
+//
+//      bricks = bricks || this.mason.bricks;
+//      for (var i = 0, l = bricks.length; i < l; i++) {
+//        brick = bricks[i];
+//        scrollAxisPos = brick.state.pos.get(this.axisIdx);
+//        if (scrollAxisPos > viewport.min && scrollAxisPos < viewport.max) {
+//          if (random)
+//            time = Math.random() * 3000;
+//          else
+//            time += 200;
+//          
+//          API.opacity(brick, 0, time, runCallback);
+//        }
+//      }
     },
     
     getSpringStiffness: function() {
@@ -1552,6 +1832,22 @@ function pick(obj) {
 //      this.checkTailEdge();
 ////      this.adjustSlidingWindow();
 //    },
+    
+    /**
+     * @param reverse - if true, will place bricks in the direction from tail to head
+     */
+    reload: function(reverse) {
+      var viewport = this.getViewport(),
+          multiplier = reverse ? 1 : -1,
+          edge = (reverse ? vieport.max : viewport.min) | 0,
+          offset = {};
+      
+      log("Reloading layout: " + this.id + (reverse ? " tail to head" : ""));
+      offset[this.axis] = edge; //Math.max(edge + multiplier * this.pageScrollDim, 0);
+      offset[this.orthoAxis] = 0;
+      this.mason.option('fromBottom', reverse);
+      this.mason.reload(offset);
+    },
 
     setLimit: function() {
       this.brickLimit = this.lastBrickSeen || 0;
@@ -1586,13 +1882,13 @@ function pick(obj) {
       this.mason.setBounds(this.bounds);
       if (this.numBricks()) {
         // TODO: find brick X currently in view so we can re-find it after masonry reload
-//        var viewport = this.getViewport(),
-//            offset = {};
-//        
-//        offset[this.axis] = viewport.min | 0;
-//        offset[this.orthoAxis] = 0;
-//        this.mason.reload(offset);
-        this.mason.reload();
+        var cols = this.mason.cols,
+            newCols = this.mason._getColumns().cols;
+        
+        if (cols != newCols) {
+          this.reload(this.lastDirection == 'head' ? true : false);
+//          this.mason.reload();
+        }
         // TODO: reposition around brick X
       }
       
@@ -1655,13 +1951,21 @@ function pick(obj) {
       this.slidingWindowOutsideBuffer = Math.max(slidingWindowDim / 5, this.slidingWindowInsideBuffer / 2); // how far away the viewport is from the closest border of the sliding window before we need to adjust the window
     },
     
-    getViewport: function() {
+    getViewport: function(scale) {
       if (!this.viewport)
         this.viewport = {};
       
       this.viewport.min = this._initialOffsetBodyPos.get(this.axisIdx) - this.offsetBody.state.pos.get(this.axisIdx);
       this.viewport.max = this.viewport.min + this.pageScrollDim;
-      return this.viewport;
+      if (!scale)
+        return this.viewport;
+      else {
+        var vDim = this.viewport.max - this.viewport.min;
+        return {
+          min: this.viewport.min - vDim * scale / 2,
+          max: this.viewport.max + vDim * scale / 2
+        }
+      }
     },
 
     numBricks: function() {
@@ -1669,8 +1973,10 @@ function pick(obj) {
     },
     
     addBricks: function(optionsArr, prepend) {
+      this.lastDirection = prepend ? 'head' : 'tail';
       this.checkRep();
-      var bricks = [],
+      var numBefore = this.numBricks(),
+          bricks = [],
           brick,
           viewport = this.getViewport(),
           viewportDim = BOUNDS[this.aabbAxisDim] * 2,
@@ -1680,6 +1986,7 @@ function pick(obj) {
           l = optionsArr.length,
           options;
       
+      this.biggestViewportMin = Math.max(viewport.min, this.biggestViewportMin || 0);
 //      log("ADDING BRICKS: " + optionsArr.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
       for (var i = 0; i < l; i++) {
         options = optionsArr[i];
@@ -1691,8 +1998,14 @@ function pick(obj) {
 //        options.z = -1;
         bricks[i] = Physics.body('convex-polygon', options);
       }
+
+      if (!numBefore) {
+        this.mason.bricks = bricks;
+        this.reload();
+      }
+      else
+        this.mason[prepend ? 'prepended' : 'appended'](bricks);
       
-      this.mason[prepend ? 'prepended' : 'appended'](bricks);
       if (this.flexigroup) {
         var brick,
             flexigroupId = this.flexigroup._id,
@@ -1712,7 +2025,9 @@ function pick(obj) {
         this.brickLimit = Math.max(this.brickLimit, this.lastBrickSeen);
       }
       
-      if (this.fly) {
+      if (this.biggestViewportMin) // only be fancy on the first page
+        world.add(bricks);
+      else if (this.fly) {
         function fix(brick) {
           brick.fixed = true;
         };
@@ -1752,7 +2067,7 @@ function pick(obj) {
           brick = bricks[i];
           scrollAxisPos = brick.state.pos.get(this.axisIdx);
           if (scrollAxisPos > viewport.min && scrollAxisPos < viewport.max) {
-            brick.state.renderData.set('scale', [0.0001, 0.0001, 1]);
+            brick.state.renderData.set('scale', MIN_SCALE);
             if (random)
               time = Math.random() * 3000;
             else
@@ -1860,7 +2175,7 @@ function pick(obj) {
         this.range.to -= n;
       }
       
-//      this.log("REMOVED BRICKS: " + bricks.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
+      this.log("REMOVED BRICKS: " + bricks.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
 //      this.printState();
 //      this.log("REMOVING " + n + " BRICKS FROM THE " + (fromTheHead ? "HEAD" : "TAIL") + " FOR A TOTAL OF " + (this.range.to - this.range.from));
   //    log("ACTUAL TOTAL AFTER REMOVE: " + this.numBricks());
@@ -1874,18 +2189,19 @@ function pick(obj) {
       this.log("putting Mason to sleep");
       world.publish('sleep:' + this.id);
       this._sleeping = this._waiting = true;
-      var bricks = this.mason.bricks,
+//      var bricks = this.mason.bricks,
 //      this._waiting = true;
 //      var self = this,
 //          viewport = this.getViewport(),
 //          bricks = this.mason.bricks,
 //          brick,
 //          scrollAxisPos,
-          i = bricks.length;
-      
-      while (i--) {        
-        API.completePendingActions(bricks[i]);
-      }
+//          i = bricks.length;
+//      
+//      while (i--) {
+//        API.completePendingActions(bricks[i]);
+//      }
+//      
 //      while (i--) {        
 //        API.cancelPendingActions(bricks[i]);
 //      }
@@ -1913,11 +2229,71 @@ function pick(obj) {
       this._adjustSlidingWindow();
     },
     
+    saveState: function() {
+      log("Saving " + this.id + "state");
+      this._state = {};
+      var bricks = this.mason.bricks,
+          brick,
+          id,
+          i = bricks.length;
+      
+      while (i--) {
+        brick = bricks[i];
+        API.completePendingActions(brick);
+        id = brick._id;
+        this._state[id] = {
+          pos: Physics.vector().clone(brick.state.pos),
+          renderData: brick.state.renderData.toJSON(true)
+        }
+      }
+    },
+    
+    loadState: function() {
+      if (!this._state)
+        return;
+      
+      var bricks = this.mason.bricks,
+          brick,
+          brickState,
+          posLock,
+          prop,
+          id,
+          i = bricks.length;
+      
+      while (i--) {
+        brick = bricks[i];
+        API.completePendingActions(brick);
+        id = brick._id;
+        brickState = this._state[id];
+        if (brickState) {
+          posLock = brick.state.pos.unlock();
+          brick.state.pos.clone(brickState.pos);
+          for (prop in brickState.renderData) {
+            brick.state.renderData.set(prop, brickState.renderData[prop]);
+          }
+          
+          if (posLock)
+            brick.state.pos.lock(posLock);
+        }
+      }
+      
+      log("Loaded " + this.id + "state");
+    },
+    
     wake: function() {
       // reposition bricks if necessary
       this.log("waking up Mason");
       world.publish('wake:' + this.id);
       if (this._sleeping && this.numBricks()) {
+//        var bricks = this.mason.bricks,
+//            brick,
+//            i = bricks.length;
+//        
+//        while (i--) {
+//          brick = bricks[i];
+//          brick.state.pos
+//        }
+        
         world.add(this.mason.bricks);
 /*        var bricks = this.mason.bricks,
             brick,
@@ -2252,22 +2628,15 @@ var API = {
 
   opacity: function(bodyId, opacity, time, callback) {
     var body = getBody(bodyId),
-        steps = time / WORLD_CONFIG.timestep,
+        steps = Math.ceil(time / WORLD_CONFIG.timestep),
         step = 0,
         factor,
         goalOpacity = opacity,
         initialOpacity = body.state.renderData.get('opacity'),
-        opacityAction = new Action(
-          'opacity' + body.options._id + ' to ' + goalOpacity,
-          function onstep() {
-            if (step++ >= steps)
-              opacityAction.complete();
-            else {
-              factor = step / steps;
-              body.state.renderData.set('opacity', initialOpacity + factor * (goalOpacity - initialOpacity));
-            }
-          }
-        );
+        opacityAction;
+    
+    if (goalOpacity == initialOpacity)
+      return;
     
     function cleanUp() {
       body.state.renderData.set('opacity', goalOpacity);
@@ -2280,15 +2649,51 @@ var API = {
     };
     
     
+    if (!time)
+      return oncomplete();
+      
+    opacityAction = new Action(
+      'opacity' + body.options._id + ' to ' + goalOpacity,
+      function onstep() {
+        if (step++ >= steps)
+          opacityAction.complete();
+        else {
+          factor = step / steps;
+          body.state.renderData.set('opacity', initialOpacity + factor * (goalOpacity - initialOpacity));
+        }
+      }
+    );
+  
     opacityAction.oncomplete = oncomplete;
     opacityAction.oncancel = cleanUp;
     addAction(body, opacityAction);
     opacityAction.start();
   },
 
+  revert: function(bodyId, action, time, callback) {
+    var body = getBody(bodyId),
+        renderDataBeforeAction = body.state.renderDataBeforeAction[action],
+        stateBeforeAction = body.state.beforeAction[action];
+    
+    // TODO: time, callback
+    if (stateBeforeAction) {
+      Physics.util.extend(body.state, stateBeforeAction);
+      delete body.state.beforeAction[action];
+    }
+    
+    if (renderDataBeforeAction) {
+      for (var prop in renderDataBeforeAction) {
+        body.state.renderData.set(prop, renderDataBeforeAction[prop]);
+      }
+      
+      delete body.state.renderDataBeforeAction[action];
+    }
+    
+  },  
+
   scale: function(bodyId, x, y, time, callback) {
     var body = getBody(bodyId),
-        steps = time / WORLD_CONFIG.timestep,
+        steps = Math.ceil(time / WORLD_CONFIG.timestep),
         step = 0,
         factor,
         i,
@@ -2297,22 +2702,10 @@ var API = {
         goalScale = [typeof x == 'number' ? x : originalScale[0],
                      typeof y == 'number' ? y : originalScale[1],
                      1],
-        scaleAction = new Action(
-          'scale' + body.options._id + ' to ' + goalScale.toString(),
-          function onstep() {
-            if (step++ >= steps)
-              scaleAction.complete();
-            else {
-              factor = step / steps;
-              i = currentScale.length;
-              while (i--) {
-                currentScale[i] = originalScale[i] + factor * (goalScale[i] - originalScale[i]);
-              }
-              
-              body.state.renderData.set('scale', currentScale);
-            }
-          }
-        );
+       scaleAction;
+    
+    if (!time)
+      return oncomplete();
     
     function cleanUp() {
       body.state.renderData.set('scale', goalScale);
@@ -2323,6 +2716,24 @@ var API = {
       if (callback)
         doCallback(callback);
     };
+    
+    scaleAction = new Action(
+      'scale' + body.options._id + ' to ' + goalScale.toString(),
+      function onstep() {
+        if (step++ >= steps)
+          scaleAction.complete();
+        else {
+          factor = step / steps;
+          i = currentScale.length;
+          while (i--) {
+            currentScale[i] = originalScale[i] + factor * (goalScale[i] - originalScale[i]);
+          }
+          
+//          log('scaling ' + body._id + ' to ' + currentScale.toString());
+          body.state.renderData.set('scale', currentScale);
+        }
+      }
+    );
     
     scaleAction.oncomplete = oncomplete;
     scaleAction.oncancel = cleanUp;

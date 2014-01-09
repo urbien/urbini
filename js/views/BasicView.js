@@ -121,14 +121,10 @@ define('views/BasicView', [
         this.listenTo(Events, 'preparingModelForDestruction.' + this.model.cid, this._preventModelDeletion);
       
       this._dimensions = {};
-      this._viewBrick = {
-        _id: this.getBodyId()
-      };
-      
       this._bounds = new Array(4);
-      if (this.resource)
-        this._viewBrick._uri = U.getShortUri(this.resource.getUri(), this.vocModel);
-
+//      if (this.resource)
+//        this._viewBrick._uri = U.getShortUri(this.resource.getUri(), this.vocModel);
+//
 //      G.log(this.TAG, 'new view', this.getPageTitle());
       return this;
     },
@@ -718,12 +714,24 @@ define('views/BasicView', [
       if (this._draggable)
         Physics.disconnectDraggable(this.getContainerBodyId());
 
-      if (this.mason) {
-        this.mason.sleep();
+//      if (this.mason) {
+//        this.mason.sleep();
 //        DOM.queueRender(this.el, DOM.transparentStyle);
-      }
+//      }
       
       this.triggerChildren('inactive');      
+    },
+    
+    turnOffPhysics: function() {
+      if (this.mason)
+        this.mason.sleep();
+      
+      var children = this.children;
+      if (children) {
+        for (var id in children) {
+          children[id].turnOffPhysics();
+        }
+      }
     },
 
     isActive: function() {
@@ -1030,40 +1038,10 @@ define('views/BasicView', [
       return this.TAG + '.' + this.cid;
     },
 
-//    getFlexigroupId: function() {
-//      return this.TAG + '.' + this.cid + '.' + this._initializedCounter + '.flexigroup';
-//    },
-
     addDraggable: function() {
       Physics.addDraggable(this.hammer(), this.getContainerBodyId(), this._dragAxis);
     },
 
-//    reconnectToWorld: function() {
-//      if (this._bodies.length)
-//        Physics.unbenchBodies.apply(Physics, this._bodies);
-//      if (this._draggables.length)
-//        Physics.addDraggables.apply(Physics, this._draggables);
-//    },
-//    
-//    disconnectFromWorld: function() {
-//      if (this._bodies.length)
-//        Physics.benchBodies.apply(Physics, this._bodies);
-//      if (this._draggables.length)
-//        Physics.removeDraggables.apply(Physics, this._draggables);
-//    },
-//
-//    addDraggable: function(id) {
-//      Physics.here.addDraggable(id);
-//      this._draggables.push(id);
-//    },
-//    
-//    addBody: function(id, type, options, el, draggable) {
-//      Physics.addBody.apply(Physics, arguments);
-//      this._bodies.push(id);
-//      if (draggable)
-//        this._draggables.push(id);
-//    },
-    
     _updateSize: function() {
       // TODO - move this to domUtils - it's per DOM element, not per view
       var viewport = G.viewport,
@@ -1109,7 +1087,7 @@ define('views/BasicView', [
       this._bounds[2] = this._width;
       this._bounds[3] = this._height;
       
-      if (doUpdate)
+      if (doUpdate && this._viewBrick)
         this.buildViewBrick();
       
       return doUpdate;
@@ -1225,81 +1203,68 @@ define('views/BasicView', [
       return this._viewBrick;
     },
     
-//    buildViewBrick: function() {
-//      var brick = this._viewBrick = this._viewBrick || {},
-//          width = this._outerWidth,
-//          height = this._outerHeight,
-//          id = this.getBodyId(),
-//          el = this.el;
-//          
-//      brick._id = id;
-//      if (this.resource)
-//        brick._uri = U.getShortUri(this.resource.getUri(), this.vocModel);
-//      
-//      brick.fixed = !this._flexigroup;
-//      
-//      // HACK
-//      brick.lock = brick.lock || {};
-//      brick.lock.x = 0;
-//      // END HACK
-//      
-//      brick.mass = 0.1;
-//      brick.restitution = 0.3;
-//      
-//      // vertices
-//      brick.vertices = brick.vertices || [];
-//      brick.vertices[0] = brick.vertices[0] || {};
-//      brick.vertices[0].x = 0;
-//      brick.vertices[0].y = height;
-//
-//      brick.vertices[1] = brick.vertices[1] || {};
-//      brick.vertices[1].x = width;
-//      brick.vertices[1].y = height;
-//
-//      brick.vertices[2] = brick.vertices[2] || {};
-//      brick.vertices[2].x = width;
-//      brick.vertices[2].y = 0;
-//
-//      brick.vertices[3] = brick.vertices[3] || {};
-//      brick.vertices[3].x = 0;
-//      brick.vertices[3].y = 0;
-//      return brick;
-//    },
-    
     buildViewBrick: function() {
+      if (!this._viewBrick) {
+        this._viewBrick = {
+          _id: this.getBodyId()
+        };
+      }
+      
       if (this.resource)
         this._viewBrick.resource = this.resource;
       
       this._viewBrick.render = true;
-      return this.buildBrick(this._viewBrick);
+      return this.buildBrick(this._viewBrick, true);
     },
     
-    buildBrick: function(options) {
+    buildBrick: function(options, thisView) {
       var brick = options,
           v,
           width, 
           height;
       
-      if (_.has(brick, 'width'))
-        width = brick.width;
-      else
-        width = brick.el ? brick.el.$outerWidth() : this._outerWidth;
-      
-      if (_.has(brick, 'height'))
-        height = brick.height;
-      else
-        height = brick.el ? brick.el.$outerHeight() : this._outerHeight;
-
-      if (!_.has(brick, '_id'))
+//      if (_.has(brick, 'width'))
+//        width = brick.width;
+//      else
+//        width = brick.el ? brick.el.$outerWidth() : this._outerWidth;
+//      
+//      if (_.has(brick, 'height'))
+//        height = brick.height;
+//      else
+//        height = brick.el ? brick.el.$outerHeight() : this._outerHeight;
+//
+//      if (!_.has(brick, '_id'))
+//        brick._id = this.getBodyId();
+      if (thisView) {
+        width = this._outerWidth;
+        height = this._outerHeight;
         brick._id = this.getBodyId();
-      
-      if (_.has(brick, 'resource')) {
-        brick._uri = U.getShortUri(brick.resource.getUri(), brick.resource.vocModel);
-        delete brick.resource;
-      }
+        if (this.resource)
+          brick._uri = U.getShortUri(this.resource.getUri(), this.vocModel);
         
-      if (brick.el)
-        delete brick.el;
+        brick.offset = brick.offset || {};
+        brick.offset.x = this._offsetLeft;
+        brick.offset.y = this._offsetTop;
+      }
+      else {
+        if (brick.el) {
+          width = brick.el.$outerWidth();
+          height = brick.el.$outerHeight();
+          brick.offset = brick.offset || {};
+          brick.offset.x = brick.el.offsetLeft;
+          brick.offset.y = brick.el.offsetTop;
+          delete brick.el;
+        }
+        
+        if (brick.resource)
+          brick._uri = U.getShortUri(brick.resource.getUri(), brick.resource.vocModel);
+      }
+      
+//      if (_.has(brick, 'resource')) {
+//        brick._uri = U.getShortUri(brick.resource.getUri(), brick.resource.vocModel);
+        delete brick.resource;
+//      }
+        
       
       brick.fixed = !this._flexigroup;
       
