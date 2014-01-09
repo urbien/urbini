@@ -1839,7 +1839,7 @@ function pick(obj) {
     reload: function(reverse) {
       var viewport = this.getViewport(),
           multiplier = reverse ? 1 : -1,
-          edge = (reverse ? vieport.max : viewport.min) | 0,
+          edge = (reverse ? viewport.max : viewport.min) | 0,
           offset = {};
       
       log("Reloading layout: " + this.id + (reverse ? " tail to head" : ""));
@@ -1883,9 +1883,11 @@ function pick(obj) {
       if (this.numBricks()) {
         // TODO: find brick X currently in view so we can re-find it after masonry reload
         var cols = this.mason.cols,
-            newCols = this.mason._getColumns().cols;
+            newCols;
         
-        if (cols != newCols) {
+        this.mason._getColumns();
+        newCols = this.mason.cols;
+        if (cols != newCols || updatedBricks) {
           this.reload(this.lastDirection == 'head' ? true : false);
 //          this.mason.reload();
         }
