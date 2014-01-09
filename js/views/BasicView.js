@@ -360,7 +360,7 @@ define('views/BasicView', [
               frag = document.createDocumentFragment();
           
           if (!this.scrollbarTemplate)
-            this.makeTemplate('scrollbarTemplate', 'scrollbarTemplate', this.vocModel.type);
+            this.makeTemplate('scrollbarTemplate', 'scrollbarTemplate', this.vocModel && this.vocModel.type);
 
           tmpl_data[this._scrollAxis == 'x' ? 'height' : 'width'] = this._scrollbarThickness;
           U.addToFrag(frag, this.scrollbarTemplate(tmpl_data));
