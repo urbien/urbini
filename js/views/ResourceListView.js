@@ -44,6 +44,7 @@ define('views/ResourceListView', [
   return BasicView.extend({
     // CONFIG
     _draggable: true,
+    _dragAxis: 'y',
     _scrollbar: true,
     _invisibleLayerThickness: 0, // in pages, 1 == 1 page, 2 == 2 pages, etc. (3 == 3 pages fool!)
     displayMode: 'vanillaList', // other options: 'masonry'
