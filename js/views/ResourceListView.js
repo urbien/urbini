@@ -34,8 +34,8 @@ define('views/ResourceListView', [
     bricksPerPage: 10,
     averageBrickScrollDim: 80,
     averageBrickNonScrollDim: 80,  
-//    minPagesInSlidingWindow: 6,
-//    maxPagesInSlidingWindow: 12,
+    minPagesInSlidingWindow: 3,
+    maxPagesInSlidingWindow: 6,
     gutterWidth: 10,
     scrollerType: 'verticalMain'
     // </ MASONRY INITIAL CONFIG>      
@@ -161,8 +161,8 @@ define('views/ResourceListView', [
       return this;
     },
 
-    setBrickLimit: function() {
-      this.mason.setLimit();
+    setBrickLimit: function(limit) {
+      this.mason.setLimit(limit || this.collection.getTotal() || this.collection.length);
       this.mason['continue']();      
     },
 
@@ -211,6 +211,11 @@ define('views/ResourceListView', [
 //          report();
 //      }
 //    },
+
+    updateTotal: function() {
+      if (!this.total)
+        return this.total = this.collection.getTotal();
+    },
     
     _onPhysicsMessage: function(event) {
       if (event.info)
@@ -224,6 +229,9 @@ define('views/ResourceListView', [
           
         this.mason.lock();
       }
+
+      if (this.updateTotal())
+        this.mason.setLimit(this.collection.getTotal());
 
       switch (event.type) {
         case 'prefetch':
@@ -252,7 +260,9 @@ define('views/ResourceListView', [
             return this.fetchResources(from, to);
           
         case 'less':
-          var from, to;
+          var from, 
+              to;
+          
           if (event.head) {
             from = this._displayedRange.from;
             to = Math.min(from + event.head, this._displayedRange.to);
@@ -295,7 +305,7 @@ define('views/ResourceListView', [
       }
 
       self = viewId && this.children[viewId]; // list item view
-//      navOptions.via = self;
+      navOptions.via = self;
       if (link) {
         Events.stopEvent(e);
         Events.trigger('navigate', link.href, navOptions);
@@ -1080,7 +1090,7 @@ define('views/ResourceListView', [
       }
       
       if (this._outOfData && this.collection.length == to)
-        this.mason.setLimit();
+        this.mason.setLimit(this.collection.length);
 
 //      this.log("ADDING BRICK RANGE " + from + "-" + to + ": " + bricks.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
       this.addBricksToWorld(bricks, atTheHead); // mason

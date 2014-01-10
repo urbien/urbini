@@ -283,9 +283,10 @@ define('views/ContextMenuPanel', [
 //      var p = document.getElementById(this.viewId);
 //      p.appendChild(this.el);
       
-      if (!G.isJQM()) 
-        this.el.style.visibility = 'visible';
-      else {
+//      if (!G.isJQM()) 
+//        this.el.style.visibility = 'visible';
+//      else {
+      if (G.isJQM()) {
 //        p.panel().panel("open");
         this.$el.panel("open");
         $(ul).listview();
@@ -299,7 +300,7 @@ define('views/ContextMenuPanel', [
       }
       
       if (G.isJQM()) {
-        var mi = this.el.querySelector('ul#rightMenuItems');
+        var mi = this.el.querySelector('#rightMenuItems');
         if (mi) {
           this.$el.panel("open");
   //        $('#' + this.viewId).panel().panel("open");
@@ -426,7 +427,7 @@ define('views/ContextMenuPanel', [
         }
       }
 
-      var ul = this.$('#rightMenuItems')[0];
+      var ul = this.ul = this.$('#rightMenuItems')[0];
       ul.appendChild(frag);
 //      var p = document.getElementById(this.viewId);
 //      p.appendChild(this.el);

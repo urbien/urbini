@@ -163,6 +163,15 @@ define('collections/ResourceList', [
       return this.range;
     },
     
+    setTotal: function(total) {
+      this.total = total;
+      this.trigger('total', total);
+    },
+    
+    getTotal: function() {
+      return this.total || null;
+    },
+    
 //    clearRange: function(from, to) {
 //      for (var i = from; i < to; i++) {
 //        this.models[i] = null;
@@ -241,7 +250,7 @@ define('collections/ResourceList', [
     },
     
     clone: function() {
-      return new ResourceList(this.models.slice(), _.extend(_.pick(this, ['model', 'rUri', 'title'].concat(listParams)), {cache: false, params: _.clone(this.params)}));
+      return new ResourceList(this.models.slice(), _.extend(_.pick(this, ['model', 'rUri', 'title', 'total'].concat(listParams)), {cache: false, params: _.clone(this.params)}));
     },
     onResourceChange: function(resource, options) {
       options = options || {};
@@ -512,6 +521,9 @@ define('collections/ResourceList', [
     fetch: function(options) {
       options = options || {};
       _.defaults(options, {
+        headers: {
+          'Range-Need-Total': true
+        },
         update: true, 
         remove: false, 
         parse: true
@@ -575,6 +587,7 @@ define('collections/ResourceList', [
       
       var success = options.success || function(resp, status, xhr) {
         var pagination = xhr.getResponseHeader("X-Pagination"),
+            total = xhr.getResponseHeader("X-Range-Total"),
             mojo = xhr.getResponseHeader("X-Mojo");
         
         if (pagination) {
@@ -588,6 +601,9 @@ define('collections/ResourceList', [
           } catch (err) {
           }
         }
+        
+        if (total != null)
+          self.setTotal(parseInt(total));
         
         if (mojo) {
           try {

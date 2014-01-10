@@ -703,8 +703,12 @@ define('views/BasicView', [
     },
     
     _recheckDimensions: function() {
-      if (this.mason && this._updateSize())
+      if (this.mason && this._updateSize()) {
+        if (this._viewBrick)
+          this.buildViewBrick();
+        
         return this.updateMason();
+      }
     },
     
 //    _onActive: function() {
@@ -1127,17 +1131,17 @@ define('views/BasicView', [
       this._bounds[2] = this._width;
       this._bounds[3] = this._height;
       
-      if (doUpdate && this._viewBrick)
-        this.buildViewBrick();
-      
-      if (this._horizontal) {
-        if (this._width > viewport.width)
-          this.log("BAD BAD BAD BAD WIDTH for " + this.TAG + ": " + this._width);
-      }
-      else {
-        if (this._height > viewport.height)
-          this.log("BAD BAD BAD BAD HEIGHT for " + this.TAG + ": " + this._height);        
-      }
+//      if (doUpdate && this._viewBrick)
+//        this.buildViewBrick();
+//      
+//      if (this._horizontal) {
+//        if (this._width > viewport.width)
+//          this.log("BAD BAD BAD BAD WIDTH for " + this.TAG + ": " + this._width);
+//      }
+//      else {
+//        if (this._height > viewport.height)
+//          this.log("BAD BAD BAD BAD HEIGHT for " + this.TAG + ": " + this._height);        
+//      }
         
       return doUpdate;
     },

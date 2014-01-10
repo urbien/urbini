@@ -32,7 +32,7 @@ define('views/ListPage', [
       
       var self = this;
       var rl = this.collection;
-      var filtered = this.filteredCollection = rl.clone();
+      var filtered = this.filteredCollection = this.collection; //rl.clone();
       var readyDfd = $.Deferred();
       
       var commonParams = {
@@ -140,7 +140,8 @@ define('views/ListPage', [
 
       this.header = new Header(_.extend({
         buttons: this.headerButtons,
-        viewId: this.cid
+        viewId: this.cid,
+        filter: true
       }, commonParams));
       
       this.addChild(this.header);

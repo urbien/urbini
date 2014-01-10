@@ -345,6 +345,8 @@ div.nabBtn {
 #menuItems li {padding-bottom: 0px; cursor: pointer;}
 #rightMenuItems li[role="heading"], #menuItems li[role="heading"] {padding-bottom:10px;font-size:18px;font-weight:normal;font-family:Tahoma,Helvetica,Arial;}
 
+#menuItems, #rightMenuItems { display: table-cell; background: #394345; width:200px; }
+
 .headerMessageBar {
   margin:0;
   padding:10px 0 10px 0;
@@ -1293,9 +1295,9 @@ div {
   box-sizing: content-box 
 }
 
-#.scrollbarx { bottom: 2px; left: 2px }
-#.scrollbary { right: 2px; top: 2px }
 .scrollbarinner { height: 100%; background: rgba(0,0,0,0.5); -webkit-border-radius: 2px; border-radius: 4px / 6px }
+
+[data-role="filler"] { visibility: hidden; display:table-cell; height:auto; width:auto; pointer-events:none; }
 
 /*
 .nabBoard {

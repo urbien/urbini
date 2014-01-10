@@ -105,11 +105,11 @@ define('views/MainMenuPanel', [
       var json = this.resource && res.toJSON();
       
       if (!res)
-        this.html(this.template({}));      
+        this.html(this.template());
       else
         this.html(this.template(json));      
 
-      var ul = this.$('#menuItems')[0];
+      var ul = this.ul = this.$('#menuItems')[0];
       var frag = document.createDocumentFragment();
 
       if (!G.currentUser.guest) {
@@ -221,9 +221,10 @@ define('views/MainMenuPanel', [
       ul.appendChild(frag);      
 //      var p = document.getElementById(this.viewId);
 //      p.appendChild(this.el);
-      if (!G.isJQM()) 
-        this.el.style.visibility = 'visible';
-      else {
+//      if (!G.isJQM()) 
+//        this.el.style.visibility = 'visible';
+//      else {
+      if (G.isJQM()) {
         this.$el.panel().panel("open");
         $(ul).listview();
 //        $(this.$('#menuItems')).listview();
@@ -234,31 +235,7 @@ define('views/MainMenuPanel', [
 //        this.$el.blurjs({source: '#nabs_grid', radius: 5});
 
       return this;
-    },
-    
-    getContainerBodyOptions: function() {
-      var options = BasicView.prototype.getContainerBodyOptions.apply(this, arguments);
-      
-      // make sure it starts just offscreen
-      options.x += G.viewport.width;
-      options.lock.y = 0;
-      return options;
-    }
-//    ,
-//    _onViewportDimensionsChanged: function() {
-//      return BasicView.prototype._onViewportDimensionsChanged.apply(this, arguments);
-//    },
-//
-//    getContainerBodyOptions: function() {
-//      var options = BasicView.prototype.getContainerBodyOptions.apply(this, arguments);
-//      options.lock.x = {
-//        min: 0,
-//        max: this.el.offsetWidth
-//      };
-//      
-//      options.lock.y = 0;
-//      return options;
-//    }
+    }    
   }, 
   {
     displayName: 'MainMenuPanel'

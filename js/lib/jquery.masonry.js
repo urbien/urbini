@@ -254,9 +254,6 @@
           colYs = this._getColYs(),
           lock;
   
-      if (isNaN(setHeight))
-        debugger;
-      
       //    Which column has the min/max Y value, 
       //         closest to the left/right, 
       // based on if we're appending/prepending

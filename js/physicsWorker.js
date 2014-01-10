@@ -590,10 +590,11 @@ function getTranslation(body) {
   var aabb = getAABB(body),
       pos = body.state.pos;
   
-  x = pos.get(0) - (aabb._hw || 0);
-  y = pos.get(1) - (aabb._hh || 0);
-  z = getZ(body); //pos.get(2) - (aabb._hd || 0);
-  return [x, y, z];
+  return [
+    pos.get(0) - (aabb._hw || 0),
+    pos.get(1) - (aabb._hh || 0),
+    getZ(body) //pos.get(2) - (aabb._hd || 0);
+  ];
 };
 
 function getZ(body) {
@@ -936,17 +937,8 @@ function pick(obj) {
     maxBricks: 10,
     bricksPerPage: 10,
 //    numBricks: 0,
-    brickLimit: Infinity,
     gutterWidthHorizontal: 0,
     gutterWidthVertical: 0,
-    slidingWindowBounds: {
-      min: 0,
-      max: 0
-    },
-    range: {
-      from: 0,
-      to: 0
-    },
 //    lastObtainedRange: {
 //      from: 0,
 //      to: 0
@@ -987,6 +979,7 @@ function pick(obj) {
     this.id = id;
     this._callbackId = callbackId;
     Physics.util.extend(this, Physics.util.clone(defaultSlidingWindowOptions, true), options);
+    this.options = pick(options, 'minPagesInSlidingWindow', 'maxPagesInSlidingWindow');
     this.masonryOptions = {};
     this.init();
   };
@@ -1003,6 +996,7 @@ function pick(obj) {
           doSlidingWindow = this.slidingWindow,
           constantsEvent;
       
+      this.reset();
       this._listeners = {};
       if (this.horizontal) {
         this.dirHead = DIR_LEFT;
@@ -1703,14 +1697,19 @@ function pick(obj) {
       this.pageWidth = Math.abs(this.bounds._hw * 2);
       this.pageHeight = Math.abs(this.bounds._hh * 2);
       this.pageArea = this.pageWidth * this.pageHeight;
-      if (this.pageArea < 400 * 400)
-        this.minPagesInSlidingWindow = 7;
-      else if (this.pageArea < 800 * 800)
-        this.minPagesInSlidingWindow = 7;
-      else
-        this.minPagesInSlidingWindow = 7;
+      if (!this.options.minPagesInSlidingWindow) {
+        if (this.pageArea < 400 * 400)
+          this.minPagesInSlidingWindow = 7;
+        else if (this.pageArea < 800 * 800)
+          this.minPagesInSlidingWindow = 7;
+        else
+          this.minPagesInSlidingWindow = 7;
+      }
       
-      this.maxPagesInSlidingWindow = this.minPagesInSlidingWindow * 2;
+      if (!this.options.maxPagesInSlidingWindow) {
+        this.maxPagesInSlidingWindow = this.minPagesInSlidingWindow * 2;
+      }
+      
       this.pageScrollDim = this.horizontal ? this.pageWidth : this.pageHeight;
       this.pageNonScrollDim = this.horizontal ? this.pageHeight : this.pageWidth;  
     },
@@ -1728,21 +1727,33 @@ function pick(obj) {
             viewportDim = viewport.max - viewport.min,
             slidingWindow = this.slidingWindowBounds,
             slidingWindowDimension = this.slidingWindowDimension,
-            dim = Math.max(6, Math.round(this.pageScrollDim * (this.pageArea / this.averageBrickArea) / this.lastBrickSeen - 4)),
+            limit = this.brickLimit == Infinity ? this.lastBrickSeen : this.brickLimit,
+            dim = Math.max(6, Math.round(this.pageScrollDim * (this.pageArea / this.averageBrickArea) / limit - 4)),
             aabb = getAABB(this.scrollbar),
             vel = this.scrollbar.state.vel.norm(),
+            pos = this.scrollbar.state.pos,
             currentOpacity = this.scrollbar.state.renderData.get('opacity'),
+            axisVal,
+            orthoAxisVal, 
             opacity,
             percentOffset;
         
         opacity = Math.max(Math.min(MAX_OPACITY, Math.pow(vel, 0.33), currentOpacity + OPACITY_INC),
                                                                       currentOpacity - OPACITY_INC/2);
             
-        percentOffset = (this.range.from + ((viewport.min - slidingWindow.min) / slidingWindowDimension) * (this.range.to - this.range.from)) / this.lastBrickSeen; // estimate which tiles we're looking at
+        percentOffset = (this.range.from + ((viewport.min - slidingWindow.min) / slidingWindowDimension) * (this.range.to - this.range.from)) / limit; // estimate which tiles we're looking at
         
         this.scrollbar.state.renderData.set(this.horizontal ? 'width' : 'height', dim + 'px');
-        this.scrollbar.state.pos.setComponent(this.axisIdx, viewport.min + viewportDim * percentOffset);
-        this.scrollbar.state.pos.setComponent(this.orthoAxisIdx, this.bounds._pos.get(this.orthoAxisIdx) + this.bounds[this.aabbOrthoAxisDim] - aabb[this.aabbOrthoAxisDim] * 2);
+        
+        // ugly hack to avoid creating array each time
+        axisVal = viewport.min + viewportDim * percentOffset;
+        if (axisVal != pos.get(this.axisIdx))
+          pos.setComponent(this.axisIdx, axisVal);
+          
+        orthoAxisVal = this.bounds._pos.get(this.orthoAxisIdx) + this.bounds[this.aabbOrthoAxisDim] - aabb[this.aabbOrthoAxisDim] * 2;
+        if (orthoAxisVal != pos.get(this.orthoAxisIdx))
+          pos.setComponent(this.orthoAxisIdx, orthoAxisVal);
+        
         if (Math.abs(opacity - currentOpacity) > 0.01)
           this.scrollbar.state.renderData.set('opacity', opacity);
       }
@@ -1812,7 +1823,10 @@ function pick(obj) {
       }
       else {
         // tail edge depends only on size of the layout and the size of the paint bounds
-        coords[this.axisIdx] = -this.slidingWindowDimension + this.pageScrollDim;
+        if (this.slidingWindowDimension < this.pageScrollDim)
+          coords[this.axisIdx] = this.headEdge.state.pos.get(this.axisIdx);
+        else
+          coords[this.axisIdx] = -this.slidingWindowDimension + this.pageScrollDim; // NOT the same as in above IF statement
       }
       
       return coords;
@@ -1874,7 +1888,7 @@ function pick(obj) {
           edge = (reverse ? viewport.max : viewport.min) | 0,
           offset;
       
-      log("Reloading layout: " + this.id + (reverse ? " tail to head" : ""));
+      log("Reloading layout: " + this.containerId + (reverse ? " tail to head" : ""));
       if (this.slidingWindow) {
         offset = {};
         offset[this.axis] = edge; //Math.max(edge + multiplier * this.pageScrollDim, 0);
@@ -1888,8 +1902,8 @@ function pick(obj) {
       }
     },
 
-    setLimit: function() {
-      this.brickLimit = this.lastBrickSeen || 0;
+    setLimit: function(limit) {
+      this.brickLimit = limit; //this.lastBrickSeen || 0;
       this.log("SETTING BRICK LIMIT: " + this.brickLimit);
       this.checkTailEdge();
     },
@@ -1903,6 +1917,20 @@ function pick(obj) {
       this.log("UNSETTING BRICK LIMIT");
     },
 
+    reset: function() {
+      this.brickLimit = Infinity;
+      this.lastBrickSeen = 0;
+      if (!this.range)
+        this.range = {};
+      
+      this.range.from = this.range.to = 0;
+      
+      if (!this.slidingWindowBounds)
+        this.slidingWindowBounds = {};
+      
+      this.slidingWindowBounds.min = this.slidingWindowBounds.max = 0;
+    },
+    
     resize: function(bounds, updatedBricks, callback) {
       if (this._sleeping) {
         this._resizeArgs = arguments;
@@ -2031,7 +2059,7 @@ function pick(obj) {
           options;
       
       this.biggestViewportMin = Math.max(viewport.min, this.biggestViewportMin || 0);
-      log("ADDING BRICKS: " + optionsArr.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
+//      log("ADDING BRICKS: " + optionsArr.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
       for (var i = 0; i < l; i++) {
         options = optionsArr[i];
         if (!this.flexigroup)
@@ -2222,7 +2250,7 @@ function pick(obj) {
         this.range.to -= n;
       }
       
-      this.log("REMOVED BRICKS: " + bricks.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
+//      this.log("REMOVED BRICKS: " + bricks.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
 //      this.printState();
 //      this.log("REMOVING " + n + " BRICKS FROM THE " + (fromTheHead ? "HEAD" : "TAIL") + " FOR A TOTAL OF " + (this.range.to - this.range.from));
   //    log("ACTUAL TOTAL AFTER REMOVE: " + this.numBricks());
@@ -2825,8 +2853,8 @@ var API = {
         goalOpacity = opacity,
         destination = updateVector(Physics.vector().clone(body.state.pos), x, y, z),
         acceleration = Physics.vector(),
-        thresh = speed * 100,
         initialDistance = body.state.pos.dist(destination),
+        thresh = Math.min(speed * 100, initialDistance / 5),
         lastDistance = initialDistance,
         distance,
         posLock,
@@ -2849,8 +2877,12 @@ var API = {
 //              body.state.vel.clone(destination).vsub(body.state.pos).normalize().mult(speed * Math.min(distance, 100) / 100);
               body.accelerate(acceleration.clone(destination).vsub(body.state.pos).mult(speed * Math.min(distance * distance, 300) / 2000 / 10000 )); // slow down when you get closer
             }
-            else
+            else {
+              if (distance > 10)
+                log("Completing action ahead of schedule by distance: " + distance + ", thresh: " + thresh + ", initial distance: " + initialDistance);
+              
               flyAction.complete();
+            }
           }
         );
     
