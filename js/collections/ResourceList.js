@@ -474,6 +474,7 @@ define('collections/ResourceList', [
     },
     
     reset: function(models, options) {
+      delete this.total;
       if (this['final'] && this.models.length)
         throw "This list is locked, it cannot be changed";
       

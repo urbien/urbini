@@ -114,29 +114,32 @@ define('views/ResourceListView', [
   
       this.isEdit = this.hashParams['$editList'];
       
-//      var self = this,
-//          col = this.collection;
-//      
-//      _.each(['updated', 'added', 'reset'], function(event) {
-//        self.stopListening(col, event);
-//        self.listenTo(col, event, function(resources) {
-//          resources = U.isCollection(resources) ? resources.models : U.isModel(resources) ? [resources] : resources;
-//          var options = {
-//            resources: resources
-//          };
-//          
-//          options[event] = true;
-//          if (event == 'reset')
-//            self._resetPaging();
-//          
-//          self.refresh(options);
-//        });
-//      });      
+      var self = this,
+          col = this.collection;
       
-//      this._offsets = [];
-//      
-//      this._dimensions = {};
-
+      _.each(['updated', 'added', 'reset'], function(event) {
+        self.stopListening(col, event);
+        self.listenTo(col, event, function(resources) {
+          resources = U.isCollection(resources) ? resources.models : U.isModel(resources) ? [resources] : resources;
+          var options = {
+            resources: resources
+          };
+          
+          options[event] = true;
+          if (event == 'reset') {
+            self._outOfData = false;
+            self._isPaging = false;
+            self._displayedRange.from = self._displayedRange.to = 0;
+            self.mason.unsetLimit();
+            self.mason.reset();
+            if (self.mason.isLocked())
+              self.mason['continue']();
+          }
+          
+//          self.refresh(options);
+        });
+      });
+      
       this._displayedRange = {
         from: 0,
         to: 0
@@ -213,8 +216,13 @@ define('views/ResourceListView', [
 //    },
 
     updateTotal: function() {
-      if (!this.total)
-        return this.total = this.collection.getTotal();
+      if (!this.total) {
+        var total = this.collection.getTotal();
+        if (total != this.total) {
+          this.total = total;
+          return true;
+        }
+      }
     },
     
     _onPhysicsMessage: function(event) {

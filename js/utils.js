@@ -1778,6 +1778,24 @@ define('utils', [
       else
         return modelOrJson[prop];
     },
+    
+    getDefaultPropValue: function(prop) {
+      switch (prop.range || prop.facet) {
+      case 'boolean':
+        return false;
+      case 'int':
+      case 'long':
+      case 'float':
+      case 'double':
+        return 0;
+      case 'date':
+      case 'datetime':
+      case 'ComplexDate':
+        return _.now();
+      default:
+        return '';
+      }
+    },
 
     colorLuminance: function(hex, lum) {
       // validate hex string
@@ -2216,6 +2234,23 @@ define('utils', [
       dates: ['date', 'dateTime', 'ComplexDate'],
       floats: ['float', 'double', 'Percent', 'm', 'm2', 'km', 'km2', 'g', 'kg'], 
       ints: ['int', 'long', 'Duration', 'ComplexDate', 'dateTime', 'date']
+    },
+    
+    isPrimitiveTypeProp: function(prop) {
+      var range = prop.range || prop.facet,
+          primitiveTypes = U.primitiveTypes,
+          primitiveType;
+
+      if (range == 'boolean')
+        return true;
+      
+      for (var type in primitiveTypes) {
+        primitiveType = primitiveTypes[type];
+        if (~primitiveType.indexOf(range))
+          return true;
+      }
+      
+      return false;
     },
     
     /**

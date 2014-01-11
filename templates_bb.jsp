@@ -431,7 +431,7 @@
   <div id="buttons">  
     {{= this.categories ? '<div style="margin:10px 0 0 10px; float:left"><a id="categories" href="#"><i class="ui-icon-tags"></i></a></div>' : '' }} 
     {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
-    {{= this.filter ? '<div style="margin:10px 0 0 10px; float:left"><a id="categories" href="#"><i class="ui-icon-filter"></i></a></div>' : '' }} 
+    {{= this.filter ? '<div style="margin:10px 0 0 10px; float:left"><a id="toggleFilter" href="#"><i class="ui-icon-filter"></i></a></div>' : '' }} 
     <div id="name" class="resTitle" {{= this.categories ? 'style="width: 100%;background:#757575;"' : 'style="min-height: 20px;background:#757575;"' }} align="center">
       <h4 id="pageTitle" style="font-weight:normal;">{{= this.title }}</h4>
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
@@ -472,6 +472,7 @@
         </button>
       </div>
     </div>
+    {{= this.filter ? "<div id='filter'></div>" : "" }}
     <div class="physics" style="display:none; background-color:#606060; color:#FFFFFF; padding:5px;">
       <!--section role="region">
         <div role="slider" aria-valuemin="1" aria-valuenow="{{= drag }}" aria-valuemax="99" aria-valuetext="Air drag">
@@ -525,6 +526,75 @@
       </div-->
     </div>    
   </div>
+</script>
+
+<script type="text/template" id="searchTemplate">
+  <!-- Filter conditions for complex queries -->
+  <div id="searchBar">
+    <input type="text" id="search" style="font-family: FontAwesome" placeholder="&#xf002; Search" />
+  </div>
+</script>  
+
+<script type="text/template" id="filterTemplate">
+  <!-- Filter conditions for complex queries -->
+  <ul class="filterConditions" id="filterConditions">
+  </ul>
+</script>  
+
+<script type="text/template" id="filterConditionTemplate">
+<!--li class="filterCondition {{= obj.cancelable == false ? '' : 'cancelable' }}"-->
+  <li class="filterCondition" id="filterCondition{{= G.nextId() }}">
+  {{ if (obj.cancelable !== false) { }}
+    <i class="ui-icon-remove"></i>
+  {{ }                 }}
+    <i class="ui-icon-plus-sign"></i>
+    <select class="propertySelector">
+      <option value="_NO_PROP_">--Select property--</option>
+      {{ for (var i = 0; i < props.length; i++) { }}
+          <option value="{{= props[i].shortName }}">{{= U.getPropDisplayName(props[i]) }}</option>
+      {{ }                                        }}
+    </select>
+    <div class="filterConditionInput">
+    </div>
+  </li>
+</script>
+
+<!--script type="text/template" id="filterConditionInputTemplate">
+{{ switch (prop.range || prop.facet) { }}
+{{ case 'boolean':                     }}
+  <select>
+    <option value="true" {{= obj.value == true ? 'selected' : '' }}>True</option>
+    <option value="false" {{= obj.value == false ? 'selected' : '' }}>False</option>
+  </select>
+{{ break;                              }}
+{{ case 'int':                         }}
+{{ case 'long':                        }}
+{{ case 'float':                       }}
+{{ case 'double':                      }}
+  <input type="number" value="{{= value }}" />
+{{ break;                              }}
+{{ case 'string':                      }}
+{{ default:                            }}
+  <input type="text" value="{{= value }}" />
+{{ break;                              }}
+{{ }                                   }}
+</script-->
+
+<script type="text/template" id="filterConditionInputTemplate">
+{{ if (prop.range == 'boolean') { }}
+  <select>
+    <option value="true" {{= value == true ? 'selected' : '' }}>True</option>
+    <option value="false" {{= value == true ? '' : 'selected' }}>False</option>
+  </select>
+{{ }                            }}
+
+{{ if (~U.primitiveTypes.ints.indexOf(prop.range) || ~U.primitiveTypes.floats.indexOf(prop.range)) { }}
+  <input type="number" value="{{= value }}" />
+{{ }                            }}
+
+{{ if (prop.range == 'string') { }}
+  <input type="text" value="{{= value }}" />
+{{ }                            }}
 </script>
 
 <script type="text/template" id="menuP">

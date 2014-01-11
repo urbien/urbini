@@ -1297,7 +1297,13 @@ div {
 
 .scrollbarinner { height: 100%; background: rgba(0,0,0,0.5); -webkit-border-radius: 2px; border-radius: 4px / 6px }
 
-[data-role="filler"] { visibility: hidden; display:table-cell; height:auto; width:auto; pointer-events:none; }
+.filterConditions { list-style: none; }
+
+.propertySelector { display: inline-block; }
+
+.filterConditionInput { display: inline-block; }
+
+/*.filterCondition.cancelable:before { font-family: FontAwesome; content: "\f00d"; }*/
 
 /*
 .nabBoard {

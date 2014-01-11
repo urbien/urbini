@@ -52,6 +52,17 @@ define('views/Header', [
         self.buttonViews = {};
       });
       
+      if (this.filter) {
+        var vocModel = this.vocModel,
+            type = vocModel && vocModel.type;
+        
+        this.makeTemplate('searchTemplate', 'searchTemplate', type);
+        this.makeTemplate('filterTemplate', 'filterTemplate', type);
+        this.makeTemplate('filterConditionTemplate', 'filterConditionTemplate', type);
+        this.makeTemplate('filterConditionInputTemplate', 'filterConditionInputTemplate', type);
+        this.originalParams = _.clone(this.collection.params);
+      }
+      
       return this;
     },
     
@@ -156,11 +167,16 @@ define('views/Header', [
       return this;
     },
     events: {
-      'change #fileUpload'         : 'fileUpload',
-      'change .physics input'    : 'changePhysics',
-      'click #categories'          : 'showCategories',
+      'change #fileUpload'                         : 'fileUpload',
+      'change .physics input'                      : 'changePhysics',
+      'click #toggleFilter'                        : 'toggleFilter',
+      'click #categories'                          : 'showCategories',
 //      'click #installApp'         : 'installApp',
-      'click #moreRanges'          : 'showMoreRanges'
+      'click #moreRanges'                          : 'showMoreRanges',
+      'keyup input#search'                         : 'search',
+      'click .filterCondition i.ui-icon-remove'    : 'removeFilterCondition',
+      'click .filterCondition i.ui-icon-plus-sign' : 'addFilterCondition',
+      'change .propertySelector'                   : 'changeFilterConditionProperty'
     },
     
     changePhysics: function(e) {
@@ -217,6 +233,7 @@ define('views/Header', [
       */    
 
     },
+    
     showMoreRanges: function(e) {
       Events.stopEvent(e);
       if (this.hashParams['$more']) {
@@ -229,6 +246,7 @@ define('views/Header', [
       }
       this.router.navigate(U.makeMobileUrl('chooser', this.vocModel.type, this.hashParams), {trigger: true, replace: true, forceFetch: true});
     },
+    
     showCategories: function(e) {
       Events.stopEvent(e);
       var self = this;
@@ -252,6 +270,180 @@ define('views/Header', [
       });
     },
     
+    toggleFilter: function(e) {
+      Events.stopEvent(e);
+      this.filterContainer.$empty();
+      
+      switch (this.filterType) {
+      case null:
+      case undefined:
+        this.filterType = 'simple';
+        this.showSearch();
+        break;
+      case 'simple':        
+        this.filterType = 'complex';
+        this.showFilter();
+        break;
+      case 'complex':
+        this.filterType = null;
+        this.hideFilter();
+        break;
+      }
+    },
+    
+    hideFilter: function() {
+      this.filterIcon.className = this.searchIconClass;
+      this.redelegateEvents();
+    },
+
+    showSearch: function() {
+      this.filterIcon.className = 'ui-icon-filter';
+      this.filterContainer.$html(this.searchTemplate(this.getBaseTemplateData()));
+      this.redelegateEvents();
+    },
+    
+    showFilter: function() {      
+      if (!this.filterProps) {
+        this.filterProps = [];
+        var meta = this.vocModel.properties,
+            first = this.collection.models[0],
+            userRole = U.getUserRole(),
+            prop;
+        
+        for (var p in meta) {
+          prop = meta[p];
+          if (!U.isSystemProp(p) && U.isPrimitiveTypeProp(prop) && U.isPropVisible(first, prop, userRole)) {
+            this.filterProps.push(prop);
+          }
+        }
+      }
+      
+      var tmpl_data = _.clone(this.getBaseTemplateData());
+      tmpl_data.props = this.filterProps;
+      tmpl_data.cancelable = false;
+      this.filterIcon.className = 'ui-icon-remove';
+      this.filterContainer.$html(this.filterTemplate());
+      this.filterContainer.$('ul')[0].$html(this.filterConditionTemplate(tmpl_data));
+      this.redelegateEvents();
+    },
+    
+    removeFilterCondition: function(e) {
+      var icon = e.currentTarget,
+          parent,
+          select;
+      
+      while (parent = icon.parentNode) {
+        if (parent.tagName == 'LI') {
+          select = parent.$('select')[0];
+          if (this.collection.params[select.value]) {
+            delete this.collection.params[select.value];
+            this.collection.reset();
+          }
+          
+          parent.$remove();
+          this.redelegateEvents();
+          break;
+        }
+      }
+    },
+    
+    addFilterCondition: function(e) {
+      var ul = this.filterContainer.$('ul')[0],
+          childNodes = ul.childNodes,
+          i = childNodes.length,
+          select,
+          condition;
+      
+      while (i--) {
+        select = childNodes[i].$('.propertySelector')[0];
+        if (select.value == '_NO_PROP_') {
+          select.focus();
+          return;
+        }
+      }
+      
+      ul.$append(this.filterConditionTemplate(_.extend({
+        props: this.filterProps
+      }, this.getBaseTemplateData())));
+      
+      condition = ul.lastChild;
+      this.doChangeFilterConditionProperty(condition.$('select')[0], condition.$('.filterConditionInput')[0]);
+      this.redelegateEvents();
+    },
+
+    changeFilterConditionProperty: function(e) {
+      var select = e.currentTarget,
+          input = select.parentNode.$('.filterConditionInput')[0];
+      
+      this.doChangeFilterConditionProperty(select, input);
+      this.redelegateEvents();
+    },
+    
+    doChangeFilterConditionProperty: function(select, input) {
+      var value = select.value,
+          prop;
+      
+      if (value == '_NO_PROP_')
+        input.$empty();
+      else {
+        prop = this.vocModel.properties[select.value];
+        input.$html(this.filterConditionInputTemplate(_.extend({
+          prop: prop,
+          value: U.getDefaultPropValue(prop)
+        }, this.getBaseTemplateData())));
+      }
+    },
+
+    search: function(e) {
+      var col = this.collection,
+          input = e.target,
+          value = input.value,
+          valueLowerCase,
+          resourceMatches,
+          numResults,
+          indicatorId,
+          hideIndicator;
+      
+      if (!value) {
+        indicatorId = this.showLoadingIndicator(3000); // 3 second timeout
+        hideIndicator = this.hideLoadingIndicator.bind(this, indicatorId);
+
+        col.reset(null, _.extend({
+          silent: true,
+        }, this.originalParams));
+        
+        col.fetch({
+          forceFetch: true,
+          success: hideIndicator,
+          error: hideIndicator
+        });
+        
+        return;
+      }
+      
+      valueLowerCase = value.toLowerCase();
+      resourceMatches = col.models.filter(function(res) {
+        var dn = U.getDisplayName(res);
+        return dn && ~dn.toLowerCase().indexOf(valueLowerCase);
+      });
+  
+      col.reset(resourceMatches, {
+        params: _.defaults({
+          '$like': 'davDisplayName,' + value
+        }, this.originalParams)
+      });
+      
+//      numResults = col.size();
+//      indicatorId = this.showLoadingIndicator(3000); // 3 second timeout
+//      hideIndicator = this.hideLoadingIndicator.bind(this, indicatorId);
+//        
+//      filtered.fetch({
+//        forceFetch: true,
+//        success: hideIndicator,
+//        error: hideIndicator
+//      });
+    },
+
     refresh: function() {
 //      this.refreshCallInProgressHeader();
       this.refreshTitle();
@@ -493,7 +685,15 @@ define('views/Header', [
         if (!this.publish  &&  this.doTry  &&  this.forkMe)
           templateSettings.className = 'ui-grid-b';
       }      
+      
       this.html(this.template(templateSettings));
+      if (this.filter) {
+        this.filter = this.$('#toggleFilter')[0];
+        this.filterIcon = this.filter.$('i')[0];
+        this.searchIconClass = this.filterIcon.className;
+        this.filterContainer = this.$('#filter')[0];
+      }
+      
       this.refreshTitle();
 //      this.$el.prevObject.attr('data-title', this.pageTitle);
 //      this.$el.prevObject.attr('data-theme', G.theme.list);
