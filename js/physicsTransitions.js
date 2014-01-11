@@ -60,20 +60,25 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
               method: 'isolate',
               args: [bodyId, 'pop']
             },            
+            {
+              object: mason.id,
+              method: 'flyToTopCenter',
+              args: [bodyId, 3, null, function() {
+                Physics.there.rpc(null, 'style', [to, {
+                  property: 'opacity',
+                  start: 0, 
+                  end: Physics.constants.maxOpacity, 
+                  time: time
+                }, finish]);
+              }]
+            },
 //            {
 //              object: mason.id,
-//              method: 'flyToTopCenter',
-//              args: [bodyId, 3, null, function() {
+//              method: 'center',
+//              args: [bodyId, 500, function() {
 //                Physics.there.rpc(null, 'opacity', [to, Physics.constants.maxOpacity, time, finish]);
 //              }]
 //            },
-            {
-              object: mason.id,
-              method: 'center',
-              args: [bodyId, 500, function() {
-                Physics.there.rpc(null, 'opacity', [to, Physics.constants.maxOpacity, time, finish]);
-              }]
-            },
 //            {
 //              object: mason.id,
 //              method: 'maximize', 

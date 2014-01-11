@@ -34,8 +34,8 @@ define('views/ResourceListView', [
     bricksPerPage: 10,
     averageBrickScrollDim: 80,
     averageBrickNonScrollDim: 80,  
-    minPagesInSlidingWindow: 3,
-    maxPagesInSlidingWindow: 6,
+    minPagesInSlidingWindow: 4,
+    maxPagesInSlidingWindow: 8,
     gutterWidth: 10,
     scrollerType: 'verticalMain'
     // </ MASONRY INITIAL CONFIG>      
@@ -310,7 +310,7 @@ define('views/ResourceListView', [
       }
 
       self = viewId && this.children[viewId]; // list item view
-      navOptions.via = self;
+//      navOptions.via = self;
       if (link) {
         Events.stopEvent(e);
         Events.trigger('navigate', link.href, navOptions);
@@ -640,7 +640,9 @@ define('views/ResourceListView', [
       }
       else if (from < availableRange[0])
         return this.fetchResources(from, availableRange[0]).then(this._addBricks.bind(this, from, to, force), this._addBricks.bind(this, from, to, true));        
-                  
+      else if (availableRange[1] - availableRange[0] < (to - from) * 2)
+        this.prefetch();
+      
       preRenderPromise = this.preRender(from, to);
       if (_.isPromise(preRenderPromise))
         return preRenderPromise.then(this._doAddBricks.bind(this, from, to));
@@ -749,10 +751,27 @@ define('views/ResourceListView', [
 //        displayed.to -= removedViews.length;
       }
 
+      if (fromTheHead && this._displayedRange.to - this._displayedRange.to < this.options.bricksPerPage * 2)
+        this.prefetch();
+      
 //      if (displayed.from > displayed.to) {
 //        debugger;
 //        displayed.from = displayed.to;
 //      }
+    },
+    
+    prefetch: function() {
+      var num = this.options.bricksPerPage * 2,
+          total = this.collection.getTotal(),
+          availableRange = this.collection.getRange();
+      
+      if (total)
+        num = Math.min(num, total - availableRange[1]);
+      
+      if (num) {
+        this.log("Prophylactic prefetching: " + num + " bricks");
+        this.fetchResources(availableRange[1], availableRange[1] + num);
+      }
     },
 
     onResourceChanged: function(res) { // attach/detach when sliding window moves

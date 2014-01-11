@@ -1107,7 +1107,6 @@
     </div>
     {{= this.categories ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-iconpos="notext" data-icon="tags" id="categories" href="#"></a></div>' : '' }} 
     {{= this.moreRanges ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-icon="tags" id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '</a></div>' : '' }}
-    {{= this.filter ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-iconpos="notext" data-icon="filter" id="filter" href="#"></a></div>' : '' }} 
     <div id="name" class="resTitle" {{= this.categories ? 'style="width: 95%;"' : 'style="min-height: 20px"' }} align="center">
       <h4 id="pageTitle" style="font-weight:normal;">{{= this.title }}</h4>
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} style="margin-top: -7px;" id="headerButtons">

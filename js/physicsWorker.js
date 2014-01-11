@@ -48,6 +48,8 @@ function index(obj, i) {
 	return obj[i];
 };
 
+function noop() {};
+
 // resolve string path to object, e.g. 'Physics.util' to Physics.util
 function leaf(obj, path, separator) {
 	return path.split(separator||'.').reduce(index, obj);
@@ -307,7 +309,7 @@ function Action(name, onstep) {
   onstep = function() {
     if (!started) {
       started = true;
-      log("Started action: " + name);
+//      log("Started action: " + name);
       if (action.onstart)
         action.onstart();
     }
@@ -324,7 +326,7 @@ function Action(name, onstep) {
     cancel: function() {
       if (!complete && !canceled) {
         canceled = true;
-        log("Canceled action: " + this.name);
+//        log("Canceled action: " + this.name);
         world.unsubscribe('step', onstep)
         if (this.oncancel)
           this.oncancel.apply(null, arguments);
@@ -333,7 +335,7 @@ function Action(name, onstep) {
     complete: function() {
       if (!complete && !canceled) {
         complete = true;      
-        log("Completed action: " + this.name);
+//        log("Completed action: " + this.name);
         world.unsubscribe('step', onstep);
         if (this.oncomplete)
           this.oncomplete.apply(null, arguments);
@@ -1730,32 +1732,40 @@ function pick(obj) {
             limit = this.brickLimit == Infinity ? this.lastBrickSeen : this.brickLimit,
             dim = Math.max(6, Math.round(this.pageScrollDim * (this.pageArea / this.averageBrickArea) / limit - 4)),
             aabb = getAABB(this.scrollbar),
-            vel = this.scrollbar.state.vel.norm(),
+            oldVel = Math.abs(this.scrollbar.state.old.vel.get(this.axisIdx)),
+            vel = Math.abs(this.scrollbar.state.vel.get(this.axisIdx)),
             pos = this.scrollbar.state.pos,
             currentOpacity = this.scrollbar.state.renderData.get('opacity'),
+            axisLock,
             axisVal,
             orthoAxisVal, 
             opacity,
             percentOffset;
         
-        opacity = Math.max(Math.min(MAX_OPACITY, Math.pow(vel, 0.33), currentOpacity + OPACITY_INC),
-                                                                      currentOpacity - OPACITY_INC/2);
-            
-        percentOffset = (this.range.from + ((viewport.min - slidingWindow.min) / slidingWindowDimension) * (this.range.to - this.range.from)) / limit; // estimate which tiles we're looking at
-        
         this.scrollbar.state.renderData.set(this.horizontal ? 'width' : 'height', dim + 'px');
-        
-        // ugly hack to avoid creating array each time
+
+        percentOffset = (this.range.from + ((viewport.min - slidingWindow.min) / slidingWindowDimension) * (this.range.to - this.range.from)) / limit; // estimate which tiles we're looking at
         axisVal = viewport.min + viewportDim * percentOffset;
-        if (axisVal != pos.get(this.axisIdx))
+        if (axisVal != pos.get(this.axisIdx)) {
+          axisLock = pos.unlock();
           pos.setComponent(this.axisIdx, axisVal);
+        }
           
         orthoAxisVal = this.bounds._pos.get(this.orthoAxisIdx) + this.bounds[this.aabbOrthoAxisDim] - aabb[this.aabbOrthoAxisDim] * 2;
-        if (orthoAxisVal != pos.get(this.orthoAxisIdx))
+        if (orthoAxisVal != pos.get(this.orthoAxisIdx)) {
+          axisLock = axisLock || pos.unlock();
           pos.setComponent(this.orthoAxisIdx, orthoAxisVal);
+        }
         
-        if (Math.abs(opacity - currentOpacity) > 0.01)
+        if (axisLock)
+          pos.lock(axisLock);
+        
+        opacity = Math.max(Math.min(MAX_OPACITY, Math.pow(vel, 0.33), currentOpacity + OPACITY_INC),
+                                                                      currentOpacity - OPACITY_INC/2);
+        if (Math.abs(opacity - currentOpacity) > 0.01) {
+//          log("Velocity: " + vel + ", Opacity: " + opacity);
           this.scrollbar.state.renderData.set('opacity', opacity);
+        }
       }
     },
     
@@ -2026,9 +2036,16 @@ function pick(obj) {
     _calcSlidingWindowDimensionRange: function() {
       this.minSlidingWindowDimension = this.pageScrollDim * this.minPagesInSlidingWindow;
       this.maxSlidingWindowDimension = this.pageScrollDim * this.maxPagesInSlidingWindow;
-      var slidingWindowDim = Math.max(this.slidingWindowDimension, (this.maxSlidingWindowDimension + this.minSlidingWindowDimension) / 2);
-      this.slidingWindowInsideBuffer = slidingWindowDim / 2; // how far away the viewport is from the closest border of the sliding window before we start to fetch more resources
-      this.slidingWindowOutsideBuffer = Math.max(slidingWindowDim / 5, this.slidingWindowInsideBuffer / 2); // how far away the viewport is from the closest border of the sliding window before we need to adjust the window
+//      var slidingWindowDim = Math.max(this.slidingWindowDimension, (this.maxSlidingWindowDimension + this.minSlidingWindowDimension) / 2);
+//      this.slidingWindowInsideBuffer = slidingWindowDim / 2; // how far away the viewport is from the closest border of the sliding window before we start to fetch more resources
+      this.slidingWindowInsideBuffer = this.minSlidingWindowDimension - this.getViewportDimension();
+      this.slidingWindowOutsideBuffer = this.slidingWindowInsideBuffer;
+//      this.slidingWindowOutsideBuffer = Math.max(slidingWindowDim / 5, this.slidingWindowInsideBuffer / 2); // how far away the viewport is from the closest border of the sliding window before we need to adjust the window
+    },
+    
+    getViewportDimension: function() {
+      var v = this.getViewport();
+      return v.max - v.min;
     },
     
     getViewport: function(scale) {
@@ -2191,9 +2208,9 @@ function pick(obj) {
         this.checkTailEdge();
       
       this.log("ADDED " + l + " BRICKS TO THE " + (prepend ? "HEAD" : "TAIL") + " FOR A TOTAL OF " + (this.range.to - this.range.from));
-//      this.printState();
+      this.printState();
       //    log("ACTUAL TOTAL AFTER ADD: " + this.numBricks());
-      if (this.scrollbar && this.scrollable)
+      if (this.scrollbar && this.scrollable && this.brickLimit == Infinity) // if we know the total number of bricks we'll ever have, no need to signal by flashing addition of bricks the scrollbar
         this.scrollbar.state.renderData.set('opacity', MAX_OPACITY);
       
       this.checkRep();
@@ -2201,7 +2218,8 @@ function pick(obj) {
     },
 
     printState: function() {
-      this.log("STATE: " + this.mason.bricks.map(function(b) { return parseInt(b._id.match(/\d+/)[0])})/*.sort(function(a, b) {return a - b})*/.join(","));
+//      this.log("STATE: " + this.mason.bricks.map(function(b) { return parseInt(b._id.match(/\d+/)[0])})/*.sort(function(a, b) {return a - b})*/.join(","));
+      this.log("CURRENT RANGE: " + this.range.from + "-" + this.range.to);
     },
     
     checkRep: function() {
@@ -2259,7 +2277,7 @@ function pick(obj) {
       }
       
 //      this.log("REMOVED BRICKS: " + bricks.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
-//      this.printState();
+      this.printState();
 //      this.log("REMOVING " + n + " BRICKS FROM THE " + (fromTheHead ? "HEAD" : "TAIL") + " FOR A TOTAL OF " + (this.range.to - this.range.from));
   //    log("ACTUAL TOTAL AFTER REMOVE: " + this.numBricks());
       this.recalc();
@@ -2399,11 +2417,13 @@ function pick(obj) {
     },
     
     getHeadDiff: function() {
-      return Math.max(this.getViewport().min - this.slidingWindowBounds.min, 0); // + favor
+      var favor = this.lastDirection == 'head' ? 0.75 : 1.25;
+      return Math.max(this.getViewport().min - this.slidingWindowBounds.min, 0) * favor; // + favor
     },
 
     getTailDiff: function() {
-      return Math.max(this.slidingWindowBounds.max - this.getViewport().max, 0); // + favor
+      var favor = this.lastDirection == 'tail' ? 0.75 : 1.25;
+      return Math.max(this.slidingWindowBounds.max - this.getViewport().max, 0) * favor; // + favor
     },
 
     /**
@@ -2426,7 +2446,7 @@ function pick(obj) {
           maxAppend = Math.max(this.brickLimit - this.range.to, 0),
           canAdd,
           defaultAddDelta = Math.max(this.bricksPerPage, 4), //Math.max(Math.ceil(this.bricksPerPage / 2), 4),
-          defaultRemoveDelta = Math.max(this.bricksPerPage, 1), //Math.max(Math.ceil(this.bricksPerPage / 2), 4),
+          defaultRemoveDelta = Math.max(this.bricksPerPage / 3 | 0, 1), //Math.max(Math.ceil(this.bricksPerPage / 2), 4),
           headDiff,
           tailDiff;
   
@@ -2537,7 +2557,7 @@ function pick(obj) {
 //        else if (this.brickLimit - range.to < this.bricksPerPage * 2) /// doesn't make any sense because if brick limit is set, we already have all those resources in the main thread, no need to fetch them from anywhere
 //          this.prefetch();
       }
-      else if (maxPrepend && range.from > 0 && headDiff < this.slidingWindowOutsideBuffer) {
+      else if (maxPrepend && range.from > 0 && headDiff < this.slidingWindowInsideBuffer) {
         var toAdd = Math.min(maxPrepend, defaultAddDelta);
 //        range.from -= toAdd;
         this.log("DECISION: growing sliding window by " + toAdd + " at the " + HEAD_STR);
@@ -2713,6 +2733,76 @@ var API = {
     }
   },
 
+  style: function(bodyId, options, callback) {
+    var body = getBody(bodyId),
+        unit = options.unit || '',
+        prop = options.property,
+        startValue = options.start,
+        endValue = options.end,
+        clear = options.clear,
+        time = options.time,
+        type = options.type,
+        steps = Math.ceil(time / WORLD_CONFIG.timestep),
+        step = 0,
+        factor,
+        val,
+        onstep,
+        action;
+    
+    if (clear == 'cancel')
+      API.cancelPendingActions(body);
+    else if (clear == 'complete')
+      API.completePendingActions(body);
+    
+    if (unit && type == 'number') {
+      if (typeof startValue == 'string')
+        startValue = parseFloat(startValue.replace(unit, ''));
+      if (typeof endValue == 'string')
+        endValue = parseFloat(endValue.replace(unit, ''));
+    }
+    
+    function cleanUp() {
+      body.state.renderData.set(prop, endValue + unit);
+    };
+    
+    function oncomplete() {
+      cleanUp();
+      if (callback)
+        doCallback(callback);
+    };
+    
+    
+    if (!time)
+      return oncomplete();
+      
+    if (type == 'boolean')
+      onstep = noop(); // set new value on action completion, essentially this is just a delayed setValue
+    else {
+      onstep = function onstep() {
+        if (step++ >= steps)
+          action.complete();
+        else {
+          factor = step / steps;
+          val = startValue + factor * (endValue - startValue);
+          if (unit)
+            val += unit;
+          
+          body.state.renderData.set(prop, val);
+        }
+      };
+    }
+    
+    action = new Action(
+      body.options._id + ' ' + prop + ' from ' + startValue + ' to ' + endValue,
+      onstep
+    );
+  
+    action.oncomplete = oncomplete;
+    action.oncancel = cleanUp;
+    addAction(body, action);
+    action.start();
+  },
+  
   opacity: function(bodyId, opacity, time, callback) {
     var body = getBody(bodyId),
         steps = Math.ceil(time / WORLD_CONFIG.timestep),
