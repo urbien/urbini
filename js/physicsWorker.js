@@ -1910,14 +1910,20 @@ function pick(obj) {
 
     unsetLimit: function() {
       this.brickLimit = Infinity;
-      API.removeConstraint(this.tailEdgeConstraint);
-      world.removeBody(this.tailEdge);
-      delete this.tailEdgeConstraint;
-      delete this.tailEdge;
+      if (this.tailEdge) {
+        API.removeConstraint(this.tailEdgeConstraint);
+        world.removeBody(this.tailEdge);
+        delete this.tailEdgeConstraint;
+        delete this.tailEdge;
+      }
+      
       this.log("UNSETTING BRICK LIMIT");
     },
 
     reset: function() {
+      if (this.mason)
+        this.removeBricks(this.numBricks());
+      
       this.brickLimit = Infinity;
       this.lastBrickSeen = 0;
       if (!this.range)
@@ -1929,6 +1935,8 @@ function pick(obj) {
         this.slidingWindowBounds = {};
       
       this.slidingWindowBounds.min = this.slidingWindowBounds.max = 0;
+      if (this.mason && !this._sleeping && !this._waiting)
+        this._adjustSlidingWindow();
     },
     
     resize: function(bounds, updatedBricks, callback) {

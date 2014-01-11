@@ -315,7 +315,14 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     
     var NodeAug = {
       $: function(selector) {
-        return this.nodeType == 1 ? this.querySelectorAll(selector) : newNodeList();
+        switch (this.nodeType) {
+        case 1:
+        case 9:
+        case 11:
+          return this.querySelectorAll(selector);
+        default:
+          return newNodeList();
+        }
       },
     
       $offset: function() {

@@ -213,8 +213,13 @@ define('views/ResourceListView', [
 //    },
 
     updateTotal: function() {
-      if (!this.total)
-        return this.total = this.collection.getTotal();
+      if (!this.total) {
+        var total = this.collection.getTotal();
+        if (total != this.total) {
+          this.total = total;
+          return true;
+        }
+      }
     },
     
     _onPhysicsMessage: function(event) {
