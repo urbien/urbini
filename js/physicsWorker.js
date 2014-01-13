@@ -3288,7 +3288,7 @@ var API = {
 
 //        body.state.vel.clone(destination).vsub(body.state.pos).normalize().mult(speed);
 //        body.state.vel.clone(destination).vsub(body.state.pos).normalize().mult(speed * Math.min(distance, 100) / 100);
-        body.accelerate(acceleration.clone(destination).vsub(body.state.pos).mult(speed * Math.min(distance * distance, 300) / 2000 / 10000 )); // slow down when you get closer
+        body.accelerate(acceleration.clone(destination).vsub(body.state.pos).normalize().mult(speed / 100)); // slow down when you get closer
       }
       else {
         if (distance > 10)

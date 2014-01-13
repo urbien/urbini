@@ -13,7 +13,7 @@ define('views/MenuPanel', [
 //    role: 'data-panel',
 //    id: 'menuPanel',
 //    theme: 'd',
-    _flySpeed: 5,
+    _flySpeed: 2,
     style: {
       opacity: 0,
       display: 'table',

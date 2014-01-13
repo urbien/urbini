@@ -286,7 +286,7 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
       {
         object: this.mason.id,
         method: 'flyToTopCenter',
-        args: [bodyId, 1, null, crossfade]
+        args: [bodyId, 0.5, null, crossfade]
       },
       {
         method: 'style',
