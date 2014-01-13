@@ -78,16 +78,32 @@ function isNumberUnit(unit, value, type) {
   return false;
 }
 
-function DragTracker(body, trackingType) {
+function DragTracker(body, trackingType, trackBodies) {
   this.body = body;
   this.type = trackingType || 'vel';
+  this.trackBodies = trackBodies;
   DRAG_TRACKERS.push(this);
 };
 
 DragTracker.prototype = {
   isTrackingPosition: function() {
     return this.type == 'pos';
-  } 
+  },
+  canTrack: function(dragData) {
+    if (!this.trackBodies)
+      return true;
+    
+    var trackables = this.trackBodies,
+        i = trackables.length,
+        bodies = dragData.bodies;
+    
+    while (i--) {
+      if (!bodies.indexOf(trackables[i]))
+        return true;
+    }
+    
+    return false;
+  }
 };
 
 //function addDragTracker(body) {
@@ -924,10 +940,12 @@ function initWorld(_world, stepSelf) {
 		i = DRAG_TRACKERS.length;
 		while (i--) {
       tracker = DRAG_TRACKERS[i];
-      tracker.body.state.pos.vadd(data.vector);
-      if (tracker.isTrackingPosition()) {
-        tracker.body.fixed = true;
-        tracker.body.stop();
+      if (tracker.canTrack(data)) {
+        tracker.body.state.pos.vadd(data.vector);
+        if (tracker.isTrackingPosition()) {
+          tracker.body.fixed = true;
+          tracker.body.stop();
+        }
       }
 		}
 	}, null, 100);
@@ -953,13 +971,15 @@ function initWorld(_world, stepSelf) {
     i = DRAG_TRACKERS.length;
     while (i--) {
       tracker = DRAG_TRACKERS[i];
-      tracker.body.state.pos.vadd(data.vector);
-      if (tracker.isTrackingPosition()) {
-        tracker.body.fixed = false;
-        if (stop)
-          tracker.body.stop();
-        else
-          tracker.body.state.vel.clone(v);
+      if (tracker.canTrack(data)) {
+        tracker.body.state.pos.vadd(data.vector);
+        if (tracker.isTrackingPosition()) {
+          tracker.body.fixed = false;
+          if (stop)
+            tracker.body.stop();
+          else
+            tracker.body.state.vel.clone(v);
+        }
       }
     }
 	}, null, 100);
@@ -1042,15 +1062,19 @@ function getBody(bodyId) {
 }
 
 function getBodies(/* ids */) {
-	var bodies = world.getBodies(),
+	var args = arguments,
+	    bodies = world.getBodies(),
   		body,
   		id,
   		filtered = [],
   		i = bodies.length;
 		
+  if (args[0] instanceof Array)
+    args = args[0];
+
 	while (i--) {
 		body = bodies[i];
-		if ((id = getId(body)) && ~indexOf.call(arguments, id)) {
+		if ((id = getId(body)) && ~indexOf.call(args, id)) {
 			filtered.push(body);
 		}
 	}
@@ -3505,9 +3529,12 @@ var API = {
 		}
 	},
 
-	trackDrag: function(body, type) {
+	trackDrag: function(body, type, bodies) {
 	  body = getBody(body);
-    getDragTracker(body) || new DragTracker(body, type);
+	  if (bodies)
+	    bodies = getBodies(bodies);
+	  
+    getDragTracker(body) || new DragTracker(body, type, bodies);
 	},
 
 	untrackDrag: function(body) {

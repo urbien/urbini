@@ -279,7 +279,10 @@ define('views/Header', [
             self._updateSize();
             self._rail = [self.getContainerBodyId(), 0, 0, 0, -self._outerHeight];
             self.addToWorld(null, false);
-            Physics.there.trackDrag(self.getContainerBodyId(), 'vel'); // 'pos' for exact tracking, 'vel' for parallax 
+//            Physics.there.trackDrag(self.getContainerBodyId(), 'vel'); // 'pos' for exact tracking, 'vel' for parallax 
+            self.pageView.listView.onload(function() {              
+              Physics.there.trackDrag(self.getContainerBodyId(), 'vel', self.pageView.listView.getContainerBodyId()); // 'pos' for exact tracking, 'vel' for parallax
+            });
           }
           
 //          if (self.pageView.TAG == 'ListPage') {

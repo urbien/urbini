@@ -91,21 +91,28 @@ define('views/MenuPanel', [
         
         this._hidden = false;
         this._transitioning = true;
-        Physics.there.chain({
-          method: 'teleport', 
-          args: [this.getContainerRailBodyId(), this.ulWidth]
-        },
-        {
-          method: 'flyTo', 
-          args: [this.getContainerRailBodyId(), 0, null, null, this._flySpeed, DOM.maxOpacity]
-        });
+        Physics.there.chain(
+          {
+            method: 'teleport', 
+            args: [this.getContainerRailBodyId(), this.ulWidth]
+          },
+          {
+            method: 'flyTo', 
+            args: [this.getContainerRailBodyId(), 0, null, null, this._flySpeed, DOM.maxOpacity]
+          },
+          {
+            method: 'style',
+            args: [self.getContainerBodyId(), {
+              'z-index': 10002,
+              visibility: 'visible'
+            }]
+          }
+        );
         
         Physics.here.once('render', this.getContainerBodyId(), function() {
           self._finishTransition();
           Q.write(function() {
             self.ul.style.visibility = 'visible';
-            self.el.style.visibility = 'visible';
-            self.el.style['z-index'] = 10002;
           });
         });
       }
@@ -122,15 +129,24 @@ define('views/MenuPanel', [
         if (G.isJQM())
           this.$el.closest('[data-role="panel"]').panel('close');
 
-
-        Physics.there.rpc(null, 'flyTo', [this.getContainerRailBodyId(), this.ulWidth, null, null, this._flySpeed, 0, function() {
-          self._finishTransition();
-          Q.write(function() {
-            self.ul.style.visibility = 'hidden';
-            self.el.style.visibility = 'hidden';
-            self.el.style['z-index'] = 0;
-          });
-        }]);
+        Physics.there.chain(
+          {
+            method: 'flyTo',
+            args: [this.getContainerRailBodyId(), this.ulWidth, null, null, this._flySpeed, 0, function() {
+              self._finishTransition();
+              Q.write(function() {
+                self.ul.style.visibility = 'hidden';
+              });
+            }]
+          },
+          {
+            method: 'style',
+            args: [self.getContainerBodyId(), {
+              'z-index': 0,
+              visibility: 'hidden'
+            }]
+          }
+        );
         
         return true;
       }
