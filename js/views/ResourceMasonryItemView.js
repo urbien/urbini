@@ -5,8 +5,9 @@ define('views/ResourceMasonryItemView', [
   'utils',
   'events',
   'views/BasicView',
-  'domUtils'
-], function(G, _, U, Events, BasicView, DOM) {
+  'domUtils',
+  'physicsBridge'
+], function(G, _, U, Events, BasicView, DOM, Physics) {
   var RMIV = BasicView.extend({
 //    className: 'nab nabBoard masonry-brick',
 //    className: 'pin',
@@ -15,6 +16,7 @@ define('views/ResourceMasonryItemView', [
     className: 'nab masonry-brick',
     tagName: 'div',
     TAG: "ResourceMasonryItemView",
+    style: {},
     initialize: function(options) {
       if (this._initialized) {
         this._initializedCounter++;
@@ -597,8 +599,14 @@ define('views/ResourceMasonryItemView', [
         var uri = _.encode(U.getLongUri1(rUri) + '?m_p=' + nabs + '&b_p=' + pMeta.backLink);
         tmpl_data.v_showRenabFor = uri;
       }
-      this.el.style.setProperty('width', (self.IMG_MAX_WIDTH + 17) + 'px', 'important'); // 17 is all paddings around the image
-      this.el.style.setProperty('height', tmpl_data['height']);
+      
+      this.style.width = (this.IMG_MAX_WIDTH + 17) + 'px';
+      if (tmpl_data['height'])
+        this.style.height = tmpl_data['height'];
+      
+      _.extend(this.el.style, this.style);
+//      this.el.style.setProperty('width', (self.IMG_MAX_WIDTH + 17) + 'px'); //, 'important'); // 17 is all paddings around the image
+//      this.el.style.setProperty('height', tmpl_data['height']);
 //      var h = tmpl_data['imgHeight'] ? tmpl_data['imgHeight'] : 0;
 //      var linesHeight = (linesCount * 15); // 15 is the font height of 12px with surrounding space;
 //      this.el.style.setProperty('height', h + linesHeight + 50 + 'px'); // + 50 to include comments and likes

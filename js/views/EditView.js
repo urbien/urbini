@@ -1522,6 +1522,7 @@ define('views/EditView', [
         }
         
         editor = CodeMirror.fromTextArea(textarea, {
+          dragDrop: false, // doesn't play nice with hammer
           mode: mode,
           tabMode: 'indent',
           lineNumbers: true,

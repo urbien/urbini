@@ -3,7 +3,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       jsBase = G.serverName + '/js/',
       physicsModuleInfo = G.files['lib/physicsjs-custom.js'],
       masonryModuleInfo = G.files['lib/jquery.masonry.js'],
-      commonMethods = ['step', 'addBody', 'removeBody', 'distanceConstraint', 'drag', 'dragend', 'benchBodies', 'unbenchBodies'],
+      commonMethods = ['step', 'addBody', 'removeBody', 'distanceConstraint', 'drag', 'dragend', 'benchBodies', 'unbenchBodies', 'style', 'track', 'trackDrag'],
       layoutMethods = ['addBricks', 'setLimit', 'unsetLimit', 'sleep', 'wake', 'continue', 'home', 'end', 'resize', 'setBounds', 'lock', 'unlock', 'isLocked', 'destroy'],
       LOCK_STEP = false, // if true, step the world through postMessage, if false let the world run its own clock
       PHYSICS_TIME = _.now(), // from here on in,
@@ -67,7 +67,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           timestep: 1000 / 60
         },
         byScrollerType: {},
-        maxOpacity: 0.999999,
+        maxOpacity: DOM.maxOpacity,
         degree: 1,
         drag: 0.1,
         groupMemberConstraintStiffness: 0.3,
@@ -137,6 +137,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //  document.addEventListener('click', enableClick);
 
   window.onscroll = function(e) {
+    debugger;
     console.log("NATIVE SCROLL: " + window.pageXOffset + ", " + window.pageYOffset);
     if (window.pageYOffset != 1 || window.pageXOffset)
       window.scrollTo(0, 1);
@@ -475,6 +476,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     var el,
         style,
         styles = UNRENDERED,
+        propVal,
         transform,
         translate,
         scale,
@@ -494,7 +496,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         style = styles[id];
         for (var prop in style) {
           if (TRANSFORM_PROPS.indexOf(prop) == -1) {
-            el.style[DOM.prefix(prop, true)] = style[prop];
+            propVal = style[prop];
+            if (propVal == null)
+              el.style.removeProperty(prop)
+            else
+              el.style[DOM.prefix(prop, true)] = propVal;
           }
         }
         
@@ -796,6 +802,12 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   }
   
   Physics = {
+    getRailId: function(bodyId) {
+      return 'rail-' + bodyId;
+    },
+    getBoxId: function(bodyId) {
+      return 'box-' + bodyId;
+    },
     getRectVertices: function(width, height) {
       return [
         {x: 0, y: 0},
@@ -1110,7 +1122,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       },
 
       chain: function() {
-        var rpcs = _.toArray(arguments),
+        var rpcs = arguments[0] instanceof Array ? arguments[0] : _.toArray(arguments),
             rpc;
         
         for (var i = 0, l = rpcs.length; i < l; i++) {

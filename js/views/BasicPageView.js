@@ -51,6 +51,7 @@ define('views/BasicPageView', [
     _flexigroup: false,
     viaHammer: true,
     style: {
+      opacity: 0,
       'min-height': '100%'
     },
     mixins: mixins,

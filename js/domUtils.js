@@ -2,6 +2,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
   var doc = document,
       LAZY_DATA_ATTR = G.lazyImgSrcAttr,
       LAZY_ATTR = LAZY_DATA_ATTR.slice(5),
+      MAX_OPACITY = 0.999999,
       isFF = G.browser.firefox,
       vendorPrefixes = ['-moz-', '-ms-', '-o-', '-webkit-'],
       ArrayProto = Array.prototype,
@@ -15,7 +16,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       OPAQUE_STYLE = {
         style: {
           add: {
-            opacity: 1
+            opacity: MAX_OPACITY
           }
         }
       },
@@ -720,8 +721,15 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           Z: parseFloat(xyz[2] || 9, 10)
         }
       }
-      
-      throw "can't parse transform";
+      else {
+        return {
+          X: 0,
+          Y: 0,
+          Z: 0
+        }
+      }
+
+//      throw "can't parse transform";
     },
     
     getStylePropertyValue: function(computedStyle, prop) {
@@ -1219,6 +1227,8 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       }
     },
 
+    maxOpacity: MAX_OPACITY,
+    
     parseHTML: function(html) {
       return $.parseHTML(html.trim());
     },

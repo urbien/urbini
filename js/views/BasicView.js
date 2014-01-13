@@ -42,6 +42,7 @@ define('views/BasicView', [
     _scrollbar: false,
     _scrollbarThickness: 5,
     _dragAxis: null, // 'x' or 'y' if you want to limit it to one axis
+    _rail: true,
     _scrollAxis: 'y',
     initialize: function(options) {
       _.bindAll(this, 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_render',  '_refresh', 'finish', '_onViewportDimensionsChanged', '_recheckDimensions', '_onMutation');
@@ -763,7 +764,7 @@ define('views/BasicView', [
     },
     
     turnOffPhysics: function() {
-      if (this.mason)
+      if (this.mason && !this.isActive())
         this.mason.sleep();
       
       var children = this.children;
@@ -1069,9 +1070,25 @@ define('views/BasicView', [
     },
     
     getScrollbarId: function() {
-      return this.getBodyId() + '-scrollbar';
+      return 'scrollbar-' + this.getBodyId();
     },
-    
+
+    getBoxBodyId: function() {
+      return Physics.getBoxId(this.getBodyId());
+    },
+
+    getRailBodyId: function() {
+      return Physics.getRailId(this.getBodyId());
+    },
+
+    getContainerRailBodyId: function() {
+      return Physics.getRailId(this.getContainerBodyId());
+    },
+
+    getContainerBoxBodyId: function() {
+      return Physics.getBoxId(this.getContainerBodyId());
+    },
+
     getBodyId: function() {
 //      return this.cid + '.' + this._initializedCounter;
       return this.cid;
@@ -1233,6 +1250,7 @@ define('views/BasicView', [
         
         options = {
           _id: containerId,
+//          style: this.style,
           x: 0,
           y: 0,
 //          x: this._horizontal ? -G.viewport.width * 5 : this._offsetLeft + this._width / 2,
@@ -1244,22 +1262,60 @@ define('views/BasicView', [
       else {
         options = {
           _id: containerId,
-          render: true,
+          style: this.style,
+//          renderData: {
+//            width: this._outerWidth,
+//            height: this._outerHeight
+//          },
+//          render: true,
+          style: this.style,
           x: 0,
-          y: 0,
-          lock: lock
+          y: 0
+//          ,
+//          lock: lock
         };
       }
       
       return options;
     },
     
+    setStyle: function(style) {
+      Physics.there.style(this.getContainerBodyId(), style);
+    },
+    
+    getMaxOpacity: function() {
+      return DOM.maxOpacity;
+    },
+    
     addContainerBodyToWorld: function() {
-      var id = this.getContainerBodyId();
+      var id = this.getContainerBodyId(),
+          railArgs,
+          chain = [{
+            method: 'addBody',
+            args: ['point', this.getContainerBodyOptions()]
+          }],
+          x1, x2, y1, y2;
+      
+      if (this._rail) {
+        if (this._rail instanceof Array)
+          railArgs = this._rail;
+        else if (this._dragAxis == 'x')
+          railArgs = [id, 1, 0];
+        else
+          railArgs = [id, 0, 1];
+        
+        chain.push({
+          method: 'addRail',
+          args: railArgs
+        });
+      }
+      
       if (!this._flexigroup)
         Physics.here.addBody(this.el, id);
       
-      Physics.there.addBody('point', this.getContainerBodyOptions(), id);
+      Physics.there.chain(chain);
+      
+//      Physics.there.addBody('point', this.getContainerBodyOptions(), id);
       if (this._draggable)
         this.addDraggable();
     },
@@ -1271,14 +1327,17 @@ define('views/BasicView', [
     buildViewBrick: function() {
       if (!this._viewBrick) {
         this._viewBrick = {
-          _id: this.getBodyId()
+          _id: this.getBodyId(),
+          style: {}
         };
       }
       
       if (this.resource)
         this._viewBrick.resource = this.resource;
       
-      this._viewBrick.render = true;
+      if (this.style)
+        _.extend(this._viewBrick.style, this.style);
+      
       return this.buildBrick(this._viewBrick, true);
     },
     
@@ -1288,7 +1347,7 @@ define('views/BasicView', [
           width, 
           height;
       
-      brick.fixed = !this._flexigroup;
+//      brick.fixed = !this._flexigroup;
       brick.mass = _.has(brick, 'mass') ? brick.mass : 0.1;
       brick.restitution = _.has(brick, 'restitution') ? brick.restitution : 0.3;
       brick.lock = brick.lock || {};      

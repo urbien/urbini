@@ -93,11 +93,11 @@ define('views/MenuPanel', [
         this._transitioning = true;
         Physics.there.chain({
           method: 'teleport', 
-          args: [this.getContainerBodyId(), this.ulWidth]
+          args: [this.getContainerRailBodyId(), this.ulWidth]
         },
         {
           method: 'flyTo', 
-          args: [this.getContainerBodyId(), 0, null, null, this._flySpeed, Physics.constants.maxOpacity]
+          args: [this.getContainerRailBodyId(), 0, null, null, this._flySpeed, DOM.maxOpacity]
         });
         
         Physics.here.once('render', this.getContainerBodyId(), function() {
@@ -123,7 +123,7 @@ define('views/MenuPanel', [
           this.$el.closest('[data-role="panel"]').panel('close');
 
 
-        Physics.there.rpc(null, 'flyTo', [this.getContainerBodyId(), this.ulWidth, null, null, this._flySpeed, 0, function() {
+        Physics.there.rpc(null, 'flyTo', [this.getContainerRailBodyId(), this.ulWidth, null, null, this._flySpeed, 0, function() {
           self._finishTransition();
           Q.write(function() {
             self.ul.style.visibility = 'hidden';

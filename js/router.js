@@ -306,14 +306,14 @@ define('router', [
       if (fragment.startsWith('http://')) {
         var appPath = G.serverName + '/' + pageRoot;
         if (fragment.startsWith(appPath)) // link within app
-          fragment = fragment.slice(appPath.length);
+          fragment = fragment.slice(appPath.length + 1); // cut off #
         else {
           window.location.href = fragment;
           return;
         }
       }
       else if (fragment.startsWith(pageRoot)) // link within app
-        fragment = fragment.slice(pageRoot.length);
+        fragment = fragment.slice(pageRoot.length + 1); // cut off #
       else if (/app\/[a-zA-Z]+\#/.test(fragment)) { // link to another app
         window.location.href = G.serverName + '/' + fragment;
         return;
@@ -1311,7 +1311,11 @@ define('router', [
         return;
       
       var toBlur,
-          dir = options && options.reverse ? 'right' : 'left';
+          transOptions = _.extend({ 
+            direction: options && options.reverse ? 'right' : 'left',
+            from: fromView,
+            to: toView
+          }, this.getChangePageOptions(), options);
       
       this._previousView = toView;
       
@@ -1337,7 +1341,8 @@ define('router', [
 //        G.activePage = toView.el;
 //      });
       
-      Transitioner.transition(dir, 'slide', fromView, toView, _.extend({}, this.getChangePageOptions(), options)).done(function() {
+      transOptions.transition = transOptions.via ? 'via' : 'slide';
+      Transitioner.transition(transOptions).done(function() {
         G.$activePage = $m.activePage = toView.$el;
         G.activePage = toView.el;
       });

@@ -3,6 +3,7 @@ define('underscoreMixins', ['_underscore'], function(_) {
       concat = ArrayProto.concat,
       slice = ArrayProto.slice,
       indexOf = ArrayProto.indexOf,
+      promiseFunctions = ['done', 'fail', 'always', 'state', 'then'],
       __htmlCommentRegex = /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/,
       __htmlCommentRegexGM = /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/gm,
       __jsCommentRegex = /(?:\/\*(?:[\s\S]*?)\*\/)|(?:\/\/(?:.*)$)/,
@@ -422,6 +423,16 @@ define('underscoreMixins', ['_underscore'], function(_) {
             return originalReturn;
           };
         }
+      }
+    },
+    
+    proxyPromise: function(proxy, promise) {
+      var i = promiseFunctions.length,
+          fn;
+      
+      while (i--) {
+        fn = promiseFunctions[i];
+        proxy[fn] = promise[fn].bind(promise);
       }
     },
     

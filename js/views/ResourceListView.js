@@ -65,7 +65,10 @@ define('views/ResourceListView', [
 //    _lastPrefetchEventSeq: -Infinity,
     className: 'scrollable',
     style: (function() {
-      var style = {};
+      var style = {
+        opacity: DOM.maxOpacity
+      };
+      
       style[DOM.prefix('perspective')] = '50px';
       return style;
     })(),
@@ -310,7 +313,7 @@ define('views/ResourceListView', [
       }
 
       self = viewId && this.children[viewId]; // list item view
-//      navOptions.via = self;
+      navOptions.via = self;
       if (link) {
         Events.stopEvent(e);
         Events.trigger('navigate', link.href, navOptions);
@@ -1069,8 +1072,7 @@ define('views/ResourceListView', [
         view = views[i];
         view._updateSize();
         brick = view.buildViewBrick();
-        brick.lock[lockAxis] = options.gutterWidth / 5;
-        brick.fixed = !options.flexigroup;
+//        brick.fixed = !options.flexigroup;
         bricks.push(brick);
       };
       

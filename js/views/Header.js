@@ -23,8 +23,10 @@ define('views/Header', [
   return BasicView.extend({
 //    viewType: 'any',
     style: {
-      'z-index': 10001
+      'z-index': 10001,
+      opacity: DOM.maxOpacity
     },
+    _draggable: false,
     autoFinish: false,
     template: 'headerTemplate',
     initialize: function(options) {
@@ -268,6 +270,28 @@ define('views/Header', [
     },
     
     render: function(options) {
+      var self = this,
+          args = arguments;
+
+      if (!this.rendered) {
+        this.onload(function() {
+          if (self.pageView.TAG == 'ListPage') {
+            self._updateSize();
+            self._rail = [self.getContainerBodyId(), 0, 0, 0, -self._outerHeight];
+            self.addToWorld(null, false);
+            Physics.there.trackDrag(self.getContainerBodyId(), 'vel'); // 'pos' for exact tracking, 'vel' for parallax 
+          }
+          
+//          if (self.pageView.TAG == 'ListPage') {
+//            self.pageView.listView.onload(function() {              
+//              Physics.there.track(self.getContainerBodyId(), self.pageView.listView.getContainerBodyId(), 'vel');
+//            });
+//          }
+//          else
+//            Physics.there.track(self.getContainerBodyId(), self.pageView.getContainerBodyId(), 'vel');
+        });
+      }
+      
       options = options || {};
       if (!this.buttons || options.buttons) {
         this.buttons = options.buttons;
@@ -275,11 +299,9 @@ define('views/Header', [
         this.getButtonViews();
       }
         
-      var self = this,
-          args = arguments;
-      
       function doRender() {
         self.renderHelper.apply(self, args);
+        self.addToWorld(null, true);
         self.finish();
         if (G.isBootstrap())
           self.$('#headerUl div').$attr('class', 'navbar-header');

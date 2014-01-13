@@ -287,15 +287,7 @@
       }
 
 //      console.log("adding", brick.geometry._aabb._hw * 2, "x", brick.geometry._aabb._hh * 2, "brick at (" + left + ", " + top + ")");
-      lock = brick.state.pos.unlock();
       brick.state.pos.set(left, top, brick.state.pos.get(2));
-      if (lock)
-        brick.state.pos.lock(lock);
-      else {
-        brick.state.pos.lock({
-          x: this.getGutterWidth(true) / 2
-        }); 
-      }
 
       // apply setHeight to necessary columns
       for ( i=0; i < setSpan; i++ ) {

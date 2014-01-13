@@ -24,6 +24,8 @@ define('views/HorizontalListView', [
 //    _flexigroup: true,
     style: (function() {
       var style = {
+        visibility: 'hidden',
+        opacity: 0,
         height: '155px' // 150 + 5 for scrollbar
 //          ,
 //        'padding-top': '3px'
@@ -128,6 +130,11 @@ define('views/HorizontalListView', [
     
     postRender: function() {
       if (!this._visible) {
+        this.setStyle({
+          opacity: this.getMaxOpacity(),
+          visibility: null
+        });
+        
         this._visible = true;
         this.el.dataset.viewid = this.cid;
 //        this.el.style.height = '150px';
