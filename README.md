@@ -101,4 +101,4 @@ Visit <a href="http://urbien.com">Urbien</a> to learn more about us.
 
 License 
 ======
-Urbini is licensed under <a href="http://www.gnu.org/licenses/lgpl.html">LGPL</a>. This means you can use it to build upon it both open source and commercial apps. You are welcome to fork Urbini and we would love you to submit Github pull requests to the team and/or open issues with requests for improvements.
+To tell you the truth, we have no idea what the proper license for Urbini should be. So far the safe choice seemed like <a href="http://www.gnu.org/licenses/lgpl.html">LGPL</a>. This means you can use it to build upon it both open source and commercial apps. You are welcome to fork Urbini and we would love you to submit Github pull requests to the team and/or open issues with requests for improvements. If you do not like this choice of lincense, please tell us about it by opening a Github issue on this repository, this way we can learn how to make it right for you.
