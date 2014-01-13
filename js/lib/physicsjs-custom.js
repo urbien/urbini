@@ -2282,7 +2282,7 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
          * @return {this}
          */
         stop: function(atPos) {
-          if (atPos) {
+          if (typeof atPos != 'undefined') {
             if (atPos instanceof Physics.vector)
               this.state.pos.clone(atPos);
             else
