@@ -313,7 +313,9 @@ define('views/ResourceListView', [
       }
 
       self = viewId && this.children[viewId]; // list item view
-      navOptions.via = self;
+      if (self.tag !== 'HorizontalListItemView')
+        navOptions.via = self;
+      
       if (link) {
         Events.stopEvent(e);
         Events.trigger('navigate', link.href, navOptions);
