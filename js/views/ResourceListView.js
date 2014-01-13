@@ -332,18 +332,18 @@ define('views/ResourceListView', [
       
       if (self.doesModelSubclass('model/workflow/Alert')) {
         Events.stopEvent(e);
+        var prms = {};
         var atype = self.resource.get('alertType');
         var action = atype  &&  atype == 'SyncFail' ? 'edit' : 'view';
         var uri = self.resource.get('forum') || self.resource.getUri();
-        navOptions['-info'] = self.resource.get('davDisplayName');
-        Events.trigger('navigate', U.makeMobileUrl(action, uri, navOptions));//, {trigger: true, forceFetch: true});
+        Events.trigger('navigate', U.makeMobileUrl(action, uri, {'-info': self.resource.get('davDisplayName')}), navOptions);//, {trigger: true, forceFetch: true});
         return;
       }
       if (self.doesModelSubclass('model/social/QuizQuestion')) {
         var title = _.getParamMap(window.location.hash).$title;
         if (!title)
           title = U.makeHeaderTitle(self.resource.get('davDisplayName'), pModel.displayName);
-        _.extend(navOptions, {
+        var prms = {
           '-info': 'Please choose the answer', 
           $forResource: self.resource.get('_uri'), 
           $propA: 'question',
@@ -353,9 +353,9 @@ define('views/ResourceListView', [
 //            user: G.currentUser._uri,
           $type: self.vocModel.properties['answers'].range,
           $title: self.resource.get('davDisplayName')
-        });
+        };
         
-        Events.trigger('navigate', U.makeMobileUrl('chooser', self.vocModel.properties['options'].range, navOptions)); //, {trigger: true, forceFetch: true});
+        Events.trigger('navigate', U.makeMobileUrl('chooser', self.vocModel.properties['options'].range, prms), navOptions); //, {trigger: true, forceFetch: true});
         return;
       }
 
