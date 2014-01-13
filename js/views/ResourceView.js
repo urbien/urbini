@@ -446,6 +446,7 @@ define('views/ResourceView', [
           }
           
           editor = CodeMirror.fromTextArea(textarea, {
+            dragDrop: false,
             mode: mode,
             tabMode: 'indent',
             lineNumbers: true,
