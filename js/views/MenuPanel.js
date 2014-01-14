@@ -13,7 +13,7 @@ define('views/MenuPanel', [
 //    role: 'data-panel',
 //    id: 'menuPanel',
 //    theme: 'd',
-    _flySpeed: 2,
+    _flySpeed: 3.5,
     style: {
       opacity: 0,
       display: 'table',
@@ -93,19 +93,19 @@ define('views/MenuPanel', [
         this._transitioning = true;
         Physics.there.chain(
           {
+            method: 'style',
+            args: [self.getContainerBodyId(), {
+              'z-index': 10002,
+              visibility: 'visible'
+            }]
+          },
+          {
             method: 'teleport', 
             args: [this.getContainerRailBodyId(), this.ulWidth]
           },
           {
             method: 'flyTo', 
             args: [this.getContainerRailBodyId(), 0, null, null, this._flySpeed, DOM.maxOpacity]
-          },
-          {
-            method: 'style',
-            args: [self.getContainerBodyId(), {
-              'z-index': 10002,
-              visibility: 'visible'
-            }]
           }
         );
         
