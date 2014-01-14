@@ -56,7 +56,6 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       },
       callbacks = {},
       subscriptions = {},
-      INPUT_TAGS = ['input', 'textarea'],
       TRANSFORM_PROPS = ['rotate', 'translate', 'scale'],
       TRANSFORM_PROP = DOM.prefix('transform', true),
       TRANSFORM_ORIGIN_PROP = DOM.prefix('transform-origin', true),
@@ -246,8 +245,15 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     G.disableClick();
   };
 
-  function isUserInputTag(tag) {
-    return INPUT_TAGS.indexOf(tag.toLowerCase()) != -1;
+  function isScrollable(el) {
+    switch (el.tagName) {
+      case 'TEXTAREA':
+        return false;
+      case 'INPUT':
+        return el.getAttribute('type') != 'range';
+      default:
+        return true;
+    }
   };
 
   function stopDragEvent(e) {
@@ -276,7 +282,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     _dragged: zeroVector.slice(),
     _coast: false,
     handleEvent: function(e) {
-      if (isUserInputTag(e.target.tagName))
+      if (!isScrollable(e.target))
         return;
 
 //      log(e.type.toUpperCase(), U.getKeyEventCode(e));
@@ -660,11 +666,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     },
 
     _canHandle: function(e) {
-      if (DRAG_ENABLED && (!DRAG_LOCK || DRAG_LOCK == this.id)) // && !isUserInputTag(e.target.tagName))
+      if (DRAG_ENABLED && (!DRAG_LOCK || DRAG_LOCK == this.id) && isScrollable(e.target))
         return true;
-      
-//      if (!isUserInputTag(e.target.tagName))
-//        return true;
     },
     
     _ondrag: function(e) {
