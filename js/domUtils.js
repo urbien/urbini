@@ -8,8 +8,8 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       ArrayProto = Array.prototype,
       resizeTimeout,
       cssPrefix = {
-        read: {},
-        write: {}
+//        read: {},
+//        write: {}
       },
       renderQueue = [],
       tmpdiv = document.createElement("div"),
@@ -1074,38 +1074,32 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       return 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, ' + (x || 0) + ', ' + (y || 0) + ', ' + (z || 0) + ', 1)';
     },
    
-    /**
-     * From wellcaffeinated's PhysicsJS
-     */
-    prefix: function(prop, write) {
-      var val;
-      if (val = cssPrefix[write ? 'write' : 'read'][prop]) {
-        return val;
+    prefix: function(prop) {
+      if (cssPrefix[prop]){
+        return cssPrefix[prop];
       }
 
       var arrayOfPrefixes = ['Webkit', 'Moz', 'Ms', 'O'],
-          docElStyle = document.documentElement.style,
+          TitleCase = toTitleCase(prop),
+          titleCase = TitleCase.slice(0, 1).toLowerCase() + TitleCase.slice(1),
           name;
 
       for (var i = 0, l = arrayOfPrefixes.length; i < l; ++i) {
-        name = arrayOfPrefixes[i] + toTitleCase(prop);
+        name = arrayOfPrefixes[i] + TitleCase;
 
-        if (name in docElStyle) {
-          cssPrefix.read[prop] = name;
-          cssPrefix.write[prop] = '-' + arrayOfPrefixes[i].toLowerCase() + '-' + prop.toLowerCase();
-          return this.prefix(prop, write);
+        if (name in tmpdiv.style){
+          return cssPrefix[prop] = name;
         }
       }
 
-      if (prop in docElStyle) {
-        cssPrefix.read[prop] = prop;
-        cssPrefix.write[prop] = prop;
-        return this.prefix(prop, write);
+      if (titleCase in tmpdiv.style){
+        return cssPrefix[prop] = titleCase;
       }
-      
-      throw "no such CSS prop: " + prop;
+
+      G.log("DOMUtils", "error", "no such css property: " + prop);
+      return false;
     },
-    
+
     /**
      * @param renderData - e.g. {
      *    innerHTML: <blah>...</blah>
