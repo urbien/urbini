@@ -7,6 +7,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       vendorPrefixes = ['-moz-', '-ms-', '-o-', '-webkit-'],
       ArrayProto = Array.prototype,
       resizeTimeout,
+      DOM,
       cssPrefix = {
 //        read: {},
 //        write: {}
@@ -195,7 +196,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
             return this.style[arg0];
           else {
             for (var prop in arg0) {
-              this.style[prop] = arg0[prop];
+              this.style[DOM.prefix(prop)] = arg0[prop];
             }
           }
           
@@ -581,7 +582,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     }
   })(window, document);
 
-  return {
+  DOM = {
     getBezierCoordinate: function(p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y, percentComplete) {
       percentComplete = Math.max(0, Math.min(percentComplete, 1));
       var percent = 1 - percentComplete;
@@ -1243,4 +1244,6 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     hideStyle: HIDE_STYLE,
     showStyle: SHOW_STYLE
   };
+  
+  return DOM;
 });

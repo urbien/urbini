@@ -13,7 +13,8 @@ define('views/ResourceListItemView', [
     className: 'masonry-brick ' + (G.isTopcoat() ? "topcoat-list__item" : (G.isBootstrap() ? "list-group-item" : "")),
     style: {
       'min-width': '100%',
-      'position': 'absolute'
+      'position': 'absolute',
+      'transform-origin': '50% 50%'
     },
 //    tagName: "div",
 //    className: "ui-li ui-li-static ui-btn-up-c ui-first-child",

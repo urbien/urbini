@@ -22,18 +22,15 @@ define('views/HorizontalListView', [
 //      keyboard: false
 //    },
 //    _flexigroup: true,
-    style: (function() {
-      var style = {
-        visibility: 'hidden',
-        opacity: 0,
-        height: '155px' // 150 + 5 for scrollbar
+    style: {
+      visibility: 'hidden',
+      opacity: 0,
+      height: '155px', // 150 + 5 for scrollbar
+      perspective: '300px'
 //          ,
 //        'padding-top': '3px'
-      };
+    },
       
-      style[DOM.prefix('perspective')] = '300px';
-      return style;
-    })(),
 //    _horizontal: true,
     _dragAxis: 'x',
     _scrollAxis: 'x',

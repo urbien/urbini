@@ -16,7 +16,9 @@ define('views/ResourceMasonryItemView', [
     className: 'nab masonry-brick',
     tagName: 'div',
     TAG: "ResourceMasonryItemView",
-    style: {},
+    style: {
+      'transform-origin': '50% 50%'
+    },
     initialize: function(options) {
       if (this._initialized) {
         this._initializedCounter++;
