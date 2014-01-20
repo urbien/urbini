@@ -79,7 +79,11 @@ define('views/HomePage', [
 //    },
     
     render: function(options) {
-      return U.require('views/RightMenuButton').done(this.renderHelper.bind(this, options));
+      var self = this;
+      return U.require('views/RightMenuButton').done(function(rmb) {
+        MenuButton = rmb;
+        self.renderHelper(options);
+      });
     },
     
     renderHelper: function(options) {
