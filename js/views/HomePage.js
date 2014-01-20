@@ -3,9 +3,8 @@ define('views/HomePage', [
   'globals',
   'events',
   'utils',
-  'views/BasicPageView',
-  'views/RightMenuButton'
-], function(G, Events, U, BasicPageView, MenuButton) {
+  'views/BasicPageView'
+], function(G, Events, U, BasicPageView) {
   return BasicPageView.extend({
     TAG: 'HomePage',
     first: true,
@@ -80,6 +79,10 @@ define('views/HomePage', [
 //    },
     
     render: function(options) {
+      return U.require('views/RightMenuButton').done(this.renderHelper.bind(this, options));
+    },
+    
+    renderHelper: function(options) {
       var self = this;
       
       if (!this.rendered) {
