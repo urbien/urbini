@@ -358,6 +358,8 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       if (this.defaultIndexOptions) {
         for (var prop in indices) {
           indices[prop] = _.defaults(indices[prop] || {}, this.defaultIndexOptions || {});
+          if (prop == '_uri')
+            indices[prop].unique = true;
         }
       }
       
@@ -526,7 +528,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
           return G.getRejectedPromise();
       });
     });
-  }
+  };
   
   IDB.prototype.get = function(storeName, uri) {
     return this._queueTask('get item {0} from store {1}'.format(uri, storeName), get.bind(this, storeName, uri));    

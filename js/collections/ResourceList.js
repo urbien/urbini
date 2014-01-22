@@ -417,7 +417,7 @@ define('collections/ResourceList', [
       this.params = params;
       this.modelParams = modelParams;
       this.modelParamsStrict = strict;
-      this.url = this.baseUrl + (this.params ? "?" + $.param(this.params) : ''); //this.getUrl();
+      this.url = this.baseUrl + (_.size(this.params) ? "?" + $.param(this.params) : ''); //this.getUrl();
       this.query = U.getQueryString(modelParams, true); // sort params in alphabetical order for easier lookup
     },
     isAll: function(interfaceNames) {
@@ -586,7 +586,7 @@ define('collections/ResourceList', [
           error.call(self, self, resp, options);
       }
       
-      var success = options.success || function(resp, status, xhr) {
+      function defaultSuccess(resp, status, xhr) {
         var pagination = xhr.getResponseHeader("X-Pagination"),
             total = xhr.getResponseHeader("X-Range-Total"),
             mojo = xhr.getResponseHeader("X-Mojo");
@@ -621,6 +621,7 @@ define('collections/ResourceList', [
         self.update(resp, options);        
       };
       
+      var success = options.success || defaultSuccess;
       options.success = function(resp, status, xhr) {
         if (self.lastFetchOrigin === 'db') {
           self.update(resp, options);
@@ -674,7 +675,9 @@ define('collections/ResourceList', [
             return;
         }
         
-        self.update(resp, options);
+        if (success != defaultSuccess)
+          self.update(resp, options);
+        
         success(resp, status, xhr);
         if (!select || select == '$all')
           return;

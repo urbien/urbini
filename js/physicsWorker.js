@@ -8,6 +8,12 @@ var ArrayProto = Array.prototype,
 		integrator,
 		NUMBER_UNITS = ['px', 'em'],
 		CONSTANTS,
+		LAST_STEP_TIME,
+    LAST_STEP_DT,
+//		DRAG_FINISH_PENDING = false,
+		IS_DRAGGING = false,
+		DRAG_ANCHOR,
+    DRAG_CONSTRAINTS = [],
     DRAG_TRACKERS = [],
     TRACKERS = [],
 		CancelType = {
@@ -28,6 +34,16 @@ var ArrayProto = Array.prototype,
 		ZERO_ROTATION = [0, 0, 0],
 		UNSCALED = [1, 1, 1],
     MIN_SCALE = [0.0001, 0.0001, 1],
+    IDENTITY_TRANSFORM,
+    MIN_SCALE_TRANSFORM,
+//    IDENTITY_TRANSFORM = [1, 0, 0, 0, 
+//                          0, 1, 0, 0, 
+//                          0, 0, 1, 0, 
+//                          0 , 0, 0, 1],
+//    MIN_SCALE_TRANSFORM = [0.0001, 0, 0, 0, 
+//                           0, 0.0001, 0, 0, 
+//                           0, 0, 0.0001, 0, 
+//                           0, 0, 0, 0.0001],
     OPACITY_INC = 0.05,
 		LEFT,
 		RIGHT,
@@ -61,6 +77,19 @@ String.prototype.endsWith = function(str) {
 
 function index(obj, i) {
 	return obj[i];
+};
+
+function getAxisIndex(axis) {
+  switch (axis) {
+  case 'x':
+    return 0;
+  case 'y':
+    return 1;
+  case 'z':
+    return 2;
+  default:
+    throw "not a valid axis: " + axis;
+  }
 };
 
 function isNumberUnit(unit, value, type) {
@@ -504,35 +533,134 @@ function removeAction(body, action) {
   }
 };
 
-function Action(type, onstep) {
+//function bindTrackedAction() {
+//  if (options.trackAction)
+//    options.track = getAction(body._actions, options.trackAction);
+//};
+
+function getAction(trackInfo) {
+  if (typeof trackInfo == 'function')
+    return trackInfo;
+  else if (trackInfo) {
+    var id = trackInfo.action,
+        body = getBody(trackInfo.body),
+        actions = body && body._actions,
+        i = actions && actions.length,
+        action;
+    
+    while (i--) {
+      action = actions[i];
+      if (action.id == id)
+        return action;
+    }
+  }
+};
+
+function Action(options) {
   var complete = false,
       canceled = false,
       started = false,
-      _onstep = onstep,
+      startTime,
+      timePassed = 0,
+      _onstep = options.onstep,
+      _onIP = options.onIntegratePositions,
+      _onIV = options.onIntegrateVelocities,
+      onstep,
+      onIP,
+      onIV,
+      ratio,
+      trackedAction = options.track,
       action;
 
-  onstep = function() {
+  if (!(!!_onstep ^ !!_onIV ^ !!_onIP))
+    throw "actions can currently only subscribe to ONE of 'integrate:positions', 'integrate:velocities' or 'step' events";
+  
+  function start() {
     if (!started) {
       started = true;
-      log("Started action: " + (action.name || type));
+      startTime = LAST_STEP_TIME;
+      log("Started action: " + (action.name));
       if (action.onstart)
-        action.onstart();
+        action.onstart(action.ratio());
     }
-    
-    if (_onstep)
-      _onstep();
   };
   
-  return action = {
-    type: type,
+  function unsubscribe() {
+    if (onstep)
+      world.unsubscribe('step', onstep);
+    else if (onIP)
+      world.unsubscribe('integrate:positions', onIP);
+    else if (onIV)
+      world.unsubscribe('integrate:velocities', onIV);
+  };
+  
+  // allow tracking of another action
+  ratio = trackedAction ? trackedAction.ratio.bind(trackedAction) : function() {
+    if (!this.duration)
+      throw "the default implementation for this method requires a time limit";
+    
+    return Math.max(0, 
+           Math.min(1, timePassed / this.duration));
+  };
+  
+  function canIterate() {
+    if (trackedAction) {
+      switch (trackedAction.state()) {
+      case 'canceled':
+        action.cancel();
+        return false;
+      case 'completed':
+        action.complete();
+        return false;
+      }
+    }
+    
+    return true;
+  };
+  
+  onstep = _onstep && function(data) {
+    if (canIterate()) {
+      timePassed += LAST_STEP_DT;
+      start();
+      _onstep.call(this, this.ratio());
+    }
+  };
+  
+  onIP = _onIP && function(data) {
+    if (canIterate()) {
+      timePassed += data.dt;
+      start();
+      _onIP.call(this, this.ratio());
+    }
+  };
+  
+  onIV = _onIV && function(data) {
+    if (canIterate()) {
+      timePassed += data.dt;
+      start();
+      _onIV.call(this, this.ratio());
+    }
+  };
+  
+  action = Physics.util.extend({}, options, {
+    id: options.id || Physics.util.uniqueId('action'),
+    ratio: ratio,
     start: function() {
-      world.subscribe('step', onstep);
+      if (onstep)
+        world.subscribe('step', onstep, action);
+      else if (onIP)
+        world.subscribe('integrate:positions', onIP, action);
+      else if (onIV)
+        world.subscribe('integrate:velocities', onIV, action);
+    },
+    state: function() {
+      return complete ? 'completed' : canceled ? 'canceled' : 'running';
     },
     cancel: function() {
       if (!complete && !canceled) {
         canceled = true;
         log("Canceled action: " + (this.name || this.type));
-        world.unsubscribe('step', onstep)
+        unsubscribe();
         if (this.oncancel)
           this.oncancel.apply(null, arguments);
       }
@@ -541,14 +669,17 @@ function Action(type, onstep) {
       if (!complete && !canceled) {
         complete = true;      
         log("Completed action: " + (this.name || this.type));
-        world.unsubscribe('step', onstep);
+//        world.unsubscribe('step', onstep);
+        unsubscribe();
         if (this.oncomplete)
           this.oncomplete.apply(null, arguments);
         
       }
     }
-  };
-}
+  });
+  
+  return action;
+};
 
 function addAction(body, action) { //, exclusive) {
 //  if (exclusive)
@@ -802,15 +933,28 @@ function calcOpacity(body) {
     body.state.renderData.set('opacity', opacity);
 };
 
-function getTranslation(body) {
+function calcTransform(body) {
   var aabb = getAABB(body),
-      pos = body.state.pos;
+      pos = body.state.pos,
+      scale = body.state.renderData.get('scale'),
+      rotate = body.state.renderData.get('rotate'),
+      m = body.state.renderData.get('transform');
   
-  return [
+  Physics.util.extend(m, IDENTITY_TRANSFORM);
+  Matrix.scale3d(m, scale[0], scale[1], scale[2]);
+  Matrix.rotate3d(m, rotate[0], rotate[1], rotate[2]);
+  Matrix.translate3d(m, 
     pos.get(0) - (aabb._hw || 0),
     pos.get(1) - (aabb._hh || 0),
-    getZ(body) //pos.get(2) - (aabb._hd || 0);
-  ];
+    getZ(body)
+  );
+  
+  return m;
+//  return [
+//    pos.get(0) - (aabb._hw || 0),
+//    pos.get(1) - (aabb._hh || 0),
+//    getZ(body) //pos.get(2) - (aabb._hd || 0);
+//  ];
 };
 
 function getZ(body) {
@@ -843,16 +987,16 @@ function renderBody(body) {
 	var state = body.state,
   		rendered = state.rendered,
   		wasRendered = body.rendered(),
+//  		rotation = body.state.renderData.get('rotate'),
   		isTranslated = body.state.rendered.isTranslated,
-      isRotated = body.state.rotation && (!body.state.rendered.rotation || !arrayEquals(body.state.rotation, body.state.rendered.rotation)),
+//      isRotated = !arrayEquals(body.state.rotation, body.state.rendered.rotation)), // is only for rendering, so it will be reflected in styleChanged (until we get rotation into physics)
 	    opacityChanged = !wasRendered || body.state.renderData.isChanged('opacity'), 
 	    styleChanged = opacityChanged || body.state.renderData.isChanged(),
-  		style = styleChanged && body.state.renderData.toJSON(true),
+  		style = styleChanged && body.state.renderData.getChanges(true),
   		transform,
   		rx, ry, rz;
 				
-	if (!wasRendered || styleChanged || isTranslated || isRotated) {
-    transform = {};
+	if (!wasRendered || styleChanged || isTranslated) {
     if (!style)
       style = {};
     
@@ -863,32 +1007,70 @@ function renderBody(body) {
 		rendered.angular.pos = state.angular.pos;
 		rendered.pos.clone(state.pos);
 		
-		transform.scale = body.state.renderData.get('scale');
-		transform.translate = getTranslation(body);		
-		if (isRotated) {
-		  transform.rotate = body.state.rendered.rotation = body.state.rotation;
-      transform.rotate.unit = 'deg';
-		}
-
+//		transform.scale = body.state.renderData.get('scale');
+//		transform.transform = getTranslation(body);
+//		if (isRotated) {
+//		  transform.rotate = body.state.rendered.rotation = body.state.rotation;
+//      transform.rotate.unit = 'deg';
+//		}
+		
+    style.transform = calcTransform(body);
     if (styleChanged) {
       Physics.util.extend(body.state.rendered.renderData, style);
+      delete style.scale;
+      delete style.rotate;
+      
       if (opacityChanged) {
-        style.transform = transform;
         if (body.state.renderData.get('opacity') == 0)
-          transform.scale = MIN_SCALE;
+          Matrix.multiply(style.transform, MIN_SCALE_TRANSFORM);
+//          transform.scale = MIN_SCALE;
       }
       
       body.state.renderData.clearChanges();
     }
       
-    if (transform.translate || transform.scale || transform.rotate)
-      style.transform = transform;
+//    if (transform.translate || transform.scale || transform.rotate)
+//      style.transform = transform;
     
 		return style;
 	}
 };
 
+function isCurrentlyDragging() {
+  return IS_DRAGGING;
+};
+
+function hasDistanceConstraint(body, armed) {
+  var constraints = constrainer._distanceConstraints,
+      constraint,
+      i = constraints.length;
+  
+  while (i--) {
+    constraint = constraints[i];
+    if (!constraint.isDisabled() && (body == constraint.bodyA || body == constraint.bodyB)) {
+      if (!armed || (armed && constraint.isArmed()))
+        return true;
+    }
+  }
+  
+  return false;
+};
+
+function hasDragConstraint(body) {
+  var i = DRAG_CONSTRAINTS.length;
+  while (i--) {
+    if (DRAG_CONSTRAINTS[i].bodyA == body)
+      return true;
+  }
+  
+  return false;
+};
+
 function initWorld(_world, stepSelf) {
+  IDENTITY_TRANSFORM = Matrix.identity();
+  MIN_SCALE_TRANSFORM = Matrix.identity();
+  MIN_SCALE_TRANSFORM[0] = MIN_SCALE_TRANSFORM[5] = 0.0001;
+  
 	world = _world;
 	integrator = Physics.integrator('verlet', { drag: CONSTANTS.drag });
 	world.integrator(integrator);
@@ -896,7 +1078,11 @@ function initWorld(_world, stepSelf) {
 	if (stepSelf)
 	  Physics.util.ticker.subscribe(API.step);
 	
-	Physics.util.extend(Physics.util, {	  
+	Physics.util.extend(Physics.util, {
+	  truncate: function(x, places) {
+	    var tmp = Math.pow(10, places);
+	    return (x * tmp | 0) / tmp;
+	  },
 	  now: Physics.util.now || (typeof performance == 'undefined' ? Date.now.bind(Date) : performance.now.bind(performance)),
 	  loop: function(arr, iterator, reverse) {
 	    if (reverse) {
@@ -922,69 +1108,132 @@ function initWorld(_world, stepSelf) {
 	    return seen;
 	  }
 	});
+
+	DRAG_ANCHOR = Physics.body('point', {
+	  x: 0, 
+	  y: 0,
+	  mass: 100000
+	});
 	
 	world.subscribe('drag', function(data) {
-		var bodies = data.bodies,
-  			body,
-  			tracker,
-  			i = bodies.length;
-	
-//		log('DRAG ' + data.vector.toString());
-		while (i--) {
-			body = bodies[i];
-			body.fixed = true;
-			body.state.pos.vadd(data.vector);
-			body.stop();
-		}
-		
-		i = DRAG_TRACKERS.length;
-		while (i--) {
-      tracker = DRAG_TRACKERS[i];
-      if (tracker.canTrack(data)) {
-        tracker.body.state.pos.vadd(data.vector);
-        if (tracker.isTrackingPosition()) {
-          tracker.body.fixed = true;
-          tracker.body.stop();
-        }
-      }
-		}
-	}, null, 100);
-
-	world.subscribe('dragend', function(data) {
-		var stop = data.stop,
-		    bodies = data.bodies,
-  			body,
-  			tracker,
-  			v = data.vector.mult( 1 / 10 ),
-  			i = bodies.length;
-			
-//		log('DRAGEND ' + data.vector.toString());
-		while (i--) {
-			body = bodies[i];
-      body.fixed = false;
-      if (stop)
-        body.stop();
-      else
-			  body.state.vel.clone(v);
-		}
-		
-    i = DRAG_TRACKERS.length;
+//	  if (DRAG_FINISH_PENDING)
+//	    killDrag();
+	  
+    var bodies = data.bodies,
+        body,
+        i = bodies.length;
+  
     while (i--) {
-      tracker = DRAG_TRACKERS[i];
-      if (tracker.canTrack(data)) {
-        tracker.body.state.pos.vadd(data.vector);
-        if (tracker.isTrackingPosition()) {
-          tracker.body.fixed = false;
-          if (stop)
-            tracker.body.stop();
-          else
-            tracker.body.state.vel.clone(v);
-        }
+      body = bodies[i];
+      if (!hasDragConstraint(body)) {
+        DRAG_CONSTRAINTS.push(constrainer.distanceConstraint(body, DRAG_ANCHOR, 0.99, body.state.pos.dist(DRAG_ANCHOR.state.pos)));
       }
     }
-	}, null, 100);
+	  
+    IS_DRAGGING = true;
+    DRAG_ANCHOR.fixed = true;
+	  DRAG_ANCHOR.state.pos.vadd(data.vector);
+	});
+
+  world.subscribe('dragend', function(data) {
+    var scratch = Physics.scratchpad(),
+        v = scratch.vector().clone(data.vector).mult( 1 / 100 );
+    
+//    DRAG_FINISH_PENDING = true;
+//    DRAG_ANCHOR.state.vel.clone(data.vector).mult( 1 / 10 );
+    var i = DRAG_CONSTRAINTS.length,
+        cst;
+    
+    while (i--) {
+      cst = DRAG_CONSTRAINTS[i];
+      constrainer.remove(cst);
+      cst.bodyA.accelerate(v);
+    }
+
+    DRAG_CONSTRAINTS.length = 0;
+    DRAG_ANCHOR.stop();
+    DRAG_ANCHOR.fixed = false;
+//    world.subscribe('integrate:positions', killDrag, this, 1000);
+	});
+
+//  function killDrag() {
+//    IS_DRAGGING = false;
+//    DRAG_FINISH_PENDING = false;
+//    world.unsubscribe('integrate:positions', killDrag);
+//    var i = DRAG_CONSTRAINTS.length;
+//    while (i--) {
+//      constrainer.remove(DRAG_CONSTRAINTS[i]); 
+//    }
+//    
+//    DRAG_ANCHOR.stop();
+//    DRAG_CONSTRAINTS.length = 0;
+//  };
+  
+//	world.subscribe('drag', function(data) {
+//		var bodies = data.bodies,
+//  			body,
+//  			tracker,
+//  			i = bodies.length;
+//	
+////		log('DRAG ' + data.vector.toString());
+//		while (i--) {
+//			body = bodies[i];
+//			body.fixed = true;
+//			body.state.pos.vadd(data.vector);
+//			body.stop();
+//		}
+//		
+//		i = DRAG_TRACKERS.length;
+//		while (i--) {
+//      tracker = DRAG_TRACKERS[i];
+//      if (tracker.canTrack(data)) {
+//        tracker.body.state.pos.vadd(data.vector);
+//        if (tracker.isTrackingPosition()) {
+//          tracker.body.fixed = true;
+//          tracker.body.stop();
+//        }
+//      }
+//		}
+//	}, null, 100);
+//
+//	world.subscribe('dragend', function(data) {
+//		var stop = data.stop,
+//		    bodies = data.bodies,
+//  			body,
+//  			tracker,
+//  			scratch = Physics.scratchpad(),
+//  			v = scratch.vector().clone(data.vector).mult( 1 / 10 ),
+//  			i = bodies.length;
+//			
+////		log('DRAGEND ' + data.vector.toString());
+//		while (i--) {
+//			body = bodies[i];
+//      body.fixed = false;
+//      if (stop)
+//        body.stop();
+//      else
+//			  body.state.vel.clone(v);
+//		}
+//		
+//    i = DRAG_TRACKERS.length;
+//    while (i--) {
+//      tracker = DRAG_TRACKERS[i];
+//      if (tracker.canTrack(data)) {
+//        tracker.body.state.pos.vadd(data.vector);
+//        if (tracker.isTrackingPosition()) {
+//          tracker.body.fixed = false;
+//          if (stop)
+//            tracker.body.stop();
+//          else
+//            tracker.body.state.vel.clone(v);
+//        }
+//      }
+//    }
+//    
+//    scratch.done();
+//	}, null, 100);
 	
-	world.subscribe('integrate:velocities', function() {
+	world.subscribe('integrate:velocities', function(data) {
 	  var i = airDragBodies.length,
 	      body;
 	  
@@ -996,6 +1245,10 @@ function initWorld(_world, stepSelf) {
 	    }
 	  }	  
 	});
+
+  world.subscribe('integrate:positions', function() {
+    
+  });
 	
 	world.subscribe('remove:body', function(data) {
     removeTrackers(data.body);
@@ -1027,9 +1280,9 @@ function initWorld(_world, stepSelf) {
 	  
 //	  if (body.geometry.name == 'point' && body.options.render)
 //	    body.state.renderData.set('opacity', 1);
-	  
-	  body.state.beforeAction = {};
-    body.state.renderDataBeforeAction = {};
+//	  
+//	  body.state.beforeAction = {};
+//    body.state.renderDataBeforeAction = {};
 	});
 
 	world.subscribe('remove:body', function(data) {
@@ -1055,6 +1308,18 @@ function getRailBody(bodyId) {
 
 function getBoxBody(bodyId) {
   return getBody('box-' + bodyId);
+};
+
+function getContainer(bodyId) {
+  var container = getBody(bodyId).options.container;
+  return container && getBody(container);
+};
+
+function getZSpace(bodyId) {
+  var container = getContainer(bodyId),
+      perspective = container && container.state.renderData.get('perspective');
+  
+  return perspective ? parseFloat(perspective) : 0;
 };
 
 function getBody(bodyId) {
@@ -1251,6 +1516,10 @@ function pick(obj) {
       
       this.reset();
       this._listeners = {};
+      this.scrollbarId = this.scrollbar;
+      if (this.scrollbarId)
+        this.scrollbar = getBody(this.scrollbarId);
+      
       if (this.horizontal) {
         this.dirHead = DIR_LEFT;
         this.dirTail = DIR_RIGHT;
@@ -1272,10 +1541,10 @@ function pick(obj) {
         this.aabbOrthoAxisDim = '_hw';
       }
         
+      if (this.scrollbar)
+        this.scrollbarRail = API.addRail(this.scrollbar, this.axis == 'x' ? 1 : 0, this.axis == 'y' ? 1 : 0);
+
       this._rangeChangeListeners = [];
-      this.scrollbarId = this.scrollbar;
-      if (this.scrollbarId)
-        this.scrollbar = getBody(this.scrollbarId);
       
 //      if (this.flexigroup) {
 ////        this.flexigroup = masonryOptions.flexigroup = getBody(this.flexigroup);
@@ -1424,16 +1693,20 @@ function pick(obj) {
 
           return;
         }
-        else {
+        else if (!this._transitioning) {
           while (i--) {
             beforeRender(bricks[i]);
-          }
+          }          
+        }
+      }, this);
+      
+      this._subscribe('integrate:positions', function() {
+        if (!this._sleeping && !this._transitioning) {
+          if (this.scrollbar) 
+            this._updateScrollbar();
           
           if (this.jiggle)
             this.tiltBricksInertially();
-          
-          if (this.scrollbar)
-            this._updateScrollbar();
         }
       }, this);
       
@@ -1451,11 +1724,13 @@ function pick(obj) {
               i = this.mason.bricks.length;
           
           while (i--) {
-            bricks[i].state.rotation = ZERO_ROTATION;
+            brick = bricks[i];
+            brick.state.renderData.set('rotate', ZERO_ROTATION); // TODO: when 3d rotation comes to physics, use the actual physical rotation
           }
         });
       }
       
+//      API.rotateWhenMoving(this.offsetBody, getContainer(this.offsetBody), this.axisIdx, this.orthoAxisIdx);
       this['continue']();
     },
     
@@ -1488,7 +1763,7 @@ function pick(obj) {
       var vel = this.offsetBody.state.pos.get(this.axisIdx) - this.offsetBody.state.old.pos.get(this.axisIdx),
           thresh = 1,
           absVel = Math.sqrt(Math.abs(vel)),
-          rotation = absVel > thresh ? ((absVel - thresh) * 100000 | 0) / 100000 : 0,
+          rotation = absVel > thresh ? Physics.util.truncate(absVel - thresh, 5) : 0,
           rArr = [null, null, 0],
           brick,
           i = this.mason.bricks.length;
@@ -1503,98 +1778,6 @@ function pick(obj) {
         brick.state.rotation = rArr;
       }      
     },
-
-    center: function(bodyId, time, callback) {
-      var self = this,
-          body = this.getBrick(bodyId),
-//          railBody = getRailBody(getId(body)),
-          aabb = getAABB(body),
-          pos = body.state.pos,
-          initialPosition = Physics.vector(pos),
-          orgX = pos.get(0),
-          orgY = pos.get(1),
-          steps = Math.ceil(time / WORLD_CONFIG.timestep),
-          step = 0,
-          x, 
-          y,
-          factor,
-          renderData = body.state.renderData,
-//          viewportOffsetX = this.offsetBody.state.offset.get(0),
-//          viewportOffsetY = this.offsetBody.state.offset.get(1),
-          boundsScrollDim = BOUNDS[this.aabbAxisDim] * 2,
-          viewportDim,
-          goalPos = [null, null, 0],
-          centerAction;
-      
-      body.state.beforeAction['center'] = {
-        pos: Physics.vector(pos)
-      };
-
-      function onstep() {
-        step++;
-        viewport = self.getViewport();
-        scale = body.state.renderData.get('scale') || UNSCALED,
-        bodyAxisHalfDim = aabb[self.aabbAxisDim] * scale[self.axisIdx],
-        bodyOrthoHalfDim = aabb[self.aabbOrthoAxisDim] * scale[self.orthoAxisIdx],
-        goalPos[self.orthoAxisIdx] = boundsScrollDim / 2;
-        viewportDim = viewport.max - viewport.min;
-        goalPos[self.axisIdx] = (viewport.max + viewport.min - (boundsScrollDim - viewportDim)) / 2; // in case things are moving while we're centering, we should recalculate this every time
-        
-        factor = step / steps;
-        x = orgX + factor * (goalPos[0] - orgX);
-        y = orgY + factor * (goalPos[1] - orgY);
-//          log('centering ' + body._id + ' to ' + x + ', ' + y);
-//          log('centering: step size: ' + factor * (goalPos[0] - pos.get(0)) + ', ' + factor * (goalPos[1] - pos.get(1)));
-        pos.set(x, y);
-        if (step >= steps)
-          centerAction.complete();
-      };
-      
-      function cleanUp(cancelType) {
-        if (cancelType == 'stop')
-          body.stop();
-        else if (cancelType == 'revert')
-          body.stop(initialPosition);
-      };
-      
-      function oncomplete(completeType) {
-        if (step < steps) {
-          step = steps - 1;
-          onstep();
-        }
-        
-        cleanUp();
-        if (callback)
-          doCallback(callback);
-      };
-      
-      centerAction = new Action('center', onstep);
-      centerAction.name = 'center' + getId(body) + ' in ' + time + 'ms';
-      centerAction.oncomplete = oncomplete;
-      centerAction.oncancel = cleanUp;
-      addAction(body, centerAction);
-      centerAction.start();
-    },
-    
-    isolate: function(bodyId, type, time, style, callback) {
-      this._transitioning = true;
-      var self = this,
-          body = this.getBrick(bodyId),
-//          railBody = getRailBody(getId(body)),
-//          bricks = this.getVisibleBricks(),
-          bricks = this.mason.bricks.slice(),
-          idx = bricks.indexOf(body);
-
-      if (~idx)
-        bricks.splice(idx, 1);
-      
-      function callbackProxy() {
-        self._transitioning = false;
-        doCallback(callback);
-      };
-      
-      this[(type || 'pop') + 'Out'].call(this, bricks, time, style, callbackProxy);
-    },    
 
     getBrick: function(id) {
       var brick = getBody(id),
@@ -1615,6 +1798,74 @@ function pick(obj) {
       
       return null;
     },
+
+    zoomInTo: function(options) {
+      // TODO: record state to enable zoomOutFrom
+      var self = this,
+          body = this.getBrick(options.body),
+          cancelCallback = options.oncancel,
+          completeCallback = options.oncomplete,
+          aabb = getAABB(body),
+          containerRail = getRailBody(getId(this.offsetBody)),
+          railPos = containerRail.state.pos,
+          viewport = this.getViewport(),
+          perspective = getZSpace(this.offsetBody),
+          scaleRatio = Math.min(this.bounds._hw / aabb._hw, this.bounds._hh / aabb._hh),
+          // scaleRatio = perspective / (perspective - translateZ) --> translateZ = perspective - perspective / scaleRatio
+          z = perspective - (perspective / scaleRatio),
+          destCoords = [null, null, z],
+          bodyX = this.offsetBody.state.pos.get(0) + body.state.pos.get(0),
+          bodyY = this.offsetBody.state.pos.get(1) + body.state.pos.get(1),// + aabb._hh,
+          scratch = Physics.scratchpad(),
+          destination = scratch.vector().clone(railPos),
+          accelerationMultiplier;
+      
+      this.offsetBody.fixed = true;
+      this.disableEdgeConstraints();
+      if (!this.savedContainerRailPos)
+        this.savedContainerRailPos = Physics.vector();
+      
+      this.savedContainerRailPos.clone(containerRail.state.pos);
+      destCoords[0] = -(-this.bounds._hw + bodyX);   // negate because we're moving the world not the camera 
+      destCoords[1] = -(-this.bounds._hh + bodyY);   // negate because we're moving the world not the camera
+      accelerationMultiplier = destination.set.apply(destination, destCoords).vsub(railPos).norm() / 1000;
+      options.a *= accelerationMultiplier;
+      scratch.done();
+      
+      return API.accelerateTo(Physics.util.extend(options, {
+        body: containerRail,
+        x: destCoords[0], 
+        y: destCoords[1], 
+        z: destCoords[2]
+      }));
+    },
+
+    restoreZoom: function(bodyId, time, callback) {
+      if (!this.restoreDestination)
+        throw "restore information missing";
+
+      var self = this,
+          containerRail = getRailBody(getId(this.offsetBody)),
+          scaleAction,
+          flyAction,
+          dest = [null, 0, 0],
+          finished = 2;
+      
+      function finish() {
+        if (--finished == 0) {
+//          self._transitioning = false;
+          self.offsetBody.fixed = false;
+          self.enableEdgeConstraints();
+          doCallback(callback);
+        }
+      };
+
+      dest[this.orthoAxisIdx] = containerRail.state.pos.get(1) / this.offsetBody.state.renderData.get('scale')[1];
+//      this._transitioning = true;
+      scaleAction = API.scale(containerRail, 1, 1, time, finish);
+      flyAction = API.flyTo(containerRail, dest[0], dest[1], dest[2], time, null, finish);
+      scaleAction.ratio = flyAction.ratio.bind(scaleAction); // synchronize the two actions
+    },
     
     flyToTopCenter: function(bodyId, speed, opacity, callback) {
       var body = this.getBrick(bodyId),
@@ -1629,96 +1880,6 @@ function pick(obj) {
 //      API.scale(body, 2, 2, 2000);
     },
     
-//    maximize: function(bodyId, time, callback) {
-//      var body = getBody(bodyId),
-////          railBody = getRailBody(getId(body)),
-//          aabb = getAABB(body),
-//          originalScale = body.state.renderData.get('scale') || UNSCALED,
-//          vWidth = BOUNDS._hw * 2,
-//          vHeight = BOUNDS._hh * 2,
-//          bodyWidth = aabb._hw * 2 * originalScale[0],
-//          bodyHeight = aabb._hh * 2 * originalScale[1],
-//          bricks = this.mason.bricks.slice();
-//
-//      bricks.splice(bricks.indexOf(body), 1);
-//      if (this.pop)
-//        this.popOut(bricks, time);
-//      else if (this.fade)
-//        this.fadeOut(bricks, time);
-//      
-//      body.state.beforeAction['maximize'] = {
-//        pos: Physics.vector(body.state.pos)
-//      };
-//      
-//      body.state.renderDataBeforeAction['maximize'] = {
-//        scale: originalScale.slice()          
-//      };
-//
-//      API.scale(body, vWidth / bodyWidth, vHeight / bodyHeight, time/*, callback*/); // one callback is enough
-//      this.center(body, time, callback);
-//    },    
-//    
-//    maximize1: function(bodyId, time, callback) {
-//      var self = this,
-//          body = getBody(bodyId),
-//          pos = body.state.pos,
-//          steps = time / WORLD_CONFIG.timestep,
-//          step = 0,
-//          factor,
-//          originalScale = body.state.renderData.get('scale') || UNSCALED,
-//          renderData = body.state.renderData,
-////          viewportOffsetX = this.offsetBody.state.offset.get(0),
-////          viewportOffsetY = this.offsetBody.state.offset.get(1),
-//          vWidth = BOUNDS._hw * 2,
-//          vHeight = BOUNDS._hh * 2,
-//          boundsScrollDim = BOUNDS[this.aabbAxisDim] * 2,
-//          bodyWidth = body.geometry._aabb._hw * 2 * originalScale[0],
-//          bodyHeight = body.geometry._aabb._hh * 2 * originalScale[1],
-//          goalPos = [null, null, 0],
-//          goalScale,
-//          maximizeAction;
-//      
-//      goalPos[self.orthoAxisIdx] = boundsScrollDim / 2;
-//      goalScale = [vWidth / bodyWidth, vHeight / bodyHeight, 1];
-//      maximizeAction = new Action( // maybe use scaleAction internally
-//        'maximize' + getId(body),
-//        function onstep() {
-//          viewport = self.getViewport();
-//          goalPos[self.axisIdx] = (viewport.max - viewport.min) / 2; // in case things are moving while we're maximizing, we should recalculate this every time
-//          if (step++ >= steps)
-//            maximizeAction.complete();
-//          else {
-//            factor = step / steps;
-//            i = currentScale.length;
-//            while (i--) {
-//              currentScale[i] = originalScale[i] + factor * (goalScale[i] - originalScale[i]);
-//            }
-//           
-//            pos.set(pos.get(0) + factor * (goalPos[0] - pos.get(0)), 
-//                    pos.get(1) + factor * (goalPos[1] - pos.get(1)));
-//            
-//            renderData.set('scale', currentScale);
-//          }
-//        }
-//      );
-//      
-//      function cleanUp() {
-//        body.state.renderData.set('scale', goalScale);
-//        pos.set.apply(pos, goalPos);
-//      };
-//      
-//      function oncomplete() {
-//        cleanUp();
-//        if (callback)
-//          doCallback(callback);
-//      };
-//      
-//      maximizeAction.oncomplete = oncomplete;
-//      maximizeAction.oncancel = cleanUp;
-//      addAction(body, maximizeAction);
-//      maximizeAction.start();
-//    },    
-
     destroy: function(animate, callback) {
       var self = this,
           bricks = this.mason.bricks,
@@ -1813,10 +1974,19 @@ function pick(obj) {
     },
 
     popIn: function(bricks, time, style, callback) {
+      var scaleInfo = {
+        x: 1,
+        y: 1,
+        duration: time
+      };
+      
       this.transition(bricks, time, {
         style: style,
         fn: function(brick, time, callback) {
-          API.scale(brick, 1, 1, time, callback);
+          scaleInfo.duration = time;
+          scaleInfo.body = brick;
+          scaleInfo.oncomplete = callback;
+          API.scale(scaleInfo);
         }
       }, callback)
     },
@@ -1830,35 +2000,35 @@ function pick(obj) {
       }, callback)
     },
     
-    fadeIn: function(bricks, time, style, callback) {
-      var _style = {
-        property: 'opacity',
-        end: MAX_OPACITY,
-        time: time
-      };
-      
-      this.transition(bricks, time, {
-        style: style,
-        fn: function(brick, time, callback) {
-          API.animateStyle(brick, _style, callback);
-        }
-      }, callback)
-    },
-
-    fadeOut: function(bricks, time, style, callback) {
-      var _style = {
-        property: 'opacity',
-        end: 0,
-        time: time
-      };
-      
-      this.transition(bricks, time, {
-        style: style,
-        fn: function(brick, time, callback) {
-          API.animateStyle(brick, _style, callback);
-        }
-      }, callback)
-    },
+//    fadeIn: function(bricks, time, style, callback) {
+//      var _style = {
+//        property: 'opacity',
+//        end: MAX_OPACITY,
+//        duration: time
+//      };
+//      
+//      this.transition(bricks, time, {
+//        style: style,
+//        fn: function(brick, time, callback) {
+//          API.animateStyle(brick, _style, callback);
+//        }
+//      }, callback)
+//    },
+//
+//    fadeOut: function(bricks, time, style, callback) {
+//      var _style = {
+//        property: 'opacity',
+//        end: 0,
+//        duration: time
+//      };
+//      
+//      this.transition(bricks, time, {
+//        style: style,
+//        fn: function(brick, time, callback) {
+//          API.animateStyle(brick, _style, callback);
+//        }
+//      }, callback)
+//    },
     
     getSpringStiffness: function() {
       return this.hasOwnProperty('springStiffness') ? this.springStiffness : CONSTANTS.springStiffness;
@@ -2009,12 +2179,15 @@ function pick(obj) {
             limit = this.brickLimit == Infinity ? this.lastBrickSeen : this.brickLimit,
             dim = Math.max(6, Math.round(this.pageScrollDim * (this.pageArea / this.averageBrickArea) / limit - 4)),
             aabb = getAABB(this.scrollbar),
-            oldVel = Math.abs(this.scrollbar.state.old.vel.get(this.axisIdx)),
-            vel = Math.abs(this.scrollbar.state.vel.get(this.axisIdx)),
-            pos = this.scrollbar.state.pos,
+//            oldVel = Math.abs(this.scrollbar.state.old.vel.get(this.axisIdx)),
+//            vel = Math.abs(this.scrollbar.state.vel.get(this.axisIdx)),
+            state = this.scrollbar.state,
+            pos = state.pos,
+            oldPos = state.old.pos,
+            vel = Physics.util.truncate(pos.get(this.axisIdx) - oldPos.get(this.axisIdx), 3),
             currentOpacity = this.scrollbar.state.renderData.get('opacity'),
             axisVal,
-            orthoAxisVal, 
+            orthoAxisVal,
             opacity,
             percentOffset;
         
@@ -2026,15 +2199,22 @@ function pick(obj) {
           pos.setComponent(this.axisIdx, axisVal);
           
         orthoAxisVal = this.bounds._pos.get(this.orthoAxisIdx) + this.bounds[this.aabbOrthoAxisDim] - aabb[this.aabbOrthoAxisDim] * 2;
-        if (orthoAxisVal != pos.get(this.orthoAxisIdx))
-          pos.setComponent(this.orthoAxisIdx, orthoAxisVal);
+        if (orthoAxisVal != pos.get(this.orthoAxisIdx)) {
+          this.scrollbarRail.railBody.state.pos.setComponent(this.orthoAxisIdx, orthoAxisVal);
+          this.scrollbarRail.railBody.stop();
+        }
         
+//        pos._[this.axisIdx] = viewport.min + viewportDim * percentOffset;
+//        pos._[this.axisOrthoIdx] = this.bounds._pos.get(this.orthoAxisIdx) + this.bounds[this.aabbOrthoAxisDim] - aabb[this.aabbOrthoAxisDim] * 2;
+//        pos.set.apply(pos, pos._);
         opacity = Math.max(Math.min(MAX_OPACITY, Math.pow(vel, 0.33), currentOpacity + OPACITY_INC),
                                                                       currentOpacity - OPACITY_INC/2);
+        
         if (Math.abs(opacity - currentOpacity) > 0.01) {
 //          log("Velocity: " + vel + ", Opacity: " + opacity);
           this.scrollbar.state.renderData.set('opacity', opacity);
         }
+        
       }
     },
     
@@ -2400,6 +2580,7 @@ function pick(obj) {
       else if (this.fly) {
         function fix(brick) {
           brick.fixed = true;
+          brick.state.renderData.set('transform-origin', '0% 0%');
         };
         
         var scrollAxisPos,
@@ -2418,6 +2599,7 @@ function pick(obj) {
             coords[2] = destZ + (Math.random() * viewportDim * 2 - viewportDim);
             brick.stop(coords[0], coords[1]);
             brick.fixed = false;
+            brick.state.renderData.set('transform-origin', '50% 50%');
             args = [brick, null, null, null, 1, changeOpacity ? 1 : null, fix.bind(null, brick)];
             args[this.axisIdx + 1] = destAxis;
             args[this.orthoAxisIdx + 1] = destOrthoAxis;
@@ -2439,6 +2621,7 @@ function pick(obj) {
         this.popIn(visibleBricks, 
                    random ? bricks.length * 200 : 1000, 
                    this.pop);
+        
 //        for (var i = 0; i < l; i++) {
 //          brick = bricks[i];
 //          scrollAxisPos = brick.state.pos.get(this.axisIdx);
@@ -2569,35 +2752,6 @@ function pick(obj) {
       this.log("putting Mason to sleep");
       world.publish('sleep:' + this.id);
       this._sleeping = this._waiting = true;
-//      var bricks = this.mason.bricks,
-//      this._waiting = true;
-//      var self = this,
-//          viewport = this.getViewport(),
-//          bricks = this.mason.bricks,
-//          brick,
-//          scrollAxisPos,
-//          i = bricks.length;
-//      
-//      while (i--) {
-//        API.completePendingActions(bricks[i]);
-//      }
-//      
-//      while (i--) {        
-//        API.cancelPendingActions(bricks[i]);
-//      }
-//
-//      function sleep() {
-//        self._readyToSleep = true;
-//      };
-//      
-//      i = bricks.length;
-//      while (i--) {
-//        brick = bricks[i];
-//        scrollAxisPos = brick.state.pos.get(this.axisIdx);
-//        if (scrollAxisPos > viewport.min && scrollAxisPos < viewport.max) {
-//          API.flyTo(brick, null, null, -500, Math.max(1, Math.random() * 5), 0, sleep);
-//        }
-//      }
       
       // will remove bricks on 'beforeRender'
       log(this.containerId + ": Disabling edge constraints (temporarily) on sleep");
@@ -2606,91 +2760,45 @@ function pick(obj) {
 
     'continue': function() {
       this._sleeping = this._waiting = false;
-//      Physics.util.extend(this.lastRequestedRange, this.range);
       this._adjustSlidingWindow();
     },
     
     saveState: function() {
-      log("Saving " + this.id + "state");
-      this._state = {};
-      var bricks = this.mason.bricks,
-          brick,
-          id,
-          i = bricks.length;
+      this._saved = true;
+      if (!this.savedContainerRailPos)
+        this.savedContainerRailPos = Physics.vector();
       
-      while (i--) {
-        brick = bricks[i];
-        API.completePendingActions(brick);
-        id = getId(brick);
-        this._state[id] = {
-          pos: Physics.vector(brick.state.pos),
-          renderData: brick.state.renderData.toJSON(true)
-        }
-      }
+      this.savedContainerRailPos.clone(getRailBody(getId(this.offsetBody)).state.pos);
     },
-    
+
     loadState: function() {
-      if (!this._state)
+      if (!this._saved)
         return;
       
-      var bricks = this.mason.bricks,
-          brick,
-          brickState,
-          currentRender,
-          prop,
-          id,
-          i = bricks.length;
-      
-      while (i--) {
-        brick = bricks[i];
-        API.completePendingActions(brick);
-        id = getId(brick);
-        brickState = this._state[id];
-        if (brickState) {
-          brick.stop(brickState.pos);
-          currentRender = brick.state.renderData.toJSON();
-          for (var prop in currentRender) {
-            brick.state.renderData.set(prop, null);
-          }
-          
-          for (prop in brickState.renderData) {
-            brick.state.renderData.set(prop, brickState.renderData[prop]);
-          }          
-        }
-      }
-      
-      log("Loaded " + this.id + " state");
+      this._saved = false;
+      var containerRail = getRailBody(getId(this.offsetBody));
+      containerRail.state.renderData.set('scale', UNSCALED);
+      containerRail.stop(this.savedContainerRailPos);
+      this.offsetBody.fixed = false;
+      this.enableEdgeConstraints();
+    },
+    
+    startTransition: function() {
+      this._transitioning = true;
+    },
+
+    endTransition: function() {
+      this._transitioning = false;
     },
     
     wake: function() {
       // reposition bricks if necessary
       this.log("waking up Mason");
       world.publish('wake:' + this.id);
-      if (this._sleeping && this.numBricks()) {
-//        var bricks = this.mason.bricks,
-//            brick,
-//            i = bricks.length;
-//        
-//        while (i--) {
-//          brick = bricks[i];
-//          brick.state.pos
-//        }
-        
+      if (this._sleeping && this.numBricks()) {        
         world.add(this.mason.bricks);
         if (this.scrollbar)
           world.addBody(this.scrollbar);
-
-/*        var bricks = this.mason.bricks,
-            brick,
-            i = bricks.length;
-        
-        while (i--) {
-          brick = bricks[i];
-          if (brick.state.pos.get(2)) {
-            API.flyTo(brick, null, null, 0, Math.max(1, Math.random() * 5), 1);
-          }
-        }
- */      
       }
       
       log(this.containerId + ": Enabling edge constraints on wake");
@@ -2727,7 +2835,7 @@ function pick(obj) {
           maxPrepend = this.range.from,
           maxAppend = Math.max(this.brickLimit - this.range.to, 0),
           canAdd,
-          defaultAddDelta = Math.max(this.bricksPerPage, 4), //Math.max(Math.ceil(this.bricksPerPage / 2), 4),
+          defaultAddDelta = Math.max(this.defaultAddDelta * this.bricksPerPage | 0, 4), //Math.max(Math.ceil(this.bricksPerPage / 2), 4),
           defaultRemoveDelta = Math.max(this.bricksPerPage / 3 | 0, 1), //Math.max(Math.ceil(this.bricksPerPage / 2), 4),
           headDiff,
           tailDiff;
@@ -2841,32 +2949,13 @@ function pick(obj) {
       }
       else if (maxPrepend && range.from > 0 && headDiff < this.slidingWindowInsideBuffer) {
         var toAdd = Math.min(maxPrepend, defaultAddDelta);
-//        range.from -= toAdd;
         this.log("DECISION: growing sliding window by " + toAdd + " at the " + HEAD_STR);
-//        return this.requestNewRange(range);
         return this.requestMore(toAdd, true);
       }
-        
-  //    if (range.from != this.range.from || range.to != this.range.to)
-  //      this.requestNewRange(range);
     },
 
-//    _capRange: function(range) {
-//      if (range.from < 0 || range.to < 0 || range.to < range.from)
-//        debugger;
-//      
-//      range.from = Math.max(0, range.from);
-//      range.to = Math.min(range.to, this.brickLimit);
-//      return range;
-//    },
-    
     home: function() {
       this.log("JUMPING HOME");
-//      this.requestNewRange({
-//        from: 0,
-//        to: this.bricksPerPage
-//      });
-      
       log(this.containerId + ": Disabling edge constraints (temporarily) on jump to HOME");
       this.disableEdgeConstraints();
       this.offsetBody.stop(this.headEdge.state.pos);
@@ -2902,48 +2991,13 @@ function pick(obj) {
 */
 
 var API = {
-  // almost verbatim from physicsjs
-/*  add: function(thing) {
-    var i = 0,
-        len = arg && arg.length || 0,
-        thing = len ? arg[ 0 ] : arg;
-  
-    if ( !thing )
-      return;
-  
-    // we'll either cycle through an array
-    // or just run this on the arg itself
-    do {
-        switch (thing.type){
-          case 'behavior':
-              this.addBehavior(thing);
-          break; // end behavior
-
-          case 'integrator':
-              this.integrator(thing);
-          break; // end integrator
-
-          case 'renderer':
-              this.renderer(thing);
-          break; // end renderer
-
-          case 'body':
-              this.addBody(thing);
-          break; // end body
-          
-          default:
-              throw 'Error: failed to add item of unknown type "'+ thing.type +'" to world';
-          // end default
-      }  
-    } while ( ++i < len && (thing = arg[ i ]) );    
-  },
-*/
-      
   chain: function() {
     ArrayProto.forEach.call(arguments, executeRPC);
   },
   
   step: function(time, dt) {
+    LAST_STEP_TIME = time;
+    LAST_STEP_DT = dt;
     world.step(time);
     // only render if not paused
     if ( RERENDER && !world.isPaused() ) {
@@ -2951,6 +3005,7 @@ var API = {
       render();
     }
   },
+  
   echo: function(callbackId) {
     doCallback(callbackId);
   },
@@ -3032,16 +3087,18 @@ var API = {
     }
   },
   
-  animateStyle: function(bodyId, options, callback) {
-    var body = getBody(bodyId),
+  animateStyle: function(options) {
+    var body = getBody(options.body),
+        completeCallback = options.oncomplete,
+        cancelCallback = options.oncancel,
         unit = options.unit,
         prop = options.property,
         startValue = options.start || body.state.renderData.get(prop),
         endValue = options.end,
         clear = options.clear,
-        time = options.time,
+        duration = options.duration,
         type = options.type,
-        steps = Math.ceil(time / WORLD_CONFIG.timestep),
+        steps = Math.ceil(duration / WORLD_CONFIG.timestep),
         step = 0,
         factor,
         val,
@@ -3063,114 +3120,78 @@ var API = {
     function cleanUp(cancelType) {
       if (cancelType == 'revert')
         body.state.renderData.set(prop, startValue, unit);
+      
+      if (cancelCallback)
+        doCallback(cancelCallback);
     };
     
     function oncomplete() {
+      cancelCallback = null;
+      if (!action || action.ratio() < 1)
+        onstep(1);
+      
       cleanUp();
       body.state.renderData.set(prop, endValue, unit);
-      if (callback)
-        doCallback(callback);
+      doCallback(completeCallback);
     };
-    
-    
-    if (!time)
-      return oncomplete();
-      
-    if (type == 'boolean')
-      onstep = noop(); // set new value on action completion, essentially this is just a delayed setValue
-    else {
-      onstep = function onstep() {
-        if (step++ >= steps)
-          action.complete();
-        else {
-          factor = step / steps;
-          val = startValue + factor * (endValue - startValue);
-          body.state.renderData.set(prop, val, unit);
-        }
-      };
-    }
-    
-    action = new Action('animateStyle', onstep);
-    action.name = getId(body) + ' ' + prop + ' from ' + startValue + ' to ' + endValue + ' in ' + time + 'ms';
-    action.oncomplete = oncomplete;
-    action.oncancel = cleanUp;
-    addAction(body, action);
-    action.start();
-  },
-  
-//  opacity: function(bodyId, opacity, time, callback) {
-//    var body = getBody(bodyId),
-//        steps = Math.ceil(time / WORLD_CONFIG.timestep),
-//        step = 0,
-//        factor,
-//        goalOpacity = opacity,
-//        initialOpacity = body.state.renderData.get('opacity'),
-//        opacityAction;
-//    
-//    if (goalOpacity == initialOpacity)
-//      return;
-//    
-//    function cleanUp() {
-//      body.state.renderData.set('opacity', goalOpacity);
-//    };
-//    
-//    function oncomplete() {
-//      cleanUp();
-//      if (callback)
-//        doCallback(callback);
-//    };
-//    
-//    
-//    if (!time)
-//      return oncomplete();
-//      
-//    opacityAction = new Action(
-//      'opacity' + getId(body) + ' to ' + goalOpacity,
-//      function onstep() {
-//        if (step++ >= steps)
-//          opacityAction.complete();
-//        else {
-//          factor = step / steps;
-//          body.state.renderData.set('opacity', initialOpacity + factor * (goalOpacity - initialOpacity));
-//        }
-//      }
-//    );
-//  
-//    opacityAction.oncomplete = oncomplete;
-//    opacityAction.oncancel = cleanUp;
-//    addAction(body, opacityAction);
-//    opacityAction.start();
-//  },
-
-  revert: function(bodyId, action, time, callback) {
-    var body = getBody(bodyId),
-        renderDataBeforeAction = body.state.renderDataBeforeAction[action],
-        stateBeforeAction = body.state.beforeAction[action];
-    
-    // TODO: time, callback
-    if (stateBeforeAction) {
-      Physics.util.extend(body.state, stateBeforeAction);
-      delete body.state.beforeAction[action];
-    }
-    
-    if (renderDataBeforeAction) {
-      for (var prop in renderDataBeforeAction) {
-        body.state.renderData.set(prop, renderDataBeforeAction[prop]);
+        
+    function onstep(ratio) {
+      if (type == 'boolean' && ratio !== 1) {
+        // set new value on action completion, essentially this is just a delayed setValue
+        return;
       }
       
-      delete body.state.renderDataBeforeAction[action];
-    }
+      val = startValue + ratio * (endValue - startValue);
+      body.state.renderData.set(prop, val, unit);
+      if (action && ratio == 1)
+        action.complete();
+    };
     
-  },  
+    action = new Action({
+      id: options.actionId,
+      track: getAction(options.trackAction),
+      name: getId(body) + ' ' + prop + ' from ' + startValue + ' to ' + endValue + ' in ' + duration + 'ms',
+      duration: duration,
+      onstep: onstep,
+      oncomplete: oncomplete,
+      oncancel: cleanUp
+    });
+    
+    action.start();
+    return action;
+  },
+  
+//  revert: function(bodyId, action, time, callback) {
+//    var body = getBody(bodyId),
+//        renderDataBeforeAction = body.state.renderDataBeforeAction[action],
+//        stateBeforeAction = body.state.beforeAction[action];
+//    
+//    // TODO: time, callback
+//    if (stateBeforeAction) {
+//      Physics.util.extend(body.state, stateBeforeAction);
+//      delete body.state.beforeAction[action];
+//    }
+//    
+//    if (renderDataBeforeAction) {
+//      for (var prop in renderDataBeforeAction) {
+//        body.state.renderData.set(prop, renderDataBeforeAction[prop]);
+//      }
+//      
+//      delete body.state.renderDataBeforeAction[action];
+//    }
+//    
+//  },  
 
-  scale: function(bodyId, x, y, time, callback) {
-    var body = getBody(bodyId),
-        steps = Math.ceil(time / WORLD_CONFIG.timestep),
-        step = 0,
-        factor,
+  scale: function(options) {
+    var body = getBody(options.body),
         i,
         currentScale,
-        originalScale = body.state.renderData.get('scale') || [1, 1, 1],
+        x = options.x,
+        y = options.y,
+        duration = options.duration,
+        completeCallback = options.oncomplete,
+        cancelCallback = options.oncancel,
+        originalScale = body.state.renderData.get('scale').slice(),
         goalScale = [typeof x == 'number' ? x : originalScale[0],
                      typeof y == 'number' ? y : originalScale[1],
                      1],
@@ -3182,117 +3203,116 @@ var API = {
       return;
     }
     
-    function onstep() {
-      step++;
-      factor = step / steps;
+    function onstep(ratio) {
+//      step++;
+//      factor = step / steps;
       i = currentScale.length;
       while (i--) {
-        if (factor == 1)
+        if (ratio == 1)
           currentScale[i] = goalScale[i];
         else
-          currentScale[i] = originalScale[i] + factor * (goalScale[i] - originalScale[i]);
+          currentScale[i] = originalScale[i] + ratio * (goalScale[i] - originalScale[i]);
       }
       
 //        log('scaling ' + body._id + ' to ' + currentScale.toString());
       body.state.renderData.set('scale', currentScale);
-      if (step >= steps)
+//      if (step >= steps)
+      if (scaleAction && ratio == 1)
         scaleAction.complete();
     };
 
     currentScale = originalScale.slice();
-    if (!time)
+    if (!duration)
       return oncomplete();
     
     function cleanUp(cancelType) {
 //      body.state.renderData.set('scale', goalScale);
       if (cancelType == 'revert')
         body.state.renderData.set('scale', originalScale);
+      
+      if (cancelCallback)
+        doCallback(cancelCallback)
     };
     
     function oncomplete() {
-      if (step < steps) {
-        step = steps - 1;
-        onstep();
-      }
+      cancelCallback = null;
+      if (!scaleAction || scaleAction.ratio() < 1)
+        onstep(1);
       
       cleanUp();
-      if (callback)
-        doCallback(callback);
+      doCallback(completeCallback);
     };
     
-    scaleAction = new Action('scale', onstep);
-    scaleAction.name = 'scale ' + getId(body) + ' to ' + goalScale.toString() + ' in ' + time + 'ms';
-    scaleAction.oncomplete = oncomplete;
-    scaleAction.oncancel = cleanUp;
+    scaleAction = new Action({
+      id: options.actionId,
+      track: getAction(options.trackAction),
+      type: 'scale',
+      name: 'scale ' + getId(body) + ' to ' + goalScale.toString(),
+      duration: duration,
+      onstep: onstep,
+      oncomplete: oncomplete,
+      oncancel: cleanUp
+    });
+    
     addAction(body, scaleAction);
     scaleAction.start();
-  },
-  
-  flyLeft: function(bodyId, speed, opacity, callback) {
-    this.flyTo(bodyId, LEFT.state.pos.get(0), null, LEFT.state.pos.get(2), speed, opacity, callback);
+    return scaleAction;
   },
 
-  flyRight: function(bodyId, speed, opacity, callback) {
-    this.flyTo(bodyId, RIGHT.state.pos.get(0), null, RIGHT.state.pos.get(2), speed, opacity, callback);
+  accelerateLeft: function(options) {
+    options.x = LEFT.state.pos.get(0);
+    options.z = LEFT.state.pos.get(2);
+    this.accelerateTo(options);
   },
 
-  flyCenter: function(bodyId, speed, opacity, callback) {
-    this.flyTo(bodyId, ORIGIN.state.pos.get(0), null, ORIGIN.state.pos.get(2), speed, opacity, callback);
+  accelerateRight: function(options) {
+    options.x = RIGHT.state.pos.get(0);
+    options.z = RIGHT.state.pos.get(2);
+    this.accelerateTo(options);
+  },
+
+  accelerateCenter: function(options) {
+    options.x = ORIGIN.state.pos.get(0);
+    options.z = ORIGIN.state.pos.get(2);
+    this.accelerateTo(options);
   },
   
-  flyBy: function(bodyId, x, y, z, speed, opacity, callback) {
-    var body = getBody(bodyId);
-    return this.flyTo(body, 
-                      body.state.pos.get(0) + (x || 0),
-                      body.state.pos.get(1) + (y || 0),
-                      body.state.pos.get(2) + (z || 0),
-                      speed,
-                      opacity,
-                      callback);
+  accelerateBy: function(options) {
+    options.x = body.state.pos.get(0) + (options.x || 0);
+    options.y = body.state.pos.get(1) + (options.y || 0);
+    options.z = body.state.pos.get(2) + (options.z || 0);
+    return this.accelerateTo(options);
   },
   
-  flyTo: function(bodyId, x, y, z, speed, opacity, callback) {
-//    if (z > 0 || speed < 0)
-//      debugger;
-    
-    var body = getBody(bodyId),
-        initialOpacity = body.state.renderData.get('opacity'),
-        goalOpacity = opacity,
-        changeOpacity = opacity != null && initialOpacity != goalOpacity,
+  accelerateTo: function(options) {
+    var body = getBody(options.body),
+        a = options.a,
+        _drag = typeof options.drag == 'undefined' ? 0.1 : options.drag,
+        dragMultiplier,
+        completeCallback = options.oncomplete,
+        cancelCallback = options.oncancel,
         initialPosition = Physics.vector(body.state.pos),
-        destination = updateVector(Physics.vector(body.state.pos), x, y, z),
-        acceleration = Physics.vector(),
+        destination = updateVector(Physics.vector(body.state.pos), options.x, options.y, options.z),
         initialDistance = body.state.pos.dist(destination),
-        thresh = Math.min(speed * 100, initialDistance / 5),
+        acceleration = Physics.vector(),
+//        thresh = Math.min(10, initialDistance / 5),
         lastDistance = initialDistance,
+        thresh = 1,
         distance,
         flyAction;
 
-    function onstep() {
-      body.state.acc.zero();
-      if ((distance = body.state.pos.dist(destination)) && distance <= lastDistance || distance > thresh) {
+    function onIntegratePositions(ratio) {
+      distance = body.state.pos.dist(destination);
+      dragMultiplier = 1 - _drag * Math.pow((initialDistance - distance) / initialDistance, 2);
+      
+      if (distance > thresh) {
         lastDistance = distance;
-        if (changeOpacity) {
-          opacity = distance / initialDistance;
-          if (goalOpacity)
-            opacity = 1 - opacity;
-            
-          if (goalOpacity > initialOpacity)
-            opacity = Math.max(opacity, initialOpacity);
-          else
-            opacity = Math.min(opacity, initialOpacity);
-          
-          opacity = Math.min(opacity, MAX_OPACITY);
-          body.state.renderData.set('opacity', opacity);
-        }
-
-//        body.state.vel.clone(destination).vsub(body.state.pos).normalize().mult(speed);
-//        body.state.vel.clone(destination).vsub(body.state.pos).normalize().mult(speed * Math.min(distance, 100) / 100);
-        body.accelerate(acceleration.clone(destination).vsub(body.state.pos).normalize().mult(speed / 100)); // slow down when you get closer
+        acceleration.clone(destination).vsub(body.state.pos).normalize().mult(a * dragMultiplier);
+        body.accelerate(acceleration);        
       }
       else {
         if (distance > 10)
-          log("Completing action ahead of schedule by distance: " + distance + ", thresh: " + thresh + ", initial distance: " + initialDistance);
+          log("Completing action ahead of schedule by distance: " + distance + ", initial distance: " + initialDistance);
         
         flyAction.complete();
       }
@@ -3303,25 +3323,40 @@ var API = {
         body.stop();
       else if (cancelType == 'revert')
         body.stop(initialPosition);
+      
+      if (cancelCallback)
+        doCallback(cancelCallback);
     };
     
     function oncomplete() {
-      body.stop(destination);
-      if (changeOpacity)
-        body.state.renderData.set('opacity', goalOpacity);
+      cancelCallback = null;
       
+      body.stop(destination);
       cleanUp();
-      if (callback)
-        doCallback(callback);
+      doCallback(completeCallback);
+    };
+
+    flyAction = new Action({
+      id: options.actionId,
+//      track: getAction(options.trackAction), // fly action cannot track another action, as it doesn't use "ratio" for input  
+      type: 'fly',
+      name: 'accelerating ' + getId(body) + ' to ' + destination.toString() + ' at ' + a + 'px/ms^2',
+      onIntegratePositions: onIntegratePositions,
+      oncomplete: oncomplete,
+      oncancel: cleanUp
+    });
+      
+    flyAction.ratio = function() {
+      if (flyAction.state() == 'completed')
+        return 1;
+      else
+        return (initialDistance - distance) / initialDistance;
     };
     
-    flyAction = new Action('fly', onstep);
-    flyAction.name = 'fly ' + getId(body) + ' to ' + destination.toString() + ' at speed ' + speed;
-    flyAction.oncomplete = oncomplete;
-    flyAction.oncancel = cleanUp;
     API.cancelPendingActions(body, 'fly', CancelType.unhandle);
     addAction(body, flyAction);
     flyAction.start();
+    return flyAction;
   },
   
   teleport: function(bodyId /*[, another body's id] or [, x, y, z]*/) {
@@ -3346,10 +3381,13 @@ var API = {
     body.stop(destination);
   },
 
-  snapTo: function(bodyId, x, y, z, stiffness, damping, callback) {
+  snapTo: function(options) {
     var self = this,
-        body = getBody(bodyId),
-        destination = updateVector(Physics.vector(body.state.pos), x, y, z),
+        body = getBody(options.body),
+        callback = options.callback,
+        stiffness = options.stiffness,
+        damping = options.damping,
+        destination = updateVector(Physics.vector(body.state.pos), options.x, options.y, options.z),
         anchor = Physics.body('point', {
           fixed: true,
           x: destination.get(0),
@@ -3399,10 +3437,16 @@ var API = {
     constraint = this.distanceConstraint(body, anchor, stiffness, 0);
     constraint.damp(damping);
     
-    snapAction = new Action('snap', onstep);
-    snapAction.name = 'snap ' + bodyId + ' to ' + destination.toString();
-    snapAction.oncomplete = endSnap;
-    snapAction.oncancel = cleanUp;
+    snapAction = new Action({
+      id: options.actionId,
+      track: getAction(options.trackAction),
+      type: 'snap',
+      name: 'snap ' + bodyId + ' to ' + destination.toString(),
+      onstep: onstep,
+      oncomplete: endSnap,
+      oncancel: cleanUp
+    });
+    
     addAction(body, snapAction);
     snapAction.start();
   },
@@ -3426,12 +3470,7 @@ var API = {
         coords = new Array(3),
         constraintEndpoint = coords[distanceAxis] = anchor.state.pos.get(distanceAxis),
         constraint = this.distanceConstraint(body, anchor, springStiffness, 0, distanceAxis == 0 ? DIR_MAP.right : DIR_MAP.down), // only snap along one axis
-        snapAction = new Action(
-          'snap ' + bodyId + ' ' + anchorId,
-          checkStopped,
-          endSnap,
-          cleanUp
-        );
+        snapAction;
     
     log("Snapping " + bodyId + " " + anchorId + " over a distance of " + (body.state.pos.get(distanceAxis) - constraintEndpoint) + ", with spring stiffness " + springStiffness + " and springDamping " + springDamping);
     constraint.damp(springDamping);
@@ -3461,10 +3500,18 @@ var API = {
         doCallback(callback);
     };
     
-    snapAction.oncomplete = endSnap;
-    snapAction.oncancel = cleanUp;
+    snapAction = new Action({
+      id: options.actionId,
+//      track: getAction(options.trackAction), // can't track another action because it doesn't use "ratio" as input
+      type: 'snap',
+      onstep: checkStopped,
+      oncomplete: endSnap,
+      oncancel: cleanUp
+    });
+    
     addAction(body, snapAction);
     snapAction.start();
+    return snapAction;
   },
   
 	removeBodies: function(/* ids */) {
@@ -3529,6 +3576,78 @@ var API = {
 		}
 	},
 
+	rotateWhenMoving: function(movingBody, rotateBody, moveAxis, rotateAxis) {
+	  var minDelta = 0.00001,
+	      maxDelta = 0.002,
+	      angles = [0, 0, 0];
+	  
+	  world.subscribe('integrate:positions', function rotate() {
+	    var v = Physics.util.truncate(movingBody.state.vel.get(moveAxis), 3),
+	        rotation = rotateBody.state.renderData.get('rotate'),
+	        r = rotation[rotateAxis],
+//	        coeff = 10,
+	        newR = v ? sign(v) * Math.log(Math.abs(v + sign(v))) : 0;
+	    
+	    newR = Math.max(-Math.PI / 4, 
+	                    Math.min(Math.PI / 4, newR));
+	    
+//	        newR = coeff * v * Math.PI / 180;
+//	          
+//	    newR = Math.max(
+//	          Math.min(newR, r + maxDelta, Math.PI / 4),
+//	          r - maxDelta,
+//	          -Math.PI / 4
+//	    ); // don't allow r to change too fast
+//	    
+//	    if (Math.abs(newR) < minDelta) {
+//	      if (r == 0)
+//	        return;
+//	      else
+//	        newR = 0;
+//	    }
+//	    else if (Math.abs(newR - r) < minDelta)
+//	      return;
+
+//	    log("ROTATION: " + newR + " for VELOCITY: " + v);
+	    Physics.util.extend(angles, rotation);
+	    angles[rotateAxis] = newR;
+      rotateBody.state.renderData.set('rotate', angles);
+	  });
+	  
+	  world.subscribe('remove:body', function unsub(data) {
+	    if (data.body == movingBody || data.body == rotateBody) {
+        world.unsubscribe('remove:body', unsub);
+        world.unsubscribe('integrate:positions', rotate);
+	    }
+	  });
+	},
+	
+	attachHeader: function(header, attachTo, velocity) {
+    header = getBody(header);
+    attachTo = getBody(attachTo);
+    
+    var up = Physics.vector(DIR_UP).mult(velocity),
+        down = Physics.vector(DIR_DOWN).mult(velocity);
+    
+    function onstep() {
+      var yVel = attachTo.state.vel.get(1),
+          yPos = attachTo.state.pos.get(1);
+      
+      if (yPos > 0 || yVel > 0.1) // bounce back is imminent
+        header.accelerate(down);
+      else if (yPos < 0 && yVel < -0.1 && !hasDistanceConstraint(attachTo, true)) // avoid triggering on bounce back
+        header.accelerate(up);
+    };
+    
+    world.subscribe('step', onstep);
+    world.subscribe('remove:body', function onremove(data) {
+      if (data.body == header || data.body == attachTo) {
+        world.unsubscribe('remove:body', onremove);
+        world.unsubscribe('step', onstep);
+      }
+    });    
+	},
+	
 	trackDrag: function(body, type, bodies) {
 	  body = getBody(body);
 	  if (bodies)
@@ -3565,102 +3684,6 @@ var API = {
     }
   },
 
-//	track: function(bodyA, bodyB, prop, factor) {
-//	  bodyA = getBody(bodyA);
-//    bodyB = getBody(bodyB);
-//    factor = factor || 1;
-//    
-//	  var propTracker = TRACKING[prop],
-//	      aId = getId(bodyA),
-//        bId = getId(bodyB),
-//        trackers = [];
-//	  
-//	  if (!propTracker)
-//	    propTracker = TRACKING[aId] = {};
-//	  
-//	  if (!propTracker[bId])
-//	    propTracker = propTracker[bId] = {};
-//	  
-//	  function trackProp() {
-//  //    var i = props.length,
-//  //        p;
-//  //    
-//  //    while(i--) {
-//  //      p = props[i];       
-//  //    }
-//      switch (prop) {
-//      case 'acc':
-//      case 'vel':
-//      case 'pos':
-//        bodyA.state[prop].clone(bodyB.state[prop]);
-//        break;
-//      default:
-//        break;
-//      }
-//    };
-//	  
-//    trackers.push(trackProp);
-//	  world.subscribe('step', trackProp);
-//	  if (prop == 'acc' || prop == 'vel' || prop == 'pos') {
-//      function trackDrag(data) {
-//        var idx = data.bodies.indexOf(bodyB);
-//        if (~idx) {
-//          bodyA.state.pos.vadd(data.vector);
-////          bodyA.stop();
-//        }
-//      }        
-//      
-//      world.subscribe('drag', trackDrag);
-//      trackers.push(trackDrag);
-//	  }
-//	  
-//	  propTracker[prop] = trackers;
-//	},
-//	
-//	untrack: function(bodyA, bodyB, prop) {
-//    bodyA = getBody(bodyA);
-//    bodyB = bodyB && getBody(bodyB);
-//    
-//	  var propTracker = TRACKING[prop];
-//	  if (!propTracker)
-//	    throw "no tracking found";
-//	  
-//	  propTracker = propTracker[getId(bodyA)];
-//    if (!propTracker)
-//      throw "no tracking found";
-//	  
-//    if (!bodyB) {
-//      for (var id in propTracker) {
-//        propTracker[id]
-//      }
-//    }
-//    
-//    propTracker = propTracker[getId(bodyB)];
-//    if (!propTracker)
-//      throw "no tracking found";
-//	  
-//    propTracker = propTracker[prop];
-//    if (!propTracker)
-//      throw "no tracking found";
-//
-//    if (typeof propTracker == 'function')
-//      world.unsubscribe('step', propTracker);
-//    else
-//      propTracker.forEach(world.unsubscribe.bind(world));
-//	},
-//	
-//	track: function(bodyA, bodyB, prop) {
-//	  
-//	},
-//
-//	untrack: function(bodyA, bodyB, prop) {
-//    
-//  },
-//	
-//	bind: function(bodyA, bodyB, gearSize) {
-//	  
-//	},
-
   removeRail: function(railId) {
 	  railroad.remove(railId);
 	},
@@ -3673,9 +3696,9 @@ var API = {
 	  }
 
 	  if (typeof x2 != 'undefined')
-	    railroad.rail(body, Physics.vector(x1, y1), Physics.vector(x2, y2));
+	    return railroad.rail(body, Physics.vector(x1, y1), Physics.vector(x2, y2));
 	  else
-	    railroad.rail(body, Physics.vector(x1, y1));
+	    return railroad.rail(body, Physics.vector(x1, y1));
 	},
 	
 	box: function(body, width, height, x, y) {
@@ -3786,4 +3809,208 @@ var API = {
   },
   
   render: render
+};
+
+/**
+ * Specific to CSS transforms
+ */
+var Matrix = {
+  _recycled: [],
+  recycle: function(m) {
+    if (this._recycled.length > 100)
+      this._recycled.length = 20;
+    
+    this._recycled.push(m);
+  },
+  getNewMatrix: function() {
+    var m = this._recycled.pop() || [],
+        i = arguments.length;
+    
+    if (i) {
+      while (i--) {
+        m[i] = arguments[i];
+      }
+    }
+    
+    return m;
+  },
+  toString: function(a) {
+    var str = "";
+    for (var i = 0; i < a.length; i++) {
+      str += a[i];
+      if (i % 4 == 3)
+        str += "\n";
+      else
+        str += ", ";
+    }
+    
+    return str;
+  },
+  identity: function() {
+    return this.getNewMatrix(
+      1, 0, 0, 0, 
+      0, 1, 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1
+    ); // use one array to save garbage, as opposed to nested arrays
+  },
+  scale: function(a, s) {
+    var i = a.length;
+    while (i--) {
+      a[i] *= s;
+    }
+    
+    return this;
+  },
+  scaleX: function(a, s) {
+    return this.scale3d(a, s, 1, 1);
+  },
+  scaleY: function(a, s) {
+    return this.scale3d(a, 1, s, 1);
+  },
+  scaleZ: function(a, s) {
+    return this.scale3d(a, 1, 1, s);
+  },
+  scale3d: function(a, x, y, z) {
+    if (x == 1 && y == 1 && z == 1)
+      return a;
+    
+    var i = this.identity();
+    i[0] = x;
+    i[5] = y;
+    i[10] = z;
+    return this.multiply(a, i);
+  },
+  translateX: function(a, d) {
+    return this.translate3d(a, d, 0, 0);
+  },
+  translateY: function(a, d) {
+    return this.translate3d(a, 0, d, 0);
+  },
+  translateZ: function(a, d) {
+    return this.translate3d(a, 0, 0, d);
+  },
+  translate3d: function(a, x, y, z) {
+    if (!x && !y && !z)
+      return a;
+    
+    var i = this.identity();
+    i[12] = x;
+    i[13] = y;
+    i[14] = z;
+    try {
+      return this.multiply(a, i);
+    } finally {
+      this.recycle(i);
+    }
+  },
+  
+  multiply: function(a, b) {
+    var result = this.getNewMatrix(),
+        q,
+        r,
+        cellResult;
+    
+    for (var idx = 0; idx < 16; idx++) {
+      cellResult = 0;
+      q = idx / 4 | 0;
+      r = idx % 4;
+      for (var i = 0; i < 4; i++) {
+        cellResult += a[i + q * 4] * b[i * 4 + r]; 
+      }
+      
+      result[idx] = cellResult;
+    }
+    
+    Physics.util.extend(a, result);
+    return this;
+  },
+  rotateX: function(a, rad) {
+    if (rad == 0)
+      return a;
+    
+    var tmp = this.getNewMatrix(
+      1, 0, 0, 0,
+      0, Math.cos(rad), Math.sin(-rad), 0,
+      0, Math.sin(rad), Math.cos(rad), 0,
+      0, 0, 0, 1
+    );
+    
+    try {
+      return Matrix.multiply(a, tmp);
+    } finally {
+      this.recycle(tmp);
+    }
+  },
+  rotateY: function(a, rad) {
+    if (rad == 0)
+      return a;
+      
+    var tmp = this.getNewMatrix(
+      Math.cos(rad), 0, Math.sin(rad), 0,
+      0, 1, 0, 0,
+      Math.sin(-rad), 0, Math.cos(rad), 0,
+      0, 0, 0, 1
+    );
+    
+    try {
+      return Matrix.multiply(a, tmp);
+    } finally {
+      this.recycle(tmp);
+    }
+  },
+  rotateZ: function(a, rad) {
+    if (rad == 0)
+      return a;
+    
+    var tmp = this.getNewMatrix(
+      Math.cos(rad), Math.sin(-rad), 0, 0,
+      Math.sin(rad), Math.cos(rad), 0, 0,
+      0, 0, 1, 0,
+      0, 0, 0, 1
+    );
+    
+    try {
+      return Matrix.multiply(a, tmp);
+    } finally {
+      this.recycle(tmp);
+    }
+  },
+  rotate3d: function(a, xRad, yRad, zRad) {
+    return this.rotateX(this.rotateY(this.rotateZ(a, zRad), yRad), xRad);
+  },
+  clone: function(a /* matrix or values list */) {
+    if (arguments.length == 2) {
+      var source = arguments[1],
+          i = source.length;
+      
+      while (i--) {
+        a[i] = source[i];
+      }
+    }
+    else {
+      for (var i = 1; i < arguments.length; i++) {
+        a[i - 1] = arguments[i];
+      }
+    }
+  }
+//  rotationXMatrix: function(rad) {
+//    return [1, 0, 0, 0,
+//            0, Math.cos(rad), Math.sin(-rad), 0,
+//            0, Math.sin(rad), Math.cos(rad), 0,
+//            0, 0, 0, 1];
+//  },
+//  rotationYMatrix: function(rad) {
+//    return [Math.cos(rad), 0, Math.sin(rad), 0,
+//            0, 1, 0, 0,
+//            Math.sin(-rad), 0, Math.cos(rad), 0,
+//            0, 0, 0, 1];
+//  },
+//
+//  rotationZMatrix: function(rad) {
+//    return [Math.cos(rad), Math.sin(-rad), 0, 0,
+//            Math.sin(rad), Math.cos(rad), 0, 0,
+//            0, 0, 1, 0,
+//            0, 0, 0, 1]
+//  }
 }

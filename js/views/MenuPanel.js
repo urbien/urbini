@@ -13,7 +13,8 @@ define('views/MenuPanel', [
 //    role: 'data-panel',
 //    id: 'menuPanel',
 //    theme: 'd',
-    _flySpeed: 3.5,
+//    _flySpeed: 3.5,
+    _acceleration: 0.035,
     style: {
       opacity: 0,
       display: 'table',
@@ -87,14 +88,21 @@ define('views/MenuPanel', [
         if (e)
           Events.stopEvent(e);
         
-        var self = this;        
+        if (this.ulWidth == G.viewport.width) {
+          // HACK!!
+          setTimeout(this.show);
+          return;
+        }
+        
+        var self = this,
+            accActionId = _.uniqueId('accAction');
         
         this._hidden = false;
         this._transitioning = true;
         Physics.there.chain(
           {
             method: 'style',
-            args: [self.getContainerBodyId(), {
+            args: [this.getContainerBodyId(), {
               'z-index': 10002,
               visibility: 'visible'
             }]
@@ -104,8 +112,25 @@ define('views/MenuPanel', [
             args: [this.getContainerRailBodyId(), this.ulWidth]
           },
           {
-            method: 'flyTo', 
-            args: [this.getContainerRailBodyId(), 0, null, null, this._flySpeed, DOM.maxOpacity]
+            method: 'accelerateTo', 
+            args: [{
+              actionId: accActionId,
+              body: this.getContainerRailBodyId(), 
+              x: 0, 
+              a: this._acceleration
+            }]
+          },
+          {
+            method: 'animateStyle',
+            args: [{
+              body: this.getContainerBodyId(),
+              property: 'opacity',
+              end: DOM.maxOpacity,
+              trackAction: {
+                body: this.getContainerRailBodyId(),
+                action: accActionId
+              }
+            }]
           }
         );
         
@@ -123,7 +148,9 @@ define('views/MenuPanel', [
         if (e)
           Events.stopEvent(e);
         
-        var self = this;
+        var self = this,
+            accActionId = _.uniqueId('accAction');
+
         this._hidden = true;
         this._transitioning = true;
         if (G.isJQM())
@@ -131,19 +158,35 @@ define('views/MenuPanel', [
 
         Physics.there.chain(
           {
-            method: 'flyTo',
-            args: [this.getContainerRailBodyId(), this.ulWidth, null, null, this._flySpeed, 0, function() {
-              self._finishTransition();
-              Q.write(function() {
-                self.ul.style.visibility = 'hidden';
-              });
+            method: 'accelerateTo', 
+            args: [{
+              actionId: accActionId,
+              body: this.getContainerRailBodyId(), 
+              x: this.ulWidth, 
+              a: this._acceleration,
+              oncomplete: function() {
+                self._finishTransition();
+                Physics.there.style(self.getContainerBodyId(), {
+                  'z-index': 0,
+                  visibility: 'hidden'
+                });
+                
+                Q.write(function() {
+                  self.ul.style.visibility = 'hidden';
+                });
+              }
             }]
           },
           {
-            method: 'style',
-            args: [self.getContainerBodyId(), {
-              'z-index': 0,
-              visibility: 'hidden'
+            method: 'animateStyle',
+            args: [{
+              body: this.getContainerBodyId(),
+              property: 'opacity',
+              end: 0,
+              trackAction: {
+                body: this.getContainerRailBodyId(),
+                action: accActionId
+              }
             }]
           }
         );

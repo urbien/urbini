@@ -3,7 +3,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       jsBase = G.serverName + '/js/',
       physicsModuleInfo = G.files['lib/physicsjs-custom.js'],
       masonryModuleInfo = G.files['lib/jquery.masonry.js'],
-      commonMethods = ['step', 'addBody', 'removeBody', 'distanceConstraint', 'drag', 'dragend', 'benchBodies', 'unbenchBodies', 'style', 'track', 'trackDrag'],
+      commonMethods = ['step', 'addBody', 'removeBody', 'distanceConstraint', 'drag', 'dragend', 'benchBodies', 'unbenchBodies', 'style', 'animateStyle', 'track', 'trackDrag'],
       layoutMethods = ['addBricks', 'setLimit', 'unsetLimit', 'sleep', 'wake', 'continue', 'home', 'end', 'resize', 'setBounds', 'lock', 'unlock', 'isLocked', 'destroy'],
       LOCK_STEP = false, // if true, step the world through postMessage, if false let the world run its own clock
       PHYSICS_TIME = _.now(), // from here on in,
@@ -443,15 +443,14 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   };
 
   function replaceCallbacks(args) {
-    var i = args.length,
-        arg;
-    
-    while (i--) {
-      arg = args[i];
+    _.each(args, function(arg, idx) {
       if (typeof arg == 'function') {
-        args[i] = addCallback(arg);
+        args[idx] = addCallback(arg);
       }
-    }
+      else if (typeof arg == 'object') {
+        replaceCallbacks(arg);
+      }
+    });
   };
   
   function addCallback(callback) {
@@ -506,97 +505,102 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
             if (propVal == null)
               el.style.removeProperty(prop)
             else
-              el.style[DOM.prefix(prop, true)] = propVal;
+              el.style[DOM.prefix(prop)] = propVal;
           }
         }
         
         transform = style.transform;
-        if (!transform)
-          continue;
-
-        translate = transform.translate;
-        scale = transform.scale;
-        rotate = transform.rotate;
-        transformStr = null;
-        if (translate || scale) {
-          transformStr = '';
-          if (scale) {
-            if (!_.isEqual(scale, DEFAULT_SCALE)) {
-              transformStr = 'scale3d(' + scale[0] + ', ' + scale[1] + ', ' + scale[2] + ')';
-              if (_.isEqual(scale, MIN_SCALE)) 
-                translate = null;
-            }
-            
-            oldScale = oldTransform.scale || DEFAULT_SCALE;
-            dsx = scale[0] - oldScale[0];
-            dsy = scale[1] - oldScale[1];
-            dsz = scale[2] - oldScale[2];
-            invokeListeners(renderListeners.scale[''][id], el, dsx, dsy, dsz);
-            invokeListeners(renderListeners.scale.x[id], el, dsx);
-            invokeListeners(renderListeners.scale.y[id], el, dsy);
-            invokeListeners(renderListeners.scale.z[id], el, dsz);
-          }
-          else
-            scale = DEFAULT_SCALE;
-          
-          if (translate) {
-            transformStr = 'matrix3d(' + scale[0] + ', 0, 0, 0, 0, ' + scale[1] + ', 0, 0, 0, 0, ' + scale[2] + ', 0, ';
-  //        transformStr = 'translate(';
-            transformStr += translate[0].toFixed(10) + ', ' + translate[1].toFixed(10) + ', ' + translate[2].toFixed(10) + ', 1)';
-  //          transformStr += translate[0].toFixed(10) + 'px, ' + translate[1].toFixed(10) + 'px)';
-            oldTranslate = oldTransform.translate || ZERO_TRANSLATION;
-            dtx = translate[0] - oldTranslate[0];
-            dty = translate[1] - oldTranslate[1];
-            dtz = translate[2] - oldTranslate[2];
-            invokeListeners(renderListeners.translate[''][id], el, dtx, dty, dtz);
-            invokeListeners(renderListeners.translate.x[id], el, dtx);
-            invokeListeners(renderListeners.translate.y[id], el, dty);
-            invokeListeners(renderListeners.translate.z[id], el, dtz);
-          }          
+        if (transform) {
+          el.style[TRANSFORM_PROP] = 'matrix3d(' + transform.join(', ') + ')';
+          el.style[TRANSITION_PROP] = '';          
         }
           
-//        else {
-//          transformStr += '0, 0, 0';
-////          transformStr += '0px, 0px)';
+//        if (!transform)
+//          continue;
+//
+//        translate = transform.translate;
+//        scale = transform.scale;
+//        rotate = transform.rotate;
+//        transformStr = null;
+//        if (translate || scale) {
+//          transformStr = '';
+//          if (scale) {
+//            if (!_.isEqual(scale, DEFAULT_SCALE)) {
+//              transformStr = 'scale3d(' + scale[0] + ', ' + scale[1] + ', ' + scale[2] + ')';
+//              if (_.isEqual(scale, MIN_SCALE)) 
+//                translate = null;
+//            }
+//            
+//            oldScale = oldTransform.scale || DEFAULT_SCALE;
+//            dsx = scale[0] - oldScale[0];
+//            dsy = scale[1] - oldScale[1];
+//            dsz = scale[2] - oldScale[2];
+//            invokeListeners(renderListeners.scale[''][id], el, dsx, dsy, dsz);
+//            invokeListeners(renderListeners.scale.x[id], el, dsx);
+//            invokeListeners(renderListeners.scale.y[id], el, dsy);
+//            invokeListeners(renderListeners.scale.z[id], el, dsz);
+//          }
+//          else
+//            scale = DEFAULT_SCALE;
+//          
+//          if (translate) {
+//            transformStr = 'matrix3d(' + scale[0] + ', 0, 0, 0, 0, ' + scale[1] + ', 0, 0, 0, 0, ' + scale[2] + ', 0, ';
+//  //        transformStr = 'translate(';
+//            transformStr += translate[0].toFixed(10) + ', ' + translate[1].toFixed(10) + ', ' + translate[2].toFixed(10) + ', 1)';
+//  //          transformStr += translate[0].toFixed(10) + 'px, ' + translate[1].toFixed(10) + 'px)';
+//            oldTranslate = oldTransform.translate || ZERO_TRANSLATION;
+//            dtx = translate[0] - oldTranslate[0];
+//            dty = translate[1] - oldTranslate[1];
+//            dtz = translate[2] - oldTranslate[2];
+//            invokeListeners(renderListeners.translate[''][id], el, dtx, dty, dtz);
+//            invokeListeners(renderListeners.translate.x[id], el, dtx);
+//            invokeListeners(renderListeners.translate.y[id], el, dty);
+//            invokeListeners(renderListeners.translate.z[id], el, dtz);
+//          }          
+//        }
+//          
+////        else {
+////          transformStr += '0, 0, 0';
+//////          transformStr += '0px, 0px)';
+////        }
+////        
+//        
+//        // ROTATION
+//        if (rotate) {
+//          // TODO: all axes, no need for now
+//          transformStr = transformStr || '';
+//          var unit = rotate.unit || 'deg';
+//          if (rotate[0])
+//            transformStr += ' rotateX(' + rotate[0].toFixed(10) + unit +')';
+//          if (rotate[1])
+//            transformStr += ' rotateY(' + rotate[1].toFixed(10) + unit +')';
+//          if (rotate[2])
+//            transformStr += ' rotateZ(' + rotate[2].toFixed(10) + unit +')';
+//          
+////          if (rotate[2])
+////            transformStr += 'rotate(' + rotate[2].toFixed(10) + 'rad)'; // for now, only around Z axis
+//          
+//          oldRotate = oldTransform.rotate || ZERO_ROTATION;
+////          drx = rotate[0] - oldRotate[0];
+////          dry = rotate[1] - oldRotate[1];
+//          drz = rotate[2] - oldRotate[2];
+//          invokeListeners(renderListeners.rotate[''][id], el, drx, dry, drz);
+////          invokeListeners(renderListeners.rotate.z[id], drx);
+////          invokeListeners(renderListeners.rotate.y[id], dry);
+//          invokeListeners(renderListeners.rotate.z[id], drz);
 //        }
 //        
-        
-        // ROTATION
-        if (rotate) {
-          // TODO: all axes, no need for now
-          transformStr = transformStr || '';
-          var unit = rotate.unit || 'rad';
-          if (rotate[0])
-            transformStr += ' rotateX(' + rotate[0].toFixed(10) + unit +')';
-          if (rotate[1])
-            transformStr += ' rotateY(' + rotate[1].toFixed(10) + unit +')';
-          if (rotate[2])
-            transformStr += ' rotateZ(' + rotate[2].toFixed(10) + unit +')';
-          
-//          if (rotate[2])
-//            transformStr += 'rotate(' + rotate[2].toFixed(10) + 'rad)'; // for now, only around Z axis
-          
-          oldRotate = oldTransform.rotate || ZERO_ROTATION;
-//          drx = rotate[0] - oldRotate[0];
-//          dry = rotate[1] - oldRotate[1];
-          drz = rotate[2] - oldRotate[2];
-          invokeListeners(renderListeners.rotate[''][id], el, drx, dry, drz);
-//          invokeListeners(renderListeners.rotate.z[id], drx);
-//          invokeListeners(renderListeners.rotate.y[id], dry);
-          invokeListeners(renderListeners.rotate.z[id], drz);
-        }
-        
-        if (transformStr != null) {
-          el.style[TRANSFORM_PROP] = transformStr;
-          el.style[TRANSITION_PROP] = '';
-          el.style[TRANSFORM_ORIGIN_PROP] = '0%; 0%';
-          if (isMoz) {
-            el.style.transform = transformStr;
-            el.style.transition = '';
-            el.style['transform-origin'] = '0% 0%';
-          }
-          
-        }
+//        if (transformStr != null) {
+//          el.style[TRANSFORM_PROP] = transformStr;
+//          el.style[TRANSITION_PROP] = '';
+////          el.style[TRANSFORM_ORIGIN_PROP] = '0% 0%';
+////          if (isMoz) {
+////            el.style.transform = transformStr;
+////            el.style.transition = '';
+////            el.style['transform-origin'] = '0% 0%';
+////          }
+//          
+//        }
         
 //        el.style[TRANSFORM_PROP] = 'matrix3d(' + transform.join(',') + ')';
         
