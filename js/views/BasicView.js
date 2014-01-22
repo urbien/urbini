@@ -1185,7 +1185,7 @@ define('views/BasicView', [
         scrollbarOptions = _.defaults({
           _id: scrollbarId,
           vertices: Physics.getRectVertices(this._scrollbarThickness, this._scrollbarThickness)
-        }, this.getContainerBodyOptions());
+        }, _.omit(this.getContainerBodyOptions(), 'style'));
         
         Physics.there.addBody('convex-polygon', scrollbarOptions, scrollbarId);
       }
@@ -1237,45 +1237,15 @@ define('views/BasicView', [
     },
     
     getContainerBodyOptions: function() {
-      var containerId = this.getContainerBodyId(),
-          options,
-          lock = {};
+      var options = this._containerBodyOptions = this._containerBodyOptions || {};
+      options._id = this.getContainerBodyId();
+      options.container = this.parentView && this.parentView.getContainerBodyId();
+      options.x = 0;
+      options.y = 0;
+      if (!options.style)
+        options.style = {};
       
-      if (this._dragAxis)
-        lock[_.oppositeAxis(this._dragAxis)] = 0;
-      
-      if (this._flexigroup) {
-        if (!this.hasOwnProperty('_offsetWidth'))
-          this._updateSize();
-        
-        options = {
-          _id: containerId,
-//          style: this.style,
-          x: 0,
-          y: 0,
-//          x: this._horizontal ? -G.viewport.width * 5 : this._offsetLeft + this._width / 2,
-//          y: this._horizontal ? this._offsetTop + this._height / 2 : -G.viewport.height * 5,
-          lock: lock, 
-          mass: 10
-        };
-      }
-      else {
-        options = {
-          _id: containerId,
-          style: this.style,
-//          renderData: {
-//            width: this._outerWidth,
-//            height: this._outerHeight
-//          },
-//          render: true,
-          style: this.style,
-          x: 0,
-          y: 0
-//          ,
-//          lock: lock
-        };
-      }
-      
+      _.extend(options.style, this.style);
       return options;
     },
     
@@ -1288,6 +1258,10 @@ define('views/BasicView', [
     },
     
     addContainerBodyToWorld: function() {
+      if (this._addedContainerBodyToWorld)
+        return;
+      
+      this._addedContainerBodyToWorld = true;
       var id = this.getContainerBodyId(),
           railArgs,
           chain = [{

@@ -281,7 +281,8 @@ define('views/Header', [
             self.addToWorld(null, false);
 //            Physics.there.trackDrag(self.getContainerBodyId(), 'vel'); // 'pos' for exact tracking, 'vel' for parallax 
             self.pageView.listView.onload(function() {              
-              Physics.there.trackDrag(self.getContainerBodyId(), 'vel', self.pageView.listView.getContainerBodyId()); // 'pos' for exact tracking, 'vel' for parallax
+//              Physics.there.trackDrag(self.getContainerBodyId(), 'vel', self.pageView.listView.getContainerBodyId()); // 'pos' for exact tracking, 'vel' for parallax
+              Physics.there.rpc(null, 'attachHeader', [self.getContainerBodyId(), self.pageView.listView.getContainerBodyId(), 0.02]);
             });
           }
           

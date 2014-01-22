@@ -32,8 +32,14 @@ define('router', [
     args.unshift("router");
     G.log.apply(G, args);
   };
+  
+//  function newPageElement() {
+//    var page = document.createElement('div');
+//    page.dataset.role = "page";
+//  };
 
   var lastViewportWidth = G.viewport.width,
+      transitionLookup = DOM.prefix('transition'),
       transformLookup = DOM.prefix('transform');
   
   window.addEventListener('resize', Q.debounce(function() {
@@ -59,7 +65,7 @@ define('router', [
         var sign = x < 0 ? -1 : 1;
         transform[3][0] = newWidth * sign;
         page.style[transformLookup] = DOM.toMatrix3DString(transform);
-        page.style[DOM.prefix('transition')] = '';
+        page.style[transitionLookup] = '';
       }
     }
   }, 20));
@@ -825,7 +831,8 @@ define('router', [
     },
 
     getChangePageOptions: function(fragment) {
-      return this.fragmentToOptions[fragment || U.getHash()] || {};
+      fragment = fragment || U.getHash();
+      return this.fragmentToOptions[fragment] || (this.fragmentToOptions[fragment] = {});
     },
     
     edit: function(path) {
@@ -1071,7 +1078,7 @@ define('router', [
       var forceFetch = options.forceFetch;
       if (res) {
         this.currentModel = res;
-        view = cachedView || new viewPageCl({model: res, source: this.previousHash});
+        view = cachedView || new viewPageCl({model: res, source: this.previousHash });
         
         this.changePage(view);
         Events.trigger('navigateToResource:' + res.resourceId, res);
@@ -1341,7 +1348,7 @@ define('router', [
 //        G.activePage = toView.el;
 //      });
       
-      transOptions.transition = transOptions.via ? 'via' : 'slide';
+      transOptions.transition = transOptions.via ? 'zoomInTo' : 'slide';
       Transitioner.transition(transOptions).done(function() {
         G.$activePage = $m.activePage = toView.$el;
         G.activePage = toView.el;
@@ -1573,7 +1580,10 @@ define('router', [
       if (!view.rendered) {
 //        view.trigger('active', true);
         activated = true;
-        renderPromise = view.render();
+//        view.render();
+        this.getChangePageOptions().render = true;
+        document.body.appendChild(view.el);
+//        renderPromise = view.render();
 //        view.onload(function() {          
 //          view.$el.attr({
 //            id: 'page' + G.nextId(),

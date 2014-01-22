@@ -17,6 +17,7 @@ define('views/ListPage', [
 //    viewType: 'collection',
     template: 'resource-list',
     clicked: false,
+    autoFetch: false,
     autoFinish: false,
     _draggable: false,
     _scrollbar: false, 
@@ -356,7 +357,6 @@ define('views/ListPage', [
       var args = arguments,
           self = this;
       
-      this.addContainerBodyToWorld(); // not draggable
       return this.ready.done(function() {
         Q.write(self.renderHelper, self, args);
       });

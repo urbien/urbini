@@ -55,10 +55,12 @@ var ArrayProto = Array.prototype,
 		proxiedObjects,
 		layoutManagers = {},
 		DEBUG,
-		DIR_UP,
-		DIR_DOWN,
-    DIR_LEFT,
-    DIR_RIGHT,
+    DIR_X_NEG,
+    DIR_X_POS,
+    DIR_Y_POS,
+    DIR_Y_NEG,
+    DIR_Z_NEG,
+    DIR_Z_POS,
     DIR_MAP = {
       left: null,
       right: null,
@@ -1245,10 +1247,6 @@ function initWorld(_world, stepSelf) {
 	    }
 	  }	  
 	});
-
-  world.subscribe('integrate:positions', function() {
-    
-  });
 	
 	world.subscribe('remove:body', function(data) {
     removeTrackers(data.body);
@@ -1292,10 +1290,12 @@ function initWorld(_world, stepSelf) {
   });
 
 	Physics.util.ticker.start();
-	DIR_MAP.up = DIR_UP = Physics.vector(0, -1);
-	DIR_MAP.down = DIR_DOWN = Physics.vector(0, 1);
-	DIR_MAP.left = DIR_LEFT = Physics.vector(-1, 0);
-	DIR_MAP.right = DIR_RIGHT = Physics.vector(1, 0);
+	DIR_MAP.up = DIR_Y_POS = Physics.vector(0, -1);
+	DIR_MAP.down = DIR_Y_NEG = Physics.vector(0, 1);
+	DIR_MAP.left = DIR_X_NEG = Physics.vector(-1, 0);
+	DIR_MAP.right = DIR_X_POS = Physics.vector(1, 0);
+  DIR_MAP.in = DIR_Z_POS = Physics.vector(0, 0, 1);
+  DIR_MAP.out = DIR_Z_NEG = Physics.vector(0, 0, -1);
 };
 
 function getId(body) {
@@ -1521,8 +1521,8 @@ function pick(obj) {
         this.scrollbar = getBody(this.scrollbarId);
       
       if (this.horizontal) {
-        this.dirHead = DIR_LEFT;
-        this.dirTail = DIR_RIGHT;
+        this.dirHead = DIR_X_NEG;
+        this.dirTail = DIR_X_POS;
         this.axis = 'x';
         this.orthoAxis = 'y';
         this.axisIdx = 0;
@@ -1531,8 +1531,8 @@ function pick(obj) {
         this.aabbOrthoAxisDim = '_hh';
       }
       else {
-        this.dirHead = DIR_UP;
-        this.dirTail = DIR_DOWN;
+        this.dirHead = DIR_Y_POS;
+        this.dirTail = DIR_Y_NEG;
         this.axis = 'y';
         this.orthoAxis = 'x';
         this.axisIdx = 1;
@@ -1582,7 +1582,7 @@ function pick(obj) {
       this.headEdgeConstraint = API.distanceConstraint(this.offsetBody, this.headEdge, this.getSpringStiffness(), this.flexigroup ? null : 0, this.dirHead);
       this.headEdgeConstraint.damp(this.getSpringDamping());
       this.headEdgeConstraint.armOnDistance(Infinity, this.dirHead); // no matter how far out of bounds we are, we should snap back
-  //    this.headEdgeConstraint.breakOnDistance(50, DIR_DOWN);
+  //    this.headEdgeConstraint.breakOnDistance(50, DIR_Y_NEG);
       if (this.bounds)
         this.setBounds(this.bounds); // convert to Physics AABB
       
@@ -1592,8 +1592,8 @@ function pick(obj) {
         this.averageBrickNonScrollDim = this.pageNonScrollDim;
         
       if (doSlidingWindow) {
-        this._subscribe('integrate:positions', this._onstep, this, -Infinity); // lowest priority
-        this._onstep = Physics.util.throttle(this._onstep.bind(this), 30);
+        this._subscribe('integrate:positions', this._onIntegratePositions, this, -Infinity); // lowest priority
+        this._onstep = Physics.util.throttle(this._onIntegratePositions.bind(this), 30);
       }
       
       this.mason = new Mason(masonryOptions);
@@ -1730,7 +1730,9 @@ function pick(obj) {
         });
       }
       
-//      API.rotateWhenMoving(this.offsetBody, getContainer(this.offsetBody), this.axisIdx, this.orthoAxisIdx);
+      if (this.slidingWindow) // TODO: make sure only one thing is rotating the container
+        API.rotateWhenMoving(this.offsetBody, getContainer(this.offsetBody), this.axisIdx, this.orthoAxisIdx);
+      
       this['continue']();
     },
     
@@ -1778,6 +1780,42 @@ function pick(obj) {
         brick.state.rotation = rArr;
       }      
     },
+//    tiltBricksInertially: function() {
+//      var containerRail = getRailBody(getId(this.offsetBody)),
+//          railPos = containerRail.state.pos,
+//          viewport = this.getViewport(),
+//          perspective = getZSpace(this.offsetBody),
+////          scaleRatio = Math.min(this.bounds._hw / aabb._hw, this.bounds._hh / aabb._hh),
+//          // scaleRatio = perspective / (perspective - translateZ) --> translateZ = perspective - perspective / scaleRatio
+////          z = perspective - (perspective / scaleRatio),
+//          z = perspective, // - this.offsetBody.state.pos.get(2),
+//          bricks = this.mason.bricks,
+//          brick,
+//          brickX,
+//          brickY,
+//          i = bricks.length,
+////          destCoords = [null, null, z],
+//          scratch = Physics.scratchpad(),
+//          normal = scratch.vector(),
+//          tmp = scratch.vector(),
+//          destination = scratch.vector().clone(railPos),
+//          rotate = [0, 0, 0];
+//
+//      while (i--) {
+//        brick = bricks[i];
+//        brickX = this.offsetBody.state.pos.get(0) + brick.state.pos.get(0);
+//        brickY = this.offsetBody.state.pos.get(1) + brick.state.pos.get(1);
+//        normal.set(-this.bounds._hw + brickX, this.bounds._hh - brickY, z);
+//        rotate[0] = -tmp.clone(normal).setComponent(0, 0).angle3d(DIR_Z_POS);
+//        rotate[1] = tmp.clone(normal).setComponent(1, 0).angle3d(DIR_Z_POS);
+////        rotate[0] = -tmp.clone(normal).setComponent(0, 0).angle3d(DIR_Z_POS);
+////        rotate[1] = -tmp.clone(normal).setComponent(1, 0).angle3d(DIR_Z_POS);
+////        rotata[2] = ?
+//        brick.state.renderData.set('rotate', rotate);
+//      }      
+//
+//      scratch.done();
+//    },
 
     getBrick: function(id) {
       var brick = getBody(id),
@@ -2218,7 +2256,7 @@ function pick(obj) {
       }
     },
     
-    _onstep: function() {
+    _onIntegratePositions: function() {
 //      this.offsetBody.state.renderData.set('perspective-origin-y', (-offset|0) + 'px');
       if (this._sleeping || this._waiting || this._transitioning)
         return;
@@ -2311,7 +2349,7 @@ function pick(obj) {
           this.tailEdgeConstraint.damp(this.getSpringDamping());
           this.tailEdgeConstraint['break']();
           this.tailEdgeConstraint.armOnDistance(Infinity, this.dirTail); // no matter how far out of bounds we are, we should snap back
-//          this.tailEdgeConstraint.breakOnDistance(50, DIR_UP);
+//          this.tailEdgeConstraint.breakOnDistance(50, DIR_Y_POS);
           world.subscribe('drag', function(data) {
 //            if (~data.bodies.indexOf(this.offsetBody) && this.offsetBody.state.pos.get(this.axisIdx) > this.tailEdge.state.pos.get(this.axisIdx))
               this.tailEdgeConstraint['break']();
@@ -3577,36 +3615,39 @@ var API = {
 	},
 
 	rotateWhenMoving: function(movingBody, rotateBody, moveAxis, rotateAxis) {
-	  var minDelta = 0.00001,
-	      maxDelta = 0.002,
+	  var minDelta = 0.0001,
+	      maxDelta = 0.001,
 	      angles = [0, 0, 0];
 	  
 	  world.subscribe('integrate:positions', function rotate() {
+	    if (movingBody.fixed)
+	      return;
+	    
 	    var v = Physics.util.truncate(movingBody.state.vel.get(moveAxis), 3),
 	        rotation = rotateBody.state.renderData.get('rotate'),
 	        r = rotation[rotateAxis],
 //	        coeff = 10,
-	        newR = v ? sign(v) * Math.log(Math.abs(v + sign(v))) : 0;
+	        newR = v ? -sign(v) * Math.log(Math.abs(v + sign(v))) / 50 : 0;
 	    
-	    newR = Math.max(-Math.PI / 4, 
-	                    Math.min(Math.PI / 4, newR));
-	    
+//	    newR = Math.max(-Math.PI / 4, 
+//	                    Math.min(Math.PI / 4, newR));
+//	    
 //	        newR = coeff * v * Math.PI / 180;
 //	          
-//	    newR = Math.max(
-//	          Math.min(newR, r + maxDelta, Math.PI / 4),
-//	          r - maxDelta,
-//	          -Math.PI / 4
-//	    ); // don't allow r to change too fast
-//	    
-//	    if (Math.abs(newR) < minDelta) {
-//	      if (r == 0)
-//	        return;
-//	      else
-//	        newR = 0;
-//	    }
-//	    else if (Math.abs(newR - r) < minDelta)
-//	      return;
+	    newR = Math.max(
+	          Math.min(newR, r + maxDelta, Math.PI / 4),
+	          r - maxDelta,
+	          -Math.PI / 4
+	    ); // don't allow r to change too fast
+	    
+	    if (Math.abs(newR) < minDelta) {
+	      if (r == 0)
+	        return;
+	      else
+	        newR = 0;
+	    }
+	    else if (Math.abs(newR - r) < minDelta)
+	      return;
 
 //	    log("ROTATION: " + newR + " for VELOCITY: " + v);
 	    Physics.util.extend(angles, rotation);
@@ -3622,12 +3663,12 @@ var API = {
 	  });
 	},
 	
-	attachHeader: function(header, attachTo, velocity) {
+	attachHeader: function(header, attachTo, acceleration) {
     header = getBody(header);
     attachTo = getBody(attachTo);
     
-    var up = Physics.vector(DIR_UP).mult(velocity),
-        down = Physics.vector(DIR_DOWN).mult(velocity);
+    var up = Physics.vector(DIR_Y_POS).mult(acceleration),
+        down = Physics.vector(DIR_Y_NEG).mult(acceleration);
     
     function onstep() {
       var yVel = attachTo.state.vel.get(1),

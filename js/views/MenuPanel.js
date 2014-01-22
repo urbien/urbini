@@ -14,7 +14,8 @@ define('views/MenuPanel', [
 //    id: 'menuPanel',
 //    theme: 'd',
 //    _flySpeed: 3.5,
-    _acceleration: 0.035,
+    _acceleration: 0.02,
+    _drag: 0.8,
     style: {
       opacity: 0,
       display: 'table',
@@ -117,7 +118,8 @@ define('views/MenuPanel', [
               actionId: accActionId,
               body: this.getContainerRailBodyId(), 
               x: 0, 
-              a: this._acceleration
+              a: this._acceleration,
+              drag: this._drag
             }]
           },
           {
@@ -126,10 +128,11 @@ define('views/MenuPanel', [
               body: this.getContainerBodyId(),
               property: 'opacity',
               end: DOM.maxOpacity,
-              trackAction: {
-                body: this.getContainerRailBodyId(),
-                action: accActionId
-              }
+              duration: 200
+//              trackAction: {
+//                body: this.getContainerRailBodyId(),
+//                action: accActionId
+//              }
             }]
           }
         );
@@ -164,6 +167,7 @@ define('views/MenuPanel', [
               body: this.getContainerRailBodyId(), 
               x: this.ulWidth, 
               a: this._acceleration,
+              drag: this._drag,
               oncomplete: function() {
                 self._finishTransition();
                 Physics.there.style(self.getContainerBodyId(), {
@@ -183,10 +187,11 @@ define('views/MenuPanel', [
               body: this.getContainerBodyId(),
               property: 'opacity',
               end: 0,
-              trackAction: {
-                body: this.getContainerRailBodyId(),
-                action: accActionId
-              }
+              duration: 200
+//              trackAction: {
+//                body: this.getContainerRailBodyId(),
+//                action: accActionId
+//              }
             }]
           }
         );

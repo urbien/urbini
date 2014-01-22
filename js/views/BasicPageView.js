@@ -43,6 +43,7 @@ define('views/BasicPageView', [
   
   var PageView = BasicView.extend({
 //    mixins: [Scrollable],
+    _autoFetch: true,
     _fetchPromise: null,
     _draggable: true,
     _scrollbar: true,
@@ -50,9 +51,14 @@ define('views/BasicPageView', [
     _scrollbar: true,
     _flexigroup: false,
     viaHammer: true,
+    attributes: {
+      'data-role': 'page'
+    },
     style: {
       opacity: 0,
-      'min-height': '100%'
+      'min-height': '100%',
+      'transform-origin': '50% 50%',
+      perspective: '1000px'
     },
     mixins: mixins,
 //    constructor: function(options) {
@@ -74,6 +80,7 @@ define('views/BasicPageView', [
     initialize: function(options) {
       var self = this;
       BasicView.prototype.initialize.apply(this, arguments);
+      this.addContainerBodyToWorld();
       _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft'/*, 'scroll', '_onScroll'*/, '_onViewportDimensionsChanged'); //, 'onpage_show', 'onpage_hide');            
       
 //      this._subscribeToImageEvents();
@@ -129,17 +136,19 @@ define('views/BasicPageView', [
           }
         }
         
-        var fetchDfd = $.Deferred();
-        this._fetchPromise = fetchDfd.promise();
-        this.model.fetch(_.extend({
-          sync: true,
-          success: fetchDfd.resolve,
-          error: function() {
-            fetchDfd.reject();
-            return Errors.getBackboneErrorHandler().apply(null, arguments);
-          }
-        }, options.fetchOptions));
-      }
+        this._fetchDfd = $.Deferred();
+        this._fetchPromise = this._fetchDfd.promise();
+        if (this._autoFetch) {
+          this.model.fetch(_.extend({
+            sync: true,
+            success: self._fetchDfd.resolve,
+            error: function() {
+              self._fetchDfd.reject();
+              return Errors.getBackboneErrorHandler().apply(null, arguments);
+            }
+          }, options.fetchOptions));
+        }
+      }      
     },
     
     events: {

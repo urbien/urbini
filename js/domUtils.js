@@ -41,7 +41,8 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
             visibility: 'hidden'
           }
         }
-      };
+      },
+      isMoz = G.browser.mozilla;
 
   window.addEventListener('resize', function(e) {
     clearTimeout(resizeTimeout);
@@ -1085,6 +1086,19 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           titleCase = TitleCase.slice(0, 1).toLowerCase() + TitleCase.slice(1),
           name;
 
+      if (isMoz) {
+        switch (prop) {
+        case 'transform':
+        case 'perspective':
+        case 'transform-origin':
+        case 'transition':
+          return cssPrefix[prop] = prop;
+        default:
+          // handle as usual
+          break;
+        }
+      }
+      
       for (var i = 0, l = arrayOfPrefixes.length; i < l; ++i) {
         name = arrayOfPrefixes[i] + TitleCase;
 

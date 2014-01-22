@@ -56,10 +56,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       },
       callbacks = {},
       subscriptions = {},
-      TRANSFORM_PROPS = ['rotate', 'translate', 'scale'],
-      TRANSFORM_PROP = DOM.prefix('transform', true),
-      TRANSFORM_ORIGIN_PROP = DOM.prefix('transform-origin', true),
-      TRANSITION_PROP = DOM.prefix('transition', true),
+      TRANSFORM_PROPS = ['rotate', 'translate', 'scale', 'transform'],
+//      isMoz = G.browser.firefox,
+      TRANSFORM_PROP = DOM.prefix('transform'),
+      TRANSFORM_ORIGIN_PROP = DOM.prefix('transform-origin'),
+      TRANSITION_PROP = DOM.prefix('transition'),
       SCROLLER_TYPES = ['verticalMain', 'horizontal'],
       CONSTANTS = {
         worldConfig: {
@@ -82,8 +83,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //      },
       DRAG_LOCK = null,
       MOUSE_OUTED = false,
-      TICKING = false,
-      isMoz = G.browser.firefox;
+      TICKING = false;
 //      ,
 //      STYLE_ORDER = ['opacity', 'translation', 'rotation'];
 
@@ -513,6 +513,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         if (transform) {
           el.style[TRANSFORM_PROP] = 'matrix3d(' + transform.join(', ') + ')';
           el.style[TRANSITION_PROP] = '';          
+          invokeListeners(renderListeners.render[id], el, oldTransform, transform);
         }
           
 //        if (!transform)
@@ -601,10 +602,10 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 ////          }
 //          
 //        }
-        
-//        el.style[TRANSFORM_PROP] = 'matrix3d(' + transform.join(',') + ')';
-        
-        invokeListeners(renderListeners.render[id], el, oldTransform, transform);
+//        
+////        el.style[TRANSFORM_PROP] = 'matrix3d(' + transform.join(',') + ')';
+//        
+//        invokeListeners(renderListeners.render[id], el, oldTransform, transform);
 
         ID_TO_LAST_TRANSFORM[id] = transform;
 //        if (!el.parentNode)  // nodes of known size or irrelevant size can be attached at first render instead of at some arbitrary view build time

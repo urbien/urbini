@@ -15,7 +15,6 @@ define('views/ResourceListView', [
 ], function(G, U, DOM, Events, BasicView, /*Scrollable, */ ResourceMasonryItemView, ResourceListItemView, ResourceList, Q, Voc, Physics) {
   var $wnd = $(window),
       doc = document,
-      transformProp = DOM.prefix('transform'),
       DO_GROUP = true;
 
   var MASONRY_FN = 'masonry', // in case we decide to switch to Packery or some other plugin
@@ -36,6 +35,7 @@ define('views/ResourceListView', [
     averageBrickNonScrollDim: 80,  
     minPagesInSlidingWindow: 4,
     maxPagesInSlidingWindow: 8,
+    defaultAddDelta: 1, // in terms of pages
     gutterWidth: 10,
     scrollerType: 'verticalMain'
     // </ MASONRY INITIAL CONFIG>      
@@ -64,16 +64,12 @@ define('views/ResourceListView', [
 //    _lastRangeEventSeq: -Infinity,
 //    _lastPrefetchEventSeq: -Infinity,
     className: 'scrollable',
-    style: (function() {
-      var style = {
-        opacity: DOM.maxOpacity
-      };
-      
-      style[DOM.prefix('perspective')] = '50px';
-      return style;
-    })(),
+    style: { 
+      opacity: DOM.maxOpacity,
+//      perspective: '1000px',
+      'transform-origin': '50% 50%'
+    },
     stashed: [],
-
     initialize: function(options) {
       _.bindAll(this, 'render', 'fetchResources', 'refresh', 'setMode', 'onResourceChanged', '_onPhysicsMessage');
       options = options || {};
@@ -165,6 +161,7 @@ define('views/ResourceListView', [
     },
 
     setBrickLimit: function(limit) {
+      debugger;
       this.mason.setLimit(limit || this.collection.getTotal() || this.collection.length);
       this.mason['continue']();      
     },
@@ -313,6 +310,9 @@ define('views/ResourceListView', [
       }
 
       self = viewId && this.children[viewId]; // list item view
+      if (!self || self.mvProp) // ||  self.TAG == 'HorizontalListItemView') 
+        return;
+      
       if (self.tag !== 'HorizontalListItemView')
         navOptions.via = self;
       
@@ -321,9 +321,6 @@ define('views/ResourceListView', [
         Events.trigger('navigate', link.href, navOptions);
         return;
       }
-      
-      if (!self || self.mvProp) // ||  self.TAG == 'HorizontalListItemView') 
-        return;
       
       Events.stopEvent(e);
       parentView = this;
@@ -603,7 +600,7 @@ define('views/ResourceListView', [
       if (from >= to) {
         if (this._outOfData) {
           this.log("1. BRICK LIMIT");
-          this.setBrickLimit();
+          this.setBrickLimit(this.collection.length);
         }
         else {
           debugger;
@@ -626,7 +623,7 @@ define('views/ResourceListView', [
           if (form >= to) {
             // we're out of candy, no need to continue
             this.log("2. BRICK LIMIT");
-            this.setBrickLimit();
+            this.setBrickLimit(availableRange[1]);
             return;
           }
         }
@@ -887,6 +884,7 @@ define('views/ResourceListView', [
             defer.resolve();
           else {
             if (!nextPageUrl || !col.isFetching(nextPageUrl)) { // we've failed to fetch anything from the db, wait for the 2nd call to success/error after pinging the server
+              // TODO: maybe we got results, but we happen to have already had them, because we had this list stored in a diff order. Complex case, because this means that we don't actually have the resources prior to this $offset
               self.log("couldn't get the next page for collection...");
               defer.reject();
             }

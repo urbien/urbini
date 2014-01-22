@@ -1582,6 +1582,18 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
     };
 
     /**
+     * From Three.js
+     */
+    Vector.prototype.angle3d = function ( v ) {
+
+      var theta = this.dot( v ) / ( this.norm() * v.norm() );
+      theta = min( max( -1, theta ), 1 );
+      // clamp, to handle numerical problems
+
+      return acos( theta );
+    };
+    
+    /**
      * Get the norm (length)
      */
     Vector.prototype.norm = function() {
@@ -2205,7 +2217,10 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
               changed: [],
               json: {
                 opacity: 0,
-                scale: [1, 1, 1]
+                scale: [1, 1, 1],
+                rotate: [0, 0, 0],
+                transform: [],
+                'transform-origin': '0% 0%'
               },
               isChanged: function(prop) {
                 if (prop)
@@ -2258,6 +2273,26 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
                     
                     break;
                 }
+              },
+              getChanges: function(clone) {
+                if (!this.body.rendered())
+                  return this.toJSON(clone);
+                
+                var i = this.changed.length,
+                    prop,
+                    val,
+                    changes = {};
+                
+                while (i--) {
+                  prop = this.changed[i];
+                  val = this.json[prop];
+                  if (clone && typeof val == 'object')
+                    changes[prop] = Physics.util.clone(val, true);
+                  else
+                    changes[prop] = val;
+                }
+                
+                return changes;
               },
               toJSON: function(clone) {
                 return clone ? Physics.util.clone(this.json, true) : this.json;
@@ -5050,6 +5085,7 @@ Physics.behavior('rails', function( parent ){
       else
         rail.dir = from.normalize();
       
+      rail.offset = Physics.vector();
       world.addBody(railBody);
       this._rails.push(rail);
   
@@ -5096,6 +5132,7 @@ Physics.behavior('rails', function( parent ){
   
       var rails = this._rails
           ,rail
+          ,offset
           ,scratch = Physics.scratchpad()
           ,from = scratch.vector()
           ,to = scratch.vector()
@@ -5104,16 +5141,22 @@ Physics.behavior('rails', function( parent ){
       for ( var i = 0, l = rails.length; i < l; ++i ){
   
         rail = rails[ i ];        
+        offset = rail.offset;
+        
         // make sure bodies stay on their railroad tracks
         // move the body to the closest position on the rail
-
         if (rail.from) {
-          from.clone(rail.from).vadd(rail.railBody.state.pos);
-          to.clone(rail.to).vadd(rail.railBody.state.pos);
+          from.clone(rail.from).vsub(offset).vadd(rail.railBody.state.pos);
+          to.clone(rail.to).vsub(offset).vadd(rail.railBody.state.pos);
           Physics.geometry.nearestPointOnLine(rail.body.state.pos, from, to, rail.body.state.pos);
+          Physics.geometry.nearestPointOnLine(rail.body.state.old.pos, from, to, rail.body.state.old.pos); // to avoid adding velocity
         }
-        else
-          rail.body.state.pos.vproj(rail.dir).vadd(rail.railBody.state.pos);
+        else {
+          rail.body.state.old.pos.vsub(offset).vproj(rail.dir).vadd(rail.railBody.state.pos); // to avoid adding velocity
+          rail.body.state.pos.vsub(offset).vproj(rail.dir).vadd(rail.railBody.state.pos);
+        }
+        
+        offset.clone(rail.railBody.state.pos);
       }
   
       scratch.done();
