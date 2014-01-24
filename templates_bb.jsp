@@ -161,12 +161,12 @@
 <!-- button for an important backlink on a resource on the resource's view page -->
  {{ var params = {}; }}
  {{ params[backlink] = _uri; }}
- {{ if (!value  &&  !chat) { }}  
+ {{ if (!obj.value  &&  !chat) { }}  
    <a role="button" data-shortName="{{= shortName }}" data-title="{{= title }}" style="border:1px solid {{= borderColor }}; background-color: {{= color }}" href="#">
      <span><i class="{{= icon }}"></i>&#160;{{= name }}</span>
    </a>
  {{ } }}
- {{ if (obj.value != 'undefined' || chat) { }}  
+ {{ if (obj.value || obj.chat) { }}  
    <a role="button" data-propName="{{= shortName }}" style="border:1px solid {{= borderColor }}; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
      <span><i class="{{= icon }}"></i>&#160;{{= name }}</span>
      
@@ -543,11 +543,10 @@
     
     <!-- {{ if (!obj.homePage) { }} -->   
     <img src="{{= obj.image || 'icons/blank.png'}}" class="thumb" 
-    {{ if (typeof obj.width != 'undefined'  &&  obj.width.length) { }}  
+    {{ if (obj.clip_right) { }}  
       style="
-        width:{{= width }}px; height:{{= height }}px;
-        left:-{{= left }}px; top:-{{= top }}px;
-        clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
+        right:-{{= right }}px; top:-{{= top }}px;
+        clip:rect({{= top }}px, {{= clip_right }}px, {{= bottom }}px, {{= clip_left }}px);"
     {{ } }}
     /> 
     <!-- {{ } }} -->
@@ -753,6 +752,22 @@
   <input type="hidden" name="{{= shortName }}" id="{{= id }}" value="{{= value }}" class="{{= 'formElement ' }}ui-input-text" {{= rules }} />
 </script>
 
+<script type="text/template" id="longEnumPET">
+<div id="_prim">
+  {{ if (name && name.length > 0) { }}
+  <label for="{{= id }}" class="select">{{= name }}</label>
+  {{ } }}
+  
+  <select name="{{= shortName }}" id="{{= id }}" data-mini="true" {{= rules }} >
+    {{= value ? '<option value="{0}">{0}</option>'.format(value) : '' }}
+    {{ _.each(options, function(option) { }} 
+    {{   if (option.displayName === value) return; }}
+    {{   var val = option.displayName; }}
+    <option value="{{= val }}">{{= val }}</option>
+    {{ }); }}
+  </select>
+</div>
+</script>
 </div>
 
 

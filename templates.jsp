@@ -53,7 +53,7 @@
   <div id="headerDiv"></div>
   <div id="resourceViewHolder">
     <div class="ui-grid-a" style="width: 100%;padding-right:10px;">
-      <div class="ui-block-a" id="resourceImage"><!-- style="width:auto" --></div>
+      <div class="ui-block-a" id="resourceImage" {{= U.getArrayOfPropertiesWith(this.vocModel.properties, "mainGroup") &&  U.isA(this.vocModel, 'ImageResource') ? 'style="min-height:210px"' : ''}}><!-- style="width:auto" --></div>
       <div id="mainGroup" class="ui-block-b" style="min-width: 130px;padding-left:7px;"></div>
       <div id="buyGroup" class="ui-block-b" style="min-width: 130px"></div>
     </div>
