@@ -4,6 +4,7 @@ define('views/BasicPageView', [
   'underscore',
   'utils',
   'events',
+  'error',
   'views/BasicView',
   'views/mixins/LazyImageLoader',
 //  'views/mixins/Scrollable',
@@ -12,7 +13,7 @@ define('views/BasicPageView', [
   'domUtils'
 //  ,
 //  'jqueryImagesLoaded'
-], function(G, _, U, Events, BasicView, LazyImageLoader, Q, $m, DOM) {
+], function(G, _, U, Events, Errors, BasicView, LazyImageLoader, Q, $m, DOM) {
   var MESSAGE_BAR_TYPES = ['info', 'error', 'tip', 'countdown'],
       pageEvents = ['page_show', 'page_hide', 'page_beforeshow'],
       doc = document,
@@ -42,12 +43,22 @@ define('views/BasicPageView', [
   
   var PageView = BasicView.extend({
 //    mixins: [Scrollable],
+    _autoFetch: true,
     _fetchPromise: null,
     _draggable: true,
+    _scrollbar: true,
+    _dragAxis: 'y',
+    _scrollbar: true,
     _flexigroup: false,
     viaHammer: true,
+    attributes: {
+      'data-role': 'page'
+    },
     style: {
-      'min-height': '100%'
+      opacity: 0,
+      'min-height': '100%',
+      'transform-origin': '50% 50%',
+      perspective: '1000px'
     },
     mixins: mixins,
 //    constructor: function(options) {
@@ -69,6 +80,7 @@ define('views/BasicPageView', [
     initialize: function(options) {
       var self = this;
       BasicView.prototype.initialize.apply(this, arguments);
+      this.addContainerBodyToWorld();
       _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft'/*, 'scroll', '_onScroll'*/, '_onViewportDimensionsChanged'); //, 'onpage_show', 'onpage_hide');            
       
 //      this._subscribeToImageEvents();
@@ -101,6 +113,9 @@ define('views/BasicPageView', [
       
       var render = this.render;
       this.render = function() {
+        if (!this.el.parentNode)
+          document.body.appendChild(this.el);
+        
         render.apply(self, arguments);
 //        self.checkError();
         if (G.callInProgress)
@@ -109,7 +124,7 @@ define('views/BasicPageView', [
       
       if (this.model) {
         if (this.resource) {
-          if (this.resource.loaded || !this.resource.getUri()) {
+          if (this.resource.loaded || this.resource.isNew() || !this.resource.getUri()) {
             this._fetchPromise = G.getResolvedPromise();
             return;
           }
@@ -121,13 +136,19 @@ define('views/BasicPageView', [
           }
         }
         
-        var fetchDfd = $.Deferred();
-        this._fetchPromise = fetchDfd.promise();
-        this.model.fetch(_.extend({
-          success: fetchDfd.resolve,
-          error: fetchDfd.reject
-        }, options.fetchOptions));
-      }
+        this._fetchDfd = $.Deferred();
+        this._fetchPromise = this._fetchDfd.promise();
+        if (this._autoFetch) {
+          this.model.fetch(_.extend({
+            sync: true,
+            success: self._fetchDfd.resolve,
+            error: function() {
+              self._fetchDfd.reject();
+              return Errors.getBackboneErrorHandler().apply(null, arguments);
+            }
+          }, options.fetchOptions));
+        }
+      }      
     },
     
     events: {

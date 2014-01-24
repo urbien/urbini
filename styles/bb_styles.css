@@ -2,16 +2,10 @@ html {
   font-size: 10px;
 }
 
-[data-role="page"] { 
-  top: 0; 
-  left: 0;
- /* bottom: 0; */ 
-  width: 100%; 
-  min-height: 100%; 
-  position: absolute; 
-  border: 0; 
+.menuItems {
+  list-style: none;
+  padding-left: 0;
 }
-
 [data-type="list"] {
   padding: 0;
   background: #eee;
@@ -67,6 +61,7 @@ html {
 #headerUl li:last-child {
   border-right: none;
 }
+
 [data-type="list"] li.u-noimg {
   cursor:pointer;
   padding:0.5rem;
@@ -160,7 +155,7 @@ section[data-type="sidebar"] {
   width: 21rem; 
   text-shadow: none;
 }
-section[data-type="sidebar"] > nav > ul > li {
+section[data-type="sidebar"] > ul > li {
   border-bottom: 0.1rem solid #000000;
 }
 
@@ -168,7 +163,7 @@ section[data-type="sidebar"] > nav > ul > li {
   border:none;
 }
 
-section[data-type="sidebar"] > nav > ul > header {
+section[data-type="sidebar"] >  ul > header {
   position: relative;
   z-index: 10;
   height: 3rem;
@@ -212,7 +207,9 @@ section[data-type="sidebar"] > nav > ul > header {
 section[data-type="sidebar"]:after {
   background: none;
 }
-
+#sidebar div {
+  font-size: 1.6rem;
+}
 .home {
   float:right; 
   position:relative; 
@@ -362,7 +359,7 @@ a {
   border-radius:1rem;
 }
 
-#photogridHeader {
+.thumb-gal-header {
   border: 1px solid #707070;
   background: #eee;
   color: #f9f9f9;
@@ -372,7 +369,7 @@ a {
   text-align: center;
   top: -3px;
 }
-#photogridHeader h3 {
+.thumb-gal-header h3 {
   font-size: 1.8rem;
   margin: 0.8rem;
 }
@@ -456,4 +453,7 @@ section#login_popup {
 }
 .commonLI {
   padding-left: 1rem;
+}
+#sidebar .ui-li-count {
+  float: right;
 }

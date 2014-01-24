@@ -181,9 +181,10 @@ define('resourceSynchronizer', [
     if (!IDB.hasStore(type))
       return REJECTED_PROMISE;
     
-    return IDB.get(type, this.data.getUri()).then(function(result) {
-      if (result)
-        return result;
+//    return IDB.get(type, this.data.getUri()).then(function(result) {
+    return IDB.queryByIndex('_uri').eq(uri).getAll(type).then(function(results) {
+      if (results && results.length)
+        return results[0];
       else if (!U.isTempUri(uri))
         return REJECTED_PROMISE;
       else

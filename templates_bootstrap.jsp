@@ -6,8 +6,8 @@
 <!-- Templates -->
 <script type="text/template" id="resource-list">
   <!-- Resource list page -->
-  <section id="{{= viewId }}" style="right:0;visibility:hidden;z-index:10001"></section>
-  <section id="{{= viewId + 'r' }}" style="left:auto;right:0;visibility:hidden;z-index:10001"></section> 
+  <section id="{{= viewId }}"></section>
+  <section id="{{= viewId + 'r' }}"></section> 
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
@@ -50,8 +50,8 @@
  
 <script type="text/template" id="resource">
   <!-- Single resource view -->  
-  <section id="{{= viewId }}" data-type="sidebar" style="right:0;visibility:hidden;z-index:10001"></section>
-  <section id="{{= viewId + 'r' }}" style="left:auto;right:0;visibility:hidden;z-index:10001"></section> 
+  <section id="{{= viewId }}" data-type="sidebar"></section>
+  <section id="{{= viewId + 'r' }}"></section> 
 
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
@@ -63,7 +63,7 @@
     </div>
     <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     
-    <div id="photogridHeader" class="hidden"><h3></h3></div>
+    <div class="thumb-gal-header hidden"><h3></h3></div>
     <!--div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="grid-listview hidden">
       <div class="dummy head"></div>
       <div class="dummy tail"></div>
@@ -252,7 +252,7 @@
   {{ if (this.resource.isA('Distance')  &&  obj.distance) { }}
     <span class="ui-li-count">{{= distance + ' mi' }}</span>
   {{ } }}
-  {{= obj.showCount ? '<span class="ui-li-count">' + obj[showCount].count + '</span>' : '' }} 
+  {{= obj.showCount ? '<span class="ui-li-count">' + obj.showCount.count + '</span>' : '' }} 
   {{ if (obj.comment) { }}
     <p style="padding-top:0.5rem;">{{= comment }}</p>
   {{ } }}
@@ -388,7 +388,7 @@
 <script type="text/template" id="headerTemplate">
   <!-- the page header, including buttons and the page title, used for all pages except the home page -->
   <div id="callInProgress"></div>
-  <div id="header" {{= obj.style ? style + ';z-index:1000;': 'style="z-index:1000;"' }} {{= obj.more || '' }} >
+  <div id="header" {{= obj.style ? style : '' }} {{= obj.more || '' }} >
     <nav  id="headerUl" class="navbar navbar-default" role="navigation">
     </nav>      
   </div>
@@ -435,6 +435,27 @@
         </button>
       </div>
     </div>
+    <table class="physics" cellspacing="0" celladding="2" width="100%" style="background-color:#606060;display:none; ">
+      <tr>
+      <td>
+        <label for="drag">Air drag</label><br/>
+        <input type="range" id="drag" name="drag" value={{= drag * 100 }} min="1" max="99">
+      </td>  
+      <td>
+        <label for="springDamping">Spring damping</label><br/>
+        <input type="range" id="springDamping" name="springDamping" value={{= springDamping * 100 }} min="1" max="99">
+      </td>  
+      <td>
+        <label for="springStiffness">Spring stiffness</label><br/>
+        <input type="range" id="springStiffness" name="springStiffness" value={{= springStiffness * 100 }} min="1" max="99">
+      </td>
+      <!--td>
+        <label for="degree">Sensitivity</label><br/>
+        <input type="range" id="degree" name="degree" value={{= degree }} min="-10" max="10">
+      </td-->
+      </tr>
+    </table>
+    
   </div>
 </script>
 
@@ -530,8 +551,8 @@
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">
 <!-- the edit page for any particular resource -->
-  <section id="{{= viewId }}" data-type="sidebar" style="right:0;visibility:hidden;z-index:10001"></section>
-  <section id="{{= viewId + 'r' }}" style="left:auto;right:0;visibility:hidden;z-index:10001"></section> 
+  <section id="{{= viewId }}" data-type="sidebar"></section>
+  <section id="{{= viewId + 'r' }}"></section> 
 <!--div id="headerMessageBar"></div-->
   <div id="headerDiv"></div>
   <div id="resourceEditView">

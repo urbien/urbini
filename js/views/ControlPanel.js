@@ -7,13 +7,15 @@ define('views/ControlPanel', [
   'views/BasicView',
   'vocManager',
   'collections/ResourceList',
-  'cache'
-], function(G, _, Events, U, BasicView, Voc, ResourceList, C) {
+  'cache',
+  'lib/fastdom',
+  'physicsBridge'
+], function(G, _, Events, U, BasicView, Voc, ResourceList, C, Q, Physics) {
   return BasicView.extend({
     tagName: "tr",
     autoFinish: false,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'refresh', 'add', 'update'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'refresh', 'add', 'update', 'insertInlineScroller', 'removeInlineScroller', 'toggleInlineScroller'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
@@ -25,13 +27,17 @@ define('views/ControlPanel', [
       this.makeTemplate('cpTemplateNoAdd', 'cpTemplateNoAdd', type);
       this.listenTo(this.resource, 'change', this.refresh);
       this.isMainGroup = options.isMainGroup;
-      this.dontStyle = this.isMainGroup && options.dontStyle
+      this.dontStyle = this.isMainGroup && options.dontStyle;
+      this._backlinkInfo = {};
 //      this.resource.on('inlineList', this.setInlineList, this);
   //    Globals.Events.on('refresh', this.refresh);
       return this;
     },
     events: {
-      'click a[data-shortName]': 'add'
+      'click a[data-shortName]': 'add',
+//      'pinchout li[data-propname]': 'insertInlineScroller',
+//      'pinchin li[data-propname]': 'removeInlineScroller',
+      'hold li[data-propname]': 'toggleInlineScroller'
 //        ,
 //      'click': 'click'
     },
@@ -74,7 +80,7 @@ define('views/ControlPanel', [
       if (t.tagName != 'A')
         return;
       
-      e.preventDefault();
+      Events.stopEvent(e);
       if ($(t).parents('.__dragged__').length)
         return;
       
@@ -165,6 +171,122 @@ define('views/ControlPanel', [
 //        G.log(self.TAG, 'add', 'user wants to add to backlink');
       });
     },
+
+    toggleInlineScroller: function(e) {
+      var pName = e.currentTarget.dataset.propname;
+      var li = e.currentTarget,
+          pName = li.dataset.propname,
+          info = this._backlinkInfo[pName];
+      
+      if (info && info.scroller)
+        this.removeInlineScroller(e);
+      else
+        this.insertInlineScroller(e);
+    },
+    
+    removeInlineScroller: function(e) {
+      e.gesture.preventDefault();
+      e.gesture.stopPropagation();
+      e.gesture.stopDetect();
+      e.stopPropagation();
+      
+      var self = this,
+          li = e.currentTarget,
+          pName = li.dataset.propname,
+          info = this._backlinkInfo[pName];
+      
+      if (info.scroller) {
+        info.scroller.mason.destroy(true, function() {
+          info.scroller.mason = null;
+          info.scroller.destroy(true); // don't remove element
+          li.$empty();
+          for (var i = 0; i < info.originalContent.length; i++) {
+            li.appendChild(info.originalContent[i]);
+          }
+          
+          self.removeChild(info.scroller);
+          info.scroller = null;
+          info.originalContent = null;
+        });
+      }
+    },
+
+    insertInlineScroller: function(e) {
+      e.gesture.preventDefault();
+      e.gesture.stopPropagation();
+      e.gesture.stopDetect();
+      e.stopPropagation();
+      var li = e.currentTarget,
+          pName = li.dataset.propname,
+          info = this._backlinkInfo[pName];
+      
+      if (!info || !info.scroller) {
+        // TODO - check count, if 0, don't bother or throw up an error message
+        if (!info)
+          this._backlinkInfo[pName] = {};
+            
+        this._insertInlineScroller(li, pName);
+      }
+    },
+    
+    _insertInlineScroller: function(li, pName) {
+      var self = this,
+          prop = this.vocModel.properties[pName],
+          modelPromise = Voc.getModels(prop.range),
+          viewPromise = U.require('views/HorizontalListView'),
+          listDfd = $.Deferred(),
+          params = {},
+          list,
+          info = this._backlinkInfo[pName];
+      
+      function fail() {
+        // TODO: tell user
+      };
+      
+      params[prop.backLink] = this.resource.getUri();
+      
+      modelPromise.done(function(blModel) {
+        if (!U.isA(blModel, 'ImageResource'))
+          return fail();
+        
+        list = new ResourceList(null, {
+          model: blModel,
+          params: params
+        });
+        
+        list.fetch({
+          success: listDfd.resolve,
+          error: listDfd.reject
+        });
+      }).fail(fail);
+      
+      $.when(viewPromise, listDfd.promise()).done(function(HorizontalListView) {
+        if (!list.length)
+          return fail();
+
+        var headerId = pName + '-gal-header',
+            galleryId = pName + '-gal';
+        
+        info.originalContent = li.childNodes.$slice();
+        li.innerHTML = _.template("<div id=\"{{= headerId }}\" style=\"top: -3px;\" data-role=\"footer\" data-theme=\"{{= G.theme.photogrid }}\" class=\"thumb-gal-header\"><h3>{{= title }}</h3></div>" +
+        		                      "<div id=\"{{= galleryId }}\" data-inset=\"true\" data-filter=\"false\" class=\"thumb-gal\"></div>")({
+          G: G,
+          headerId: headerId,
+          galleryId: galleryId,
+          title: U.getPropDisplayName(prop)
+        });
+        
+
+        info.scroller = new HorizontalListView({
+          el: li.$('#' + galleryId)[0],
+          model: list, 
+          parentView: self
+        });
+        
+        info.scroller.render();
+        self.addChild(info.scroller);
+      }).fail(fail);
+    },
     
     refresh: function(res, options) {
       options = options || {};
@@ -204,8 +326,6 @@ define('views/ControlPanel', [
         self.renderHelper(options);
         if (invisible)
           self.toggleVisibility();
-        
-        self.finish();
       });
     },
     
@@ -647,7 +767,6 @@ define('views/ControlPanel', [
         }
       }
       
-      this.el.$html(frag);
 //      if (this.hashParams.$tour) {
 //        var s = this.$el.find(this.hashParams.$tourS + '=' + this.hashParams.$tourV);
 //        s.css('class', 'hint--left');
@@ -669,6 +788,30 @@ define('views/ControlPanel', [
 //          this.$el.listview('refresh');
       }
 
+      Q.write(function() {
+        this.el.$html(frag);
+//        this.addToWorld(null, false);
+//        this.addToWorld({
+//          slidingWindow: true
+//        }, false);
+        this.finish();
+//        Q.read(function() {
+//          var self = this,
+//              id;
+//          
+//          this.propBricks = this.$('[data-propname],header').$map(function(el) {
+//            id = el.dataset.propname || el.innerText;
+//            Physics.here.addBody(el, id);
+//            return self.buildBrick({
+//              _id: id,
+//              el: el
+//            });            
+//          });
+//          
+//          this.addBricksToWorld(this.propBricks);
+//        }, this);
+      }, this);
+      
       return this;
     }
   }, {

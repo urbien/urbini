@@ -4,11 +4,11 @@ define('views/IntersectionListView', [
   'utils',
   'events',
   'views/ResourceListView',
-  'views/IntersectionListItemView',
-  'views/mixins/Scrollable'
-], function(G, U, Events, ResourceListView, IntersectionListItemView, Scrollable) {
+  'views/IntersectionListItemView'
+//  'views/mixins/Scrollable'
+], function(G, U, Events, ResourceListView, IntersectionListItemView) {
   return ResourceListView.extend({
-    _renderedIntersectionUris: [],
+//    _renderedIntersectionUris: [],
     initialize: function(options) {
       ResourceListView.prototype.initialize.apply(this, arguments);
       _.extend(this, options);
@@ -16,7 +16,7 @@ define('views/IntersectionListView', [
     
     renderItem: function(res, info) {
       var source = this.parentView.resource,
-          xUris = this._renderedIntersectionUris,
+//          xUris = this._renderedIntersectionUris,
           html = '<div style="display:block">',
           liView,
           a,
@@ -32,9 +32,9 @@ define('views/IntersectionListView', [
         renderToHtml: true
       });
       
-      if (rendered === false)
-        return false;
-      
+//      if (rendered === false)
+//        return false;
+//      
 //      html += liView._html + '</div>';
       
       this.addChild(liView);

@@ -32,8 +32,14 @@ define('router', [
     args.unshift("router");
     G.log.apply(G, args);
   };
+  
+//  function newPageElement() {
+//    var page = document.createElement('div');
+//    page.dataset.role = "page";
+//  };
 
   var lastViewportWidth = G.viewport.width,
+      transitionLookup = DOM.prefix('transition'),
       transformLookup = DOM.prefix('transform');
   
   window.addEventListener('resize', Q.debounce(function() {
@@ -59,7 +65,7 @@ define('router', [
         var sign = x < 0 ? -1 : 1;
         transform[3][0] = newWidth * sign;
         page.style[transformLookup] = DOM.toMatrix3DString(transform);
-        page.style[DOM.prefix('transition')] = '';
+        page.style[transitionLookup] = '';
       }
     }
   }, 20));
@@ -296,7 +302,7 @@ define('router', [
       
       
       options = options || {};
-      var adjustedOptions = _.extend({}, this.defaultOptions, _.pick(options, 'forceFetch', 'errMsg', 'info', 'replace', 'postChangePageRedirect')),
+      var adjustedOptions = _.extend({}, this.defaultOptions, _.pick(options, 'forceFetch', 'errMsg', 'info', 'replace', 'postChangePageRedirect', 'via')),
           hashInfo = G.currentHashInfo,
           pageRoot = G.pageRoot;
       
@@ -306,14 +312,14 @@ define('router', [
       if (fragment.startsWith('http://')) {
         var appPath = G.serverName + '/' + pageRoot;
         if (fragment.startsWith(appPath)) // link within app
-          fragment = fragment.slice(appPath.length);
+          fragment = fragment.slice(appPath.length + 1); // cut off #
         else {
           window.location.href = fragment;
           return;
         }
       }
       else if (fragment.startsWith(pageRoot)) // link within app
-        fragment = fragment.slice(pageRoot.length);
+        fragment = fragment.slice(pageRoot.length + 1); // cut off #
       else if (/app\/[a-zA-Z]+\#/.test(fragment)) { // link to another app
         window.location.href = G.serverName + '/' + fragment;
         return;
@@ -382,11 +388,7 @@ define('router', [
           delete G.homePage;
         }
         
-        var homePageEl = doc.querySelector('#homePage');
-        if (!homePageEl)
-          debugger;
-        
-        homePage = new HomePage({el: homePageEl });
+        homePage = new HomePage({el: doc.querySelector('#homePage') });
       }
       
       this.changePage(homePage);
@@ -829,7 +831,8 @@ define('router', [
     },
 
     getChangePageOptions: function(fragment) {
-      return this.fragmentToOptions[fragment || U.getHash()] || {};
+      fragment = fragment || U.getHash();
+      return this.fragmentToOptions[fragment] || (this.fragmentToOptions[fragment] = {});
     },
     
     edit: function(path) {
@@ -1075,7 +1078,7 @@ define('router', [
       var forceFetch = options.forceFetch;
       if (res) {
         this.currentModel = res;
-        view = cachedView || new viewPageCl({model: res, source: this.previousHash});
+        view = cachedView || new viewPageCl({model: res, source: this.previousHash });
         
         this.changePage(view);
         Events.trigger('navigateToResource:' + res.resourceId, res);
@@ -1315,7 +1318,11 @@ define('router', [
         return;
       
       var toBlur,
-          dir = options && options.reverse ? 'right' : 'left';
+          transOptions = _.extend({ 
+            direction: options && options.reverse ? 'right' : 'left',
+            from: fromView,
+            to: toView
+          }, this.getChangePageOptions(), options);
       
       this._previousView = toView;
       
@@ -1325,12 +1332,14 @@ define('router', [
           if ( document.activeElement && document.activeElement.nodeName.toLowerCase() !== 'body' ) {
             toBlur = document.activeElement;
           } else {
-            toBlur = $( "input:focus, textarea:focus, select:focus" );
+            toBlur = fromView && fromView.$( "input:focus, textarea:focus, select:focus" );
           }
           
-          Q.write(function() {
-            toBlur.blur();
-          });
+          if (toBlur && toBlur.length) {
+            Q.write(function() {
+              toBlur.blur();
+            });
+          }
         });
       } catch( e ) {}
       
@@ -1339,7 +1348,8 @@ define('router', [
 //        G.activePage = toView.el;
 //      });
       
-      Transitioner.transition(dir, fromView, toView /*[, springStiffness, springDamping]*/).done(function() {
+      transOptions.transition = transOptions.via ? 'zoomInTo' : 'slide';
+      Transitioner.transition(transOptions).done(function() {
         G.$activePage = $m.activePage = toView.$el;
         G.activePage = toView.el;
       });
@@ -1570,7 +1580,10 @@ define('router', [
       if (!view.rendered) {
 //        view.trigger('active', true);
         activated = true;
-        renderPromise = view.render();
+//        view.render();
+        this.getChangePageOptions().render = true;
+        document.body.appendChild(view.el);
+//        renderPromise = view.render();
 //        view.onload(function() {          
 //          view.$el.attr({
 //            id: 'page' + G.nextId(),

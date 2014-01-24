@@ -2,29 +2,47 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
   var doc = document,
       LAZY_DATA_ATTR = G.lazyImgSrcAttr,
       LAZY_ATTR = LAZY_DATA_ATTR.slice(5),
+      MAX_OPACITY = 0.999999,
       isFF = G.browser.firefox,
       vendorPrefixes = ['-moz-', '-ms-', '-o-', '-webkit-'],
       ArrayProto = Array.prototype,
       resizeTimeout,
-      cssPrefix = {},
+      DOM,
+      cssPrefix = {
+//        read: {},
+//        write: {}
+      },
       renderQueue = [],
       tmpdiv = document.createElement("div"),
+      OPAQUE_STYLE = {
+        style: {
+          add: {
+            opacity: MAX_OPACITY
+          }
+        }
+      },
+      TRANSPARENT_STYLE = {
+        style: {
+          add: {
+            opacity: 0
+          }
+        }
+      },
       SHOW_STYLE = {
         style: {
           add: {
-            opacity: 1
+            visibility: 'visible'
           }
         }
       },
       HIDE_STYLE = {
         style: {
           add: {
-            opacity: 0
+            visibility: 'hidden'
           }
         }
-      };
-
-//      TRANSITION_PROP = G.browser.webkit ? '-webkit-transition' : 'transition';
+      },
+      isMoz = G.browser.mozilla;
 
   window.addEventListener('resize', function(e) {
     clearTimeout(resizeTimeout);
@@ -34,6 +52,12 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
   window.addEventListener('debouncedresize', function() {
     console.log("debounced resize event");
   });
+
+  function toTitleCase(str) {
+    return str.replace(/(?:^|\s|-)\w/g, function(match) {
+        return match.toUpperCase();
+    }).replace(/-/, ''); 
+  };
 
   function fireResizeEvent() {
     var v = G.viewport,
@@ -171,8 +195,11 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           var arg0 = arguments[0];
           if (typeof arg0 == 'string')
             return this.style[arg0];
-          else
-            _.extend(this.style, arg0);
+          else {
+            for (var prop in arg0) {
+              this.style[DOM.prefix(prop)] = arg0[prop];
+            }
+          }
           
           break;
         case 2:
@@ -291,7 +318,14 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     
     var NodeAug = {
       $: function(selector) {
-        return this.nodeType == 1 ? this.querySelectorAll(selector) : newNodeList();
+        switch (this.nodeType) {
+        case 1:
+        case 9:
+        case 11:
+          return this.querySelectorAll(selector);
+        default:
+          return newNodeList();
+        }
       },
     
       $offset: function() {
@@ -549,7 +583,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     }
   })(window, document);
 
-  return {
+  DOM = {
     getBezierCoordinate: function(p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y, percentComplete) {
       percentComplete = Math.max(0, Math.min(percentComplete, 1));
       var percent = 1 - percentComplete;
@@ -689,8 +723,15 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           Z: parseFloat(xyz[2] || 9, 10)
         }
       }
-      
-      throw "can't parse transform";
+      else {
+        return {
+          X: 0,
+          Y: 0,
+          Z: 0
+        }
+      }
+
+//      throw "can't parse transform";
     },
     
     getStylePropertyValue: function(computedStyle, prop) {
@@ -1035,32 +1076,45 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       return 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, ' + (x || 0) + ', ' + (y || 0) + ', ' + (z || 0) + ', 1)';
     },
    
-    /**
-     * From wellcaffeinated's PhysicsJS
-     */
     prefix: function(prop) {
       if (cssPrefix[prop]){
         return cssPrefix[prop];
       }
 
       var arrayOfPrefixes = ['Webkit', 'Moz', 'Ms', 'O'],
+          TitleCase = toTitleCase(prop),
+          titleCase = TitleCase.slice(0, 1).toLowerCase() + TitleCase.slice(1),
           name;
 
+      if (isMoz) {
+        switch (prop) {
+        case 'transform':
+        case 'perspective':
+        case 'transform-origin':
+        case 'transition':
+          return cssPrefix[prop] = prop;
+        default:
+          // handle as usual
+          break;
+        }
+      }
+      
       for (var i = 0, l = arrayOfPrefixes.length; i < l; ++i) {
-        name = arrayOfPrefixes[i] + prop.toTitleCase();
+        name = arrayOfPrefixes[i] + TitleCase;
 
         if (name in tmpdiv.style){
           return cssPrefix[prop] = name;
         }
       }
 
-      if (name in tmpdiv.style){
-        return cssPrefix[prop] = prop;
+      if (titleCase in tmpdiv.style){
+        return cssPrefix[prop] = titleCase;
       }
 
+      G.log("DOMUtils", "error", "no such css property: " + prop);
       return false;
     },
-    
+
     /**
      * @param renderData - e.g. {
      *    innerHTML: <blah>...</blah>
@@ -1109,6 +1163,11 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       };
     },
     
+    _renderCallbacks: [],
+    onNextRender: function(callback) {
+      this._renderCallbacks.push(callback);
+    },
+    
     /**
      * changes an element's styles, attributes, classes (see queueRender method signature for parameter definitions)
      */
@@ -1118,7 +1177,15 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           attrs = renderData.attributes, 
           classes = renderData['class'], 
           add, remove, replace,
-          i;
+          i = this._renderCallbacks.length;
+      
+      if (i) {
+        while (i--) {
+          this._renderCallbacks[i]();
+        }
+        
+        this._renderCallbacks.length = 0;
+      }
       
       if (html)
         el.innerHTML = html;
@@ -1168,8 +1235,29 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
         }
       }
     },
+
+    maxOpacity: MAX_OPACITY,
     
-    transparentStyle: HIDE_STYLE,
-    opaqueStyle: SHOW_STYLE
+    parseHTML: function(html) {
+      return $.parseHTML(html.trim());
+    },
+    
+    /**
+     * Replaces all of a's child nodes with b's
+     */
+    replaceChildNodes: function(a, b) {
+      a.$empty();
+      var nodes = b.childNodes;
+      for (var i = 0, l = nodes.length; i < l; i++) {
+        a.appendChild(nodes[i]);
+      }
+    },
+    
+    transparentStyle: TRANSPARENT_STYLE,
+    opaqueStyle: OPAQUE_STYLE,
+    hideStyle: HIDE_STYLE,
+    showStyle: SHOW_STYLE
   };
+  
+  return DOM;
 });

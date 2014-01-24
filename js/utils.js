@@ -1005,6 +1005,7 @@ define('utils', [
       var total = 0;
       for (var i = 0; i < cols.length; i++) {
         var col = cols[i].trim();
+        if (col == '')
         var prop = vocModel.properties[col];
         if (!prop)
           return;
@@ -1561,16 +1562,17 @@ define('utils', [
 //        day_diff > 365 && (years = Math.round( day_diff / 365 )) + " years and " + U.getFormattedDate(now + (day_diff % 365));  
     },
     
-    toHTMLElement: function(html) {
-      return $(html.trim())[0];
-    },
-    
     getShortName: function(uri) {
       return uri.slice(uri.lastIndexOf('/') + 1); // if lastIndexOf is -1, return original string
     },
     
     addToFrag: function(frag, html) {
-      frag.appendChild(U.toHTMLElement(html));
+      var els = DOM.parseHTML(html),
+          l = els.length;
+      
+      for (var i = 0; i < l; i++) {
+        frag.appendChild(els[i]);
+      }
     },
     
     getUris: function(data) {
@@ -2701,7 +2703,7 @@ define('utils', [
       var primaryKeys = U.getPrimaryKeys(model),
           keyVals = _.pick(atts, primaryKeys);
       
-      if (!_.size(keyVals))
+      if (_.size(keyVals) != primaryKeys.length)
         return null;
       
       for (var key in keyVals) {
@@ -3508,10 +3510,10 @@ define('utils', [
      * sends a remote procedure call to the packaged app code
      */
     rpc: function(method) {
-      log('app', method);
+//      log('app', method);
       var args = slice.call(arguments, 1),
           msg = {
-              type: 'rpc:' + method
+            type: 'rpc:' + method
           };
       
       if (args && args.length)
@@ -3617,7 +3619,7 @@ define('utils', [
 
     isMasonryModel: function(vocModel) {
       var type = vocModel.type;
-      return type.startsWith(G.defaultVocPath) && _.any(['Tournament', 'Theme', 'Goal', 'Coupon', 'VideoResource', 'Movie', 'App', 'ThirtyDayTrial', 'Tree'], function(className) {
+      return type.startsWith(G.defaultVocPath) && _.any(['Tournament', 'Theme', 'Goal', 'Coupon', 'VideoResource', 'Movie', 'App', 'ThirtyDayTrial', 'Tree', 'Urbien'], function(className) {
         return type.endsWith('/' + className);
       });
     },

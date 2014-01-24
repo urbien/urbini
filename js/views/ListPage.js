@@ -17,8 +17,13 @@ define('views/ListPage', [
 //    viewType: 'collection',
     template: 'resource-list',
     clicked: false,
+    autoFetch: false,
     autoFinish: false,
     _draggable: false,
+    _scrollbar: false, 
+    style: {
+      'background-color': 'white'
+    },
     initialize: function(options) {
       _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'setMode', /*'orientationchange',*/ 'onFilter');
       BasicPageView.prototype.initialize.apply(this, arguments);
@@ -28,7 +33,7 @@ define('views/ListPage', [
       
       var self = this;
       var rl = this.collection;
-      var filtered = this.filteredCollection = rl.clone();
+      var filtered = this.filteredCollection = this.collection; //rl.clone();
       var readyDfd = $.Deferred();
       
       var commonParams = {
@@ -72,13 +77,15 @@ define('views/ListPage', [
                             U.isUserInRole(U.getUserRole(), 'siteOwner');
             if (!showAddButton) {
               var p = U.getContainerProperty(vocModel);
-              if (p && _.getParamMap[p])
+              if (p && params[p])
                 showAddButton = true;
             }
           }
     //                           (vocModel.skipAccessControl  &&  (isOwner  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'))));
           if (showAddButton) { 
-            if (U.isA(this.vocModel, "Reference")  ||  U.isAssignableFrom(this.vocModel, "Assessment"))
+            if (U.isAssignableFrom(this.vocModel, "Assessment"))
+              showAddButton = false;
+            else if (U.isA(this.vocModel, "Reference")  &&  this.vocModel.type.toLowerCase().indexOf("/voc/dev/" + G.currentApp.appPath.toLowerCase()) == -1)  
               showAddButton = false;
           }
           else if (isOwner  &&  !isChooser) {
@@ -134,7 +141,8 @@ define('views/ListPage', [
 
       this.header = new Header(_.extend({
         buttons: this.headerButtons,
-        viewId: this.cid
+        viewId: this.cid,
+        filter: true
       }, commonParams));
       
       this.addChild(this.header);
@@ -165,13 +173,13 @@ define('views/ListPage', [
       this.canSearch = !this.isSpecialIntersection; // for now - search + photogrid results in something HORRIBLE, try it if you're feeling brave
       
       // setup filtering
-      this.listenTo(filtered, 'endOfList', function() {
-        self.pageView.trigger('endOfList');
-      });
-      
-      this.listenTo(filtered, 'reset', function() {
-        self.pageView.trigger('newList');
-      });      
+//      this.listenTo(filtered, 'endOfList', function() {
+//        self.pageView.trigger('endOfList');
+//      });
+//      
+//      this.listenTo(filtered, 'reset', function() {
+//        self.pageView.trigger('newList');
+//      });      
     },
     
     setMode: function(mode) {
@@ -365,8 +373,6 @@ define('views/ListPage', [
 //      this.$el.attr("data-scrollable", "true");
       tmpl_data.isMasonry = this.isMasonry;
       this.html(this.template(tmpl_data));
-      if (!this.el.parentNode)  
-        document.body.appendChild(this.el);
       
       views[this.listContainer] = this.listView;
       this.assign(views);
@@ -414,7 +420,7 @@ define('views/ListPage', [
         });
       }
       
-      this.addContainerBodyToWorld(); // not draggable
+//      this.addToWorld(null, true);
       this.finish();
       return this;
     }

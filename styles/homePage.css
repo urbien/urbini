@@ -54,6 +54,7 @@ h2 {font-size: 28px; line-height: 34px; margin-top: 3px; font-weight:normal;}
   background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5));
   color: #eee; padding-top:5px;
 }
+
 body { 
   margin: 0; 
   height:99.9%; 
@@ -61,8 +62,8 @@ body {
   /*background-color: #fff;*/ 
   font-family: Helvetica, Arial, sans-serif; 
   color: #757575;
-  overflow: hidden; 
 }
+
 .demo {
   position:absolute;
   top:0;

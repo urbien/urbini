@@ -6,10 +6,10 @@
 <!-- Templates -->
 <script type="text/template" id="resource-list">
   <!-- Resource list page -->
-  <section id="{{= viewId }}" data-type="sidebar" data-position="right" style="left:auto;right:0;visibility:hidden;z-index:10002"></section>
-  <section id="{{= viewId + 'r' }}" data-type="sidebar" data-position="right" style="left:auto;right:0;visibility:hidden;z-index:10002"></section> 
+  <section id="{{= viewId }}" data-type="sidebar"></section>
+  <section id="{{= viewId + 'r' }}" data-type="sidebar"></section> 
   <!-- div id="headerMessageBar"></div -->
-  <div id="headerDiv" style="position:relative;"></div>
+  <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" role="main">
   <!--
@@ -23,7 +23,6 @@
    {{ } }}
    -->
     <section  id="sidebar" data-type="list" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
-   </div>
     </section>
     <div id="nabs_grid" class="masonry"></div>
     
@@ -45,24 +44,24 @@
     </form>  
   </div>
 </script>  
- 
+
 <script type="text/template" id="resource">
   <!-- Single resource view -->  
-  <section id="{{= viewId }}" data-type="sidebar" style="left:auto;right:0;visibility:hidden;z-index:10001"></section>
-  <section id="{{= viewId + 'r' }}" data-type="sidebar" style="left:auto;right:0;visibility:hidden;z-index:10001"></section> 
+  <section id="{{= viewId }}" data-type="sidebar"></section>
+  <section id="{{= viewId + 'r' }}" data-type="sidebar"></section> 
 
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
   <div id="resourceViewHolder">
     <div style="width: 100%;position:relative;padding-right:10px;overflow:hidden">
       <div id="resourceImage" style="width:50%;float:left;margin:0; padding:0;"><!-- style="width:auto" --></div>
-      <div id="mainGroup" style="position:absolute;top:0;right:1.3rem;"></div>
+      <div id="mainGroup" style="top:0;right:1.3rem;"></div>
       <!--div id="buyGroup" class="ui-block-b" style="width:50%; min-width: 130px"></div-->
     </div>
-    <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
+    <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="hidden"></div>
     
-    <div id="photogridHeader" class="hidden"><h3></h3></div>
-    <!--div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="grid-listview hidden">
+    <div class="thumb-gal-header hidden"><h3></h3></div>
+    <!--div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="hidden">
     </div-->
     
     <div id="photogrid" data-inset="true" data-filter="false" class="thumb-gal hidden">
@@ -109,8 +108,8 @@
       {{ } }}
       data-for="{{= U.getImageAttribute(resource, imageProperty) }}"
       class="lazyImage" />
-      <span style="position:absolute;padding:1rem;font-size:1.6rem;font-weight:bold;">{{= name }}{{= obj.gridCols ? '<br/>' + gridCols : '' }}</span>
     {{ } }}
+    <span style="position:absolute;padding:1rem;font-size:1.6rem;font-weight:bold;">{{= name }}{{= obj.gridCols ? '<br/>' + gridCols : '' }}</span>
   </a>
   {{ if (typeof comment != 'undefined') { }}
     <p>{{= comment }}</p>
@@ -189,7 +188,7 @@
  {{ if (typeof value != 'undefined') { }}  
    <a role="button" data-propName="{{= shortName }}" style="width:auto;margin:5px;text-align:left; border: 1px solid #ccc; min-width:115px;float:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
      <!-- {{= obj.icon ? '<i class="' + icon + '" style="font-size:20px;top:35%"></i>' : '' }} -->
-     <span>{{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="float: right;position:relative;margin: -17px;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}</span>
+     <span>{{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="float: right;position:relative;margin:-17px -10px 0 0;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}</span>
    </a>
  {{ } }}
 </script>
@@ -230,7 +229,7 @@
       style="padding: .7em 10px 10px 0px;"
     {{ } }}
     {{ if (!obj.isJst  &&  (obj._hasSubmittedBy || !obj.v_submitToTournament)) { }}
-      style="padding: 1rem; border-bottom:1px solid #aaa;"
+      style="padding: 1rem;"
     {{ } }}
   {{ } }}
   {{ if (obj.v_submitToTournament) { }}
@@ -251,7 +250,7 @@
   {{ if (this.resource.isA('Distance')  &&  obj.distance) { }}
     <span class="ui-li-count">{{= distance + ' mi' }}</span>
   {{ } }}
-  {{= obj.showCount ? '<span class="ui-li-count">' + obj[showCount].count + '</span>' : '' }} 
+  {{= obj.showCount ? '<span class="ui-li-count">' + obj.showCount.count + '</span>' : '' }} 
   {{ if (obj.comment) { }}
     <p style="padding:0.5rem 0 0 1.5rem;">{{= comment }}</p>
   {{ } }}
@@ -288,7 +287,7 @@
 
 <script type="text/template" id="addButtonTemplate">
   <!-- button used for creating new resources -->
-  <a target="#" {{= obj.empty ? 'class="hint--bottom hint--always" data-hint="Add item"' : '' }}><i class="ui-icon-plus-sign"></i></a>
+  <a target="#"><i class="ui-icon-plus-sign"></i></a>
 </script>
 
 <script type="text/template" id="menuButtonTemplate">
@@ -300,7 +299,7 @@
 
 <script type="text/template" id="rightMenuButtonTemplate">
   <!-- button that toggles the object properties panel -->
-  <a target="#" href="#{{= viewId }}"><i class="ui-icon-reorder"></i></a><!-- {{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }} -->
+  <a target="#" href="#{{= viewId }}"><i class="{{= obj.icon || 'ui-icon-reorder' }}"></i></a><!-- {{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }} -->
     {{= '<span class="menuBadge">{0}</span>'.format(obj.newAlerts || '') }}
   </a>
 </script>
@@ -419,7 +418,7 @@
 <script type="text/template" id="headerTemplate">
   <!-- the page header, including buttons and the page title, used for all pages except the home page -->
   <div id="callInProgress"></div>
-  <div id="header" {{= obj.style ? style + ';z-index:1000;': 'style="z-index:1000;"' }} {{= obj.more || '' }} >
+  <div id="header" {{= obj.style ? style : '' }} {{= obj.more || '' }} >
     <div class="hdr">
     <section role="region">
       <header>
@@ -507,10 +506,10 @@
           <label for="springStiffness">Spring stiffness</label><br/>
           <input type="range" id="springStiffness" name="springStiffness" value={{= springStiffness * 100 }} min="1" max="99">
         </td>
-        <td>
-          <label for="degree">Sensitivity</label>
+        <!--td>
+          <label for="degree">Sensitivity</label><br/>
           <input type="range" id="degree" name="degree" value={{= degree }} min="-10" max="10">
-        </td>
+        </td-->
         </tr>
       </table>
       <!--div class="physicsLabels">
@@ -529,19 +528,17 @@
 
 <script type="text/template" id="menuP">
   <!-- Left-side slide-out menu panel -->
-  <ul class="menuItems" id="menuItems">
-  </ul>
+  <ul class="menuItems" id="menuItems"></ul>
 </script>  
 
 <script type="text/template" id="rightMenuP">
   <!-- Right-side slide-out menu panel -->
-  <ul id="rightMenuItems" class="menuItems">
-  </ul>
+  <ul id="rightMenuItems" class="menuItems"></ul>
 </script>  
 
 <script type="text/template" id="menuItemTemplate">
   <!-- one item on the left-side slide-out menu panel -->
-  <li style="{{= obj.image ? 'padding-top: 0;padding-right:0px;padding-bottom: 7px;' : 'padding-bottom:0px;' }}"  id="{{= obj.id ? obj.id : G.nextId() }}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
+  <li style="{{= obj.image ? 'padding-top: 0;padding-right:0px;' : 'padding-bottom:0px;' }}"  id="{{= obj.id ? obj.id : G.nextId() }}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
       {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl) + '"' : '' }} >
     
     <!-- {{ if (!obj.homePage) { }} -->   
@@ -614,8 +611,8 @@
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">
 <!-- the edit page for any particular resource -->
-  <section id="{{= viewId }}" data-type="sidebar" style="left:auto;right:0;visibility:hidden;z-index:10001"></section>
-  <section id="{{= viewId + 'r' }}" data-type="sidebar" style="left:auto;right:0;visibility:hidden;z-index:10001"></section> 
+  <section id="{{= viewId }}" data-type="sidebar"></section>
+  <section id="{{= viewId + 'r' }}" data-type="sidebar"></section> 
 <!--div id="headerMessageBar"></div-->
   <div id="headerDiv"></div>
   <div id="resourceEditView">

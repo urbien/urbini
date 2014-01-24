@@ -5,8 +5,9 @@ define('views/ResourceMasonryItemView', [
   'utils',
   'events',
   'views/BasicView',
-  'domUtils'
-], function(G, _, U, Events, BasicView, DOM) {
+  'domUtils',
+  'physicsBridge'
+], function(G, _, U, Events, BasicView, DOM, Physics) {
   var RMIV = BasicView.extend({
 //    className: 'nab nabBoard masonry-brick',
 //    className: 'pin',
@@ -15,6 +16,9 @@ define('views/ResourceMasonryItemView', [
     className: 'nab masonry-brick',
     tagName: 'div',
     TAG: "ResourceMasonryItemView",
+    style: {
+      'transform-origin': '50% 50%'
+    },
     initialize: function(options) {
       if (this._initialized) {
         this._initializedCounter++;
@@ -260,7 +264,27 @@ define('views/ResourceMasonryItemView', [
           }
         }
       }
-      
+      if (obj.modifiedBy) {
+        var modA = this.el.querySelector('.urbien a');
+        modA.href = obj.modifiedBy;
+        var img = modA.children[0];
+       
+        if (img && G.lazifyImages) {
+          img.setAttribute(G.lazyImgSrcAttr, imgSrc);
+          img.$removeClass('wasLazyImage');
+          img.$addClass('lazyImage');            
+          img.src = blankImg;
+        }
+        else {
+          var src = this.resource.get('modifiedBy.thumb');
+          if (src) {
+            var idx = src.indexOf('wf/');
+            if (idx != -1)
+              src = src.substring(idx);
+          }
+          img.src = src;
+        }
+      }
 //      nabRLGridCols.innerHTML = obj.gridCols;
       /*
       var grid = U.getCols(this.resource, 'grid');
@@ -304,10 +328,13 @@ define('views/ResourceMasonryItemView', [
       }
       */
       if (obj.gridCols) {
-        gridCols.innerHTML = obj.gridCols;  
+        DOM.queueRender(gridCols, {          
+          innerHTML: obj.gridCols  
+        });
       }
       else {
-        gridCols.style.visibility = 'hidden';
+        if (gridCols)
+          gridCols.style.visibility = 'hidden';
       }
       if (obj.v_showCommentsFor) {
         var a = nabRLSocial.$('a'),
@@ -363,11 +390,11 @@ define('views/ResourceMasonryItemView', [
       var imgWidth = meta[imgP].imageWidth;
       this.IMG_MAX_WIDTH = imgWidth ||  this.maxImageDimension;
       var rUri = m.getUri();
-      if (!rUri) {
-        // <debug>
-        debugger;
-        // </debug>
-      }
+//      if (!rUri) {
+//        // <debug>
+//        debugger;
+//        // </debug>
+//      }
       
       var tmpl_data = this.getBaseTemplateData();
         
@@ -574,8 +601,14 @@ define('views/ResourceMasonryItemView', [
         var uri = _.encode(U.getLongUri1(rUri) + '?m_p=' + nabs + '&b_p=' + pMeta.backLink);
         tmpl_data.v_showRenabFor = uri;
       }
-      this.el.style.setProperty('width', (self.IMG_MAX_WIDTH + 17) + 'px', 'important'); // 17 is all paddings around the image
-      this.el.style.setProperty('height', tmpl_data['height']);
+      
+      this.style.width = (this.IMG_MAX_WIDTH + 17) + 'px';
+      if (tmpl_data['height'])
+        this.style.height = tmpl_data['height'];
+      
+      _.extend(this.el.style, this.style);
+//      this.el.style.setProperty('width', (self.IMG_MAX_WIDTH + 17) + 'px'); //, 'important'); // 17 is all paddings around the image
+//      this.el.style.setProperty('height', tmpl_data['height']);
 //      var h = tmpl_data['imgHeight'] ? tmpl_data['imgHeight'] : 0;
 //      var linesHeight = (linesCount * 15); // 15 is the font height of 12px with surrounding space;
 //      this.el.style.setProperty('height', h + linesHeight + 50 + 'px'); // + 50 to include comments and likes
@@ -904,8 +937,16 @@ define('views/ResourceMasonryItemView', [
         tmpl_data.imgHeight = Math.floor(oHeight * ratio);
       }
       
+      this.el.style.setProperty('width', (this.IMG_MAX_WIDTH + 17) + 'px', 'important'); // 17 is all paddings around the image
+//      this.el.style.setProperty('height', tmpl_data['height']);
       return this.doRender(options, tmpl_data);
     }
+//    ,
+//    
+//    _getCID: function(options) {
+//      var res = options.resource;
+//      return 'li' + res.collection.indexOf(res);
+//    }
   }, {
     displayName: 'ResourceMasonryItemView',
     preinitData: {

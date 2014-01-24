@@ -334,7 +334,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   Redirecter.prototype._forType[interfaceImplementorType] = function(res, options) {
     var iClName = U.getValueDisplayName(res, 'interfaceClass'),
         title = iClName ? U.makeHeaderTitle(iClName, 'Properties') : 'Interface properties',
-        fragment = U.makeMobileUrl('list', webPropType, {
+        fragment = U.makeMobileUrl('list', G.commonTypes.WebProperty, {
           domain: res.get('implementor'), 
           $title: title
         });

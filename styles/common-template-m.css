@@ -1,14 +1,28 @@
-body { 
+body {
+    overflow: hidden;
+    -webkit-perspective: 100px;
+            perspective: 100px;
     -webkit-text-size-adjust: none; 
     -webkit-touch-callout: none;
     -webkit-user-select: none;
     -webkit-backface-visibility: hidden;
     -webkit-font-smoothing: antialiased;
+    -webkit-transform-style: preserve-3d;
+    -moz-transform-style: preserve-3d;
+         transform-style: preserve-3d;
     -moz-user-select: none;
     -ms-user-select: none;
-    user-select: none;
+        user-select: none;
 }
-
+[data-role="page"] { 
+  top: 0; 
+  left: 0;
+ /* bottom: 0; */ 
+  width: 100%; 
+  min-height: 100%; 
+  position: absolute; 
+  border: 0; 
+}
 input {
     -webkit-touch-callout: auto;
     -webkit-user-select: auto;
@@ -24,6 +38,7 @@ html { height: 100%; }
 }
 
 [data-role="page"] {
+  background-color: inherit;
   min-height: 100%;
   overflow:hidden;
 }
@@ -39,6 +54,7 @@ html { height: 100%; }
 
 /* .galleryItem_css3 img { float: left;} */
 .galleryItem_container .galleryItem, .galleryItem_container .galleryItem_css3 { margin: 0px; }
+#.nab  { -webkit-transition: all 300ms; }
 .nab  { box-shadow: none; position: absolute; }
 .nab  span { padding-right: 12px; }
 .nab  .b span { padding-right: 0px; padding-left: 0px; color: #393939; font-weight: normal;}
@@ -152,16 +168,19 @@ html { height: 100%; }
 .masonry > li, .masonry > div { visibility: hidden; }
 .masonry .masonry-brick { visibility: visible; }
 
-.nab .modP .urbien { padding-left: 10px; }
+table.modP {
+  position: relative;
+}
+
 .nab .modP .urbien img {
-    width: 50px;
+    #width: 50px;
+    left: -20px;
+    top: -10px;
     position: absolute;
-    clip: rect(0px, 50px, 70px, 0px);
+    clip: rect(20px, 75px, 75px, 30px);
 }
 .nab .nabP .urbien { padding-left: 10px; }
 .nab .nabP .urbien img {width: 50px;}
-
-
 
 .gnab { font-size: 11px; }
 /* .nab .galleryItem_css3 img {max-width: 205px;} */
@@ -311,7 +330,7 @@ div.nabBtn {
 /*  #sidebarDiv #nabs_grid {left: -15px;} */
 }
 
-#nabs_grid {padding: 0 5px;}
+#nabs_grid {padding: 0;}
 .u-desc {
   padding-top:7px; font-size: 14px;
 }
@@ -325,6 +344,8 @@ div.nabBtn {
 #rightMenuItems li div, #menuItems li div {padding-top: 0px; padding-right: 0px; padding-left: 0px; font-weight:normal;font-family:Tahoma,Helvetica,Arial;}
 #menuItems li {padding-bottom: 0px; cursor: pointer;}
 #rightMenuItems li[role="heading"], #menuItems li[role="heading"] {padding-bottom:10px;font-size:18px;font-weight:normal;font-family:Tahoma,Helvetica,Arial;}
+
+#menuItems, #rightMenuItems { display: table-cell; background: #394345; width:200px; }
 
 .headerMessageBar {
   margin:0;
@@ -963,6 +984,13 @@ div.nabBtn {
   width: 100%;
   white-space: nowrap;
 }
+section[id^="view"] {
+  position: absolute;
+  height: 100%;
+  visibility:hidden;
+  z-index:10001;
+}
+
 
 .thumb-gal-item {
   padding: 0px;
@@ -970,6 +998,10 @@ div.nabBtn {
   background: none;
   background-image:none;
   cursor: pointer;
+  border-radius: 10px;
+  -webkit-border-radius: 10px;
+  border: solid black;
+  overflow:hidden;
 }
 
 .thumb-inner {
@@ -1181,6 +1213,14 @@ div.nabBtn {
   margin-bottom:0;
   padding:0;
 }
+#sidebar .masonry-brick {
+  width:100%;
+}
+
+#headerDiv {
+  z-index:1001;
+  position: relative;
+}
 .menuItems {
   cursor: pointer;
 }
@@ -1235,6 +1275,29 @@ div {
   bottom: 2px;
 }
 
+.scrollbar { 
+  pointer-events: none; 
+  position: absolute; 
+  width: 5px; 
+  height: 5px;
+#  background: rgba(0, 0, 255, 0.99);
+#  border: 1px solid rgba(255, 255, 255, 0.15); 
+  -webkit-border-radius: 3px; 
+  border-radius: 6px; 
+  opacity: 0;
+  z-index:10002;
+#  -webkit-transition: opacity 350ms; 
+#  -moz-transition: opacity 350ms; 
+#  transition: opacity 350ms; 
+  z-index: 10; 
+  -webkit-box-sizing: content-box; 
+  -moz-box-sizing: content-box; 
+  box-sizing: content-box 
+}
+
+.scrollbarinner { height: 100%; background: rgba(0,0,0,0.5); -webkit-border-radius: 2px; border-radius: 4px / 6px }
+
+[data-role="filler"] { visibility: hidden; display:table-cell; height:auto; width:auto; pointer-events:none; }
 
 /*
 .nabBoard {

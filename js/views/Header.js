@@ -5,7 +5,8 @@ define('views/Header', [
   'utils',
   'vocManager',
   'views/BasicView',
-  'physicsBridge'
+  'physicsBridge',
+  'domUtils'
 //  ,
 //  'views/BackButton',
 //  'views/LoginButton',
@@ -14,15 +15,18 @@ define('views/Header', [
 //  'views/AroundMeButton',
 //  'views/MenuButton',
 //  'views/PublishButton'
-], function(G, Events, U, Voc, BasicView, Physics/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
+], function(G, Events, U, Voc, BasicView, Physics, DOM/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
   var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate', 'installApp'];
   var REGULAR_BUTTONS = ['back', 'mapIt', 'add', 'video', 'chat', 'login', 'rightMenu'];
   var commonTypes = G.commonTypes;
+  var friendlyTypes = [G.commonTypes.Urbien, 'http://urbien.com/voc/dev/ImpressBackup/Movie', 'http://urbien.com/voc/dev/ImpressBackup/Artist', 'model/social/App'];
   return BasicView.extend({
 //    viewType: 'any',
     style: {
-      'z-index': 10001
+      'z-index': 10001,
+      opacity: DOM.maxOpacity
     },
+    _draggable: false,
     autoFinish: false,
     template: 'headerTemplate',
     initialize: function(options) {
@@ -162,14 +166,30 @@ define('views/Header', [
     },
     
     changePhysics: function(e) {
-      var val = parseInt(e.target.value);
+      var val = parseInt(e.target.value),
+          type = 'verticalMain';
+      
       if (e.target.name == 'degree')
         val *= -1;
       else
         val /= 100;
       
+      switch (this._hashInfo.route) {
+        case 'view':
+          var i = friendlyTypes.length;
+          
+          while (i--) {
+            if (U.isAssignableFrom(this.vocModel, friendlyTypes[i])) {
+              type = 'horizontal';
+              break;
+            }
+          }
+          
+        break;
+      }
+      
       this.log('PHYSICS: ' + e.target.name + ' = ' + val);
-      Physics.there.set(e.target.name, val);
+      Physics.there.set(type, e.target.name, val);
     },
     
     fileUpload: function(e) {
@@ -250,6 +270,32 @@ define('views/Header', [
     },
     
     render: function(options) {
+      var self = this,
+          args = arguments;
+
+      if (!this.rendered) {
+        this.onload(function() {
+          if (self.pageView.TAG == 'ListPage') {
+            self._updateSize();
+            self._rail = [self.getContainerBodyId(), 0, 0, 0, -self._outerHeight];
+            self.addToWorld(null, false);
+//            Physics.there.trackDrag(self.getContainerBodyId(), 'vel'); // 'pos' for exact tracking, 'vel' for parallax 
+            self.pageView.listView.onload(function() {              
+//              Physics.there.trackDrag(self.getContainerBodyId(), 'vel', self.pageView.listView.getContainerBodyId()); // 'pos' for exact tracking, 'vel' for parallax
+              Physics.there.rpc(null, 'attachHeader', [self.getContainerBodyId(), self.pageView.listView.getContainerBodyId(), 0.02]);
+            });
+          }
+          
+//          if (self.pageView.TAG == 'ListPage') {
+//            self.pageView.listView.onload(function() {              
+//              Physics.there.track(self.getContainerBodyId(), self.pageView.listView.getContainerBodyId(), 'vel');
+//            });
+//          }
+//          else
+//            Physics.there.track(self.getContainerBodyId(), self.pageView.getContainerBodyId(), 'vel');
+        });
+      }
+      
       options = options || {};
       if (!this.buttons || options.buttons) {
         this.buttons = options.buttons;
@@ -257,11 +303,9 @@ define('views/Header', [
         this.getButtonViews();
       }
         
-      var self = this,
-          args = arguments;
-      
       function doRender() {
         self.renderHelper.apply(self, args);
+        self.addToWorld(null, true);
         self.finish();
         if (G.isBootstrap())
           self.$('#headerUl div').$attr('class', 'navbar-header');
@@ -380,25 +424,36 @@ define('views/Header', [
         var returnUri = this.hashParams['$returnUri'];
         var pr = this.hashParams['$prop'];
         if (forResource  &&  location  &&  pr) {
-          var type = U.getTypeUri(forResource);      
-          var cModel = U.getModel(type);
-          var self = this;
+          var self = this,
+              type = U.getTypeUri(forResource),      
+              cModel = U.getModel(type);
+          
           if (!cModel) {
             Voc.getModels(type).done(function() {
               cModel = U.getModel(type);
               if (cModel  &&  !cModel.properties[pr].readOnly) {
-                var frag = document.createDocumentFragment();
-                var rules = ' data-formEl="true"';
+                var frag = document.createDocumentFragment(),
+                    existing = self.$('#fileUpload')[0],
+                    rules = ' data-formEl="true"';
+                
                 U.addToFrag(frag, self.fileUploadTemplate({name: pr, forResource: forResource, rules: rules, type: type, location: location, returnUri: returnUri }));
-                self.$el.append(frag);
+                if (existing)
+                  DOM.replaceChildNodes(existing, frag);
+                else
+                  self.$el.append(frag);
               }
             });
           }
           else {
-            var frag = document.createDocumentFragment();
-            var rules = ' data-formEl="true"';
+            var frag = document.createDocumentFragment(),
+                existing = self.$('#fileUpload')[0],
+                rules = ' data-formEl="true"';
+            
             U.addToFrag(frag, self.fileUploadTemplate({name: pr, forResource: forResource, rules: rules, type: type, location: location }));
-            self.$el.append(frag);
+            if (existing)
+              DOM.replaceChildNodes(existing, frag);
+            else
+              self.$el.append(frag);
           }
           
         }
@@ -454,7 +509,7 @@ define('views/Header', [
       }
 
       var templateSettings = this.getBaseTemplateData();
-      _.extend(templateSettings, Physics.constants);
+      _.extend(templateSettings, Physics.constants); //Physics.scrollerConstants[this._scrollerType]);
       if (U.isChatPage()) {
 //        templateSettings.more = $.param({
 //          "data-position": "fixed"
@@ -530,7 +585,7 @@ define('views/Header', [
           // this.$el.find('#pageTitle').css('margin-bottom', '0px'); 
         }
       }      
-      if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges  &&  !this.isEdit) {
+      if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges  &&  !this.isEdit  &&  !G.isBB()) {
         this.$('#name.resTitle').$css('padding-bottom', '0px');
       }
 //      var wl = G.currentApp.widgetLibrary;

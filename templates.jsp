@@ -36,7 +36,14 @@
     </form>  
   </div>
 </script>  
- 
+
+<script type="text/template" id="scrollbarTemplate">
+  <div id="{{= obj.id || 'scrollbar' + G.nextId() }}" class="scrollbar {{= 'scrollbar' + obj.axis || 'y' }}" style="z-index:10002; {{= (obj.width ? 'width:' + width + 'px;' : '') + (obj.height ? 'height:' + height + 'px;' : '') }}">
+    <div class="scrollbarinner">
+    </div>
+  </div>
+</script>
+
 <script type="text/template" id="resource">
   <!-- Single resource view -->  
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div>
@@ -50,9 +57,9 @@
       <div id="mainGroup" class="ui-block-b" style="min-width: 130px;padding-left:7px;"></div>
       <div id="buyGroup" class="ui-block-b" style="min-width: 130px"></div>
     </div>
-    <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
-    <div id="photogridHeader" style="top: -3px;" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
-    <!--div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="grid-listview hidden">
+    <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="hidden"></div>
+    <div style="top: -3px;" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="thumb-gal-header hidden"><h3></h3></div>
+    <!--div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="hidden">
     </div-->
     
     <div id="photogrid" data-inset="true" data-filter="false" class="thumb-gal hidden">
@@ -493,15 +500,12 @@
 
 <script type="text/template" id="menuP">
   <!-- Left-side slide-out menu panel -->
-  <ul data-role="none" data-theme="{{= G.theme.menu }}" id="menuItems" class="menuItems">
-  </ul>
+  <ul data-role="none" data-theme="{{= G.theme.menu }}" id="menuItems" class="menuItems"></ul>
 </script>  
 
 <script type="text/template" id="rightMenuP">
   <!-- Right-side slide-out menu panel -->
-  <ul data-role="none" data-theme="{{= G.theme.menu }}" id="rightMenuItems" class="menuItems">
-  </ul>
-  
+  <ul data-role="none" data-theme="{{= G.theme.menu }}" id="rightMenuItems" class="menuItems"></ul>
 </script>  
 
 <script type="text/template" id="stringPT">
@@ -947,7 +951,8 @@
 
 <script type="text/template" id="addButtonTemplate">
   <!-- button used for creating new resources -->
-  <a target="#" data-icon="plus-sign" {{= obj.empty ? 'class="hint--bottom hint--always" data-hint="Add item"' : '' }}>Create</a>
+  <!--a target="#" data-icon="plus-sign" {{= obj.empty ? 'class="hint--bottom hint--always" data-hint="Add item"' : '' }}>Create</a-->
+  <a target="#" data-icon="plus-sign">Create</a>
 </script>
 
 <script type="text/template" id="menuButtonTemplate">
@@ -959,7 +964,7 @@
 
 <script type="text/template" id="rightMenuButtonTemplate">
   <!-- button that toggles the object properties panel -->
-  <a target="#" href="#{{= viewId }}" data-icon="reorder"><!--{{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}-->
+  <a target="#" href="#{{= viewId }}" data-icon="{{= obj.icon || 'reorder' }}"><!--{{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}-->
     {{= '<span class="menuBadge">{0}</span>'.format(obj.newAlerts || '') }}
   </a>
 </script>
@@ -1095,7 +1100,7 @@
 <script type="text/template" id="headerTemplate">
   <!-- the page header, including buttons and the page title, used for all pages except the home page -->
   <div id="callInProgress" data-theme="{{= G.theme.header}}"></div>
-  <div data-role="header" class="ui-header" data-theme="{{= G.theme.header}}" id="header" {{= obj.style ? style + ';z-index:1000;': 'style="z-index:1000;"' }} {{= obj.more || '' }} >
+  <div data-role="header" class="ui-header" data-theme="{{= G.theme.header}}" id="header" {{= obj.style ? style : '' }} {{= obj.more || '' }} >
     <div data-role="navbar">
       <ul id="headerUl" class="navbarUl">
       </ul>
@@ -1194,7 +1199,6 @@
 </script>
 
 <script type="text/template" id="masonry-mod-list-item">
-<div>
   <div class="anab" data-viewid="{{= viewId }}">
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
@@ -1208,6 +1212,7 @@
       </a>
     </div>
   </div>
+  <div class="nabRL">
   <table width="100%" class="modP">
     <tr>
       <td class="urbien" width="55px">
@@ -1223,50 +1228,44 @@
       </td>
     </tr>
   </table>
-  <table width="100%">
-    <tr>
-    <td colspan="2">
-      <div class="nabBtn" style="background:#eeeeee; padding: 10px 0 0 5px;margin:-3px;">
-        {{ if (typeof v_showCommentsFor != 'undefined') { }}
-          <!--a data-icon="comments" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor, '-makeId': G.nextId()}) }}">
-          </a -->
-          <a style="float:left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor.uri, '-makeId': G.nextId()}) }}">Comment
-          </a>
-          {{ if (v_showCommentsFor.count) { }}
-            <a style="float:right; font-size:12px;" href="{{= U.makePageUrl('list', 'model/portal/Comment', {forum: v_showCommentsFor.uri}) }} "><span class="ui-icon-comment-alt"></span>{{= v_showCommentsFor.count }}</a>
-          {{ } }}
-          
-        {{ } }}
-        {{ if (typeof v_showVotesFor != 'undefined') { }}
-          <!--a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}"> 
-          </a -->
-          <a class="like" style="float: left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}">
-          {{ if (typeof v_showCommentsFor != 'undefined') { }}
-             &#160;&#160;&#8226;
-          {{ } }}
-          &#160;&#160;Like 
-          </a>
-          {{ if (v_showVotesFor.count) { }}
-          <div style="float:right; font-size:12px;"> 
-            <a href="{{= U.makePageUrl('list', 'aspects/tags/Vote', {votable: v_showVotesFor.uri, $title: davDisplayName + ' liked by'}) }}"><span class="ui-icon-heart-empty"></span>{{= v_showVotesFor.count }}</a> 
-          </div>
-          {{ } }}
+  <div class="nabBtn" style="background:#eeeeee; padding: 10px 0 0 5px;margin:-3px;">
+    {{ if (typeof v_showCommentsFor != 'undefined') { }}
+      <!--a data-icon="comments" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor, '-makeId': G.nextId()}) }}">
+      </a -->
+      <a style="float:left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor.uri, '-makeId': G.nextId()}) }}">Comment
+      </a>
+      {{ if (v_showCommentsFor.count) { }}
+        <a style="float:right; font-size:12px;" href="{{= U.makePageUrl('list', 'model/portal/Comment', {forum: v_showCommentsFor.uri}) }} "><span class="ui-icon-comment-alt"></span>{{= v_showCommentsFor.count }}</a>
+      {{ } }}
+      
+    {{ } }}
+    {{ if (typeof v_showVotesFor != 'undefined') { }}
+      <!--a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}"> 
+      </a -->
+      <a class="like" style="float: left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}">
+      {{ if (typeof v_showCommentsFor != 'undefined') { }}
+         &#160;&#160;&#8226;
+      {{ } }}
+      &#160;&#160;Like 
+      </a>
+      {{ if (v_showVotesFor.count) { }}
+      <div style="float:right; font-size:12px;"> 
+        <a href="{{= U.makePageUrl('list', 'aspects/tags/Vote', {votable: v_showVotesFor.uri, $title: davDisplayName + ' liked by'}) }}"><span class="ui-icon-heart-empty"></span>{{= v_showVotesFor.count }}</a> 
+      </div>
+      {{ } }}
 <!--          {{ if (v_showVotesFor.count) { }}
              v_showVotesFor.count
           {{ } }}
 -->          
-        {{ } }}
-        <!--
-        {{ if (typeof v_showRenabFor != 'undefined') { }}
-          <a data-icon="pushpin" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'nabit?originalImageUrl=' + encodeURIComponent(v_showRenabFor) + '&amp;sourceUrl=' + encodeURIComponent(rUri) }}">
-          </a>
-        {{ } }}
-        -->
-        </div>
-    </td>
-    </tr>
-  </table>
-</div>  
+    {{ } }}
+    <!--
+    {{ if (typeof v_showRenabFor != 'undefined') { }}
+      <a data-icon="pushpin" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'nabit?originalImageUrl=' + encodeURIComponent(v_showRenabFor) + '&amp;sourceUrl=' + encodeURIComponent(rUri) }}">
+      </a>
+    {{ } }}
+    -->
+    </div>
+  </div>
 </script>
 
 <script type="text/template" id="masonry-list-item">

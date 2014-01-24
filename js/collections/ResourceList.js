@@ -15,7 +15,6 @@ define('collections/ResourceList', [
   var tsProp = 'davGetLastModified';
   var listParams = ['perPage', 'offset'];
   var ResourceList = Backbone.Collection.extend({
-    _fetchDeferreds: {},
     initialize: function(models, options) {
       if (!models && !options.model)
         throw new Error("resource list must be initialized with options.model or an array of models");
@@ -134,8 +133,75 @@ define('collections/ResourceList', [
       
       this.monitorQueryChanges();
       this.enablePaging();
-      this.on('endOfList', this.disablePaging);      
+      this.on('endOfList', this.disablePaging);
+      this.resetRange();
+      this._fetchDeferreds = {};
       log("info", "init " + this.shortName + " resourceList");      
+    },
+    
+    resetRange: function() {
+      if (!this.range)
+        this.range = new Array(2);
+      
+      this.range[0] = 0;
+      this.range[1] = this.models.length;
+    },
+    
+    setRange: function(from, to) {
+      if (from > this.range[0])
+        this.collection.remove(this.collection.slice(this.from, from));
+      
+      this.range[0] = from;
+      if (to < this.range[1])
+        this.collection.remove(this.collection.slice(to, this.range[1]));
+      
+      this.range[1] = to;
+    },
+
+    getRange: function() {
+      this.range[1] = this.models.length;
+      return this.range;
+    },
+    
+    setTotal: function(total) {
+      this.total = total;
+      this.trigger('total', total);
+    },
+    
+    getTotal: function() {
+      return this.total || null;
+    },
+    
+//    clearRange: function(from, to) {
+//      for (var i = from; i < to; i++) {
+//        this.models[i] = null;
+//      }
+//
+//      if (from == this.range[0])
+//        this.range[0] = to;
+//      else if (to == this.range[1])
+//        this.range[1] = from;
+//    },
+
+    setStartIndex: function(start) {
+      var range = this.getRange();
+      if (start < range[0])
+        throw "Can't set start index to where there are no models";
+      
+      if (start > range[1])
+        throw "Start index must be lower than end index";
+      
+      this.remove(this.models.slice(this.range[0], start));
+      this.range[0] = start;
+    },
+
+    setEndIndex: function(end) {
+      var range = this.getRange();
+      if (end > range[1])
+        throw "Can't set end index to where there are no models";
+      
+      this.remove(this.models.slice(this.range[1]));
+      this.range[1] = end;
     },
 
     filterAndAddResources: function(resources) {
@@ -184,7 +250,7 @@ define('collections/ResourceList', [
     },
     
     clone: function() {
-      return new ResourceList(this.models.slice(), _.extend(_.pick(this, ['model', 'rUri', 'title'].concat(listParams)), {cache: false, params: _.clone(this.params)}));
+      return new ResourceList(this.models.slice(), _.extend(_.pick(this, ['model', 'rUri', 'title', 'total'].concat(listParams)), {cache: false, params: _.clone(this.params)}));
     },
     onResourceChange: function(resource, options) {
       options = options || {};
@@ -351,7 +417,7 @@ define('collections/ResourceList', [
       this.params = params;
       this.modelParams = modelParams;
       this.modelParamsStrict = strict;
-      this.url = this.baseUrl + (this.params ? "?" + $.param(this.params) : ''); //this.getUrl();
+      this.url = this.baseUrl + (_.size(this.params) ? "?" + $.param(this.params) : ''); //this.getUrl();
       this.query = U.getQueryString(modelParams, true); // sort params in alphabetical order for easier lookup
     },
     isAll: function(interfaceNames) {
@@ -408,6 +474,7 @@ define('collections/ResourceList', [
     },
     
     reset: function(models, options) {
+      delete this.total;
       if (this['final'] && this.models.length)
         throw "This list is locked, it cannot be changed";
       
@@ -455,6 +522,9 @@ define('collections/ResourceList', [
     fetch: function(options) {
       options = options || {};
       _.defaults(options, {
+        headers: {
+          'Range-Need-Total': true
+        },
         update: true, 
         remove: false, 
         parse: true
@@ -516,8 +586,9 @@ define('collections/ResourceList', [
           error.call(self, self, resp, options);
       }
       
-      var success = options.success || function(resp, status, xhr) {
+      function defaultSuccess(resp, status, xhr) {
         var pagination = xhr.getResponseHeader("X-Pagination"),
+            total = xhr.getResponseHeader("X-Range-Total"),
             mojo = xhr.getResponseHeader("X-Mojo");
         
         if (pagination) {
@@ -531,6 +602,9 @@ define('collections/ResourceList', [
           } catch (err) {
           }
         }
+        
+        if (total != null)
+          self.setTotal(parseInt(total));
         
         if (mojo) {
           try {
@@ -547,6 +621,7 @@ define('collections/ResourceList', [
         self.update(resp, options);        
       };
       
+      var success = options.success || defaultSuccess;
       options.success = function(resp, status, xhr) {
         if (self.lastFetchOrigin === 'db') {
           self.update(resp, options);
@@ -600,7 +675,9 @@ define('collections/ResourceList', [
             return;
         }
         
-        self.update(resp, options);
+        if (success != defaultSuccess)
+          self.update(resp, options);
+        
         success(resp, status, xhr);
         if (!select || select == '$all')
           return;

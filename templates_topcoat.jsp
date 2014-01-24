@@ -6,8 +6,8 @@
 <!-- Templates -->
 <script type="text/template" id="resource-list">
   <!-- Resource list page -->
-  <section id="{{= viewId }}" data-type="sidebar" data-position="right" style="left:auto;right:0;visibility:hidden;z-index:10001"></section>
-  <section id="{{= viewId + 'r' }}" data-type="sidebar" data-position="right" style="left:auto;right:0;visibility:hidden;z-index:10001"></section> 
+  <section id="{{= viewId }}" data-type="sidebar" data-position="right" style="position:absolute;visibility:hidden;z-index:10001"></section>
+  <section id="{{= viewId + 'r' }}" data-type="sidebar" data-position="right" style="position:absolute;visibility:hidden;z-index:10001"></section> 
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
@@ -52,8 +52,8 @@
  
 <script type="text/template" id="resource">
   <!-- Single resource view -->  
-  <section id="{{= viewId }}" data-type="sidebar" style="left:auto;right:0;visibility:hidden;z-index:10001"></section>
-  <section id="{{= viewId + 'r' }}" data-type="sidebar" data-position="right" style="left:auto;right:0;visibility:hidden;z-index:10001"></section> 
+  <section id="{{= viewId }}" data-type="sidebar" style="position:absolute;visibility:hidden;z-index:10001"></section>
+  <section id="{{= viewId + 'r' }}" data-type="sidebar" data-position="right" style="position:absolute;visibility:hidden;z-index:10001"></section> 
 
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
@@ -65,7 +65,7 @@
     </div>
     <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     
-    <div id="photogridHeader" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
+    <div data-role="footer" data-theme="{{= G.theme.photogrid }}" class="thumb-gal-header hidden"><h3></h3></div>
     <!--div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="grid-listview hidden">
       <div class="dummy head"></div>
       <div class="dummy tail"></div>
@@ -122,7 +122,7 @@
       class="lazyImage" data-for="{{= U.getImageAttribute(resource, imageProperty) }}" />
     {{ } }}
   </a>
-        <span style="position:absolute;padding:1rem;font-size:1.6rem;font-weight:bold;">{{= name }}{{= obj.gridCols ? '<br/>' + gridCols : '' }}</span>
+        <span style="font-size:1.6rem;font-weight:bold;">{{= name }}{{= obj.gridCols ? '<br/>' + gridCols : '' }}</span>
   
   {{ if (typeof comment != 'undefined') { }}
     <p>{{= comment }}</p>
@@ -173,7 +173,7 @@
  {{ var params = {}; }}
  {{ params[backlink] = _uri; }}
  <div style="width:100%;padding:5px;">
-  <button class="topcoat-button--cta" style="width:95%;border:1px solid {{= borderColor }}; background-color: {{= color }}"
+  <button class="topcoat-button--cta" style="width:95%;border:1px solid {{= borderColor }}; background-color: {{= color }}">
  {{ if (!obj.value  &&  !obj.chat) { }}  
    <a data-shortName="{{= shortName }}" data-title="{{= title }}" href="#">
      <span><i class="{{= icon }}"></i>&#160;{{= name }}</span>
@@ -262,7 +262,7 @@
   {{ if (this.resource.isA('Distance')  &&  obj.distance) { }}
     <span class="ui-li-count">{{= distance + ' mi' }}</span>
   {{ } }}
-  {{= obj.showCount ? '<span class="ui-li-count">' + obj[showCount].count + '</span>' : '' }} 
+  {{= obj.showCount ? '<span class="ui-li-count">' + obj.showCount.count + '</span>' : '' }} 
   {{ if (obj.comment) { }}
     <p style="padding-top:0.5rem;">{{= comment }}</p>
   {{ } }}
@@ -277,7 +277,9 @@
 
 <script type="text/template" id="mapItButtonTemplate">
   <!-- button that toggles map view -->
-  <a id="mapIt" target="#"><i class="ui-icon-map-marker"></i></a>
+  <button class="topcoat-button-bar__button">
+   <a id="mapIt" target="#"><i class="ui-icon-map-marker"></i></a>
+  </button>
 </script>
 
 <script type="text/template" id="backButtonTemplate">
@@ -304,7 +306,7 @@
 <script type="text/template" id="addButtonTemplate">
   <!-- button used for creating new resources -->
     <button class="topcoat-button-bar__button" style="overflow:visible">
-  <a target="#" {{= obj.empty ? 'class="hint--bottom hint--always" data-hint="Add item"' : '' }}><i class="ui-icon-plus-sign"></i></a>
+  <a target="#"><i class="ui-icon-plus-sign"></i></a>
     </button>
 </script>
 
@@ -312,19 +314,19 @@
   <!-- button that toggles the menu panel -->
   <button class="topcoat-button-bar__button">
   <a target="#" href="#{{= viewId }}"><i class="ui-icon-reorder"></i>
-    {{= '<span class="menuBadge" style="top:1rem">{0}</span>'.format(obj.newAlerts || '') }}
+    {{= <span class="menuBadge" style="top:1rem">{0}</span>'.format(obj.newAlerts || '') }}
   </a>
-  <span style="position: absolute;"><i class="ui-icon-sort"></i></span>
+  <!--span style="position: absolute;"><i class="ui-icon-sort"></i></span-->
   </button>
 </script>
 
 <script type="text/template" id="rightMenuButtonTemplate">
   <!-- button that toggles the object properties panel -->
-    <button class="topcoat-button-bar__button">
-  <a target="#" href="#{{= viewId }}"><i class="ui-icon-indent-right"></i></a><!--{{= '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}-->
+  <button class="topcoat-button-bar__button">
+  <a target="#" href="#{{= viewId }}"><i class="ui-icon-reorder"></i></a><!--{{= '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}-->
     {{= '<span class="topcoat-notification">{0}</span>'.format(obj.newAlerts || '') }}
-  </a>
-  <span style="position: absolute;font-size:14px;top:-0.2rem;margin-left:1.3rem;"><i class="ui-icon-sort"></i></span>
+    </a>
+  <!--span style="position: absolute;font-size:14px;top:-0.2rem;"><i class="ui-icon-sort"></i></span-->
   </button>
 </script>
 
@@ -411,7 +413,7 @@
 <script type="text/template" id="headerTemplate">
   <!-- the page header, including buttons and the page title, used for all pages except the home page -->
   <div id="callInProgress"></div>
-  <div id="header" {{= obj.style ? style + ';z-index:1000;': 'style="z-index:1000;"' }} {{= obj.more || '' }} >
+  <div id="header" {{= obj.style ? style : '' }} {{= obj.more || '' }} >
     <section class="component">
       <ul  id="headerUl" class="topcoat-button-bar" style="width:100%">
       </ul>
@@ -460,6 +462,60 @@
         </button>
       </div>
     </div>
+        <div class="physics" style="display:none; background-color:#606060; color:#FFFFFF; padding:5px;">
+      <!--section role="region">
+        <div role="slider" aria-valuemin="1" aria-valuenow="{{= drag }}" aria-valuemax="99" aria-valuetext="Air drag">
+          <div>
+            <progress value="{{= drag }}" max="99"></progress>
+            <button>handler</button>
+          </div>
+        </div>
+        <div role="slider" aria-valuemin="1" aria-valuenow="{{= springDamping }}" aria-valuemax="99" aria-valuetext="Spring damping">
+          <div>
+            <progress value="{{= springDamping }}" max="99"></progress>
+            <button>handler</button>
+          </div>
+        </div>
+        <div role="slider" aria-valuemin="1" aria-valuenow="{{= springStiffness }}" aria-valuemax="99" aria-valuetext="Spring stiffness">
+          <div>
+            <progress value="{{= springStiffness }}" max="99"></progress>
+            <button>handler</button>
+          </div>
+        </div>
+      </section-->
+      <table class="physics" cellspacing="0" celladding="2" width="100%" style="background-color:#606060;display:none; ">
+        <tr>
+        <td>
+          <label for="drag">Air drag</label><br/>
+          <input type="range" id="drag" name="drag" value={{= drag * 100 }} min="1" max="99">
+        </td>  
+        <td>
+          <label for="springDamping">Spring damping</label><br/>
+          <input type="range" id="springDamping" name="springDamping" value={{= springDamping * 100 }} min="1" max="99">
+        </td>  
+        <td>
+          <label for="springStiffness">Spring stiffness</label><br/>
+          <input type="range" id="springStiffness" name="springStiffness" value={{= springStiffness * 100 }} min="1" max="99">
+        </td>
+        <!--td>
+          <label for="degree">Sensitivity</label><br/>
+          <input type="range" id="degree" name="degree" value={{= degree }} min="-10" max="10">
+        </td-->
+        </tr>
+      </table>
+      <!--div class="physicsLabels">
+        <label for="drag" style="min-width:10%;">Air drag</label>
+        <label for="springDamping" style="min-width:10%">Spring damping</label>
+        <label for="springStiffness" style="min-width:10%">Spring stiffness</label><br />      
+      </div>
+      <div class="physicsProps">
+        1<input type="range" style="min-width:10%" name="drag" value={{= drag * 100 }} min="1" max="99">100
+        1<input type="range" style="min-width:10%" name="springDamping" value={{= springDamping * 100 }} min="1" max="99">100
+        1<input type="range" style="min-width:10%" name="springStiffness" value={{= springStiffness * 100 }} min="1" max="99">100
+      </div-->
+    </div>    
+  </div>
+    
   </div>
 </script>
 
@@ -477,7 +533,7 @@
 
 <script type="text/template" id="menuItemTemplate">
   <!-- one item on the left-side slide-out menu panel -->
-  <li style="{{= obj.image ? 'padding-top: 0;padding-right:0px;padding-bottom: 7px;' : 'padding-bottom:0px;' }}"  id="{{= obj.id ? obj.id : G.nextId() }}" class="topcoat-list__item{{= obj.cssClass ? ' ' + cssClass : '' }}" 
+  <li style="{{= obj.image ? 'padding-top: 0;padding-right:0px;' : 'padding-bottom:0px;' }}"  id="{{= obj.id ? obj.id : G.nextId() }}" class="topcoat-list__item{{= obj.cssClass ? ' ' + cssClass : '' }}" 
       {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl) + '"' : '' }} >
     
     {{ if (obj.image) { }}   
@@ -551,8 +607,8 @@
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">
 <!-- the edit page for any particular resource -->
-  <section id="{{= viewId }}" data-type="sidebar" style="left:auto;right:0;visibility:hidden;z-index:10001"></section>
-  <section id="{{= viewId + 'r' }}" data-type="sidebar" style="left:auto;right:0;visibility:hidden;z-index:10001"></section> 
+  <section id="{{= viewId }}" data-type="sidebar" style="position:absolute;visibility:hidden;z-index:10001"></section>
+  <section id="{{= viewId + 'r' }}" data-type="sidebar" style="position:absolute;visibility:hidden;z-index:10001"></section> 
 <!--div id="headerMessageBar"></div-->
   <div id="headerDiv"></div>
   <div id="resourceEditView">
@@ -610,7 +666,7 @@
   {{ } }} 
   {{ if (!name) { }}
   <div> 
-    <{{= isInput ? 'input type="text"' : 'textarea  rows="3"' }} name="{{= shortName }}" id="{{= id }}"  value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }} class="topcoat-text-input">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
+    <{{= isInput ? 'input type="text"' : 'textarea  rows="3"' }} name="{{= shortName }}" id="{{= id }}"  value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }} class="ui-input-text topcoat-text-input">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   </div>
   {{ } }} 
 </script>
@@ -709,6 +765,15 @@
     </button>  
     </div>
   </div>
+</script>
+<script type="text/template" id="moneyPET">
+  <label for="{{= id }}" class="ui-input-text"  data-theme="{{= G.theme.list }}">{{= name }} <b>{{= typeof value.currency === 'undefined' ? '$' : value.currency }}</b></label>
+  <input type="text" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '' }}" {{= rules }} class="topcoat-text-input"></input>
+</script>
+<script type="text/template" id="datePET">
+  <label for="{{= id }}" class="ui-input-text">{{= name }}</label>
+  <input id="{{= id }}" class="i-txt topcoat-text-input" name="{{= shortName }}" {{= rules }} data-mini="true" value="{{= value }}" />
+  <!--input type="hidden" id="{{= id + '.hidden' }}" name="{{= shortName }}" {{= rules }} data-mini="true" /-->
 </script>
 
 </div>

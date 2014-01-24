@@ -3,17 +3,12 @@ define('underscoreMixins', ['_underscore'], function(_) {
       concat = ArrayProto.concat,
       slice = ArrayProto.slice,
       indexOf = ArrayProto.indexOf,
+      promiseFunctions = ['done', 'fail', 'always', 'state', 'then'],
       __htmlCommentRegex = /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/,
       __htmlCommentRegexGM = /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/gm,
       __jsCommentRegex = /(?:\/\*(?:[\s\S]*?)\*\/)|(?:\/\/(?:.*)$)/,
       __jsCommentRegexGM = /(?:\/\*(?:[\s\S]*?)\*\/)|(?:\/\/(?:.*)$)/gm;
 
-
-  String.prototype.toTitleCase = function() {
-    return this.replace(/(?:^|\s)\w/g, function(match) {
-        return match.toUpperCase();
-    });
-  }
 
   String.prototype.repeat = function(num) {
     return new Array(num + 1).join(this);
@@ -428,6 +423,31 @@ define('underscoreMixins', ['_underscore'], function(_) {
             return originalReturn;
           };
         }
+      }
+    },
+    
+    proxyPromise: function(proxy, promise) {
+      var i = promiseFunctions.length,
+          fn;
+      
+      while (i--) {
+        fn = promiseFunctions[i];
+        proxy[fn] = promise[fn].bind(promise);
+      }
+    },
+    
+    oppositeAxis: function(axis) {
+      switch (axis) {
+      case 'x':
+        return 'y';
+      case 'X':
+        return 'Y';
+      case 'y':
+        return 'x';
+      case 'Y':
+        return 'X';
+      default:
+        throw "unsupported axis " + axis;
       }
     },
   

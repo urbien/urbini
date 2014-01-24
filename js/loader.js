@@ -838,7 +838,7 @@ define('globals', function() {
         source = 'indexedDB';
       
       if (!modules.length)
-        return $.Deferred().resolve(modules).promise;
+        return $.Deferred().resolve(modules).promise();
       
       var minify = G.minify,
           def = G.minifyByDefault;
@@ -1093,7 +1093,7 @@ define('globals', function() {
         bg: '#DDD'
       },
       events: {
-        on: false,
+        on: true,
         color: '#baFF00',
         bg: '#555'
       },
@@ -1866,12 +1866,16 @@ define('globals', function() {
     },
     _clickDisabled: false,
     enableClick: function() {
-//      this.log('events', 'CLICK MONITOR', 'ENABLED CLICK');
-      this._clickDisabled = false;
+      if (this._clickDisabled) {
+        this.log('Globals', 'events', 'ENABLED CLICK');
+        this._clickDisabled = false;
+      }
     },
     disableClick: function() {
-//      this.log('events', 'CLICK MONITOR', 'DISABLED CLICK');
-      this._clickDisabled = true;
+      if (!this._clickDisabled) {
+        this.log('Globals', 'events', 'DISABLED CLICK');
+        this._clickDisabled = true;
+      }
     },
     canClick: function() {
       return !this._clickDisabled;

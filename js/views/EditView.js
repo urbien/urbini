@@ -735,7 +735,8 @@ define('views/EditView', [
     },
 
     reset: function() {
-      this.getInputs().$attr('disabled', null);
+      if (this.rendered)
+        this.getInputs().$attr('disabled', null);
     },
     
     submit: function(e, options) {
@@ -1521,6 +1522,7 @@ define('views/EditView', [
         }
         
         editor = CodeMirror.fromTextArea(textarea, {
+          dragDrop: false, // doesn't play nice with hammer
           mode: mode,
           tabMode: 'indent',
           lineNumbers: true,

@@ -8,17 +8,21 @@ define('views/HomePage', [
   return BasicPageView.extend({
     TAG: 'HomePage',
     first: true,
+    viewId: 'viewHome',
+    style: {
+      display: 'block'
+    },
     initialize: function(options) {
-      _.bindAll(this, 'render', 'rightMenu', 'leftMenu'); //, 'pagehide', 'pagebeforeshow');
+      _.bindAll(this, 'render'); //, 'rightMenu', 'leftMenu'); //, 'pagehide', 'pagebeforeshow');
       BasicPageView.prototype.initialize.apply(this, arguments);
       return this;
     },
 
-    events: {
-      'tap #hpRightPanel'   : 'leftMenu',
-      'hold #hpRightPanel'  : 'rightMenu',
-      'tap #installApp'    : 'installApp'
-    },
+//    events: {
+//      'tap #hpRightPanel'   : 'leftMenu',
+//      'hold #hpRightPanel'  : 'rightMenu',
+//      'tap #installApp'    : 'installApp'
+//    },
     
     installApp: function(e) {
       Events.stopEvent(e);
@@ -29,56 +33,78 @@ define('views/HomePage', [
       }
     },
     
-    rightMenu: function(e) {
-      var id = e.target.id,
-          self = this;
-      
-      if (!id)
-        return;
-      if (!id.startsWith('hpRightPanel'))
-        return;
-      Events.stopEvent(e);
-      U.require(["views/RightMenuPanel"]).done(function(MP) {
-        self.menuPanel = new MP({
-          viewId: 'viewHome'
-        });
-        
-        self.addChild(self.menuPanel);
-        self.menuPanel.render();
-      });
-    },
-    leftMenu: function(e) {
-      var id = e.target.id,
-          self = this;
-      
-      if (!id)
-        return;
-      if (!id.startsWith('hpRightPanel'))
-        return;
-      if (!this.el.querySelector('#hpLeftPanel'))
-        return this.rightMenu(e);
-//      if (!this.$('#' + this.viewId).length)
+//    click: function(e) {
+//      if (!this.rendered)
+//        this._lastClick = e;
+//    },
+//    
+//    rightMenu: function(e) {
+//      var id = e.target.id,
+//          self = this;
+//      
+//      if (!id)
 //        return;
-      
-      Events.stopEvent(e);
-      U.require(["views/MenuPanel"]).done(function(MP) {
-        self.menuPanel = new MP({viewId: 'viewHome'});
-        self.addChild(self.menuPanel);
-        self.menuPanel.render();
-      });
-    },
+//      if (!id.startsWith('hpRightPanel'))
+//        return;
+//      Events.stopEvent(e);
+//      U.require(["views/ContextMenuPanel"]).done(function(MP) {
+//        self.menuPanel = new MP({
+//          viewId: 'viewHome'
+//        });
+//        
+//        self.addChild(self.menuPanel);
+//        self.menuPanel.render();
+//      });
+//    },
+//    leftMenu: function(e) {
+////      var id = e.target.id,
+////          self = this;
+////      
+////      if (!id)
+////        return;
+////      if (!id.startsWith('hpRightPanel'))
+////        return;
+////      if (!this.el.querySelector('#hpLeftPanel'))
+////        return this.rightMenu(e);
+//////      if (!this.$('#' + this.viewId).length)
+//////        return;
+////      
+////      Events.stopEvent(e);
+////      U.require(["views/MainMenuPanel"]).done(function(MP) {
+////        self.menuPanel = new MP({viewId: 'viewHome'});
+////        self.addChild(self.menuPanel);
+////        self.menuPanel.render();
+////      });
+//      
+//    },
     
     render: function(options) {
       var self = this;
+      return U.require('views/RightMenuButton').done(function(rmb) {
+        MenuButton = rmb;
+        self.renderHelper(options);
+      });
+    },
+    
+    renderHelper: function(options) {
+      var self = this;
       
       if (!this.rendered) {
+        this.addToWorld(null, true);
 //      this.$el.trigger('page_beforeshow');
-        this.el.style.display = 'block';
         
         // only allow tap and hold events, click muddies the waters
-        this.el.querySelector('#hpRightPanel').$on('click', function(e) {
-          e.preventDefault();
+        var menuBtnEl = this.el.querySelector('#hpRightPanel');
+        this.menuBtn = new MenuButton({
+          el: menuBtnEl,
+          pageView: this,
+          viewId: this.viewId
         });
+        
+        this.menuBtn.render();
+//        menuBtnEl.$on('click', function(e) {
+//          e.preventDefault();
+//        });
       }
 //      var item = $('#homePage');
 //      item.css('display', 'block');
@@ -107,7 +133,6 @@ define('views/HomePage', [
         this.removeInstallBtn();
       
       document.title = G.currentApp.title;
-      this.addToWorld(null, true);
       return this;
     },
     

@@ -56,8 +56,8 @@ define('views/ResourceImageView', [
         return;
       
       var v = this.video,
-          width = v.videoWidth || this.$video.width(),
-          height = v.videoHeight || this.$video.height(),
+          width = v.videoWidth || v.$outerWidth(),
+          height = v.videoHeight || v.$outerHeight(),
           preventOversize = !!width;
       
       if (width && height) {
@@ -80,8 +80,8 @@ define('views/ResourceImageView', [
       width = width || maxWidth;
       height = height || maxHeight;
       var downscaleRatio = Math.max(width / maxWidth, height / maxHeight, false);
-      this.$video.attr('width', Math.round(width / downscaleRatio));
-      this.$video.attr('height', Math.round(height / downscaleRatio));
+      this.video.$attr('width', Math.round(width / downscaleRatio));
+      this.video.$attr('height', Math.round(height / downscaleRatio));
     },
     
     refresh: function() {
@@ -92,7 +92,7 @@ define('views/ResourceImageView', [
     },
     
     _getVideoEl: function() {
-      return this.isLocalVideo ? this.$('video') : this.$('iframe');
+      return (this.isLocalVideo ? this.$('video') : this.$('iframe'))[0];
     },
     
     renderVideo: function() {
@@ -135,21 +135,20 @@ define('views/ResourceImageView', [
         }
       }
       
-      this.$video = this._getVideoEl();
-      this.video = this.$video[0];
+      this.video = this._getVideoEl();
       if (this.video) {
         if (this.video.tagName === 'VIDEO') {
           var checkSize = function(e) {
             if (self.video.videoWidth) {
               self.resizeVideo();
               _.each(G.media_events, function(e) {
-                self.$video.off(e, checkSize);
+                self.video.$off(e, checkSize);
               });
             }
           };
               
           _.each(G.media_events, function(e) {
-            self.$video.one(e, checkSize);
+            self.video.$once(e, checkSize);
           });
         }
         else {
@@ -315,7 +314,7 @@ define('views/ResourceImageView', [
         if (l)
           iTemplate += '<a href="#cameraPopup" class="cameraCapture" target="#" data-icon="camera" data-prop="'+ cOf[0] + '"></a>';
 //        imgAtts.style = 'position:absolute; clip: rect(' + t + 'px,' + r + 'px,' + b + 'px,' + l + 'px); left:' + left + 'px; '; // + (top ? 'top: ' + top + 'px;' : '');   
-        imgAtts.style = 'position:absolute; clip: rect(' + clip.clip_top + 'px,' + clip.clip_right + 'px,' + clip.clip_bottom + 'px,' + clip.clip_left + 'px); left:-' + clip.clip_left + 'px; top:-' + clip.clip_top; // + (top ? 'top: ' + top + 'px;' : '');
+        imgAtts.style = 'position:absolute; clip: rect(' + clip.clip_top + 'px,' + clip.clip_right + 'px,' + clip.clip_bottom + 'px,' + clip.clip_left + 'px); left:-' + clip.clip_left + 'px; top:-' + clip.clip_top + 'px;'; // + (top ? 'top: ' + top + 'px;' : '');
       }
       else if (!isIntersection) {
         if (w) imgAtts.width = w;

@@ -79,13 +79,13 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
     
     if (this._isUpdate()) {
       if (this._isForceFetch() || this._isStale())
-        this._delayedFetch(); // shortPage ? null : lf); // if shortPage, don't set If-Modified-Since header
-      else if (this.data.length)
-        this._success(null, 'success', addEmptyResponseHeaderFn({
-          status: 304
-        })); // the data is fresh, let's get out of here
-      
-      return;
+        return this._delayedFetch(); // shortPage ? null : lf); // if shortPage, don't set If-Modified-Since header
+//      else if (this.data.length) {
+//        this._success(null, 'success', addEmptyResponseHeaderFn({
+//          status: 304
+//        })); // the data is fresh, let's get out of here
+//        return;
+//      }
     }
     else {
       if (this.data.isOutOfResources()) {
@@ -127,12 +127,14 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
 //          }
 //        };
 
-    this._success(results, 'success', {
+    // must merge results in first, otherwise we don't know if we received an update to already cached resources, or a batch of new resources
+    
+    this._success(results, 'success', { // add to / update collection
       getResponseHeader: function(p) {
         if (p == 'X-Pagination')
           return JSON.stringify(pagination);
       }
-    }); // add to / update collection
+    }); 
 
     if (this._isForceFetch())
       return this._fetchFromServer();

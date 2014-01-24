@@ -1,11 +1,10 @@
-define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', 'hammer', 'domUtils', 'utils'], function(G, _, FrameWatch, Q, Hammer, DOM, U) {
+define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', 'hammer', 'domUtils', 'utils', 'events'], function(G, _, FrameWatch, Q, Hammer, DOM, U, Events) {
   var worker,
       jsBase = G.serverName + '/js/',
       physicsModuleInfo = G.files['lib/physicsjs-custom.js'],
       masonryModuleInfo = G.files['lib/jquery.masonry.js'],
-      commonMethods = ['step', 'addBody', 'removeBody', 'distanceConstraint', 'drag', 'dragend', 'resize', 'benchBodies', 'unbenchBodies'],
-      layoutMethods = ['addBricks', 'setLimit', 'sleep', 'wake', 'continue', 'resize', 'home', 'end', 'setBounds'],
-      TIMESTEP = 1000/60,
+      commonMethods = ['step', 'addBody', 'removeBody', 'distanceConstraint', 'drag', 'dragend', 'benchBodies', 'unbenchBodies', 'style', 'animateStyle', 'track', 'trackDrag'],
+      layoutMethods = ['addBricks', 'setLimit', 'unsetLimit', 'sleep', 'wake', 'continue', 'home', 'end', 'resize', 'setBounds', 'lock', 'unlock', 'isLocked', 'destroy'],
       LOCK_STEP = false, // if true, step the world through postMessage, if false let the world run its own clock
       PHYSICS_TIME = _.now(), // from here on in,
       NOW = PHYSICS_TIME,     // these diverge
@@ -16,10 +15,13 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       HERE,
       THERE,
       KeyHandler,
+      ARROW_KEY_VECTOR_MAG = 80,
       ID_TO_LAYOUT_MANAGER = {},
       ID_TO_EL = {},
       ID_TO_LAST_TRANSFORM = {},
       ZERO_TRANSLATION = [0, 0, 0],
+      DEFAULT_SCALE = [1, 1, 1],
+      MIN_SCALE = [0.0001, 0.0001, 1],
       ZERO_ROTATION = [0, 0, 0],
       IDENTITY_TRANSFORM = [1, 0, 0, 0,
                             0, 1, 0, 0,
@@ -44,23 +46,46 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           x: {},
           y: {},
           z: {}
-        }  
+        },
+        scale: {
+          '': {},
+          x: {},
+          y: {},
+          z: {}
+        }
       },
       callbacks = {},
       subscriptions = {},
-      INPUT_TAGS = ['input', 'textarea'],
+      TRANSFORM_PROPS = ['rotate', 'translate', 'scale', 'transform'],
+//      isMoz = G.browser.firefox,
       TRANSFORM_PROP = DOM.prefix('transform'),
+      TRANSFORM_ORIGIN_PROP = DOM.prefix('transform-origin'),
       TRANSITION_PROP = DOM.prefix('transition'),
+      SCROLLER_TYPES = ['verticalMain', 'horizontal'],
       CONSTANTS = {
+        worldConfig: {
+          timestep: 1000 / 60
+        },
+        byScrollerType: {},
+        maxOpacity: DOM.maxOpacity,
         degree: 1,
         drag: 0.1,
         groupMemberConstraintStiffness: 0.3,
         springDamping: 0.1,
         springStiffness: 0.1 // stiff bounce: 0.1, // mid bounce: 0.005, // loosy goosy: 0.001,
       },
+//      SCROLLER_CONSTANTS = {
+//        degree: 1,
+//        drag: 0.1,
+//        groupMemberConstraintStiffness: 0.3,
+//        springDamping: 0.1,
+//        springStiffness: 0.1 // stiff bounce: 0.1, // mid bounce: 0.005, // loosy goosy: 0.001,
+//      },
       DRAG_LOCK = null,
       MOUSE_OUTED = false,
       TICKING = false;
+//      ,
+//      STYLE_ORDER = ['opacity', 'translation', 'rotation'];
 
   function log() {
     var args = [].slice.call(arguments);
@@ -68,16 +93,109 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     G.log.apply(G, args);
 //    console.log.apply(console, arguments);
   };
-      
-  hammer.on('drag', function() {
-    var draggable;
+
+  function isDragAlongAxis(drag, axis) {
+    switch (axis) {
+    case null:
+      return true;
+    case 'x':
+      return /left|right/.test(drag);
+    case 'y':
+      return /up|down/.test(drag);
+    default:
+      return false;
+    }
+  };
+
+//  function getDragAlongAxis(vector, axis) {
+//    switch (axis) {
+//    case 'x':
+//      vector[1] = vector[2] = 0;
+//    case 'y':
+//      vector[0] = vector[2] = 0;
+//    default:
+//      return drag;
+//    }    
+//  };
+
+  // prevent click on capture phase
+  document.$on('click', function(e) {
+    if (!G.canClick()) {
+      log('events', 'PREVENTING CLICK', _.now());
+      e.preventDefault();
+      e.stopPropagation();
+//      e.stopImmediatePropagation();
+      G.enableClick();
+      return false;
+    }
+    else
+      log('events', 'ALLOWING CLICK', _.now());
+  }, true);
+
+//  // re-enable click on bubble phase
+//  document.addEventListener('click', enableClick);
+
+  window.onscroll = function(e) {
+    debugger;
+    console.log("NATIVE SCROLL: " + window.pageXOffset + ", " + window.pageYOffset);
+    if (window.pageYOffset != 1 || window.pageXOffset)
+      window.scrollTo(0, 1);
+  };
+  
+  window.scrollTo(0, 1);
+  
+  hammer.on('touchstart', enableClick);
+//  hammer.on('tap', disableClick);
+  hammer.on('dragleft dragright dragup dragdown', function(e) {
+    G.disableClick();
+    var draggable,
+        rejects,
+        twiceRejects,
+        i;
+    
     for (var id in DRAGGABLES) {
       draggable = DRAGGABLES[id];
-      if (draggable.isOn())
-        draggable._ondrag.apply(draggable, arguments);
+      if (draggable.isOn() && isDragAlongAxis(e.type, draggable.axis)) {
+        if (draggable.hammer.element.contains(e.target)) {
+          if (draggable._ondrag.apply(draggable, arguments) !== false)
+            return;
+        }
+        else {
+          if (!rejects)
+            rejects = [];
+          
+          rejects.push(draggable);
+        }
+      }
     }
-  });
 
+    // get desperate
+    i = rejects ? rejects.length : 0;
+    while (i--) {
+      draggable = rejects[i];
+      if (e.target.contains(draggable.hammer.element)) {
+        if (draggable._ondrag.apply(draggable, arguments) !== false)
+          return;
+      }      
+      else {
+        if (!twiceRejects)
+          twiceRejects = [];
+        
+        twiceRejects.push(draggable);
+      }
+    }
+
+    // get really desperate
+    i = twiceRejects ? twiceRejects.length : 0;
+    while (i--) {
+      draggable = twiceRejects[i];
+      if (draggable._ondrag.apply(draggable, arguments) !== false)
+        return;
+    }
+
+    // oh well, we tried harder than they deserve
+  });
+  
   hammer.on('dragend', function() {
     var draggable;
     for (var id in DRAGGABLES) {
@@ -86,21 +204,6 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         draggable._ondragend.apply(draggable, arguments);
     }
   });
-
-  document.addEventListener('click', function(e) {
-    try {
-      if (!G.canClick()) {
-        log('events', 'PREVENTING CLICK', _.now());
-        e.preventDefault();
-        e.stopPropagation();
-        return false;
-      }
-      
-      log('events', 'ALLOWING CLICK', _.now());
-    } finally {
-      enableClick();
-    }
-  }, true);
 
   function dragOnTick() {
     if (TICKING)
@@ -137,9 +240,20 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   function enableClick() {
     G.enableClick();
   };
-  
-  function isUserInputTag(tag) {
-    return INPUT_TAGS.indexOf(tag.toLowerCase()) != -1;
+
+  function disableClick() {
+    G.disableClick();
+  };
+
+  function isScrollable(el) {
+    switch (el.tagName) {
+      case 'TEXTAREA':
+        return false;
+      case 'INPUT':
+        return el.getAttribute('type') != 'range';
+      default:
+        return true;
+    }
   };
 
   function stopDragEvent(e) {
@@ -168,7 +282,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     _dragged: zeroVector.slice(),
     _coast: false,
     handleEvent: function(e) {
-      if (isUserInputTag(e.target.tagName))
+      if (!isScrollable(e.target))
         return;
 
 //      log(e.type.toUpperCase(), U.getKeyEventCode(e));
@@ -190,8 +304,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       var keyCode = U.getKeyEventCode(e),
           vector = this._dragged,
           viewport = G.viewport,
-          axisIdx = 1, // generalize to X, Y
-          dimProp = axisIdx == 0 ? 'width' : 'height',
+//          axisIdx = 1, // generalize to X, Y
+//          dimProp = axisIdx == 0 ? 'width' : 'height',
           draggable;
           
       if (this._keyHeld && this._keyHeld != keyCode)
@@ -202,13 +316,15 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         if (this._keyHeld)
           return;
         
-        vector[axisIdx] = viewport[dimProp];
+        vector[0] = viewport.width;
+        vector[1] = viewport.height;
         break;
       case 34: // page down
         if (this._keyHeld)
           return;
         
-        vector[axisIdx] = -viewport[dimProp];
+        vector[0] = -viewport.width;
+        vector[1] = -viewport.height;
         break;
       case 35: // end
         if (this._keyHeld)
@@ -234,13 +350,21 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         }
         
         return; 
+      case 37: // left arrow
+        this._coast = true;
+        vector[0] = ARROW_KEY_VECTOR_MAG;
+        break;
       case 38: // up arrow
         this._coast = true;
-        vector[axisIdx] = 40;
+        vector[1] = ARROW_KEY_VECTOR_MAG;
+        break;
+      case 39: // right arrow
+        this._coast = true;
+        vector[0] = -ARROW_KEY_VECTOR_MAG;
         break;
       case 40: // down arrow
         this._coast = true;
-        vector[axisIdx] = -40;
+        vector[1] = -ARROW_KEY_VECTOR_MAG;
         break;
       default:
         return;
@@ -314,20 +438,19 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   function calcBounds() {
     var viewport = G.viewport;
     bounds[0] = bounds[1] = 0;
-    bounds[2] = bounds[2] + viewport.width;
-    bounds[3] = bounds[3] + viewport.height;
+    bounds[2] = bounds[0] + viewport.width;
+    bounds[3] = bounds[1] + viewport.height;
   };
 
   function replaceCallbacks(args) {
-    var i = args.length,
-        arg;
-    
-    while (i--) {
-      arg = args[i];
+    _.each(args, function(arg, idx) {
       if (typeof arg == 'function') {
-        args[i] = addCallback(arg);
+        args[idx] = addCallback(arg);
       }
-    }
+      else if (typeof arg == 'object') {
+        replaceCallbacks(arg);
+      }
+    });
   };
   
   function addCallback(callback) {
@@ -353,58 +476,136 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     }
   };
   
-  function render(transforms) {
+  function render() {
+    THERE.rpc(null, 'render'); // signal readiness for next set of render data    
     var el,
+        style,
+        styles = UNRENDERED,
+        propVal,
         transform,
         translate,
+        scale,
         rotate,
         oldTranslate,
         oldRotate,
+        oldScale,
         transformStr,
         listeners,
         dtx, dty, dtz,
         drx, dry, drz;
     
-    for (var id in transforms) {
+    for (var id in styles) {
       el = ID_TO_EL[id];
       if (el) {
         oldTransform = ID_TO_LAST_TRANSFORM[id] || IDENTITY_TRANSFORM;
-        transform = transforms[id];
-        transformStr = 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, ';
-        if ((translate = transform.translate)) {
-          transformStr += translate[0].toFixed(10) + ', ' + translate[1].toFixed(10) + ', ' + translate[2].toFixed(10);
-          oldTranslate = oldTransform.translate || ZERO_TRANSLATION;
-          dtx = translate[0] - oldTranslate[0];
-          dty = translate[1] - oldTranslate[1];
-          dtz = translate[2] - oldTranslate[2];
-          invokeListeners(renderListeners.translate[''][id], el, dtx, dty, dtz);
-          invokeListeners(renderListeners.translate.x[id], el, dtx);
-          invokeListeners(renderListeners.translate.y[id], el, dty);
-          invokeListeners(renderListeners.translate.z[id], el, dtz);
-        }
-        else
-          transformStr += '0, 0, 0';
-        
-        transformStr += ', 1) ';
-        if ((rotate = transform.rotate)) {
-          // TODO: all axes, no need for now
-//          transformStr += 'rotateX(' + rotate[0] + 'rad) ' + 'rotateY(' + rotate[1] + 'rad)' + 'rotateZ(' + rotate[2] + 'rad)';
-          transformStr += 'rotate(' + rotate[2].toFixed(10) + 'rad)'; // for now, only around Z axis
-          oldRotate = oldTransform.rotate || ZERO_ROTATION;
-//          drx = rotate[0] - oldRotate[0];
-//          dry = rotate[1] - oldRotate[1];
-          drz = rotate[2] - oldRotate[2];
-          invokeListeners(renderListeners.rotate[''][id], el, drx, dry, drz);
-//          invokeListeners(renderListeners.rotate.z[id], drx);
-//          invokeListeners(renderListeners.rotate.y[id], dry);
-          invokeListeners(renderListeners.rotate.z[id], drz);
+        style = styles[id];
+        for (var prop in style) {
+          if (TRANSFORM_PROPS.indexOf(prop) == -1) {
+            propVal = style[prop];
+            if (propVal == null)
+              el.style.removeProperty(prop)
+            else
+              el.style[DOM.prefix(prop)] = propVal;
+          }
         }
         
-//        el.style[TRANSFORM_PROP] = 'matrix3d(' + transform.join(',') + ')';
-        el.style[TRANSFORM_PROP] = transformStr;
-        el.style[TRANSITION_PROP] = '';
-        
-        invokeListeners(renderListeners.render[id], el, oldTransform, transform);
+        transform = style.transform;
+        if (transform) {
+          el.style[TRANSFORM_PROP] = 'matrix3d(' + transform.join(', ') + ')';
+          el.style[TRANSITION_PROP] = '';          
+          invokeListeners(renderListeners.render[id], el, oldTransform, transform);
+        }
+          
+//        if (!transform)
+//          continue;
+//
+//        translate = transform.translate;
+//        scale = transform.scale;
+//        rotate = transform.rotate;
+//        transformStr = null;
+//        if (translate || scale) {
+//          transformStr = '';
+//          if (scale) {
+//            if (!_.isEqual(scale, DEFAULT_SCALE)) {
+//              transformStr = 'scale3d(' + scale[0] + ', ' + scale[1] + ', ' + scale[2] + ')';
+//              if (_.isEqual(scale, MIN_SCALE)) 
+//                translate = null;
+//            }
+//            
+//            oldScale = oldTransform.scale || DEFAULT_SCALE;
+//            dsx = scale[0] - oldScale[0];
+//            dsy = scale[1] - oldScale[1];
+//            dsz = scale[2] - oldScale[2];
+//            invokeListeners(renderListeners.scale[''][id], el, dsx, dsy, dsz);
+//            invokeListeners(renderListeners.scale.x[id], el, dsx);
+//            invokeListeners(renderListeners.scale.y[id], el, dsy);
+//            invokeListeners(renderListeners.scale.z[id], el, dsz);
+//          }
+//          else
+//            scale = DEFAULT_SCALE;
+//          
+//          if (translate) {
+//            transformStr = 'matrix3d(' + scale[0] + ', 0, 0, 0, 0, ' + scale[1] + ', 0, 0, 0, 0, ' + scale[2] + ', 0, ';
+//  //        transformStr = 'translate(';
+//            transformStr += translate[0].toFixed(10) + ', ' + translate[1].toFixed(10) + ', ' + translate[2].toFixed(10) + ', 1)';
+//  //          transformStr += translate[0].toFixed(10) + 'px, ' + translate[1].toFixed(10) + 'px)';
+//            oldTranslate = oldTransform.translate || ZERO_TRANSLATION;
+//            dtx = translate[0] - oldTranslate[0];
+//            dty = translate[1] - oldTranslate[1];
+//            dtz = translate[2] - oldTranslate[2];
+//            invokeListeners(renderListeners.translate[''][id], el, dtx, dty, dtz);
+//            invokeListeners(renderListeners.translate.x[id], el, dtx);
+//            invokeListeners(renderListeners.translate.y[id], el, dty);
+//            invokeListeners(renderListeners.translate.z[id], el, dtz);
+//          }          
+//        }
+//          
+////        else {
+////          transformStr += '0, 0, 0';
+//////          transformStr += '0px, 0px)';
+////        }
+////        
+//        
+//        // ROTATION
+//        if (rotate) {
+//          // TODO: all axes, no need for now
+//          transformStr = transformStr || '';
+//          var unit = rotate.unit || 'deg';
+//          if (rotate[0])
+//            transformStr += ' rotateX(' + rotate[0].toFixed(10) + unit +')';
+//          if (rotate[1])
+//            transformStr += ' rotateY(' + rotate[1].toFixed(10) + unit +')';
+//          if (rotate[2])
+//            transformStr += ' rotateZ(' + rotate[2].toFixed(10) + unit +')';
+//          
+////          if (rotate[2])
+////            transformStr += 'rotate(' + rotate[2].toFixed(10) + 'rad)'; // for now, only around Z axis
+//          
+//          oldRotate = oldTransform.rotate || ZERO_ROTATION;
+////          drx = rotate[0] - oldRotate[0];
+////          dry = rotate[1] - oldRotate[1];
+//          drz = rotate[2] - oldRotate[2];
+//          invokeListeners(renderListeners.rotate[''][id], el, drx, dry, drz);
+////          invokeListeners(renderListeners.rotate.z[id], drx);
+////          invokeListeners(renderListeners.rotate.y[id], dry);
+//          invokeListeners(renderListeners.rotate.z[id], drz);
+//        }
+//        
+//        if (transformStr != null) {
+//          el.style[TRANSFORM_PROP] = transformStr;
+//          el.style[TRANSITION_PROP] = '';
+////          el.style[TRANSFORM_ORIGIN_PROP] = '0% 0%';
+////          if (isMoz) {
+////            el.style.transform = transformStr;
+////            el.style.transition = '';
+////            el.style['transform-origin'] = '0% 0%';
+////          }
+//          
+//        }
+//        
+////        el.style[TRANSFORM_PROP] = 'matrix3d(' + transform.join(',') + ')';
+//        
+//        invokeListeners(renderListeners.render[id], el, oldTransform, transform);
 
         ID_TO_LAST_TRANSFORM[id] = transform;
 //        if (!el.parentNode)  // nodes of known size or irrelevant size can be attached at first render instead of at some arbitrary view build time
@@ -434,8 +635,14 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
    * currently only sends drag data once a frame (maybe it should send every time it gets a drag event)
    * TODO: make it work for nested draggables
    */
-  function DragProxy(hammerOrElement, id) {
+  function DragProxy(hammer, id, axis) {
     this.id = id;
+    this.axis = axis;
+    if (axis)
+      this.dragEventName = axis == 'x' ? 'dragleft dragright' : 'dragup dragdown';
+    else
+      this.dragEventName = 'drag';
+    
     this.touchPos = zeroVector.slice();
     this.touchPosOld = zeroVector.slice();
     this.tmp = zeroVector.slice();
@@ -446,7 +653,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     this.drag = false;      
     this._ondrag = this._ondrag.bind(this);
     this._ondragend = this._ondragend.bind(this);
-    this.hammer = hammerOrElement instanceof Hammer.Instance ? hammerOrElement : new Hammer(hammerOrElement);
+//    this.hammer = hammerOrElement instanceof Hammer.Instance ? hammerOrElement : new Hammer(hammerOrElement);
+    this.hammer = hammer;
     this.connect();
   };
     
@@ -463,16 +671,13 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     },
 
     _canHandle: function(e) {
-      if (DRAG_ENABLED && (!DRAG_LOCK || DRAG_LOCK == this.id) && !isUserInputTag(e.target.tagName))
+      if (DRAG_ENABLED && (!DRAG_LOCK || DRAG_LOCK == this.id) && isScrollable(e.target))
         return true;
-      
-//      if (!isUserInputTag(e.target.tagName))
-//        return true;
     },
     
     _ondrag: function(e) {
       if (!this._canHandle(e))
-        return;
+        return false;
       
       G.disableClick();
       var gesture = e.gesture,
@@ -493,9 +698,15 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         this.touchPos[0] = touch.pageX;
         this.touchPos[1] = touch.pageY;
         Array.copy(this.touchPos, this.tmp);
+
+        if (this.axis != 'y')
+          this.tmp[0] -= gesture.deltaX / 2;
+        if (this.axis != 'x')
+          this.tmp[1] -= gesture.deltaY / 2;
         
-        this.tmp[0] -= gesture.deltaX / 2;
-        this.tmp[1] -= gesture.deltaY / 2;
+        if (this.tmp[0] == this.tmp[1] && this.tmp[0] == 0)
+          return false;
+        
         Array.copy(this.tmp, this.touchPosOld);
       }
       
@@ -509,7 +720,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 
     _ondragend: function(e) {
       if (!this._canHandle(e))
-        return;
+        return false;
 
       stopDragEvent(e);
       DRAG_LOCK = null;
@@ -537,15 +748,19 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //    
 
     connect: function() {
-      this._connected = true;
-      this.hammer.on('drag', this._ondrag);
-      this.hammer.on('dragend', this._ondragend);
+      if (!this._connected) {
+        this._connected = true;
+        this.hammer.on(this.dragEventName, this._ondrag);
+        this.hammer.on('dragend', this._ondragend);
+      }
     },
     
     disconnect: function() {
-      this._connected = false;
-      this.hammer.off('drag', this._ondrag);
-      this.hammer.off('dragend', this._ondragend);
+      if (this._connected) {
+        this._connected = false;
+        this.hammer.off(this.dragEventName, this._ondrag);
+        this.hammer.off('dragend', this._ondragend);
+      }
     },
     
     isOn: function() {
@@ -558,10 +773,19 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
             
       if (this.dragEnd) {
         this.dragEnd = false;
+//        THERE.chain({
+//            method: 'dragend',
+//            args: [this.lastDragVector, this.id]
+//          }, {
+//            method: 'echo',
+//            args: [enableClick] // async and faster than setTimeout
+//          }
+//        );
+
         THERE.dragend(this.lastDragVector, this.id);
         zero(this.lastDragVector);
         
-        Physics.echo(enableClick) // async and faster than setTimeout
+//        Physics.echo(enableClick); // async and faster than setTimeout 
       }
       
       if (this.drag && !isEqual(this.dragVector, zeroVector)) {
@@ -575,15 +799,48 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   };
 
   function getRenderListeners(event) {
-    if (event == 'translate')
-      return renderListeners.translate[''];
-    else if (event == 'rotate')
-      return renderListeners.translate[''];
-    else
-      return _.leaf(renderListeners, event);
+    switch (event) {
+      case 'translate':
+      case 'rotate':
+      case 'scale':
+        return renderListeners[event][''];
+      default:
+        return _.leaf(renderListeners, event);
+    }
   }
   
   Physics = {
+    getRailId: function(bodyId) {
+      return 'rail-' + bodyId;
+    },
+    getBoxId: function(bodyId) {
+      return 'box-' + bodyId;
+    },
+    getRectVertices: function(width, height) {
+      return [
+        {x: 0, y: 0},
+        {x: width, y: 0},
+        {x: width, y: height},
+        {x: 0, y: height}
+      ];
+    },
+    updateRectVertices: function(vertices, width, height) {
+      if (!vertices)
+        return Physics.getRectVertices(width, height);
+      
+      var v0 = vertices[0],
+          v1 = vertices[1],
+          v2 = vertices[2],
+          v3 = vertices[3];
+      
+      v0.x = v0.y = v1.y = v3.x = 0;
+      v1.x = v2.x = width;
+      v2.y = v3.y = height;
+      return vertices;
+    },
+    isDragging: function() {
+      return !!DRAG_LOCK;
+    },
     constants: CONSTANTS,
     init: function() {
       if (!worker) {
@@ -596,14 +853,14 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       THERE.rpc(null, 'echo', [addCallback(callback)]);
     },
     
-    addBody: function(id, type, options, el, hammer) {
-      if (el)
-        HERE.addBody(el, id);
-      if (hammer)
-        this.addDraggable(hammer || el, id);
-      
-      THERE.addBody(type, options, id);
-    },
+//    addBody: function(id, type, options, el, hammer) {
+//      if (el)
+//        HERE.addBody(el, id);
+//      if (hammer)
+//        this.addDraggable(hammer || el, id);
+//      
+//      THERE.addBody(type, options, id);
+//    },
     
     benchBodies: function(/* ids */) {
       THERE.benchBodies.apply(THERE, arguments);
@@ -613,25 +870,39 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       THERE.unbenchBodies.apply(THERE, arguments);
     },
     
-    addDraggable: function(hammerOrElement, id) {
-      var proxy = new DragProxy(hammerOrElement, id);
-      if (!DRAGGABLES[id])
+    addDraggable: function(hammer, id, axis) {
+      var proxy = DRAGGABLES[id];
+      if (proxy) {
+        this.connectDraggable(id);
+      }
+      else {
         numDraggables++;
+        proxy = DRAGGABLES[id] = new DragProxy(hammer, id, axis);
+      }
       
-      DRAGGABLES[id] = proxy;
       return proxy;
     },
     
-    suspendDraggable: function(id) {
+    connectDraggable: function(id) {
       var draggable = DRAGGABLES[id];
-      if (draggable)
+      if (draggable) {
+        draggable.connect();
+        return draggable;
+      }
+    },
+    
+    disconnectDraggable: function(id) {
+      var draggable = DRAGGABLES[id];
+      if (draggable) {
         draggable.disconnect();
+        return draggable;
+      }
       
 //      DRAGGABLES = _.difference(DRAGGABLES, _.toArray(arguments));
     },
 
     removeDraggable: function(id) {
-      this.suspendDraggable(id);
+      this.disconnectDraggable(id);
       if (DRAGGABLES[id]) {
         delete DRAGGABLES[id];
         numDraggables--;
@@ -642,14 +913,14 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     disableDrag: function() {
       DRAG_ENABLED = false;
 //      for (var id in DRAGGABLES) {
-//        this.suspendDraggable(id);
+//        this.disconnectDraggable(id);
 //      }
     },
 
     enableDrag: function() {
       DRAG_ENABLED = true;
 //      for (var id in DRAGGABLES) {
-//        this.suspendDraggable(id);
+//        this.disconnectDraggable(id);
 //      }
     },
     
@@ -703,6 +974,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         debugger;
       },
       init: function() {
+//        var clone = _.deepExtend({}, Physics.constants);
+//        for (var i = 0; i < SCROLLER_TYPES.length; i++) {
+//          Physics.constants.byScrollerType[SCROLLER_TYPES[i]] = _.deepExtend({}, clone);
+//        }        
+
 //        hammer = new Hammer(document, hammerOptions);
 //        DragProxy.init();
 //        DragProxy.connect(hammer);
@@ -728,8 +1004,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           
           switch (topic) {
             case 'render':
-              _.extend(UNRENDERED, e.data.bodies);
-              Q.write(render, this, [UNRENDERED], {
+//              if (_.size(UNRENDERED))
+//                debugger; // should never happen
+                
+              UNRENDERED = e.data.bodies;
+              Q.write(render, this, null, {
                 throttle: true,
                 last: true
               });
@@ -794,14 +1073,44 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         });
         
         this.updateBounds();
+        this.rpc(null, 'render'); // signal readiness for next set of render data    
       },
 
       updateBounds: function() {
         calcBounds();
-        worker.postMessage({
-          method: 'updateBounds',
-          args: bounds
+        var self = this,
+            disconnected = [],
+            chain = [{
+              method: 'updateBounds',
+              args: bounds
+            }];
+        /*
+        // disconnect/reconnect draggables before/after resize handling
+        _.each(DRAGGABLES, function(draggable, id) {
+          if (draggable.isOn() && draggable.drag) { // currently dragging
+            Physics.disconnectDraggable(id);
+            disconnected.push(id);
+            chain.push({
+              method: 'dragend',
+              args: [ZERO_VECTOR, id]
+            });
+          }          
         });
+        
+        if (disconnected.length > 1) {
+          chain.push({
+            method: 'echo',
+            args: [function() {
+              var i = disconnected.length;
+              while (i--) {
+                Physics.connectDraggable(disconnected[i]);
+              }
+            }]
+          });
+        };
+        // end draggable hack
+        */
+        return THERE.chain.apply(THERE, chain);
       },
       
       postMessage: function() {
@@ -821,7 +1130,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       },
 
       chain: function() {
-        var rpcs = _.toArray(arguments),
+        var rpcs = arguments[0] instanceof Array ? arguments[0] : _.toArray(arguments),
             rpc;
         
         for (var i = 0, l = rpcs.length; i < l; i++) {
@@ -840,6 +1149,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         if (args)
           replaceCallbacks(args);
         
+//        G.log("events", "RPC", method, (args ? args.join(",") : ''));
         worker.postMessage({
           object: objectName,
           method: method,
@@ -853,8 +1163,14 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         }
       },
       
-      set: function(constantName, value) {
-        Physics.constants[constantName] = value;
+      set: function(type, constantName, value) {
+        var constants;
+//        if (type)
+//          constants = Physics.constants.byScrollerType[type];
+//        else
+          constants = Physics.constants;
+        
+        constants[constantName] = value;
         return this.rpc(null, 'set', _.toArray(arguments));
       }
     }
@@ -866,8 +1182,40 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     
     ID_TO_LAYOUT_MANAGER[options.container] = this;
     this.id = _.uniqueId('layoutManager');
+    this.containerId = options.container;
     THERE.rpc(null, 'layout.init', [this.id, options, addSubscription(callback)]);
   };
+  
+//  LayoutManager.prototype = {
+//    resize: function() {
+//      var self = this,
+//          draggable = this.containerId && Physics.disconnectDraggable(this.containerId),
+//          args = _.toArray(arguments),
+//          chain = [{
+//            object: this.id,
+//            method: 'resize',
+//            args: args
+//          }];
+//      
+//      if (draggable) {
+//        if (draggable.drag) { // currently dragging
+//          chain.push({
+//            method: 'dragend',
+//            args: [ZERO_VECTOR, this.containerId]
+//          });
+//        }
+//
+//        chain.push({
+//          method: 'echo',
+//          args: [function() {
+//            Physics.connectDraggable(self.containerId);
+//          }]
+//        });
+//      }
+//      
+//      return THERE.chain.apply(THERE, chain);
+//    }  
+//  };
   
   HERE = Physics.here;
   THERE = Physics.there;
@@ -880,6 +1228,21 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   
   layoutMethods.forEach(function(method) {
     LayoutManager.prototype[method] = function() {
+      switch (method) {
+      case 'continue':
+      case 'addBricks':
+        this.unlock();
+        break;
+      case 'lock':
+        this._handlingRangeRequest = true;
+        return;
+      case 'unlock':
+        this._handlingRangeRequest = false;
+        return;
+      case 'isLocked':
+        return this._handlingRangeRequest;
+      }
+      
       return THERE.rpc(this.id, method, _.toArray(arguments));
     };
   });
