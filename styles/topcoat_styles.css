@@ -75,6 +75,9 @@ li {
 #cpView {
   font-size:1.6rem;
 }
+#cpView .topcoat-list__item {
+  padding: 1.25rem 0 0 1.25rem;
+}
 .topcoat-button-bar__button--large i {
   font-size:3rem;
 }
