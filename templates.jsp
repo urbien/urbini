@@ -38,7 +38,7 @@
 </script>  
 
 <script type="text/template" id="scrollbarTemplate">
-  <div id="{{= obj.id || 'scrollbar' + G.nextId() }}" class="scrollbar {{= 'scrollbar' + obj.axis || 'y' }}" style="z-index:10002; {{= (obj.width ? 'width:' + width + 'px;' : '') + (obj.height ? 'height:' + height + 'px;' : '') }}">
+  <div id="{{= obj.id || 'scrollbar' + G.nextId() }}" class="scrollbar" style="position:absolute; {{= (obj.width ? 'width:' + width + 'px;' : '') + (obj.height ? 'height:' + height + 'px;' : '') }}">
     <div class="scrollbarinner">
     </div>
   </div>

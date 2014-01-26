@@ -1289,7 +1289,6 @@ div {
 #  -webkit-transition: opacity 350ms; 
 #  -moz-transition: opacity 350ms; 
 #  transition: opacity 350ms; 
-  z-index: 10; 
   -webkit-box-sizing: content-box; 
   -moz-box-sizing: content-box; 
   box-sizing: content-box 
