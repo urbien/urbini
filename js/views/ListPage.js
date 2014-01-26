@@ -22,7 +22,7 @@ define('views/ListPage', [
     _draggable: false,
     _scrollbar: false, 
     style: {
-      'background-color': 'white'
+      'backgroundColor': 'white'
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'setMode', /*'orientationchange',*/ 'onFilter');

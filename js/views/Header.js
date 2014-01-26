@@ -23,8 +23,8 @@ define('views/Header', [
   return BasicView.extend({
 //    viewType: 'any',
     style: {
-      'z-index': 10001,
-      opacity: DOM.maxOpacity
+      'zIndex': 10001,
+      opacity: 0.9 //DOM.maxOpacity
     },
     _draggable: false,
     autoFinish: false,
