@@ -14,6 +14,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       Physics,
       HERE,
       THERE,
+      MouseWheelHandler,
       KeyHandler,
       ARROW_KEY_VECTOR_MAG = 80,
       ID_TO_LAYOUT_MANAGER = {},
@@ -57,7 +58,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       callbacks = {},
       subscriptions = {},
       TRANSFORM_PROPS = ['rotate', 'translate', 'scale', 'transform'],
-//      isMoz = G.browser.firefox,
+      isMoz = G.browser.firefox,
       TRANSFORM_PROP = DOM.prefix('transform'),
       TRANSFORM_ORIGIN_PROP = DOM.prefix('transform-origin'),
       TRANSITION_PROP = DOM.prefix('transition'),
@@ -297,6 +298,29 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       }
     },
     
+    getDragDirection: function(keyCode) {
+      switch (keyCode) {
+      case 33: // page up
+        return 'up';
+      case 34: // page down
+        return 'down';
+      case 35: // end
+        return 'downright';
+      case 36: // home
+        return 'upleft';
+      case 37: // left arrow
+        return 'left';
+      case 38: // up arrow
+        return 'up';
+      case 39: // right arrow
+        return 'right';
+      case 40: // down arrow
+        return 'down';
+      default:
+        throw "key does not correspond to a direction";
+      }
+    },
+    
     _onKeyDown: function(e) {
       if (!numDraggables)
         return;
@@ -306,6 +330,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           viewport = G.viewport,
 //          axisIdx = 1, // generalize to X, Y
 //          dimProp = axisIdx == 0 ? 'width' : 'height',
+          dir,
           draggable;
           
       if (this._keyHeld && this._keyHeld != keyCode)
@@ -370,20 +395,24 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         return;
       }        
       
+      dir = this.getDragDirection(keyCode);
       this._keyHeld = keyCode;
       for (var id in DRAGGABLES) {
         draggable = DRAGGABLES[id];
-        if (draggable.isOn())
+        if (draggable.isOn() && isDragAlongAxis(dir, draggable.axis))
           THERE.drag(this._dragged, id);
       }
     },
     
     _onKeyUp: function(e) {
-      if (this._keyHeld && U.getKeyEventCode(e) == this._keyHeld) {
-        var draggable;
+      var keyCode = U.getKeyEventCode(e);
+      if (this._keyHeld && keyCode == this._keyHeld) {
+        var draggable,
+            dir = this.getDragDirection(keyCode);
+        
         for (var id in DRAGGABLES) {
           draggable = DRAGGABLES[id];
-          if (draggable.isOn())
+          if (draggable.isOn() && isDragAlongAxis(dir, draggable.axis))
             THERE.dragend(this._dragged, id, !this._coast);
         }
 
@@ -399,6 +428,59 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   
   document.addEventListener('keydown', KeyHandler);
   document.addEventListener('keyup', KeyHandler)
+  
+  MouseWheelHandler = {
+    _vector: [0, 0, 0],
+    handleEvent: function(e) {
+      if (!isScrollable(e.target))
+        return;
+
+      var target = e.target,
+          draggable,
+          el,
+          dragEl,
+          axis,
+          coast,
+          v,
+          args;
+      
+      for (var id in DRAGGABLES) {
+        draggable = DRAGGABLES[id];
+        el = draggable.getElement();
+        if (el == e.target || el.contains(e.target)) {
+          dragEl = el;
+          break;
+        }
+      }
+      
+      if (!dragEl)
+        return;
+      
+      axis = draggable.getAxis();
+      v = MouseWheelHandler._vector;
+      v[0] = v[1] = 0;
+      v[axis == 'x' ? 0 : 1] = e.wheelDelta / 10 | 0;
+      args = [v, draggable.getId(), false]; // if true, will prevent coast
+      THERE.chain({
+        method: 'drag',
+        args: args
+      }, {
+        method: 'dragend',
+        args: args        
+      });
+      
+//      THERE.dragend(v, draggable.getId(), false); 
+    }
+  };
+
+  if (isMoz) {
+    // Firefox
+    document.addEventListener("DOMMouseScroll", MouseWheelHandler, true);
+  }
+  else {
+    // IE9, Chrome, Safari, Opera
+    document.addEventListener("mousewheel", MouseWheelHandler, true);
+  }
 
   // VECTOR functions
   function isEqual(v1, v2) {
@@ -511,7 +593,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         
         transform = style.transform;
         if (transform) {
-          el.style[TRANSFORM_PROP] = 'matrix3d(' + transform.join(', ') + ')';
+          el.style[TRANSFORM_PROP] = DOM.toMatrix3DString(transform);
           el.style[TRANSITION_PROP] = '';          
           invokeListeners(renderListeners.render[id], el, oldTransform, transform);
         }
@@ -795,6 +877,18 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       
       zero(this.dragVector);
       return true;
+    },
+    
+    getElement: function() {
+      return this.hammer.element;
+    },
+    
+    getAxis: function() {
+      return this.axis;
+    },
+    
+    getId: function() {
+      return this.id;
     }
   };
 

@@ -758,6 +758,14 @@ function toJSON(obj) {
 //          : Math.min(Math.max(right2 - left1, right1 - left2, bottom2 - top1, bottom1 - top2, 0), Math.max(aabb1.halfWidth, aabb1.halfHeight) * 2, Math.max(aabb2.halfWidth, aabb2.halfHeight) * 2);
 //};
 
+function fixRectVertices(v) {
+  if (v[0].x == 0 && v[1].x == 0 && v[2].x == 0 && v[3].x == 0)
+    v[1].x = v[2].x = 1;
+
+  if (v[0].y == 0 && v[1].y == 0 && v[2].y == 0 && v[3].y == 0)
+    v[2].y = v[3].y = 1;
+};
+
 function _getOverlapArea(aabbA, aabbB, areaA, areaB) {
   aabbA = aabbA.get ? aabbA.get() : aabbA;
   aabbB = aabbB.get ? aabbB.get() : aabbB;
@@ -1081,6 +1089,9 @@ function initWorld(_world, stepSelf) {
 	  Physics.util.ticker.subscribe(API.step);
 	
 	Physics.util.extend(Physics.util, {
+	  clamp: function(val, low, high) {
+	    return Math.max(Math.min(val, high), low);
+	  },
 	  truncate: function(x, places) {
 	    var tmp = Math.pow(10, places);
 	    return (x * tmp | 0) / tmp;
@@ -1139,11 +1150,8 @@ function initWorld(_world, stepSelf) {
 
   world.subscribe('dragend', function(data) {
     var scratch = Physics.scratchpad(),
-        v = scratch.vector().clone(data.vector).mult( 1 / 100 );
-    
-//    DRAG_FINISH_PENDING = true;
-//    DRAG_ANCHOR.state.vel.clone(data.vector).mult( 1 / 10 );
-    var i = DRAG_CONSTRAINTS.length,
+        v = scratch.vector().clone(data.vector).mult( 1 / 100 ),
+        i = DRAG_CONSTRAINTS.length,
         cst;
     
     while (i--) {
@@ -1155,6 +1163,7 @@ function initWorld(_world, stepSelf) {
     DRAG_CONSTRAINTS.length = 0;
     DRAG_ANCHOR.stop();
     DRAG_ANCHOR.fixed = false;
+    scratch.done();
 //    world.subscribe('integrate:positions', killDrag, this, 1000);
 	});
 
@@ -1294,7 +1303,7 @@ function initWorld(_world, stepSelf) {
 	DIR_MAP.down = DIR_Y_NEG = Physics.vector(0, 1);
 	DIR_MAP.left = DIR_X_NEG = Physics.vector(-1, 0);
 	DIR_MAP.right = DIR_X_POS = Physics.vector(1, 0);
-  DIR_MAP.in = DIR_Z_POS = Physics.vector(0, 0, 1);
+	DIR_MAP['in'] = DIR_Z_POS = Physics.vector(0, 0, 1);
   DIR_MAP.out = DIR_Z_NEG = Physics.vector(0, 0, -1);
 };
 
@@ -1705,7 +1714,7 @@ function pick(obj) {
           if (this.scrollbar) 
             this._updateScrollbar();
           
-          if (this.jiggle)
+          if (this.tilt)
             this.tiltBricksInertially();
         }
       }, this);
@@ -1730,7 +1739,9 @@ function pick(obj) {
         });
       }
       
-      if (this.slidingWindow) // TODO: make sure only one thing is rotating the container
+//      if (this.squeeze) // TODO: make sure only one thing is rotating the container
+//        API.squeezeAndStretch(this.offsetBody, this.offsetBody);
+      if (this.tilt)
         API.rotateWhenMoving(this.offsetBody, getContainer(this.offsetBody), this.axisIdx, this.orthoAxisIdx);
       
       this['continue']();
@@ -1762,24 +1773,45 @@ function pick(obj) {
     },
     
     tiltBricksInertially: function() {
-      var vel = this.offsetBody.state.pos.get(this.axisIdx) - this.offsetBody.state.old.pos.get(this.axisIdx),
-          thresh = 1,
-          absVel = Math.sqrt(Math.abs(vel)),
-          rotation = absVel > thresh ? Physics.util.truncate(absVel - thresh, 5) : 0,
-          rArr = [null, null, 0],
-          brick,
-          i = this.mason.bricks.length;
+      if (!this.numBricks())
+        return;
+      
+      var minDelta = 0.0001,
+          maxDelta = 0.001,
+          angles = [0, 0, 0],
+          v = Physics.util.truncate(this.offsetBody.state.vel.get(this.axisIdx), 3),
+          rotation = this.mason.bricks[0].state.renderData.get('rotate'),
+          r = rotation[this.orthoAxisIdx],
+          newR = v ? -sign(v) * Math.log(Math.abs(v + sign(v))) / 50 : 0,
+          bricks = this.mason.bricks,
+          i = bricks.length;
+      
+      newR = Math.max(
+        Math.min(newR, r + maxDelta, Math.PI / 4),
+        r - maxDelta,
+        -Math.PI / 4
+      ); // don't allow r to change too fast
+      
+      if (Math.abs(newR) < minDelta) {
+        if (r == 0)
+          return;
+        else
+          newR = 0;
+      }
+      else if (Math.abs(newR - r) < minDelta)
+        return;
 
-      rotation = Math.min(rotation, 5);
-      rotation *= sign(vel);
-      rArr[this.orthoAxisIdx] = rotation;
-      rArr[this.axisIdx] = 0;
+//      log("ROTATION: " + newR + " for VELOCITY: " + v);
+      Physics.util.extend(angles, rotation);
+      angles[this.orthoAxisIdx] = newR;
+//      rotateBody.state.renderData.set('rotate', angles);
       
       while (i--) {
         brick = this.mason.bricks[i];
-        brick.state.rotation = rArr;
+        brick.state.renderData.set('rotate', angles);
       }      
     },
+    
 //    tiltBricksInertially: function() {
 //      var containerRail = getRailBody(getId(this.offsetBody)),
 //          railPos = containerRail.state.pos,
@@ -2580,6 +2612,8 @@ function pick(obj) {
         options = optionsArr[i];
         if (!this.flexigroup)
           options.frame = this.container;
+        
+        fixRectVertices(options.vertices);
 //        if (!options.hasOwnProperty('drag') && this.hasOwnProperty('drag'))
 //          options.drag = this.drag;
         
@@ -3156,11 +3190,11 @@ var API = {
     }
     
     function cleanUp(cancelType) {
+      completeCallback = null;
       if (cancelType == 'revert')
         body.state.renderData.set(prop, startValue, unit);
       
-      if (cancelCallback)
-        doCallback(cancelCallback);
+      doCallback(cancelCallback);
     };
     
     function oncomplete() {
@@ -3168,9 +3202,9 @@ var API = {
       if (!action || action.ratio() < 1)
         onstep(1);
       
+      doCallback(completeCallback);
       cleanUp();
       body.state.renderData.set(prop, endValue, unit);
-      doCallback(completeCallback);
     };
         
     function onstep(ratio) {
@@ -3265,11 +3299,11 @@ var API = {
     
     function cleanUp(cancelType) {
 //      body.state.renderData.set('scale', goalScale);
+      completeCallback = null;
       if (cancelType == 'revert')
         body.state.renderData.set('scale', originalScale);
       
-      if (cancelCallback)
-        doCallback(cancelCallback)
+      doCallback(cancelCallback);
     };
     
     function oncomplete() {
@@ -3277,8 +3311,8 @@ var API = {
       if (!scaleAction || scaleAction.ratio() < 1)
         onstep(1);
       
-      cleanUp();
       doCallback(completeCallback);
+      cleanUp();
     };
     
     scaleAction = new Action({
@@ -3357,21 +3391,20 @@ var API = {
     };
 
     function cleanUp(cancelType) {
+      completeCallback = null;
       if (cancelType == 'stop')
         body.stop();
       else if (cancelType == 'revert')
         body.stop(initialPosition);
       
-      if (cancelCallback)
-        doCallback(cancelCallback);
+      doCallback(cancelCallback);
     };
     
     function oncomplete() {
       cancelCallback = null;
-      
       body.stop(destination);
-      cleanUp();
       doCallback(completeCallback);
+      cleanUp();
     };
 
     flyAction = new Action({
@@ -3422,7 +3455,8 @@ var API = {
   snapTo: function(options) {
     var self = this,
         body = getBody(options.body),
-        callback = options.callback,
+        completeCallback = options.oncomplete,
+        cancelCallback = options.oncancel,
         stiffness = options.stiffness,
         damping = options.damping,
         destination = updateVector(Physics.vector(body.state.pos), options.x, options.y, options.z),
@@ -3453,11 +3487,14 @@ var API = {
     };
   
     function cleanUp() {
+      completeCallback = null;
       self.removeConstraint(constraint);
       world.removeBody(anchor);
+      doCallback(cancelCallback);
     };
     
     function endSnap() {
+      cancelCallback = null;
 //      log("Snapping " + bodyId + " took " + (Physics.util.now() - startTime) + " milliseconds");
   //    world.unsubscribe(PUBSUB_SNAP_CANCELED, endSnap);
       body.stop(destination);
@@ -3465,9 +3502,8 @@ var API = {
 //      body.state.pos.set.apply(body.state.pos, coords);
 //      body.state.vel.zero();
 //      body.state.acc.zero();
+      doCallback(completeCallback);
       cleanUp();
-      if (callback)
-        doCallback(callback);
     };
     
     world.addBody(anchor);
@@ -3588,7 +3624,7 @@ var API = {
 			  bodies = typeof ids == 'string' ? getBodies(ids) : getBodies.apply(null, ids);
 
 		if (bodies.length) {
-      v = Physics.vector().set(dragVector[0], dragVector[1]);
+      v = Physics.vector(dragVector[0], dragVector[1]);
 //			log("DRAG: " + v.toString());
 			world.publish({
 				topic: 'drag', 
@@ -3603,7 +3639,7 @@ var API = {
         bodies = typeof ids == 'string' ? getBodies(ids) : getBodies.apply(null, ids);
 		
 		if (bodies.length) {
-      v = Physics.vector().set(dragVector[0], dragVector[1]);
+      v = Physics.vector(dragVector[0], dragVector[1]);
 //      log("DRAG END: " + v.toString());
 			world.publish({
 				topic: 'dragend', 
@@ -3614,7 +3650,90 @@ var API = {
 		}
 	},
 
-	rotateWhenMoving: function(movingBody, rotateBody, moveAxis, rotateAxis) {
+//	squeezeAndStretch: function(movingBody, squeezeBody) {
+//	  movingBody = getBody(movingBody);
+//    squeezeBody = getBody(squeezeBody);
+//	  var scale = [1, 1, 1],
+//	      vel,
+//	      velMag;
+//	  
+//    world.subscribe('integrate:positions', function scale() {
+////      scale[0] = scale[1] = scale[2] = 1;
+//      for (var i = 0; i < 3; i++) {
+//        vel = Physics.util.truncate(movingBody.state.vel.get(i), 3);
+//        velMag = Math.abs(vel);
+//        if (velMag > 0.001) {
+//          Physics.util.extend(scale, squeezeBody.state.renderData.get('scale'));
+//          scale[i] = Physics.util.clamp(1 + (Math.pow(velMag + 1, 1/2) - 1) * sign(vel), 0.5, 2);
+//        }
+//        else
+//          scale[i] = 1;
+//      }
+//      
+//      squeezeBody.state.renderData.set('scale', scale);
+//    });
+//    
+//    world.subscribe('remove:body', function unsub(data) {
+//      if (data.body == movingBody || data.body == squeezeBody) {
+//        world.unsubscribe('remove:body', unsub);
+//        world.unsubscribe('integrate:positions', scale);
+//      }
+//    });
+//	},
+
+	 squeezeAndStretch: function(movingBody, squeezeBody) {
+     movingBody = getBody(movingBody);
+     squeezeBody = getBody(squeezeBody);
+     var scaleVals = [1, 1, 1],
+         max = 1,
+         min = 1,
+         maxDelta = 0.005,
+         acc,
+         accMag;
+    
+    world.subscribe('integrate:velocities', function scale() {
+      Physics.util.extend(scaleVals, squeezeBody.state.renderData.get('scale'));
+      for (var i = 0; i < 3; i++) {
+        acc = Physics.util.truncate(movingBody.state.old.acc.get(i), 3);
+//        acc = Physics.util.truncate(Math.abs(movingBody.state.vel.get(i)) - Math.abs(movingBody.state.old.vel.get(i)), 3);
+        accMag = Math.abs(acc);
+        if (accMag > 0.001) {
+          scaleVals[i] = Physics.util.clamp(1 + (Math.pow(accMag + 1, 1) - 1) * sign(acc), // squeeze for deceleration, stretch for acceleration 
+                                            scaleVals[i] - maxDelta, 
+                                            Math.min(scaleVals[i] + maxDelta, 1)); // don't stretch to more than original scale
+          
+          if (scaleVals[i] < min) {
+            min = scaleVals[i];
+            log("NEW SCALE MIN: " + min);
+          }
+          
+          if (scaleVals[i] > max) {
+            max = scaleVals[i];
+            log("NEW SCALE MAX: " + max);
+          }
+        }
+        else
+          scaleVals[i] = 1;
+      }
+      
+      squeezeBody.state.renderData.set('scale', scaleVals);
+    });
+    
+//    world.subscribe('beforeRender', function beforeRender() {
+//      log("RENDERING SCALE: " + scale[0]);
+//      squeezeBody.state.renderData.set('scale', scale);
+//    });
+    
+    world.subscribe('remove:body', function unsub(data) {
+      if (data.body == movingBody || data.body == squeezeBody) {
+        world.unsubscribe('remove:body', unsub);
+        world.unsubscribe('integrate:velocities', scale);
+        world.unsubscribe('beforeRender', beforeRender);
+      }
+    });
+  },
+
+	rotateWhenMoving: function(movingBody, rotateBody, moveAxis, rotateAxis, negate) {
 	  var minDelta = 0.0001,
 	      maxDelta = 0.001,
 	      angles = [0, 0, 0];
