@@ -21,7 +21,8 @@ define('views/MenuPanel', [
       display: 'table',
       width: '100%',
       background: 'none',
-      visibility: 'hidden'
+      visibility: 'hidden',
+      'transform-origin': '100% 0%'
     },
     _hidden: true,
     _dragAxis: 'y',
@@ -48,6 +49,7 @@ define('views/MenuPanel', [
       
       this.onload(function() {
         self.addToWorld(null, true);
+        Physics.there.rpc(null, 'squeezeAndStretch', [self.getContainerRailBodyId(), self.getContainerBodyId()]);
         self.show();
       });
 

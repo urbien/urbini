@@ -1739,8 +1739,8 @@ function pick(obj) {
         });
       }
       
-//      if (this.squeeze) // TODO: make sure only one thing is rotating the container
-//        API.squeezeAndStretch(this.offsetBody, this.offsetBody);
+      if (this.squeeze) // TODO: make sure only one thing is rotating the container
+        API.squeezeAndStretch(this.offsetBody, this.offsetBody);
       if (this.tilt)
         API.rotateWhenMoving(this.offsetBody, getContainer(this.offsetBody), this.axisIdx, this.orthoAxisIdx);
       
@@ -3681,13 +3681,14 @@ var API = {
 //    });
 //	},
 
-	 squeezeAndStretch: function(movingBody, squeezeBody) {
+	 squeezeAndStretch: function(movingBody, squeezeBody, multiplier) {
      movingBody = getBody(movingBody);
      squeezeBody = getBody(squeezeBody);
+     multiplier = multiplier || 1;
      var scaleVals = [1, 1, 1],
          max = 1,
          min = 1,
-         maxDelta = 0.005,
+         maxDelta = 0.05,
          acc,
          accMag;
     
@@ -3696,9 +3697,10 @@ var API = {
       for (var i = 0; i < 3; i++) {
         acc = Physics.util.truncate(movingBody.state.old.acc.get(i), 3);
 //        acc = Physics.util.truncate(Math.abs(movingBody.state.vel.get(i)) - Math.abs(movingBody.state.old.vel.get(i)), 3);
-        accMag = Math.abs(acc);
+        accMag = Math.abs(acc) * multiplier;
         if (accMag > 0.001) {
-          scaleVals[i] = Physics.util.clamp(1 + (Math.pow(accMag + 1, 1) - 1) * sign(acc), // squeeze for deceleration, stretch for acceleration 
+//          scaleVals[i] = Physics.util.clamp(1 + (Math.pow(accMag + 1, 1/2) - 1) * sign(acc), // squeeze for deceleration, stretch for acceleration 
+          scaleVals[i] = Physics.util.clamp(1 + acc * multiplier, // squeeze for deceleration, stretch for acceleration 
                                             scaleVals[i] - maxDelta, 
                                             Math.min(scaleVals[i] + maxDelta, 1)); // don't stretch to more than original scale
           

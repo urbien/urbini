@@ -24,7 +24,7 @@ define('views/ResourceListView', [
     // <MASONRY INITIAL CONFIG>
     slidingWindow: true,
     tilt: true,
-    squeeze: true,
+    squeeze: false,
     horizontal: false,
 //    fly: true,
     pop: 'sequential', //other option is 'random'

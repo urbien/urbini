@@ -2807,6 +2807,19 @@ Physics.geometry.nearestPointOnLine = function nearestPointOnLine( pt, linePt1, 
         integrate: function( bodies, dt ){
 
             var world = this._world;
+//            ,
+//                state,
+//                i = bodies.length;
+//            
+//            while (i--) {
+//              state = bodies[i].state;
+//              
+////              // store acceleration
+////              state.old.acc.clone( state.vel ).vsub( state.old.vel );
+//              
+//              // store calculated velocity
+//              state.old.vel.clone( state.vel );
+//            }
 
             this.integrateVelocities( bodies, dt );
             
@@ -3759,10 +3772,13 @@ Physics.integrator('verlet', function( parent ){
                     // normalize velocity 
                     state.vel.mult( 1/dt );
 
+                    // store acceleration
+                    state.old.acc.clone( state.vel ).vsub( state.old.vel );                    
+
                     // store calculated velocity
                     state.old.vel.clone( state.vel );
 
-                    // Reset accel
+                    // Reset acceleration
                     state.acc.zero();
 
                     //

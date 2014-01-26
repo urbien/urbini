@@ -138,14 +138,12 @@ define('views/BasicPageView', [
         
         this._fetchDfd = $.Deferred();
         this._fetchPromise = this._fetchDfd.promise();
+        this._fetchPromise.fail(Errors.getBackboneErrorHandler());
         if (this._autoFetch) {
           this.model.fetch(_.extend({
             sync: true,
             success: self._fetchDfd.resolve,
-            error: function() {
-              self._fetchDfd.reject();
-              return Errors.getBackboneErrorHandler().apply(null, arguments);
-            }
+            error: self._fetchDfd.reject
           }, options.fetchOptions));
         }
       }      

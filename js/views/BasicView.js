@@ -1174,7 +1174,6 @@ define('views/BasicView', [
       
       this._updateSize();
       var self = this,
-          thisTransform = DOM.getTransform(this.el),
           containerId = this.getContainerBodyId(),
           topEdgeId = _.uniqueId('topEdge'),
           scrollbarId,
