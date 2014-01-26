@@ -61,9 +61,9 @@ define('router', [
     while (i--) {
       page = pages[i];
       transform = DOM.getTransform(page);
-      if (transform && (x = transform[3][0])) {
+      if (transform && (x = transform[12])) {
         var sign = x < 0 ? -1 : 1;
-        transform[3][0] = newWidth * sign;
+        transform[12] = newWidth * sign;
         page.style[transformLookup] = DOM.toMatrix3DString(transform);
         page.style[transitionLookup] = '';
       }

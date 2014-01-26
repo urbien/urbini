@@ -23,6 +23,8 @@ define('views/ResourceListView', [
   var defaultSlidingWindowOptions = {
     // <MASONRY INITIAL CONFIG>
     slidingWindow: true,
+    tilt: true,
+    squeeze: true,
     horizontal: false,
 //    fly: true,
     pop: 'sequential', //other option is 'random'
@@ -1072,7 +1074,7 @@ define('views/ResourceListView', [
         view = views[i];
         view._updateSize();
         brick = view.buildViewBrick();
-//        brick.fixed = !options.flexigroup;
+        brick.fixed = true; //!options.flexigroup;
         bricks.push(brick);
       };
       

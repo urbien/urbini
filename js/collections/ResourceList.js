@@ -532,10 +532,13 @@ define('collections/ResourceList', [
       
       var self = this,
           vocModel = this.vocModel,
+          success = options.success,
           error = options.error = options.error || Errors.getBackboneErrorHandler(),
           adapter = vocModel.adapter,
           params = this.params,
-          extraParams = options.params || {};
+          extraParams = options.params || {},
+          urlParams,
+          limit;
 
       if (this['final']) {
         error(this, {status: 204, details: "This list is locked"}, options);
@@ -556,8 +559,7 @@ define('collections/ResourceList', [
         params.$offset = this.offset;
       
       this.rUri = options.rUri;
-      var urlParams = this.rUri ? _.getParamMap(this.rUri) : {};
-      var limit;
+      urlParams = this.rUri ? _.getParamMap(this.rUri) : {};
       if (urlParams) {
         limit = urlParams.$limit;
         limit = limit && parseInt(limit);
@@ -586,8 +588,18 @@ define('collections/ResourceList', [
           error.call(self, self, resp, options);
       }
       
-      function defaultSuccess(resp, status, xhr) {
-        var pagination = xhr.getResponseHeader("X-Pagination"),
+      options.success = function(resp, status, xhr) {
+        if (self.lastFetchOrigin === 'db') {
+          if (success)
+            return success(resp, status, xhr);
+          
+          return;
+        }
+        
+        var now = G.currentServerTime(),
+            code = xhr.status,
+            select = extraParams && extraParams.$select,
+            pagination = xhr.getResponseHeader("X-Pagination"),
             total = xhr.getResponseHeader("X-Range-Total"),
             mojo = xhr.getResponseHeader("X-Mojo");
         
@@ -618,21 +630,6 @@ define('collections/ResourceList', [
           }
         }
         
-        self.update(resp, options);        
-      };
-      
-      var success = options.success || defaultSuccess;
-      options.success = function(resp, status, xhr) {
-        if (self.lastFetchOrigin === 'db') {
-          self.update(resp, options);
-          success(resp, status, xhr);
-          return;
-        }
-        
-        var now = G.currentServerTime(),
-            code = xhr.status,
-            select = extraParams && extraParams.$select;
-        
         function err() {
           debugger;
           log('error', code, options.url);
@@ -648,7 +645,9 @@ define('collections/ResourceList', [
             break;
           case 204:
             self.trigger('endOfList');
-            success([], status, xhr);
+            if (success)
+              success([], status, xhr);
+            
             return;
           case 304:
 //            var ms = self.models.slice(options.start, options.end);
@@ -668,17 +667,19 @@ define('collections/ResourceList', [
 //            });
 //            
 //            self.trigger('endOfList');
-            success([], status, xhr);
+            if (success)
+              success([], status, xhr);
+            
             return;
           default:
             err();
             return;
         }
         
-        if (success != defaultSuccess)
-          self.update(resp, options);
+        self.update(resp, options);        
+        if (success)
+          success(resp, status, xhr);
         
-        success(resp, status, xhr);
         if (!select || select == '$all')
           return;
         
