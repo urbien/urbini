@@ -42,35 +42,6 @@ $.extend({
       });
     }).promise();
   }
-//,
-//  
-//  LazyDeferred: (function() {
-//    var dfd = $.Deferred();
-//    
-//    function LazyDeferred(init) {
-//      if (!(this instanceof LazyDeferred))
-//        return new LazyDeferred(init);
-//      
-//      this._started = false;
-//      this.start = function() {
-//        this._started = true;
-//        init.call(dfd, dfd);
-//        return this.promise();
-//      };
-//      
-//      this.isRunning = function() {
-//        return this._started;
-//      };
-//    };
-//      
-//    for (var fn in dfd) {
-//      if (typeof dfd[fn] == 'function') {
-//        LazyDeferred.prototype[fn] = dfd[fn].bind(dfd);
-//      }
-//    }
-//    
-//    return LazyDeferred;
-//  })()
 });
 
 define('globals', function() {
@@ -317,15 +288,31 @@ define('globals', function() {
   
   function testCSS(prop) {
     return prop in doc.documentElement.style;
-  }
+  };
     
   function getSpinnerId(name) {
     return 'loading-spinner-holder-' + (name || '').replace(/[\.\ ]/g, '-');
-  }
+  };
+
+  function getFilePathInStorage(url) {
+    url = isFilePathKey(url) ? url : 'file:' + url;
+    if (G.minify && !/\.min$/.test(url))
+      url += ".min";
+    
+    return url;
+  };
+
+  function isFilePathKey(str) {
+    return /^file:/.test(str); 
+  };
+
+  function isFilePathMetadataKey(str) {
+    return /^file:metadata:/.test(str); 
+  };
 
   function getMetadataURL(url) {
-    return 'metadata:' + url;
-  }
+    return 'metadata:' + getFilePathInStorage(url);
+  };
 
   function putCached(keyToData, options) {
     options = options || {};
@@ -335,6 +322,9 @@ define('globals', function() {
         keyPath = storeInfo.options.keyPath;        
     
     if (storage === 'localStorage') {
+      if (!G.prunedLocalStorage)
+        G.pruneLocalStorage();
+      
       for (var key in keyToData) {
         var val = keyToData[key];
         if (typeof val == 'object')
@@ -349,6 +339,9 @@ define('globals', function() {
       if (G.dbType === 'none')
         return REJECTED_PROMISE;
             
+      if (!G.prunedIndexedDB)
+        G.pruneIndexedDB();
+      
       var stuff = [];
       for (var key in keyToData) {
         var stuffInfo = {
@@ -363,7 +356,7 @@ define('globals', function() {
     }
     else
       return REJECTED_PROMISE;
-  }
+  };
 
   function setMiscGlobals() {
     var path = window.location.pathname,
@@ -526,14 +519,7 @@ define('globals', function() {
   
         value = Object.prototype.toString.call(value) === '[object String]' ? value : JSON.stringify(value);
         try {
-  //        G.localStorage.del(key);
-          if (window.fastdom) {
-            window.fastdom.nonDom(function() {              
-              localStorage.setItem(key, value);
-            });
-          }
-          else
-            localStorage.setItem(key, value);
+          localStorage.setItem(key, value);
         } catch(e) {
           debugger;
           if (['QuotaExceededError', 'QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
@@ -867,7 +853,7 @@ define('globals', function() {
             }
 
             if (!fetch) {
-              return G.getCached(url, source).then(function(text) {                
+              return G.getCached(getFilePathInStorage(url), source).then(function(text) {                
                 G.modules[url] = text;
               }).fail(function() {
                 pruned.push(url);
@@ -893,7 +879,7 @@ define('globals', function() {
       
       return prunePromise;
     },
-
+    
 //    _queuedToLoad: [],
 //    queueLoadBundle: function(/* module names */) {
 //      var self = this;
@@ -961,7 +947,7 @@ define('globals', function() {
               minified: G.isMinified(name, m.body)
             };
             
-            newModules[name] = m.body; // yes, overwrite
+            newModules[getFilePathInStorage(name)] = m.body; // yes, overwrite
           }
           
           G.putCached(newModules, {
@@ -1253,6 +1239,7 @@ define('globals', function() {
         });
       });
     },
+    
     getCached: function(url, source, storeName) {
       if (source === 'localStorage') {
         return $.Deferred(function(defer) {        
@@ -1273,6 +1260,78 @@ define('globals', function() {
         });
       }
     },
+    
+    pruneLocalStorage: function() {
+      G.prunedLocalStorage = true;
+      var except = [],
+          remove = [],
+          bundle,
+          url,
+          i,
+          key;
+      
+      for (var bName in bundles) {
+        bundle = bundles[bName];
+        if (bName == 'pre' || bName == 'post' || bName == 'widgetsFramework' || bName == 'appcache') { // TODO: this preference should be set in one spot, not all over the place
+          i = bundle.length;
+          while (i--) {
+            url = G.getCanonicalPath(require.toUrl(bundle[i].name));
+            except.push(getFilePathInStorage(url));
+            except.push(getMetadataURL(url));
+          }
+        }
+      }
+      
+      for (var key in localStorage) {
+        if ((isFilePathKey(key) || isFilePathMetadataKey(key)) && except.indexOf(key) == -1) {
+          remove.push(key); // just in case removing while looping affects the loop order
+        }
+      }
+      
+      i = remove.length;
+      while (i--) {
+        key = remove[i];
+        G.log("localStorage", "removing item: " + key);
+        localStorage.removeItem(key);
+      }
+    },
+
+    pruneIndexedDB: function(except) {
+      G.prunedIndexedDB = true;
+      var idb = G.IDB.getIDB(),
+          except = [],
+          remove = [],
+          key,
+          bundle,
+          url,
+          i;
+      
+      for (var bName in bundles) {
+        bundle = bundles[bName];
+        if (bName != 'pre' && bName != 'post') {
+          i = bundle.length;
+          while (i--) {
+            url = G.getCanonicalPath(require.toUrl(bundle[i].name));
+            except.push(getFilePathInStorage(url));
+            except.push(getMetadataURL(url));
+          }          
+        }
+      }
+
+      idb.getAllKeys('modules').then(function(keys) {
+        i = keys.length;
+        while (i--) {
+          key = keys[i];
+          if ((isFilePathKey(key) || isFilePathMetadataKey(key)) && except.indexOf(key) == -1) {
+            remove.push(key); // just in case removing while looping affects the loop order
+          }
+        }
+        
+        if (remove.length)
+          idb['delete']('modules', remove);
+      });
+    },
+
     dbType: (function() {
 //      if (browser.chrome) // testing how things work without indexeddb
 //        return 'shim';
@@ -1512,7 +1571,7 @@ define('globals', function() {
     hasLocalStorage: hasLocalStorage,
     hasFileSystem: !!(window.requestFileSystem || window.webkitRequestFileSystem),
     hasBlobs: typeof window.Blob !== 'undefined',
-    hasWebWorkers: typeof window.Worker !== 'undefined',
+    hasWebWorkers: false, //typeof window.Worker !== 'undefined',
     TAG: 'globals',
     checkpoints: [],
     tasks: {},
@@ -1690,44 +1749,6 @@ define('globals', function() {
       head.appendChild(style);
     },
     
-//    removeHoverStyles: function() {
-//      function hasHover(selector) {
-//        return /:hover|-hover-/.test(selector);
-//      };
-//      
-//      function addCSSRule(sheet, selector, rules, index) {
-//        if (sheet.insertRule) {
-//          sheet.insertRule(selector + "{" + rules + "}", index);
-//        }
-//        else {
-//          sheet.addRule(selector, rules, index);
-//        }
-//      };
-//      
-//      $.each(document.styleSheets, function(i, sheet) {
-//        $.each(sheet.rules, function(i, rule) {
-//          var selector = rule.selectorText,
-//              css = rule.cssText;
-//          
-//          if (hasHover(selector)) {
-//            while (/,/.test(selector) && hasHover(selector)) {
-//              selector = selector.replace(/(,?)[^,]+(:hover|-hover-)[^,]*(,?)/g, "$1$3").replace(/,+/g, ',');
-//            }
-//
-//            if (selector.startsWith(','))
-//              selector = selector.slice(1);
-//            if (selector.endsWith(','))
-//              selector = selector.slice(0, selector.length - 1);
-//
-//            sheet.deleteRule(i);
-//            if (selector && selector != rule.selectorText) {
-//              addCSSRule(sheet, selector, css, i);
-//            }
-//          } 
-//        });
-//      });
-//    },
-    
     getCanonicalPath: function(path, separator) {
       separator = separator || '/';
       var parts = path.split(separator);
@@ -1743,7 +1764,10 @@ define('globals', function() {
     },
 
 //    mainWorkerName: 'main',
+    maxXhrWorkers: 3,
+    numXhrWorkers: 0,
     workers: [],
+    workerDeferreds: [],
 //    isWorkerAvailable: function(worker) {
 //      return !worker.__lablzTaken;
 //    },
@@ -1795,8 +1819,16 @@ define('globals', function() {
         var worker;
         if (G.workers.length)
           worker = G.workers.shift();
-        else
-          worker = G.loadWorker('js/xhrWorker.js');
+        else {
+          if (G.numXhrWorkers == G.maxXhrWorkers) {
+            G.workerDeferreds.push(dfd);
+            return;
+          }
+          else {
+            G.numXhrWorkers++;
+            worker = G.loadWorker('js/xhrWorker.js');
+          }
+        }
         
         dfd.resolve(worker);
       }).promise();
@@ -1808,7 +1840,10 @@ define('globals', function() {
     recycleXhrWorker: function(worker) {
       worker.onerror = null;
       worker.onmessage = null;
-      G.workers.push(worker);
+      if (G.workerDeferreds.length)
+        G.workerDeferreds.pop().resolve(worker);
+      else
+        G.workers.push(worker);
 //      worker.__lablzTaken = false;
 //      var q = G.workerQueues[worker._taskType];
 //      if (q && q.length)

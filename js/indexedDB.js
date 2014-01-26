@@ -529,9 +529,25 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       });
     });
   };
-  
+
   IDB.prototype.get = function(storeName, uri) {
     return this._queueTask('get item {0} from store {1}'.format(uri, storeName), get.bind(this, storeName, uri));    
+  };
+  
+  function getAllKeys(storeName) {
+    if (!this.hasStore(storeName))
+      return REJECTED_PROMISE;
+
+    var resultDfd = $.Deferred(),
+        transPromise = this.$idb.transaction([storeName], IDBTransaction.READ_ONLY).progress(function(trans) {
+          trans.objectStore(storeName).getAllKeys().then(resultDfd.resolve, resultDfd.reject);
+        });
+    
+    return resultDfd.promise();
+  };
+
+  IDB.prototype.getAllKeys = function(storeName) {
+    return this._queueTask('get all keys from store {0}'.format(storeName), getAllKeys.bind(this, storeName));    
   };
 
   var queryRunMethods = ['getAll', 'getAllKeys'];
@@ -729,7 +745,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     log('db', 'deleting items', primaryKeys.join(', '));
     return this.$idb.transaction([storeName], IDBTransaction.READ_WRITE).progress(function(trans) {
       var store = trans.objectStore(storeName);
-      _.each(primaryKeys, function(primaryKey) {
+      primaryKeys.forEach(function(primaryKey) {
         store['delete'](primaryKey).done(function() {
           log('db', 'deleted', primaryKey);
         });
