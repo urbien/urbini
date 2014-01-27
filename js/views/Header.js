@@ -20,6 +20,7 @@ define('views/Header', [
   var REGULAR_BUTTONS = ['back', 'mapIt', 'add', 'video', 'chat', 'login', 'rightMenu'];
   var commonTypes = G.commonTypes;
   var friendlyTypes = [G.commonTypes.Urbien, 'http://urbien.com/voc/dev/ImpressBackup/Movie', 'http://urbien.com/voc/dev/ImpressBackup/Artist', 'model/social/App'];
+  var editablePhysicsConstants = ['drag', 'springStiffness', 'springDamping', 'tilt'];
   return BasicView.extend({
 //    viewType: 'any',
     style: {
@@ -53,7 +54,8 @@ define('views/Header', [
       this.on('destroyed', function() {
         self.buttonViews = {};
       });
-      
+    
+      this.makeTemplate('physicsConstantsTemplate', 'physicsConstantsTemplate', this.vocModel && this.vocModel.type);
       return this;
     },
     
@@ -159,7 +161,7 @@ define('views/Header', [
     },
     events: {
       'change #fileUpload'         : 'fileUpload',
-      'change .physics input'    : 'changePhysics',
+      'change .physicsConstants input' : 'changePhysics',
       'click #categories'          : 'showCategories',
 //      'click #installApp'         : 'installApp',
       'click #moreRanges'          : 'showMoreRanges'
@@ -174,19 +176,23 @@ define('views/Header', [
       else
         val /= 100;
       
-      switch (this._hashInfo.route) {
-        case 'view':
-          var i = friendlyTypes.length;
-          
-          while (i--) {
-            if (U.isAssignableFrom(this.vocModel, friendlyTypes[i])) {
-              type = 'horizontal';
-              break;
-            }
-          }
-          
-        break;
+      if (this._hashInfo.route == 'view' && this._relevantPhysicsConstants.hasOwnProperty('tilt')) {
+        type = 'horizontal';
       }
+      
+//      switch (this._hashInfo.route) {
+//        case 'view':
+//          var i = friendlyTypes.length;
+//          
+//          while (i--) {
+//            if (U.isAssignableFrom(this.vocModel, friendlyTypes[i])) {
+//              type = 'horizontal';
+//              break;
+//            }
+//          }
+//          
+//        break;
+//      }
       
       this.log('PHYSICS: ' + e.target.name + ' = ' + val);
       Physics.there.set(type, e.target.name, val);
@@ -464,6 +470,45 @@ define('views/Header', [
         this.noButtons = true;      
     },
     
+    getPhysicsTemplateData: function() {
+      if (!this._physicsTemplateData) {
+        this._physicsTemplateData = {
+            constants: {}
+        };
+      }
+      
+      var constants = this._physicsTemplateData.constants,
+          i = editablePhysicsConstants.length,
+          cName;
+      
+      while (i--) {
+        cName = editablePhysicsConstants[i];
+        constants[cName] = Physics.constants[cName];
+      }
+        
+      if (this.pageView.TAG != 'ListPage') {
+        var i = friendlyTypes.length,
+            keepTilt = false;
+        
+        while (i--) {
+          if (U.isAssignableFrom(this.vocModel, friendlyTypes[i])) {
+            keepTilt = true;
+            break;
+          }
+        }
+
+        if (!keepTilt)
+          delete constants.tilt;
+      }
+        
+      return this._physicsTemplateData;
+    },
+    
+    renderPhysics: function() {
+      this.physicsConstantsEl = this.el.querySelector('.physicsConstants');
+      this.physicsConstantsEl.innerHTML = this.physicsConstantsTemplate(this.getPhysicsTemplateData());
+    },
+    
     restyleNavbar: function() {
       var navbar = this.$('[data-role="navbar"]')[0];
       $(navbar).navbar();
@@ -509,7 +554,7 @@ define('views/Header', [
       }
 
       var templateSettings = this.getBaseTemplateData();
-      _.extend(templateSettings, Physics.constants); //Physics.scrollerConstants[this._scrollerType]);
+//      templateSettings.physics = this.getPhysicsConstants(); //Physics.scrollerConstants[this._scrollerType]);
       if (U.isChatPage()) {
 //        templateSettings.more = $.param({
 //          "data-position": "fixed"
@@ -519,7 +564,9 @@ define('views/Header', [
         if (!this.publish  &&  this.doTry  &&  this.forkMe)
           templateSettings.className = 'ui-grid-b';
       }      
+      
       this.html(this.template(templateSettings));
+      this.renderPhysics();
       this.refreshTitle();
 //      this.$el.prevObject.attr('data-title', this.pageTitle);
 //      this.$el.prevObject.attr('data-theme', G.theme.list);

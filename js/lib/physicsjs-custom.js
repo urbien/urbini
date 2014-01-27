@@ -2219,6 +2219,7 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
                 opacity: 0,
                 scale: [1, 1, 1],
                 rotate: [0, 0, 0],
+                skew: [0, 0, 0],
                 transform: [],
                 'transform-origin': '0% 0%'
               },

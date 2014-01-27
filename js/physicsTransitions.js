@@ -174,8 +174,8 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
 
   var slideDefaultSettings = {
 //    duration: 500
-    acceleration: 0.01,
-    drag: 0.8 // inversely proportional to distance^2 from the target (the closer, the more drag) 
+    acceleration: 0.03,
+    drag: 0.85 // inversely proportional to distance^2 from the target (the closer, the more drag) 
   };
   
   function Slide(options) {
@@ -359,7 +359,7 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
         method: 'style',
         args: [this.to.getContainerBodyId(), {
           'z-index': 1000,
-          opacity: 1
+          opacity: DOM.maxOpacity
         }]
       },
 //      {
@@ -717,7 +717,7 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
 //      var dfd = $.Deferred();
 //      Q.write(function() {
         Physics.there.style(to.getContainerBodyId(), {
-          opacity: 1,
+          opacity: DOM.maxOpacity,
           'z-index': 1000
         });
         

@@ -432,27 +432,7 @@
         </button>
       </div>
     </div>
-    <table class="physics" cellspacing="0" celladding="2" width="100%" style="background-color:#606060;display:none; ">
-      <tr>
-      <td>
-        <label for="drag">Air drag</label><br/>
-        <input type="range" id="drag" name="drag" value={{= drag * 100 }} min="1" max="99">
-      </td>  
-      <td>
-        <label for="springDamping">Spring damping</label><br/>
-        <input type="range" id="springDamping" name="springDamping" value={{= springDamping * 100 }} min="1" max="99">
-      </td>  
-      <td>
-        <label for="springStiffness">Spring stiffness</label><br/>
-        <input type="range" id="springStiffness" name="springStiffness" value={{= springStiffness * 100 }} min="1" max="99">
-      </td>
-      <!--td>
-        <label for="degree">Sensitivity</label><br/>
-        <input type="range" id="degree" name="degree" value={{= degree }} min="-10" max="10">
-      </td-->
-      </tr>
-    </table>
-    
+    <div class="physicsConstants" style="background-color:#606060; display:none; color: #ffffff;"></div>    
   </div>
 </script>
 

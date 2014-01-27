@@ -50,6 +50,7 @@ define('views/MenuPanel', [
       this.onload(function() {
         self.addToWorld(null, true);
         Physics.there.rpc(null, 'squeezeAndStretch', [self.getContainerRailBodyId(), self.getContainerBodyId()]);
+//        Physics.there.rpc(null, 'skewWhenMoving', [self.getContainerRailBodyId(), self.getContainerBodyId(), 'x']);
         self.show();
       });
 

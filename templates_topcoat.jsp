@@ -456,61 +456,8 @@
           {{ } }}
         </button>
       </div>
-    </div>
-        <div class="physics" style="display:none; background-color:#606060; color:#FFFFFF; padding:5px;">
-      <!--section role="region">
-        <div role="slider" aria-valuemin="1" aria-valuenow="{{= drag }}" aria-valuemax="99" aria-valuetext="Air drag">
-          <div>
-            <progress value="{{= drag }}" max="99"></progress>
-            <button>handler</button>
-          </div>
-        </div>
-        <div role="slider" aria-valuemin="1" aria-valuenow="{{= springDamping }}" aria-valuemax="99" aria-valuetext="Spring damping">
-          <div>
-            <progress value="{{= springDamping }}" max="99"></progress>
-            <button>handler</button>
-          </div>
-        </div>
-        <div role="slider" aria-valuemin="1" aria-valuenow="{{= springStiffness }}" aria-valuemax="99" aria-valuetext="Spring stiffness">
-          <div>
-            <progress value="{{= springStiffness }}" max="99"></progress>
-            <button>handler</button>
-          </div>
-        </div>
-      </section-->
-      <table class="physics" cellspacing="0" celladding="2" width="100%" style="background-color:#606060;display:none; ">
-        <tr>
-        <td>
-          <label for="drag">Air drag</label><br/>
-          <input type="range" id="drag" name="drag" value={{= drag * 100 }} min="1" max="99">
-        </td>  
-        <td>
-          <label for="springDamping">Spring damping</label><br/>
-          <input type="range" id="springDamping" name="springDamping" value={{= springDamping * 100 }} min="1" max="99">
-        </td>  
-        <td>
-          <label for="springStiffness">Spring stiffness</label><br/>
-          <input type="range" id="springStiffness" name="springStiffness" value={{= springStiffness * 100 }} min="1" max="99">
-        </td>
-        <!--td>
-          <label for="degree">Sensitivity</label><br/>
-          <input type="range" id="degree" name="degree" value={{= degree }} min="-10" max="10">
-        </td-->
-        </tr>
-      </table>
-      <!--div class="physicsLabels">
-        <label for="drag" style="min-width:10%;">Air drag</label>
-        <label for="springDamping" style="min-width:10%">Spring damping</label>
-        <label for="springStiffness" style="min-width:10%">Spring stiffness</label><br />      
-      </div>
-      <div class="physicsProps">
-        1<input type="range" style="min-width:10%" name="drag" value={{= drag * 100 }} min="1" max="99">100
-        1<input type="range" style="min-width:10%" name="springDamping" value={{= springDamping * 100 }} min="1" max="99">100
-        1<input type="range" style="min-width:10%" name="springStiffness" value={{= springStiffness * 100 }} min="1" max="99">100
-      </div-->
-    </div>    
-  </div>
-    
+    </div>  
+    <div class="physicsConstants" style="background-color:#606060; color: #ffffff; display:none;"></div>
   </div>
 </script>
 

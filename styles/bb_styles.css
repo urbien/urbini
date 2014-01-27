@@ -444,13 +444,10 @@ section#login_popup {
   overflow:hidden;
 }
 
-.physics input[type="range"] {
+.physicsConstants input[type="range"] {
   width: 90%;
 }
-.physics td {
-  text-align: center;
-  width: 33%;
-}
+
 .commonLI {
   padding-left: 1rem;
 }

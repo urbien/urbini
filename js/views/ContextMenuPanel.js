@@ -48,23 +48,17 @@ define('views/ContextMenuPanel', [
     
     physics: function(e) {
       Events.stopEvent(e);
+
+      var physics = this.getPageView().el.querySelector('.physicsConstants'),
+          style = physics.style;
       
-      var elm = this.el.parentElement;
-      while (!elm.id  ||  elm.id.indexOf('page') == -1) {
-        elm = elm.parentElement;
-      }
-      
-      var p = elm.querySelectorAll('.physics');
-      for (var i=0; i<p.length; i++) {
-        p[i].style.display = 'block';
-      }
+      if (style.display == 'none')
+        style.removeProperty('display');
+      else
+        style.display = 'none';        
       
       window.dispatchEvent(new Event("viewportdimensions"));
-      this.hide();
-//      p.forEach(function(element) {
-//        element.style.visibility = 'visible';  
-//      });
-      
+//      this.hide();
     },
     
 //    click: function(e) {

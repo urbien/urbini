@@ -948,16 +948,21 @@ function calcTransform(body) {
       pos = body.state.pos,
       scale = body.state.renderData.get('scale'),
       rotate = body.state.renderData.get('rotate'),
+      skew = body.state.renderData.get('skew'),
       m = body.state.renderData.get('transform');
   
   Physics.util.extend(m, IDENTITY_TRANSFORM);
-  Matrix.scale3d(m, scale[0], scale[1], scale[2]);
   Matrix.rotate3d(m, rotate[0], rotate[1], rotate[2]);
+  Matrix.scale3d(m, scale[0], scale[1], scale[2]);
   Matrix.translate3d(m, 
     pos.get(0) - (aabb._hw || 0),
     pos.get(1) - (aabb._hh || 0),
     getZ(body)
   );
+  
+  m[4] = Math.atan(skew[1]); // skew X
+  m[1] = Math.atan(skew[0]); // skew Y
+  // TODO: skew Z
   
   return m;
 //  return [
@@ -3735,31 +3740,27 @@ var API = {
     });
   },
 
-	rotateWhenMoving: function(movingBody, rotateBody, moveAxis, rotateAxis, negate) {
+	rotateWhenMoving: function(movingBody, rotateBody, moveAxis, rotateAxis) {
+    movingBody = getBody(movingBody);
+    rotateBody = getBody(rotateBody);
 	  var minDelta = 0.0001,
 	      maxDelta = 0.001,
-	      angles = [0, 0, 0];
+	      angles = [0, 0, 0],
+	      coeff,
+	      v,
+	      rotation,
+	      r,
+	      newR;
 	  
 	  world.subscribe('integrate:positions', function rotate() {
 	    if (movingBody.fixed)
 	      return;
 	    
-	    var v = Physics.util.truncate(movingBody.state.vel.get(moveAxis), 3),
-	        rotation = rotateBody.state.renderData.get('rotate'),
-	        r = rotation[rotateAxis],
-//	        coeff = 10,
-	        newR = v ? -sign(v) * Math.log(Math.abs(v + sign(v))) / 50 : 0;
-	    
-//	    newR = Math.max(-Math.PI / 4, 
-//	                    Math.min(Math.PI / 4, newR));
-//	    
-//	        newR = coeff * v * Math.PI / 180;
-//	          
-	    newR = Math.max(
-	          Math.min(newR, r + maxDelta, Math.PI / 4),
-	          r - maxDelta,
-	          -Math.PI / 4
-	    ); // don't allow r to change too fast
+	    coeff = CONSTANTS.tilt;
+	    v = Physics.util.truncate(movingBody.state.vel.get(moveAxis), 3);
+	    rotation = rotateBody.state.renderData.get('rotate');
+	    r = rotation[rotateAxis];
+	    newR = v ? -sign(v) * coeff * Math.log(Math.abs(v + sign(v))) / 10 : 0;
 	    
 	    if (Math.abs(newR) < minDelta) {
 	      if (r == 0)
@@ -3784,6 +3785,90 @@ var API = {
 	  });
 	},
 	
+	skewWhenMoving: function(movingBody, skewBody, axis) {
+    movingBody = getBody(movingBody);
+    skewBody = getBody(skewBody);
+	  
+//    var minDelta = 0.0001,
+//        maxDelta = 0.001,
+    var minVel = 1,
+        maxSkew = Math.PI / 4, // don't use a skew value past 45 degrees, it looks bad
+        newSkew = [0, 0, 0],
+        angle,
+        rescale = false,
+        newScale = [1, 1, 1],
+        doScaleX = !axis || axis == 'x',
+        doScaleY = !axis || axis == 'y',
+        v,
+        vMag,
+        vx,
+        vy,
+        skewX,
+        skewY;
+    
+    world.subscribe('integrate:positions', function skew() {
+      if (movingBody.fixed)
+        return;
+      
+      v = movingBody.state.vel;
+      vMag = v.norm();
+      vx = Physics.util.truncate(v.get(0), 3);
+      vy = Physics.util.truncate(v.get(1), 3);
+      skew = skewBody.state.renderData.get('skew');
+      scale = skewBody.state.renderData.get('scale');
+      Physics.util.extend(newSkew, skew);
+      Physics.util.extend(newScale, scale);      
+      angle = Math.atan2(vy, vx);
+      if (vMag > minVel) {
+        rescale = true;
+        
+        // If the X velocity is greater, stretch in X, squash in Y. And vice versa
+        if (Math.abs(vx) > Math.abs(vy)) {
+          newScale[0] = 1 + ((0.5 - Math.abs(Math.cos(angle) * Math.sin(angle))) * Math.abs((vx / 10)));
+          newScale[1] = 1 / newScale[0];
+        }
+        else {
+          newScale[1] = 1 + ((0.5 - Math.abs(cos(angle) * sin(angle))) * Math.abs((vy / 10)));
+          newScale[0] = 1 / newScale[1];
+        }
+
+        if (!doScaleX)
+          newScale[0] = scale[0];
+        
+        if (!doScaleY)
+          newScale[1] = scale[1];
+
+        skewX = -maxSkew * Math.sin(angle) * Math.cos(angle) * vMag / 10;
+        Physics.util.clamp(skewX, -maxSkew, maxSkew);
+      }
+      else {
+        skewX = 0;
+        if (newScale[0] != 0 || newScale[1] != 0 || newScale[2] != 0) {
+          newScale[0] = newScale[1] = newScale[2] = 1;
+          rescale = true;
+        }
+      }
+
+      if (newSkew[0] != skewX) {
+        newSkew[0] = skewX;
+  //      newSkew[1] = skewY;
+        skewBody.state.renderData.set('skew', newSkew);
+      }
+      
+      if (rescale) {
+        skewBody.state.renderData.set('scale', newScale);
+        rescale = false;
+      }
+    });
+    
+    world.subscribe('remove:body', function unsub(data) {
+      if (data.body == movingBody || data.body == skewBody) {
+        world.unsubscribe('remove:body', unsub);
+        world.unsubscribe('integrate:positions', skew);
+      }
+    });
+  },
+
 	attachHeader: function(header, attachTo, acceleration) {
     header = getBody(header);
     attachTo = getBody(attachTo);
@@ -3954,19 +4039,25 @@ var API = {
 //      }
       
       break;
-    case 'springDamping':
+    default:
       world.publish({
-        topic: prefix + 'constants:springDamping'
+        topic: prefix + 'constants:' + constantName
       });
       
       break;
-      
-    case 'springStiffness':
-      world.publish({
-        topic: prefix + 'constants:springStiffness'
-      });
-      
-      break;
+//    case 'springDamping':
+//      world.publish({
+//        topic: prefix + 'constants:springDamping'
+//      });
+//      
+//      break;
+//      
+//    case 'springStiffness':
+//      world.publish({
+//        topic: prefix + 'constants:springStiffness'
+//      });
+//      
+//      break;
     }
   },
   

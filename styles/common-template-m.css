@@ -1316,6 +1316,19 @@ div {
 
 [data-role="filler"] { visibility: hidden; display:table-cell; height:auto; width:auto; pointer-events:none; }
 
+.physicsConstants {
+  width:100%;
+  display:table;
+}
+
+.physicsConstants > * {
+  display: table-cell;
+}
+
+.physicsConstants * {
+  text-align: center;
+}
+
 /*
 .nabBoard {
   padding: 0 !important; cursor: pointer;

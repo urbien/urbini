@@ -1147,6 +1147,7 @@
         </div>
       </div>
     </div>
+    <div class="physicsConstants" style="background-color:#606060; display:none; color: #ffffff;"></div>    
     <!--div id="headerErrorBar">
     </div-->
   </div>
@@ -1415,6 +1416,19 @@
 {{  });                           }}
 </div>
 
+</script>
+
+<script type="text/template" id="physicsConstantsTemplate">
+{{ for (var p in constants) { }}
+  <div>
+    <label for="{{= p }}">{{= p.splitCamelCase(true) }}</label><br/>
+    <input type="range" id="{{= p }}" name="{{= p }}" value={{= constants[p] * 100 }} min="1" max="99">
+  </div>  
+{{ }                    }}
+  <!--div>
+    <label for="degree">Sensitivity</label><br/>
+    <input type="range" id="degree" name="degree" value={{= degree }} min="-10" max="10">
+  </div-->
 </script>
 
 <!-- EDIT TEMPLATES -->
