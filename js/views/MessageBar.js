@@ -81,24 +81,29 @@ define('views/MessageBar', [
       
       this.$('.headerMessageBar').$forEach(function(bar) {
         var id = bar.id,
-            events = _.find(messages, function(msg) { return msg.id == id }).events;
+            events = _.find(messages, function(msg) { return msg.id == id }).events || {},
+            onremove = events.remove;
         
-        if (events) {
-          debugger;
-          var $bar = $(bar),
-              onremove = events.remove;
-          
-          events.remove = function(e) {
-            self.trigger('messageBarRemoved', e);
-            if (onremove)
-              onremove.apply(this, arguments);
-          };
-
-          for (var event in events) {
-            $bar.on(event, events[event]);
-          }
+        bar.$onremove(function(e) {
+//          window.dispatchEvent(new Event("resize"));
+          self.trigger('messageBarRemoved', e);
+          if (onremove)
+            onremove.apply(this, arguments);
+        });
+        
+        for (var event in events) {
+          if (event !== 'remove')
+            bar.$on(event, events[event]);
         }
       });
+    },
+    
+    destroy: function() {
+      this.$('.headerMessageBar').$forEach(function(bar) {
+        bar.$remove();
+      });
+      
+      BasicView.prototype.destroy.apply(this, arguments);
     }
 //    ,
 //    _updateInfoErrorBar: function(options) {

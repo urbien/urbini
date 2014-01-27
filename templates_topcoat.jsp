@@ -23,9 +23,7 @@
    {{ } }}
    -->
     <div  id="sidebar" data-type="list" class="topcoat-list__container" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
-      <div class="dummy head"></div>
-      <div class="dummy tail"></div>
-   </div>
+    </div>
     </section>
     <div id="nabs_grid" class="masonry"></div>
     
@@ -71,10 +69,7 @@
       <div class="dummy tail"></div>
     </div-->
     
-    <div id="photogrid" data-inset="true" data-filter="false" class="thumb-gal hidden">
-      <div class="dummy head"></div>
-      <div class="dummy tail"></div>
-    </div>
+    <div id="photogrid" data-inset="true" data-filter="false" class="thumb-gal hidden"></div>
     <br/>
     {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
        <div style="text-align:center;width:100%;padding-bottom:0.5rem">

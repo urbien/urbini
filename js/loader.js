@@ -1319,7 +1319,7 @@ define('globals', function() {
       }
 
       idb.getAllKeys('modules').then(function(keys) {
-        i = keys.length;
+        i = keys ? keys.length : 0;
         while (i--) {
           key = keys[i];
           if ((isFilePathKey(key) || isFilePathMetadataKey(key)) && except.indexOf(key) == -1) {

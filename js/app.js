@@ -506,7 +506,8 @@ define('app', [
   
   function setupWidgetLibrary() {
     if (G.isJQM()) {
-      var jqmEvents = ['pagebeforecreate', 'pagecreate', 'pagebeforehide', 'pagehide', 'pagebeforeshow', 'pageshow', 'pagebeforechange', 'pagechange'],
+      var jqmEvents = ['pagebeforecreate', 'pagecreate', 'pagebeforechange', 'pagechange'],
+          jqmTransitionEvents = ['pagebeforehide', 'pagehide', 'pagebeforeshow', 'pageshow'],
           $doc = $(document);
       
       function fwdEvent(page_event) {
@@ -520,7 +521,14 @@ define('app', [
             page_event = 'page_' + pageevent.slice(4);
             
         $doc.on(pageevent, fwdEvent(page_event));        
-      }      
+      }
+      
+      for (var i = 0, len = jqmTransitionEvents.length; i < len; i++) {
+        var pageevent = jqmTransitionEvents[i],
+            page_event = 'page_' + pageevent.slice(4);
+            
+        $doc.on(page_event, fwdEvent(pageevent));        
+      }
     }
   }
   

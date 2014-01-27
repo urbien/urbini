@@ -3,16 +3,21 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
       connectedDfd = $.Deferred(),
       connectedPromise = connectedDfd.promise(),
       inIFrame = G.inFirefoxOS;
-
+  
   if (G.appWindow || (G.hasFFApps && !G.inFirefoxOS))
     connectedDfd.resolve();
 
+  
   function log() {
     var args = [].slice.call(arguments);
     args.unshift('Firefox', 'app comm');
     G.log.apply(G, args);
     U.rpc.apply(null, ['log'].concat(args));
   }
+  
+  console.log = function() {
+    U.rpc.apply(U, ['log'].concat(args));
+  };
   
   connectedPromise.done(function() {
     log("2. CONNECTED TO APP!");
