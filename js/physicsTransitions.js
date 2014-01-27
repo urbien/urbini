@@ -179,9 +179,6 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
   };
   
   function Slide(options) {
-//    if (options.render)
-//      options.to.render();
-
     options = _.extend({}, options, slideDefaultSettings);
     Transition.apply(this, arguments);
   };

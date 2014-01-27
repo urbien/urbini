@@ -1154,6 +1154,7 @@ function initWorld(_world, stepSelf) {
 	});
 
   world.subscribe('dragend', function(data) {
+    IS_DRAGGING = false;
     var scratch = Physics.scratchpad(),
         v = scratch.vector().clone(data.vector).mult( 1 / 100 ),
         i = DRAG_CONSTRAINTS.length,
@@ -3698,6 +3699,9 @@ var API = {
          accMag;
     
     world.subscribe('integrate:velocities', function scale() {
+      if (IS_DRAGGING || movingBody.fixed)
+        return;
+      
       Physics.util.extend(scaleVals, squeezeBody.state.renderData.get('scale'));
       for (var i = 0; i < 3; i++) {
         acc = Physics.util.truncate(movingBody.state.old.acc.get(i), 3);
@@ -3753,7 +3757,7 @@ var API = {
 	      newR;
 	  
 	  world.subscribe('integrate:positions', function rotate() {
-	    if (movingBody.fixed)
+	    if (IS_DRAGGING || movingBody.fixed)
 	      return;
 	    
 	    coeff = CONSTANTS.tilt;
@@ -3807,7 +3811,7 @@ var API = {
         skewY;
     
     world.subscribe('integrate:positions', function skew() {
-      if (movingBody.fixed)
+      if (IS_DRAGGING || movingBody.fixed)
         return;
       
       v = movingBody.state.vel;
