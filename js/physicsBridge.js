@@ -70,7 +70,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         byScrollerType: {},
         maxOpacity: DOM.maxOpacity,
         degree: 1,
-        drag: 0.1,
+        drag: G.browser.mobile ? 0.05 : 0.1,
         tilt: 0.1,
         groupMemberConstraintStiffness: 0.3,
         springDamping: 0.1,

@@ -343,7 +343,7 @@ function _onmessage(e) {
   	    
         CONSTANTS.__defineSetter__(c, function(val) {
           if (c == 'drag')
-            val /= 2;
+            val /= 4;
           
           CONSTANTS['_' + c] = val;
         });
@@ -1154,6 +1154,7 @@ function initWorld(_world, stepSelf) {
 	});
 
   world.subscribe('dragend', function(data) {
+    log("DRAG END");
     IS_DRAGGING = false;
     var scratch = Physics.scratchpad(),
         v = scratch.vector().clone(data.vector).mult( 1 / 100 ),
@@ -1328,6 +1329,20 @@ function getBoxBody(bodyId) {
 function getContainer(bodyId) {
   var container = getBody(bodyId).options.container;
   return container && getBody(container);
+};
+
+function hasArmedConstraints(body) {
+  var constraints = constrainer._distanceConstraints,
+      i = constraints.length,
+      c;
+  
+  while (i--) {
+    c = constraints[i];
+    if (c.bodyA == body || c.bodyB == body) {
+      if (c.isArmed())
+        return true;
+    }
+  }
 };
 
 function getZSpace(bodyId) {
@@ -1748,7 +1763,7 @@ function pick(obj) {
       if (this.squeeze) // TODO: make sure only one thing is rotating the container
         API.squeezeAndStretch(this.offsetBody, this.offsetBody);
       if (this.tilt)
-        API.rotateWhenMoving(this.offsetBody, getContainer(this.offsetBody), this.axisIdx, this.orthoAxisIdx);
+        API.rotateWhenMoving(this.offsetBody, getContainer(this.offsetBody), this.axisIdx, this.orthoAxisIdx, 1);
       
       this['continue']();
     },
@@ -2299,6 +2314,34 @@ function pick(obj) {
       if (this._sleeping || this._waiting || this._transitioning)
         return;
       
+      if (this._wasHeadArmed) {
+        if (!this.headEdgeConstraint.isArmed()) {
+          this._wasHeadArmed = false;
+          this.log("Head edge disarmed");          
+        }
+      }
+      else {
+        if (this.headEdgeConstraint.isArmed()) {
+          this._wasHeadArmed = true;
+          this.log("Head edge armed");          
+        }
+      }
+
+      if (this.tailEdgeConstraint) {
+        if (this._wasTailArmed) {
+          if (!this.tailEdgeConstraint.isArmed()) {
+            this._wasTailArmed = false;
+            this.log("Tail edge disarmed");          
+          }
+        }
+        else {
+          if (this.tailEdgeConstraint.isArmed()) {
+            this._wasTailArmed = true;
+            this.log("Tail edge armed");          
+          }
+        }
+      }
+
       var offset = this.offsetBody.state.pos.get(this.axisIdx),
           lastOffset = this._lastOffset.get(this.axisIdx),
           diff = offset - lastOffset,
@@ -2599,6 +2642,7 @@ function pick(obj) {
     },
     
     addBricks: function(optionsArr, prepend) {
+      this.log("Before Vel: " + this.offsetBody.state.vel.get(1));
       this.lastDirection = prepend ? 'head' : 'tail';
       this.checkRep();
       var numBefore = this.numBricks(),
@@ -2754,6 +2798,7 @@ function pick(obj) {
         this.scrollbar.state.renderData.set('opacity', MAX_OPACITY);
       
       this.checkRep();
+      this.log("After Vel: " + this.offsetBody.state.vel.get(1));
       this['continue']();
     },
 
@@ -2779,6 +2824,7 @@ function pick(obj) {
       if (n == 0)
         return;
       
+      this.log("Before Remove Vel: " + this.offsetBody.state.vel.get(1));
       this.checkRep();
       var bricks = fromTheHead ? this.mason.bricks.slice(0, n) : this.mason.bricks.slice(this.numBricks() - n),
           brick,
@@ -2822,6 +2868,7 @@ function pick(obj) {
   //    log("ACTUAL TOTAL AFTER REMOVE: " + this.numBricks());
       this.recalc();
       this.checkRep();
+      this.log("After Remove Vel: " + this.offsetBody.state.vel.get(1));
   //    if (readjust)
   //      this.adjustSlidingWindow();
     },
@@ -3744,17 +3791,18 @@ var API = {
     });
   },
 
-	rotateWhenMoving: function(movingBody, rotateBody, moveAxis, rotateAxis) {
+	rotateWhenMoving: function(movingBody, rotateBody, moveAxis, rotateAxis, thresh) {
     movingBody = getBody(movingBody);
     rotateBody = getBody(rotateBody);
-	  var minDelta = 0.0001,
-	      maxDelta = 0.001,
+	  var minDelta = 0.001,
+	      maxDelta = 0.01,
 	      angles = [0, 0, 0],
 	      coeff,
 	      v,
 	      rotation,
 	      r,
-	      newR;
+	      newR,
+	      thresh = thresh == undefined ? 2 : thresh;
 	  
 	  world.subscribe('integrate:positions', function rotate() {
 	    if (IS_DRAGGING || movingBody.fixed)
@@ -3764,7 +3812,10 @@ var API = {
 	    v = Physics.util.truncate(movingBody.state.vel.get(moveAxis), 3);
 	    rotation = rotateBody.state.renderData.get('rotate');
 	    r = rotation[rotateAxis];
-	    newR = v ? -sign(v) * coeff * Math.log(Math.abs(v + sign(v))) / 10 : 0;
+	    if (hasArmedConstraints(movingBody))
+	      newR = Math.max(0, Math.abs(r) - maxDelta) * sign(r); // gradually kill tilt. If it's being pulled by a constraint, we don't want the tilt to go nuts first one way then the other 
+	    else
+	      newR = Math.abs(v) > thresh ? -sign(v) * coeff * Math.log(Math.abs(v + sign(v)) - thresh) / 10 : 0;
 	    
 	    if (Math.abs(newR) < minDelta) {
 	      if (r == 0)

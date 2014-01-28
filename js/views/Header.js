@@ -171,28 +171,35 @@ define('views/Header', [
       var val = parseInt(e.target.value),
           type = 'verticalMain';
       
-      if (e.target.name == 'degree')
+      switch (e.target.name) {
+      case 'degree':
         val *= -1;
-      else
+        break;
+      case 'tilt':
+        val -= 1; // min at 0 instead of 1
+        // fall through;
+      default:
         val /= 100;
-      
-      if (this._hashInfo.route == 'view' && this._relevantPhysicsConstants.hasOwnProperty('tilt')) {
-        type = 'horizontal';
+        break;
       }
       
-//      switch (this._hashInfo.route) {
-//        case 'view':
-//          var i = friendlyTypes.length;
-//          
-//          while (i--) {
-//            if (U.isAssignableFrom(this.vocModel, friendlyTypes[i])) {
-//              type = 'horizontal';
-//              break;
-//            }
-//          }
-//          
-//        break;
+//      if (this._hashInfo.route == 'view') {
+//        type = 'horizontal';
 //      }
+      
+      switch (this._hashInfo.route) {
+        case 'view':
+          var i = friendlyTypes.length;
+          
+          while (i--) {
+            if (U.isAssignableFrom(this.vocModel, friendlyTypes[i])) {
+              type = 'horizontal';
+              break;
+            }
+          }
+          
+        break;
+      }
       
       this.log('PHYSICS: ' + e.target.name + ' = ' + val);
       Physics.there.set(type, e.target.name, val);
