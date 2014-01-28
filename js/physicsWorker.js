@@ -2384,6 +2384,8 @@ function pick(obj) {
             percentOffset;
         
         this.scrollbar.state.renderData.set(this.horizontal ? 'width' : 'height', dim, 'px');
+        if (this.scrollbarRail.railBody.state.pos.get(2) == 0)
+          this.scrollbarRail.railBody.state.pos.setComponent(2, 1);
 
         percentOffset = (this.range.from + ((viewport.min - slidingWindow.min) / slidingWindowDimension) * (this.range.to - this.range.from)) / limit; // estimate which tiles we're looking at
         axisVal = viewport.min + viewportDim * percentOffset;
@@ -2729,7 +2731,6 @@ function pick(obj) {
     },
     
     addBricks: function(optionsArr, prepend) {
-      this.log("Before Vel: " + this.offsetBody.state.vel.get(1));
       this.lastDirection = prepend ? 'head' : 'tail';
       this.checkRep();
       var numBefore = this.numBricks(),
@@ -2885,7 +2886,6 @@ function pick(obj) {
         this.scrollbar.state.renderData.set('opacity', MAX_OPACITY);
       
       this.checkRep();
-      this.log("After Vel: " + this.offsetBody.state.vel.get(1));
       this['continue']();
     },
 
@@ -2911,7 +2911,6 @@ function pick(obj) {
       if (n == 0)
         return;
       
-      this.log("Before Remove Vel: " + this.offsetBody.state.vel.get(1));
       this.checkRep();
       var bricks = fromTheHead ? this.mason.bricks.slice(0, n) : this.mason.bricks.slice(this.numBricks() - n),
           brick,
@@ -2955,7 +2954,6 @@ function pick(obj) {
   //    log("ACTUAL TOTAL AFTER REMOVE: " + this.numBricks());
       this.recalc();
       this.checkRep();
-      this.log("After Remove Vel: " + this.offsetBody.state.vel.get(1));
   //    if (readjust)
   //      this.adjustSlidingWindow();
     },
@@ -3913,7 +3911,7 @@ var API = {
 	      newR,
 	      bgPosition = [],
 	      _parseFloat = parseFloat.bind(self),
-	      thresh = thresh == undefined ? 2 : thresh;
+	      thresh = 1;
 	  
 	  world.subscribe('integrate:positions', function rotate() {
 	    if (IS_DRAGGING || movingBody.fixed)

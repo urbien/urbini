@@ -1318,12 +1318,14 @@ define('router', [
         return;
       
       var toBlur,
+          changePageOptions = this.getChangePageOptions(),
           transOptions = _.extend({ 
             direction: options && options.reverse ? 'right' : 'left',
             from: fromView,
             to: toView
-          }, this.getChangePageOptions(), options);
+          }, changePageOptions, options);
       
+      delete changePageOptions.via;
       this._previousView = toView;
       
       // kill the keybord, from JQM

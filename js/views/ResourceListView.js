@@ -164,7 +164,6 @@ define('views/ResourceListView', [
     },
 
     setBrickLimit: function(limit) {
-      debugger;
       this.mason.setLimit(limit || this.collection.getTotal() || this.collection.length);
       this.mason['continue']();      
     },
@@ -326,7 +325,7 @@ define('views/ResourceListView', [
       if (!self || self.mvProp) // ||  self.TAG == 'HorizontalListItemView') 
         return;
       
-      if (self.tag !== 'HorizontalListItemView')
+      if (self.TAG !== 'HorizontalListItemView')
         navOptions.via = self;
       
       if (link) {
