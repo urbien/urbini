@@ -48,7 +48,8 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
   };
 
   Synchronizer.prototype._fetchFromServer = function(delay) {
-    var options = this.options,
+    var self = this,
+        options = this.options,
         url = options.url,
         dfd, 
         promise,
