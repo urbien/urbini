@@ -27,6 +27,11 @@ define('views/BasicPageView', [
   function isInsideDraggableElement(element) {
     return !!$(element).parents('[draggable=true]').length;
   };
+  
+  function getLinearGradient(r, g, b) {
+    var rgb = r + ',' + g + ',' + b;
+    return 'linear-gradient(to bottom, rgba({0},1) 0%, rgba({0},0.15) 25%, rgba({0},0) 50%, rgba({0},0.15) 75%, rgba({0},1) 100%)'.format(rgb);
+  };
 
   function getTooltipPos(el) {
     var position = el.$offset();
@@ -58,7 +63,16 @@ define('views/BasicPageView', [
       opacity: 0,
       'min-height': '100%',
       'transform-origin': '50% 50%',
-      perspective: '1000px'
+      perspective: '1000px',
+//      'background-image': 'linear-gradient(#5187c4, #1c2f45, #1c2f45, #5187c4)',
+//      'background-image': 'linear-gradient(rgba(255,0,0,1), rgba(255,255,255,0), rgba(255,255,255,0), rgba(255,0,0,1))',
+//      'background-image': DOM.prefix('radial-gradient') + '(circle, #FFFFFF, #000000)',
+//      'background-image': 'linear-gradient(rgba(255,0,0,0.5), rgba(255,255,255,0), rgba(255,255,255,0), rgba(255,0,0,0.5))',
+//      'background-image': 'linear-gradient(rgba(255,0,0,1) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0), rgba(255,0,0,1) 100%)',
+//      'background-image': 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.85) 30%, rgba(255,255,255,1) 50%, rgba(255,255,255,0.8) 70%, rgba(255,255,255,0) 100%)',
+      'background-image': getLinearGradient(100, 100, 100),
+      'background-size': 'auto 200%',
+      'background-position': '0 50%'
     },
     mixins: mixins,
 //    constructor: function(options) {

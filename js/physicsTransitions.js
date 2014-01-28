@@ -174,8 +174,8 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
 
   var slideDefaultSettings = {
 //    duration: 500
-    acceleration: 0.03,
-    drag: 0.85 // inversely proportional to distance^2 from the target (the closer, the more drag) 
+    acceleration: 0.02,
+    drag: 0.99 // inversely proportional to distance^2 from the target (the closer, the more drag) 
   };
   
   function Slide(options) {

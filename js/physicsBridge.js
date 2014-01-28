@@ -15,6 +15,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       HERE,
       THERE,
       MouseWheelHandler,
+      MOUSE_WHEEL_TIMEOUT,
       KeyHandler,
       ARROW_KEY_VECTOR_MAG = 80,
       ID_TO_LAYOUT_MANAGER = {},
@@ -70,7 +71,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         byScrollerType: {},
         maxOpacity: DOM.maxOpacity,
         degree: 1,
-        drag: G.browser.mobile ? 0.05 : 0.1,
+//        drag: G.browser.mobile ? 0.05 : 0.1,
+        drag: 0.1,
         tilt: 0.1,
         groupMemberConstraintStiffness: 0.3,
         springDamping: 0.1,
@@ -138,7 +140,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //  document.addEventListener('click', enableClick);
 
   window.onscroll = function(e) {
-    debugger;
+//    debugger;
     console.log("NATIVE SCROLL: " + window.pageXOffset + ", " + window.pageYOffset);
     if (window.pageYOffset != 1 || window.pageXOffset)
       window.scrollTo(0, 1);
@@ -146,7 +148,9 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   
   window.scrollTo(0, 1);
   
-  hammer.on('touchstart', enableClick);
+  hammer.on('touchstart', function(e) {
+    G.enableClick();
+  });
 //  hammer.on('tap', disableClick);
   hammer.on('dragleft dragright dragup dragdown', function(e) {
     G.disableClick();
@@ -195,6 +199,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         return;
     }
 
+    e.gesture.preventDefault();
     // oh well, we tried harder than they deserve
   });
   
@@ -239,9 +244,9 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     });
   };
   
-  function enableClick() {
-    G.enableClick();
-  };
+//  function enableClick() {
+//    G.enableClick();
+//  };
 
   function disableClick() {
     G.disableClick();
@@ -443,7 +448,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           axis,
           coast,
           v,
-          args;
+          args,
+          rejects = [];
       
       for (var id in DRAGGABLES) {
         draggable = DRAGGABLES[id];
@@ -460,20 +466,65 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       axis = draggable.getAxis();
       v = MouseWheelHandler._vector;
       v[0] = v[1] = 0;
-      v[axis == 'x' ? 0 : 1] = e.wheelDelta / 10 | 0;
-      args = [v, draggable.getId(), false]; // if true, will prevent coast
-      THERE.chain({
-        method: 'drag',
-        args: args
-      }, {
-        method: 'dragend',
-        args: args        
-      });
+      v[axis == 'x' ? 0 : 1] = e.wheelDelta / 2 | 0;
+      THERE.drag(v, draggable.getId());
       
-//      THERE.dragend(v, draggable.getId(), false); 
+      if (!resetTimeout(this._endTimeout)) {
+        this._endTimeout = setTimeout(function() {
+          THERE.dragend(v, draggable.getId(), false); // if true, will prevent coast
+        }, 100);
+      }
+      
+//      THERE.dragend(v, draggable.getId(), false);
+    
+//      e.target.$trigger(new Event('dragup'));
+//      if (!resetTimeout(this._endTimeout)) {
+//        this._endTimeout = setTimeout(function() {
+//          e.target.$trigger(new Event('dragend'));
+//        }, 100);
+//      }
     }
   };
 
+//  hammer.on("mousewheel", function(ev) { 
+//    // create some hammerisch eventData
+//    var self = this;
+//    var eventType = MOUSE_WHEEL_TIMEOUT ? 'mousemove' : 'mousedown';
+//    var touches   = Hammer.event.getTouchList(ev, eventType);
+//    var eventData = Hammer.event.collectEventData(this, eventType, touches, ev);
+////    ev.touches = touches;
+////    _.extend(ev, eventData);
+////    Hammer.detection.startDetect(hammer, ev);
+////
+////    // you should calculate the zooming over here, 
+////    // should be something like wheelDelta * the current scale level, or something...
+//////    eventData.scale = ev.wheelDelta;
+////
+//    // trigger drag event
+//    if (eventType == 'mousemove') {
+//      eventData.deltaX = 0;
+//      eventData.deltaY = ev.wheelDelta;
+//      hammer.trigger("drag", eventData);
+//      if (ev.wheelDelta > 0)
+//        hammer.trigger("dragdown", eventData);
+//      else
+//        hammer.trigger("dragup", eventData);
+//    }
+//      
+//    if (!resetTimeout(MOUSE_WHEEL_TIMEOUT)) {
+//      MOUSE_WHEEL_TIMEOUT = setTimeout(function() {
+//        MOUSE_WHEEL_TIMEOUT = null;
+//        eventData = Hammer.event.collectEventData(self, 'mouseup', touches, ev);
+//        eventData.deltaX = 0;
+//        eventData.deltaY = ev.wheelDelta;
+//        hammer.trigger("dragend", eventData);
+//      }, 100);
+//    }
+//
+//    // prevent scrolling
+//    ev.preventDefault();
+//  });
+  
   if (isMoz) {
     // Firefox
     document.addEventListener("DOMMouseScroll", MouseWheelHandler, true);

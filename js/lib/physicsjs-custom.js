@@ -4330,6 +4330,13 @@ Physics.behavior('verlet-constraints', function( parent ){
       this.breakOn(function() {
         return !aabb.contains(body);
       });
+    },
+    
+    breakOnStop: function(body, thresh) {
+      thresh = thresh || 0;
+      this.breakOn(function() {
+        return body.state.vel.norm() <= thresh;
+      });      
     }
   };
 

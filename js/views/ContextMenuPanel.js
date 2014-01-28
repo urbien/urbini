@@ -58,7 +58,7 @@ define('views/ContextMenuPanel', [
         style.display = 'none';        
       
       window.dispatchEvent(new Event("viewportdimensions"));
-//      this.hide();
+      this.hide();
     },
     
 //    click: function(e) {

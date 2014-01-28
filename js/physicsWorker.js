@@ -1055,6 +1055,24 @@ function isCurrentlyDragging() {
   return IS_DRAGGING;
 };
 
+function getDistanceConstraints(body, armed) {
+  var constraints = constrainer._distanceConstraints,
+      constraint,
+      filtered = [],
+      i = constraints.length;
+  
+  while (i--) {
+    constraint = constraints[i];
+    if (!constraint.isDisabled() && (body == constraint.bodyA || body == constraint.bodyB)) {
+      if (!armed || (armed && constraint.isArmed()))
+        filtered.push(constraint);
+    }
+  }
+  
+  return filtered;
+
+};
+
 function hasDistanceConstraint(body, armed) {
   var constraints = constrainer._distanceConstraints,
       constraint,
@@ -1094,6 +1112,18 @@ function initWorld(_world, stepSelf) {
 	  Physics.util.ticker.subscribe(API.step);
 	
 	Physics.util.extend(Physics.util, {
+    negate: function(fn, context) {
+      return function() {
+        return !fn.apply(context || this, arguments);
+      }
+    },
+	  bindAll: function(context /*, fns */) {
+	    var fn;
+	    for (var i = 1; i < arguments.length; i++) {
+	      fn = arguments[i];
+	      context[fn] = context[fn].bind(context);
+	    }
+	  },
 	  clamp: function(val, low, high) {
 	    return Math.max(Math.min(val, high), low);
 	  },
@@ -1134,9 +1164,6 @@ function initWorld(_world, stepSelf) {
 	});
 	
 	world.subscribe('drag', function(data) {
-//	  if (DRAG_FINISH_PENDING)
-//	    killDrag();
-	  
     var bodies = data.bodies,
         body,
         i = bodies.length;
@@ -1154,13 +1181,13 @@ function initWorld(_world, stepSelf) {
 	});
 
   world.subscribe('dragend', function(data) {
-    log("DRAG END");
     IS_DRAGGING = false;
     var scratch = Physics.scratchpad(),
         v = scratch.vector().clone(data.vector).mult( 1 / 100 ),
         i = DRAG_CONSTRAINTS.length,
         cst;
     
+    log("DRAG END: " + v.norm());
     while (i--) {
       cst = DRAG_CONSTRAINTS[i];
       constrainer.remove(cst);
@@ -1331,20 +1358,6 @@ function getContainer(bodyId) {
   return container && getBody(container);
 };
 
-function hasArmedConstraints(body) {
-  var constraints = constrainer._distanceConstraints,
-      i = constraints.length,
-      c;
-  
-  while (i--) {
-    c = constraints[i];
-    if (c.bodyA == body || c.bodyB == body) {
-      if (c.isArmed())
-        return true;
-    }
-  }
-};
-
 function getZSpace(bodyId) {
   var container = getContainer(bodyId),
       perspective = container && container.state.renderData.get('perspective');
@@ -1475,6 +1488,7 @@ function pick(obj) {
 // START LAYOUT MANAGER
 //(function(root) {
   var defaultSlidingWindowOptions = {
+//    maximumVelocity: 10,
     minPagesInSlidingWindow: 3, // should depend on size of visible area of the list, speed of device, RAM
     maxPagesInSlidingWindow: 6, // should depend on size of visible area of the list, speed of device, RAM
     averageBrickScrollDim: 50,
@@ -1611,7 +1625,14 @@ function pick(obj) {
       this.log("SET HEAD EDGE TO " + this.headEdge.state.pos.get(this.axisIdx));
       this.headEdgeConstraint = API.distanceConstraint(this.offsetBody, this.headEdge, this.getSpringStiffness(), this.flexigroup ? null : 0, this.dirHead);
       this.headEdgeConstraint.damp(this.getSpringDamping());
-      this.headEdgeConstraint.armOnDistance(Infinity, this.dirHead); // no matter how far out of bounds we are, we should snap back
+      this.headEdgeConstraint.armOn(this.shouldArmHead.bind(this.headEdgeConstraint, this)); // pass in self as first param
+//      this.headEdgeConstraint.breakOn(Physics.util.negate(this.shouldArmHead.bind(this.headEdgeConstraint, this))); // pass in self as first param
+//      this.headEdgeConstraint.breakOn(function() {
+//        return self.offsetBody.state.pos.dist(self.headEdge.state.pos) < 1 && self.offsetBody.state.vel.norm() < 0.1;
+//      });
+      
+      // this one doesn't work because if we're not at range 0-X, we don't know where the head edge should be yet
+//      this.headEdgeConstraint.armOnDistance(Infinity, this.dirHead); // no matter how far out of bounds we are, we should snap back
   //    this.headEdgeConstraint.breakOnDistance(50, DIR_Y_NEG);
       if (this.bounds)
         this.setBounds(this.bounds); // convert to Physics AABB
@@ -1622,8 +1643,13 @@ function pick(obj) {
         this.averageBrickNonScrollDim = this.pageNonScrollDim;
         
       if (doSlidingWindow) {
+//        this._subscribe('integrate:velocities', this._onIntegrateVelocities, this, -Infinity); // lowest priority
         this._subscribe('integrate:positions', this._onIntegratePositions, this, -Infinity); // lowest priority
-        this._onstep = Physics.util.throttle(this._onIntegratePositions.bind(this), 30);
+//        this._onIntegratePositions = Physics.util.throttle(this._onIntegratePositions.bind(this), 30);
+//        this._onIntegrateVelocities = Physics.util.throttle(this._onIntegrateVelocities.bind(this), 30);
+        Physics.util.bindAll(this, '_onIntegratePositions'); //, '_onIntegrateVelocities');
+//        this._onIntegratePositions = this._onIntegratePositions.bind(this);
+//        this._onIntegrateVelocities = this._onIntegrateVelocities.bind(this);        
       }
       
       this.mason = new Mason(masonryOptions);
@@ -1763,7 +1789,7 @@ function pick(obj) {
       if (this.squeeze) // TODO: make sure only one thing is rotating the container
         API.squeezeAndStretch(this.offsetBody, this.offsetBody);
       if (this.tilt)
-        API.rotateWhenMoving(this.offsetBody, getContainer(this.offsetBody), this.axisIdx, this.orthoAxisIdx, 1);
+        API.rotateWhenMoving(this.offsetBody, getContainer(this.offsetBody), this.axisIdx, this.orthoAxisIdx, this.gradient);
       
       this['continue']();
     },
@@ -1791,6 +1817,37 @@ function pick(obj) {
           handlers.length--;
         }
       }
+    },
+    
+    shouldArmHead: function(self) {
+      if (self.range.from == 0) {
+        var scratchpad = Physics.scratchpad(),
+            dist = scratchpad.vector().clone(this.bodyB.state.pos).vsub(this.bodyA.state.pos).proj(self.dirHead);
+        
+        scratchpad.done();
+//        if (dist > 0)
+//          log("Armed Head constraint: " + this.bodyA.state.pos.toString() + " to " + this.bodyB.state.pos.toString() + ", dist = " + dist);
+        
+        return dist > 0;
+      }
+      else
+        return false;
+    },
+    
+    shouldArmTail: function(self) {
+      if (self.range.to == self.getKnownLimit()) {
+        var scratchpad = Physics.scratchpad(),
+            dist = scratchpad.vector().clone(this.bodyB.state.pos).vsub(this.bodyA.state.pos).proj(self.dirTail);
+        
+        scratchpad.done();
+        return dist > 0;
+      }
+      else
+        return false;
+    },
+
+    getKnownLimit: function() {
+      return this.brickLimit == Infinity ? this.lastBrickSeen : this.brickLimit;
     },
     
     tiltBricksInertially: function() {
@@ -1890,6 +1947,50 @@ function pick(obj) {
       return null;
     },
 
+    attachHeader: function(header, acceleration) {
+      header = getBody(header);
+      var self = this,
+          up = Physics.vector(DIR_Y_POS),
+          down = Physics.vector(DIR_Y_NEG),
+          vel,
+          a,
+          initialPos = Physics.vector(header.state.pos);
+      
+      function onIV() {        
+        a = null;
+        vel = self.offsetBody.state.vel.get(self.axisIdx);
+        if ((self.headEdge.state.pos.dist(self.offsetBody.state.pos) < self.bounds[self.aabbAxisDim] * 2) ||
+            (self.tailEdge && self.tailEdge.state.pos.dist(self.offsetBody.state.pos) < self.bounds[self.aabbAxisDim] * 2)) {
+          if (!header.state.pos.equals(initialPos))
+            a = down;
+        }
+        else {
+          if (vel > 0.1)
+            a = down;
+          else if (vel < -0.1)
+            a = up;
+        }
+        
+        if (a) {
+          a.normalize();
+          if (vel && sign(vel) != sign(a.get(self.axisIdx)))
+            a.mult(Math.abs(vel))
+          else
+            a.mult(acceleration);
+          
+          header.accelerate(a);
+        }
+      };
+      
+      world.subscribe('integrate:velocities', onIV);
+      world.subscribe('remove:body', function onremove(data) {
+        if (data.body == header || data.body == self.offsetBody) {
+          world.unsubscribe('remove:body', onremove);
+          world.unsubscribe('integrate:velocities', onIV);
+        }
+      });    
+    },
+    
     zoomInTo: function(options) {
       // TODO: record state to enable zoomOutFrom
       var self = this,
@@ -2308,39 +2409,21 @@ function pick(obj) {
         
       }
     },
-    
+
+//    _onIntegrateVelocities: function(data) {
+//      if (!this._sleeping && !this._transitioning && !this.headEdgeConstraint.isArmed() && (!this.tailEdgeConstraint || this.tailEdgeConstraint.isArmed())) {
+//        var axisVel = this.offsetBody.state.vel.get(this.axisIdx);
+//        if (Math.abs(axisVel) > this.maxVelocity) {
+//          this.log("Capping velocity at: " + this.maxVelocity);
+//          this.offsetBody.state.vel.setComponent(this.axisIdx, this.maxVelocity * sign(axisVel));
+//        }
+//      }
+//    },
+
     _onIntegratePositions: function() {
 //      this.offsetBody.state.renderData.set('perspective-origin-y', (-offset|0) + 'px');
       if (this._sleeping || this._waiting || this._transitioning)
-        return;
-      
-      if (this._wasHeadArmed) {
-        if (!this.headEdgeConstraint.isArmed()) {
-          this._wasHeadArmed = false;
-          this.log("Head edge disarmed");          
-        }
-      }
-      else {
-        if (this.headEdgeConstraint.isArmed()) {
-          this._wasHeadArmed = true;
-          this.log("Head edge armed");          
-        }
-      }
-
-      if (this.tailEdgeConstraint) {
-        if (this._wasTailArmed) {
-          if (!this.tailEdgeConstraint.isArmed()) {
-            this._wasTailArmed = false;
-            this.log("Tail edge disarmed");          
-          }
-        }
-        else {
-          if (this.tailEdgeConstraint.isArmed()) {
-            this._wasTailArmed = true;
-            this.log("Tail edge armed");          
-          }
-        }
-      }
+        return;      
 
       var offset = this.offsetBody.state.pos.get(this.axisIdx),
           lastOffset = this._lastOffset.get(this.axisIdx),
@@ -2429,7 +2512,11 @@ function pick(obj) {
           this.tailEdgeConstraint = API.distanceConstraint(this.offsetBody, this.tailEdge, this.getSpringStiffness(), this.flexigroup ? null : 0, this.dirTail);
           this.tailEdgeConstraint.damp(this.getSpringDamping());
           this.tailEdgeConstraint['break']();
-          this.tailEdgeConstraint.armOnDistance(Infinity, this.dirTail); // no matter how far out of bounds we are, we should snap back
+          this.tailEdgeConstraint.armOn(this.shouldArmTail.bind(this.tailEdgeConstraint, this)); // pass in self as first param
+//          this.tailEdgeConstraint.breakOn(Physics.util.negate(this.shouldArmTail.bind(this.tailEdgeConstraint, this))); // pass in self as first param
+
+          // this one doesn't work because if we're not at range X-LastIndex, we don't know where the tail edge should be yet
+//          this.tailEdgeConstraint.armOnDistance(Infinity, this.dirTail); // no matter how far out of bounds we are, we should snap back
 //          this.tailEdgeConstraint.breakOnDistance(50, DIR_Y_POS);
           world.subscribe('drag', function(data) {
 //            if (~data.bodies.indexOf(this.offsetBody) && this.offsetBody.state.pos.get(this.axisIdx) > this.tailEdge.state.pos.get(this.axisIdx))
@@ -2656,7 +2743,7 @@ function pick(obj) {
           l = optionsArr.length,
           options;
       
-      this.biggestViewportMin = Math.max(viewport.min, this.biggestViewportMin || 0);
+      this.scrolled = this.scrolled || viewport.min != 0;
 //      log("ADDING BRICKS: " + optionsArr.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
       for (var i = 0; i < l; i++) {
         options = optionsArr[i];
@@ -2697,7 +2784,7 @@ function pick(obj) {
         this.brickLimit = Math.max(this.brickLimit, this.lastBrickSeen);
       }
       
-      if (this.biggestViewportMin) // only be fancy on the first page
+      if (this.scrolled) // only be fancy on the first page
         world.add(bricks);
       else if (this.fly) {
         function fix(brick) {
@@ -3079,8 +3166,28 @@ function pick(obj) {
       }
     },
 
+    requestRange: function(from, to, atTheHead) {
+      if (this._waiting)
+        return;
+      
+      this._waiting = true;
+      from = Math.max(0, from);
+      to = Math.min(this.brickLimit == Infinity ? this.lastBrickSeen : this.brickLimit, to);
+      this.removeBricks(this.numBricks());
+      this.range.from = this.range.to = atTheHead ? to : from;
+      triggerEvent(this._callbackId, {
+        type: 'range',
+        from: from,
+        to: to,
+        info: this._getInfo()
+      });
+    },
+    
     home: function() {
       this.log("JUMPING HOME");
+      if (this.range.from != 0)
+        this.requestRange(0, this.bricksPerPage, true);
+      
       log(this.containerId + ": Disabling edge constraints (temporarily) on jump to HOME");
       this.disableEdgeConstraints();
       this.offsetBody.stop(this.headEdge.state.pos);
@@ -3090,13 +3197,11 @@ function pick(obj) {
     
     end: function() {
       this.log("JUMPING TO THE END");
-      var end = Math.min(this.brickLimit, this.lastBrickSeen),
-          coords = this.getTailEdgeCoords();
+      var coords = this.getTailEdgeCoords(),
+          end = this.brickLimit == Infinity ? this.lastBrickSeen : this.brickLimit;
       
-//      this.requestNewRange({
-//        from: Math.max(end - this.bricksPerPage, 0),
-//        to: end
-//      });
+      if (this.range.to != end)
+        this.requestRange(end - this.bricksPerPage, end);
       
       log(this.containerId + ": Disabling edge constraints (temporarily) on jump to END");
       this.disableEdgeConstraints();
@@ -3424,11 +3529,13 @@ var API = {
         lastDistance = initialDistance,
         thresh = 1,
         distance,
-        flyAction;
+        flyAction,
+        boundsDim;
 
     function onIntegratePositions(ratio) {
       distance = body.state.pos.dist(destination);
-      dragMultiplier = 1 - _drag * Math.pow((initialDistance - distance) / initialDistance, 2);
+      boundsDim = Math.min(BOUNDS._hw, BOUNDS._hh);
+      dragMultiplier = 1 - _drag * Math.pow((boundsDim - Math.min(distance, boundsDim)) / boundsDim, 2);
       
       if (distance > thresh) {
         lastDistance = distance;
@@ -3791,17 +3898,21 @@ var API = {
     });
   },
 
-	rotateWhenMoving: function(movingBody, rotateBody, moveAxis, rotateAxis, thresh) {
+	rotateWhenMoving: function(movingBody, rotateBody, moveAxis, rotateAxis, doGradient) {
     movingBody = getBody(movingBody);
     rotateBody = getBody(rotateBody);
 	  var minDelta = 0.001,
 	      maxDelta = 0.01,
+//	      minAngle = -Math.PI / 4
+//	      maxAngle = Math.PI / 4,
 	      angles = [0, 0, 0],
 	      coeff,
 	      v,
 	      rotation,
 	      r,
 	      newR,
+	      bgPosition = [],
+	      _parseFloat = parseFloat.bind(self),
 	      thresh = thresh == undefined ? 2 : thresh;
 	  
 	  world.subscribe('integrate:positions', function rotate() {
@@ -3812,7 +3923,7 @@ var API = {
 	    v = Physics.util.truncate(movingBody.state.vel.get(moveAxis), 3);
 	    rotation = rotateBody.state.renderData.get('rotate');
 	    r = rotation[rotateAxis];
-	    if (hasArmedConstraints(movingBody))
+	    if (hasDistanceConstraint(movingBody, true))
 	      newR = Math.max(0, Math.abs(r) - maxDelta) * sign(r); // gradually kill tilt. If it's being pulled by a constraint, we don't want the tilt to go nuts first one way then the other 
 	    else
 	      newR = Math.abs(v) > thresh ? -sign(v) * coeff * Math.log(Math.abs(v + sign(v)) - thresh) / 10 : 0;
@@ -3826,6 +3937,12 @@ var API = {
 	    else if (Math.abs(newR - r) < minDelta)
 	      return;
 
+	    if (doGradient) {
+  	    Physics.util.extend(bgPosition, rotateBody.state.renderData.get('background-position').match(/\d+/ig));
+  	    bgPosition[rotateAxis ^ 1] = Physics.util.clamp(50 + 10 * 100 * newR | 0, 0, 100) + '%';
+  	    rotateBody.state.renderData.set('background-position', bgPosition.join(' '));
+	    }
+	    
 //	    log("ROTATION: " + newR + " for VELOCITY: " + v);
 	    Physics.util.extend(angles, rotation);
 	    angles[rotateAxis] = newR;
@@ -3924,32 +4041,6 @@ var API = {
     });
   },
 
-	attachHeader: function(header, attachTo, acceleration) {
-    header = getBody(header);
-    attachTo = getBody(attachTo);
-    
-    var up = Physics.vector(DIR_Y_POS).mult(acceleration),
-        down = Physics.vector(DIR_Y_NEG).mult(acceleration);
-    
-    function onstep() {
-      var yVel = attachTo.state.vel.get(1),
-          yPos = attachTo.state.pos.get(1);
-      
-      if (yPos > 0 || yVel > 0.1) // bounce back is imminent
-        header.accelerate(down);
-      else if (yPos < 0 && yVel < -0.1 && !hasDistanceConstraint(attachTo, true)) // avoid triggering on bounce back
-        header.accelerate(up);
-    };
-    
-    world.subscribe('step', onstep);
-    world.subscribe('remove:body', function onremove(data) {
-      if (data.body == header || data.body == attachTo) {
-        world.unsubscribe('remove:body', onremove);
-        world.unsubscribe('step', onstep);
-      }
-    });    
-	},
-	
 	trackDrag: function(body, type, bodies) {
 	  body = getBody(body);
 	  if (bodies)
@@ -4037,6 +4128,14 @@ var API = {
 		if (!constrainer) {
 			constrainer = Physics.behavior('verlet-constraints');
 			world.addBehavior(constrainer);
+			
+//			world.subscribe('broke-verlet-constraint', function(data) {
+//			  log("Broke constraint: " + getId(data.constraint.bodyA) + " - " + getId(data.constraint.bodyB));
+//			});
+//			
+//      world.subscribe('armed-verlet-constraint', function(data) {
+//        log("Armed constraint: " + getId(data.constraint.bodyA) + " - " + getId(data.constraint.bodyB));
+//      });
 		}
 		
 		bodyA = getBody(bodyA);

@@ -44,7 +44,7 @@ define('views/HorizontalListView', [
         horizontal: true, 
         gutterWidthHorizontal: 15,
         gutterWidthVertical: 0,
-//        tilt: true,
+        tilt: false,
 //        squeeze: true,
         scrollerType: 'horizontal',
         oneElementPerRow: false,

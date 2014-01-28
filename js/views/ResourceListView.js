@@ -24,6 +24,7 @@ define('views/ResourceListView', [
     // <MASONRY INITIAL CONFIG>
     slidingWindow: true,
     tilt: true,
+    gradient: true,
     squeeze: false,
     horizontal: false,
 //    fly: true,
@@ -241,6 +242,16 @@ define('views/ResourceListView', [
         this.mason.setLimit(this.collection.getTotal());
 
       switch (event.type) {
+        case 'range':
+          if (this._displayedRange.to > this._displayedRange.from)
+            this._removeBricks(this._displayedRange.from, this._displayedRange.to);
+          
+          if (event.from < this._displayedRange.from)
+            this._displayedRange.from = this._displayedRange.to = event.to;
+          else
+            this._displayedRange.from = this._displayedRange.to = event.from;
+          
+          return this._addBricks(event.from, event.to);
         case 'prefetch':
           if (this._isPaging)
             return;
@@ -655,9 +666,9 @@ define('views/ResourceListView', [
     },
     
     _doAddBricks: function(from, to) {
-      Q.write(function() {
+//      Q.write(function() {
         this._doAddBricksFoReal(from, to);
-      }, this);
+//      }, this);
     },
       
     _doAddBricksFoReal: function(from, to) {
@@ -1082,9 +1093,9 @@ define('views/ResourceListView', [
     },
 
     postRender: function(from, to, added) {
-      Q.read(function() {        
+//      Q.read(function() {        
         this._doPostRender(from, to, added); // need to get new brick sizes
-      }, this);
+//      }, this);
     },
     
     _doPostRender: function(from, to, added) {

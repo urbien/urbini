@@ -328,9 +328,10 @@ define('views/ResourceMasonryItemView', [
       }
       */
       if (obj.gridCols) {
-        DOM.queueRender(gridCols, {          
-          innerHTML: obj.gridCols  
-        });
+        gridCols.innerHTML = obj.gridCols;  
+//        DOM.queueRender(gridCols, {          
+//          innerHTML: obj.gridCols  
+//        });
       }
       else {
         if (gridCols)

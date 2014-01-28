@@ -25,6 +25,7 @@ body {
   position: absolute; 
   border: 0; 
 }
+
 input {
     -webkit-touch-callout: auto;
     -webkit-user-select: auto;
@@ -1327,6 +1328,10 @@ div {
 
 .physicsConstants * {
   text-align: center;
+}
+
+.physicsConstants input[type="range"] {
+  width: 90%;
 }
 
 /*

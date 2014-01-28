@@ -293,9 +293,9 @@ define('views/Header', [
             self._rail = [self.getContainerBodyId(), 0, 0, 0, -self._outerHeight];
             self.addToWorld(null, false);
 //            Physics.there.trackDrag(self.getContainerBodyId(), 'vel'); // 'pos' for exact tracking, 'vel' for parallax 
-            self.pageView.listView.onload(function() {              
+            self.getPageView().listView.onload(function() {              
 //              Physics.there.trackDrag(self.getContainerBodyId(), 'vel', self.pageView.listView.getContainerBodyId()); // 'pos' for exact tracking, 'vel' for parallax
-              Physics.there.rpc(null, 'attachHeader', [self.getContainerBodyId(), self.pageView.listView.getContainerBodyId(), 0.02]);
+              Physics.there.rpc(self.getPageView().listView.mason.id, 'attachHeader', [self.getContainerBodyId(), 0.02]);
             });
           }
           
