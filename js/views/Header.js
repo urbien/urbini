@@ -24,7 +24,6 @@ define('views/Header', [
   return BasicView.extend({
 //    viewType: 'any',
     style: {
-      'zIndex': 10001,
       opacity: 0.9 //DOM.maxOpacity
     },
     _draggable: false,
