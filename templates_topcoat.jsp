@@ -56,21 +56,15 @@
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
   <div id="resourceViewHolder">
-    <div style="width: 100%;position:relative;padding-right:10px;overflow:hidden">
-      <div id="resourceImage" style="width:50%;float:left;margin:0; padding:0;"><!-- style="width:auto" --></div>
-      <div id="mainGroup" style="position:absolute;top:0;right:1.3rem;"></div>
+    <div style="width: 100%;position:relative;min-height:40px;padding-right:10px;overflow:hidden">
+      <div id="resourceImage" style="width:50%;float:left;margin:0; padding:0;{{= U.getArrayOfPropertiesWith(this.vocModel.properties, "mainGroup") &&  U.isA(this.vocModel, 'ImageResource') ? 'min-height:210px;' : ''}}" ><!-- style="width:auto" --></div>
+      <div id="mainGroup" style="top:0;right:1.3rem;"></div>
       <!--div id="buyGroup" class="ui-block-b" style="width:50%; min-width: 130px"></div-->
     </div>
     <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     
-    <div data-role="footer" data-theme="{{= G.theme.photogrid }}" class="thumb-gal-header hidden"><h3></h3></div>
-    <!--div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="grid-listview hidden">
-      <div class="dummy head"></div>
-      <div class="dummy tail"></div>
-    </div-->
-    
+    <div data-role="footer" data-theme="{{= G.theme.photogrid }}" class="thumb-gal-header hidden"><h3></h3></div>    
     <div id="photogrid" data-inset="true" data-filter="false" class="thumb-gal hidden"></div>
-    <br/>
     {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
        <div style="text-align:center;width:100%;padding-bottom:0.5rem">
        <button class="topcoat-button--cta" style="width:80%;font-size:1.8rem; padding:0.5rem 0; font-weight:bold;">
@@ -128,7 +122,7 @@
 
 <script type="text/template" id="cpTemplate">
 <!-- readwrite backlink in resource view -->
-<li class="topcoat-list__item" data-propName="{{= shortName }}"
+<li class="topcoat-list__item" data-propName="{{= shortName }}" {{= obj.comment ? 'style="min-height: 6rem;"' : '' }}
 {{= obj.inline ? ' data-theme="{0}">'.format(G.theme.footer) : '' }}
 >
      {{ var params = {}; }}
@@ -143,7 +137,7 @@
      <div style="display:inline;position:absolute;right:4rem;font-size: 11px;top:1.5rem;border-radius:1rem;border: 1px solid #777;padding: 0.1rem 0.3rem;">{{= value }}</div>
      
      {{ if (typeof comment != 'undefined') { }}
-       <p style="font-size:1.3rem;color:#808080; line-height:1rem;">{{= comment }}</p>
+       <p style="padding-left:1.25rem; font-size:1.3rem;color:#808080; position:absolute;top:2rem;">{{= comment }}</p>
      {{ } }}
    </li>
 </script>
@@ -188,17 +182,20 @@
 <!-- button for an important backlink on a resource on the resource's view page (horizontal mode) -->
  {{ var params = {}; }}
  {{ params[backlink] = _uri; }}
- {{ if (!value) { }}  
-   <a role="button" data-shortName="{{= shortName }}" style="width:auto;margin:5px;text-align:left; border: 1px solid #ccc; min-width:115px; float:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="#" data-title="{{= title }}">
+  <button class="topcoat-button--cta hmg" style="text-shadow:0 1px 0 {{= borderColor }};border:1px solid {{= borderColor }}; background-color: {{= color }}">
+ {{ if (!obj.value) { }}  
+   <a data-shortName="{{= shortName }}" href="#" data-title="{{= title }}">
       <span>{{= obj.icon ? '<i class="' + icon + '" style="margin-left:-5px;"></i>' : '' }} {{= name }}</span> 
    </a>
  {{ } }}
  {{ if (obj.value) { }}  
-   <a role="button" data-propName="{{= shortName }}" style="width:auto;margin:5px;text-align:left; border: 1px solid #ccc; min-width:115px;float:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
+   <a data-propName="{{= shortName }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
      <!-- {{= obj.icon ? '<i class="' + icon + '" style="font-size:20px;top:35%"></i>' : '' }} -->
      <span>{{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="float: right;position:relative;margin-right:-10px;margin-top: -17px;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}</span>
    </a>
  {{ } }}
+ </button>
+
 </script>
 
 
@@ -480,12 +477,11 @@
     
     {{ if (obj.image) { }}   
       <img src="{{= obj.image || 'icons/blank.png'}}" class="thumb" 
-      {{ if (typeof obj.width != 'undefined'  &&  obj.width.length) { }}  
-        style="
-          width:{{= width }}px; height:{{= height }}px;
-          left:-{{= left }}px; top:-{{= top }}px;
-          clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
-      {{ } }}
+    {{ if (obj.clip_right) { }}  
+      style="
+        right:-{{= right }}px; top:-{{= top }}px;
+        clip:rect({{= top }}px, {{= clip_right }}px, {{= bottom }}px, {{= clip_left }}px);"
+    {{ } }}
       /> 
     {{ } }}
     <div style="min-height:38px;max-width:100%;padding-top:10px;font-size:18px;margin-left:15px;" 
@@ -597,7 +593,7 @@
 
 <script type="text/template" id="editRowTemplate">
   <!-- one property row in edit mode -->
-  <li data-role="fieldcontain" class="topcoat-list__item">{{= value }}</li>
+  <li data-role="fieldcontain" class="topcoat-list__item {{= !_.isUndefined(prop.maxSize) && prop.maxSize > 100 && !prop.multiValue ? 'textarea' : ''}}">{{= value }}</li>
 </script>
 
 <script type="text/template" id="stringPET">
@@ -636,7 +632,7 @@
   {{ }                                                                                                                                                                                        }}
 
   <!--a target="#"  name="{{= shortName }}" class="resourceProp" id="{{= id }}" {{= rules }}--> 
-  <a target="#"  name="{{= shortName }}" style="min-height:3rem;{{= obj.img ? 'padding: 0 1.5rem;' : ''}}" class="resourceProp" id="{{= id }}" {{= rules }}> 
+  <a target="#"  name="{{= shortName }}" style="min-height:3rem;" class="resourceProp" id="{{= id }}" {{= rules }}> 
     {{ if (obj.img) { }}    
       <img name="{{= shortName }}" src="{{= img }}" style="
       
