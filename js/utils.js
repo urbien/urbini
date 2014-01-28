@@ -665,7 +665,16 @@ define('utils', [
 
     getTypeUri: function(typeName, hint) {
       if (typeName.indexOf('/') != -1) {
-        var type = typeName.startsWith('http://') ? typeName : G.defaultVocPath + typeName;
+        
+        var type;
+        if (typeName.startsWith('http://'))
+          type = typeName;
+        else {
+          if (("http://" + typeName).startsWith(G.DEV_PACKAGE_PATH))
+            type = "http://" + typeName;
+          else
+            type = G.defaultVocPath + typeName;
+        }
         var sqlIdx = type.indexOf(G.sqlUri);
         if (sqlIdx != -1)
           type = 'http://' + type.slice(sqlIdx + G.sqlUri.length + 1);
@@ -2092,12 +2101,12 @@ define('utils', [
         val.comment = prop.comment;
       
       var propInfo = {
-        value: U.template(propTemplate)(val)
+        value: U.template(propTemplate)(val),
+        prop: prop
       };
       
       if (prop.comment)
         propInfo.comment = prop.comment;
-      
       return propInfo;
     },
     
@@ -3304,7 +3313,7 @@ define('utils', [
       if (G.isJQM())
         $(dialog).trigger('create').popup().popup("open");
       else
-        dialog.style['z-index'] = 1000000;
+        dialog.style['zIndex'] = 1000000;
       if (options.onok)
         dialog.$('[data-cancel]').$on('click', options.oncancel);
       if (options.onok)
