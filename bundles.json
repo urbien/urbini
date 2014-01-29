@@ -15,7 +15,7 @@
 		'views/EditPage.js', 'views/EditView.js', 'views/ChatPage.js', 'views/HorizontalListView.js', 'views/HorizontalListItemView.js', 'views/VideoButton.js', 'views/CallInProgressHeader.js', 'lib/mobiscroll-datetime-min.js', 'mobiscroll-duration.js', 
 		'views/IntersectionListView.js', 'views/IntersectionListItemView.js', 'views/MapView.js', 'lib/leaflet.js', 'lib/leaflet.markercluster.js', 'maps.js', 'lib/codemirror.js', 'lib/codemirrorXMLMode.js', 'lib/codemirrorHTMLMode.js', 'lib/codemirrorJSMode.js', 'lib/codemirrorCSSMode.js', 
 		'views/CameraPopup.js', 'lib/whammy.js', 'lib/recorder.js', 'lib/recorderWorker.js', 'lib/socket.io.js', 'lib/simplewebrtc.js', 'fileSystem.js', 'lib/jquery.draggable.js', 'lib/d3.js', 'd3widgets.js', 'views/SocialNetworkPage.js', 'views/StaticPage.js',
-		'views/CommentListView.js', 'views/CommentListItemView.js', 'views/PublishButton.js', 'views/ChatButton.js', 'views/MessageBar.js', 'tourGuide.js', 'views/MenuPanel.js', 'views/ContextMenuPanel.js',
+		'views/CommentListView.js', 'views/CommentListItemView.js', 'views/PublishButton.js', 'views/ChatButton.js', 'views/MessageBar.js', 'tourGuide.js', 'views/MenuPanel.js', 'views/MainMenuPanel.js', 'views/ContextMenuPanel.js',
 		'../styles/mobiscroll.datetime.min.css', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css', '../styles/leaflet/leaflet.ie.css', '../styles/leaflet/MarkerCluster.Default.ie.css', '../styles/mobiscroll.datetime.min.css', '../styles/codemirror.css'
   ],
   appcache: [

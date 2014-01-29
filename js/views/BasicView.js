@@ -1049,6 +1049,7 @@ define('views/BasicView', [
           attributes: true,
           childList: true,
           characterData: true,
+          attributeOldValue: true,
           subtree: true
         }));
       } else {
@@ -1215,6 +1216,21 @@ define('views/BasicView', [
     },
     
     _onMutation: function(mutations) {
+      var i = mutations.length,
+          recheck = false,
+          m;
+      
+      while (i--) {
+        m = mutations[i];
+        if (!m.target.classList.contains("scrollbar")) {
+          recheck = true;
+          break;
+        }
+      }
+      
+      if (!recheck)
+        return;
+      
       if (this._mutationTimeout) {
         if (resetTimeout(this._mutationTimeout))
           return;
