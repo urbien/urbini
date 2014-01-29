@@ -98,7 +98,8 @@ define('views/HomePage', [
         this.menuBtn = new MenuButton({
           el: menuBtnEl,
           pageView: this,
-          viewId: this.viewId
+          viewId: this.viewId,
+          homePage: true
         });
         
         this.menuBtn.render();
