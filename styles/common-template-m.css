@@ -1018,7 +1018,7 @@ section[id^="view"] {
   cursor: pointer;
   border-radius: 10px;
   -webkit-border-radius: 10px;
-  border: solid black;
+  border: solid #5d5d5d;
   overflow:hidden;
 }
 
@@ -1225,6 +1225,10 @@ section[id^="view"] {
   }
 }  
   
+#sidebarDiv {
+  z-index: 10000;
+}  
+  
 #sidebarDiv #sidebar ul.listPage {
   list-style: none;
   margin-top:0;
@@ -1236,7 +1240,7 @@ section[id^="view"] {
 }
 
 #headerDiv {
-  z-index:1001;
+  z-index:10001;
   position: relative;
   opacity: 0.8;
 }
@@ -1332,6 +1336,10 @@ div {
 
 .physicsConstants input[type="range"] {
   width: 90%;
+}
+
+#photogrid {
+  padding-top: 5px;
 }
 
 /*

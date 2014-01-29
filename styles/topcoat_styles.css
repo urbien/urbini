@@ -70,8 +70,10 @@ li {
   font-size:1.6rem;
 }
 #cpView .topcoat-list__item {
-  padding: 1.25rem 0 0 1.25rem;
+  padding: 0;
+  min-height: 4rem;
 }
+
 .topcoat-button-bar__button--large i {
   font-size:3rem;
 }
@@ -116,13 +118,15 @@ a {
 }
 .cpA {
   font-weight:normal;width:100%;height:100%;
+  position:absolute;
+  padding:1.25rem;
 }
 
 .cp i {
   z-index:1001; 
   position:absolute;
   top:1rem;
-  right:0.5rem;
+  right:1.75rem;
   font-size:22px;
 }
 .ui-icon-plus-sign:before, .ui-icon-chevron-left:before, .ui-icon-map-marker:before {
@@ -190,6 +194,7 @@ a {
 
 .editList textarea, .editList input[type="text"] {
   width: 100%;
+/*  position:static; */
 }
 
 @media all and (min-width:420px) {
@@ -209,6 +214,12 @@ a {
   }
   .editList textarea, .editList input[type="text"] {
     width: 80%;
+    position:absolute;
+    float:right;
+    right: 15px;
+  }
+  .textarea {
+    height: 10.5rem;
   }
 }
 .resourceProp {
@@ -284,8 +295,9 @@ fieldset#submitBtns {
   cursor: pointer;
   padding: 0;
 }
-fieldset .listPage .topcoat-list__container {
-  border: none;}
+fieldset .listPage .topcoat-list__container, #sidebar.topcoat-list__container {
+  border: none;
+}
 .topcoat-checkbox {
   line-height: 3rem;
   left: 1rem;
@@ -343,3 +355,13 @@ fieldset .listPage .topcoat-list__container {
   border: 1px solid #9daca9;
   border-radius: 6px;
 }
+#mainGroup button.img {
+  margin:5px;
+  width:auto;
+  float:left;
+  font-weight: bold;
+  text-align:left; 
+  border: 1px solid #ccc; 
+  min-width:115px; 
+  background:none;
+} 
