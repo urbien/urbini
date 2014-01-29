@@ -325,7 +325,7 @@ define('views/ResourceListView', [
       if (!self || self.mvProp) // ||  self.TAG == 'HorizontalListItemView') 
         return;
       
-      if (self.TAG !== 'HorizontalListItemView')
+      if (self.TAG !== 'HorizontalListItemView' && this.displayMode != 'vanillaList')
         navOptions.via = self;
       
       if (link) {
@@ -1074,6 +1074,23 @@ define('views/ResourceListView', [
       this._prerendered = true;
     },
     
+    _updateSize: function() {
+      var ot = this.el.offsetTop,
+          ol = this.el.offsetLeft,
+          w = this._width,
+          h = this._height,
+          viewport = G.viewport;
+      
+      this._offsetTop = ot;
+      this._offsetLeft = ol;
+      this._bounds[0] = this._bounds[1] = 0;
+      this._outerHeight = this._height = this._bounds[3] = viewport.height - ot;
+      this._outerWidth = this._width = this._bounds[2] = viewport.width - ol;
+      if (ot != this._offsetTop || ol != this._offsetLeft || this._height != h || this._width != w) {
+        return true;
+      }
+    },
+    
     toBricks: function(views, options) {
       var bricks = [],
           brick,
@@ -1127,8 +1144,10 @@ define('views/ResourceListView', [
         this._displayedRange.to = Math.max(this._displayedRange.to, to);
       }
       
-      if (this._outOfData && this.collection.length == to)
+      if (this._outOfData && this.collection.length == to) {
+        this.log("3. BRICK LIMIT");
         this.mason.setLimit(this.collection.length);
+      }
 
 //      this.log("ADDING BRICK RANGE " + from + "-" + to + ": " + bricks.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
       this.addBricksToWorld(bricks, atTheHead); // mason
