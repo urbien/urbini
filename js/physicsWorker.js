@@ -2410,6 +2410,7 @@ function pick(obj) {
       
       this.pageWidth = Math.abs(this.bounds._hw * 2);
       this.pageHeight = Math.abs(this.bounds._hh * 2);
+      this.log("Page Height: " + this.pageHeight);
       this.pageArea = this.pageWidth * this.pageHeight;
       if (!this.options.minPagesInSlidingWindow) {
         if (this.pageArea < 400 * 400)
@@ -2554,17 +2555,21 @@ function pick(obj) {
       coords[this.orthoAxisIdx] = this.headEdge.state.pos.get(this.orthoAxisIdx);
       if (this.slidingWindow) {
         // head and tail edge swim around
+//        this.log("Setting tail edge for sliding window layout");
         if (this.range.from == 0 && this.range.to == this.brickLimit && this.slidingWindowDimension < this.pageScrollDim)
           coords[this.axisIdx] = this.headEdge.state.pos.get(this.axisIdx);
         else
           coords[this.axisIdx] = -this.slidingWindowBounds.max + this.pageScrollDim; // - this.pageOffset[this.axisIdx];
       }
       else {
+//        this.log("Setting tail edge for non-sliding window layout");
         // tail edge depends only on size of the layout and the size of the paint bounds
         if (this.slidingWindowDimension < this.pageScrollDim)
           coords[this.axisIdx] = this.headEdge.state.pos.get(this.axisIdx);
-        else
+        else {
+//          this.log("SW Dim = " + this.slidingWindowDimension + ", pageScrollDim = " + this.pageScrollDim);
           coords[this.axisIdx] = -this.slidingWindowDimension + this.pageScrollDim; // NOT the same as in above IF statement
+        }
       }
       
       return coords;
@@ -2757,7 +2762,7 @@ function pick(obj) {
         this.averageBricksPerScrollDim = this.pageScrollDim / this.averageBrickScrollDim;
         this.averageBricksPerNonScrollDim = this.pageNonScrollDim / this.averageBrickNonScrollDim;
         this.averageBrickArea = this.averageBrickWidth * this.averageBrickHeight;
-        this.bricksPerPage = this.pageArea / this.averageBrickArea | 0;
+        this.bricksPerPage = Math.max(2, this.pageArea / this.averageBrickArea | 0);
         this.minBricks = this.minPagesInSlidingWindow * this.bricksPerPage | 0;
         this.maxBricks = this.maxPagesInSlidingWindow * this.bricksPerPage | 0;
       }
@@ -3195,6 +3200,7 @@ function pick(obj) {
       }
       else if (this.slidingWindowDimension > this.maxSlidingWindowDimension) { // should this be measured in pages or in pixels or viewports?
         // shrink window
+        this.log("Sliding window too big: " + this.slidingWindowDimension + ", max is: " + this.maxSlidingWindowDimension);
         var toRemove, 
             fromTheHead,
             range = Physics.util.extend({}, this.range);
