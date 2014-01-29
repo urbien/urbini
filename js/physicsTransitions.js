@@ -497,7 +497,8 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
     this.chain.push(
       {
         object: this.mason.id,
-        method: 'saveState' 
+        method: 'saveState',
+        args: [this.options.via.getRailBodyId()]
       },
       {
         object: this.mason.id,
@@ -620,7 +621,8 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
       },
       {
         object: this.mason.id,
-        method: 'saveState' 
+        method: 'saveState', 
+        args: [this.options.via.getBodyId()]
       },
       {
         object: this.mason.id,
