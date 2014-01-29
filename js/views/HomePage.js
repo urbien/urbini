@@ -3,13 +3,15 @@ define('views/HomePage', [
   'globals',
   'events',
   'utils',
-  'views/BasicPageView'
-], function(G, Events, U, BasicPageView) {
+  'views/BasicPageView',
+  'domUtils'
+], function(G, Events, U, BasicPageView, DOM) {
   return BasicPageView.extend({
     TAG: 'HomePage',
     first: true,
     viewId: 'viewHome',
     style: {
+      opacity: DOM.maxOpacity,
       display: 'block'
     },
     initialize: function(options) {
