@@ -284,7 +284,34 @@ function leaf(obj, path, separator) {
 };
 
 function sign(number) {
-  return number ? number < 0 ? -1 : 1 : 0;
+  return number < 0 ? -1 : 1;
+};
+
+/**
+ * Note: increase and decrease are in magnitude, not in raw value, so 1 to 2 as well as -1 to -2 is an "increase" of 1 
+ */
+function getNextValue(oldValue, newValue, maxDecrease, maxIncrease, minDecrease, minIncrease) {
+  minDecrease = minDecrease == undefined ? 0 : minDecrease;
+  minIncrease = minIncrease == undefined ? 0 : minIncrease;
+  maxDecrease = maxDecrease == undefined ? Infinity : maxDecrease;
+  maxIncrease = maxIncrease == undefined ? Infinity : maxIncrease;
+  if (oldValue < 0) {
+    if (newValue < oldValue)
+      newValue = Math.min(newValue, oldValue - minIncrease);
+    else
+      newValue = Math.max(newValue, oldValue + minDecrease);
+  }
+  else {
+    if (newValue < oldValue)
+      newValue = Math.min(newValue, oldValue - minDecrease);
+    else
+      newValue = Math.max(newValue, oldValue + minIncrease);
+  }
+    
+  var low = oldValue < 0 ? oldValue - maxIncrease : oldValue - maxDecrease,
+      high = oldValue < 0 ? oldValue + maxDecrease : oldValue + maxIncrease;
+  
+  return Physics.util.clamp(newValue, low, high);
 };
 
 self.console = self.console || {
@@ -520,6 +547,8 @@ function removeAction(body, action) {
     var idx = body._actions.indexOf(action);
     if (~idx)
       body._actions.splice(idx, 1);
+    else
+      debugger;
     
 //    if (!body._actions.length) {
 //      var callbacks = body._outOfActionsCallbacks;
@@ -544,6 +573,9 @@ function getAction(trackInfo) {
   if (typeof trackInfo == 'function')
     return trackInfo;
   else if (trackInfo) {
+    if (typeof trackInfo.action == 'object')
+      return trackInfo.action;
+    
     var id = trackInfo.action,
         body = getBody(trackInfo.body),
         actions = body && body._actions,
@@ -556,6 +588,15 @@ function getAction(trackInfo) {
         return action;
     }
   }
+};
+
+function getActionOptions(options) {
+  return {
+    id: options.actionId,
+    track: getAction(options.trackAction),
+    forceFollow: options.forceFollow,
+    duration: options.duration
+  };
 };
 
 function Action(options) {
@@ -572,7 +613,9 @@ function Action(options) {
       onIV,
       ratio,
       trackedAction = options.track,
-      action;
+      action,
+      previousRatio = 0,
+      goingBackwards = false;
 
   if (!(!!_onstep ^ !!_onIV ^ !!_onIP))
     throw "actions can currently only subscribe to ONE of 'integrate:positions', 'integrate:velocities' or 'step' events";
@@ -605,7 +648,10 @@ function Action(options) {
            Math.min(1, timePassed / this.duration));
   };
   
-  function canIterate() {
+  function canIterate(ratio) {
+//    if (complete || canceled)
+//      return false;
+    
     if (trackedAction) {
       switch (trackedAction.state()) {
       case 'canceled':
@@ -615,34 +661,43 @@ function Action(options) {
         action.complete();
         return false;
       }
+      
+      if (goingBackwards) {
+        if (ratio > previousRatio) {
+          goingBackwards = false;
+        }
+      }
+      else {
+        if (ratio < previousRatio) {
+          goingBackwards = true;
+          if (options.forceFollow)
+            options.forceFollow--;
+          else {
+            action.complete();
+            return false;
+          }
+        }
+      }
     }
     
+    previousRatio = ratio;
     return true;
   };
   
-  onstep = _onstep && function(data) {
-    if (canIterate()) {
-      timePassed += LAST_STEP_DT;
-      start();
-      _onstep.call(this, this.ratio());
+  function setupIterator(fn, dt) {
+    return function(data) {
+      var ratio = this.ratio();
+      if (canIterate(ratio)) {
+        timePassed += (dt || data.dt);
+        start();
+        fn.call(this, this.ratio());
+      }      
     }
   };
   
-  onIP = _onIP && function(data) {
-    if (canIterate()) {
-      timePassed += data.dt;
-      start();
-      _onIP.call(this, this.ratio());
-    }
-  };
-  
-  onIV = _onIV && function(data) {
-    if (canIterate()) {
-      timePassed += data.dt;
-      start();
-      _onIV.call(this, this.ratio());
-    }
-  };
+  onstep = _onstep && setupIterator(_onstep, LAST_STEP_DT);  
+  onIP = _onIP && setupIterator(_onIP);
+  onIV = _onIV && setupIterator(_onIV);
   
   action = Physics.util.extend({}, options, {
     id: options.id || Physics.util.uniqueId('action'),
@@ -1786,10 +1841,11 @@ function pick(obj) {
         });
       }
       
-      if (this.squeeze) // TODO: make sure only one thing is rotating the container
+      if (this.squeeze) 
         API.squeezeAndStretch(this.offsetBody, this.offsetBody);
-      if (this.tilt)
-        API.rotateWhenMoving(this.offsetBody, getContainer(this.offsetBody), this.axisIdx, this.orthoAxisIdx, this.gradient);
+      
+      if (this.tilt) // TODO: make sure only one thing is rotating the container
+        API.rotateWhenMoving(this.offsetBody, getContainer(this.offsetBody), this.axisIdx, this.orthoAxisIdx, this.tilt, this.gradient);
       
       this['continue']();
     },
@@ -2010,7 +2066,10 @@ function pick(obj) {
           bodyY = this.offsetBody.state.pos.get(1) + body.state.pos.get(1),// + aabb._hh,
           scratch = Physics.scratchpad(),
           destination = scratch.vector().clone(railPos),
-          accelerationMultiplier;
+          accelerationMultiplier,
+          accAction,
+          scratch = Physics.scratchpad(),
+          tmp = scratch.vector();
       
       this.offsetBody.fixed = true;
       this.disableEdgeConstraints();
@@ -2024,12 +2083,26 @@ function pick(obj) {
       options.a *= accelerationMultiplier;
       scratch.done();
       
-      return API.accelerateTo(Physics.util.extend(options, {
+      accAction = API.accelerateTo(Physics.util.extend(options, {
         body: containerRail,
         x: destCoords[0], 
         y: destCoords[1], 
         z: destCoords[2]
       }));
+      
+//      tmp.set.apply(tmp, destCoords);
+//      API.rotateToAndBack({
+//        body: containerRail,
+//        forceFollow: 1,
+//        y: Math.PI / 2,
+//        trackAction: {
+//          body: containerRail,
+//          action: accAction
+//        }
+//      });
+      
+      scratch.done();
+      return accAction;
     },
 
     restoreZoom: function(bodyId, time, callback) {
@@ -2995,10 +3068,12 @@ function pick(obj) {
     
     startTransition: function() {
       this._transitioning = true;
+//      this.tilter.pause();
     },
 
     endTransition: function() {
       this._transitioning = false;
+//      this.tilter.unpause();
     },
     
     wake: function() {
@@ -3375,16 +3450,15 @@ var API = {
         action.complete();
     };
     
-    action = new Action({
-      id: options.actionId,
-      track: getAction(options.trackAction),
+    action = new Action(Physics.util.extend(getActionOptions(options), {
+      type: 'animateStyle',
       name: getId(body) + ' ' + prop + ' from ' + startValue + ' to ' + endValue + ' in ' + duration + 'ms',
-      duration: duration,
       onstep: onstep,
       oncomplete: oncomplete,
       oncancel: cleanUp
-    });
+    }));
     
+    addAction(body, action);
     action.start();
     return action;
   },
@@ -3471,16 +3545,13 @@ var API = {
       cleanUp();
     };
     
-    scaleAction = new Action({
-      id: options.actionId,
-      track: getAction(options.trackAction),
+    scaleAction = new Action(Physics.util.extend(getActionOptions(options), {
       type: 'scale',
       name: 'scale ' + getId(body) + ' to ' + goalScale.toString(),
-      duration: duration,
       onstep: onstep,
       oncomplete: oncomplete,
       oncancel: cleanUp
-    });
+    }));
     
     addAction(body, scaleAction);
     scaleAction.start();
@@ -3565,15 +3636,14 @@ var API = {
       cleanUp();
     };
 
-    flyAction = new Action({
-      id: options.actionId,
-//      track: getAction(options.trackAction), // fly action cannot track another action, as it doesn't use "ratio" for input  
+    delete options.trackAction; // fly action cannot track another action, as it doesn't use "ratio" for input  
+    flyAction = new Action(Physics.util.extend(getActionOptions(options), {
       type: 'fly',
       name: 'accelerating ' + getId(body) + ' to ' + destination.toString() + ' at ' + a + 'px/ms^2',
       onIntegratePositions: onIntegratePositions,
       oncomplete: oncomplete,
       oncancel: cleanUp
-    });
+    }));
       
     flyAction.ratio = function() {
       if (flyAction.state() == 'completed')
@@ -3587,7 +3657,143 @@ var API = {
     flyAction.start();
     return flyAction;
   },
+
+  rotateBy: function(options) {
+    var body = getBody(options.body),
+        originalRotation = body.state.renderData.get('rotate');
+    
+    options.x = originalRotation[0] + (options.x || 0);
+    options.y = originalRotation[1] + (options.y || 0);
+    options.z = originalRotation[2] + (options.z || 0);
+    return API.rotateTo(options);
+  },
+
+  rotateTo: function(options) {
+    var body = getBody(options.body),
+        completeCallback = options.oncomplete,
+        cancelCallback = options.oncancel,
+        x = options.x,
+        y = options.y,
+        z = options.z,
+        originalRotation = body.state.renderData.get('rotate'),
+        originalX = originalRotation[0],
+        originalY = originalRotation[1],
+        originalZ = originalRotation[2],
+        rotation = originalRotation.slice();
+    
+    function onIntegratePositions(ratio) {
+      if (x !== undefined)
+        rotation[0] = originalX + (x - originalX) * ratio;
+      if (y !== undefined)
+        rotation[1] = originalY + (y - originalY) * ratio;
+      if (z !== undefined)
+        rotation[2] = originalZ + (z - originalZ) * ratio;
+        
+      body.state.renderData.set('rotate', rotation);
+    };
+    
+    function cleanUp(cancelType) {
+      completeCallback = null;
+      if (cancelType == 'revert')
+        body.state.renderData.set('rotate', originalRotation);
+      
+      doCallback(cancelCallback);
+    };
+    
+    function oncomplete() {
+      cancelCallback = null;
+      if (!action || action.ratio() < 1)
+        onIntegratePositions(1);
+      
+      doCallback(completeCallback);
+      cleanUp();
+    };
+    
+    action = new Action(Physics.util.extend(getActionOptions(options), {
+      type: 'rotate',
+      name: 'rotate ' + getId(body) + ' to ' + x + ", " + y + ", " + z,
+      onIntegratePositions: onIntegratePositions,
+      oncomplete: oncomplete,
+      oncancel: cleanUp
+    }));
+    
+    API.cancelPendingActions(body, 'rotate', CancelType.unhandle);
+    addAction(body, action);
+    action.start();
+    return action;
+  },
   
+  rotateToAndBack: function(options) {
+    var body = getBody(options.body),
+        completeCallback = options.oncomplete,
+        cancelCallback = options.oncancel,
+        x = options.x,
+        y = options.y,
+        z = options.z,
+        originalRotation = body.state.renderData.get('rotate'),
+        originalX = originalRotation[0],
+        originalY = originalRotation[1],
+        originalZ = originalRotation[2],
+        rotation = originalRotation.slice();
+    
+    function onIntegratePositions(ratio) {
+      if (ratio > 0.5)
+        ratio = 1 - ratio;
+      if (x !== undefined)
+        rotation[0] = originalX + (x - originalX) * ratio;
+      if (y !== undefined)
+        rotation[1] = originalY + (y - originalY) * ratio;
+      if (z !== undefined)
+        rotation[2] = originalZ + (z - originalZ) * ratio;
+        
+      body.state.renderData.set('rotate', rotation);
+    };
+    
+    function cleanUp(cancelType) {
+      completeCallback = null;
+      if (cancelType == 'revert')
+        body.state.renderData.set('rotate', originalRotation);
+      
+      doCallback(cancelCallback);
+    };
+    
+    function oncomplete() {
+      cancelCallback = null;
+      if (!action || action.ratio() < 1)
+        onIntegratePositions(1);
+      
+      doCallback(completeCallback);
+      cleanUp();
+    };
+    
+    action = new Action(Physics.util.extend(getActionOptions(options), {
+      type: 'rotate',
+      name: 'rotate ' + getId(body) + ' to ' + x + ", " + y + ", " + z,
+      onIntegratePositions: onIntegratePositions,
+      oncomplete: oncomplete,
+      oncancel: cleanUp
+    }));
+    
+    API.cancelPendingActions(body, 'rotate', CancelType.unhandle);
+    addAction(body, action);
+    action.start();
+    return action;    
+  },
+
+  rotateFromTo: function(options) {
+    var body = getBody(options.body),
+        rotation = body.state.renderData.get('rotate').slice(),
+        from = options.from;
+    
+    rotation[0] = from.hasOwnProperty('x') ? from.x : rotation[0];
+    rotation[1] = from.hasOwnProperty('y') ? from.y : rotation[1];
+    rotation[2] = from.hasOwnProperty('z') ? from.z : rotation[2];
+    body.state.renderData.set('rotate', rotation);
+    Physics.util.extend(options, options.to);
+    delete options.to;
+    return API.rotateTo(options);
+  },
+
   teleport: function(bodyId /*[, another body's id] or [, x, y, z]*/) {
     var body = getBody(bodyId),
         anchor,
@@ -3669,18 +3875,17 @@ var API = {
     constraint = this.distanceConstraint(body, anchor, stiffness, 0);
     constraint.damp(damping);
     
-    snapAction = new Action({
-      id: options.actionId,
-      track: getAction(options.trackAction),
+    snapAction = new Action(Physics.util.extend(getActionOptions(options), {
       type: 'snap',
       name: 'snap ' + bodyId + ' to ' + destination.toString(),
       onstep: onstep,
       oncomplete: endSnap,
       oncancel: cleanUp
-    });
+    }));
     
     addAction(body, snapAction);
     snapAction.start();
+    return snapAction;
   },
   
   /**
@@ -3732,14 +3937,13 @@ var API = {
         doCallback(callback);
     };
     
-    snapAction = new Action({
-      id: options.actionId,
+    snapAction = new Action(Physics.util.extend(getActionOptions(options), {
 //      track: getAction(options.trackAction), // can't track another action because it doesn't use "ratio" as input
       type: 'snap',
       onstep: checkStopped,
       oncomplete: endSnap,
       oncancel: cleanUp
-    });
+    }));
     
     addAction(body, snapAction);
     snapAction.start();
@@ -3896,11 +4100,14 @@ var API = {
     });
   },
 
-	rotateWhenMoving: function(movingBody, rotateBody, moveAxis, rotateAxis, doGradient) {
+	rotateWhenMoving: function(movingBody, rotateBody, moveAxis, rotateAxis, direction, doGradient) {
     movingBody = getBody(movingBody);
     rotateBody = getBody(rotateBody);
-	  var minDelta = 0.001,
-	      maxDelta = 0.01,
+	  var minIncDelta = 0.001,
+	      minDecDelta = 0.0001,
+	      maxIncDelta = 0.005, // don't need it yet
+        maxDecDelta = 0.0003,
+        decDelta,
 //	      minAngle = -Math.PI / 4
 //	      maxAngle = Math.PI / 4,
 	      angles = [0, 0, 0],
@@ -3911,29 +4118,44 @@ var API = {
 	      newR,
 	      bgPosition = [],
 	      _parseFloat = parseFloat.bind(self),
-	      thresh = 1;
+	      thresh = 1,
+	      paused = false;
 	  
 	  world.subscribe('integrate:positions', function rotate() {
-	    if (IS_DRAGGING || movingBody.fixed)
+	    if (IS_DRAGGING || movingBody.fixed || paused)
 	      return;
 	    
 	    coeff = CONSTANTS.tilt;
 	    v = Physics.util.truncate(movingBody.state.vel.get(moveAxis), 3);
+	    switch (direction) {
+	    case 'both':
+	      break;
+	    case 'backward':
+  	    coeff *= -1;
+  	    // fall through
+	    case 'forward':
+	      v = Math.abs(v);
+	      break;
+	    }
+	    
 	    rotation = rotateBody.state.renderData.get('rotate');
 	    r = rotation[rotateAxis];
-	    if (hasDistanceConstraint(movingBody, true))
-	      newR = Math.max(0, Math.abs(r) - maxDelta) * sign(r); // gradually kill tilt. If it's being pulled by a constraint, we don't want the tilt to go nuts first one way then the other 
-	    else
-	      newR = Math.abs(v) > thresh ? -sign(v) * coeff * Math.log(Math.abs(v + sign(v)) - thresh) / 10 : 0;
+	    if (Math.abs(v) < thresh || hasDistanceConstraint(movingBody, true)) {
+	      decDelta = Math.max(Math.abs(r) / 30, maxDecDelta) * sign(r);
+	      newR = r < 0 ? Math.min(r - decDelta, 0) : Math.max(r - decDelta, 0); // gradually kill tilt. If it's being pulled by a constraint, we don't want the tilt to go nuts first one way then the other
+	    }
+	    else {
+	      newR = -sign(v) * coeff * Math.log(Math.abs(v + sign(v)) - thresh) / 10;
+//	      if (Math.abs(newR) < Math.abs(r))
+        newR = getNextValue(r, newR, maxDecDelta, maxIncDelta, minDecDelta, minIncDelta);
+	    }
 	    
-	    if (Math.abs(newR) < minDelta) {
+	    if (Math.abs(newR) < minDecDelta) {
 	      if (r == 0)
 	        return;
 	      else
 	        newR = 0;
 	    }
-	    else if (Math.abs(newR - r) < minDelta)
-	      return;
 
 	    if (doGradient) {
   	    Physics.util.extend(bgPosition, rotateBody.state.renderData.get('background-position').match(/\d+/ig));
@@ -3941,7 +4163,6 @@ var API = {
   	    rotateBody.state.renderData.set('background-position', bgPosition.join(' '));
 	    }
 	    
-//	    log("ROTATION: " + newR + " for VELOCITY: " + v);
 	    Physics.util.extend(angles, rotation);
 	    angles[rotateAxis] = newR;
       rotateBody.state.renderData.set('rotate', angles);
@@ -3953,7 +4174,90 @@ var API = {
         world.unsubscribe('integrate:positions', rotate);
 	    }
 	  });
+	  
+//	  return {
+//	    pause: function() {
+//	      pause = true;
+//	    },	    
+//      unpause: function() {
+//        pause = false;
+//      }
+//	  };
 	},
+  
+//  rotateWhenMoving: function(movingBody, rotateBody, moveAxis, rotateAxis, doGradient) {
+//    movingBody = getBody(movingBody);
+//    rotateBody = getBody(rotateBody);
+//    var minIncDelta = 0.001,
+//        minDecDelta = 0.0001,
+//        maxIncDelta = Infinity, // don't need it yet
+//        maxDecDelta = 0.0003,
+//        decDelta,
+////        minAngle = -Math.PI / 4
+////        maxAngle = Math.PI / 4,
+//        angles = [0, 0, 0],
+//        coeff,
+//        v,
+//        rotation,
+//        r,
+//        rMag,
+//        newR,
+//        newRMag,
+//        newRSign,
+//        rSign,
+//        bgPosition = [],
+//        _parseFloat = parseFloat.bind(self),
+//        thresh = 1;
+//    
+//    world.subscribe('integrate:positions', function rotate() {
+//      if (IS_DRAGGING || movingBody.fixed)
+//        return;
+//      
+//      coeff = CONSTANTS.tilt;
+//      v = Math.abs(Physics.util.truncate(movingBody.state.vel.get(moveAxis), 3));
+//      rotation = rotateBody.state.renderData.get('rotate');
+//      r = rotation[rotateAxis];
+//      if (v < thresh || hasDistanceConstraint(movingBody, true)) {
+//        decDelta = Math.max(r / 30, maxDecDelta);
+//        newR = Math.max(0, r - decDelta); // gradually kill tilt. If it's being pulled by a constraint, we don't want the tilt to go nuts first one way then the other
+//      }
+//      else {
+//        newR = coeff * Math.log(v + 1 - thresh) / 10;
+//        newR = Physics.util.clamp(newR, r - maxDecDelta, r + maxIncDelta);
+//        if (newR < r)
+//          newR = Math.min(newR, r - minDecDelta);
+//        else
+//          newR = Math.max(newR, r + minIncDelta);
+//      }
+//      
+//      if (Math.abs(newR) < minDecDelta) {
+//        if (r == 0)
+//          return;
+//        else
+//          newR = 0;
+//      }
+////      else if (Math.abs(newR - r) < minDelta)
+////        return;
+//
+//      if (doGradient) {
+//        Physics.util.extend(bgPosition, rotateBody.state.renderData.get('background-position').match(/\d+/ig));
+//        bgPosition[rotateAxis ^ 1] = Physics.util.clamp(50 + 10 * 100 * newR | 0, 0, 100) + '%';
+//        rotateBody.state.renderData.set('background-position', bgPosition.join(' '));
+//      }
+//      
+////      log("ROTATION: " + newR + " for VELOCITY: " + v);
+//      Physics.util.extend(angles, rotation);
+//      angles[rotateAxis] = newR;
+//      rotateBody.state.renderData.set('rotate', angles);
+//    });
+//    
+//    world.subscribe('remove:body', function unsub(data) {
+//      if (data.body == movingBody || data.body == rotateBody) {
+//        world.unsubscribe('remove:body', unsub);
+//        world.unsubscribe('integrate:positions', rotate);
+//      }
+//    });
+//  },
 	
 	skewWhenMoving: function(movingBody, skewBody, axis) {
     movingBody = getBody(movingBody);
@@ -4382,7 +4686,10 @@ var Matrix = {
     }
   },
   rotate3d: function(a, xRad, yRad, zRad) {
-    return this.rotateX(this.rotateY(this.rotateZ(a, zRad), yRad), xRad);
+    this.rotateX(a, xRad);
+    this.rotateY(a, yRad);
+    this.rotateZ(a, zRad);
+    return this;
   },
   clone: function(a /* matrix or values list */) {
     if (arguments.length == 2) {

@@ -13,6 +13,11 @@ define('views/ListPage', [
   var MapView,
       SPECIAL_INTERSECTIONS = [G.commonTypes.Handler, G.commonTypes.Friend, U.getLongUri1('model/social/NominationForConnection') /*, commonTypes.FriendApp*/];
   
+  function getLinearGradient(r, g, b) {
+    var rgb = r + ',' + g + ',' + b;
+    return 'linear-gradient(to bottom, rgba({0},1) 0%, rgba({0},0.15) 25%, rgba({0},0) 50%, rgba({0},0.15) 75%, rgba({0},1) 100%)'.format(rgb);
+  };
+
   return BasicPageView.extend({
 //    viewType: 'collection',
     template: 'resource-list',
@@ -22,7 +27,18 @@ define('views/ListPage', [
     _draggable: false,
     _scrollbar: false, 
     style: {
-      'backgroundColor': 'white'
+//      'background-image': 'linear-gradient(#5187c4, #1c2f45, #1c2f45, #5187c4)',
+//      'background-image': 'linear-gradient(rgba(255,0,0,1), rgba(255,255,255,0), rgba(255,255,255,0), rgba(255,0,0,1))',
+//      'background-image': DOM.prefix('radial-gradient') + '(circle, #FFFFFF, #000000)',
+//      'background-image': 'linear-gradient(rgba(255,0,0,0.5), rgba(255,255,255,0), rgba(255,255,255,0), rgba(255,0,0,0.5))',
+//      'background-image': 'linear-gradient(rgba(255,0,0,1) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0), rgba(255,0,0,1) 100%)',
+//      'background-image': 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.85) 30%, rgba(255,255,255,1) 50%, rgba(255,255,255,0.8) 70%, rgba(255,255,255,0) 100%)',
+    
+//    'backgroundColor': 'white'
+    // gradient
+      'background-image': getLinearGradient(100, 100, 100),
+      'background-size': 'auto 200%',
+      'background-position': '0 50%'
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'setMode', /*'orientationchange',*/ 'onFilter');

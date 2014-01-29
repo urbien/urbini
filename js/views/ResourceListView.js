@@ -23,9 +23,9 @@ define('views/ResourceListView', [
   var defaultSlidingWindowOptions = {
     // <MASONRY INITIAL CONFIG>
     slidingWindow: true,
-    tilt: true,
-    gradient: true,
-    squeeze: false,
+    tilt: 'forward',
+//    gradient: true,
+//    squeeze: false,
     horizontal: false,
 //    fly: true,
     pop: 'sequential', //other option is 'random'

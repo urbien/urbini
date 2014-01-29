@@ -114,7 +114,7 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
     
     this.chain = [];
     this.id = _.uniqueId('transition');
-
+    
     _.proxyPromise(this, this.promise);
   };
   
@@ -241,6 +241,46 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
           drag: this.options.drag
         }]
       },
+//      {
+//        method: 'rotateFromTo', 
+//        args: [{
+//          body: toRailId,
+//          forceFollow: 1, // follow tracked action even if it goes backwards, but only once
+//          from: {
+//            y: Math.PI / 16 * (fromDir == 'left' ? -1 : 1)
+//          },
+//          to: {
+//            y: 0
+//          },
+//          trackAction: {
+//            body: toRailId,
+//            action: accToActionId
+//          }
+//        }]
+//      },
+//      {
+//        method: 'rotateToAndBack', 
+//        args: [{
+//          body: toRailId,
+//          y: -Math.PI / 8,
+//          trackAction: {
+//            body: toRailId,
+//            action: accToActionId
+//          }
+//        }]
+//      },
+//      {
+//        method: 'rotateBy', 
+//        args: [{
+//          body: toRailId,
+//          x: Math.PI,
+//          y: Math.PI,
+//          trackAction: {
+//            body: toRailId,
+//            action: accToActionId
+//          }
+//        }]
+//      },
       // the animateStyle actions track the accelerate action of the "to" view to synchronize with arrival at the destination 
       {
         method: 'animateStyle', 

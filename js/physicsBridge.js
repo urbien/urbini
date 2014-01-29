@@ -73,7 +73,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         degree: 1,
 //        drag: G.browser.mobile ? 0.05 : 0.1,
         drag: 0.1,
-        tilt: 0.1,
+        tilt: 0.4,
         groupMemberConstraintStiffness: 0.3,
         springDamping: 0.1,
         springStiffness: 0.1 // stiff bounce: 0.1, // mid bounce: 0.005, // loosy goosy: 0.001,
