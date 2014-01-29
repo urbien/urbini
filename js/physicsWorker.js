@@ -690,7 +690,7 @@ function Action(options) {
       if (canIterate(ratio)) {
         timePassed += (dt || data.dt);
         start();
-        fn.call(this, this.ratio());
+        fn.call(this, ratio);
       }      
     }
   };
@@ -1163,6 +1163,15 @@ function initWorld(_world, stepSelf) {
 	integrator = Physics.integrator('verlet', { drag: CONSTANTS.drag });
 	world.integrator(integrator);
 	
+  constrainer = Physics.behavior('verlet-constraints');
+  world.addBehavior(constrainer);
+
+  railroad = Physics.behavior('rails');
+  world.addBehavior(railroad);
+
+//  boxer = Physics.behavior('box-constraint-manager');
+//  world.addBehavior(boxer);
+
 	if (stepSelf)
 	  Physics.util.ticker.subscribe(API.step);
 	
@@ -2046,7 +2055,77 @@ function pick(obj) {
         }
       });    
     },
-    
+
+    zoomInTo1: function(options) {
+      // TODO: record state to enable zoomOutFrom
+      var self = this,
+          body = this.getBrick(options.body),
+          cancelCallback = options.oncancel,
+          completeCallback = options.oncomplete,
+          aabb = getAABB(body),
+          containerRail = getRailBody(getId(this.offsetBody)),
+          railPos = containerRail.state.pos,
+          viewport = this.getViewport(),
+          perspective = getZSpace(this.offsetBody),
+          scaleRatio = Math.min(this.bounds._hw / aabb._hw, this.bounds._hh / aabb._hh),
+          // scaleRatio = perspective / (perspective - translateZ) --> translateZ = perspective - perspective / scaleRatio
+          z = perspective - (perspective / scaleRatio),
+          destCoords = [0, 0],
+          bodyX = this.offsetBody.state.pos.get(0) + body.state.pos.get(0),
+          bodyY = this.offsetBody.state.pos.get(1) + body.state.pos.get(1),// + aabb._hh,
+          scratch = Physics.scratchpad(),
+          destination = scratch.vector().clone(railPos),
+          accelerationMultiplier,
+          accAction,
+          brickAction,
+          oncomplete,
+          scratch = Physics.scratchpad(),
+          tmp = scratch.vector();
+      
+      this.offsetBody.fixed = true;
+      this.disableEdgeConstraints();
+      destCoords[0] = -(-this.bounds._hw + bodyX);   // negate because we're moving the world not the camera 
+      destCoords[1] = -(-this.bounds._hh + bodyY);   // negate because we're moving the world not the camera
+      accelerationMultiplier = destination.set.apply(destination, destCoords).vsub(railPos).norm() / 1000;
+      options.a *= accelerationMultiplier;
+      scratch.done();
+      
+      accAction = API.accelerateTo(Physics.util.extend({
+        a: options.a,
+        body: containerRail,
+        x: destCoords[0], 
+        y: destCoords[1] 
+      }));
+
+      oncomplete = accAction.oncomplete;
+      accAction.oncomplete = function() {
+        oncomplete.apply(this, arguments);
+        API.flyTo(Physics.util.extend({}, options, {
+          body: containerRail,
+          duration: 1000,
+          z: 2000
+        }));        
+
+        API.flyTo(Physics.util.extend({}, options, {
+          body: body,
+          duration: 1000,
+          z: -1000 - perspective / scaleRatio
+        }));        
+      };
+      
+//      brickAction = API.flyTo(Physics.util.extend({}, options, {
+//        body: body,
+//        z: z,
+//        trackAction: {
+//          body: containerRail,
+//          action: accAction
+//        }
+//      }));
+
+      scratch.done();
+      return accAction;
+    },
+
     zoomInTo: function(options) {
       // TODO: record state to enable zoomOutFrom
       var self = this,
@@ -2073,10 +2152,6 @@ function pick(obj) {
       
       this.offsetBody.fixed = true;
       this.disableEdgeConstraints();
-      if (!this.savedContainerRailPos)
-        this.savedContainerRailPos = Physics.vector();
-      
-      this.savedContainerRailPos.clone(containerRail.state.pos);
       destCoords[0] = -(-this.bounds._hw + bodyX);   // negate because we're moving the world not the camera 
       destCoords[1] = -(-this.bounds._hh + bodyY);   // negate because we're moving the world not the camera
       accelerationMultiplier = destination.set.apply(destination, destCoords).vsub(railPos).norm() / 1000;
@@ -3051,12 +3126,17 @@ function pick(obj) {
       this._adjustSlidingWindow();
     },
     
-    saveState: function() {
+    saveState: function(brick) {
       this._saved = true;
       if (!this.savedContainerRailPos)
         this.savedContainerRailPos = Physics.vector();
-      
+
       this.savedContainerRailPos.clone(getRailBody(getId(this.offsetBody)).state.pos);
+//      this.savedContainerRailPos.clone(containerRail.state.pos);
+      if (brick) {
+        this.savedBrick = getBody(brick);
+        this.savedBrickPos = Physics.vector(this.savedBrick.state.pos);
+      }
     },
 
     loadState: function() {
@@ -3067,6 +3147,12 @@ function pick(obj) {
       var containerRail = getRailBody(getId(this.offsetBody));
       containerRail.state.renderData.set('scale', UNSCALED);
       containerRail.stop(this.savedContainerRailPos);
+      
+      if (this.savedBrickPos) {
+        this.savedBrick.stop(this.savedBrickPos);
+        this.savedBrickPos = this.savedBrick = null;
+      }
+      
       this.offsetBody.fixed = false;
       this.enableEdgeConstraints();
     },
@@ -3602,8 +3688,8 @@ var API = {
         acceleration = Physics.vector(),
 //        thresh = Math.min(10, initialDistance / 5),
         lastDistance = initialDistance,
+        distance = initialDistance,
         thresh = 1,
-        distance,
         flyAction,
         boundsDim;
 
@@ -3644,7 +3730,7 @@ var API = {
 
     delete options.trackAction; // fly action cannot track another action, as it doesn't use "ratio" for input  
     flyAction = new Action(Physics.util.extend(getActionOptions(options), {
-      type: 'fly',
+      type: 'accelerate',
       name: 'accelerating ' + getId(body) + ' to ' + destination.toString() + ' at ' + a + 'px/ms^2',
       onIntegratePositions: onIntegratePositions,
       oncomplete: oncomplete,
@@ -3658,6 +3744,61 @@ var API = {
         return (initialDistance - distance) / initialDistance;
     };
     
+    API.cancelPendingActions(body, 'accelerate', CancelType.unhandle);
+    addAction(body, flyAction);
+    flyAction.start();
+    return flyAction;
+  },
+
+  flyTo: function(options) {
+    var body = getBody(options.body),
+        a = options.a,
+        _drag = typeof options.drag == 'undefined' ? 0.1 : options.drag,
+        dragMultiplier,
+        completeCallback = options.oncomplete,
+        cancelCallback = options.oncancel,
+        initialPosition = Physics.vector(body.state.pos),
+        destination = updateVector(Physics.vector(body.state.pos), options.x, options.y, options.z),
+        initialDistance = body.state.pos.dist(destination),
+        lastDistance = initialDistance,
+        distance = initialDistance,
+        pos = Physics.vector(),
+        thresh = 1,
+        flyAction;
+
+    function onIntegratePositions(ratio) {
+      distance = body.state.pos.dist(destination);
+      if (distance < thresh)
+        flyAction.complete();
+      else
+        body.stop(pos.clone(destination).vsub(initialPosition).mult(ratio).vadd(initialPosition));
+    };
+
+    function cleanUp(cancelType) {
+      completeCallback = null;
+      if (cancelType == 'stop')
+        body.stop();
+      else if (cancelType == 'revert')
+        body.stop(initialPosition);
+      
+      doCallback(cancelCallback);
+    };
+    
+    function oncomplete() {
+      cancelCallback = null;
+      body.stop(destination);
+      doCallback(completeCallback);
+      cleanUp();
+    };
+
+    flyAction = new Action(Physics.util.extend(getActionOptions(options), {
+      type: 'fly',
+      name: 'flying ' + getId(body) + ' to ' + destination.toString() + ' at ' + a + 'px/ms^2',
+      onIntegratePositions: onIntegratePositions,
+      oncomplete: oncomplete,
+      oncancel: cleanUp
+    }));
+      
     API.cancelPendingActions(body, 'fly', CancelType.unhandle);
     addAction(body, flyAction);
     flyAction.start();
@@ -4391,11 +4532,6 @@ var API = {
 
 	addRail: function(body, x1, y1, x2, y2) {
 	  body = getBody(body);
-	  if (!railroad) {
-      railroad = Physics.behavior('rails');
-      world.addBehavior(railroad);
-	  }
-
 	  if (typeof x2 != 'undefined')
 	    return railroad.rail(body, Physics.vector(x1, y1), Physics.vector(x2, y2));
 	  else
@@ -4407,11 +4543,6 @@ var API = {
     if (!body)
       throw "No body found to box in";
     
-    if (!boxer) {
-      boxer = Physics.behavior('box-constraint-manager');
-      world.addBehavior(boxer);
-    }
-
 //    if (typeof x == 'undefined')
 //      x = width == Infinity ? 0 : width / 2;
 //    
@@ -4433,19 +4564,6 @@ var API = {
 	},
 	
 	distanceConstraint: function(bodyA, bodyB, stiffness, targetLength, dir) {
-		if (!constrainer) {
-			constrainer = Physics.behavior('verlet-constraints');
-			world.addBehavior(constrainer);
-			
-//			world.subscribe('broke-verlet-constraint', function(data) {
-//			  log("Broke constraint: " + getId(data.constraint.bodyA) + " - " + getId(data.constraint.bodyB));
-//			});
-//			
-//      world.subscribe('armed-verlet-constraint', function(data) {
-//        log("Armed constraint: " + getId(data.constraint.bodyA) + " - " + getId(data.constraint.bodyB));
-//      });
-		}
-		
 		bodyA = getBody(bodyA);
     bodyB = getBody(bodyB);
 		return constrainer.distanceConstraint(bodyA, bodyB, stiffness, typeof targetLength == 'number' ? targetLength : bodyA.state.pos.dist(bodyB.state.pos), dir);
