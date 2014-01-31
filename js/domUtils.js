@@ -423,8 +423,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
         for (var i = 0; i < arguments.length; i++) {
           var htmlOrFrag = arguments[i];
           if (typeof htmlOrFrag == 'string')
-            this.innerHTML += htmlOrFrag;
-//            this.$append($.parseHTML(htmlOrFrag));
+            this.$append($.parseHTML(htmlOrFrag));
           else if (htmlOrFrag instanceof Node)
             this.appendChild(htmlOrFrag);
           else if (htmlOrFrag instanceof Array || htmlOrFrag instanceof NodeList) {
