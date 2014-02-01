@@ -38,12 +38,16 @@
 //    return common;
 //  };
   
+  function getBrickCoord(brick, idx) {
+    brick = brick._rail ? brick._rail.railBody : brick;
+    return brick.state.pos.get(idx);
+  }
+
   // our "Widget" object constructor
   function Mason( options, bricks ){
     this.flexigroup = options.flexigroup;
-    this.initialYOffset = this.flexigroup ? this.flexigroup.state.pos.get(1) : 0;
-      this.bricks = bricks || [];
-      this._create( options );
+    this.bricks = bricks || [];
+    this._create( options );
     if (this.bricks.length)
       this._init();
   };
@@ -62,14 +66,15 @@
 
   Mason.prototype = {
     // sets up widget
-    _create: function( options ) {
-  
-      if (options.hasOwnProperty('gutterWidth'))
-        options.gutterWidthHorizontal = options.gutterWidthVertical = options.gutterWidth;
-        
+    _create: function( options ) {        
       this.options = Physics.util.extend( {}, Mason.settings, options );
         
       this.axis = this.options.horizontal ? 'x' : 'y';
+      this.axisIdx = this.options.horizontal ? 0 : 1;
+      this.orthoAxisIdx = this.axisIdx ^ 1;
+      this.aabbAxisDim = this.options.horizontal ? '_hw' : '_hh';
+      this.aabbOrthoAxisDim = this.options.horizontal ? '_hh' : '_hw';
+      this.initialAxisOffset = this.flexigroup ? this.flexigroup.state.pos.get(this.axisIdx) : 0;
 //      this.AXIS = this.axis.toUpperCase();
       this.originalFromBottom = this.options.fromBottom;
       this.setBounds(options.bounds);
@@ -104,7 +109,7 @@
 
     _getOffsetDueToFlexigroup: function() {
       if (this.options.flexigroup)
-        return this.flexigroup.state.pos.get(1) - this.initialYOffset;
+        return this.flexigroup.state.pos.get(this.axisIdx) - this.initialAxisOffset;
       else
         return 0;
     },
@@ -126,8 +131,6 @@
         // signature: $('#foo').bar('option', 'baz', false);
       } else {
         this.options[ key ] = value;
-        if (key == 'gutterWidth')
-          this.options.gutterWidthHorizontal = this.options.gutterWidthVertical = value;
       }
   
       return this; // make sure to return the instance!
@@ -286,8 +289,8 @@
           top = extremeDepth /*+ this.offset.y*/ + brick.geometry._aabb._hh + this._getOffsetDueToFlexigroup();
       }
 
-//      console.log("adding", brick.geometry._aabb._hw * 2, "x", brick.geometry._aabb._hh * 2, "brick at (" + left + ", " + top + ")");
-      brick.state.pos.set(left, top, brick.state.pos.get(2));
+      console.log("adding " + brick.options._id + " (" + brick.geometry._aabb._hw * 2, "x", brick.geometry._aabb._hh * 2, ") brick at (" + left + ", " + top + ")");
+      brick.state.pos.set(left, top, getBrickCoord(brick, 2));
 
       // apply setHeight to necessary columns
       for ( i=0; i < setSpan; i++ ) {
@@ -402,9 +405,7 @@
     },
   
     _getLeftmostColumn: function(brick) {
-      var coordIdx = this.options.horizontal ? 1 : 0;
-      var dimProp = this.options.horizontal ? '_hh' : '_hw';
-      var offset = brick.state.pos.get(coordIdx) - brick.geometry._aabb[dimProp];
+      var offset = getBrickCoord(brick, this.orthoAxisIdx) - brick.geometry._aabb[this.aabbOrthoAxisDim];
       var edgeCol = Math.round(offset / this.alleyDim);
       return edgeCol;
     },
@@ -429,8 +430,8 @@
           bottomColYs = this.topColYs.slice(),
           cols = this.cols,
           col,
-          top,
-          height,
+          head,
+          dim,
           i = bricks.length,
           flexigroupOffset = this._getOffsetDueToFlexigroup();
 
@@ -438,12 +439,12 @@
         brick = bricks[i];
         fromCol = this._getLeftmostColumn(brick);
         colSpan = this._getColSpan(brick);
-        height = this[dimensionMethod](brick);
-        top = brick.state.pos.get(1) - brick.geometry._aabb._hh - flexigroupOffset;
+        dim = this[dimensionMethod](brick);
+        head = getBrickCoord(brick, this.axisIdx) - brick.geometry._aabb[this.aabbAxisDim] - flexigroupOffset;
         while (colSpan--) {
           col = fromCol + colSpan;
-          topColYs[col] = Math.min(top - this.getGutterWidth(), topColYs[col]);
-          bottomColYs[col] = Math.max(top + height + this.getGutterWidth(), bottomColYs[col]);
+          topColYs[col] = Math.min(head - this.getGutterWidth(), topColYs[col]);
+          bottomColYs[col] = Math.max(head + dim + this.getGutterWidth(), bottomColYs[col]);
         }
       }
     

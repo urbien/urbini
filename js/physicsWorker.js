@@ -27,9 +27,9 @@ var ArrayProto = Array.prototype,
       timestep: 1000 / 60,
       maxIPF: 6
     },
-    airDragBodies = [],
+//    airDragBodies = [],
 		constrainer,
-    boxer,
+//    boxer,
     railroad,
 		ZERO_ROTATION = [0, 0, 0],
 		UNSCALED = [1, 1, 1],
@@ -670,8 +670,10 @@ function Action(options) {
       else {
         if (ratio < previousRatio) {
           goingBackwards = true;
-          if (options.forceFollow)
-            options.forceFollow--;
+          if (options.forceFollow) {
+            if (typeof options.forceFollow == 'number')
+              options.forceFollow--;
+          }
           else {
             action.complete();
             return false;
@@ -1342,18 +1344,18 @@ function initWorld(_world, stepSelf) {
 //    scratch.done();
 //	}, null, 100);
 	
-	world.subscribe('integrate:velocities', function(data) {
-	  var i = airDragBodies.length,
-	      body;
-	  
-	  while (i--) {
-	    body = airDragBodies[i];
-	    if (!body.fixed) {
-  	    body.state.vel.mult(body.options.drag);
-        body.state.old.vel.clone(body.state.vel);
-	    }
-	  }	  
-	});
+//	world.subscribe('integrate:velocities', function(data) {
+//	  var i = airDragBodies.length,
+//	      body;
+//	  
+//	  while (i--) {
+//	    body = airDragBodies[i];
+//	    if (!body.fixed) {
+//  	    body.state.vel.mult(body.options.drag);
+//        body.state.old.vel.clone(body.state.vel);
+//	    }
+//	  }	  
+//	});
 	
 	world.subscribe('remove:body', function(data) {
     removeTrackers(data.body);
@@ -1380,8 +1382,8 @@ function initWorld(_world, stepSelf) {
 	  if (body.options.style)
 	    API.style(body, body.options.style);
 
-	  if (body.options.drag)
-	    airDragBodies.push(body);
+//	  if (body.options.drag)
+//	    airDragBodies.push(body);
 	  
 //	  if (body.geometry.name == 'point' && body.options.render)
 //	    body.state.renderData.set('opacity', 1);
@@ -1390,11 +1392,11 @@ function initWorld(_world, stepSelf) {
 //    body.state.renderDataBeforeAction = {};
 	});
 
-	world.subscribe('remove:body', function(data) {
-	  var idx = airDragBodies.indexOf(data.body);
-    if (~idx)
-      airDragBodies.splice(idx, 1);
-  });
+//	world.subscribe('remove:body', function(data) {
+//	  var idx = airDragBodies.indexOf(data.body);
+//    if (~idx)
+//      airDragBodies.splice(idx, 1);
+//  });
 
 	Physics.util.ticker.start();
 	DIR_MAP.up = DIR_Y_POS = Physics.vector(0, -1);
@@ -1604,8 +1606,12 @@ function pick(obj) {
   function LayoutManager(id, options, callbackId) {
     this.id = id;
     this._callbackId = callbackId;
+    if (options.hasOwnProperty('gutterWidth'))
+      options.gutterWidthHorizontal = options.gutterWidthVertical = options.gutterWidth;
+    
     Physics.util.extend(this, Physics.util.clone(defaultSlidingWindowOptions, true), options);
     this.options = pick(options, 'minPagesInSlidingWindow', 'maxPagesInSlidingWindow');
+
     this.masonryOptions = {};
     this.init();
   };
@@ -1667,10 +1673,15 @@ function pick(obj) {
 //      }
 
       if (this.flexigroup) {
+        this.flexigroupOffset = -100000;
         this.flexigroupId = this.container;
-        this.flexigroup = getBody(this.flexigroupId);
+        masonryOptions.flexigroup = this.flexigroup = getBody(this.flexigroupId);
+        this.flexigroup.mass = 10000;
+        this.flexigroup.state.pos.setComponent(this.axisIdx, this.flexigroupOffset);
+        this.flexigroup.state.pos.setComponent(this.orthoAxisIdx, this.bounds[this.aabbOrthoAxisDim]);
       }
       else {
+        this.flexigroupOffset = 0;
         this.containerId = this.container;
         this.container = getBody(this.containerId);
       }
@@ -1687,7 +1698,7 @@ function pick(obj) {
       });
   
       this.log("SET HEAD EDGE TO " + this.headEdge.state.pos.get(this.axisIdx));
-      this.headEdgeConstraint = API.distanceConstraint(this.offsetBody, this.headEdge, this.getSpringStiffness(), this.flexigroup ? null : 0, this.dirHead);
+      this.headEdgeConstraint = API.distanceConstraint(this.offsetBody, this.headEdge, this.getSpringStiffness(), 0, this.dirHead);
       this.headEdgeConstraint.damp(this.getSpringDamping());
       this.headEdgeConstraint.armOn(this.shouldArmHead.bind(this.headEdgeConstraint, this)); // pass in self as first param
 //      this.headEdgeConstraint.breakOn(Physics.util.negate(this.shouldArmHead.bind(this.headEdgeConstraint, this))); // pass in self as first param
@@ -1702,7 +1713,7 @@ function pick(obj) {
         this.setBounds(this.bounds); // convert to Physics AABB
       
       this._calcSlidingWindowDimensionRange();
-      Physics.util.extend(masonryOptions, pick(this, 'bounds', 'horizontal', 'oneElementPerRow', 'oneElementPerCol', 'gutterWidth', 'gutterWidthHorizontal', 'gutterWidthVertical'));
+      Physics.util.extend(masonryOptions, pick(this, 'bounds', 'horizontal', 'oneElementPerRow', 'oneElementPerCol', 'gutterWidthHorizontal', 'gutterWidthVertical'));
       if (this.oneElementPerRow || this.oneElementPerCol)
         this.averageBrickNonScrollDim = this.pageNonScrollDim;
         
@@ -1851,7 +1862,7 @@ function pick(obj) {
       }
       
       if (this.squeeze) 
-        API.squeezeAndStretch(this.offsetBody, this.offsetBody);
+        API.squashAndStretch(this.offsetBody, this.offsetBody);
       
       if (this.tilt) // TODO: make sure only one thing is rotating the container
         API.rotateWhenMoving(this.offsetBody, getContainer(this.offsetBody), this.axisIdx, this.orthoAxisIdx, this.tilt, this.gradient);
@@ -1905,6 +1916,7 @@ function pick(obj) {
             dist = scratchpad.vector().clone(this.bodyB.state.pos).vsub(this.bodyA.state.pos).proj(self.dirTail);
         
         scratchpad.done();
+//        return self.flexigroup ? dist > self.flexigroupOffset : dist > 0;
         return dist > 0;
       }
       else
@@ -2056,75 +2068,75 @@ function pick(obj) {
       });    
     },
 
-    zoomInTo1: function(options) {
-      // TODO: record state to enable zoomOutFrom
-      var self = this,
-          body = this.getBrick(options.body),
-          cancelCallback = options.oncancel,
-          completeCallback = options.oncomplete,
-          aabb = getAABB(body),
-          containerRail = getRailBody(getId(this.offsetBody)),
-          railPos = containerRail.state.pos,
-          viewport = this.getViewport(),
-          perspective = getZSpace(this.offsetBody),
-          scaleRatio = Math.min(this.bounds._hw / aabb._hw, this.bounds._hh / aabb._hh),
-          // scaleRatio = perspective / (perspective - translateZ) --> translateZ = perspective - perspective / scaleRatio
-          z = perspective - (perspective / scaleRatio),
-          destCoords = [0, 0],
-          bodyX = this.offsetBody.state.pos.get(0) + body.state.pos.get(0),
-          bodyY = this.offsetBody.state.pos.get(1) + body.state.pos.get(1),// + aabb._hh,
-          scratch = Physics.scratchpad(),
-          destination = scratch.vector().clone(railPos),
-          accelerationMultiplier,
-          accAction,
-          brickAction,
-          oncomplete,
-          scratch = Physics.scratchpad(),
-          tmp = scratch.vector();
-      
-      this.offsetBody.fixed = true;
-      this.disableEdgeConstraints();
-      destCoords[0] = -(-this.bounds._hw + bodyX);   // negate because we're moving the world not the camera 
-      destCoords[1] = -(-this.bounds._hh + bodyY);   // negate because we're moving the world not the camera
-      accelerationMultiplier = destination.set.apply(destination, destCoords).vsub(railPos).norm() / 1000;
-      options.a *= accelerationMultiplier;
-      scratch.done();
-      
-      accAction = API.accelerateTo(Physics.util.extend({
-        a: options.a,
-        body: containerRail,
-        x: destCoords[0], 
-        y: destCoords[1] 
-      }));
-
-      oncomplete = accAction.oncomplete;
-      accAction.oncomplete = function() {
-        oncomplete.apply(this, arguments);
-        API.flyTo(Physics.util.extend({}, options, {
-          body: containerRail,
-          duration: 1000,
-          z: 2000
-        }));        
-
-        API.flyTo(Physics.util.extend({}, options, {
-          body: body,
-          duration: 1000,
-          z: -1000 - perspective / scaleRatio
-        }));        
-      };
-      
-//      brickAction = API.flyTo(Physics.util.extend({}, options, {
-//        body: body,
-//        z: z,
-//        trackAction: {
-//          body: containerRail,
-//          action: accAction
-//        }
+//    zoomInTo1: function(options) {
+//      // TODO: record state to enable zoomOutFrom
+//      var self = this,
+//          body = this.getBrick(options.body),
+//          cancelCallback = options.oncancel,
+//          completeCallback = options.oncomplete,
+//          aabb = getAABB(body),
+//          containerRail = getRailBody(getId(this.offsetBody)),
+//          railPos = containerRail.state.pos,
+//          viewport = this.getViewport(),
+//          perspective = getZSpace(this.offsetBody),
+//          scaleRatio = Math.min(this.bounds._hw / aabb._hw, this.bounds._hh / aabb._hh),
+//          // scaleRatio = perspective / (perspective - translateZ) --> translateZ = perspective - perspective / scaleRatio
+//          z = perspective - (perspective / scaleRatio),
+//          destCoords = [0, 0],
+//          bodyX = this.offsetBody.state.pos.get(0) + body.state.pos.get(0),
+//          bodyY = this.offsetBody.state.pos.get(1) + body.state.pos.get(1),// + aabb._hh,
+//          scratch = Physics.scratchpad(),
+//          destination = scratch.vector().clone(railPos),
+//          accelerationMultiplier,
+//          accAction,
+//          brickAction,
+//          oncomplete,
+//          scratch = Physics.scratchpad(),
+//          tmp = scratch.vector();
+//      
+//      this.offsetBody.fixed = true;
+//      this.disableEdgeConstraints();
+//      destCoords[0] = -(-this.bounds._hw + bodyX);   // negate because we're moving the world not the camera 
+//      destCoords[1] = -(-this.bounds._hh + bodyY);   // negate because we're moving the world not the camera
+//      accelerationMultiplier = destination.set.apply(destination, destCoords).vsub(railPos).norm() / 1000;
+//      options.a *= accelerationMultiplier;
+//      scratch.done();
+//      
+//      accAction = API.accelerateTo(Physics.util.extend({
+//        a: options.a,
+//        body: containerRail,
+//        x: destCoords[0], 
+//        y: destCoords[1] 
 //      }));
-
-      scratch.done();
-      return accAction;
-    },
+//
+//      oncomplete = accAction.oncomplete;
+//      accAction.oncomplete = function() {
+//        oncomplete.apply(this, arguments);
+//        API.flyTo(Physics.util.extend({}, options, {
+//          body: containerRail,
+//          duration: 1000,
+//          z: 2000
+//        }));        
+//
+//        API.flyTo(Physics.util.extend({}, options, {
+//          body: body,
+//          duration: 1000,
+//          z: -1000 - perspective / scaleRatio
+//        }));        
+//      };
+//      
+////      brickAction = API.flyTo(Physics.util.extend({}, options, {
+////        body: body,
+////        z: z,
+////        trackAction: {
+////          body: containerRail,
+////          action: accAction
+////        }
+////      }));
+//
+//      scratch.done();
+//      return accAction;
+//    },
 
     zoomInTo: function(options) {
       // TODO: record state to enable zoomOutFrom
@@ -2132,6 +2144,8 @@ function pick(obj) {
           body = this.getBrick(options.body),
           cancelCallback = options.oncancel,
           completeCallback = options.oncomplete,
+          oncomplete,
+          duration,
           aabb = getAABB(body),
           containerRail = getRailBody(getId(this.offsetBody)),
           railPos = containerRail.state.pos,
@@ -2141,14 +2155,21 @@ function pick(obj) {
           // scaleRatio = perspective / (perspective - translateZ) --> translateZ = perspective - perspective / scaleRatio
           z = perspective - (perspective / scaleRatio),
           destCoords = [null, null, z],
-          bodyX = this.offsetBody.state.pos.get(0) + body.state.pos.get(0),
-          bodyY = this.offsetBody.state.pos.get(1) + body.state.pos.get(1),// + aabb._hh,
+          bodyX,
+          bodyY,
           scratch = Physics.scratchpad(),
           destination = scratch.vector().clone(railPos),
           accelerationMultiplier,
           accAction,
           scratch = Physics.scratchpad(),
           tmp = scratch.vector();
+      
+      bodyX = body.state.pos.get(0);
+      bodyY = body.state.pos.get(1);// + aabb._hh,
+      if (!this.flexigroup) {
+        bodyX += this.offsetBody.state.pos.get(0); 
+        bodyY += this.offsetBody.state.pos.get(1) + this.gutterWidthVertical * scaleRatio; // HACK: not sure why it's off-center vertically
+      }
       
       this.offsetBody.fixed = true;
       this.disableEdgeConstraints();
@@ -2158,12 +2179,39 @@ function pick(obj) {
       options.a *= accelerationMultiplier;
       scratch.done();
       
-      accAction = API.accelerateTo(Physics.util.extend(options, {
-        body: containerRail,
-        x: destCoords[0], 
-        y: destCoords[1], 
-        z: destCoords[2]
-      }));
+      if (options.flyThrough) {
+        duration = options.duration || 1000;
+        accAction = API.accelerateTo({
+          a: options.a,
+          body: containerRail,
+          x: destCoords[0], 
+          y: destCoords[1] 
+        });
+
+        oncomplete = accAction.oncomplete;
+        accAction.oncomplete = function() {
+          oncomplete.apply(this, arguments);
+          API.flyTo(Physics.util.extend({}, options, {
+            body: containerRail,
+            duration: duration,
+            z: 2000
+          }));        
+
+          API.flyTo(Physics.util.extend({}, options, {
+            body: body,
+            duration: duration,
+            z: -1000 - perspective / scaleRatio
+          }));        
+        }; 
+      }
+      else {
+        accAction = API[options.snap ? 'snapTo' : 'accelerateTo'](Physics.util.extend(options, {
+          body: containerRail,
+          x: destCoords[0], 
+          y: destCoords[1], 
+          z: destCoords[2]
+        }));
+      }
       
 //      tmp.set.apply(tmp, destCoords);
 //      API.rotateToAndBack({
@@ -2537,7 +2585,11 @@ function pick(obj) {
           this.scrollbarRail.railBody.state.pos.setComponent(2, 1);
 
         percentOffset = (this.range.from + ((viewport.min - slidingWindow.min) / slidingWindowDimension) * (this.range.to - this.range.from)) / limit; // estimate which tiles we're looking at
-        axisVal = viewport.min + viewportDim * percentOffset;
+        if (this.flexigroup)
+          axisVal = viewportDim * percentOffset;
+        else
+          axisVal = viewport.min + viewportDim * percentOffset;
+        
         if (axisVal != pos.get(this.axisIdx))
           pos.setComponent(this.axisIdx, axisVal);
           
@@ -2619,7 +2671,7 @@ function pick(obj) {
         var coords = new Array(2);
         coords[this.orthoAxisIdx] = this.headEdge.state.pos.get(this.orthoAxisIdx);
 //        coords[this.axisIdx] = Math.max(this.headEdge.state.pos.get(this.axisIdx), -this.slidingWindowBounds.min);
-        coords[this.axisIdx] = -this.slidingWindowBounds.min;
+        coords[this.axisIdx] = -this.slidingWindowBounds.min + this.flexigroupOffset;
         this.headEdge.state.pos.set(coords[0], coords[1]);
       }
 //      }
@@ -2634,7 +2686,7 @@ function pick(obj) {
         if (this.range.from == 0 && this.range.to == this.brickLimit && this.slidingWindowDimension < this.pageScrollDim)
           coords[this.axisIdx] = this.headEdge.state.pos.get(this.axisIdx);
         else
-          coords[this.axisIdx] = -this.slidingWindowBounds.max + this.pageScrollDim; // - this.pageOffset[this.axisIdx];
+          coords[this.axisIdx] = -this.slidingWindowBounds.max + this.pageScrollDim + this.flexigroupOffset; // - this.pageOffset[this.axisIdx];
       }
       else {
 //        this.log("Setting tail edge for non-sliding window layout");
@@ -2643,7 +2695,7 @@ function pick(obj) {
           coords[this.axisIdx] = this.headEdge.state.pos.get(this.axisIdx);
         else {
 //          this.log("SW Dim = " + this.slidingWindowDimension + ", pageScrollDim = " + this.pageScrollDim);
-          coords[this.axisIdx] = -this.slidingWindowDimension + this.pageScrollDim; // NOT the same as in above IF statement
+          coords[this.axisIdx] = -this.slidingWindowDimension + this.pageScrollDim + this.flexigroupOffset; // NOT the same as in above IF statement
         }
       }
       
@@ -2664,7 +2716,7 @@ function pick(obj) {
             mass: 1
           });
           
-          this.tailEdgeConstraint = API.distanceConstraint(this.offsetBody, this.tailEdge, this.getSpringStiffness(), this.flexigroup ? null : 0, this.dirTail);
+          this.tailEdgeConstraint = API.distanceConstraint(this.offsetBody, this.tailEdge, this.getSpringStiffness(), 0, this.dirTail);
           this.tailEdgeConstraint.damp(this.getSpringDamping());
           this.tailEdgeConstraint['break']();
           this.tailEdgeConstraint.armOn(this.shouldArmTail.bind(this.tailEdgeConstraint, this)); // pass in self as first param
@@ -2722,6 +2774,8 @@ function pick(obj) {
         this.mason.option('fromBottom', false);
         this.mason.reload();
       }
+      
+      // TODO: redo rails for bricks
     },
 
     setLimit: function(limit) {
@@ -2889,6 +2943,7 @@ function pick(obj) {
       var numBefore = this.numBricks(),
           bricks = [],
           brick,
+          rail,
           viewport = this.getViewport(),
           viewportDim = BOUNDS[this.aabbAxisDim] * 2,
           viewportOrthoDim = BOUNDS[this.aabbOrthoAxisDim] * 2,
@@ -2898,7 +2953,7 @@ function pick(obj) {
           options;
       
       this.scrolled = this.scrolled || viewport.min != 0;
-//      log("ADDING BRICKS: " + optionsArr.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
+      log("ADDING BRICKS: " + optionsArr.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
       for (var i = 0; i < l; i++) {
         options = optionsArr[i];
         if (!this.flexigroup)
@@ -2909,7 +2964,16 @@ function pick(obj) {
 //          options.drag = this.drag;
         
 //        options.z = -1;
-        bricks[i] = Physics.body('convex-polygon', options);
+        brick = Physics.body('convex-polygon', options);
+//        if (this.flexigroup) {
+//          pos = brick.state.pos;
+//          if (this.horizontal)
+//            brick = API.addRail(brick, pos.get(0) - range / 2, pos.get(1), pos.get(0) + range / 2, pos.get(1));
+//          else
+//            brick = API.addRail(brick, pos.get(0), pos.get(1) - range / 2, pos.get(0), pos.get(1) + range / 2);
+//        }
+        
+        bricks[i] = brick;
       }
 
       if (!numBefore) {
@@ -2921,12 +2985,21 @@ function pick(obj) {
       
       if (this.flexigroup) {
         var brick,
-            flexigroupId = getId(this.flexigroup),
-            flexiPos = this.flexigroup.state.pos;
+            pos,
+            flexiPos = this.flexigroup.state.pos,
+            range = 20,
+            stiffness; // = 0.07;
         
         for (var i = 0; i < l; i++) {
           brick = bricks[i];
-          API.distanceConstraint(getId(brick), flexigroupId, 0.05, brick.state.pos.dist(flexiPos), this.dirHead);
+//          pos = brick.state.pos;
+//          if (this.horizontal)
+//            brick._rail = API.addRail(brick, 1, 0);
+//          else
+//            brick._rail = API.addRail(brick, 0, 1);
+          
+          stiffness = 0.07 + Math.random() * 0.1;
+          API.distanceConstraint(brick, this.flexigroup, stiffness, brick.state.pos.dist(flexiPos), this.dirHead);
         }
       }
       
@@ -3101,7 +3174,7 @@ function pick(obj) {
         this.range.to -= n;
       }
       
-//      this.log("REMOVED BRICKS: " + bricks.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
+      this.log("REMOVED BRICKS: " + bricks.map(function(b) { return parseInt(getId(b).match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
       this.printState();
 //      this.log("REMOVING " + n + " BRICKS FROM THE " + (fromTheHead ? "HEAD" : "TAIL") + " FOR A TOTAL OF " + (this.range.to - this.range.from));
   //    log("ACTUAL TOTAL AFTER REMOVE: " + this.numBricks());
@@ -3131,10 +3204,13 @@ function pick(obj) {
       if (!this.savedContainerRailPos)
         this.savedContainerRailPos = Physics.vector();
 
+//      if (!this.savedContainerRenderData)
+//        this.savedContainerRenderData = this.offsetBody.state.renderData.toJSON(true);
+
       this.savedContainerRailPos.clone(getRailBody(getId(this.offsetBody)).state.pos);
 //      this.savedContainerRailPos.clone(containerRail.state.pos);
       if (brick) {
-        this.savedBrick = getBody(brick);
+        this.savedBrick = this.getBrick(brick);
         this.savedBrickPos = Physics.vector(this.savedBrick.state.pos);
       }
     },
@@ -3147,7 +3223,13 @@ function pick(obj) {
       var containerRail = getRailBody(getId(this.offsetBody));
       containerRail.state.renderData.set('scale', UNSCALED);
       containerRail.stop(this.savedContainerRailPos);
-      
+
+      if (this.savedContainerRenderData) {
+        for (var p in this.savedContainerRenderData) {
+          this.offsetBody.state.renderData.set(p, this.savedContainerRenderData[p]);
+        }
+      }
+
       if (this.savedBrickPos) {
         this.savedBrick.stop(this.savedBrickPos);
         this.savedBrickPos = this.savedBrick = null;
@@ -3291,7 +3373,7 @@ function pick(obj) {
             fromTheHead,
             range = Physics.util.extend({}, this.range);
         
-        while (numBricks && this.slidingWindowDimension > this.maxSlidingWindowDimension) {
+        while ((numBricks = this.numBricks()) && this.slidingWindowDimension > this.maxSlidingWindowDimension) {
           toRemove = Math.min(defaultRemoveDelta, numBricks);
           fromTheHead = headDiff > tailDiff;
           this.log("DECISION: shrinking sliding window by " + toRemove + " at the " + (fromTheHead ? HEAD_STR : TAIL_STR));
@@ -3488,7 +3570,7 @@ var API = {
         cancelCallback = options.oncancel,
         unit = options.unit,
         prop = options.property,
-        startValue = options.start || body.state.renderData.get(prop),
+        startValue = options.hasOwnProperty('start') ? options.start : body.state.renderData.get(prop),
         endValue = options.end,
         clear = options.clear,
         duration = options.duration,
@@ -3674,37 +3756,65 @@ var API = {
     options.z = body.state.pos.get(2) + (options.z || 0);
     return this.accelerateTo(options);
   },
-  
+
+  /**
+   * Acceleration to a target with air resistance:
+   * vt = mg / b
+   * a = (b / m) * (vt - v)   where a is acceleration
+   *                                g is gravity
+   *                                v is velocity 
+   *                                vt is terminal velocity
+   *                                b is the coefficient of air resistance
+   *                                m is mass
+   *                                
+   * Equations of motion for free fall with air resistance taken from:                               
+   * http://phys.csuchico.edu/kagan/204A/lectureslides/slides15.pdf
+   */
   accelerateTo: function(options) {
     var body = getBody(options.body),
-        a = options.a,
+        m = body.mass,
+        g = options.a,
+        a,
         _drag = typeof options.drag == 'undefined' ? 0.1 : options.drag,
-        dragMultiplier,
+        dragCoeff,
         completeCallback = options.oncomplete,
         cancelCallback = options.oncancel,
         initialPosition = Physics.vector(body.state.pos),
         destination = updateVector(Physics.vector(body.state.pos), options.x, options.y, options.z),
         initialDistance = body.state.pos.dist(destination),
         acceleration = Physics.vector(),
+        dir = Physics.vector(),
 //        thresh = Math.min(10, initialDistance / 5),
         lastDistance = initialDistance,
         distance = initialDistance,
+        atmosphereRadius = options.atmosphereRadius || initialDistance,
+        vInDir,
         thresh = 1,
         flyAction,
         boundsDim;
 
     function onIntegratePositions(ratio) {
       distance = body.state.pos.dist(destination);
-      boundsDim = Math.min(BOUNDS._hw, BOUNDS._hh);
-      dragMultiplier = 1 - _drag * Math.pow((boundsDim - Math.min(distance, boundsDim)) / boundsDim, 2);
-      
       if (distance > thresh) {
         lastDistance = distance;
-        acceleration.clone(destination).vsub(body.state.pos).normalize().mult(a * dragMultiplier);
+        boundsDim = Math.min(BOUNDS._hw, BOUNDS._hh);
+//        dragCoeff = 0.1 * _drag * Math.pow((boundsDim - Math.min(distance, boundsDim)) / boundsDim, 2);
+//        dragCoeff = 1 - _drag * Math.pow((boundsDim - Math.min(distance, boundsDim)) / boundsDim, 2);
+        if (distance < atmosphereRadius)
+          dragCoeff = 1 - _drag * Math.pow((initialDistance - distance) / initialDistance, 2);
+        else
+          dragCoeff = 1;
+//        dir.clone(destination).vsub(body.state.pos).normalize();
+//        vInDir = body.state.vel.proj(dir);
+//        a = g - dragCoeff * vInDir / m;
+        a = g * dragCoeff;
+//        a = Physics.util.clamp(a, -vInDir, 2 * g);
+//        acceleration.clone(dir).mult(a);
+        acceleration.clone(destination).vsub(body.state.pos).normalize().mult(a);
         body.accelerate(acceleration);        
       }
       else {
-        if (distance > 10)
+        if (distance)
           log("Completing action ahead of schedule by distance: " + distance + ", initial distance: " + initialDistance);
         
         flyAction.complete();
@@ -3826,7 +3936,8 @@ var API = {
         originalX = originalRotation[0],
         originalY = originalRotation[1],
         originalZ = originalRotation[2],
-        rotation = originalRotation.slice();
+        rotation = originalRotation.slice(),
+        action;
     
     function onIntegratePositions(ratio) {
       if (x !== undefined)
@@ -3837,6 +3948,8 @@ var API = {
         rotation[2] = originalZ + (z - originalZ) * ratio;
         
       body.state.renderData.set('rotate', rotation);
+      if (action && ratio == 1)
+        action.complete();
     };
     
     function cleanUp(cancelType) {
@@ -3970,13 +4083,17 @@ var API = {
         cancelCallback = options.oncancel,
         stiffness = options.stiffness,
         damping = options.damping,
+        initialPosition = Physics.vector(body.state.pos),
         destination = updateVector(Physics.vector(body.state.pos), options.x, options.y, options.z),
-        anchor = Physics.body('point', {
-          fixed: true,
-          x: destination.get(0),
-          y: destination.get(1),
-          z: destination.get(2)
-        }),
+        initialDistance = initialPosition.dist(destination),
+        drag = options.drag || 0,
+        distance,
+        anchor = Physics.body('point', Physics.util.extend(destination.values(), {
+          fixed: true
+        })),
+        distThresh = options.distanceThreshold || 1,
+        velThresh = options.velocityThreshold || 0.1,
+        accThresh = options.accelerationThreshold || 0.1,
         constraint, // only snap along one axis
         snapAction;
   
@@ -3991,13 +4108,23 @@ var API = {
   //  world.subscribe(PUBSUB_SNAP_CANCELED, endSnap);
   //  world.subscribe('step', checkStopped);
     
-    function onstep() {
-      if (Math.abs(body.state.pos.dist(destination)) < 10 && body.state.vel.norm() < 0.1 && body.state.acc.norm() < 0.1) {
+    function onIntegrateVelocities() {
+      if (Math.abs(body.state.pos.dist(destination)) < distThresh && body.state.vel.norm() < velThresh && body.state.acc.norm() < accThresh) {
         snapAction.complete();
+      }
+      else {
+        if (drag) {
+          body.state.vel.mult(1 - drag);
+        }
       }
     };
   
-    function cleanUp() {
+    function cleanUp(cancelType) {
+      if (cancelType == 'stop')
+        body.stop();
+      else if (cancelType == 'revert')
+        body.stop(initialPosition);
+      
       completeCallback = null;
       self.removeConstraint(constraint);
       world.removeBody(anchor);
@@ -4024,12 +4151,22 @@ var API = {
     
     snapAction = new Action(Physics.util.extend(getActionOptions(options), {
       type: 'snap',
-      name: 'snap ' + bodyId + ' to ' + destination.toString(),
-      onstep: onstep,
+      name: 'snap ' + getId(body) + ' to ' + destination.toString(),
+      onIntegrateVelocities: onIntegrateVelocities,
       oncomplete: endSnap,
       oncancel: cleanUp
     }));
     
+    snapAction.ratio = function() {
+      if (snapAction.state() == 'completed')
+        return 1;
+      else {
+        distance = body.state.pos.dist(destination);
+        return (initialDistance - distance) / initialDistance;
+      }
+    };
+    
+    API.cancelPendingActions(body, 'snap', CancelType.stop);
     addAction(body, snapAction);
     snapAction.start();
     return snapAction;
@@ -4159,7 +4296,7 @@ var API = {
 		}
 	},
 
-//	squeezeAndStretch: function(movingBody, squeezeBody) {
+//	squashAndStretch: function(movingBody, squeezeBody) {
 //	  movingBody = getBody(movingBody);
 //    squeezeBody = getBody(squeezeBody);
 //	  var scale = [1, 1, 1],
@@ -4190,7 +4327,7 @@ var API = {
 //    });
 //	},
 
-	 squeezeAndStretch: function(movingBody, squeezeBody, multiplier) {
+	 squashAndStretch: function(movingBody, squeezeBody, multiplier) {
      movingBody = getBody(movingBody);
      squeezeBody = getBody(squeezeBody);
      multiplier = multiplier || 1;
@@ -4538,22 +4675,22 @@ var API = {
 	    return railroad.rail(body, Physics.vector(x1, y1));
 	},
 	
-	box: function(body, width, height, x, y) {
-    body = getBody(body);
-    if (!body)
-      throw "No body found to box in";
-    
-//    if (typeof x == 'undefined')
-//      x = width == Infinity ? 0 : width / 2;
+//	box: function(body, width, height, x, y) {
+//    body = getBody(body);
+//    if (!body)
+//      throw "No body found to box in";
 //    
-//    if (typeof y == 'undefined')
-//      y = height == Infinity ? 0 : height / 2;
-    
-    if (arguments.length == 5)
-      boxer.box(body, width, height, Physics.vector(x, y));
-    else
-      boxer.box(body, width, height);
-  },
+////    if (typeof x == 'undefined')
+////      x = width == Infinity ? 0 : width / 2;
+////    
+////    if (typeof y == 'undefined')
+////      y = height == Infinity ? 0 : height / 2;
+//    
+//    if (arguments.length == 5)
+//      boxer.box(body, width, height, Physics.vector(x, y));
+//    else
+//      boxer.box(body, width, height);
+//  },
 	
 	removeConstraint: function(cstOrId) {
     log("Removing constraint");
@@ -4756,6 +4893,7 @@ var Matrix = {
     }
     
     Physics.util.extend(a, result);
+    this.recycle(result);
     return this;
   },
   rotateX: function(a, rad) {
@@ -4830,23 +4968,4 @@ var Matrix = {
       }
     }
   }
-//  rotationXMatrix: function(rad) {
-//    return [1, 0, 0, 0,
-//            0, Math.cos(rad), Math.sin(-rad), 0,
-//            0, Math.sin(rad), Math.cos(rad), 0,
-//            0, 0, 0, 1];
-//  },
-//  rotationYMatrix: function(rad) {
-//    return [Math.cos(rad), 0, Math.sin(rad), 0,
-//            0, 1, 0, 0,
-//            Math.sin(-rad), 0, Math.cos(rad), 0,
-//            0, 0, 0, 1];
-//  },
-//
-//  rotationZMatrix: function(rad) {
-//    return [Math.cos(rad), Math.sin(-rad), 0, 0,
-//            Math.sin(rad), Math.cos(rad), 0, 0,
-//            0, 0, 1, 0,
-//            0, 0, 0, 1]
-//  }
 }

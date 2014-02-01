@@ -4775,217 +4775,6 @@ Physics.behavior('verlet-constraints', function( parent ){
     };
 });
 
-///**
-// * Box constraint manager.
-// * Put a body in a box to constrain its motion to an area
-// * @module behaviors/box-constraint-manager
-// */
-//Physics.behavior('box-constraint-manager', function( parent ){
-//
-//  var defaults = {
-//      width: 0,
-//      height: 0 
-//  };
-//
-//  return {
-//
-//    /**
-//     * Initialization
-//     * @param  {Object} options Configuration object
-//     * @return {void}
-//     */
-//    init: function( options ){
-//
-//    parent.init.call(this, options);
-//
-//    Physics.util.extend(this.options, defaults, options);
-//
-//    this._boxes = [];
-//  },
-//
-//  /**
-//   * Connect to world. Automatically called when added to world by the setWorld method
-//   * @param  {Object} world The world to connect to
-//   * @return {void}
-//   */
-//  connect: function( world ){
-//
-//    // var intg = world.integrator();
-//
-//    // if ( intg && intg.name.indexOf('verlet') < 0 ){
-//
-//    // throw 'The rigid box manager needs a world with a "verlet" compatible integrator.';
-//    // }
-//
-//    // world.subscribe('integrate:positions', this.resolve, this);
-//    world.subscribe('step', this.resolve, this);
-//    world.subscribe('remove:body', this._onRemoveBody);
-//  },
-//
-//  /**
-//   * Disconnect from world
-//   * @param  {Object} world The world to disconnect from
-//   * @return {void}
-//   */
-//  disconnect: function( world ){
-//
-//    // world.unsubscribe('integrate:positions', this.resolve);
-//    world.unsubscribe('step', this.resolve);
-//    world.unsubscribe('remove:body', this._onRemoveBody);
-//  },
-//
-//  /**
-//   * Remove all boxes
-//   * @return {self}
-//   */
-//  clear: function(){
-//
-//    // remove all current boxes
-//    var boxes = this._boxes,
-//        box,
-//        i = boxes.length;
-//
-//    while (i--) {
-//      box = boxes[i];
-//      boxes.length--;
-//    }
-//
-//    return this;
-//  },
-//
-//  _onRemoveBody: function(data) {
-//    var body = data.body,
-//        boxes = this._boxes,
-//        box,
-//        i = boxes.length;
-//
-//    while (i--) {
-//      box = boxes[i];
-//      if (box.body == body) {
-//        world.removeBody(box.boxBody);
-//        break;
-//      }
-//    }
-//  },
-//
-//  /**
-//   * Constrain two bodies to a target relative distance
-//   * @param  {Object} body        First body
-//   * @param  {Number} width     Box width
-//   * @param  {Number} height    Box height
-//   * @param  {Vector} posInBox    (optional) initial position of the body in the box, from the bottom left corner, defaults to box center
-//   * @return {object} box       (optional) The box object, which holds .body and .boxBody references to the bodies, .id the string ID of the box
-//   */
-//  box: function( body, width, height, posInBox ){
-//    var box,
-//        x1, y1, // bottom left corner of the box
-//        x2, y2, // top right corner of the box
-//        boxBody;
-//
-//    if (!body) {
-//      return false;
-//    }
-//
-//    if (!posInBox || posInBox == 'center')
-//      posInBox = Physics.vector(width / 2, height / 2);
-//    
-//    x1 = -posInBox.get(0);      
-//    y1 = -posInBox.get(1);
-//    x2 = x1 + width;
-//    y2 = y1 + height;
-//    
-//    boxBody = Physics.body('convex-polygon', Physics.util.extend({
-//      _id: 'box-' + (body._id || Physics.util.uniqueId('box-constraint')),
-//      vertices: [
-//       {x: x1, y: y1},
-//       {x: x1, y: y2},
-//       {x: x2, y: y2},
-//       {x: x2, y: y1}
-//     ]
-//    }, body.state.pos.values()));
-//
-//    world.addBody(boxBody);
-//    this._boxes.push(box = {
-//        id: Physics.util.uniqueId('box'),
-//        body: body,
-//        boxBody: boxBody
-//    });
-//
-//    return box;
-//  },
-//
-//  /**
-//   * Remove a box
-//   * @param  {Mixed} indexBoxOrId Either the box object, the box id, or the numeric index of the box
-//   * @return {self}
-//   */
-//  remove: function( indexBoxOrId ){
-//
-//    var boxes = this._boxes
-//        ,isObj
-//        ;
-//
-//    if (typeof indexBoxOrId === 'number'){
-//
-//      boxes.splice( indexBoxOrId, 1 );
-//      return this;   
-//    }
-//
-//    isObj = Physics.util.isObject( indexBoxOrId );
-//
-//    for ( var i = 0, l = boxes.length; i < l; ++i ){
-//
-//      if ( (isObj && boxes[ i ] === indexBoxOrId) ||
-//          ( !isObj && boxes[ i ].id === indexBoxOrId) ){
-//
-//        boxes.splice( i, 1 );
-//        return this;
-//      }
-//    }
-//
-//    return this;
-//  },
-//
-//  /**
-//   * Resolve boxes
-//   * @return {void}
-//   */
-//  resolve: function(){
-//
-//    var boxes = this._boxes
-//        ,x
-//        ,y
-//        ,box
-//        ,body
-//        ,boxVertices
-//        ;
-//
-//    for ( var i = 0, l = boxes.length; i < l; ++i ){
-//
-//      box = boxes[ i ];
-//      body = box.body;        
-//      // make sure bodies stay in their boxes
-//      boxVertices = box.boxBody.geometry.vertices;
-//      x = body.state.pos.get(0);
-//      y = body.state.pos.get(1);
-//      x = min(boxVertices[2].get(0), max(boxVertices[0].get(0), x));
-//      y = min(boxVertices[2].get(1), max(boxVertices[0].get(1), y));
-//      body.state.pos.set(x, y);
-//    }
-//  },
-//
-//  /**
-//   * Get an array of all boxes
-//   * @return {Array} The array of box objects
-//   */
-//  getBoxes: function(){
-//
-//    return [].concat(this._boxes);
-//  }
-//  };
-//});
-
-
 /**
  * Rigid rails manager.
  * Put a body on rails to constrain its motion to a direction or a path
@@ -5058,17 +4847,27 @@ Physics.behavior('rails', function( parent ){
       var body = data.body,
           rails = this._rails,
           rail,
+          idx,
           i = rails.length;
   
       while (i--) {
         rail = rails[i];
-        if (rail.body == body) {
-          world.removeBody(rail.railBody);
+        if (~(idx = rail.bodies.indexOf(body))) {
+          rail.bodies.splice(idx, 1);
+          if (!rail.bodies.length) {
+            world.removeBody(rail.railBody);
+            rails.splice(i, 1);
+          }
+          
           break;
         }
       }
     },
   
+    addBodyToRail: function(rail, body) {
+      rail.bodies.push(body);
+    },
+    
     /**
      * Constrain two bodies to a target relative distance
      * @param  {Object} body        First body
@@ -5096,7 +4895,7 @@ Physics.behavior('rails', function( parent ){
       rail = {
           id: railBody.options._id, // a body can't be on two rails simultaneously
           finite: arguments.length == 3,
-          body: body,
+          bodies: [body],
           railBody: railBody
       };
       
@@ -5109,7 +4908,7 @@ Physics.behavior('rails', function( parent ){
       else
         rail.dir = from.normalize();
       
-      rail.offset = Physics.vector();
+      rail.offset = Physics.vector(rail.railBody.state.pos);
       world.addBody(railBody);
       this._rails.push(rail);
   
@@ -5156,6 +4955,8 @@ Physics.behavior('rails', function( parent ){
   
       var rails = this._rails
           ,rail
+          ,bodies
+          ,body
           ,offset
           ,scratch = Physics.scratchpad()
           ,from = scratch.vector()
@@ -5164,20 +4965,24 @@ Physics.behavior('rails', function( parent ){
   
       for ( var i = 0, l = rails.length; i < l; ++i ){
   
-        rail = rails[ i ];        
+        rail = rails[ i ];
+        bodies = rail.bodies;
         offset = rail.offset;
         
         // make sure bodies stay on their railroad tracks
         // move the body to the closest position on the rail
-        if (rail.from) {
-          from.clone(rail.from).vsub(offset).vadd(rail.railBody.state.pos);
-          to.clone(rail.to).vsub(offset).vadd(rail.railBody.state.pos);
-          Physics.geometry.nearestPointOnLine(rail.body.state.pos, from, to, rail.body.state.pos);
-          Physics.geometry.nearestPointOnLine(rail.body.state.old.pos, from, to, rail.body.state.old.pos); // to avoid adding velocity
-        }
-        else {
-          rail.body.state.old.pos.vsub(offset).vproj(rail.dir).vadd(rail.railBody.state.pos); // to avoid adding velocity
-          rail.body.state.pos.vsub(offset).vproj(rail.dir).vadd(rail.railBody.state.pos);
+        for (var j = 0; j < bodies.length; j++) {
+          body = bodies[j];
+          if (rail.from) {
+            from.clone(rail.from).vsub(offset).vadd(rail.railBody.state.pos);
+            to.clone(rail.to).vsub(offset).vadd(rail.railBody.state.pos);
+            Physics.geometry.nearestPointOnLine(body.state.pos, from, to, body.state.pos);
+            Physics.geometry.nearestPointOnLine(body.state.old.pos, from, to, body.state.old.pos); // to avoid adding velocity
+          }
+          else {
+            body.state.old.pos.vsub(offset).vproj(rail.dir).vadd(rail.railBody.state.pos); // to avoid adding velocity
+            body.state.pos.vsub(offset).vproj(rail.dir).vadd(rail.railBody.state.pos);
+          }
         }
         
         offset.clone(rail.railBody.state.pos);
@@ -5191,7 +4996,6 @@ Physics.behavior('rails', function( parent ){
      * @return {Array} The array of rail objects
      */
     getRails: function(){
-  
       return [].concat(this._rails);
     }
   };

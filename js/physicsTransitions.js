@@ -6,7 +6,32 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
       down: 'up'
     },
     currentTransition,
-    queued;
+    queued,
+    slideDefaultSettings = {
+      acceleration: 0.02,
+      drag: 0.3 // inversely proportional to distance^2 from the target (the closer, the more drag) 
+    },
+    snapDefaultSettings = {
+      duration: 500,
+      stiffness: 0.01,
+      damping: 0.5
+    },
+    zoomInToDefaultSettings = {
+      fadeDuration: 500,
+      acceleration: 0.01,
+      drag: 0.3,
+      stiffness: 0.06,
+      damping: 0.3,
+      snap: true
+    },
+    rotateAndZoomInToDefaultSettings = {
+      rotateDuration: 1000,
+      fadeDuration: 500,
+      angle: Math.PI / 2,
+      acceleration: 0.01,
+      drag: 0.1
+    };
+
   
   function getOppositeDir(dir) {
     return _oppositeDir[dir]; 
@@ -130,7 +155,7 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
           }]
         });
       }
-      
+
       Physics.disableDrag();
       if (this.from)
         this.from.$el.trigger('page_beforehide');
@@ -172,12 +197,6 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
     interrupt: null
   };
 
-  var slideDefaultSettings = {
-//    duration: 500
-    acceleration: 0.02,
-    drag: 0.99 // inversely proportional to distance^2 from the target (the closer, the more drag) 
-  };
-  
   function Slide(options) {
     options = _.extend({}, options, slideDefaultSettings);
     Transition.apply(this, arguments);
@@ -185,8 +204,8 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
   
   Slide.prototype = Object.create(Transition.prototype);
   Slide.prototype.transition = function() {
-    var fromDir = getOppositeDir(this.options.direction),
-        toDir = this.options.direction,
+    var toDir = this.options.direction,
+        fromDir = getOppositeDir(toDir),
         fromRailId = this.from.getContainerRailBodyId(),
         toRailId = this.to.getContainerRailBodyId(),
         fromId = this.from.getContainerBodyId(),
@@ -343,23 +362,24 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
 //};
 
   function Snap(options) {
-//    if (options.render)
-//      options.to.render();
-    
+    options = _.extend({}, options, snapDefaultSettings);
     Transition.apply(this, arguments);
-    this.stiffness = options.springStiffness || 0.8;
-    this.damping = options.springDamping || 0.99;
   };
   
   Snap.prototype = Object.create(Transition.prototype);
   Snap.prototype.transition = function() {    
     var self = this,
-        fromDir = getOppositeDir(this.options.direction),
         toDir = this.options.direction,
+        fromDir = getOppositeDir(toDir),
         fromRailId = this.from.getContainerRailBodyId(),
         toRailId = this.to.getContainerRailBodyId(),
         options = this.options,
-        finished = 2;
+        duration = options.duration,
+        stiffness = options.stiffness,
+        damping = options.damping,
+        finished = 2,
+        toSnapId = _.uniqueId('snapAction'),
+        fromSnapId = _.uniqueId('snapAction');
     
 //    options.springStiffness = 0.8;
 //    options.springDamping = Math.min(0.99, Physics.constants.springDamping);
@@ -395,33 +415,196 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
       {
         method: 'style',
         args: [this.to.getContainerBodyId(), {
-          'z-index': 1000,
-          opacity: DOM.maxOpacity
+          'z-index': 1000
         }]
       },
-//      {
-//        method: 'snap', 
-//        args: [fromRailId, toDir, options.springStiffness, options.springDamping, finish]
-//      },
-//      {
-//        method: 'snap', 
-//        args: [toRailId, 'center', options.springStiffness, options.springDamping, finish]
-//      }
       {
         method: 'snapTo', 
-        args: [fromRailId, G.viewport.width * (toDir == 'left' ? -1 : 1), null, -10, this.stiffness, this.damping, finish]
+        args: [{
+          actionId: fromSnapId,
+          body: fromRailId, 
+          x: G.viewport.width * (toDir == 'left' ? -1 : 1),
+          z: -10,
+          stiffness: stiffness / 2, 
+          damping: damping, 
+          oncomplete: finish,
+          oncancel: this.dfd.reject
+        }]
       },
       {
         method: 'snapTo', 
-        args: [toRailId, 0, null, 0, this.stiffness, this.damping, finish]
+        args: [{
+          actionId: toSnapId,
+          body: toRailId, 
+          x: 0, 
+          z: 0, 
+          stiffness: stiffness, 
+          damping: damping, 
+          oncomplete: finish,
+          oncancel: this.dfd.reject
+        }]
+      },
+      {
+        method: 'animateStyle', 
+        args: [{
+          trackAction: {
+            body: toRailId,
+            action: toSnapId
+          },
+          forceFollow: true,
+          body: fromRailId,
+          property: 'opacity',
+          end: 0
+        }]
+      },
+      {
+        method: 'animateStyle', 
+        args: [{
+          trackAction: {
+            body: toRailId,
+            action: toSnapId
+          },
+          forceFollow: true,
+          body: toRailId,
+          property: 'opacity',
+          end: DOM.maxOpacity
+        }]
       }
     );        
   };
   
   Snap.prototype.interrupt = function() {
 //    // maybe doing nothing is ok too
-//    this.dfd.reject();
+    var chain = [];
+    
+    cancelPendingActions(this.from, chain);
+    cancelPendingActions(this.to, chain);
+    Physics.there.chain(chain);
+    this.dfd.reject();
+  };
+  
+//  function Via(options) {
+//    Transition.apply(this, arguments);
+//    this.mason = options.via.parentView.mason;
+//  };
+//
+//  Via.prototype = Object.create(Transition.prototype);
+//  Via.prototype.transition = function() {
+//    var self = this,
+//        fromRailId = this.from.getContainerRailBodyId(),
+//        toRailId = this.to.getContainerRailBodyId(),
+//        fromId = this.from.getContainerBodyId(),
+//        toId = this.to.getContainerBodyId(),
+//        via = this.options.via,
+//        bodyId = via.getBodyId(),
+//        time = 1000;
+//    
+//    function doCrossfade() {
+////      if (self.options.render)
+////        options.to.render();
+//      
+//      if (self.isRunning()) {
+////        fadeTo(self.from.getContainerBodyId(), 0, time).done(function() {
+////          if (self.isRunning()) {
+////            fadeTo(self.to.getContainerBodyId(), 0, time).done(self.dfd.resolve).fail(self.dfd.reject);
+////          }
+////        }).fail(self.dfd.reject);
+//        var fadePromise = fadeThroughBackground(fromId, toId, time * 2).progress(function() {
+//          if (!self.isRunning())
+//            fadePromise.cancel();
+//        }).done(function() {
+//          if (self.isRunning())
+//            switchZIndex(fromId, toId);
+//          
+//          self.dfd.resolve();
+//        })
+//      }
+//      
+////      var opacityChain = [
+////        {
+////          method: 'animateStyle',
+////          args: [self.to.getContainerBodyId(), {
+////            property: 'opacity',
+////            start: 0, 
+////            end: DOM.maxOpacity, 
+////            duration: time
+////          }, self.dfd.resolve]
+////        },
+////        {
+////          method: 'animateStyle',
+////          args: [self.from.getContainerBodyId(), {
+////            property: 'opacity',
+////            start: DOM.maxOpacity, 
+////            end: 0, 
+////            duration: time
+////          }]
+////        }
+////      ];
+////      
+////      Physics.there.chain(opacityChain);
+//    };
+//    
+//    this.chain.push(
+//      {
+//        object: this.mason.id,
+//        method: 'saveState',
+//        args: [this.options.via.getRailBodyId()]
+//      },
+//      {
+//        object: this.mason.id,
+//        method: 'isolate',
+//         args: [bodyId, 'pop', time * 2, 'simultaneous' /*callback*/]
+//      },
+//      {
+//        object: this.mason.id,
+//        method: 'flyToTopCenter',
+//        args: [bodyId, 0.5, null, doCrossfade]
+//      },
+//      {
+//        method: 'style',
+//        args: [bodyId, {
+//          'text-align': 'center',
+//          'border': '1px solid black'
+//        }]
+//      },            
+//      {
+//        method: 'animateStyle',
+//        args: [{
+//          body: bodyId, 
+//          property: 'width',
+////          start: via.el.$outerWidth(),
+//          end: G.viewport.width,
+//          unit: 'px',
+//          duration: time
+//        }]
+//      },
+////      {
+////        method: 'animateStyle',
+////        args: [bodyId, {
+////          property: 'height',
+////          start: via.el.$outerHeight(),
+////      //    end: 50,
+////          end: G.viewport.height,
+////          unit: 'px',
+////          duration: time
+////        }]
+////      },
+//      {
+//        method: 'teleportCenterX', 
+//        args: [toRailId]
+//      }                       
+//    );
+//    
+//    this.promise.done(this.cleanup.bind(this));
+//  };
+//
+//  Via.prototype.cleanup = function() {
 //    Physics.there.chain(
+//      {
+//        object: this.mason.id,
+//        method: 'loadState',
+//        args: [this.from.getContainerRailBodyId()]
+//      },
 //      {
 //        method: 'cancelPendingActions',
 //        args: [this.from.getContainerRailBodyId()]
@@ -429,162 +612,22 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
 //      {
 //        method: 'cancelPendingActions',
 //        args: [this.to.getContainerRailBodyId()]
-//      }
-//    );
-  };
-  
-  function Via(options) {
-    Transition.apply(this, arguments);
-    this.mason = options.via.parentView.mason;
-  };
-
-  Via.prototype = Object.create(Transition.prototype);
-  Via.prototype.transition = function() {
-    var self = this,
-        fromRailId = this.from.getContainerRailBodyId(),
-        toRailId = this.to.getContainerRailBodyId(),
-        fromId = this.from.getContainerBodyId(),
-        toId = this.to.getContainerBodyId(),
-        via = this.options.via,
-        bodyId = via.getBodyId(),
-        time = 1000;
-    
-    function doCrossfade() {
-//      if (self.options.render)
-//        options.to.render();
-      
-      if (self.isRunning()) {
-//        fadeTo(self.from.getContainerBodyId(), 0, time).done(function() {
-//          if (self.isRunning()) {
-//            fadeTo(self.to.getContainerBodyId(), 0, time).done(self.dfd.resolve).fail(self.dfd.reject);
-//          }
-//        }).fail(self.dfd.reject);
-        var fadePromise = fadeThroughBackground(fromId, toId, time * 2).progress(function() {
-          if (!self.isRunning())
-            fadePromise.cancel();
-        }).done(function() {
-          if (self.isRunning())
-            switchZIndex(fromId, toId);
-          
-          self.dfd.resolve();
-        })
-      }
-      
-//      var opacityChain = [
-//        {
-//          method: 'animateStyle',
-//          args: [self.to.getContainerBodyId(), {
-//            property: 'opacity',
-//            start: 0, 
-//            end: DOM.maxOpacity, 
-//            duration: time
-//          }, self.dfd.resolve]
-//        },
-//        {
-//          method: 'animateStyle',
-//          args: [self.from.getContainerBodyId(), {
-//            property: 'opacity',
-//            start: DOM.maxOpacity, 
-//            end: 0, 
-//            duration: time
-//          }]
-//        }
-//      ];
-//      
-//      Physics.there.chain(opacityChain);
-    };
-    
-    this.chain.push(
-      {
-        object: this.mason.id,
-        method: 'saveState',
-        args: [this.options.via.getRailBodyId()]
-      },
-      {
-        object: this.mason.id,
-        method: 'isolate',
-         args: [bodyId, 'pop', time * 2, 'simultaneous' /*callback*/]
-      },
-      {
-        object: this.mason.id,
-        method: 'flyToTopCenter',
-        args: [bodyId, 0.5, null, doCrossfade]
-      },
-      {
-        method: 'style',
-        args: [bodyId, {
-          'text-align': 'center',
-          'border': '1px solid black'
-        }]
-      },            
-      {
-        method: 'animateStyle',
-        args: [{
-          body: bodyId, 
-          property: 'width',
-//          start: via.el.$outerWidth(),
-          end: G.viewport.width,
-          unit: 'px',
-          duration: time
-        }]
-      },
-//      {
-//        method: 'animateStyle',
-//        args: [bodyId, {
-//          property: 'height',
-//          start: via.el.$outerHeight(),
-//      //    end: 50,
-//          end: G.viewport.height,
-//          unit: 'px',
-//          duration: time
-//        }]
 //      },
-      {
-        method: 'teleportCenterX', 
-        args: [toRailId]
-      }                       
-    );
-    
-    this.promise.done(this.cleanup.bind(this));
-  };
-
-  Via.prototype.cleanup = function() {
-    Physics.there.chain(
-      {
-        object: this.mason.id,
-        method: 'loadState',
-        args: [this.from.getContainerRailBodyId()]
-      },
-      {
-        method: 'cancelPendingActions',
-        args: [this.from.getContainerRailBodyId()]
-      },
-      {
-        method: 'cancelPendingActions',
-        args: [this.to.getContainerRailBodyId()]
-      },
-      {
-        method: 'cancelPendingActions',
-        args: [this.from.getContainerBodyId()]
-      },
-      {
-        method: 'cancelPendingActions',
-        args: [this.to.getContainerBodyId()]
-      }
-    );    
-  };
-  
-  Via.prototype.interrupt = function() {
-    this.dfd.reject();
-    this.cleanup();
-  };
-
-  var zoomInToDefaultSettings = {
-//    duration: 500
-    fadeDuration: 500,
-    acceleration: 0.01,
-    drag: 0.1
-  };
+//      {
+//        method: 'cancelPendingActions',
+//        args: [this.from.getContainerBodyId()]
+//      },
+//      {
+//        method: 'cancelPendingActions',
+//        args: [this.to.getContainerBodyId()]
+//      }
+//    );    
+//  };
+//  
+//  Via.prototype.interrupt = function() {
+//    this.dfd.reject();
+//    this.cleanup();
+//  };
 
   function ZoomInTo(options) {
   //  if (options.render)
@@ -629,8 +672,13 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
         method: 'zoomInTo',
          args: [{
            body: bodyId, 
-           a: a, 
+           // snap variant
+           snap: this.options.snap,
+           stiffness: this.options.stiffness,
+           damping: this.options.damping,
            drag: this.options.drag,
+           // acceleration variant
+           a: a, 
            oncomplete: doCrossfade, 
            oncancel: this.dfd.reject
          }]
@@ -695,6 +743,155 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
     this.cleanup();
   };
 
+//  function RotateAndZoomInTo(options) {
+//  //  if (options.render)
+//  //    options.to.render();
+//    
+//    options = _.extend({}, options, rotateAndZoomInToDefaultSettings);
+//    this.mason = options.via.parentView.mason;
+//    Transition.apply(this, arguments);
+//  };
+//  
+//  RotateAndZoomInTo.prototype = Object.create(Transition.prototype);
+//  RotateAndZoomInTo.prototype.transition = function() {
+//    var self = this,
+//        fromRailId = this.from.getContainerRailBodyId(),
+//        toRailId = this.to.getContainerRailBodyId(),
+//        fromId = this.from.getContainerBodyId(),
+//        toId = this.to.getContainerBodyId(),
+//        via = this.options.via,
+//        bodyId = via.getBodyId(),
+//        fadeDuration = this.options.fadeDuration,
+//        rotateDuration = this.options.rotateDuration,
+//        a = this.options.acceleration,
+//        brickId = this.options.via.getBodyId(),
+//        angle = this.options.angle;
+//
+//    function doCrossfade() {
+//      if (self.isRunning()) {
+//        fadeThroughBackground(fromId, toId, fadeDuration * 2).done(self.dfd.resolve).fail(self.dfd.reject);
+//      }
+//    };
+//
+//    function zoomIn() {
+//      Physics.there.chain(
+//        {
+//          object: this.mason.id,
+//          method: 'zoomInTo',
+//           args: [{
+//             body: bodyId, 
+//  //           snap: true,
+//             a: a, 
+//             drag: this.options.drag,
+//             oncomplete: doCrossfade, 
+//             oncancel: this.dfd.reject
+//           }]
+//        },
+//        {
+//          method: 'style', 
+//          args: [toRailId, {
+//            'z-index': 1
+//          }]
+//        },                       
+//        {
+//          method: 'style', 
+//          args: [fromRailId, {
+//            'z-index': 1000
+//          }]
+//        },
+//        {
+//          method: 'teleportCenterX', 
+//          args: [toRailId]
+//        }                       
+//      );
+//    };
+//    
+//    this.chain.push({
+//      object: this.mason.id,
+//      method: 'startTransition',
+//      args: [fromRailId]
+//    },
+//    {
+//      object: this.mason.id,
+//      method: 'saveState', 
+//      args: [brickId]
+//    },
+////    {
+////      method: 'style',
+////      args: [this.from.listView.getContainerBodyId(), {
+////        'transform-origin': '0% 100%'
+////      }]
+////    },
+//    {
+//      method: 'rotateBy',
+//      args: [{
+//        body: this.from.listView.getContainerBodyId(),
+//        x: -angle,
+//        duration: rotateDuration,
+//        oncomplete: zoomIn.bind(this),
+//        oncancel: this.dfd.reject
+//      }]
+//    },
+//    {
+//      method: 'flyTo',
+//      args: [{
+//        body: brickId,
+//        z: 100,
+//        duration: rotateDuration
+//      }]
+//    },
+//    {
+//      method: 'rotateBy',
+//      args: [{
+//        body: brickId,
+//        x: angle,
+//        duration: rotateDuration,
+//        oncancel: this.dfd.reject
+//      }]
+//    });
+//    
+//    this.promise.done(this.cleanup.bind(this));
+//  };
+//  
+//  RotateAndZoomInTo.prototype.interrupt = function() {
+//    this.dfd.reject();
+//    this.cleanup();
+//  };
+//  
+//  RotateAndZoomInTo.prototype.cleanup = function() {
+//    var chain = [];
+//    cancelPendingActions(this.from.listView, chain);
+//    cancelPendingActions(this.from, chain);
+//    cancelPendingActions(this.to, chain);
+//    chain.push(
+//      {
+//        object: this.mason.id,
+//        method: 'loadState',
+//        args: [this.from.getContainerRailBodyId()]
+//      },
+//      {
+//        object: this.mason.id,
+//        method: 'endTransition',
+//        args: [this.from.getContainerRailBodyId()]
+//      }
+//    );
+//    
+//    if (this.promise.state() == 'resolved') {
+//      chain.push({
+//        object: this.mason.id,
+//        method: 'sleep',
+//        args: [this.from.getContainerRailBodyId()]
+//      });
+//    }
+//    
+//    Physics.there.chain(chain);
+//  };
+//  
+//  RotateAndZoomInTo.prototype.interrupt = function() {
+//    this.dfd.reject();
+//    this.cleanup();
+//  };
+
   var Transitions = {
     slide: function(options) {
       return new Slide(options);
@@ -706,11 +903,18 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
 
     zoomInTo: function(options) {
       return new ZoomInTo(options);
-    },
-
-    via: function(options) {
-      return new Via(options);
-    }    
+    }
+//    ,
+//    
+//    rotateAndZoomInTo: function(options) {
+//      return new RotateAndZoomInTo(options);
+//    }
+//    
+//    ,
+//
+//    via: function(options) {
+//      return new Via(options);
+//    }    
   };
 
   function switchRoles(fromView, toView, chain) {

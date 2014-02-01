@@ -199,17 +199,23 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         return;
     }
 
-    e.gesture.preventDefault();
     // oh well, we tried harder than they deserve
+    e.preventDefault();
   });
   
-  hammer.on('dragend', function() {
+  hammer.on('dragend', function(e) {
     var draggable;
     for (var id in DRAGGABLES) {
       draggable = DRAGGABLES[id];
       if (draggable.isOn())
         draggable._ondragend.apply(draggable, arguments);
     }
+    
+    e.preventDefault();
+  });
+
+  hammer.on('hold', function(e) {
+    e.preventDefault(); // prevent browser context menu on mac/mobile
   });
 
   function dragOnTick() {

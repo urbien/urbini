@@ -1326,6 +1326,9 @@ define('router', [
           }, changePageOptions, options);
       
       delete changePageOptions.via;
+      if (fromView && !fromView.isListPage())
+        delete transOptions.via; // HACK - for when user clicks on ListPage and then clicks on another item before transition has completed, issuing a faux transition from ViewPage with "via"
+      
       this._previousView = toView;
       
       // kill the keybord, from JQM
@@ -1350,7 +1353,8 @@ define('router', [
 //        G.activePage = toView.el;
 //      });
       
-      transOptions.transition = transOptions.via ? 'zoomInTo' : 'slide';
+      transOptions.transition = transOptions.via ? 'zoomInTo' : 'snap';//'slide';
+//      transOptions.transition = transOptions.via ? 'rotateAndZoomInTo' : 'snap';
       Transitioner.transition(transOptions).done(function() {
         G.$activePage = $m.activePage = toView.$el;
         G.activePage = toView.el;
