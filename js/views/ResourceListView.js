@@ -46,6 +46,7 @@ define('views/ResourceListView', [
   
   return BasicView.extend({
     // CONFIG
+//    _flexigroup: true,
     _draggable: true,
     _dragAxis: 'y',
     _scrollbar: true,
@@ -69,7 +70,6 @@ define('views/ResourceListView', [
     className: 'scrollable',
     style: { 
       opacity: DOM.maxOpacity,
-//      perspective: '1000px',
       'transform-origin': '50% 50%'
     },
     stashed: [],
@@ -1027,8 +1027,8 @@ define('views/ResourceListView', [
         unlazifyImages: !this._scrollable
       });
       
-      if (!this._itemTemplateElement && this.displayMode == 'masonry') // remove this when we change ResourceListItemView to update DOM instead of replace it
-        this._itemTemplateElement = liView.el;
+//      if (!this._itemTemplateElement && this.displayMode == 'masonry') // remove this when we change ResourceListItemView to update DOM instead of replace it
+//        this._itemTemplateElement = liView.el;
         
       return liView;
     },
@@ -1101,7 +1101,7 @@ define('views/ResourceListView', [
         view = views[i];
         view._updateSize();
         brick = view.buildViewBrick();
-        brick.fixed = true; //!options.flexigroup;
+        brick.fixed = !options.flexigroup;
         bricks.push(brick);
       };
       

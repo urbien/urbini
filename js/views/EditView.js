@@ -70,8 +70,8 @@ define('views/EditView', [
       });
       */
       // maybe move this to router
-      var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
-      this.isCode = codemirrorModes.length;
+      var codemirrorModes = U.getRequiredCodemirrorModes(this.resource, 'edit');
+      this.isCode = !!codemirrorModes.length;
 
       var self = this;
       var codemirrorPromise;

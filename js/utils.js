@@ -3202,12 +3202,23 @@ define('utils', [
       }
     },
     
-    getRequiredCodemirrorModes: function(vocModel) {
-      var codeProps = U.getPropertiesWith(vocModel.properties, 'code');
-      var scriptTypes = [];
-      var codemirrorModes = [];
+    getRequiredCodemirrorModes: function(res, mode) {
+      var codeProps = U.getPropertiesWith(res.vocModel.properties, 'code'),
+          scriptTypes = [],
+          codemirrorModes = [],
+          userRole = U.getUserRole(),
+          prop,
+          code;
+      
       for (var cp in codeProps) {
-        var code = codeProps[cp].code;
+        prop = codeProps[cp];
+        if (!U.isPropVisible(res, prop, userRole))
+          continue;
+
+        if (mode != 'edit' && !res.get(prop))
+          continue;
+        
+        code = prop.code;
         switch (code) {
           case 'html':
             codemirrorModes.push('codemirrorXMLMode');
@@ -3222,7 +3233,9 @@ define('utils', [
         }
       }
       
-      codemirrorModes = _.uniq(codemirrorModes);
+      if (codemirrorModes.length)
+        codemirrorModes = _.uniq(codemirrorModes);
+      
       return codemirrorModes;
     },
     

@@ -357,16 +357,13 @@ define('views/BasicView', [
               tmpl_data = {
                 axis: this._scrollAxis,
                 id: scrollbarId
-              },
-              frag = document.createDocumentFragment();
+              };
           
           if (!this.scrollbarTemplate)
             this.makeTemplate('scrollbarTemplate', 'scrollbarTemplate', this.vocModel && this.vocModel.type);
 
           tmpl_data[this._scrollAxis == 'x' ? 'height' : 'width'] = this._scrollbarThickness;
-          U.addToFrag(frag, this.scrollbarTemplate(tmpl_data));
-          
-          this.scrollbar = frag.childNodes[0];
+          this.scrollbar = DOM.parseHTML(this.scrollbarTemplate(tmpl_data))[0];
           this.el.$prepend(this.scrollbar);
           Physics.here.addBody(this.scrollbar, scrollbarId);
 //          Q.read(function() {
@@ -487,8 +484,8 @@ define('views/BasicView', [
 //      });
 //    },
 
-    onload: function(callback) {
-      return this._loadPromise.done(callback);
+    onload: function(callback, context) {
+      return this._loadPromise.done(context ? callback.bind(context) : callback);
 //      return $.whenAll.apply($, this._getLoadingPromises()).then(callback);
     },
 
@@ -704,7 +701,7 @@ define('views/BasicView', [
     },
     
     _recheckDimensions: function() {
-      if (this.mason && this._updateSize()) {
+      if (this.el && this.mason && this._updateSize()) {
         if (this._viewBrick)
           this.buildViewBrick();
         
@@ -1299,7 +1296,10 @@ define('views/BasicView', [
         });
       }
       
-      if (!this._flexigroup)
+      if (this._flexigroup) {
+        // Physics.
+      }
+      else
         Physics.here.addBody(this.el, id);
       
       Physics.there.chain(chain);

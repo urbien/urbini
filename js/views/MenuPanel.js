@@ -14,8 +14,10 @@ define('views/MenuPanel', [
 //    id: 'menuPanel',
 //    theme: 'd',
 //    _flySpeed: 3.5,
-    _acceleration: 0.02,
-    _drag: 0.8,
+//    _acceleration: 0.05,
+    _drag: 0.2,
+    _stiffness: 0.1,
+    _damping: 0.3,
     style: {
       opacity: 0,
       display: 'table',
@@ -49,7 +51,7 @@ define('views/MenuPanel', [
       
       this.onload(function() {
         self.addToWorld(null, true);
-        Physics.there.rpc(null, 'squeezeAndStretch', [self.getContainerRailBodyId(), self.getContainerBodyId()]);
+//        Physics.there.rpc(null, 'squeezeAndStretch', [self.getContainerRailBodyId(), self.getContainerBodyId()]);
 //        Physics.there.rpc(null, 'skewWhenMoving', [self.getContainerRailBodyId(), self.getContainerBodyId(), 'x']);
         self.show();
       });
@@ -115,14 +117,25 @@ define('views/MenuPanel', [
             method: 'teleport', 
             args: [this.getContainerRailBodyId(), this.ulWidth]
           },
+//          {
+//            method: 'accelerateTo', 
+//            args: [{
+//              actionId: accActionId,
+//              body: this.getContainerRailBodyId(), 
+//              x: 0, 
+//              a: this._acceleration,
+//              drag: this._drag
+//            }]
+//          },
           {
-            method: 'accelerateTo', 
+            method: 'snapTo', 
             args: [{
               actionId: accActionId,
-              body: this.getContainerRailBodyId(), 
-              x: 0, 
-              a: this._acceleration,
-              drag: this._drag
+              body: this.getContainerRailBodyId(),
+              stiffness: this._stiffness,
+              damping: this._damping,
+              drag: this._drag,
+              x: 0 
             }]
           },
           {
@@ -164,13 +177,16 @@ define('views/MenuPanel', [
 
         Physics.there.chain(
           {
-            method: 'accelerateTo', 
+//            method: 'accelerateTo',
+            method: 'snapTo',
             args: [{
-              actionId: accActionId,
+//              actionId: accActionId,
               body: this.getContainerRailBodyId(), 
               x: this.ulWidth, 
-              a: this._acceleration,
+              stiffness: this._stiffness,
+              damping: this._damping,
               drag: this._drag,
+//              a: this._acceleration,
               oncomplete: function() {
                 self._finishTransition();
                 Physics.there.style(self.getContainerBodyId(), {

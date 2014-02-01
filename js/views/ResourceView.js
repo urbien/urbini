@@ -35,8 +35,8 @@ define('views/ResourceView', [
 //        });
 //      }
 
-      var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
-      this.isCode = codemirrorModes.length; // we don't need to use the actual modes, just need to know whether we need codemirror stuff
+      var codemirrorModes = U.getRequiredCodemirrorModes(this.resource, 'view');
+      this.isCode = !!codemirrorModes.length; // we don't need to use the actual modes, just need to know whether we need codemirror stuff
       var promises = [this.getFetchPromise()];
       if (this.isCode)
         promises.push(U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes)));

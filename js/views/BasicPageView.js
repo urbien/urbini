@@ -80,7 +80,8 @@ define('views/BasicPageView', [
     initialize: function(options) {
       var self = this;
       BasicView.prototype.initialize.apply(this, arguments);
-      this.addContainerBodyToWorld();
+      if (!options.mock)
+        this.addContainerBodyToWorld();
       _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft'/*, 'scroll', '_onScroll'*/, '_onViewportDimensionsChanged'); //, 'onpage_show', 'onpage_hide');            
       
 //      this._subscribeToImageEvents();
@@ -628,6 +629,10 @@ define('views/BasicPageView', [
     
     getFetchPromise: function() {
       return this._fetchPromise;
+    },
+    
+    isListPage: function() {
+      return this.model == this.collection;
     }
   }, {
     displayName: 'BasicPageView'
