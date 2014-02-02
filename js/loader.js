@@ -922,8 +922,8 @@ define('globals', function() {
           }
         }
         
-        var newModules = {};
         if (resp && !resp.error && resp.modules) {
+          var newModules = {};
           var modules = resp.modules;
           for (var i = 0; i < modules.length; i++) {
             var m = modules[i];
@@ -932,29 +932,19 @@ define('globals', function() {
             var minIdx = name.indexOf('.min.js');
             name = minIdx == -1 ? name : name.slice(0, minIdx) + '.js';
             G.modules[name] = m.body;
-            newModules[name] = m;
-//              break;
-//            }
-//            newModules.push(m);
-          }
-        }
-      
-        setTimeout(function() {
-          for (var name in newModules) {
-            var m = newModules[name];
+            newModules[getFilePathInStorage(name)] = m.body;
             newModules[getMetadataURL(name)] = {
               dateModified: m.dateModified,
               minified: G.isMinified(name, m.body)
             };
-            
-            newModules[getFilePathInStorage(name)] = m.body; // yes, overwrite
           }
           
-          G.putCached(newModules, {
-            storage: source
-          });
-          
-        }, 100);
+          setTimeout(function() {
+            G.putCached(newModules, {
+              storage: source
+            });          
+          }, 100);
+        }
         
         bundleDfd.resolve();
       };
