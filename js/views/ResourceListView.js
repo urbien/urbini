@@ -23,12 +23,12 @@ define('views/ResourceListView', [
   var defaultSlidingWindowOptions = {
     // <MASONRY INITIAL CONFIG>
     slidingWindow: true,
-    tilt: 'forward',
+//    tilt: 'forward',
 //    gradient: true,
 //    squeeze: false,
     horizontal: false,
 //    fly: true,
-    pop: 'sequential', //other option is 'random'
+//    pop: 'sequential', //other option is 'random'
 //    fade: 'random', //other option is 'sequential'
     animateOpacity: true,
     minBricks: 10,
@@ -36,8 +36,8 @@ define('views/ResourceListView', [
     bricksPerPage: 10,
     averageBrickScrollDim: 80,
     averageBrickNonScrollDim: 80,  
-    minPagesInSlidingWindow: 4,
-    maxPagesInSlidingWindow: 8,
+    minPagesInSlidingWindow: 3,
+    maxPagesInSlidingWindow: 6,
     defaultAddDelta: 1, // in terms of pages
     gutterWidth: 10,
     scrollerType: 'verticalMain'
@@ -46,6 +46,7 @@ define('views/ResourceListView', [
   
   return BasicView.extend({
     // CONFIG
+    _autoFetch: false,
 //    _flexigroup: true,
     _draggable: true,
     _dragAxis: 'y',
@@ -606,6 +607,9 @@ define('views/ResourceListView', [
     * @return a promise
     */
     _addBricks: function(from, to, force) {
+      if (!this._requestMoreTimePlaced)
+        this._requestMoreTimePlaced = _.now();
+      
       if (this._outOfData)
         to = Math.min(to, this.collection.length);
       
@@ -654,8 +658,9 @@ define('views/ResourceListView', [
       }
       else if (from < availableRange[0])
         return this.fetchResources(from, availableRange[0]).then(this._addBricks.bind(this, from, to, force), this._addBricks.bind(this, from, to, true));        
-      else if (availableRange[1] - availableRange[0] < (to - from) * 2)
-        this.prefetch();
+//      else if (availableRange[1] - availableRange[0] < (to - from) * 2)
+      else if (availableRange[1] < to + this.options.bricksPerPage * this.options.minPagesInSlidingWindow)
+        this.prefetch(this.options.bricksPerPage * this.options.minPagesInSlidingWindow);
       
       preRenderPromise = this.preRender(from, to);
       if (_.isPromise(preRenderPromise))
@@ -665,9 +670,9 @@ define('views/ResourceListView', [
     },
     
     _doAddBricks: function(from, to) {
-//      Q.write(function() {
+      Q.write(function() {
         this._doAddBricksFoReal(from, to);
-//      }, this);
+      }, this);
     },
       
     _doAddBricksFoReal: function(from, to) {
@@ -765,8 +770,8 @@ define('views/ResourceListView', [
 //        displayed.to -= removedViews.length;
       }
 
-      if (fromTheHead && this._displayedRange.to - this._displayedRange.to < this.options.bricksPerPage * 2)
-        this.prefetch();
+      if (fromTheHead && this.collection.getRange().to - this._displayedRange.to < this.options.bricksPerPage * this.options.minPagesInSlidingWindow)
+        this.prefetch(this.options.bricksPerPage * this.options.minPagesInSlidingWindow);
       
 //      if (displayed.from > displayed.to) {
 //        debugger;
@@ -774,9 +779,12 @@ define('views/ResourceListView', [
 //      }
     },
     
-    prefetch: function() {
-      var num = this.options.bricksPerPage * 2,
-          total = this.collection.getTotal(),
+    prefetch: function(num) {
+      if (true)
+        return;
+      
+      num = num || this.options.bricksPerPage * this.options.minPagesInSlidingWindow;
+      var total = this.collection.getTotal(),
           availableRange = this.collection.getRange();
       
       if (total)
@@ -884,8 +892,9 @@ define('views/ResourceListView', [
           defer = $.Deferred(),
           nextPagePromise,
           nextPageUrl,
-          limit = Math.max(to - from || this.options.bricksPerPage, 10);
+          limit = Math.max(to - from, this.options.minPagesInSlidingWindow * this.options.bricksPerPage, 10);
       
+      this._pageRequestTimePlaced = _.now();
       nextPagePromise = col.getNextPage({
         params: {
           $offset: from,
@@ -925,9 +934,16 @@ define('views/ResourceListView', [
       
       this._pagingPromise = defer.promise().always(function() {
         self._isPaging = false;
-        if (defer.state() == 'rejected') {
+        if (defer.state() == 'rejected')
           self._outOfData = true;
-        }        
+        else {
+          var time = _.now() - self._requestMoreTimePlaced | 0;
+          self.log((col.length - before) + " bricks took " + time + "ms to fetch");
+//          if (time > 500)
+//            debugger;
+          
+          delete self._pageRequestTimePlaced;
+        }
       }); 
       
       this._pagingPromise._range = 'from: ' + before + ', to: ' + (before + limit);
@@ -1027,8 +1043,8 @@ define('views/ResourceListView', [
         unlazifyImages: !this._scrollable
       });
       
-//      if (!this._itemTemplateElement && this.displayMode == 'masonry') // remove this when we change ResourceListItemView to update DOM instead of replace it
-//        this._itemTemplateElement = liView.el;
+      if (!this._itemTemplateElement && this.displayMode == 'masonry') // remove this when we change ResourceListItemView to update DOM instead of replace it
+        this._itemTemplateElement = liView.el;
         
       return liView;
     },
@@ -1109,9 +1125,9 @@ define('views/ResourceListView', [
     },
 
     postRender: function(from, to, added) {
-//      Q.read(function() {        
+      Q.read(function() {        
         this._doPostRender(from, to, added); // need to get new brick sizes
-//      }, this);
+      }, this);
     },
     
     _doPostRender: function(from, to, added) {
@@ -1151,6 +1167,10 @@ define('views/ResourceListView', [
 
 //      this.log("ADDING BRICK RANGE " + from + "-" + to + ": " + bricks.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
       this.addBricksToWorld(bricks, atTheHead); // mason
+      if (this._requestMoreTimePlaced) {
+        this.log("Bricks took " + (_.now() - this._requestMoreTimePlaced) + " to retrieve");
+        delete this._requestMoreTimePlaced;
+      }
     },
     
     hasMasonry: function() {
