@@ -77,7 +77,7 @@ define('collections/ResourceList', [
       }
       
       try {
-        this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
+        this.belongsInCollection = U.buildValueTester(this.params, this.vocModel) || G.trueFn;
         this._unbreak();
       } catch (err) {
         this.belongsInCollection = G.falseFn; // for example, the where clause might assume a logged in user
@@ -508,7 +508,7 @@ define('collections/ResourceList', [
       if (options.params) {
         _.extend(this.params, options.params);
         try {
-          this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
+          this.belongsInCollection = U.buildValueTester(this.params, this.vocModel) || G.trueFn;
           this._unbreak();
         } catch (err) {
           this.belongsInCollection = G.falseFn; // for example, the where clause might assume a logged in user  
@@ -570,7 +570,7 @@ define('collections/ResourceList', [
       if (limit > 50)
         options.timeout = 5000 + limit * 50;
       
-      params.$limit = limit;
+      options.limit = params.$limit = limit;
       try {
         options.url = this.getUrl(extraParams);
       } catch (err) {
@@ -704,7 +704,8 @@ define('collections/ResourceList', [
           })
         };
         
-        G.whenNotRendering(self.fetch.bind(self, newOptions));
+//        G.whenNotRendering(self.fetch.bind(self, newOptions));
+        self.fetch(newOptions);
       }; 
 
       if (this.offset && !this._outOfData) {
@@ -810,5 +811,6 @@ define('collections/ResourceList', [
     displayName: 'ResourceList'
   });
   
+//  U.toTimedFunction(Backbone.Collection.prototype, 'set');
   return ResourceList;
 });

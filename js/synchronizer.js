@@ -136,7 +136,6 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
     this.options.success = function() {
       G.finishedTask(tName);
       self.data.lastFetchOrigin = 'server';
-      self._success.apply(self.data, arguments);
     }
     
     return Backbone.defaultSync(this.method, this.data, this.options);

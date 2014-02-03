@@ -98,9 +98,11 @@ define('vocManager', [
       return linkedModels;
     },
     
-    fetchLinkedAndReferredModels: function(listOrRes) {
-      G.whenNotRendering(fetchLinkedAndReferredModels.bind(null, listOrRes));
-    },
+//    fetchLinkedAndReferredModels: function(listOrRes) {
+//      G.whenNotRendering(fetchLinkedAndReferredModels.bind(null, listOrRes));
+//    },
+    
+    fetchLinkedAndReferredModels: fetchLinkedAndReferredModels,
 
     detectReferredModels: function(list) {      
       var resources = U.isCollection(list) ? list.models : _.isArray(list) ? list : [list];
