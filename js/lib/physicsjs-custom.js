@@ -2150,8 +2150,8 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
          * @return {void}
          */
         init: function( options ){
-
-            var vector = Physics.vector;
+            var body = this,
+                vector = Physics.vector;
 
             this.options = Physics.util.extend({}, defaults, options);
 
@@ -2213,7 +2213,6 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
             }
             
             Physics.util.extend(this.state.renderData, {
-              body: this,
               changed: [],
               json: {
                 opacity: 0,
@@ -2276,7 +2275,7 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
                 }
               },
               getChanges: function(clone) {
-                if (!this.body.rendered())
+                if (!body.rendered())
                   return this.toJSON(clone);
                 
                 var i = this.changed.length,
