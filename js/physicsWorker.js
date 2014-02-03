@@ -408,6 +408,13 @@ function executeRPC(rpc) {
       return unsubscribe.apply(obj, args);
   }
   
+  if (obj instanceof LayoutManager) {
+    if (obj._requestLessTimePlaced) {
+      obj.log("Bricks took " + (Physics.util.now() - obj._requestLessTimePlaced) + "ms to remove");
+      delete obj._requestLessTimePlaced;
+    }
+  }
+  
 //  log("RPC " + method + (args ? args.join(",") : ''));
   if (callbackId)
     args.push(callbackId);
@@ -721,7 +728,9 @@ function Action(options) {
         log("Canceled action: " + (this.name || this.type));
         unsubscribe();
         if (this.oncancel)
-          this.oncancel.apply(null, arguments);
+          this.oncancel.apply(this, arguments);
+        
+        this.cleanup(); // prevent memory leak via circular reference endSnap -> action -> endSnap         
       }
     },
     complete: function() {
@@ -731,9 +740,14 @@ function Action(options) {
 //        world.unsubscribe('step', onstep);
         unsubscribe();
         if (this.oncomplete)
-          this.oncomplete.apply(null, arguments);
+          this.oncomplete.apply(this, arguments);
         
+        this.cleanup(); // prevent memory leak via circular reference endSnap -> action -> endSnap         
       }
+    },
+    cleanup: function() {
+      delete this.oncancel;
+      delete this.oncomplete;
     }
   });
   
@@ -1178,6 +1192,29 @@ function initWorld(_world, stepSelf) {
 	  Physics.util.ticker.subscribe(API.step);
 	
 	Physics.util.extend(Physics.util, {
+    removeFromTo: function(array, fromIdx, toIdx) {
+      var howMany = toIdx - fromIdx;
+      for (var i = fromIdx, len = array.length - howMany; i < len; i++) {
+        array[i] = array[toIdx++];
+      }
+  
+      array.length = len;
+      return array;
+    },
+	  pick: function(obj) {
+	    var copy = {};
+	    var keys = concat.apply(ArrayProto, slice.call(arguments, 1)),
+	        key,
+	        i = keys.length;
+	    
+	    while (i--) {
+	      key = keys[i];
+	      if (key in obj) 
+	        copy[key] = obj[key];
+	    }
+	    
+	    return copy;
+	  },
     negate: function(fn, context) {
       return function() {
         return !fn.apply(context || this, arguments);
@@ -1535,22 +1572,6 @@ function getRectVertices(width, height) {
 
 /** END Event system hack **/
 
-function pick(obj) {
-  var copy = {};
-  var keys = concat.apply(ArrayProto, slice.call(arguments, 1)),
-      key,
-      i = keys.length;
-  
-  while (i--) {
-    key = keys[i];
-    if (key in obj) 
-      copy[key] = obj[key];
-  }
-  
-  return copy;
-};
-
-
 // START LAYOUT MANAGER
 //(function(root) {
   var defaultSlidingWindowOptions = {
@@ -1610,7 +1631,7 @@ function pick(obj) {
       options.gutterWidthHorizontal = options.gutterWidthVertical = options.gutterWidth;
     
     Physics.util.extend(this, Physics.util.clone(defaultSlidingWindowOptions, true), options);
-    this.options = pick(options, 'minPagesInSlidingWindow', 'maxPagesInSlidingWindow');
+    this.options = Physics.util.pick(options, 'minPagesInSlidingWindow', 'maxPagesInSlidingWindow');
 
     this.masonryOptions = {};
     this.init();
@@ -1674,7 +1695,7 @@ function pick(obj) {
 
       if (this.flexigroup) {
         this.flexigroupOffset = -100000;
-        this.flexigroupId = this.container;
+        this.flexigroupId = this.flexigroup;
         masonryOptions.flexigroup = this.flexigroup = getBody(this.flexigroupId);
         this.flexigroup.mass = 10000;
         this.flexigroup.state.pos.setComponent(this.axisIdx, this.flexigroupOffset);
@@ -1713,7 +1734,7 @@ function pick(obj) {
         this.setBounds(this.bounds); // convert to Physics AABB
       
       this._calcSlidingWindowDimensionRange();
-      Physics.util.extend(masonryOptions, pick(this, 'bounds', 'horizontal', 'oneElementPerRow', 'oneElementPerCol', 'gutterWidthHorizontal', 'gutterWidthVertical'));
+      Physics.util.extend(masonryOptions, Physics.util.pick(this, 'bounds', 'horizontal', 'oneElementPerRow', 'oneElementPerCol', 'gutterWidthHorizontal', 'gutterWidthVertical'));
       if (this.oneElementPerRow || this.oneElementPerCol)
         this.averageBrickNonScrollDim = this.pageNonScrollDim;
         
@@ -2168,7 +2189,7 @@ function pick(obj) {
       bodyY = body.state.pos.get(1);// + aabb._hh,
       if (!this.flexigroup) {
         bodyX += this.offsetBody.state.pos.get(0); 
-        bodyY += this.offsetBody.state.pos.get(1) + this.gutterWidthVertical * scaleRatio; // HACK: not sure why it's off-center vertically
+        bodyY += this.offsetBody.state.pos.get(1);// + this.gutterWidthVertical * scaleRatio; // HACK: not sure why it's off-center vertically
       }
       
       this.offsetBody.fixed = true;
@@ -2465,13 +2486,11 @@ function pick(obj) {
     },
     
     _getInfo: function() {
-      return {
-        minBricks: this.minBricks,
-        maxBricks: this.maxBricks
-      };
+      return Physics.util.pick(this, 'minBricks', 'maxBricks', 'minSlidingPagesInWindow', 'maxSlidingPagesInWindow', 'bricksPerPage');
     },
     
     requestMore: function(n, atTheHead) {
+      this._requestMoreTimePlaced = Physics.util.now();
       if (this._waiting)
         return;
       
@@ -2497,6 +2516,7 @@ function pick(obj) {
       if (this._waiting)
         return;
       
+      this._requestLessTimePlaced = Physics.util.now();
       this._waiting = true;
       triggerEvent(this._callbackId, {
         type: 'less',
@@ -2602,7 +2622,7 @@ function pick(obj) {
 //        pos._[this.axisIdx] = viewport.min + viewportDim * percentOffset;
 //        pos._[this.axisOrthoIdx] = this.bounds._pos.get(this.orthoAxisIdx) + this.bounds[this.aabbOrthoAxisDim] - aabb[this.aabbOrthoAxisDim] * 2;
 //        pos.set.apply(pos, pos._);
-        opacity = Math.max(Math.min(MAX_OPACITY, Math.pow(vel, 0.33), currentOpacity + OPACITY_INC),
+        opacity = Math.max(Math.min(MAX_OPACITY, Math.abs(vel), currentOpacity + OPACITY_INC),
                                                                       currentOpacity - OPACITY_INC/2);
         
         if (Math.abs(opacity - currentOpacity) > 0.01) {
@@ -2906,8 +2926,8 @@ function pick(obj) {
       this.maxSlidingWindowDimension = this.pageScrollDim * this.maxPagesInSlidingWindow;
 //      var slidingWindowDim = Math.max(this.slidingWindowDimension, (this.maxSlidingWindowDimension + this.minSlidingWindowDimension) / 2);
 //      this.slidingWindowInsideBuffer = slidingWindowDim / 2; // how far away the viewport is from the closest border of the sliding window before we start to fetch more resources
-      this.slidingWindowInsideBuffer = this.minSlidingWindowDimension - this.getViewportDimension();
-      this.slidingWindowOutsideBuffer = this.slidingWindowInsideBuffer;
+      this.slidingWindowInsideBuffer = this.minSlidingWindowDimension; // - this.getViewportDimension();
+      this.slidingWindowOutsideBuffer = this.slidingWindowInsideBuffer - this.getViewportDimension();
 //      this.slidingWindowOutsideBuffer = Math.max(slidingWindowDim / 5, this.slidingWindowInsideBuffer / 2); // how far away the viewport is from the closest border of the sliding window before we need to adjust the window
     },
     
@@ -2938,6 +2958,7 @@ function pick(obj) {
     },
     
     addBricks: function(optionsArr, prepend) {
+      this.log("Bricks took " + (Physics.util.now() - this._requestMoreTimePlaced) + "ms to arrive");
       this.lastDirection = prepend ? 'head' : 'tail';
       this.checkRep();
       var numBefore = this.numBricks(),
@@ -3394,15 +3415,15 @@ function pick(obj) {
 //          return this.requestNewRange(range);
           return this.requestMore(toAdd);
         }
-        else {
+//        else {
 //          if (this.brickLimit == Infinity) {
 //            var toAdd = Math.min(maxAppend, defaultAddDelta);
 //            this.log("DECISION: prefetching " + toAdd + " items");
 //            this.prefetch(toAdd, false); // add sth similar for head
 //          }
 //          else
-            this.log("DECISION: not doing anything to sliding window");
-        }
+//            this.log("DECISION: not doing anything to sliding window");
+//        }
 //        else if (this.brickLimit - range.to < this.bricksPerPage * 2) /// doesn't make any sense because if brick limit is set, we already have all those resources in the main thread, no need to fetch them from anywhere
 //          this.prefetch();
       }

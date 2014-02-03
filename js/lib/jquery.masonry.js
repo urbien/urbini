@@ -454,7 +454,8 @@
 
     removedFromHead: function(n, bricks) {
 //      this.bricks = difference(this.bricks, bricks);
-      this.bricks = this.bricks.slice(Math.min(this.bricks.length, n), this.bricks.length);
+//      this.bricks = this.bricks.slice(Math.min(this.bricks.length, n), this.bricks.length);
+      Physics.util.removeFromTo(this.bricks, 0, n);
       var dimensionMethod = this.options.horizontal ? '_getOuterWidth' : '_getOuterHeight',
           gutterWidth = this.getGutterWidth(),
           i = bricks.length,
