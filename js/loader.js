@@ -1059,7 +1059,7 @@ define('globals', function() {
         bg: '#000'
       },
       db: {
-        on: false,
+        on: true,
         color: '#FFFFFF',
         bg: '#000'
       },
@@ -1224,9 +1224,9 @@ define('globals', function() {
     putCached: function(urlToData, options) {
       var args = arguments;
       return G.onAppStart(function() {
-        return G.whenNotRendering(function() {
+//        return G.whenNotRendering(function() {
           putCached.apply(null, args);
-        });
+//        });
       });
     },
     

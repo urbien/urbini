@@ -36,8 +36,8 @@ define('resourceManager', [
        */
       MAX_DATA_AGE = G.MAX_DATA_AGE,
       IDB = IndexedDBModule.getIDB(G.serverName, {
-//        defaultStoreOptions: {keyPath: '_uri', autoIncrement: false},
-        defaultStoreOptions: {keyPath: '_defaultIndex', autoIncrement: true},
+        defaultStoreOptions: {keyPath: '_uri', autoIncrement: false},
+//        defaultStoreOptions: {keyPath: '_defaultIndex', autoIncrement: true},
         defaultIndexOptions: {unique: false, multiEntry: false},
         filePropertyName: G.storeFilesInFileSystem ? '_filePath' : null,
         fileTypePropertyName: G.storeFilesInFileSystem ? '_contentType' : null
@@ -317,9 +317,9 @@ define('resourceManager', [
   
   Events.on('updatedResources', function(resources) {
     if (resources.length) {
-      G.whenNotRendering(function() {
+//      G.whenNotRendering(function() {
         Q.nonDom(RM.addItems.bind(RM, resources));
-      });
+//      });
     }
   });
 

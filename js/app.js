@@ -294,44 +294,44 @@ define('app', [
     });
   }
 
-  function setupAvailibilityMonitor(dont) {
-    function run(fn, context) {
-      if (context)
-        fn.call(context);
-      else
-        fn();
-    }
-    
-    if (dont) {
-      // run everything right away
-      G.whenNotRendering = run;
-      return;
-    }
-    
-    var dfd, promise;
-    
-    function reset() {
-      var oldDfd = dfd,
-          oldPromise = promise;
-      
-      dfd = $.Deferred();
-      promise = dfd.promise();
-      
-      if (oldDfd)
-        Events.off('pageChange', oldDfd.resolve);
-      
-      Events.once('pageChange', dfd.resolve);
-      if (oldPromise && oldPromise.state() === 'pending')
-        promise.then(oldDfd.resolve);
-
-    }
-    
-    reset();
-    Events.on('changingPage', reset);
-    G.whenNotRendering = function(fn, context) {
-      return promise.then(run.bind(null, fn, context));
-    };
-  }
+//  function setupAvailibilityMonitor(dont) {
+//    function run(fn, context) {
+//      if (context)
+//        fn.call(context);
+//      else
+//        fn();
+//    }
+//    
+//    if (dont) {
+//      // run everything right away
+//      G.whenNotRendering = run;
+//      return;
+//    }
+//    
+//    var dfd, promise;
+//    
+//    function reset() {
+//      var oldDfd = dfd,
+//          oldPromise = promise;
+//      
+//      dfd = $.Deferred();
+//      promise = dfd.promise();
+//      
+//      if (oldDfd)
+//        Events.off('pageChange', oldDfd.resolve);
+//      
+//      Events.once('pageChange', dfd.resolve);
+//      if (oldPromise && oldPromise.state() === 'pending')
+//        promise.then(oldDfd.resolve);
+//
+//    }
+//    
+//    reset();
+//    Events.on('changingPage', reset);
+//    G.whenNotRendering = function(fn, context) {
+//      return promise.then(run.bind(null, fn, context));
+//    };
+//  }
   
   function hashToResourceOrList(hash) {
     var hashInfo = U.getUrlInfo(hash),
@@ -549,7 +549,7 @@ define('app', [
     setupWidgetLibrary();
     setupPackagedApp();
     setupUser();
-    setupAvailibilityMonitor();
+//    setupAvailibilityMonitor();
     setupCleaner();
     prepDB();
     var localized = localize();
@@ -925,7 +925,8 @@ define('app', [
     initialize: function() {            
       var self = this;
       doPreStartTasks().always(function() {
-        G.whenNotRendering(doPostStartTasks);
+//        G.whenNotRendering(doPostStartTasks);
+        doPostStartTasks();
         startApp().always(function() {
           Events.trigger('appStart');
         });

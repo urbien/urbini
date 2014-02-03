@@ -506,12 +506,12 @@ define('router', [
         cachedView.setMode(mode || G.LISTMODES.LIST);
         this.changePage(cachedView, _.extend({page: page}));
         Events.trigger('navigateToList:' + list.listId, list);
-        G.whenNotRendering(function() {
+//        G.whenNotRendering(function() {
           list.fetch({
             page: page, 
             forceFetch: forceFetch
           });
-        });
+//        });
         
         this.monitorCollection(list);
 //        setTimeout(function() {c.fetch({page: page, forceFetch: forceFetch})}, 100);
@@ -1082,9 +1082,9 @@ define('router', [
         
         this.changePage(view);
         Events.trigger('navigateToResource:' + res.resourceId, res);
-        G.whenNotRendering(function() {
+//        G.whenNotRendering(function() {
           res.fetch({forceFetch: forceFetch});
-        });
+//        });
         
         if (wasTemp && !isTemp)
           this.navigate(U.makeMobileUrl(action, newUri), {trigger: false, replace: true});

@@ -3000,13 +3000,15 @@ define('utils', [
         }
       });
       
-      return function(val) {
-        for (var i = 0; i < rules.length; i++) {
-          if (!rules[i](val))
-            return false;
+      if (rules.length) {
+        return function(val) {
+          for (var i = 0; i < rules.length; i++) {
+            if (!rules[i](val))
+              return false;
+          }
+          
+          return true;
         }
-        
-        return true;
       }
     },
     
@@ -3744,7 +3746,12 @@ define('utils', [
         return G.getResolvedPromise();
       else {
         var dfd = $.Deferred();
-        return dfd.resolve.apply(dfd, concat.apply(ArrayProto, slice.call(arguments))).promise();
+        switch (arguments.length) { // small optimizations to avoid creating arrays
+          case 1: return dfd.resolve.call(dfd, arguments[0]);
+          case 2: return dfd.resolve.call(dfd, arguments[0], arguments[1]);
+          case 3: return dfd.resolve.call(dfd, arguments[0], arguments[1], arguments[2]);
+          default: return dfd.resolve.apply(dfd, concat.apply(ArrayProto, slice.call(arguments))).promise();
+        }
       }
     },
     
@@ -3839,20 +3846,40 @@ define('utils', [
     },
     
     toTimedFunction: function(obj, name, thresh) {
-      var fn = obj[name];
-      return function() {
+      var fn = name ? obj[name] : obj;
+      function timed() {
         var now = _.now(),
-            frame = window.fastdom.frameNum;
+            frame = window.fastdom.frameNum,
+            result,
+            time;
         
-        try {
-          return fn.apply(this, arguments);
-        } finally {
-          var time = _.now() - now;
+        function measure() {
+          time = _.now() - now;
           if (!thresh || time > thresh)
-            console.log("function", name, "took", time, "millis", window.fastdom.frameNum - frame, "frames");
-        }
+            console.log("function", name, "took", time, "millis", window.fastdom.frameNum - frame, "frames");          
+        };
+        
+        result = fn.apply(this, arguments);
+        if (_.isPromise(result))
+          result.always(measure);
+        else
+          measure();
+        
+        return result;
       };
+      
+      if (name)
+        obj[name] = timed;
+      
+      return timed;
     },
+    
+//    arrayFnProxy: function(arrayFn, fn, objOrArray) {
+//      if (objOrArray instanceof Array)
+//        return objOrArray[arrayFn](fn);
+//      else
+//        return fn(objOrArray);
+//    },
     
     dataURLToBlob: function(dataURL) {
       var BASE64_MARKER = ';base64,',

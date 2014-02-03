@@ -410,7 +410,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           }
           
           if (typeof htmlOrFrag == 'string')
-            htmlOrFrag = $.parseHTML(htmlOrFrag);
+            htmlOrFrag = DOM.parseHTML(htmlOrFrag);
           
           (htmlOrFrag instanceof Array) ? htmlOrFrag[0].$before(this.firstChild) : htmlOrFrag.$before(this.firstChild);
 //           htmlOrFrag.$before(this.firstChild);
@@ -423,7 +423,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
         for (var i = 0; i < arguments.length; i++) {
           var htmlOrFrag = arguments[i];
           if (typeof htmlOrFrag == 'string')
-            this.$append($.parseHTML(htmlOrFrag));
+            this.$append(DOM.parseHTML(htmlOrFrag));
           else if (htmlOrFrag instanceof Node)
             this.appendChild(htmlOrFrag);
           else if (htmlOrFrag instanceof Array || htmlOrFrag instanceof NodeList) {
@@ -1231,7 +1231,10 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     maxOpacity: MAX_OPACITY,
     
     parseHTML: function(html) {
-      return $.parseHTML(html.trim());
+//      return $.parseHTML(html.trim());
+      var tmp = document.implementation.createHTMLDocument();
+      tmp.body.innerHTML = html;
+      return tmp.body.children;
     },
     
     /**
