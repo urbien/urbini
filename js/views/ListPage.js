@@ -8,8 +8,9 @@ define('views/ListPage', [
   'views/BasicPageView',
   'views/ResourceListView', 
   'views/Header',
-  'lib/fastdom'
-], function(G, Events, U, Errors, Voc, BasicPageView, ResourceListView, Header, Q) {
+  'lib/fastdom',
+  'domUtils'
+], function(G, Events, U, Errors, Voc, BasicPageView, ResourceListView, Header, Q, DOM) {
   var MapView,
       SPECIAL_INTERSECTIONS = [G.commonTypes.Handler, G.commonTypes.Friend, U.getLongUri1('model/social/NominationForConnection') /*, commonTypes.FriendApp*/];
   
@@ -22,7 +23,7 @@ define('views/ListPage', [
 //    viewType: 'collection',
     template: 'resource-list',
     clicked: false,
-    autoFetch: false,
+    _autoFetch: false,
     autoFinish: false,
     _draggable: false,
     _scrollbar: false, 
@@ -41,7 +42,7 @@ define('views/ListPage', [
       'background-position': '0 50%'
     },
     initialize: function(options) {
-      _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'setMode', /*'orientationchange',*/ 'onFilter');
+      _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'setMode', /*'orientationchange',*/ 'onFilter', '_buildMockViewPage', '_getViewPageImageInfo');
       BasicPageView.prototype.initialize.apply(this, arguments);
       this.mode = options.mode || G.LISTMODES.DEFAULT;
 //      this.options = _.pick(options, 'checked', 'props');
@@ -195,7 +196,9 @@ define('views/ListPage', [
 //      
 //      this.listenTo(filtered, 'reset', function() {
 //        self.pageView.trigger('newList');
-//      });      
+//      });
+      
+//      this.onload(this.buildMockViewPage, this);
     },
     
     setMode: function(mode) {
@@ -439,6 +442,62 @@ define('views/ListPage', [
 //      this.addToWorld(null, true);
       this.finish();
       return this;
+    },
+    
+    buildMockViewPage: function() {
+      var self = this,
+          imgRes;
+          
+      if (!this.mockViewPage && U.isA(this.vocModel, 'ImageResource'))
+        $.when(U.require('views/ViewPage'), this.getFetchPromise()).done(function(ViewPage) {
+          if (imgRes = self.collection.find(function(res) { return !!res.get('ImageResource.mediumImage') }))
+            self._buildMockViewPage(ViewPage, imgRes);
+        });
+    },
+    
+    _buildMockViewPage: function(ViewPage, imgRes) {
+      var self = this,
+          img,
+          vpInfo;
+      
+      this.mockViewPage = new ViewPage({
+        style: {
+          opacity: DOM.maxOpacity
+        },
+        mock: true,
+        model: imgRes
+      });
+      
+      this.mockViewPage.render({
+        mock: true,
+        force: true
+      });
+      
+      this.mockViewPage.onLoadedImage(function() {        
+        img = this.mockViewPage.$('#resourceImage img')[0];
+        this._viewPageImg = img;
+        if (img)
+          this._getViewPageImageInfo();
+        else
+          debugger; // should never happen
+      }, this);
+    },
+    
+    _getViewPageImageInfo: function() {
+      var offset = this._viewPageImg.$offset();
+      if (!offset.top)
+        return setTimeout(this._getViewPageImageInfo, 50);
+        
+      this.viewPageInfo = {
+        imageTop: offset.top,
+        imageLeft: offset.left
+      };
+      
+      this.mockViewPage.destroy();
+    },
+    
+    getViewPageInfo: function() {
+      return this.viewPageInfo;
     }
   }, {
     displayName: 'ListPage'
