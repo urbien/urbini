@@ -1088,17 +1088,19 @@ define('views/BasicView', [
     },
 
     getBodyId: function() {
-//      return this.cid + '.' + this._initializedCounter;
       return this.cid;
     },
 
     getContainerBodyId: function() {
-//      return this.TAG + '.' + this.cid + '.' + this._initializedCounter;
       return this.TAG + '.' + this.cid;
     },
 
+    getFlexigroupId: function() {
+      return 'flexigroup.' + this.cid;
+    },
+
     addDraggable: function() {
-      Physics.addDraggable(this.hammer(), this.getContainerBodyId(), this._dragAxis);
+      Physics.addDraggable(this.hammer(), this._flexigroup ? this.getFlexigroupId() : this.getContainerBodyId(), this._dragAxis);
     },
 
     _updateSize: function() {
@@ -1194,7 +1196,7 @@ define('views/BasicView', [
         container: containerId,
         scrollbar: scrollbarId, 
         bounds: this._bounds,
-        flexigroup: this._flexigroup ? containerId : false,
+        flexigroup: this._flexigroup ? this.getFlexigroupId() : false,
         scrollerType: this._scrollerType
       });
 
@@ -1297,11 +1299,12 @@ define('views/BasicView', [
       }
       
       if (this._flexigroup) {
-        // Physics.
+         Physics.there.addBody('point', _.defaults({
+           _id: this.getFlexigroupId()
+         }, this.getContainerBodyOptions()));
       }
-      else
-        Physics.here.addBody(this.el, id);
       
+      Physics.here.addBody(this.el, id);      
       Physics.there.chain(chain);
       
 //      Physics.there.addBody('point', this.getContainerBodyOptions(), id);
