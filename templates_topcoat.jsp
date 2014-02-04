@@ -56,14 +56,24 @@
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
   <div id="resourceViewHolder">
-    <div style="width: 100%;position:relative;min-height:40px;padding-right:10px;overflow:hidden">
-      <div id="resourceImage" style="width:50%;float:left;margin:0; padding:0;{{= U.getArrayOfPropertiesWith(this.vocModel.properties, "mainGroup") &&  U.isA(this.vocModel, 'ImageResource') ? 'min-height:210px;' : ''}}" ><!-- style="width:auto" --></div>
-      <div id="mainGroup" style="top:0;right:1.3rem;"></div>
+    <div style="width: 100%;position:relative;min-height:40px;overflow:hidden">
+      {{ if (this.isImageCover) { }} 
+        <div id="resourceImage" style="position:absolute;z-index:1"></div>
+        <div data-role="footer" data-theme="{{= G.theme.photogrid }}" class="thumb-gal-header hidden" 
+          style="opacity:0.7;position:absolute;top:314px;width:100%;background:#eee;text-shadow:none;color:{{= G.coverImage.background }}"><h3></h3></div>    
+        <div id="mainGroup" style="top:125px;right:0.3rem;position:absolute;"></div>
+      {{ } }}
+      {{ if (!this.isImageCover) { }}
+        <div id="resourceImage" style="margin:0; padding:0;{{= U.getArrayOfPropertiesWith(this.vocModel.properties, "mainGroup") &&  U.isA(this.vocModel, 'ImageResource') ? 'min-height:110px;' : ''}}" ><!-- style="width:auto" --></div>
+        <div id="mainGroup" style="top:0px;right:1.3rem;position:absolute;"></div>
+      {{ } }}
       <!--div id="buyGroup" class="ui-block-b" style="width:50%; min-width: 130px"></div-->
     </div>
     <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
     
-    <div data-role="footer" data-theme="{{= G.theme.photogrid }}" class="thumb-gal-header hidden"><h3></h3></div>    
+    {{ if (!this.isImageCover) { }}
+      <div data-role="footer" data-theme="{{= G.theme.photogrid }}" class="thumb-gal-header hidden"><h3></h3></div>    
+    {{ } }}
     <div id="photogrid" data-inset="true" data-filter="false" class="thumb-gal hidden"></div>
     {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
        <div style="text-align:center;width:100%;padding-bottom:0.5rem">
@@ -162,20 +172,21 @@
  {{ var params = {}; }}
  {{ params[backlink] = _uri; }}
  <div style="width:100%;padding:5px;">
-  <button class="topcoat-button--cta" style="width:95%;border:1px solid {{= borderColor }}; background-color: {{= color }}">
  {{ if (!obj.value  &&  !obj.chat) { }}  
    <a data-shortName="{{= shortName }}" data-title="{{= title }}" href="#">
-     <span><i class="{{= icon }}"></i>&#160;{{= name }}</span>
+	   <button class="topcoat-button--cta" style="cursor:pointer; width:95%;border:1px solid {{= borderColor }}; background-color: {{= color }}">
+	     <span><i class="{{= icon }}"></i>&#160;{{= name }}</span>
+	   </button>  
    </a>
  {{ } }}
  {{ if (obj.value || obj.chat) { }}  
    <a data-propName="{{= shortName }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" style="width:95%;">
-     <span><i class="{{= icon }}"></i>&#160;{{= name }}</span>
-     
-     {{= obj.value ? '<div style="display:inline-block;position:absolute;top:-35%;right:1px"><span class="counter" style="padding:1px 5px;background:#EEF;border-radius:1rem;font-size:1.2rem;">' + value + '</span></div>' :  ''  }}
+     <button class="topcoat-button--cta" style="width:95%;border:1px solid {{= borderColor }}; background-color: {{= color }}">
+       <span><i class="{{= icon }}"></i>&#160;{{= name }}</span>
+       {{= obj.value ? '<div style="display:inline-block;position:absolute;top:-35%;right:1px"><span class="counter" style="padding:1px 5px;background:#EEF;border-radius:1rem;font-size:1.2rem;">' + value + '</span></div>' :  ''  }}
+    </button>
    </a>
  {{ } }}
- </button></div>
  </script>
 
 <script type="text/template" id="cpMainGroupTemplateH">
@@ -204,7 +215,7 @@
   {{ var action = action ? action : 'view' }}
   <div style="margin:0" data-viewid="{{= viewId }}">
   {{ if (!obj.v_submitToTournament) { }}
-    <div style="padding-left: 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
+    <div style="padding-left: 90px; {{= obj.image ? 'min-height:59px;' : '' }}" data-uri="{{= U.makePageUrl(action, _uri) }}">
   {{ } }}
   {{ if (obj.v_submitToTournament) { }}
     <div style="padding-left: 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
@@ -264,7 +275,7 @@
 
 <script type="text/template" id="propGroupsDividerTemplate">
   <!-- row divider / property group header in resource view -->
-  <li class="topcoat-list__header"><h3>{{= value }}</h3></li>
+  <li class="topcoat-list__header" {{= G.coverImage ? 'style="text-shadow:none;background:' + G.coverImage.color + ';color: ' + G.coverImage.background + ';"' : '' }}><h3>{{= value }}</h3></li>
 </script>
 
 <script type="text/template" id="mapItButtonTemplate">
@@ -414,40 +425,40 @@
   <div id="buttons">  
     {{= this.categories ? '<div style="margin:10px 0 0 10px; float:left"><a id="categories" href="#"><i class="ui-icon-tags"></i></a></div>' : '' }} 
     {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
-    <div id="name" class="resTitle" {{= this.categories ? 'style="width: 100%;background:#757575;"' : 'style="min-height: 20px;background:#757575;"' }} align="center">
-      <h4 id="pageTitle" style="font-weight:normal;">{{= this.title }}</h4>
+    <div id="name" class="resTitle" style="background:{{= G.coverImage ? G.coverImage.background : '#757575' }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
+      <h4 id="pageTitle" style="font-weight:normal;color:{{= G.coverImage ? G.coverImage.color : ''}}">{{= this.title }}</h4>
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
-        <button style="max-width:200px; display: inline-block;" id="doTryBtn" class="topcoat-button--cta">
+        <button style="max-width:200px; display: inline-block;{{= G.coverImage ? 'background-color:' + G.coverImage.color + ';color:' + G.coverImage.background : ''}}" id="doTryBtn" class="topcoat-button--cta">
           {{ if (obj.tryApp) { }}
               {{= tryApp }}
           {{ } }}
         </button>
-        <button style="max-width:200px; display: inline-block;" id="forkMeBtn" class="topcoat-button--cta">
+        <button style="max-width:200px; display: inline-block;{{= G.coverImage ? 'background-color:' + G.coverImage.color + ';color:' + G.coverImage.background : ''}}" id="forkMeBtn" class="topcoat-button--cta">
           {{ if (obj.forkMeApp) { }}
               {{= forkMeApp }}
           {{ } }}
         </button>
-        <button style="max-width:400px;" id="publishBtn" class="headerSpecialBtn topcoat-button--cta">
+        <button style="max-width:400px;{{= G.coverImage ? 'background-color:' + G.coverImage.color + ';color:' + G.coverImage.background : ''}}" id="publishBtn" class="headerSpecialBtn topcoat-button--cta">
           {{ if (obj.publishApp) { }}
               {{= publish }}
           {{ } }}
         </button>
-        <button style="max-width:200px;" id="testPlugBtn" class="headerSpecialBtn topcoat-button--cta">
+        <button style="max-width:200px;{{= G.coverImage ? 'background-color:' + G.coverImage.color + ';color:' + G.coverImage.background : ''}}" id="testPlugBtn" class="headerSpecialBtn topcoat-button--cta">
           {{ if (obj.testPlug) { }}
               {{= testPlug }}
           {{ } }}
         </button>
-        <button style="max-width:200px;" id="installAppBtn"  class="headerSpecialBtn topcoat-button--cta">
+        <button style="max-width:200px;{{= G.coverImage ? 'background-color:' + G.coverImage.color + ';color:' + G.coverImage.background : ''}}" id="installAppBtn"  class="headerSpecialBtn topcoat-button--cta">
           {{ if (obj.installApp) { }}
             {{= installApp }}
           {{ } }}
         </button>
-        <button style="max-width:320px;" id="enterTournamentBtn" class="headerSpecialBtn topcoat-button--cta">
+        <button style="max-width:320px;{{= G.coverImage ? 'background-color:' + G.coverImage.color + ';color:' + G.coverImage.background : ''}}" id="enterTournamentBtn" class="headerSpecialBtn topcoat-button--cta">
           {{ if (obj.enterTournament) { }}
               {{= enterTournament }}
           {{ } }}
         </button>
-        <button style="max-width:320px;" id="resetTemplateBtn" class="headerSpecialBtn topcoat-button--cta">
+        <button style="max-width:320px;{{= G.coverImage ? 'background-color:' + G.coverImage.color + ';color:' + G.coverImage.background + ';color:' + G.coverImage.background : ''}}" id="resetTemplateBtn" class="headerSpecialBtn topcoat-button--cta">
           {{ if (obj.resetTemplate) { }}
               {{= resetTemplate }}
           {{ } }}
@@ -550,7 +561,7 @@
 <!--div id="headerMessageBar"></div-->
   <div id="headerDiv"></div>
   <div id="resourceEditView">
-  <div id="resourceImage"></div>
+  <!-- div id="resourceImage"></div -->
   <form data-ajax="false" id="{{= viewId + '_editForm'}}" action="#">
   <ul id="fieldsList" class="editList topcoat-list__container">
   </ul>
@@ -713,7 +724,6 @@
   <input id="{{= id }}" class="i-txt topcoat-text-input" name="{{= shortName }}" {{= rules }} data-mini="true" value="{{= value }}" />
   <!--input type="hidden" id="{{= id + '.hidden' }}" name="{{= shortName }}" {{= rules }} data-mini="true" /-->
 </script>
-
 </div>
 
 

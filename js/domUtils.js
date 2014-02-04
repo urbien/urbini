@@ -422,11 +422,13 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       $append: function(/* htmlOrFrag, htmlOrFrag, ... */) {
         for (var i = 0; i < arguments.length; i++) {
           var htmlOrFrag = arguments[i];
-          if (typeof htmlOrFrag == 'string')
+          if (typeof htmlOrFrag == 'string') {
             this.$append(DOM.parseHTML(htmlOrFrag));
+            continue;
+          }
           else if (htmlOrFrag instanceof Node)
             this.appendChild(htmlOrFrag);
-          else if (htmlOrFrag instanceof Array || htmlOrFrag instanceof NodeList) {
+          else if (htmlOrFrag instanceof Array || htmlOrFrag instanceof NodeList || htmlOrFrag instanceof HTMLCollection) {
             for (var j = 0; j < htmlOrFrag.length; j++) {
               this.appendChild(htmlOrFrag[j]);
             }

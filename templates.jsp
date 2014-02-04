@@ -511,7 +511,7 @@
 <script type="text/template" id="stringPT">
   <!-- Left-side slide-out menu panel -->
   {{ if (obj.value  &&  value.indexOf('<span') == -1) { }}
-     <div data-prop="{{= prop.shortName }}" style="white-space: normal;font-size:16px;">{{= value }}</div>
+     <div style="white-space: normal;font-size:16px;">{{= value }}</div>
   {{ } }}
   {{ if (obj.value  &&  value.indexOf('<span') != -1) { }}
     {{= value }}
@@ -617,7 +617,7 @@
   {{ var action = action ? action : 'view' }}
   <div class="ui-btn-inner ui-li ui-li-has-thumb" data-viewid="{{= viewId }}">
   {{ if (!obj.v_submitToTournament) { }}
-    <div class="ui-btn-text" style="padding:0.7em 10px 10px 90px;min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
+    <div class="ui-btn-text" style="padding:0.7em 10px 10px 90px;{{= obj.image ? 'min-height:59px;' : '' }}" data-uri="{{= U.makePageUrl(action, _uri) }}">
   {{ } }}
   {{ if (obj.v_submitToTournament) { }}
     <div class="ui-btn-text" style="padding:0em 10px 0 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">

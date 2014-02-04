@@ -567,6 +567,11 @@ define('app', [
 //        getAppAccounts().always(loadModels);
     Voc.checkUser();
     G.checkVersion();
+    if (G.coverImage) {
+      G.coverImage.color = U.colorLuminance("#" + G.coverImage.lightColor.toString(16), 0.4);
+      G.coverImage.background = "#" + G.coverImage.darkColor.toString(16);
+    }
+
     Templates.loadTemplates();
     extendMetadataKeys();
     setupNetworkEvents();

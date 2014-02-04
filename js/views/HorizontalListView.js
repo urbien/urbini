@@ -25,7 +25,7 @@ define('views/HorizontalListView', [
     style: {
       visibility: 'hidden',
       opacity: 0,
-      height: '155px', // 150 + 5 for scrollbar
+      height:'115px', // 150 + 5 for scrollbar
       perspective: '300px'
 //          ,
 //        'padding-top': '3px'
@@ -42,7 +42,7 @@ define('views/HorizontalListView', [
       ResourceListView.prototype.initialize.apply(this, arguments);
       _.extend(this.options, {
         horizontal: true, 
-        gutterWidthHorizontal: 15,
+        gutterWidthHorizontal: 5,
         gutterWidthVertical: 0,
         tilt: false,
 //        squeeze: true,

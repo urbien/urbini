@@ -23,7 +23,7 @@
   ],
   widgetsFramework: {
     bb: [
-    	'lib/bb/style/buttons.css', 'lib/bb/style/action_menu.css', 'lib/bb/style/headers.css', 'lib/bb/style_unstable/lists.css', 'lib/bb/style_unstable/drawer.css', 'lib/bb/style_unstable/seekbars.css', 'lib/bb/style/switches.css', '../styles/bb_styles.css',
+    	'lib/bb/style/buttons.css', 'lib/bb/style/action_menu.css', 'lib/bb/style/headers.css', 'lib/bb/style_unstable/lists.css', 'lib/bb/style_unstable/drawer.css', 'lib/bb/style/switches.css', '../styles/bb_styles.css',
     	'../templates_bb.jsp'
     ],
     topcoat: [

@@ -56,9 +56,17 @@
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
   <div id="resourceViewHolder">
-    <div style="width: 100%;position:relative;padding-right:10px;overflow:hidden">
-      <div id="resourceImage" style="width:50%;float:left;margin:0; padding:0;"><!-- style="width:auto" --></div>
-      <div id="mainGroup"></div>
+    <div style="width: 100%;position:relative;min-height:40px;overflow:hidden">
+      {{ if (this.isImageCover) { }} 
+        <div id="resourceImage" style="position:absolute;z-index:1"></div>
+        <div data-role="footer" data-theme="{{= G.theme.photogrid }}" class="thumb-gal-header hidden" 
+          style="opacity:0.7;position:absolute;top:312px;width:100%;background:#eee;text-shadow:none;color:{{= G.coverImage ? G.coverImage.background : '#eeeeee;'}}"><h3></h3></div>    
+        <div id="mainGroup" style="top:120px;right:1.3rem;position:absolute;"></div>
+      {{ } }}
+      {{ if (!this.isImageCover) { }}
+        <div id="resourceImage" style="margin:0; padding:0;{{= U.getArrayOfPropertiesWith(this.vocModel.properties, "mainGroup") &&  U.isA(this.vocModel, 'ImageResource') ? 'min-height:110px;' : ''}}" ><!-- style="width:auto" --></div>
+        <div id="mainGroup" style="right:1.3rem;position:absolute;"></div>
+      {{ } }}
       <!--div id="buyGroup" class="ui-block-b" style="width:50%; min-width: 130px"></div-->
     </div>
     <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
@@ -198,7 +206,7 @@
   {{ var action = action ? action : 'view' }}
   <div style="margin:0" data-viewid="{{= viewId }}">
   {{ if (!obj.v_submitToTournament) { }}
-    <div style="padding:.7em 10px 10px 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
+    <div style="padding:.7em 10px 10px 90px; {{= obj.image ? 'min-height:59px;' : '' }}" data-uri="{{= U.makePageUrl(action, _uri) }}">
   {{ } }}
   {{ if (obj.v_submitToTournament) { }}
     <div style="padding:.7em 10px 0 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
@@ -258,7 +266,7 @@
 
 <script type="text/template" id="propGroupsDividerTemplate">
   <!-- row divider / property group header in resource view -->
-  <li class="list-group-item active">{{= value }}</li>
+  <li class="list-group-item active" {{= G.coverImage ? 'style="background:' + G.coverImage.background + ';color:' + G.coverImage.color + ';"' : '' }}>{{= value }}</li>
 </script>
 
 <script type="text/template" id="mapItButtonTemplate">
@@ -392,7 +400,7 @@
   <div id="buttons">  
     {{= this.categories ? '<div style="margin:10px 0 0 10px; float:left"><a id="categories" href="#"><i class="ui-icon-tags"></i></a></div>' : '' }} 
     {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
-    <div id="name" class="resTitle" {{= this.categories ? 'style="width: 100%;background:#757575;"' : 'style="min-height: 20px;background:#757575;"' }} align="center">
+    <div id="name" class="resTitle" style="background:{{= G.coverImage ? G.coverImage.background : '#757575' }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
       <h4 id="pageTitle" style="font-weight:normal;">{{= this.title }}</h4>
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
         <button style="max-width:200px; display: inline-block;" class="btn" id="doTryBtn">

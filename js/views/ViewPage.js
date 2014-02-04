@@ -113,6 +113,7 @@ define('views/ViewPage', [
 //        this.buyGroup = new ResourceView(_.extend({isBuyGroup: true}, commonParams));
 //        this.addChild(this.buyGroup);
 //      }
+      this.isImageCover = U.isA(this.vocModel, 'ImageCover')  &&  U.getCloneOf(this.vocModel, 'ImageCover.coverPhoto');
         
       this.resourceView = new ResourceView(commonParams);
       this.addChild(this.resourceView);
@@ -201,6 +202,13 @@ define('views/ViewPage', [
       
       this.listenTo(Events, "mapReady", this.showMapButton);
     },
+//    _updateSize: function() {
+//      try {
+//        return this.resourceView._updateSize();
+//      } finally {
+//        _.extend(this, _.pick(this.resourceView, '_outerHeight', '_outerWidth', '_width', '_height', '_bounds'));
+//      }
+//    },
 //    doInlineBacklinks: function(bls) {
 //      var ranges = _.pluck(bls, "range");
 //      this.inlineXBacklinks = [];

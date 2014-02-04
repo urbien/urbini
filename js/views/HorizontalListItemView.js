@@ -42,7 +42,8 @@ define('views/HorizontalListItemView', [
     className: 'masonry-brick thumb-gal-item',
     style: {
       'position': 'absolute',
-      'transform-origin': '50% 50%'
+      'transform-origin': '50% 50%',
+      'border-color': G.coverImage ? G.coverImage.background : '#aaaaaa' 
     },
     initialize: function(options) {
       _.bindAll(this, 'render'); // fixes loss of context for 'this' within methods
