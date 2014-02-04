@@ -221,23 +221,21 @@ define('views/MenuPanel', [
     
     _updateSize: function() {
       var viewport = G.viewport,
-          outerHeight = this.ulHeight = this.ul.$outerHeight();
+          height = this.ulHeight = parseInt(this.ul.style.height || 0),
+          outerWidth = this.ul.$outerWidth(),
+          outerHeight = this.ul.$outerHeight();
       
-      this.ulWidth = this.ul.$outerWidth();
-      try {
-        if (this._outerWidth != viewport.width || this._height != viewport.height || this._outerHeight != outerHeight) {
-          this._bounds[0] = this._bounds[1] = 0;
-          this._outerWidth = this._width = this._bounds[2] = G.viewport.width;
-          this._outerHeight = outerHeight;
-          this._height = this._bounds[3] = viewport.height;
-          return true;
-        }
-      } finally {
-        if (this.ulHeight != viewport.height) {
-          Q.write(function() {
-            this.ul.style.height = viewport.height + 'px';
-          }, this);
-        }
+      this.ulWidth = outerWidth;
+      if (this._outerWidth != viewport.width || this._outerHeight != outerHeight || height != viewport.height) {
+        this._bounds[0] = this._bounds[1] = 0;
+        this._outerWidth = this._width = this._bounds[2] = viewport.width;
+        this._outerHeight = outerHeight;
+        this._height = this._bounds[3] = viewport.height;
+        Q.write(function() {
+          this.ul.style.height = viewport.height + 'px'; // to keep the menu the same height as the screen
+        }, this);
+        
+        return true;
       }
     },
 
