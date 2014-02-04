@@ -715,85 +715,12 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
 //    return overallPromise; 
 //  };
 
-  function search(storeName, options) {
-    if (!this.hasStore(storeName))
-      return REJECTED_PROMISE;
-
-//    var trans = this.$idb.transaction([storeName], IDBTransaction.READ_ONLY),
-    var results = [],
-        orderBy = options.orderBy,
-        asc = options.asc,
-        limit = options.limit,
-        filter = options.filter,
-        from = options.from,
-        direction = asc == undefined || U.isTrue(asc) ? IDBCursor.NEXT : IDBCursor.PREV,
-        promises = [],
-        done = false,
-        dfd = $.Deferred(),
-        overallPromise = dfd.promise(),
-        transPromise,
-        start = _.now(),
-        processingTime = 0,
-        waitingTime = 0,
-        now,
-        tmp;
-
-//    filter = filter || alwaysTrue;    
-//    transPromise = trans.progress(function(trans) {
-//      var store = trans.objectStore(storeName);
-    this.$idb.objectStore(storeName, IDBTransaction.READ_ONLY).each(
-      function processItem(item) {
-//        var t = _.now();
-        tmp = _.now();
-        if (now)
-          waitingTime += tmp - now;
-        
-        now = tmp;
-        if (done)
-          return false; // ends the cursor transaction
-        
-        var promise = parse(item.value).done(function(val) {
-          if (!filter || filter && filter(val)) {
-            results.push(val);
-            if (results.length >= limit)
-              done = true;
-          }      
-          
-//          processingTime += (_.now() - t);
-        });
-    
-        if (promise.state() == 'pending')
-          promises.push(promise);
-        else {
-          if (done)
-            return false;
-        }
-      }, 
-      from && IDBKeyRange.lowerBound(from, true), 
-      direction
-    ).fail(function() {
-      debugger;
-      dfd.reject();
-    }).done(function() {
-      log('Getting {0} items from DB objectStore {1} took {2}ms, waiting time: {3}'.format(results.length + promises.length, storeName, _.now() - start | 0, waitingTime | 0));
-      if (promises.length) {
-        $.when.apply($, promises).done(function() {
-          dfd.resolve(results);
-        }).fail(dfd.reject);
-      }
-      else
-        dfd.resolve(results);
-    });
-    
-    return overallPromise; 
-  };
-
 //  function search(storeName, options) {
 //    if (!this.hasStore(storeName))
 //      return REJECTED_PROMISE;
 //
-//    var trans = this.$idb.transaction([storeName], IDBTransaction.READ_ONLY),
-//        results = [],
+////    var trans = this.$idb.transaction([storeName], IDBTransaction.READ_ONLY),
+//    var results = [],
 //        orderBy = options.orderBy,
 //        asc = options.asc,
 //        limit = options.limit,
@@ -809,18 +736,12 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
 //        processingTime = 0,
 //        waitingTime = 0,
 //        now,
-//        tmp,
-//        keys;
+//        tmp;
 //
-//    transPromise = trans.progress(function(trans) {
-//      var store = trans.objectStore(storeName);
-//      store.getAll().done(function(all) {
-//        for (var i = 0; !done && i < all.length; i++) {
-//          processItem(all[i]);
-//        }
-//      });
-//      
-//      now = _.now();
+////    filter = filter || alwaysTrue;    
+////    transPromise = trans.progress(function(trans) {
+////      var store = trans.objectStore(storeName);
+//    this.$idb.objectStore(storeName, IDBTransaction.READ_ONLY).each(
 //      function processItem(item) {
 ////        var t = _.now();
 //        tmp = _.now();
@@ -831,7 +752,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
 //        if (done)
 //          return false; // ends the cursor transaction
 //        
-//        var promise = parse(item).done(function(val) {
+//        var promise = parse(item.value).done(function(val) {
 //          if (!filter || filter && filter(val)) {
 //            results.push(val);
 //            if (results.length >= limit)
@@ -847,19 +768,102 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
 //          if (done)
 //            return false;
 //        }
-//      };
-//    }).fail(function() {
+//      }, 
+//      from && IDBKeyRange.lowerBound(from, true), 
+//      direction
+//    ).fail(function() {
 //      debugger;
 //      dfd.reject();
 //    }).done(function() {
-//      $.when.apply($, promises).done(function() {
-//        log('Getting {0} items from DB objectStore {1} took {2}ms, processing time: {3}, waiting time: {4}'.format(results.length, storeName, _.now() - start | 0, processingTime | 0, waitingTime | 0));
+//      log('Getting {0} items from DB objectStore {1} took {2}ms, waiting time: {3}'.format(results.length + promises.length, storeName, _.now() - start | 0, waitingTime | 0));
+//      if (promises.length) {
+//        $.when.apply($, promises).done(function() {
+//          dfd.resolve(results);
+//        }).fail(dfd.reject);
+//      }
+//      else
 //        dfd.resolve(results);
-//      }).fail(dfd.reject);
 //    });
 //    
 //    return overallPromise; 
 //  };
+
+  function search(storeName, options) {
+    if (!this.hasStore(storeName))
+      return REJECTED_PROMISE;
+
+    var trans = this.$idb.transaction([storeName], IDBTransaction.READ_ONLY),
+        results = [],
+        orderBy = options.orderBy,
+        asc = options.asc,
+        limit = options.limit,
+        filter = options.filter,
+        from = options.from,
+        direction = asc == undefined || U.isTrue(asc) ? IDBCursor.NEXT : IDBCursor.PREV,
+        promises = [],
+        done = false,
+        dfd = $.Deferred(),
+        overallPromise = dfd.promise(),
+        transPromise,
+        start = _.now(),
+        processingTime = 0,
+        waitingTime = 0,
+        now,
+        tmp,
+        keys;
+
+    transPromise = trans.progress(function(trans) {
+      var store = trans.objectStore(storeName);
+      store.getAll().done(function(all) {
+        for (var i = 0; !done && i < all.length; i++) {
+          processItem(all[i]);
+        }
+      });
+      
+      now = _.now();
+      function processItem(item) {
+//        var t = _.now();
+        tmp = _.now();
+        if (now)
+          waitingTime += tmp - now;
+        
+        now = tmp;
+        if (done)
+          return false; // ends the cursor transaction
+        
+        var promise = parse(item).done(function(val) {
+          if (!filter || filter && filter(val)) {
+            results.push(val);
+            if (results.length >= limit)
+              done = true;
+          }      
+          
+//          processingTime += (_.now() - t);
+        });
+    
+        if (promise.state() == 'pending')
+          promises.push(promise);
+        else {
+          if (done)
+            return false;
+        }
+      };
+    }).fail(function() {
+      debugger;
+      dfd.reject();
+    }).done(function() {
+      log('Getting {0} items from DB objectStore {1} took {2}ms, waiting time: {3}'.format(results.length + promises.length, storeName, _.now() - start | 0, waitingTime | 0));
+      if (promises.length) {
+        $.when.apply($, promises).done(function() {
+          dfd.resolve(results);
+        }).fail(dfd.reject);
+      }
+      else
+        dfd.resolve(results);
+    });
+    
+    return overallPromise; 
+  };
 
   
   /**
