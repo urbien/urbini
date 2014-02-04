@@ -8,13 +8,13 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
     currentTransition,
     queued,
     slideDefaultSettings = {
-      acceleration: 0.02,
+      acceleration: 0.03,
       drag: 0.3 // inversely proportional to distance^2 from the target (the closer, the more drag) 
     },
     snapDefaultSettings = {
-      duration: 500,
-      stiffness: 0.01,
-      damping: 0.5
+      stiffness: 0.03,
+      damping: 0.5,
+      drag: 0.1
     },
     zoomInToDefaultSettings = {
       fadeDuration: 500,
@@ -377,6 +377,7 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
         duration = options.duration,
         stiffness = options.stiffness,
         damping = options.damping,
+        drag = options.drag,
         finished = 2,
         toSnapId = _.uniqueId('snapAction'),
         fromSnapId = _.uniqueId('snapAction');
@@ -426,7 +427,8 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
           x: G.viewport.width * (toDir == 'left' ? -1 : 1),
           z: -10,
           stiffness: stiffness / 2, 
-          damping: damping, 
+          damping: damping,
+          drag: drag,
           oncomplete: finish,
           oncancel: this.dfd.reject
         }]
@@ -440,6 +442,7 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
           z: 0, 
           stiffness: stiffness, 
           damping: damping, 
+          drag: drag,
           oncomplete: finish,
           oncancel: this.dfd.reject
         }]
@@ -646,6 +649,9 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
         fromId = this.from.getContainerBodyId(),
         toId = this.to.getContainerBodyId(),
         via = this.options.via,
+        fromImg = via.el.querySelector('img'),
+        toImgInfo = this.from.getViewPageInfo(),
+        imgBodyId = _.uniqueId('img-body'),
         bodyId = via.getBodyId(),
         fadeDuration = this.options.fadeDuration;
         a = this.options.acceleration;
@@ -656,6 +662,33 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
       }
     };
 
+    if (fromImg && toImgInfo) {
+      fromImg.position = 'absolute';
+      this.chain.push(
+        {
+          method: 'addBody',
+          args: ['convex-polygon', {
+            _id: imgBodyId,
+            rel: bodyId,
+            x: 0,
+            y: 0,
+            vertices: Physics.getRectVertices(fromImg.width || fromImg.$outerWidth(), fromImg.height || fromImg.$outerHeight())
+          }]
+        }
+//        , 
+//        {
+//          method: 'snapBy',
+//          args: [imgBodyId, {
+//            _id: imgBodyId,
+//            rel: bodyId,
+//            x: 0,
+//            y: 0,
+//            vertices: Physics.getRectVertices(fromImg.width || fromImg.$outerWidth(), fromImg.height || fromImg.$outerHeight())
+//          }]
+//        }, 
+      );
+    }
+    
     this.chain.push(
       {
         object: this.mason.id,
