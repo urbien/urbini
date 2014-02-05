@@ -1023,16 +1023,20 @@ function calcTransform(body) {
       m = body.state.renderData.get('transform');
   
   Physics.util.extend(m, IDENTITY_TRANSFORM);
-  Matrix.rotate3d(m, rotate[0], rotate[1], rotate[2]);
-  Matrix.scale3d(m, scale[0], scale[1], scale[2]);
-  Matrix.translate3d(m, 
-    pos.get(0) - (aabb._hw || 0),
-    pos.get(1) - (aabb._hh || 0),
-    getZ(body)
-  );
+  if (arrayEquals(scale, MIN_SCALE) || body.state.renderData.get('opacity') == 0)
+    Matrix.scale3d(m, scale[0], scale[1], scale[2]);
+  else {
+    Matrix.rotate3d(m, rotate[0], rotate[1], rotate[2]);
+    Matrix.scale3d(m, scale[0], scale[1], scale[2]);
+    Matrix.translate3d(m, 
+      pos.get(0) - (aabb._hw || 0),
+      pos.get(1) - (aabb._hh || 0),
+      getZ(body)
+    );
   
-  m[4] = Math.atan(skew[1]); // skew X
-  m[1] = Math.atan(skew[0]); // skew Y
+    m[4] = Math.atan(skew[1]); // skew X
+    m[1] = Math.atan(skew[0]); // skew Y
+  }
   // TODO: skew Z
   
   return m;
