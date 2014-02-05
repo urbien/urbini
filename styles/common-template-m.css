@@ -19,7 +19,6 @@ body {
 [data-role="page"] { 
   top: 0; 
   left: 0;
- /* bottom: 0; */ 
   width: 100%; 
   min-height: 100%; 
   position: absolute; 
@@ -51,11 +50,9 @@ html { height: 100%; }
   border-width: 0px;
   padding: 0px;
   border-spacing: 0px;
-/*  margin: 10px 10px 6px 10px; */
   margin: 8px 10px 6px 8px;
 }
 
-/* .galleryItem_css3 img { float: left;} */
 .galleryItem_container .galleryItem, .galleryItem_container .galleryItem_css3 { margin: 0px; }
 #.nab  { -webkit-transition: all 300ms; }
 .nab  { box-shadow: none; position: absolute; }
@@ -69,27 +66,15 @@ html { height: 100%; }
 .nab .nabP #-inner img  { padding-right: 0px; }
 
 /* Portrait styles */
-
-
-.nabRL #-inner img  { width: 16px;  padding-right: 2px; border: 0; /*vertical-align: top;height: 16px; */}
+.nabRL #-inner img  { width: 16px;  padding-right: 2px; border: 0; }
 
 .nab .modP img { padding-right: 5px; }
 
 .galleryItem, .galleryItem_css3, .galleryItem_nab { 
   position: relative; 
 }
-/*
-.galleryItem_css3 {
-  position: absolute;
-}
-*/
 .galleryItem_css3, galleryItem_nab { 
   display: inline-block; 
-  /*
-  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); 
-  -webkit-box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5); 
-  -moz-box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.5);
-  */ 
  }
 
 .likes_tbl {  position: absolute; opacity: 0; visibility: hidden; z-index: 1; top: 0px; left: 0px; border-collapse: collapse; }
@@ -154,17 +139,11 @@ html { height: 100%; }
 }
 
 .nab { 
-  /* float: left; */ 
-  /* width: 192px; */ 
-  /* margin: 5px; */ 
-  /* padding: 15px 15px 0; */ 
   font-size: 12px; 
   background-color: #ffffff; 
   border: 1px solid #DDDDDD; 
-/*  box-shadow: 0 0px 1px #AAAAAA; */
 }
 
-/*#nabs_grid .nab { visibility: hidden; }*/
 .dList #nabs_grid .nab { visibility: visible; -webkit-transform-style: preserve-3d } /* TODO: implement 2 (RL) masonry and delete this rule */
 
 /* hide "bricks" initially and show them only ones are aligned */ 
@@ -186,7 +165,6 @@ table.modP {
 .nab .nabP .urbien img {width: 50px;}
 
 .gnab { font-size: 11px; }
-/* .nab .galleryItem_css3 img {max-width: 205px;} */
 .nab .galleryItem_css3 { display: inline-block; box-shadow: none; -webkit-box-shadow: none; -moz-box-shadow: none; }
 
 .renab img { width:16px;height:14px; margin-top: -4px;}
@@ -201,11 +179,7 @@ table.modP {
 .pList {padding-top:15px;padding-left:15px; background: #f7f5f7;}
 .aList { padding:15px 0px 0px 0px; background: #f7f5f7;}
 .renab, .nab .pLink {color: #757575;}
-/* BOARD CELL
 
-#renabs span.action   {font-weight:bold;font-size:8pt;color:#000066;}
-
---------------------------------------------------------------------------------------- */
 h3#pageTitle {margin: 10px 0 7px 0;}
 .boardsTitle, .nabTitle {margin-left: 10px; padding-top: 5px; font-size: 16pt; color: #cb2027; }
 .boardsTitle a { color: #f47414; }
@@ -242,9 +216,7 @@ h3#pageTitle {margin: 10px 0 7px 0;}
 div.nabBtn { 
   text-align: center; 
   background: #eeeeee; 
-/*  height: 25px; */ 
   padding-top: 10px; 
-/*  padding-bottom: 0px; */
 }
 
 .nabRL .nabBtn a { color: #757575; text-shadow: none; }
@@ -292,17 +264,9 @@ div.nabBtn {
   max-height: 60px;
   max-width: 50px;
 }
-/*
-@media screen and (orientation: portrait) {
-  .nab {
-    background-color: #0f0;
-  }
-}
-*/
 @media screen and (max-device-width: 480px) and (orientation: portrait) {
   .nab a { font-size: 16px; }
 
-/*@media all and (min-width: 298px) { */
   .nab { 
     margin: auto; 
     margin-top: 5px; 
@@ -312,17 +276,8 @@ div.nabBtn {
     font-size: 12px; 
     background-color: #fff; 
     border: 1px solid #DDDDDD; 
-    /*box-shadow: 0 0px 1px #AAAAAA; */
   }
-/*  
-  .nab .galleryItem_css3 img {max-width: 272px;} 
-  .nabBoard {
-    /* width: 290px !important; */ 
-    padding: 0 !important; cursor: pointer;}
-  .nabBoard .link { height: 260px; display: block; overflow: hidden;}
-*/
   #resourceImage img {max-width: 320px;}
-/*  #sidebar {margin: 0} */
   .ui-listview .connect { float: left; top:60px; padding:0px; border:0px; background: none;background-image:none;}
   .connect i { font-size:16px; color: #888;}
 }
@@ -330,7 +285,6 @@ div.nabBtn {
 
 @media all and (min-width: 468px){
   #sidebarDiv #nabs_grid {margin-left: 0px;margin-right: -25px;}
-/*  #sidebarDiv #nabs_grid {left: -15px;} */
 }
 
 #nabs_grid {padding: 0;}
@@ -338,22 +292,9 @@ div.nabBtn {
   padding-top:7px; font-size: 14px;
 }
 #mainGroup div {white-space:normal; height: 60px; }
-/* #mainGroup span {text-shadow: 0 1px 0 #bbb;} */
 #resourceView { font-size: 16px; }
 #resourceView p { margin-top: 0.5em; }
 #login_popup .big_symbol { float: left; font-size: 25px; color: #aaaaaa; line-height: 100%; margin: 0px 0px 0px -8px; }
-/*
-.menu_image_fitted .thumb { 
-  margin-right:4px; 
-  max-width: 42px; 
-  max-height: none; 
-  float:right; 
-  min-width: 42px;
-  min-height: 42px; 
-  clip: rect(0px, 42px, 42px, 0px); 
-  position: relative;
-}
-*/
 
 .menu_image_fitted .thumb { 
   position: absolute;
@@ -396,12 +337,12 @@ div.nabBtn {
 .badge, .menuBadge, .appBadge {
   background-color: red;
   border: 2px solid white;
-  border-radius: 12px; /* must be 1/2 of ( border-width*2 + width ) */
+  border-radius: 12px; 
   box-shadow: 1px 1px 1px black;
   color: white;
   font: bold 17px/15px Helvetica, Verdana, Tahoma;
-  height: 18px; /* height + padding-top must equal width */
-  padding: 2px 2px 0 2px; /* height + padding-top must equal width */
+  height: 18px; 
+  padding: 2px 2px 0 2px; 
   text-align: center;
   min-width: 16px;
 }
@@ -426,12 +367,11 @@ div.nabBtn {
   background-color: blue;
 }
 
-/* .commonLI { margin-left: -12px; padding-top:3px; overflow: auto; } */
 .commonLI img { max-height: 30px;float:left; }
 .commonLI { margin-left: 5px; font-weight: normal; font-size: 16px; padding-top:3px; overflow: auto; display:inline;}
 
-.dateLI { float: right; /* margin-top: -7px; *margin-right: -30px;*/ color: #999; font-weight: normal; font-size: 11px; }
-.submitter { color: #737373; /*margin-top: 10px;*/ padding-top:3px; font-size:14px; font-weight: normal; }
+.dateLI { float: right;  color: #999; font-weight: normal; font-size: 11px; }
+.submitter { color: #737373; padding-top:3px; font-size:14px; font-weight: normal; }
 .submitter img {max-height: 40px;vertical-align:middle}
 .submitter div {display: inline; }
 
@@ -449,8 +389,7 @@ div.nabBtn {
 
 #callInProgress {
   text-align: center;
-/*  color: #FFF; */
-  background: lightblue;/*#0F2;*/
+  background: lightblue;
   margin: 0px auto;
   line-height: 40px;
   text-shadow: none;
@@ -474,18 +413,6 @@ div.nabBtn {
 .chattee img {
   max-height: 44px;
 }
-/*
-.headerSpecialBtn {
-  padding: 3px 0;
-  max-width: 200px;
-}
-#enterTournamentBtn.headerSpecialBtn, #resetTemplateBtn.enterTournamentBtn {
-  max-width: 320px;
-}
-#publishBtn.headerSpecialBtn
-  max-width: 400px;
-}
-*/
 .headerSpecialBtn a {
   margin: 0;
 }
@@ -495,20 +422,16 @@ div.nabBtn {
   overflow-x: hidden;
 }
 .gradientEllipsis .dimmer {
-/*  display: block; */
   position: absolute;
   right: 0;
   top: 0;
   bottom: 0;
   width: 50px;
-/*  background-image: linear-gradient(left center, rgba(0, 0, 0, 0), #ff0000); */
   background-image: -moz-linear-gradient(left center, rgba(51, 51, 51, 0), rgba(51, 51, 51, 0.9));
   background-image: -webkit-gradient(linear, 0% 70%, 70% 100%, from(rgba(51, 51, 51, 0)), to(rgba(51, 51, 51, 0.9)));
   content: "";
   
 }
-
-
 
 .faBg {
   position: relative;
@@ -521,36 +444,7 @@ div.nabBtn {
   font-size: 100px;
   color: #ccc;
   content: attr(data-icon);
-/*  content: "\25AE"; */ 
 }
-
-/*! Hint.css - v1.3.0 - 2013-08-05
-* http://kushagragour.in/lab/hint/
-* Copyright (c) 2013 Kushagra Gour; Licensed MIT */
-
-/*-------------------------------------*\
-  HINT.css - A CSS tooltip library
-\*-------------------------------------*/
-/**
- * HINT.css is a tooltip library made in pure CSS.
- *
- * Source: https://github.com/chinchang/hint.css
- * Demo: http://kushagragour.in/labs/hint/
- *
- * Release under The MIT License
- *
- */
-/**
- * source: hint-core.scss
- *
- * Defines the basic styling for the tooltip.
- * Each tooltip is made of 2 parts:
- *  1) body (:after)
- *  2) arrow (:before)
- * 
- * Classes added:
- *  1) hint
- */
 
 #resourceViewHolder .hint--top:before,#resourceViewHolder .hint--top:after {
   bottom: 100%;
@@ -574,15 +468,9 @@ div.nabBtn {
   background: #ffffff;
 }
 
-.hint, [data-hint] {
-  position: relative;
-/*  display: inline-block; */
-  /**
-   * tooltip arrow
-   */
-  /**
-   * tooltip body
-   */ }
+  .hint, [data-hint] {
+     position: relative;
+   }
   .hint:before, .hint:after, [data-hint]:before, [data-hint]:after {
     position: absolute;
     -webkit-transform: translate3d(0, 0, 0);
@@ -615,20 +503,6 @@ div.nabBtn {
     white-space: nowrap;
     box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3); }
 
-/**
- * source: hint-position.scss
- *
- * Defines the positoning logic for the tooltips.
- * 
- * Classes added:
- *  1) hint--top
- *  2) hint--bottom
- *  3) hint--left
- *  4) hint--right
- */
-/**
- * set default color for tooltip arrows
- */
 .hint--top:before {
   border-top-color: #383838; }
 
@@ -641,9 +515,8 @@ div.nabBtn {
 .hint--right:before {
   border-right-color: #383838; }
 
-/**
- * top tooltip
- */
+
+/* top tooltip */
 .hint--top:before {
   margin-bottom: -12px; }
 .hint--top:after {
@@ -656,9 +529,7 @@ div.nabBtn {
   -moz-transform: translateY(-8px);
   transform: translateY(-8px); }
 
-/**
- * bottom tooltip
- */
+/* bottom tooltip */
 .hint--bottom:before {
   margin-top: -12px; }
 .hint--bottom:after {
@@ -671,9 +542,7 @@ div.nabBtn {
   -moz-transform: translateY(8px);
   transform: translateY(8px); }
 
-/**
- * right tooltip
- */
+/* right tooltip */
 .hint--right:before {
   margin-left: -12px;
   margin-bottom: -6px; }
@@ -687,9 +556,7 @@ div.nabBtn {
   -moz-transform: translateX(8px);
   transform: translateX(8px); }
 
-/**
- * left tooltip
- */
+/* left tooltip */
 .hint--left:before {
   margin-right: -12px;
   margin-bottom: -6px; }
@@ -703,21 +570,7 @@ div.nabBtn {
   -moz-transform: translateX(-8px);
   transform: translateX(-8px); }
 
-/**
- * source: hint-color-types.scss
- *
- * Contains tooltips of various types based on color differences.
- * 
- * Classes added:
- *  1) hint--error
- *  2) hint--warning
- *  3) hint--info
- *  4) hint--success
- *  
- */
-/**
- * Error
- */
+/* Error */
 .hint--error:after {
   background-color: #b34e4d;
   text-shadow: 0 -1px 0px #592726; }
@@ -730,9 +583,7 @@ div.nabBtn {
 .hint--error.hint--right:before {
   border-right-color: #b34e4d; }
 
-/**
- * Warning
- */
+/* Warning */
 .hint--warning:after {
   background-color: #c09854;
   text-shadow: 0 -1px 0px #6c5328; }
@@ -745,9 +596,7 @@ div.nabBtn {
 .hint--warning.hint--right:before {
   border-right-color: #c09854; }
 
-/**
- * Info
- */
+/* Info */
 .hint--info:after {
   background-color: #3986ac;
   text-shadow: 0 -1px 0px #193b4d; }
@@ -760,9 +609,7 @@ div.nabBtn {
 .hint--info.hint--right:before {
   border-right-color: #3986ac; }
 
-/**
- * Success
- */
+/* Success */
 .hint--success:after {
   background-color: #458746;
   text-shadow: 0 -1px 0px #1a321a; }
@@ -775,15 +622,6 @@ div.nabBtn {
 .hint--success.hint--right:before {
   border-right-color: #458746; }
 
-/**
- * source: hint-always.scss
- *
- * Defines a persisted tooltip which shows always.
- * 
- * Classes added:
- *  1) hint--always
- *  
- */
 .hint--always:after, .hint--always:before {
   opacity: 1;
   visibility: visible; }
@@ -804,27 +642,9 @@ div.nabBtn {
   -moz-transform: translateX(8px);
   transform: translateX(8px); }
 
-/**
- * source: hint-rounded.scss
- *
- * Defines rounded corner tooltips.
- * 
- * Classes added:
- *  1) hint--rounded
- *  
- */
 .hint--rounded:after {
   border-radius: 4px; }
 
-/**
- * source: hint-effects.scss
- *
- * Defines various transition effects for the tooltips.
- * 
- * Classes added:
- *  1) hint--bounce
- *  
- */
 .hint--bounce:before, .hint--bounce:after {
   -webkit-transition: opacity 0.3s ease, visibility 0.3s ease, -webkit-transform 0.3s cubic-bezier(0.71, 1.7, 0.77, 1.24);
   -moz-transition: opacity 0.3s ease, visibility 0.3s ease, -moz-transform 0.3s cubic-bezier(0.71, 1.7, 0.77, 1.24);
@@ -834,14 +654,6 @@ div.nabBtn {
   color: #E21F27; 
   font-weight: bold;
 }
-  
-  /*_________________________________ */
-   /*                                  */
-  /*  STYLES FOR TRANSITIONS SECTION  */
- /*  Author: Arnau March - @RnowM    */
-/*__________________________________*/
-
-
 .transition {
   overflow: hidden;
   border: 1px solid #e1e1e8;
@@ -849,8 +661,6 @@ div.nabBtn {
   position: relative;
   margin-bottom: 20px;
 }
-
-
 .phone-frame {
   position: relative;
   height: 671px;
@@ -911,10 +721,6 @@ div.nabBtn {
 
 .play .glow {
   position: absolute;
-/*
-  top: -17px;
-  left: -17px;
-*/  
   top: -22px;
   left: -22px;
   width: 60px;
@@ -934,10 +740,6 @@ div.nabBtn {
 
 .play .shape {
   position: absolute;
-/*
-  top: 10px;
-  left: 10px;
-*/  
   top: 7px;
   left: 7px;
   width: 26px;
@@ -1039,7 +841,6 @@ section[id^="view"] {
 .thumb-inner a {
   height: 100%;
   width: 100%;
-/*  z-index: 10001; */
   position:absolute;
 }
 .phOverlay h3 {
@@ -1062,7 +863,6 @@ section[id^="view"] {
 }
 
 .thumb-inner img {
-/*  width: 100%; */
   height: auto;
 }
 
@@ -1076,7 +876,7 @@ section[id^="view"] {
   
   .connect i { font-size:16px; color: #888;}
   .thumb-gal-item .thumb-gal-thumb {
-    height: auto; /* To keep aspect ratio. */
+    height: auto;
     max-width: 100%;
     max-height: none;
     margin: 0;
@@ -1107,70 +907,13 @@ section[id^="view"] {
     line-height: 1.5;
   }
 
-  /* Semi transparent background and different position if there is a thumb 
-  .ui-listview .ui-li-has-thumb .ui-li-heading,
-  .ui-listview .ui-li-has-thumb .ui-li-desc {
-    background: #111;
-    background: rgba(0,0,0,.7);
-    -webkit-background-clip: padding;
-    background-clip: padding-box;
-  }
-  .ui-listview .ui-li-has-thumb .ui-li-heading {
-    padding: 10px;
-    bottom: 3%;
-  }
-  .ui-listview .ui-li-has-thumb .ui-li-desc {
-    padding: 0 10px;
-    min-height: 3%;
-    -webkit-border-bottom-left-radius: inherit;
-    border-bottom-left-radius: inherit;
-    -webkit-border-bottom-right-radius: inherit;
-    border-bottom-right-radius: inherit;
-  }
-  */
-  /* ui-li-aside has class .ui-li-desc as well so we have to override some things. 
-  .grid-listview .ui-listview .ui-li-desc.ui-li-aside {
-    padding: 2px 10px;
-    width: auto;
-    min-height: 0;
-    top: 0;
-    left: auto;
-    bottom: auto;
-    */
-    /* Custom styling. 
-    color: #c0c0c0;
-    background: #990099;
-    background: rgba(153,0,153,.85);
-    -webkit-border-top-right-radius: inherit;
-    border-top-right-radius: inherit;
-    -webkit-border-bottom-left-radius: inherit;
-    border-bottom-left-radius: inherit;
-    -webkit-border-bottom-right-radius: 0;
-    border-bottom-right-radius: 0;
-  }*/
-  /* If you want to add shadow, don't kill the focus style.  
-  .grid-listview .ui-listview .ui-btn:not(.ui-focus) {
-    -moz-box-shadow: 0px 0px 9px #111;
-    -webkit-box-shadow: 0px 0px 9px #111;
-    box-shadow: 0px 0px 9px #111;
-  }
-  */
-  /* Images mask the hover bg color so we give desktop users feedback by applying the focus style on hover as well. 
-  .grid-listview .ui-listview .ui-btn:hover {
-    -moz-box-shadow: 0px 0px 12px #387bbe;
-    -webkit-box-shadow: 0px 0px 12px #387bbe;
-    box-shadow: 0px 0px 12px #387bbe;
-  }
-  */
-  /* Animate focus and hover style, and resizing.  
-  .grid-listview .ui-listview .ui-btn {
-    -webkit-transition: all 500ms ease;
-    -moz-transition: all 500ms ease;
-    -o-transition: all 500ms ease;
-    -ms-transition: all 500ms ease;
-    transition: all 500ms ease; 
-  }
-  */
+	.thumb-gal-item {
+	  width: 100px; /* 50% incl. 2 x 2% margin */
+	  height: 100px;
+	}
+	.phOverlay h3 {
+	  margin-top: 5px;
+	}
 }
 
 @media all and (min-width: 468px){
@@ -1179,45 +922,14 @@ section[id^="view"] {
 
 /* 2nd breakpoint is 768px. 3 column layout. Tiles 250x250 pixels at the breakpoint. */
 @media all and (min-width: 768px){
-  /*
-  .grid-listview .ui-content {
-    padding: 9px;
-  }
-  */
   .ui-listview .connect { float: left; top:110px; padding:0px; border:0px; background: none; background-image:none;}
   .connect i { font-size:36px;color: lightgrey;}
-  /*
-  .thumb-gal-item {
-    width: 232px;
-    height: 232px;
-    #margin: 9px 1.2%;
-    #border-width: 0; /* The 1px border would break the layout so we set it on .ui-btn-inner instead. */
-    */
   }
-  /*  
-  .ui-listview .ui-li-has-thumb .ui-li-heading {
-    bottom: 20%;
-  }
-  .ui-listview .ui-li-has-thumb .ui-li-desc {
-    min-height: 20%;
-  }
-  */
 }
 
 /* 3rd breakpoint. 4 column layout. Tiles will be 250x250 pixels again at the breakpoint. */
 @media all and (min-width: 1020px){
-/*  .grid-listview .ui-content {
-    padding: 10px;
-  }
-  */
-  /* Set a max-width for the last breakpoint to prevent too much stretching on large screens.
-  By setting the max-width equal to the breakpoint width minus padding we keep square tiles. 
-  .thumb-gal {
-    width: 1000px;
-    margin: 0;
-  }*/
-  /* Because of the 1000px max-width the width will always be 230px (and margin left/right 10px),
-  but we stick to percentage values for demo purposes. */
+  /* Because of the 1000px max-width the width will always be 230px (and margin left/right 10px), but we stick to percentage values for demo purposes. */
   .thumb-gal-item {
     width: 140px;
     height: 140px;
@@ -1261,7 +973,6 @@ section[id^="view"] {
 }
 
 .listPage li > div {
- /* margin: 0.3rem; */
   font-size: 18px;
 }
 
@@ -1269,25 +980,8 @@ div {
   font-family: Helvetica, Ariel, sans-serif;
 }
 
-
 .triangle {
-
   position:absolute;  
-  /* 
-  width: 10px;
-  height: 10px;
-  border-left: 8px solid transparent;
-  border-right: 8px solid transparent;
-  border-bottom: 8px solid #2f2f2f;
-  font-size: 0;
-  transform:rotate(89deg);
- -ms-transform:rotate(90deg); 
- -webkit-transform: rotate(135deg);
-  line-height: 0;
-  right: -19px;
-  bottom:  -5px;
- */ 
-
   border-color: transparent transparent #2d2d2d transparent;
   border-width: 0px 0px 10px 10px;
   border-style: solid;
@@ -1303,15 +997,10 @@ div {
   position: absolute; 
   width: 5px; 
   height: 5px;
-#  background: rgba(0, 0, 255, 0.99);
-#  border: 1px solid rgba(255, 255, 255, 0.15); 
   -webkit-border-radius: 3px; 
   border-radius: 6px; 
   opacity: 0;
   z-index:10002;
-#  -webkit-transition: opacity 350ms; 
-#  -moz-transition: opacity 350ms; 
-#  transition: opacity 350ms; 
   -webkit-box-sizing: content-box; 
   -moz-box-sizing: content-box; 
   box-sizing: content-box 
@@ -1342,41 +1031,3 @@ div {
   padding-top: 5px;
 }
 
-/*
-.nabBoard {
-  padding: 0 !important; cursor: pointer;
-}
-
-.nabBoard h3, .gridBoard h3 { height: 20px; padding: 11px 15px 5px; font-size: 13px; font-weight: 300; overflow: hidden;margin: 0}
-.gridBoard {max-width: 669px !important; padding: 0 !important;cursor: pointer;}
-.nabBoard .link { height: 200px; display: block; padding: 0 0 10px 12px; overflow: hidden;}
-.gridBoard .link {display: block; padding: 9px 0 4px 12px; overflow: hidden;}
-.nabBoard .link img, .gridBoard .link img  {float: left; width: 100px; margin-left: -20px; }
-
-.nabBoard .link div, .gridBoard .link div { width: 61px; height: 61px; border: 1px solid #f0f0f0; overflow: hidden; float: left; margin: 0px 4px 4px 0px;}
-
-.editBoard a {font-size: 13px;} 
-.nabBoard .editBoard {padding: 0 15px 11px; text-align: center;}
-.nabBoard .editBoard .Buttn {display: block; padding: 0.5em 0.825em;}
-*/
-/*@media (max-width: 328px)  {*/
-/* @media only screen and (max-divice-width: 480px;)  { */
-/*
-@media screen and (max-device-width: 480px) and (orientation: landscape) {
-  .nab .galleryItem_css3 img {max-width: 272px;}
-  .nabBoard {width: 290px !important; padding: 0 !important; cursor: pointer;}
-  .nabBoard .link { height: 260px; display: block; overflow: hidden;}
-}
-*/
-/*
-@media all and (min-width: 468px){
-  .nabBoard {width: 222px !important; padding: 0 !important; cursor: pointer;}
-  .nabBoard .link { height: 200px; display: block; padding: 0 0 10px 12px; overflow: hidden;}
-}
-
-@media all and (min-width: 768px){
-  .nab { margin: auto; margin-top: 5px; margin-bottom: 5px; padding: 15px 15px 0; float: none; font-size: 12px; background-color: #fff; border: 1px solid #DDDDDD;}
-  .nabBoard {width: 222px !important; padding: 0 !important; cursor: pointer;}
-  .nabBoard .link { height: 200px; display: block; padding: 0 0 10px 12px; overflow: hidden;}
-}
-*/

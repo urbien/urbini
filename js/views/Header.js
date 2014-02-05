@@ -24,7 +24,8 @@ define('views/Header', [
   return BasicView.extend({
 //    viewType: 'any',
     style: {
-      opacity: 0.9 //DOM.maxOpacity
+      opacity: 0.75//, //DOM.maxOpacity
+//      zIndex: 10001
     },
     _draggable: false,
     autoFinish: false,
@@ -321,6 +322,10 @@ define('views/Header', [
         self.finish();
         if (G.isBootstrap())
           self.$('#headerUl div').$attr('class', 'navbar-header');
+        if (G.coverImage) 
+          self.$('#headerUl a').$forEach(function(elm) {
+            elm.style.color = G.coverImage.background;
+          });
       };
       
       if (this.btnsReq.state() !== 'pending') {
@@ -570,7 +575,6 @@ define('views/Header', [
         if (!this.publish  &&  this.doTry  &&  this.forkMe)
           templateSettings.className = 'ui-grid-b';
       }      
-      
       this.html(this.template(templateSettings));
       this.renderPhysics();
       this.refreshTitle();

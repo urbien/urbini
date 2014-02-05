@@ -686,8 +686,9 @@ define('views/ControlPanel', [
       if (!this.isMainGroup) {
         groupNameDisplayed = false;
         var tmpl_data = {};
-        
+        var cnt;
         for (var p in meta) {
+          cnt++;
           if (!/^[a-zA-Z]/.test(p))
             continue;
           

@@ -22,13 +22,13 @@ li {
 }
 #headerUl .topcoat-button-bar__button {
   border-radius: 0;
-  font-size: 3rem;
+  font-size: 2.8rem;
   padding:2px;
   width: 100%;
 }
 
 #headerButtons {
-  padding-bottom: 3px;
+  padding-bottom: 7px;
 }
 #menuItems li, #rightMenuItems li {
   background: #2d2d2d;
@@ -53,10 +53,12 @@ li {
 }
 
 #mainGroup .topcoat-button--cta {
-  line-height: 6rem;
+  line-height: 5rem;
   text-align: left;
   color: #000000;
 }
+#mainGroup div {height: 50px; }
+
 #mainGroup div.counter {
   height: 30px;
 }
@@ -64,14 +66,15 @@ li {
   padding: 4px 0px;
 }
 #other h3 {
-  margin:10px;
+  margin:0.3rem 0.7rem;
 }
 #cpView {
   font-size:1.6rem;
 }
 #cpView .topcoat-list__item {
-  padding: 0;
-  min-height: 4rem;
+/*  padding: 0; */
+/*  min-height: 4rem; */
+  min-height: 2rem;
 }
 
 .topcoat-button-bar__button--large i {
@@ -92,7 +95,9 @@ h4#pageTitle  {
 .editList .topcoat-list__header h3 {
   margin: 0;
 }
-
+.editList .topcoat-list__header {
+  padding: 0.5rem 0 0 1.5rem; 
+}
 a {
   color: #333333;
 }
@@ -119,7 +124,7 @@ a {
 .cpA {
   font-weight:normal;width:100%;height:100%;
   position:absolute;
-  padding:1.25rem;
+  padding:0 0 0 1.25rem;
 }
 
 .cp i {
@@ -365,3 +370,10 @@ fieldset .listPage .topcoat-list__container, #sidebar.topcoat-list__container {
   min-width:115px; 
   background:none;
 } 
+
+.hmg {
+  margin: 10px 5px 10px 5px;
+}
+#mainGroup .hmg:first-child {
+  margin-left:10px;
+}
