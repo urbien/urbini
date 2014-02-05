@@ -163,6 +163,10 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     });
   }
 
+  function setPropertyValue(obj, propName, propValue) {
+    obj[propName] = propValue;
+  };
+  
   function _parse(_items) {
     var promises,
         returnObj,
@@ -178,23 +182,22 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       _items = [_items];
 
     items = _items.map(function(_item) {
-      var item = {};
-      _.each(_item, function(val, prop) {
-        var parsedPropName = parsePropName(prop),
-            val = _item[prop],
-            method;
+      var item = {},
+          method,
+          parsedPropName,
+          val;
+      
+      for (var prop in _item) {
+        parsedPropName = parsePropName(prop);
+        val = _item[prop];
             
         if (val  &&  filePropertyName  &&  val[filePropertyName]) {
           method = FileSystem && U.isCompositeProp(parsedPropName) ? 'readAsFile' : 'readAsBlob';
-          var promise = FileSystem[method](val[filePropertyName], val[fileTypePropertyName]).done(function(data) {
-            item[parsedPropName] = data;
-          });
-          
-          promises.push(promise);
+          promises.push(FileSystem[method](val[filePropertyName], val[fileTypePropertyName]).done(setPropertyValue.bind(null, item, parsedPropName)));
         }
         else
           item[parsedPropName] = val;
-      });
+      }
     
       return item;
     });
@@ -812,14 +815,10 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
         tmp,
         keys;
 
-    transPromise = trans.progress(function(trans) {
-      var store = trans.objectStore(storeName);
-      store.getAll().done(function(all) {
-        for (var i = 0; !done && i < all.length; i++) {
-          processItem(all[i]);
-        }
-      });
-      
+    if (filter === G.trueFn)
+      filter = null;
+    
+    transPromise = trans.progress(function(trans) {      
       now = _.now();
       function processItem(item) {
 //        var t = _.now();
@@ -831,7 +830,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
         if (done)
           return false; // ends the cursor transaction
         
-        var promise = parse(item).done(function(val) {
+        var promise = parse(item.value).done(function(val) {
           if (!filter || filter && filter(val)) {
             results.push(val);
             if (results.length >= limit)
@@ -848,6 +847,8 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
             return false;
         }
       };
+      
+      trans.objectStore(storeName).each(processItem, from && IDBKeyRange.lowerBound(from, true), direction);
     }).fail(function() {
       debugger;
       dfd.reject();
