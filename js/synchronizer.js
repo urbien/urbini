@@ -106,13 +106,11 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
     var intermediatePromise;
     if (this._isSyncRequest() || !G.hasWebWorkers)
       intermediatePromise = this._defaultSync();
-    else {
-      intermediatePromise = U.ajax({url: options.url, type: 'GET', headers: options.headers}).always(function(resp, status, xhr) {
-        self.data.lastFetchOrigin = 'server';
-      });
-    }
+    else
+      intermediatePromise = U.ajax({url: options.url, type: 'GET', headers: options.headers});
       
     intermediatePromise.done(function(data, status, xhr) {
+      self.data.lastFetchOrigin = 'server';
       dfd.resolveWith(self.data, [data, status, xhr]);
     }).fail(function(xhr, status, msg) {
   //    if (xhr.status === 304)
