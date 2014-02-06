@@ -697,6 +697,10 @@ define('views/BasicView', [
     },
     
     _onViewportDimensionsChanged: function() {
+      this.invalidateSize();
+    },
+    
+    invalidateSize: function() {
       Q.read(this._recheckDimensions, this);
     },
     
@@ -1211,7 +1215,7 @@ define('views/BasicView', [
       if (addViewBrick)
         this.addViewBrick();
       
-      this.observeMutations(null, this._onMutation);
+//      this.observeMutations(null, this._onMutation);
     },
     
     _onMutation: function(mutations) {

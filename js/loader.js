@@ -1059,7 +1059,7 @@ define('globals', function() {
         bg: '#000'
       },
       db: {
-        on: true,
+        on: false,
         color: '#FFFFFF',
         bg: '#000'
       },
