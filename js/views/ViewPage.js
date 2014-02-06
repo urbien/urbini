@@ -298,19 +298,20 @@ define('views/ViewPage', [
       
       this.html(this.template(this.getBaseTemplateData()));
       
-      this.photogridPromise.done(function() {        
+      this.photogridPromise.done(function() {
         self.assign({
           '#photogrid': self.photogrid
         }, options);
         
-        self.photogrid.onload(function() {
+        self.photogrid.onload(Q.write.bind(Q, function() {
           var pHeader = self.$('.thumb-gal-header')[0];
           var h3 = pHeader.querySelector('h3');
           if (h3)
             h3.innerHTML = self.friends.title;
           
           pHeader.classList.remove('hidden');
-        });
+          self.parentView.invalidateSize();
+        }));
       });
 
 //      this.chatPromise && this.chatPromise.done(function() {        
@@ -387,6 +388,14 @@ define('views/ViewPage', [
       
       return this;
     },
+    
+//    _updateSize: function() {
+//      try {
+//        return this.resourceView._updateSize();
+//      } finally {
+//        _.extend(this, _.pick(this.resourceView, '_outerHeight', '_outerWidth', '_width', '_height', '_bounds'));
+//      }
+//    },
     
     onLoadedImage: function(callback, context) {
       return this.imageView ? this.imageView.onload(callback, context) : G.getRejectedPromise();
