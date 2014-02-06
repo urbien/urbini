@@ -18,7 +18,8 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
 
   var FPS = 45,
       FRAME_SIZE = 16,
-      FRAME_END = 14,
+      MIN_FRAME_SIZE = 5,
+      MAX_FRAME_SIZE = 14,
       modeOrder = ['nonDom', 'read', 'write'],
       numModes = modeOrder.length,
       BYPASS = false,
@@ -183,7 +184,10 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
 
   FastDom.prototype.scheduleFrame = function() {
     this.pending = true;
+    var time = this.time();
     var task = FrameWatch.subscribe(function() {
+//      this.lastBlackoutDuration = this.time() - time;
+//      this.log("Non-scripting browser ops took " + this.lastBlackoutDuration);
       FrameWatch.unsubscribe(task._taskId);
       this.frame();
     }, this);
@@ -207,8 +211,10 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
   };
 
   FastDom.prototype.isOutOfTime = function() {
-    return false;
-//    return (this._frameTime = _.last(this.timestamps) - this.frameStart) >= FRAME_END;
+//    return false;
+    this.frameEnd = _.last(this.timestamps);
+    this._frameTime = this.frameEnd - this.frameStart;
+    return this._frameTime >= MAX_FRAME_SIZE; //Math.max(MIN_FRAME_SIZE, MAX_FRAME_SIZE - this.lastBlackoutDuration);
   };
   
   /**
@@ -447,7 +453,7 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
   
 //    console.debug('running job', job.fn);
     if (args) {
-      if (_.isArray(args))
+      if (_.isArray(args) || _.isArguments(args))
         job.fn.apply(ctx, args);
       else
         job.fn.call(ctx, args);
