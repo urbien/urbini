@@ -289,7 +289,7 @@
           top = extremeDepth /*+ this.offset.y*/ + brick.geometry._aabb._hh + this._getOffsetDueToFlexigroup();
       }
 
-      console.log("adding " + brick.options._id + " (" + brick.geometry._aabb._hw * 2, "x", brick.geometry._aabb._hh * 2, ") brick at (" + left + ", " + top + ")");
+//      console.log("adding " + brick.options._id + " (" + brick.geometry._aabb._hw * 2, "x", brick.geometry._aabb._hh * 2, ") brick at (" + left + ", " + top + ")");
       brick.state.pos.set(left, top, getBrickCoord(brick, 2));
 
       // apply setHeight to necessary columns
