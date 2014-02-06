@@ -138,6 +138,8 @@ define('views/HorizontalListView', [
 //        this.el.style.height = '150px';
         if (G.isJQM())
           this.$el.trigger("create");
+        
+        this.parentView.invalidateSize();
       }
       
       return ResourceListView.prototype.postRender.apply(this, arguments);
