@@ -14,7 +14,7 @@ var ArrayProto = Array.prototype,
 		IS_DRAGGING = false,
 		DRAG_ANCHOR,
     DRAG_CONSTRAINTS = [],
-    DRAG_TRACKERS = [],
+//    DRAG_TRACKERS = [],
     TRACKERS = [],
 		CancelType = {
       unhandle: 'unhandle', // stop handling 'step' event for action
@@ -109,172 +109,158 @@ function isNumberUnit(unit, value, type) {
   return false;
 }
 
-function DragTracker(body, trackingType, trackBodies) {
-  this.body = body;
-  this.type = trackingType || 'vel';
-  this.trackBodies = trackBodies;
-  DRAG_TRACKERS.push(this);
-};
-
-DragTracker.prototype = {
-  isTrackingPosition: function() {
-    return this.type == 'pos';
-  },
-  canTrack: function(dragData) {
-    if (!this.trackBodies)
-      return true;
-    
-    var trackables = this.trackBodies,
-        i = trackables.length,
-        bodies = dragData.bodies;
-    
-    while (i--) {
-      if (!bodies.indexOf(trackables[i]))
-        return true;
-    }
-    
-    return false;
-  }
-};
-
-//function addDragTracker(body) {
-//  var idx = DRAG_TRACKERS.indexOf(body);
-//  if (idx == -1)
-//    DRAG_TRACKERS.push(body);
+//function DragTracker(body, trackingType, trackBodies) {
+//  this.body = body;
+//  this.type = trackingType || 'vel';
+//  this.trackBodies = trackBodies;
+//  DRAG_TRACKERS.push(this);
 //};
-
-function getDragTracker(body) {
-  var i = DRAG_TRACKERS.length,
-      tracker;
-  
-  while (i--) {
-    tracker = DRAG_TRACKERS[i];
-    if (tracker.body == body)
-      return tracker;
-  }
-  
-  return null;
-};
-
-function removeDragTracker(body) {
-  var tracker = getDragTracker(body),
-      idx;
-  
-  if (tracker) {
-    idx = DRAG_TRACKERS.indexOf(body);
-    if (~idx)
-      DRAG_TRACKERS.splice(idx, 1);
-  }
-};
-
-function getTracker(bodyA, bodyB) {
-  var i = TRACKERS.length,
-      tracker;
-  
-  while (i--) {
-    tracker = TRACKERS[i];
-    if (tracker.bodyA == bodyA && tracker.bodyB == bodyB)
-      return tracker;
-  }
-  
-  return null;
-};
-
-function getTrackersByType(body, type) {
-  type = type || 'all';
-  
-  var i = TRACKERS.length,
-      trackers = [],
-      tracker;
-  
-  while (i--) {
-    tracker = TRACKERS[i];
-    switch (type) {
-    case 'tracked':
-      if (tracker.bodyB == body)
-        trackers.push(body);
-      
-      break;
-    case 'tracking':
-      if (tracker.bodyA == body)
-        trackers.push(body);
-      
-      break;
-    case 'all':
-      if (tracker.bodyA == body || tracker.bodyB == body)
-        trackers.push(t);
-      
-      break;
-    }
-  }
-  
-  return trackers;
-};
-
-function removeTrackers(body, type) {
-  getTrackersByType(body, type).forEach(function(tracker) {
-    tracker.destroy();
-  });
-};
-
-function Tracker(bodyA, bodyB) {
-  this.bodyA = getBody(bodyA);
-  this.bodyB = getBody(bodyB);
-  this._props = {};
-  TRACKERS.push(this);
-};
-
-Tracker.prototype = {
-  untrack: function(prop) {
-    world.unsubscribe('step', this._props[prop]);
-  },
-  track: function(prop) {
-    if (this._props[prop])
-      return;
-    
-    var a = this.bodyA,
-        b = this.bodyA;
-    
-    function trackProp() {
-      switch (prop) {
-      case 'acc':
-      case 'vel':
-      case 'pos':
-        a.state[prop].clone(b.state[prop]);
-        break;
-      default:
-        a.state.renderData.set(prop, b.state.renderData.get(prop));
-        break;
-      }
-    };
-    
-    this._props[prop] = trackProp;
-    world.subscribe('step', trackProp);
-//    if (prop == 'acc' || prop == 'vel' || prop == 'pos') {
-//      function trackDrag(data) {
-//        var idx = data.bodies.indexOf(bodyB);
-//        if (~idx) {
-//          bodyA.state.pos.vadd(data.vector);
-//  //        bodyA.stop();
-//        }
-//      }        
-//      
-//      world.subscribe('drag', trackDrag);
-//      trackers.push(trackDrag);
+//
+//DragTracker.prototype = {
+//  isTrackingPosition: function() {
+//    return this.type == 'pos';
+//  },
+//  canTrack: function(dragData) {
+//    if (!this.trackBodies)
+//      return true;
+//    
+//    var trackables = this.trackBodies,
+//        i = trackables.length,
+//        bodies = dragData.bodies;
+//    
+//    while (i--) {
+//      if (!bodies.indexOf(trackables[i]))
+//        return true;
 //    }
 //    
-//    propTracker[prop] = trackers;
-  },
-  destroy: function() {
-    var idx = TRACKERS.indexOf(this);
-    if (~idx)
-      TRACKERS.splice(idx, 1);
-    
-    for (var p in this._props) {
-      this.untrack(p);
-    }
-  }
-};
+//    return false;
+//  }
+//};
+//
+////function addDragTracker(body) {
+////  var idx = DRAG_TRACKERS.indexOf(body);
+////  if (idx == -1)
+////    DRAG_TRACKERS.push(body);
+////};
+//
+//function getDragTracker(body) {
+//  var i = DRAG_TRACKERS.length,
+//      tracker;
+//  
+//  while (i--) {
+//    tracker = DRAG_TRACKERS[i];
+//    if (tracker.body == body)
+//      return tracker;
+//  }
+//  
+//  return null;
+//};
+//
+//function removeDragTracker(body) {
+//  var tracker = getDragTracker(body),
+//      idx;
+//  
+//  if (tracker) {
+//    idx = DRAG_TRACKERS.indexOf(body);
+//    if (~idx)
+//      DRAG_TRACKERS.splice(idx, 1);
+//  }
+//};
+//
+//function getTracker(bodyA, bodyB) {
+//  var i = TRACKERS.length,
+//      tracker;
+//  
+//  while (i--) {
+//    tracker = TRACKERS[i];
+//    if (tracker.bodyA == bodyA && tracker.bodyB == bodyB)
+//      return tracker;
+//  }
+//  
+//  return null;
+//};
+//
+//function getTrackersByType(body, type) {
+//  type = type || 'all';
+//  
+//  var i = TRACKERS.length,
+//      trackers = [],
+//      tracker;
+//  
+//  while (i--) {
+//    tracker = TRACKERS[i];
+//    switch (type) {
+//    case 'tracked':
+//      if (tracker.bodyB == body)
+//        trackers.push(body);
+//      
+//      break;
+//    case 'tracking':
+//      if (tracker.bodyA == body)
+//        trackers.push(body);
+//      
+//      break;
+//    case 'all':
+//      if (tracker.bodyA == body || tracker.bodyB == body)
+//        trackers.push(t);
+//      
+//      break;
+//    }
+//  }
+//  
+//  return trackers;
+//};
+//
+//function removeTrackers(body, type) {
+//  getTrackersByType(body, type).forEach(function(tracker) {
+//    tracker.destroy();
+//  });
+//};
+//
+//function Tracker(bodyA, bodyB) {
+//  this.bodyA = getBody(bodyA);
+//  this.bodyB = getBody(bodyB);
+//  this._props = {};
+//  TRACKERS.push(this);
+//};
+//
+//Tracker.prototype = {
+//  untrack: function(prop) {
+//    world.unsubscribe('step', this._props[prop]);
+//  },
+//  track: function(prop) {
+//    if (this._props[prop])
+//      return;
+//    
+//    var a = this.bodyA,
+//        b = this.bodyA;
+//    
+//    function trackProp() {
+//      switch (prop) {
+//      case 'acc':
+//      case 'vel':
+//      case 'pos':
+//        a.state[prop].clone(b.state[prop]);
+//        break;
+//      default:
+//        a.state.renderData.set(prop, b.state.renderData.get(prop));
+//        break;
+//      }
+//    };
+//    
+//    this._props[prop] = trackProp;
+//    world.subscribe('step', trackProp);
+//  },
+//  destroy: function() {
+//    var idx = TRACKERS.indexOf(this);
+//    if (~idx)
+//      TRACKERS.splice(idx, 1);
+//    
+//    for (var p in this._props) {
+//      this.untrack(p);
+//    }
+//  }
+//};
 
 function noop() {};
 
@@ -980,40 +966,6 @@ function hasMovedSinceLastRender(body) {
     return false;
 };
 
-function beforeRender(body) {
-  calcOpacity(body);
-};
-
-function calcOpacity(body) {
-  if (body.state.renderData.isChanged('opacity'))
-    return;
-  
-//  var opacity = 1;
-  var opacity;
-  if (body.geometry.name == 'point') // HACK for now, as we use points to represent all kinds of shapes for now
-    opacity = MAX_OPACITY;
-  else if (hasMovedSinceLastRender(body)) {
-    var overlap = getOverlapArea(body, BOUNDS, body.geometry._area, BOUNDS_AREA);
-//    return overlap / body.geometry._area;
-//    opacity = overlap > 0 ? 1 : 0;
-    if (overlap > 0)
-      opacity = MAX_OPACITY;
-    else {
-      if (body.state.renderData.get('opacity') >= MAX_OPACITY) {
-        if (overlap < -2 * Math.max(BOUNDS._hw, BOUNDS._hh))
-          opacity = 0;
-      }
-      else {
-        if (overlap > -10)
-          opacity = MAX_OPACITY;
-      }
-    }
-  }
-  
-  if (typeof opacity != 'undefined')
-    body.state.renderData.set('opacity', opacity);
-};
-
 function calcTransform(body) {
   var aabb = getAABB(body),
       pos = body.state.pos,
@@ -1397,11 +1349,11 @@ function initWorld(_world, stepSelf) {
 //	    }
 //	  }	  
 //	});
-	
-	world.subscribe('remove:body', function(data) {
-    removeTrackers(data.body);
-    removeDragTracker(data.body);
-	});
+//	
+//	world.subscribe('remove:body', function(data) {
+//    removeTrackers(data.body);
+//    removeDragTracker(data.body);
+//	});
 	
 	world.subscribe('add:body', function(data) {
 	  var body = data.body,
@@ -1589,6 +1541,7 @@ function getRectVertices(width, height) {
     minBricks: 10,
     maxBricks: 10,
     bricksPerPage: 10,
+    defaultAddDelta: 1, // 1 page worth of bricks
 //    numBricks: 0,
     gutterWidthHorizontal: 0,
     gutterWidthVertical: 0,
@@ -1851,7 +1804,7 @@ function getRectVertices(width, height) {
         }
         else if (!this._transitioning) {
           while (i--) {
-            beforeRender(bricks[i]);
+            this.beforeRender(bricks[i]);
           }          
         }
       }, this);
@@ -1920,6 +1873,44 @@ function getRectVertices(width, height) {
       }
     },
     
+    getScrollVelocity: function() {
+      return this.offsetBody.state.vel.norm();
+    },
+    
+    beforeRender: function(body) {
+      this.calcOpacity(body);
+    },
+
+    calcOpacity: function(body) {
+      if (body.state.renderData.isChanged('opacity'))
+        return;
+      
+//      var opacity = 1;
+      var opacity;
+      if (body.geometry.name == 'point') // HACK for now, as we use points to represent all kinds of shapes for now
+        opacity = MAX_OPACITY;
+      else if (hasMovedSinceLastRender(body)) {
+        var overlap = getOverlapArea(body, BOUNDS, body.geometry._area, BOUNDS_AREA);
+//        return overlap / body.geometry._area;
+//        opacity = overlap > 0 ? 1 : 0;
+        if (overlap > 0)
+          opacity = MAX_OPACITY;
+        else {
+          if (body.state.renderData.get('opacity') >= MAX_OPACITY) {
+            if (overlap < -1000)//-2 * Math.max(BOUNDS._hw, BOUNDS._hh))
+              opacity = 0;
+          }
+          else {
+            if (overlap > -700)
+              opacity = MAX_OPACITY;
+          }
+        }
+      }
+      
+      if (typeof opacity != 'undefined')
+        body.state.renderData.set('opacity', opacity);
+    },
+
     shouldArmHead: function(self) {
       if (self.range.from == 0) {
         var scratchpad = Physics.scratchpad(),
@@ -2779,6 +2770,7 @@ function getRectVertices(width, height) {
     
     /**
      * @param reverse - if true, will place bricks in the direction from tail to head
+     * @TODO - reload a subset of bricks and as a result any bricks before and after them 
      */
     reload: function(reverse) {
       var viewport = this.getViewport(),
@@ -4652,41 +4644,41 @@ var API = {
     });
   },
 
-	trackDrag: function(body, type, bodies) {
-	  body = getBody(body);
-	  if (bodies)
-	    bodies = getBodies(bodies);
-	  
-    getDragTracker(body) || new DragTracker(body, type, bodies);
-	},
-
-	untrackDrag: function(body) {
-    removeDragTracker(getBody(body));
-  },
-
-	track: function(bodyA, bodyB, props) {
-    bodyA = getBody(bodyA);
-    bodyB = getBody(bodyB);
-	  var tracker = getTracker(bodyA, bodyB) || new Tracker(bodyA, bodyB),
-	      i = props.length;
-	  
-	  while (i--) {
-	    tracker.track(props[i]);
-	  }
-	},
-
-	untrack: function(bodyA, bodyB, props) {
-    bodyA = getBody(bodyA);
-    bodyB = getBody(bodyB);
-    var tracker = getTracker(bodyA, bodyB),
-        i = props.length;
-    
-    if (tracker) {
-      while (i--) {
-        tracker.track(props[i]);
-      }
-    }
-  },
+//	trackDrag: function(body, type, bodies) {
+//	  body = getBody(body);
+//	  if (bodies)
+//	    bodies = getBodies(bodies);
+//	  
+//    getDragTracker(body) || new DragTracker(body, type, bodies);
+//	},
+//
+//	untrackDrag: function(body) {
+//    removeDragTracker(getBody(body));
+//  },
+//
+//	track: function(bodyA, bodyB, props) {
+//    bodyA = getBody(bodyA);
+//    bodyB = getBody(bodyB);
+//	  var tracker = getTracker(bodyA, bodyB) || new Tracker(bodyA, bodyB),
+//	      i = props.length;
+//	  
+//	  while (i--) {
+//	    tracker.track(props[i]);
+//	  }
+//	},
+//
+//	untrack: function(bodyA, bodyB, props) {
+//    bodyA = getBody(bodyA);
+//    bodyB = getBody(bodyB);
+//    var tracker = getTracker(bodyA, bodyB),
+//        i = props.length;
+//    
+//    if (tracker) {
+//      while (i--) {
+//        tracker.track(props[i]);
+//      }
+//    }
+//  },
 
   removeRail: function(railId) {
 	  railroad.remove(railId);
