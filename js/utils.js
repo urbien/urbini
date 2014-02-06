@@ -40,8 +40,13 @@ define('utils', [
 
   function isFileUpload(prop, val) {
     return prop.range && /model\/portal\/(Image|Video)/.test(prop.range) && typeof val === 'object';
-  }
+  };
   
+  function getName(res, name) {
+    // HACK
+//    return (U.isModel(res) ? res.attributes : res).hasOwnProperty('__uri') ? '_' + name : name;
+    return name;
+  };
   
 //  Array.prototype.remove = function() {
 //    var what, a = arguments, L = a.length, ax;
@@ -219,14 +224,17 @@ define('utils', [
               
 //              Events.trigger('garbage', resp);
               if (headers.length) {
-                var h = headers.splitAndTrim(/\n/);
+                var h = headers.splitAndTrim(/\n/),
+                    i = h.length,
+                    pair;
+                
                 headers = {};
-                _.each(h, function(pair) {
-                  if (pair) {
+                while (i--) {
+                  if (pair = h[i]) {
                     var cIdx = pair.indexOf(':');
                     headers[pair.slice(0, cIdx)] = pair.slice(cIdx + 1);
                   }
-                });
+                }
               }
               else
                 headers = {};
@@ -1576,12 +1584,7 @@ define('utils', [
     },
     
     addToFrag: function(frag, html) {
-      var els = DOM.parseHTML(html),
-          l = els.length;
-      
-      for (var i = 0; i < l; i++) {
-        frag.appendChild(els[i]);
-      }
+      frag.$append(DOM.parseHTML(html));
     },
     
     getUris: function(data) {
@@ -2920,8 +2923,10 @@ define('utils', [
     },
     
     buildValueTester: function(params, vocModel) {
-      var rules = [], meta = vocModel.properties;
-      var query = U.parseAPIQuery(params);
+      var rules = [], 
+          meta = vocModel.properties,
+          query = U.parseAPIQuery(params);
+      
       _.each(query, function(clause) {
         var param = clause.name;
         switch (param) {
@@ -2941,7 +2946,7 @@ define('utils', [
             
             if (subClause.name.startsWith('$')) {
               debugger;
-              return function() {return true};
+              return G.trueFn;
             }
             
             return U.makeTest(meta[subClause.name], subClause.op, subClause.value);
@@ -2961,7 +2966,7 @@ define('utils', [
           var prop = meta[propName];
           if (!prop) {
             debugger;
-            return function() {return true};
+            return G.trueFn;
           }
           
           values = values.slice(1);
@@ -2984,7 +2989,7 @@ define('utils', [
           var prop = meta[propName];
           if (!prop) {
             debugger;
-            return function() {return true};
+            return G.trueFn;
           }
           
           var value = nameVal[1].toLowerCase();
@@ -3049,10 +3054,10 @@ define('utils', [
       var range = prop.range;
       var name = prop.shortName;
       var falsy = function(res) {
-        return U.isFalsy(U.getValue(res, name), range);
+        return U.isFalsy(U.getValue(res, getName(res, name)), range);
       }
       var truthy = function(res) {
-        return !U.isFalsy(U.getValue(res, name), range);
+        return !U.isFalsy(U.getValue(res, getName(res, name)), range);
       }
       
       if (bound === 'null')
@@ -3074,7 +3079,7 @@ define('utils', [
         default: {
           return function(res) {
             try {
-              return new Function("a", "b", "return a {0} b".format(op))(U.getValue(res, name), bound);
+              return new Function("a", "b", "return a {0} b".format(op))(U.getValue(res, getName(res, name)), bound);
             } catch (err){
               return false;
             }
@@ -3855,35 +3860,6 @@ define('utils', [
           };
         }
       });
-    },
-    
-    toTimedFunction: function(obj, name, thresh) {
-      var fn = name ? obj[name] : obj;
-      function timed() {
-        var now = _.now(),
-            frame = window.fastdom.frameNum,
-            result,
-            time;
-        
-        function measure() {
-          time = _.now() - now;
-          if (!thresh || time > thresh)
-            console.log("function", name, "took", time, "millis", window.fastdom.frameNum - frame, "frames");          
-        };
-        
-        result = fn.apply(this, arguments);
-        if (_.isPromise(result))
-          result.always(measure);
-        else
-          measure();
-        
-        return result;
-      };
-      
-      if (name)
-        obj[name] = timed;
-      
-      return timed;
     },
     
 //    arrayFnProxy: function(arrayFn, fn, objOrArray) {

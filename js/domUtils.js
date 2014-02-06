@@ -297,25 +297,22 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       },
       
       $empty: function() {
-        this.innerHTML = "";
+        while (this.lastChild) {
+//        this.innerHTML = "";
+          this.removeChild(this.lastChild); // http://jsperf.com/removechild-vs-innerhtml-empty/5
+        }
+        
         return this;
       },
       
       $html: function(htmlOrFrag) {
-        if (typeof htmlOrFrag == 'string') {
-          this.innerHTML = htmlOrFrag;
-          return this;
-        }
+        if (typeof htmlOrFrag == 'string')
+          return this.$html(DOM.parseHTML(htmlOrFrag));
         
         return this.$empty().$append(htmlOrFrag);        
       }
-    },
-        
-    noOffset = {
-      top: 0,
-      left: 0
     };
-    
+        
     var NodeAug = {
       $: function(selector) {
         switch (this.nodeType) {
@@ -353,7 +350,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
             offsetParent = this.offsetParent, // maybe use jQuery's offsetParent?
             style = win.getComputedStyle(this),
             parentStyle = win.getComputedStyle(offsetParent),
-            parentOffset = offset.nodeName == 'HTML' ? noOffset : offsetParent.$offset(),
+            parentOffset = offset.nodeName == 'HTML' ? { top: 0, left: 0 } : offsetParent.$offset(),
             marginTop = 0,
             marginLeft = 0;
         
@@ -429,8 +426,13 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           else if (htmlOrFrag instanceof Node)
             this.appendChild(htmlOrFrag);
           else if (htmlOrFrag instanceof Array || htmlOrFrag instanceof NodeList || htmlOrFrag instanceof HTMLCollection) {
-            for (var j = 0; j < htmlOrFrag.length; j++) {
+            for (var j = 0, l = htmlOrFrag.length; j < l; j++) {
               this.appendChild(htmlOrFrag[j]);
+              if (htmlOrFrag.length < l) {
+                // we're appending a live collection, so with every element we append, the collection gets smaller
+                j--;
+                l--;
+              }
             }
           }
           else
@@ -486,7 +488,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           right: parseFloat(style.marginRight || 0)
         }
       },
-      
+
       $outerHeight: function(includeMargin) {
         if (!includeMargin)
           return this.offsetHeight;
@@ -1232,11 +1234,14 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
 
     maxOpacity: MAX_OPACITY,
     
+    /**
+     * IMPORTANT: returns a live NodeList (meaning if you start taking its nodes and appending them somewhere, the collection length WILL change automatically)
+     */
     parseHTML: function(html) {
-//      return $.parseHTML(html.trim());
+//      return $.parseHTML(html);
       var tmp = document.implementation.createHTMLDocument();
       tmp.body.innerHTML = html;
-      return tmp.body.children;
+      return tmp.body.children; // live NodeList
     },
     
     /**
