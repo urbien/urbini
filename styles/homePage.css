@@ -1,24 +1,6 @@
 html {
  height: 100%;
 }
-/*
-html {
-  font-size: 10px;
-}
-#homePage.demo:after {
-  content: "";  
-  z-index: -1;
-  position: absolute;
-  top: 0; right: 0; bottom: 0; left: 0;
-  background: #000;
-  background: -webkit-radial-gradient(center center, circle cover, rgba(0,0,0,0.5), rgba(0,0,0,0.95));
-  background: -moz-radial-gradient(center center, circle cover, rgba(0,0,0,0.3), rgba(0,0,0,0.95));
-  background: -ms-radial-gradient(center center, circle cover, rgba(0,0,0,0.3), rgba(0,0,0,0.95));
-  background: -o-radial-gradient(center center, circle cover, rgba(0,0,0,0.3), rgba(0,0,0,0.95));
-  background: radial-gradient(center center, circle cover, rgba(0,0,0,0.3), rgba(0,0,0,0.95));
-}
-*/
-//#homePage {height: 99.9%;}
 
 #homePage {
   height: 100%;
@@ -143,7 +125,7 @@ body {
    }
 }
 
-///////////// ROUND BUTTONS
+/* ROUND BUTTONS */
 .nav {
   list-style: none;
   text-align: center;
