@@ -132,8 +132,8 @@ define('views/EditPage', [
         views['div#resourceImage'] = this.imageView;
 
       this.assign(views);      
-      if (G.theme.backgroundImage) 
-        this.$('#resourceEditView').$css('background-image', 'url(' + G.theme.backgroundImage +')');
+//      if (G.theme.backgroundImage) 
+//        this.$('#resourceEditView').$css('background-image', 'url(' + G.theme.backgroundImage +')');
 
       // Comments inline
       var isComment = U.isAssignableFrom(this.vocModel, U.getLongUri1("model/portal/Comment"));
