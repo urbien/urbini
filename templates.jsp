@@ -1392,7 +1392,7 @@
 <script type="text/template" id="messageListTemplate">
 <!-- collapsible error list -->
 
-<div id="messageList" data-theme="{{= obj.theme ||  G.theme.error || 'c' }}">
+<div id="messageList">
 {{  _.each(messages, function(msg) {  }}
      <div style="display:block;position:relative;" id="{{= msg.id }}" class="headerMessageBar {{= msg['class'] || obj['class'] || '' }}">
   {{ if (msg.link) {            }}

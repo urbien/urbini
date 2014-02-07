@@ -22,7 +22,7 @@
     </form>
    {{ } }}
    -->
-    <section  id="sidebar" data-type="list" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
+    <section  id="sidebar" data-type="list">
     </section>
     <div id="nabs_grid" class="masonry"></div>
     
@@ -39,7 +39,7 @@
     </form>  
     <form data-ajax="false" id="editRlForm" action="#">
       <input type="submit" id="editRlSubmit" value="Submit" />
-      <ul data-role="listview" data-theme="{{= G.theme.list }}" id="editRlList" class="action-list" data-inset="true">
+      <ul data-role="listview" id="editRlList" class="action-list" data-inset="true">
       </ul>
     </form>  
   </div>
@@ -57,7 +57,7 @@
 
       {{ if (this.isImageCover) { }} 
         <div id="resourceImage" style="position:absolute;z-index:1"></div>
-        <div data-role="footer" data-theme="{{= G.theme.photogrid }}" class="thumb-gal-header hidden" 
+        <div data-role="footer" class="thumb-gal-header hidden" 
           style="opacity:0.7;position:absolute;top:251px;width:100%;background:#eee;text-shadow:none;color:{{= G.coverImage ? G.coverImage.background : '#eeeeee' }}"><h3></h3></div>    
         <div id="mainGroup" style="top:0px;right:1.3rem;position:absolute;"></div>
       {{ } }}
@@ -70,37 +70,37 @@
       <!--div id="resourceImage" style="width:50%;float:left;margin:0; padding:0;"--><!-- style="width:auto" --></div>
       <!--div id="buyGroup" class="ui-block-b" style="width:50%; min-width: 130px"></div-->
     </div>
-    <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="hidden"></div>
+    <div id="resourceImageGrid" data-role="content" style="padding: 2px;" class="hidden"></div>
     {{ if (!this.isImageCover) { }}
-      <div data-role="footer" data-theme="{{= G.theme.photogrid }}" class="thumb-gal-header hidden"><h3></h3></div>    
+      <div data-role="footer" class="thumb-gal-header hidden"><h3></h3></div>    
     {{ } }}
     
     <div class="thumb-gal-header hidden"><h3></h3></div>
-    <!--div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="hidden">
+    <!--div id="photogrid" style="padding: 7px;" data-role="content" class="hidden">
     </div-->
     
     <div id="photogrid" data-inset="true" data-filter="false" class="thumb-gal hidden">
     </div>
     {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
-       <div style="padding:10px;"><a data-role="button" class="{{= 'ui-btn-hover-' + G.theme.swatch }}" data-icon="heart" data-theme="{{= G.theme.swatch }}" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></div>
+       <div style="padding:10px;"><a data-role="button" class="ui-btn-hover-c" data-icon="heart" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></div>
     {{ } }}
     
-    <section data-type="list" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
-      <ul data-theme="{{= G.theme.list }}" id="resourceView" style="padding:10px;">
+    <section data-type="list">
+      <ul id="resourceView" style="padding:10px;">
       </ul>
     </section>
-    <div id="about" class="hidden" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}"></div>
+    <div id="about" class="hidden" style="padding: 7px;"></div>
     
     {{ if ($('#other')) { }}
       <!--br/>
       <br/-->
     {{ } }}
-    <section data-type="list" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
-      <ul data-theme="{{= G.theme.list }}" id="cpView" style="padding: 10px;">
+    <section data-type="list">
+      <ul id="cpView" style="padding: 10px;">
       </ul>
     </section>
   </div>
-  <!--div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
+  <!--div data-role="footer" class="ui-bar">
      <a data-role="button" data-shadow="false" data-icon="repeat" id="homeBtn" target="#">Home</a>
      <a data-role="button" data-shadow="false" data-icon="edit" id="edit" target="#" style="float:right;" id="edit">{{= loc('edit') }}</a>
   </div-->
@@ -135,9 +135,7 @@
 
 <script type="text/template" id="cpTemplate">
 <!-- readwrite backlink in resource view -->
-<li data-propName="{{= shortName }}"
-{{= obj.inline ? ' data-theme="{0}">'.format(G.theme.footer) : '' }}
->
+<li data-propName="{{= shortName }}">
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      
@@ -157,15 +155,13 @@
 
 <script type="text/template" id="cpTemplateNoAdd">
 <!-- readonly backlink in resource view -->
-<li data-propName="{{= shortName }}"
-  {{= obj.inline ? ' data-theme="{0}">'.format(G.theme.activeButton) : '' }}
->
+<li data-propName="{{= shortName }}">
 <p>
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
      
-     <!--span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="{{= G.theme.list }}" data-icon="chevron-right" data-iconshadow="false" class="cp" -->
+     <!--span class="ui-li-count">{{= value }}</span></a><a target="#" data-icon="chevron-right" data-iconshadow="false" class="cp" -->
      </a>
      <div style="display:inline;position:absolute;right:4rem;top:1rem;font-size: 11px;border-radius:1rem;border: 1px solid #777;padding: 0.1rem 0.3rem;">{{= value }}</div>
 </p>     
@@ -214,7 +210,7 @@
   {{ var action = action ? action : 'view' }}
   <div style="margin:0" data-viewid="{{= viewId }}">
   {{ if (!obj.v_submitToTournament) { }}
-    <div style="padding:.7em 10px 10px 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
+    <div style="padding:1.25rem 0 1.25rem 90px;{{= obj.image ? 'min-height:59px;' : '' }}" data-uri="{{= U.makePageUrl(action, _uri) }}">
   {{ } }}
   {{ if (obj.v_submitToTournament) { }}
     <div style="padding:.7em 10px 0 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
@@ -244,7 +240,7 @@
       style="padding: .7em 10px 10px 0px;"
     {{ } }}
     {{ if (!obj.isJst  &&  (obj._hasSubmittedBy || !obj.v_submitToTournament)) { }}
-      style="padding: 1rem;"
+      style="padding: 1.25rem 1rem;"
     {{ } }}
   {{ } }}
   {{ if (obj.v_submitToTournament) { }}
@@ -360,16 +356,16 @@
 <script type="text/template" id="genericDialogTemplate">
 <section role="region" class="loginPopup" id="{{= id }}">
   {{ if (obj.header) { }}
-  <div data-role="header" id="header" data-theme="a" class="ui-corner-top">
+  <div data-role="header" id="header" class="ui-corner-top">
     <h1>{{= header }}</h1>
   </div>
   {{ }                 }}
   
   {{ if (obj.ok === false && obj.cancel === false) { }}
-    <a href="#" data-cancel="cancel" data-rel="back" data-role="button" data-theme="{{= G.theme.menu }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
+    <a href="#" data-cancel="cancel" data-rel="back" data-role="button" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
   {{ }                 }}
 
-  <div data-role="content" data-theme="d" class="ui-corner-bottom ui-content">
+  <div data-role="content" class="ui-corner-bottom ui-content">
     {{= obj.title ? '<h3 class="ui-title">{0}</h3>'.format(title) : '' }}
     {{ if (obj.img) { }}
       <img src="{{= img }}" style="display:block" />    
@@ -378,11 +374,11 @@
     
     <div style="display:block">
     {{ if (obj.cancel) { }}
-    <a href="#" role="button" data-cancel="" class="lpButton" data-theme="{{= G.theme.footer }}">{{= loc(typeof cancel === 'string' ? cancel : 'cancel') }}</a>
+    <a href="#" role="button" data-cancel="" class="lpButton">{{= loc(typeof cancel === 'string' ? cancel : 'cancel') }}</a>
     {{ }                 }}
     
     {{ if (obj.ok) { }}
-    <a href="#" role="button" data-ok="" class="lpButton" data-theme="{{= G.theme.activeButton }}">{{= loc(typeof ok === 'string' ? ok : 'ok') }}</a>
+    <a href="#" role="button" data-ok="" class="lpButton">{{= loc(typeof ok === 'string' ? ok : 'ok') }}</a>
     {{ }                 }}
     </div>
   </div>
@@ -422,7 +418,7 @@
 
 <script type="text/template" id="enterTournamentBtnTemplate">
   <!-- button that will enter the user into a tournament -->
-  <a target="#" data-icon="star" id="enterTournament" data-theme="e" data-role="button" data-position="notext">{{= loc('enterData') + ': ' + name }}</a>
+  <a target="#" data-icon="star" id="enterTournament" data-role="button" data-position="notext">{{= loc('enterData') + ': ' + name }}</a>
 </script>
 
 <script type="text/template" id="testPlugBtnTemplate">
@@ -444,7 +440,10 @@
     </div>
   </div>
   <div id="buttons">  
-    {{= this.categories ? '<div style="margin:10px 0 0 10px; float:left"><a id="categories" href="#"><i class="ui-icon-tags"></i></a></div>' : '' }} 
+    {{ if (this.categories) { }}
+       <div style="margin:10px 0 0 10px; float:left"><a id="categories" href="#" {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';background:' + G.coverImage.color +';"' : '' }}>
+       <i class="ui-icon-tags"></i></a></div> 
+    {{ } }} 
     {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
     <div id="name" class="resTitle" style="background:{{= G.coverImage ? G.coverImage.background : '#757575' }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
       <h4 id="pageTitle" style="font-weight:normal;">{{= this.title }}</h4>
@@ -589,8 +588,8 @@
     {{ if (this.resource.isAssignableFrom("InterfaceImplementor")) }}
     <div data-role="fieldcontain" id="ip">
       <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true" data-theme="{{= G.theme.activeButton }}">{{= loc('checkAll') }}</a></div>
-        <div class="ui-block-b"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true" data-theme="{{= G.theme.footer }}">{{= loc('uncheckAll') }}</a></div>
+        <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true">{{= loc('checkAll') }}</a></div>
+        <div class="ui-block-b"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true">{{= loc('uncheckAll') }}</a></div>
       </fieldset>
       <fieldset data-role="controlgroup" id="interfaceProps">
       </fieldset>
