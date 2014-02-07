@@ -31,12 +31,6 @@ html {
   width:100%;height:40px
 }
 
-#categories {
-  font-size:20px;
-  background: #eee;
-  border-radius: 1.5rem;
-  padding: .2rem;
-}
 #headerUl  {
   display:block;
   max-width:100%;
@@ -446,10 +440,11 @@ section#login_popup {
   top:1.5rem;
   overflow:hidden;
 }
-
+/*
 .commonLI {
   padding-left: 1rem;
 }
+*/
 #sidebar .ui-li-count {
   float: right;
 }
