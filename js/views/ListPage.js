@@ -422,9 +422,9 @@ define('views/ListPage', [
 //        this.listView.$el.find('ul').removeClass('grid-listview');
 //      }
       this.$('#sidebarDiv').$css('clear', 'both');
-      if (G.theme.backgroundImage) { 
-        this.$('#sidebarDiv').$css('background-image', 'url(' + G.theme.backgroundImage +')');
-      }
+//      if (G.theme.backgroundImage) { 
+//        this.$('#sidebarDiv').$css('background-image', 'url(' + G.theme.backgroundImage +')');
+//      }
       if (!this.isMasonry)
         this.$('#sidebarDiv').$css('overflow-x', 'visible');
 

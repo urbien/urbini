@@ -369,9 +369,9 @@ define('views/ViewPage', [
         }
       }       
       
-      this.el.dataset.theme = G.theme.swatch;
-      if (G.theme.backgroundImage) 
-        this.$('#resourceViewHolder').$css('background-image', 'url(' + G.theme.backgroundImage +')');
+//      this.el.dataset.theme = G.theme.swatch;
+//      if (G.theme.backgroundImage) 
+//        this.$('#resourceViewHolder').$css('background-image', 'url(' + G.theme.backgroundImage +')');
 
       this.$('#chatbox').$hide();
             
