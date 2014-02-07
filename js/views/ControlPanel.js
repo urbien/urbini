@@ -686,7 +686,7 @@ define('views/ControlPanel', [
       if (!this.isMainGroup) {
         groupNameDisplayed = false;
         var tmpl_data = {};
-        var cnt;
+        var cnt = 0;        
         for (var p in meta) {
           cnt++;
           if (!/^[a-zA-Z]/.test(p))
@@ -709,9 +709,9 @@ define('views/ControlPanel', [
             if (!pMeta  ||  !pMeta.backLink || json[pp]) 
               continue;
             count = json[p];
-            p = pp;
+//            p = pp;
             prop = pMeta;
-            json[p] = {count: count};
+            json[pp] = {count: count};
           }
           if (count == -1) {
             if (!prop  ||  (!_.has(json, p)  &&  typeof prop.readOnly != 'undefined')) {
