@@ -60,7 +60,7 @@
       {{ if (this.isImageCover) { }} 
         <div id="resourceImage" style="position:absolute;z-index:1"></div>
         <div data-role="footer" class="thumb-gal-header hidden" 
-          style="opacity:0.7;position:absolute;top:314px;width:100%;background:#eee;text-shadow:none;color:{{= G.coverImage.background }}"
+          style="opacity:0.7;position:absolute;top:314px;width:100%;background:#eee;text-shadow:none;color:{{= G.coverImage ? G.coverImage.background : '#eeeeee' }};"
         ><h3></h3></div>    
         <div id="mainGroup" style="top:125px;right:0.3rem;position:absolute;"></div>
       {{ } }}
