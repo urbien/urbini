@@ -582,7 +582,7 @@ define('views/Header', [
 //      this.$el.prevObject.attr('data-theme', G.theme.list);
       var pageData = this.pageView.el.dataset;
       pageData.title = this.pageTitle;
-      pageData.theme = G.theme.list;
+//      pageData.theme = G.theme.list;
       var frag = document.createDocumentFragment();
       var btns = this.buttonViews;
       var isMapItToggleable = !!this.collection;
@@ -665,7 +665,7 @@ define('views/Header', [
       // HACK
       // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view 
       var header = this.$('.ui-header')[0];
-      var barClass = 'ui-bar-{0}'.format(G.theme.header);
+//      var barClass = 'ui-bar-{0}'.format(G.theme.header);
       if (header && !header.classList.contains(barClass))
         header.classList.add(barClass);
       
