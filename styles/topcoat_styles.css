@@ -12,11 +12,14 @@ a.resourceProp {
   margin-bottom: -5px;
   margin-right: -15px;
 }
- 
+.topcoat-button--large {
+  font-size: 1.7rem;
+  text-shadow: none;
+} 
 li {
   position: relative;
 }
-#categories {font-size:20px;}f
+
 #headerUl .topcoat-button-bar__button--large {
   border-radius: 0;
 }
