@@ -1415,7 +1415,7 @@
 <!--div id="headerMessageBar"></div-->
 <div id="headerDiv"></div>
 <div id="resourceEditView">
-  <div id="resourceImage"></div>
+  <!-- div id="resourceImage"></div -->
   <form data-ajax="false" id="{{= viewId + '_editForm'}}" action="#">
     <ul data-role="listview" data-theme="c" id="fieldsList" class="action-list" data-inset="true">
     </ul>
