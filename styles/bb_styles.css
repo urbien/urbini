@@ -14,7 +14,7 @@ html {
   background: #eee;
 }
 [data-type="list"] li, #sidebar li.image_fitted {
-  border-bottom: solid 0.1rem #e3e3e3;
+  border-bottom: solid 1px #e3e3e3;
   height: 8rem;
 }
 
@@ -66,7 +66,7 @@ html {
 }
 
 #resourceView li {
- border-bottom: 0.1rem solid #e3e3e3;
+ border-bottom: 1px solid #e3e3e3;
 }
 
 
@@ -87,7 +87,7 @@ button {
   width: auto;
   height: 2.3rem;
   background: #fafafa url(buttons/images/ui/default.png) repeat-x left bottom / auto 100%;
-  border: 0.1rem solid #a6a6a6;
+  border: 1px solid #a6a6a6;
   font-size: 1rem;
   line-height: 2.3rem;
   border-radius: 0.5rem;
@@ -153,7 +153,7 @@ section[data-type="sidebar"] {
   text-shadow: none;
 }
 section[data-type="sidebar"] > ul > li {
-  border-bottom: 0.1rem solid #000000;
+  border-bottom: 1px solid #000000;
 }
 
 [data-type="list"] header:before {
@@ -173,7 +173,7 @@ section[data-type="sidebar"] >  ul > header {
   font-weight: normal;
   font-size: 18px; 
   line-height: 2rem;
-  border-bottom: 0.1rem solid #596068;
+  border-bottom: 1px solid #596068;
 }
 
 .acounter {

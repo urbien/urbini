@@ -271,7 +271,7 @@
 
 <script type="text/template" id="propGroupsDividerTemplate">
   <!-- row divider / property group header in resource view -->
-  <header {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';border-bottom:0.1rem solid ' + G.coverImage.background + ';"' : '' }}>{{= value }}</header>
+  <header {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';border-bottom:1px solid ' + G.coverImage.background + ';"' : '' }}>{{= value }}</header>
 </script>
 
 <script type="text/template" id="mapItButtonTemplate">
