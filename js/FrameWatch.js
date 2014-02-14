@@ -36,8 +36,8 @@ define('FrameWatch', ['underscore'], function() {
     }
   }
   
-  function subscribe(fn /*, ctx, args */) {
-    var id = taskCounter++;
+  function subscribe(fn /*, ctx, args, taskId */) {
+    var id = arguments[3] || taskCounter++;
     listeners[id] = arguments;
     numListeners++;
     arguments._taskId = id;

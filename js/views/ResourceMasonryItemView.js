@@ -44,6 +44,7 @@ define('views/ResourceMasonryItemView', [
       else
         this.makeTemplate('masonry-list-item', 'template', type);
 
+      this.makeTemplate('gridColTemplate', 'gridColTemplate', type);
       if (viewport.height > viewport.width) {
         this.IMG_MAX_WIDTH = 272;
         vocModel = this.vocModel;
@@ -137,6 +138,9 @@ define('views/ResourceMasonryItemView', [
       if (this.el.childElementCount)
         return this.updateTile(options, data);
       
+      if (data.gridCols)
+        data.gridCols = data.gridCols.map(this.gridColTemplate).join('');
+        
       var html = this.template(data, options && options.unlazifyImages);
       if (options && options.renderToHtml) {
 //        var tagName = this.tagName || 'div';
@@ -221,7 +225,11 @@ define('views/ResourceMasonryItemView', [
           atts = this.resource.attributes,
           imgSrc = obj.resourceMediumImage,
           cloned = this.clonedProperties,
-          gridCols = this.el.querySelector('.gridCols');
+          gridCols = this.el.querySelector('.gridCols'),
+          gColsData = obj.gridCols,
+          gCol,
+          gColEl,
+          gColA,
           blankImg = G.getBlankImgSrc();
           
 //          comments = data.v_showCommentsFor && nabRLSocial.firstChild,
@@ -327,8 +335,29 @@ define('views/ResourceMasonryItemView', [
         }
       }
       */
-      if (obj.gridCols) {
-        gridCols.innerHTML = obj.gridCols;  
+      if (gColsData) {
+//        for (var i = 0; i < gColsData.length; i++) {
+//          gCol = gColsData[i];
+//          gColEl = gridCols.$('gridCol[data-prop="{0}"]'.format(gCol.property))[0];
+//          if (gColEl) {
+//            gColEl.$('.label')[0].textContent = gCol.label;
+//            gColA = gColEl.$('a')[0];
+//            if (gColA) {
+//              gColA.href = gCol.href;
+//              gColA.textContent = gCol.value;
+//            }
+//            else
+//              gColEl.$('span')[0].textContent = gCol.value;              
+//            
+//            gColEl.textContent = gCol.value;
+//          }
+//          else
+//            gridCols.$append(this.gridColTemplate(gCol));
+//        }
+        
+//        gridCols.innerHTML = gColsData.map(this.gridColTemplate).join('');//obj.gridCols;
+
+        gridCols.$html(DOM.parseHTML(gColsData.map(this.gridColTemplate).join('')));
 //        DOM.queueRender(gridCols, {          
 //          innerHTML: obj.gridCols  
 //        });
@@ -412,18 +441,24 @@ define('views/ResourceMasonryItemView', [
       var i = 0;
 
       tmpl_data.contentWidth = this.IMG_MAX_WIDTH - 3;
-      var grid = U.getColsMeta(vocModel, 'grid'),
+      var mediumImageProp = cloned['ImageResource'].mediumImage,
+          smallImageProp = cloned['ImageResource'].smallImage,
+          grid = U.getColsMeta(vocModel, 'grid'),
           gCols = [], 
+          pName,
+          prop,
+          pDisplayName,
+          label,
+          val,
+          href,
           linesCount = 0, 
           lineWidth = tmpl_data.contentWidth / 5;
       
       for (var g = 0; g < grid.length; g++) {
-        var mediumImageProp = cloned['ImageResource'].mediumImage,
-            smallImageProp = cloned['ImageResource'].smallImage,
-            pName = grid[g],
-            prop = meta[pName],
-            pDisplayName = U.getPropDisplayName(prop),
-            val = atts[pName] || prop.propertyGroupList || '';
+        pName = grid[g];
+        prop = meta[pName];
+        pDisplayName = U.getPropDisplayName(prop);
+        val = atts[pName] || prop.propertyGroupList || '';
         
         if (pName == mediumImageProp  ||  pName == smallImageProp)
           continue;
@@ -431,25 +466,37 @@ define('views/ResourceMasonryItemView', [
         symbolsCount = val.length;
         
         val = U.makeProp(m, prop, val || '').value || '';
-        var label = '';
         if (!prop.skipLabelInGrid) {
-          label += '<span data-prop="' + pName + '" class="label">' + pDisplayName + '</span>';
+//          label += '<span data-prop="' + pName + '" class="label">' + pDisplayName + '</span>';
+          label = pDisplayName;
           symbolsCount += pDisplayName.length + 1;
         }
-        if (prop.resourceLink) 
-          val = '<a data-prop="' + pName + '" href="' + resourceUri + '">' + val + '</a>';
-
-        else if (prop.facet  &&  prop.facet.indexOf("/href") != -1)
-          val = '<a data-prop="' + pName + '" href="' + val + '">' + val + '</a>';
+        else
+          label = null;
+        
+        if (prop.resourceLink)  {
+          //'<a data-prop="' + pName + '" href="' + resourceUri + '">' + val + '</a>';
+          href = resourceUri;
+        }
+        else if (prop.facet  &&  prop.facet.indexOf("/href") != -1) {
+//          val = '<a data-prop="' + pName + '" href="' + val + '">' + val + '</a>';
+          href = val;
+        }
+        else
+          href = null;
 //        else if (meta[pName].range == 'date' ||  meta[pName].range == 'ComplexDate'  ||  meta[pName].range == 'dateTime')
 //          s += U.getFormattedDate(json[pName]);
 
         linesCount += (symbolsCount < lineWidth ? 1 : Math.round(symbolsCount / lineWidth) + 1);
-        if (label || val)
-          gCols.push(label + val);
+        gCols.push({
+          property: pName,
+          label: label || '',
+          href: href,
+          value: val.trim()
+        });
       }
       
-      gridCols = gCols.join('<br />');
+//      gridCols = gCols.join('<br />');
       var divHeight;      
       if (typeof img != 'undefined') {
         if (img.indexOf('Image/') == 0)
@@ -539,10 +586,17 @@ define('views/ResourceMasonryItemView', [
         }
         tmpl_data['davDisplayName'] = dn;
       }
-      if (!gridCols.length) 
-        gridCols = '<a href="' + resourceUri + '">' + dn + '</a>';
       
-      tmpl_data['gridCols'] = gridCols;
+      if (!gCols.length) {
+        gCols.push({
+          property: '_defaultGridCol',
+          value: dn,
+          label: '',
+          href: resourceUri
+        });
+      }
+      
+      tmpl_data['gridCols'] = gCols;
       
 //      var rUri = G.pageRoot + '#view/' + _.encode(U.getLongUri1(json[imgSrc].value), snmHint);
       

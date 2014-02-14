@@ -1319,6 +1319,19 @@
         {{= typeof isIdea == 'undefined' ? '' : '<p class="ui-li-aside ui-li-desc">Idea</p>'}}
 </script>
 
+<script type="text/template" id="gridColTemplate">
+  <gridCol data-prop="{{= property }}">
+    <span data-prop="{{= property }}" class="label">{{= label }}</span>
+    {{ if (obj.href) { }}
+      <a href="{{= obj.href }}">{{= value }}</a>
+    {{ }               }}
+    
+    {{ if (!obj.href) { }}
+      <span>{{= value }}</span>
+    {{ }               }}
+  </gridCol>
+</script>
+
 <script type="text/template" id="fileUpload">
   <!-- a file upload form -->
   

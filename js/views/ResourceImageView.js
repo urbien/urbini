@@ -33,6 +33,7 @@ define('views/ResourceImageView', [
 //  });  
 
   return BasicView.extend({
+    autoFinish: false,
     initialize: function(options) {
       _.bindAll(this, 'render', 'resizeVideo'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);
@@ -171,6 +172,11 @@ define('views/ResourceImageView', [
     },
     
     renderHelper: function(options) {
+      this._renderHelper.apply(this, arguments);
+      this.finish();
+    },
+    
+    _renderHelper: function(options) {
       if (!this.isImage && !this.isVideo && !this.isAudio)
         return false;
       

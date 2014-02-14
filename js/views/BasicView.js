@@ -45,7 +45,7 @@ define('views/BasicView', [
     _rail: true,
     _scrollAxis: 'y',
     initialize: function(options) {
-      _.bindAll(this, 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_render',  '_refresh', 'finish', '_onViewportDimensionsChanged', '_recheckDimensions', '_onMutation');
+      _.bindAll(this, 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_render',  '_refresh', 'finish', '_onViewportDimensionsChanged', '_recheckDimensions', '_onMutation', '_updateSize');
       this._initializedCounter++;
       this.TAG = this.TAG || this.constructor.displayName;
 //      this.log('newView', ++this.constructor._instanceCounter);

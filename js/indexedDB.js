@@ -571,6 +571,9 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
 
   var queryRunMethods = ['getAll', 'getAllKeys'];
   function wrapQuery(query) {
+    if (!query.betweeq && !query._queryFunc)
+      return query;
+    
     for (var fn in query) {
       if (typeof query[fn] == 'function') {
         if (_.contains(queryRunMethods, fn))
@@ -614,7 +617,12 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       return instance._queueTask('querying object store {0} by indices'.format(storeName), function(defer) {
         args[0] = instance.$idb.objectStore(args[0], IDBTransaction.READ_ONLY);
         return backup.apply(query, args).then(function(results) {
-          return results ? queueParse.apply(null, results) : [];
+          if (results) {
+            queueParse.apply(null, results);
+            return results;
+          }
+          else 
+            return [];
         });
       });
       

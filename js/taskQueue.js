@@ -118,6 +118,9 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
         tq.block();
 
       try {
+        if (task.queueTime)
+          log('taskQueue', 'Task {0} delayed by {1}ms'.format(task.name, _.now() - task.queueTime));
+          
         task.run();
       } catch (err) {
         debugger;
@@ -147,6 +150,7 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
       if (!running.length)
         debugger;
       
+      task.queueTime = _.now();
       queue.push(task);
     }
     

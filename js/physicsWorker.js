@@ -1599,6 +1599,7 @@ function getRectVertices(width, height) {
     _sleeping: false,
     _waiting: false,
     _eventSeq: 0,
+    constraints: null,
   //  _waiting: false,
     init: function() {
       var self = this,
@@ -1637,6 +1638,7 @@ function getRectVertices(width, height) {
         this.scrollbarRail = API.addRail(this.scrollbar, this.axis == 'x' ? 1 : 0, this.axis == 'y' ? 1 : 0);
 
       this._rangeChangeListeners = [];
+      this.constraints = [];
       
 //      if (this.flexigroup) {
 ////        this.flexigroup = masonryOptions.flexigroup = getBody(this.flexigroup);
@@ -1724,12 +1726,9 @@ function getRectVertices(width, height) {
 //      
 //      resetConstraint();
       // TODO: subscribe/unsubscribe on arm/break
-      this._subscribe('drag', function(data) {
-//        resetConstraint();
-//        if (~data.bodies.indexOf(this.offsetBody) && this.offsetBody.state.pos.get(this.axisIdx) < this.headEdge.state.pos.get(this.axisIdx))
-          this.headEdgeConstraint['break']();
-      }, 10);
-      
+      this._subscribe('drag', this.breakHeadEdgeConstraint, 10);
+      this._subscribe('dragend', this.breakHeadEdgeConstraint, 10);
+
 //      world.subscribe('constants.springDamping', function() {
 //        this.headEdgeConstraint.damp(CONSTANTS.springDamping);
 //        if (this.tailEdgeConstraint)
@@ -1760,6 +1759,9 @@ function getRectVertices(width, height) {
           this.headEdgeConstraint.stiffness = value;
           if (this.tailEdgeConstraint)
             this.tailEdgeConstraint.stiffness = value;
+          
+          break;
+        case 'drag':
           
           break;
 //        case 'drag':
@@ -1873,6 +1875,20 @@ function getRectVertices(width, height) {
       }
     },
     
+    breakHeadEdgeConstraint: function(data) {
+  //    resetConstraint();
+  //    if (~data.bodies.indexOf(this.offsetBody) && this.offsetBody.state.pos.get(this.axisIdx) < this.headEdge.state.pos.get(this.axisIdx))
+//        console.log("BREAKING HEAD EDGE CONSTRAINT");
+      this.headEdgeConstraint['break']();
+    },
+
+    breakTailEdgeConstraint: function(data) {
+  //    resetConstraint();
+  //    if (~data.bodies.indexOf(this.offsetBody) && this.offsetBody.state.pos.get(this.axisIdx) < this.headEdge.state.pos.get(this.axisIdx))
+//        console.log("BREAKING TAIL EDGE CONSTRAINT");
+      this.tailEdgeConstraint['break']();
+    },
+
     getScrollVelocity: function() {
       return this.offsetBody.state.vel.norm();
     },
@@ -1918,7 +1934,7 @@ function getRectVertices(width, height) {
         
         scratchpad.done();
 //        if (dist > 0)
-//          log("Armed Head constraint: " + this.bodyA.state.pos.toString() + " to " + this.bodyB.state.pos.toString() + ", dist = " + dist);
+//          log("ARMED Head constraint: " + this.bodyA.state.pos.toString() + " to " + this.bodyB.state.pos.toString() + ", dist = " + dist);
         
         return dist > 0;
       }
@@ -1932,6 +1948,8 @@ function getRectVertices(width, height) {
             dist = scratchpad.vector().clone(this.bodyB.state.pos).vsub(this.bodyA.state.pos).proj(self.dirTail);
         
         scratchpad.done();
+//        if (dist > 0)
+//          log("ARMED Tail constraint: " + this.bodyA.state.pos.toString() + " to " + this.bodyB.state.pos.toString() + ", dist = " + dist);
 //        return self.flexigroup ? dist > self.flexigroupOffset : dist > 0;
         return dist > 0;
       }
@@ -2580,7 +2598,7 @@ function getRectVertices(width, height) {
             viewportDim = viewport.max - viewport.min,
             slidingWindow = this.slidingWindowBounds,
             slidingWindowDimension = this.slidingWindowDimension,
-            limit = this.brickLimit == Infinity ? this.lastBrickSeen : this.brickLimit,
+            limit = this.getKnownLimit(),
             dim = Math.max(6, Math.round(this.pageScrollDim * (this.pageArea / this.averageBrickArea) / limit - 4)),
             aabb = getAABB(this.scrollbar),
 //            oldVel = Math.abs(this.scrollbar.state.old.vel.get(this.axisIdx)),
@@ -2648,6 +2666,9 @@ function getRectVertices(width, height) {
           diff = offset - lastOffset,
           absDiff = Math.abs(diff);
 
+      if (this.headEdgeConstraint.isArmed() || (this.tailEdgeConstraint && this.tailEdgeConstraint.isArmed()))
+        this.offsetBody.state.vel.mult(1 - CONSTANTS.drag); // extra drag
+      
       if (absDiff > 50) {
 //        if (this._waiting && absDiff < 100)
 //          return;
@@ -2740,10 +2761,8 @@ function getRectVertices(width, height) {
           // this one doesn't work because if we're not at range X-LastIndex, we don't know where the tail edge should be yet
 //          this.tailEdgeConstraint.armOnDistance(Infinity, this.dirTail); // no matter how far out of bounds we are, we should snap back
 //          this.tailEdgeConstraint.breakOnDistance(50, DIR_Y_POS);
-          world.subscribe('drag', function(data) {
-//            if (~data.bodies.indexOf(this.offsetBody) && this.offsetBody.state.pos.get(this.axisIdx) > this.tailEdge.state.pos.get(this.axisIdx))
-              this.tailEdgeConstraint['break']();
-          }, this, 10);          
+          this._subscribe('drag', this.breakTailEdgeConstraint, 10);          
+          this._subscribe('dragend', this.breakTailEdgeConstraint, 10);          
         }
         else
           this.tailEdge.state.pos.set(coords[0], coords[1]);
@@ -2952,6 +2971,14 @@ function getRectVertices(width, height) {
     numBricks: function() {
       return this.mason.bricks.length;
     },
+
+    removeFlexigroupConstraints: function() {
+      this.constraints.map(function(c) {
+        constrainer.remove(c);
+      });
+      
+      this.constraints.length = 0;
+    },
     
     addBricks: function(optionsArr, prepend) {
       this.log("Bricks took " + (Physics.util.now() - this._requestMoreTimePlaced) + "ms to arrive");
@@ -3005,19 +3032,41 @@ function getRectVertices(width, height) {
             pos,
             flexiPos = this.flexigroup.state.pos,
             range = 20,
-            stiffness; // = 0.07;
+            idx,
+            limit = this.brickLimit == Infinity ? 500 : this.brickLimit,
+            baseStiffness = 0.08;
+        
+//        this.removeFlexigroupConstraints();
         
         for (var i = 0; i < l; i++) {
           brick = bricks[i];
-//          pos = brick.state.pos;
+////          pos = brick.state.pos;
 //          if (this.horizontal)
 //            brick._rail = API.addRail(brick, 1, 0);
 //          else
 //            brick._rail = API.addRail(brick, 0, 1);
           
-          stiffness = 0.07 + Math.random() * 0.1;
+//          stiffness = 0.07 + Math.random() * 0.1;
+//          stiffness = 0.08 - 0.00025 * (this.mason.bricks.length - l/2 + i);
+          if (limit < Infinity) {
+            if (prepend)
+              idx = this.range.from - l + i;
+            else
+              idx = this.range.to + i;
+            
+            stiffness = baseStiffness - Math.min(Math.pow((idx - limit / 2) / limit, 4), 0.05);
+          }
+          else
+            stiffness = baseStiffness;
+          
           API.distanceConstraint(brick, this.flexigroup, stiffness, brick.state.pos.dist(flexiPos), this.dirHead);
         }
+        
+//        for (var i = 0, n = this.numBricks(); i < n; i++) {
+//          brick = this.mason.bricks[i];
+//          stiffness = 0.08 - Math.min(Math.pow((i - n/2) / n, 4), 0.05);
+//          this.constraints.push(API.distanceConstraint(brick._rail.railBody, this.flexigroup, stiffness, brick._rail.railBody.state.pos.dist(flexiPos), this.dirHead));
+//        }
       }
       
       if (prepend)

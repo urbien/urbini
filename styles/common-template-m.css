@@ -1031,3 +1031,17 @@ div {
   padding-top: 5px;
 }
 
+#categories {
+  font-size:18px;
+  border-radius: 1.25rem;
+  padding: .2rem;
+}
+
+gridCol {
+  display: inline;
+}
+
+gridCol:after {
+  content: "\a";
+  white-space: pre;
+}

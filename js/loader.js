@@ -1561,7 +1561,7 @@ define('globals', function() {
     hasLocalStorage: hasLocalStorage,
     hasFileSystem: !!(window.requestFileSystem || window.webkitRequestFileSystem),
     hasBlobs: typeof window.Blob !== 'undefined',
-    hasWebWorkers: typeof window.Worker !== 'undefined',
+    hasWebWorkers: false,//typeof window.Worker !== 'undefined',
     TAG: 'globals',
     checkpoints: [],
     tasks: {},

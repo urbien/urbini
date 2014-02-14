@@ -182,15 +182,15 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
     this.scheduleFrame();
   };
 
+  FastDom.prototype._frameTaskId = -1;
+  FastDom.prototype._frameTask = function() {
+    FrameWatch.unsubscribe(this._frameTaskId);
+    this.frame();
+  };
+  
   FastDom.prototype.scheduleFrame = function() {
     this.pending = true;
-    var time = this.time();
-    var task = FrameWatch.subscribe(function() {
-//      this.lastBlackoutDuration = this.time() - time;
-//      this.log("Non-scripting browser ops took " + this.lastBlackoutDuration);
-      FrameWatch.unsubscribe(task._taskId);
-      this.frame();
-    }, this);
+    FrameWatch.subscribe(this._frameTask, this, null, this._frameTaskId);
   };
 
   FastDom.prototype.startFrame = function() {

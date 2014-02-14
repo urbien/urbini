@@ -15,9 +15,7 @@ define('views/ResourceListView', [
 ], function(G, U, DOM, Events, BasicView, /*Scrollable, */ ResourceMasonryItemView, ResourceListItemView, ResourceList, Q, Voc, Physics) {
   var $wnd = $(window),
       doc = document,
-      DO_GROUP = true;
-
-  var MASONRY_FN = 'masonry', // in case we decide to switch to Packery or some other plugin
+      MASONRY_FN = 'masonry', // in case we decide to switch to Packery or some other plugin
       ITEM_SELECTOR = '.masonry-brick';
 
   var defaultSlidingWindowOptions = {
@@ -913,6 +911,7 @@ define('views/ResourceListView', [
           col = this.collection,
           before = col.length,
           defer = $.Deferred(),
+          firstFetchDfd = this.getPageView()._fetchDfd, // HACK
           nextPagePromise,
           nextPageUrl,
           limit = Math.max(to - from, this.options.minPagesInSlidingWindow * this.options.bricksPerPage, 10);
@@ -954,6 +953,8 @@ define('views/ResourceListView', [
         nextPageUrl = nextPagePromise._url;
       
       this._isPaging = true;
+      if (firstFetchDfd.state() == 'pending')
+        defer.promise().done(firstFetchDfd.resolve).fail(firstFetchDfd.resolve); // HACK
       
       this._pagingPromise = defer.promise().always(function() {
         self._isPaging = false;

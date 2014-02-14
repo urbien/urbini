@@ -90,18 +90,25 @@ define('views/MenuPanel', [
     },
     
     show: function(e) {
+      var self = this;
       if (this._hidden) {
         if (e)
           Events.stopEvent(e);
         
-        if (this.ulWidth == G.viewport.width) {
-          // HACK!!
-          setTimeout(this.show);
-          return;
-        }
+//        if (this.ulWidth == G.viewport.width) {
+//          var self = this;
+//          // HACK!!
+//          setTimeout(function tryAgain() {
+//            if (self._updateSize())
+//              self.show();
+//            else
+//              setTimeout(tryAgain, 50);
+//          }, 50);
+//          
+//          return;
+//        }
         
-        var self = this,
-            accActionId = _.uniqueId('accAction');
+        var accActionId = _.uniqueId('accAction');
         
         this._hidden = false;
         this._transitioning = true;
@@ -224,6 +231,11 @@ define('views/MenuPanel', [
           height = this.ulHeight = parseInt(this.ul.style.height || 0),
           outerWidth = this.ul.$outerWidth(),
           outerHeight = this.ul.$outerHeight();
+
+      if (outerWidth == G.viewport.width) {
+        if (!resetTimeout(this._measureMenuTimeout))
+          this._measureMenuTimeout = setTimeout(this._updateSize.bind(this), 50); // HACK - ul is full screen width on first check
+      }
       
       this.ulWidth = outerWidth;
       if (this._outerWidth != viewport.width || this._outerHeight != outerHeight || height != viewport.height) {
