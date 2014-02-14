@@ -422,7 +422,7 @@
     {{ } }} 
     {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
     <div id="name" class="resTitle" style="background:{{= G.coverImage ? G.coverImage.background : '#757575' }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
-      <h4 id="pageTitle" style="font-weight:normal;color:{{= G.coverImage ? G.coverImage.color : ''}}">{{= this.title }}</h4>
+      <h4 id="pageTitle" style="font-weight:normal;color:{{= G.coverImage ? G.coverImage.color : '#eeeeee;'}}">{{= this.title }}</h4>
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
         <button style="max-width:200px; display: inline-block;{{= G.coverImage ? 'background-color:' + G.coverImage.color + ';color:' + G.coverImage.background : ''}}" id="doTryBtn" class="topcoat-button--cta">
           {{ if (obj.tryApp) { }}

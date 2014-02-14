@@ -432,7 +432,7 @@
   <div id="header" {{= obj.style ? style : '' }} {{= obj.more || '' }} >
     <div class="hdr">
     <section role="region">
-      <header>
+      <header style="height:4rem;{{= G.coverImage ? 'background:' + G.coverImage.color + ';"' : '' }}>
       <ul id="headerUl">
       </ul>
       </header>
