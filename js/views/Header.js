@@ -665,7 +665,7 @@ define('views/Header', [
       // HACK
       // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view 
       var header = this.$('.ui-header')[0];
-//      var barClass = 'ui-bar-{0}'.format(G.theme.header);
+      var barClass = 'ui-bar-c';//{0}'.format(G.theme.header);
       if (header && !header.classList.contains(barClass))
         header.classList.add(barClass);
       
