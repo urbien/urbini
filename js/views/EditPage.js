@@ -43,8 +43,8 @@ define('views/EditPage', [
       this.buttons = {
         back: true,
 //        menu: true,
-        rightMenu: !G.currentUser.guest,
-        login: G.currentUser.guest
+//        login: G.currentUser.guest,
+        rightMenu: !G.currentUser.guest
       };
     
       this.header = new Header({
@@ -128,12 +128,12 @@ define('views/EditPage', [
         '#headerDiv'       : this.header
       };
       
-      if (this.imageView)
-        views['div#resourceImage'] = this.imageView;
+//      if (this.imageView)
+//        views['div#resourceImage'] = this.imageView;
 
       this.assign(views);      
-      if (G.theme.backgroundImage) 
-        this.$('#resourceEditView').$css('background-image', 'url(' + G.theme.backgroundImage +')');
+//      if (G.theme.backgroundImage) 
+//        this.$('#resourceEditView').$css('background-image', 'url(' + G.theme.backgroundImage +')');
 
       // Comments inline
       var isComment = U.isAssignableFrom(this.vocModel, U.getLongUri1("model/portal/Comment"));

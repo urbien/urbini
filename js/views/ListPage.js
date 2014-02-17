@@ -37,9 +37,9 @@ define('views/ListPage', [
     
 //    'backgroundColor': 'white'
     // gradient
-      'background-image': getLinearGradient(100, 100, 100),
-      'background-size': 'auto 200%',
-      'background-position': '0 50%'
+//      'background-image': getLinearGradient(100, 100, 100),
+//      'background-size': 'auto 200%',
+//      'background-position': '0 50%'
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'setMode', /*'orientationchange',*/ 'onFilter', '_buildMockViewPage', '_getViewPageImageInfo');
@@ -152,8 +152,8 @@ define('views/ListPage', [
 //        aroundMe: isGeo,
         mapIt: isGeo,
 //        menu: true,
-        rightMenu: true, //!G.currentUser.guest,
-        login: G.currentUser.guest
+//        login: G.currentUser.guest,
+        rightMenu: true //!G.currentUser.guest,
       };
 
       this.header = new Header(_.extend({
@@ -422,9 +422,9 @@ define('views/ListPage', [
 //        this.listView.$el.find('ul').removeClass('grid-listview');
 //      }
       this.$('#sidebarDiv').$css('clear', 'both');
-      if (G.theme.backgroundImage) { 
-        this.$('#sidebarDiv').$css('background-image', 'url(' + G.theme.backgroundImage +')');
-      }
+//      if (G.theme.backgroundImage) { 
+//        this.$('#sidebarDiv').$css('background-image', 'url(' + G.theme.backgroundImage +')');
+//      }
       if (!this.isMasonry)
         this.$('#sidebarDiv').$css('overflow-x', 'visible');
 
