@@ -128,8 +128,8 @@ define('views/EditPage', [
         '#headerDiv'       : this.header
       };
       
-      if (this.imageView)
-        views['div#resourceImage'] = this.imageView;
+//      if (this.imageView)
+//        views['div#resourceImage'] = this.imageView;
 
       this.assign(views);      
 //      if (G.theme.backgroundImage) 

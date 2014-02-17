@@ -1864,7 +1864,9 @@ define('utils', [
             val = "<span>" + val + "</span>";
 //            val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
           else if (!isView  &&  prop.maxSize > 1000) {
-            var color = G.theme.descColor; 
+            var color;
+            if (G.coverImage)
+              color = G.coverImage.color;
             /*
             if (!color) {
               color = $('[data-role="page"]').css('color');

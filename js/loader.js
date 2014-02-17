@@ -1184,7 +1184,7 @@ define('globals', function() {
   }, false);
 
   $.extend(G, {
-    _widgetLibrary: G.currentApp.widgetLibrary || 'JQuery Mobile',
+    _widgetLibrary: G.currentApp.widgetLibrary || 'topcoat',
     isJQM: function() {
       return G.getWidgetLibrary().toLowerCase() == 'jquery mobile';
     },
