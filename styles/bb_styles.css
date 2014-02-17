@@ -261,7 +261,7 @@ fieldset {
 }
 
 #cpView > li > p, #resourceView > li > p, #other > ul > li > p {
-  margin: 0 1.5rem;
+  margin: 0 1rem;
 }
 
 [data-type="list"] #cpView > li, #resourceView > li {
