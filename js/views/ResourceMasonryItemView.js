@@ -230,6 +230,9 @@ define('views/ResourceMasonryItemView', [
 //        debugger;
         gItem.$attr('style', _.template("{{= (obj.top ? '' : 'height:' + imgHeight + 'px;') + (obj.left ? '' : 'width:' + imgWidth + 'px;') }}")(obj));
       }
+      else {
+        gItem.$attr('style', _.template("{{= (obj.height ? 'height:' + height + 'px;' : '') + (obj.width ? 'width:' + width + 'px;' : '') }}")(obj));
+      }
       
       gItemA.href = obj.rUri || 'about:blank';
       gItemImg.dataset['for'] = U.getImageAttribute(this.resource, obj.imageProperty);
@@ -244,8 +247,12 @@ define('views/ResourceMasonryItemView', [
       
       if (obj.imgWidth)
         gItemImg.style.width = obj.imgWidth + 'px';
+      else
+        gItemImg.$attr('width', obj.width + 'px');
       if (obj.imgHeight)
         gItemImg.style.height = obj.imgHeight + 'px';
+      else
+        gItemImg.$attr('height', obj.height + 'px');
 
       if (!appBadge) {
         if (_.has(obj, 'friendMeCount')) {
@@ -456,69 +463,88 @@ define('views/ResourceMasonryItemView', [
           img = img.slice(6);
         tmpl_data['resourceMediumImage'] = img;
   //      tmpl_data = _.extend(tmpl_data, {imgSrc: img});
-        var oWidth  = m.get('ImageResource.originalWidth'); //atts.originalWidth;
-        var oHeight = m.get('ImageResource.originalHeight');
-        if (typeof oWidth != 'undefined' && typeof oHeight != 'undefined') {
-          var ratio = 1;
-          if (oWidth > oHeight) {
-            if (oWidth > this.IMG_MAX_WIDTH) 
-              ratio = this.IMG_MAX_WIDTH / oWidth;
+
+        
+        var idx = img.lastIndexOf('.jpg_');
+        var idx1 = img.indexOf('_', idx + 5);
+        if (idx != -1  &&  idx1 != -1) {
+          var s = img.substring(idx + 5, idx1);
+          idx = s.indexOf("-");
+          if (idx != -1) {
+            var w = s.substring(0, idx);
+            if (w <= this.IMG_MAX_WIDTH) {
+              tmpl_data['width'] = s.substring(0, idx);
+              tmpl_data['height'] = s.substring(idx + 1);
+            }
           }
-          else {
-            if (imgWidth) {
-              if (oWidth > this.IMG_MAX_WIDTH)
+        }
+        if (tmpl_data['width'])
+          maxDim = imgWidth;
+        else {
+          var oWidth  = m.get('ImageResource.originalWidth'); //atts.originalWidth;
+          var oHeight = m.get('ImageResource.originalHeight');
+          if (typeof oWidth != 'undefined' && typeof oHeight != 'undefined') {
+            var ratio = 1;
+            if (oWidth > oHeight) {
+              if (oWidth > this.IMG_MAX_WIDTH) 
                 ratio = this.IMG_MAX_WIDTH / oWidth;
             }
-            else if (oHeight > this.IMG_MAX_WIDTH) 
-              ratio = this.IMG_MAX_WIDTH / oHeight;
-          }
-          var iW = Math.floor(oWidth * ratio);
-          var iH = Math.floor(oHeight * ratio);
-          tmpl_data['imgWidth'] = iW;
-          tmpl_data['imgHeight'] = iH;
-          var maxDim = this.maxImageDimension;
-          
-          if (imgWidth) {
-            var idx = img.lastIndexOf('.jpg_');
-            var idx1 = img.indexOf('_', idx + 5);
-            if (idx != -1  &&  idx1 != -1) {
-              var s = img.substring(idx + 5, idx1);
-              idx = s.indexOf("-");
-              if (idx != -1) {
-                var w = s.substring(0, idx);
-                if (w <= imgWidth) {
-                  tmpl_data['width'] = s.substring(0, idx);
-                  tmpl_data['height'] = s.substring(idx + 1);
+            else {
+              if (imgWidth) {
+                if (oWidth > this.IMG_MAX_WIDTH)
+                  ratio = this.IMG_MAX_WIDTH / oWidth;
+              }
+              else if (oHeight > this.IMG_MAX_WIDTH) 
+                ratio = this.IMG_MAX_WIDTH / oHeight;
+            }
+            var iW = Math.floor(oWidth * ratio);
+            var iH = Math.floor(oHeight * ratio);
+            tmpl_data['imgWidth'] = iW;
+            tmpl_data['imgHeight'] = iH;
+            var maxDim = this.maxImageDimension;
+            
+            if (imgWidth) {
+              var idx = img.lastIndexOf('.jpg_');
+              var idx1 = img.indexOf('_', idx + 5);
+              if (idx != -1  &&  idx1 != -1) {
+                var s = img.substring(idx + 5, idx1);
+                idx = s.indexOf("-");
+                if (idx != -1) {
+                  var w = s.substring(0, idx);
+                  if (w <= imgWidth) {
+                    tmpl_data['width'] = s.substring(0, idx);
+                    tmpl_data['height'] = s.substring(idx + 1);
+                  }
                 }
               }
+              if (tmpl_data['width'])
+                maxDim = imgWidth;
             }
-            if (tmpl_data['width'])
-              maxDim = imgWidth;
-          }
-          if (maxDim  &&  (maxDim > this.IMG_MAX_WIDTH)) {
-            var mdW, mdH;
-            if (oWidth >= oHeight) {
-              mdW = maxDim > oWidth ? oWidth : maxDim; 
-              var r = maxDim /oWidth;
-              mdH = Math.floor(oHeight * r); 
+          
+            if (maxDim  &&  (maxDim > this.IMG_MAX_WIDTH)) {
+              var mdW, mdH;
+              if (oWidth >= oHeight) {
+                mdW = maxDim > oWidth ? oWidth : maxDim; 
+                var r = maxDim /oWidth;
+                mdH = Math.floor(oHeight * r); 
+              }
+              else {
+                mdH = maxDim > oHeight ? oHeight : maxDim; 
+                var r = maxDim /oHeight;
+                mdW = Math.floor(oWidth * r); 
+              }
+              var dW = Math.floor((mdW - iW) / 2);
+              var dH = Math.floor((mdH - iH) / 2);    
+              tmpl_data['top'] = dH;
+              tmpl_data['right'] = iW + dW;
+              tmpl_data['bottom'] = iH + dH;
+              tmpl_data['left'] = dW;
+              tmpl_data['margin-top'] = 0;
+              tmpl_data['margin-left'] = 0 - dW;
             }
-            else {
-              mdH = maxDim > oHeight ? oHeight : maxDim; 
-              var r = maxDim /oHeight;
-              mdW = Math.floor(oWidth * r); 
-            }
-            var dW = Math.floor((mdW - iW) / 2);
-            var dH = Math.floor((mdH - iH) / 2);    
-            tmpl_data['top'] = dH;
-            tmpl_data['right'] = iW + dW;
-            tmpl_data['bottom'] = iH + dH;
-            tmpl_data['left'] = dW;
-            tmpl_data['margin-top'] = 0;
-            tmpl_data['margin-left'] = 0 - dW;
           }
         }
       }
-      
       var dn = atts.davDisplayName;
       var dnProps = this.displayNameProps;
       if (dn)
