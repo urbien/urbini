@@ -558,7 +558,8 @@ define('views/ControlPanel', [
               }
             }
 
-            var action = iRes.vocModel.adapter || U.isAssignableFrom(iRes.vocModel, 'Intersection') ? 'view' : 'edit';
+//            var action = iRes.vocModel.adapter || U.isAssignableFrom(iRes.vocModel, 'Intersection') ? 'view' : 'edit';
+            var action = (U.isAssignableFrom(iRes.vocModel, 'WebProperty')) ? 'edit' : 'view';
             params._uri = U.makePageUrl(action, iRes.getUri(), {title: params.name});
             params.resource = iRes;
             U.addToFrag(frag, this.inlineListItemTemplate(params));
