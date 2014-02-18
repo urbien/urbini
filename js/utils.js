@@ -1015,6 +1015,7 @@ define('utils', [
       for (var i = 0; i < cols.length; i++) {
         var col = cols[i].trim();
         if (col == '')
+          continue;
         var prop = vocModel.properties[col];
         if (!prop)
           return;
