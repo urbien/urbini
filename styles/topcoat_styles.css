@@ -181,7 +181,7 @@ a {
   color:#eee;
 }
 #name.resTitle {
-  padding: 7px;
+  padding: 7px 0 3px 0;
 }
 .cameraPopup {
   background: #f9f9f9;
