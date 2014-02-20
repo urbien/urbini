@@ -411,10 +411,10 @@ define('views/ResourceImageView', [
         
         if (U.isAssignableFrom(this.vocModel, 'model/company/ContactBySocial')) {
           var friends = this.resource.get('friendsCount') || (this.resource.get('friends') && this.resource.get('friends').count);
-          this.el.style.top = !G.isBB() ? (friends ? '155px' : '190px') : '95px';
+          this.el.style.top = '95px'; //!G.isBB() ? (friends ? '155px' : '190px') : '95px';
         }
         else
-          this.el.style.top = !G.isBB() ? '195px' : '155px';
+          this.el.style.top = '155px'; //!G.isBB() ? '195px' : '155px';
       }  
       if (l) {
         var h = t ? b - t : b;
@@ -477,7 +477,7 @@ define('views/ResourceImageView', [
       }
       else
         coverDiv = '<div id="coverImage" style="height:';
-      coverDiv += !G.isBB() ? '350px;' : '290px;';
+      coverDiv += '290px;'; //!G.isBB() ? '350px;' : '290px;';
       coverDiv += 'z-index:100;"></div>';
       var pe = this.el.parentElement;
       if (!pe)
@@ -485,11 +485,13 @@ define('views/ResourceImageView', [
       pe.$append(coverDiv);  
       while (!pe.id  ||  pe.id != 'resourceViewHolder')
         pe = pe.parentElement;
+/*
       if (!G.isBB()) {
         pe.style.position = "absolute";
         pe.style.top = "0";
         pe.style.width = "100%";
       }
+*/      
     }
   },
   {
