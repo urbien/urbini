@@ -555,16 +555,16 @@
 
 <script type="text/template" id="propRowTemplate">
   <!-- wrapper for one row on a list page (short) -->
-  <li data-shortname="{{= shortName }}" {{= obj.rules || '' }}><p>{{= name }}<div style="position:absolute; right:1.5rem;top:1rem; font-weight: normal;">{{= value }}</div></p></li>
+  <li data-shortname="{{= shortName }}" {{= obj.rules || '' }}><p{{= G.coverImage ? ' style="color:' + G.coverImage.background + ';"' : '' }}>{{= name }}<div style="position:absolute; right:1.5rem;top:1rem; font-weight: normal;">{{= value }}</div></p></li>
 </script>
 
 <script type="text/template" id="propRowTemplate2">
   <!-- wrapper for one row on a list page (long) -->
-  <li data-shortname="{{= shortName }}" {{= obj.rules || '' }}><p>{{= name }}<div style="margin-left:1.5rem;font-weight: normal;">{{= value }}</div></p></li>
+  <li data-shortname="{{= shortName }}" {{= obj.rules || '' }}><p{{= G.coverImage ? ' style="color:' + G.coverImage.background + ';"' : '' }}>{{= name }}<div style="margin-left:1.5rem;font-weight: normal;">{{= value }}</div></p></li>
 </script>
 
 <script type="text/template" id="menuHeaderTemplate">
-  <!-- menu header -->
+  <!-- menu {{= G.coverImage ? ' style="color:' + G.coverImage.darkColor + ';"' : '' }}header -->
   <li {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} class="mi" style="margin: 15px 0 0 15px;"><i class="ui-icon-" + {{= icon }}"></i>
     {{= title }}
   </li>

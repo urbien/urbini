@@ -532,12 +532,12 @@
 
 <script type="text/template" id="propRowTemplate">
   <!-- wrapper for one row on a list page (short) -->
-  <li data-shortname="{{= shortName }}" class="topcoat-list__item" {{= obj.rules || '' }}>{{= name }}<div style="float:right;font-weight: normal;">{{= value }}</div></li>
+  <li data-shortname="{{= shortName }}" class="topcoat-list__item" {{= obj.rules || '' }} {{= G.coverImage ? ' style="color:' + G.coverImage.background + ';"' : '' }}>{{= name }}<div style="float:right;font-weight: normal;">{{= value }}</div></li>
 </script>
 
 <script type="text/template" id="propRowTemplate2">
   <!-- wrapper for one row on a list page (long) -->
-  <li data-shortname="{{= shortName }}" class="topcoat-list__item" {{= obj.rules || '' }}>{{= name }}<div style="display:inline-block;margin-left:1.5rem;font-weight: normal;">{{= value }}</div></li>
+  <li data-shortname="{{= shortName }}" class="topcoat-list__item" {{= obj.rules || '' }} {{= G.coverImage ? ' style="color:' + G.coverImage.background + ';"' : '' }}>{{= name }}<div style="display:inline-block;margin-left:1.5rem;font-weight: normal;">{{= value }}</div></li>
 </script>
 
 <script type="text/template" id="menuHeaderTemplate">
