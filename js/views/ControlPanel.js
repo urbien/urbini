@@ -338,6 +338,7 @@ define('views/ControlPanel', [
         return this;
       
       var json = this.getBaseTemplateData(); //res.toJSON();
+      var atts = res.attributes;
       var frag = document.createDocumentFragment();
   
       var mainGroup = U.getArrayOfPropertiesWith(meta, "mainGroup");
@@ -715,9 +716,17 @@ define('views/ControlPanel', [
             json[pp] = {count: count};
           }
           if (count == -1) {
-            if (!prop  ||  (!_.has(json, p)  &&  typeof prop.readOnly != 'undefined')) {
-  //            delete json[p];
+            if (!prop)
               continue;
+            if (!_.has(atts, p)) {
+              if (typeof prop.readOnly != 'undefined') {
+    //            delete json[p];
+                continue;
+              }
+            }
+            else {
+              if (prop.range.indexOf('/voc/dev/') == -1)
+                continue;
             }
           }
                 
@@ -728,8 +737,8 @@ define('views/ControlPanel', [
           var doShow = false;
           var n = U.getPropDisplayName(prop);
           var cnt;
-          var pValue = json[p];
-          if (!_.has(json,p)) {
+          var pValue = atts[p];
+          if (!_.has(atts, p)) {
             cnt = count > 0 ? count : 0;
             if (cnt != 0 || isPropEditable)
               doShow = true;
