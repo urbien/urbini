@@ -13,6 +13,9 @@ define('views/ViewPage', [
   return BasicPageView.extend({
     clicked: false,
     className: 'scrollable',
+//    style: {
+//      overflow: 'visible' // because resourceViewHolder is absolutely positioned, so we can't use the size of the container (this view) as a natural boundary
+//    },
     initialize: function(options) {
       _.bindAll(this, 'render', 'home', 'edit', 'pageChange');
       BasicPageView.prototype.initialize.apply(this, arguments);
@@ -34,9 +37,9 @@ define('views/ViewPage', [
       this.headerButtons = {
         back: true,
 //        menu: true,
-        rightMenu: true, //!G.currentUser.guest,
+//        chat: res.isA("ChatRoom"),
+        rightMenu: true //!G.currentUser.guest,
 //        login: G.currentUser.guest,
-        chat: res.isA("ChatRoom")
       };
 
       var params = _.getParamMap(window.location.hash);
@@ -297,7 +300,6 @@ define('views/ViewPage', [
           views = {};
       
       this.html(this.template(this.getBaseTemplateData()));
-      
       this.photogridPromise.done(function() {
         self.assign({
           '#photogrid': self.photogrid
@@ -310,7 +312,7 @@ define('views/ViewPage', [
             h3.innerHTML = self.friends.title;
           
           pHeader.classList.remove('hidden');
-          self.invalidateSize();
+//          self.invalidateSize();
         }));
       });
 
@@ -386,15 +388,24 @@ define('views/ViewPage', [
 //        });
 //      });
       
+      if (!this.rendered && !options.mock) {
+        this.addToWorld(null, true); // auto-add view page brick
+//        $.when.apply($, this._getLoadingPromises()).done(function() {
+//          var holder = self.$('#resourceViewHolder')[0];
+//          self._updateSize(holder);
+//          self.updateMason();
+//        });
+      }
+
       return this;
     },
     
+//    _sizeProps: ['_outerHeight', '_outerWidth', '_width', '_height', '_bounds'],
 //    _updateSize: function() {
-//      try {
-//        return this.resourceView._updateSize();
-//      } finally {
-//        _.extend(this, _.pick(this.resourceView, '_outerHeight', '_outerWidth', '_width', '_height', '_bounds'));
-//      }
+//      if (!this.resourceView.rendered)
+//        return BasicPageView.prototype._updateSize.apply(this, arguments);
+//      else
+//        return BasicPageView.prototype._updateSize.call(this, this.$('#resourceViewHolder')[0]);
 //    },
     
     onLoadedImage: function(callback, context) {

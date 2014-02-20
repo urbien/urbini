@@ -22,7 +22,7 @@
     </form>
    {{ } }}
    -->
-    <div  id="sidebar" data-type="list" class="topcoat-list__container" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
+    <div  id="sidebar" data-type="list" class="topcoat-list__container">
     </div>
     </section>
     <div id="nabs_grid" class="masonry"></div>
@@ -59,20 +59,20 @@
     <div style="width: 100%;position:relative;min-height:40px;overflow:hidden">
       {{ if (this.isImageCover) { }} 
         <div id="resourceImage" style="position:absolute;z-index:1"></div>
-        <div data-role="footer" data-theme="{{= G.theme.photogrid }}" class="thumb-gal-header hidden" 
-          style="opacity:0.7;position:absolute;top:314px;width:100%;background:#eee;text-shadow:none;color:{{= G.coverImage.background }}"><h3></h3></div>    
-        <div id="mainGroup" style="top:125px;right:0.3rem;position:absolute;"></div>
+        <div data-role="footer" class="thumb-gal-header hidden" 
+          style="opacity:0.7;position:absolute;top:251px;width:100%;background:#eee;text-shadow:none;color:{{= G.coverImage ? G.coverImage.background : '#eeeeee' }}"><h3></h3></div>    
+        <div id="mainGroup" style="top:0px;right:1.3rem;position:absolute;"></div>
       {{ } }}
       {{ if (!this.isImageCover) { }}
-        <div id="resourceImage" style="margin:0; padding:0;{{= U.getArrayOfPropertiesWith(this.vocModel.properties, "mainGroup") &&  U.isA(this.vocModel, 'ImageResource') ? 'min-height:110px;' : ''}}" ><!-- style="width:auto" --></div>
-        <div id="mainGroup" style="top:0px;right:1.3rem;position:absolute;"></div>
+        <div id="resourceImage" style="width:50%;float:left;margin:0; padding:0;{{= U.getArrayOfPropertiesWith(this.vocModel.properties, "mainGroup") &&  U.isA(this.vocModel, 'ImageResource') ? 'min-height:210px;' : ''}}" ><!-- style="width:auto" --></div>
+        <div id="mainGroup" style="right:1.3rem;position:absolute;"></div>
       {{ } }}
       <!--div id="buyGroup" class="ui-block-b" style="width:50%; min-width: 130px"></div-->
     </div>
-    <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
+    <div id="resourceImageGrid" data-role="content" style="padding: 2px;" class="grid-listview hidden"></div>
     
     {{ if (!this.isImageCover) { }}
-      <div data-role="footer" data-theme="{{= G.theme.photogrid }}" class="thumb-gal-header hidden"><h3></h3></div>    
+      <div data-role="footer" class="thumb-gal-header hidden"><h3></h3></div>    
     {{ } }}
     <div id="photogrid" data-inset="true" data-filter="false" class="thumb-gal hidden"></div>
     {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
@@ -84,9 +84,9 @@
        </div>
     {{ } }}
     
-    <ul data-theme="{{= G.theme.list }}" class="topcoat-list__container" id="resourceView">
+    <ul class="topcoat-list__container" id="resourceView">
     </ul>
-    <div id="about" class="hidden" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}"></div>
+    <div id="about" class="hidden" style="padding: 7px;"></div>
     
     {{ if ($('#other')) { }}
       <!--br/>
@@ -95,10 +95,6 @@
     <ul class="topcoat-list__container" id="cpView">
     </ul>
   </div>
-  <!--div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
-     <a data-role="button" data-shadow="false" data-icon="repeat" id="homeBtn" target="#">Home</a>
-     <a data-role="button" data-shadow="false" data-icon="edit" id="edit" target="#" style="float:right;" id="edit">{{= loc('edit') }}</a>
-  </div-->
   <br/>
 </script>  
 
@@ -132,9 +128,7 @@
 
 <script type="text/template" id="cpTemplate">
 <!-- readwrite backlink in resource view -->
-<li class="topcoat-list__item" data-propName="{{= shortName }}" {{= obj.comment ? 'style="min-height: 6rem;"' : '' }}
-{{= obj.inline ? ' data-theme="{0}">'.format(G.theme.footer) : '' }}
->
+<li class="topcoat-list__item" data-propName="{{= shortName }}" {{= obj.comment ? 'style="min-height: 6rem;"' : '' }}>
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      
@@ -154,14 +148,12 @@
 
 <script type="text/template" id="cpTemplateNoAdd">
 <!-- readonly backlink in resource view -->
-<li class="topcoat-list__item" data-propName="{{= shortName }}"
-  {{= obj.inline ? ' data-theme="{0}">'.format(G.theme.activeButton) : '' }}
->
+<li class="topcoat-list__item" data-propName="{{= shortName }}">
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
      
-     <!--span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="{{= G.theme.list }}" data-icon="chevron-right" data-iconshadow="false" class="cp" -->
+     <!--span class="ui-li-count">{{= value }}</span></a><a target="#" data-icon="chevron-right" data-iconshadow="false" class="cp" -->
      </a>
      <div style="display:inline;position:absolute;right:4rem;top:1rem;font-size: 11px;border-radius:1rem;border: 1px solid #777;padding: 0.1rem 0.3rem;">{{= value }}</div>
    </li>
@@ -215,7 +207,7 @@
   {{ var action = action ? action : 'view' }}
   <div style="margin:0" data-viewid="{{= viewId }}">
   {{ if (!obj.v_submitToTournament) { }}
-    <div style="padding-left: 90px; {{= obj.image ? 'min-height:59px;' : '' }}" data-uri="{{= U.makePageUrl(action, _uri) }}">
+    <div style="padding-left: 90px;{{= obj.image ? 'min-height:59px;' : '' }}" data-uri="{{= U.makePageUrl(action, _uri) }}">
   {{ } }}
   {{ if (obj.v_submitToTournament) { }}
     <div style="padding-left: 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
@@ -276,6 +268,20 @@
 <script type="text/template" id="propGroupsDividerTemplate">
   <!-- row divider / property group header in resource view -->
   <li class="topcoat-list__header" {{= G.coverImage ? 'style="text-shadow:none;background:' + G.coverImage.color + ';color: ' + G.coverImage.background + ';"' : '' }}><h3>{{= value }}</h3></li>
+</script>
+
+<script type="text/template" id="saveButtonTemplate">
+  <!-- header button for saving changes -->
+  <button class="topcoat-button-bar__button">
+    <a target="#"><i class="ui-icon-ok"></i></a>
+  </button>
+</script>
+
+<script type="text/template" id="cancelButtonTemplate">
+  <!-- header button for canceling changes -->
+  <button class="topcoat-button-bar__button">
+    <a target="#"><i class="ui-icon-remove"></i></a>
+  </button>
 </script>
 
 <script type="text/template" id="mapItButtonTemplate">
@@ -345,7 +351,7 @@
   {{ var canDismiss = typeof dismissible === 'undefined' || dismissible == true; }}
   <section id="login_popup" style="position:absolute; top:15%; border:1px solid #aaa; border-radius:1rem; z-index:1000000; background:#d2d2d2;width:auto;">
   <div style="padding:0 1rem 1rem 1rem;">
-    <h4 style="margin:10px 0;color:#757575;" id="loginMsg">{{= msg }}</h4>
+    <h4 style="text-align:center;margin:10px 0;color:#757575;" id="loginMsg">{{= msg }}</h4>
     {{ _.forEach(nets, function(net) { }} 
     <button class="topcoat-button-bar__button" style="width:100%;margin-top:1rem;padding:0.5rem;">
       <a href="{{= net.url }}" style="text-align:center;border-radius:1rem;width:85%;font-weight:bold;" {{= net.name == 'Facebook' ? ' target="_top"' : '' }}>
@@ -405,7 +411,7 @@
 
 <script type="text/template" id="enterTournamentBtnTemplate">
   <!-- button that will enter the user into a tournament -->
-  <a target="#" data-icon="star" id="enterTournament" data-theme="e" data-role="button" data-position="notext">{{= loc('enterData') + ': ' + name }}</a>
+  <a target="#" data-icon="star" id="enterTournament" data-role="button" data-position="notext">{{= loc('enterData') + ': ' + name }}</a>
 </script>
 
 <script type="text/template" id="testPlugBtnTemplate">
@@ -423,10 +429,13 @@
     </section>
   </div>
   <div id="buttons">  
-    {{= this.categories ? '<div style="margin:10px 0 0 10px; float:left"><a id="categories" href="#"><i class="ui-icon-tags"></i></a></div>' : '' }} 
+    {{ if (this.categories) { }}
+       <div style="margin:10px 0 0 10px; float:left"><a id="categories" href="#" {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';background:' + G.coverImage.color +';"' : '' }}>
+       <i class="ui-icon-tags"></i></a></div> 
+    {{ } }} 
     {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
     <div id="name" class="resTitle" style="background:{{= G.coverImage ? G.coverImage.background : '#757575' }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
-      <h4 id="pageTitle" style="font-weight:normal;color:{{= G.coverImage ? G.coverImage.color : ''}}">{{= this.title }}</h4>
+      <h4 id="pageTitle" style="font-weight:normal;color:{{= G.coverImage ? G.coverImage.color : '#eeeeee;'}}">{{= this.title }}</h4>
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
         <button style="max-width:200px; display: inline-block;{{= G.coverImage ? 'background-color:' + G.coverImage.color + ';color:' + G.coverImage.background : ''}}" id="doTryBtn" class="topcoat-button--cta">
           {{ if (obj.tryApp) { }}
@@ -569,20 +578,20 @@
     {{ if (this.resource.isAssignableFrom("InterfaceImplementor")) }}
     <div data-role="fieldcontain" id="ip">
       <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true" data-theme="{{= G.theme.activeButton }}">{{= loc('checkAll') }}</a></div>
-        <div class="ui-block-b"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true" data-theme="{{= G.theme.footer }}">{{= loc('uncheckAll') }}</a></div>
+        <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true">{{= loc('checkAll') }}</a></div>
+        <div class="ui-block-b"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true">{{= loc('uncheckAll') }}</a></div>
       </fieldset>
       <fieldset data-role="controlgroup" id="interfaceProps">
       </fieldset>
     </div>
     {{                                                             }}
     
-    <div>
+    <!--div>
       <fieldset id= "submitBtns">
-        <div><button class="topcoat-button--large" type="cancel" id="cancel">{{= obj.cancel || loc('cancel') }}</button></div>
-        <div><button class="topcoat-button--large" type="submit" id="submit">{{= obj.submit || loc('submit') }}</button></div>
+        <div><button class="topcoat-button--large" type="cancel" id="cancel" {{= G.coverImage ? 'style="background:' + G.coverImage.background + ';color:' +  G.coverImage.color + ';"' : '' }}>{{= obj.cancel || loc('cancel') }}</button></div>
+        <div><button class="topcoat-button--large" type="submit" id="submit" {{= G.coverImage ? 'style="background:' + G.coverImage.color + ';color:' +  G.coverImage.background + ';"' : '' }}>{{= obj.submit || loc('submit') }}</button></div>
       </fieldset>
-    </div>
+    </div-->
 
   </form>
   
@@ -716,7 +725,7 @@
   </div>
 </script>
 <script type="text/template" id="moneyPET">
-  <label for="{{= id }}" class="ui-input-text"  data-theme="{{= G.theme.list }}">{{= name }} <b>{{= typeof value.currency === 'undefined' ? '$' : value.currency }}</b></label>
+  <label for="{{= id }}" class="ui-input-text"">{{= name }} <b>{{= typeof value.currency === 'undefined' ? '$' : value.currency }}</b></label>
   <input type="text" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '' }}" {{= rules }} class="topcoat-text-input"></input>
 </script>
 <script type="text/template" id="datePET">

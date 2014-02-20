@@ -41,10 +41,13 @@ define('views/EditPage', [
       
       var isGeo = this.isGeo();
       this.buttons = {
-        back: true,
+//        back: true,
+        save: true,
+        cancel: true
+//        ,
 //        menu: true,
 //        login: G.currentUser.guest,
-        rightMenu: !G.currentUser.guest
+//        rightMenu: !G.currentUser.guest
       };
     
       this.header = new Header({

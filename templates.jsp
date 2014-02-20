@@ -6,13 +6,13 @@
 <!-- Templates -->
 <script type="text/template" id="resource-list">
   <!-- Resource list page -->
-  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
-  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="a" data-position="right"></div> 
+  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="a" data-position="right"></div> 
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" role="main">
-    <div id="sidebar" data-theme="{{= G.theme.list }}"  data-filter-theme="{{= G.theme.list }}" 
+    <div id="sidebar" data-theme="c"  data-filter-theme="d" 
       {{ if (this.collection.models.length > 5) { }}
        data-filter="{{= this.canSearch }}" data-filter-placeholder="{{= loc(obj.placeholder || 'search') }}"
      {{ } }}
@@ -31,7 +31,7 @@
     </form>  
     <form data-ajax="false" id="editRlForm" action="#">
       <input type="submit" id="editRlSubmit" value="Submit" />
-      <ul data-role="listview" data-theme="{{= G.theme.list }}" id="editRlList" class="action-list" data-inset="true">
+      <ul data-role="listview" data-theme="c" id="editRlList" class="action-list" data-inset="true">
       </ul>
     </form>  
   </div>
@@ -46,8 +46,8 @@
 
 <script type="text/template" id="resource">
   <!-- Single resource view -->  
-  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div>
-  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="c" data-position="right"></div>
+  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="a" data-position="right"></div> 
 
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
@@ -57,33 +57,29 @@
       <div id="mainGroup" class="ui-block-b" style="min-width: 130px;padding-left:7px;"></div>
       <div id="buyGroup" class="ui-block-b" style="min-width: 130px"></div>
     </div>
-    <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="hidden"></div>
-    <div style="top: -3px;" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="thumb-gal-header hidden"><h3></h3></div>
-    <!--div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="hidden">
+    <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="d" class="hidden"></div>
+    <div style="top: -3px;" data-role="footer" data-theme="d" class="thumb-gal-header hidden"><h3></h3></div>
+    <!--div id="photogrid" style="padding: 7px;" data-theme="d" data-role="content" class="hidden">
     </div-->
     
     <div id="photogrid" data-inset="true" data-filter="false" class="thumb-gal hidden">
     </div>
     
     {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
-          <div style="padding:10px;"><a data-role="button" class="{{= 'ui-btn-hover-' + G.theme.swatch }}" data-icon="heart" data-theme="{{= G.theme.swatch }}" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></div>
+          <div style="padding:10px;"><a data-role="button" class="ui-btn-hover-c" data-icon="heart" data-theme="c" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></div>
     {{ } }}
-    <ul data-theme="{{= G.theme.list }}" id="resourceView">
+    <ul data-theme="c" id="resourceView">
     </ul>
-    <div id="about" class="hidden" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}"></div>
+    <div id="about" class="hidden" style="padding: 7px;" data-theme="d"></div>
     
     {{ if ($('#other')) { }}
       <!--br/>
       <br/-->
     {{ } }}
     
-    <ul data-theme="{{= G.theme.list }}" id="cpView" data-inset="true">
+    <ul data-theme="c" id="cpView" data-inset="true">
     </ul>
   </div>
-  <!--div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
-     <a data-role="button" data-shadow="false" data-icon="repeat" id="homeBtn" target="#">Home</a>
-     <a data-role="button" data-shadow="false" data-icon="edit" id="edit" target="#" style="float:right;" id="edit">{{= loc('edit') }}</a>
-  </div-->
   <br/>
 </script>  
 
@@ -194,8 +190,8 @@
 
 <script type="text/template" id="chatPageTemplate">
   <!-- Chat page -->
-  <div id="{{= viewId }}" data-role="panel" data-display="overlay" style="z-index: 3000;" data-theme="{{= G.theme.menu}}" data-position="right"></div> 
-  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" style="z-index: 3001;" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" style="z-index: 3000;" data-theme="a" data-position="right"></div> 
+  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" style="z-index: 3001;" data-theme="a" data-position="right"></div> 
   <div id="headerDiv"></div>
   <div id="videoChat" class="videoChat">
     <div id="localMedia"></div>
@@ -221,27 +217,27 @@
   {{ }                                          }}
   </div>
   {{ if (!this.isWaitingRoom || this.isAgent) { }}
-  <div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}" class="fieldcontain closespacing forceinline" style="z-index:3000">
+  <div data-role="footer" data-position="fixed" data-theme="d" class="fieldcontain closespacing forceinline" style="z-index:3000">
     <div class="floatleft">
-      <button id="chatCaptureBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-camera"></i></button>
+      <button id="chatCaptureBtn" data-theme="a" data-mini="true"><i class="ui-icon-camera"></i></button>
     </div>
     {{ if (this.isAgent) { }}
     <div class="floatleft">
-      <button id="chatReqLocBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-eye-open"></i></button>
+      <button id="chatReqLocBtn" data-theme="a" data-mini="true"><i class="ui-icon-eye-open"></i></button>
     </div>
     {{ }                     }}
     {{ if (this.isClient) { }}
     <div class="floatleft" style="padding-top:0px">
       <!--input type="radio" id="chatShareLocBtn" value="off" data-mini="true" />
       <label for="chatShareLocBtn"><i class="ui-icon-map-marker"></i></label-->
-      <button id="chatShareLocBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-map-marker"></i></button>
+      <button id="chatShareLocBtn" data-theme="a" data-mini="true"><i class="ui-icon-map-marker"></i></button>
     </div>  
     {{ }                     }}
     <div class="floatleft" style="width:40%">
       <input type="text" id="chatMessageInput" class="miniinputheight" value="" data-mini="true" />
     </div>  
     <div class="floatleft">
-      <button id="chatSendBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true">{{= loc('send') }}</button>
+      <button id="chatSendBtn" data-theme="a" data-mini="true">{{= loc('send') }}</button>
     </div>
   </div>
   {{ } }}
@@ -328,8 +324,8 @@
 
 <script type="text/template" id="socialNetworkPageTemplate">
 <!-- View where the user can connect various social networks -->  
-  <div id="{{= this.cid }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div>
-  <div id="{{= this.cid + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
+  <div id="{{= this.cid }}" data-role="panel" data-display="overlay" data-theme="a" data-position="right"></div>
+  <div id="{{= this.cid + 'r' }}" data-role="panel" data-display="overlay" data-theme="a" data-position="right"></div> 
   <div id="headerDiv"></div>
   <div id="socialButtons" style="min-width:200px; margin: 0 auto;"></div>
 </script>  
@@ -376,7 +372,7 @@
   {{ }                 }}
   
   {{ if (obj.ok === false && obj.cancel === false) { }}
-    <a href="#" data-cancel="cancel" data-rel="back" data-role="button" data-theme="{{= G.theme.menu }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
+    <a href="#" data-cancel="cancel" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
   {{ }                 }}
 
   <div data-role="content" data-theme="d" class="ui-corner-bottom ui-content">
@@ -388,11 +384,11 @@
     
     <div style="display:block">
     {{ if (obj.cancel) { }}
-    <a href="#" data-role="button" data-cancel="" data-inline="true" data-rel="back" data-theme="{{= G.theme.footer }}">{{= loc(typeof cancel === 'string' ? cancel : 'cancel') }}</a>
+    <a href="#" data-role="button" data-cancel="" data-inline="true" data-rel="back" data-theme="d">{{= loc(typeof cancel === 'string' ? cancel : 'cancel') }}</a>
     {{ }                 }}
     
     {{ if (obj.ok) { }}
-    <a href="#" data-role="button" data-ok="" data-inline="true" data-rel="back" data-transition="flow" data-theme="{{= G.theme.activeButton }}">{{= loc(typeof ok === 'string' ? ok : 'ok') }}</a>
+    <a href="#" data-role="button" data-ok="" data-inline="true" data-rel="back" data-transition="flow" data-theme="a">{{= loc(typeof ok === 'string' ? ok : 'ok') }}</a>
     {{ }                 }}
     </div>
   </div>
@@ -418,15 +414,15 @@
       <div id="messages" width="100%">
       </div>
     </div>
-        <div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}" class="fieldcontain closespacing forceinline" style="z-index:3000">
+        <div data-role="footer" data-position="fixed" data-theme="d" class="fieldcontain closespacing forceinline" style="z-index:3000">
       <!--table>
         <tr>
           <td>
-            <button id="chatCaptureBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-camera"></i></button>
+            <button id="chatCaptureBtn" data-theme="a" data-mini="true"><i class="ui-icon-camera"></i></button>
           </td>
           {{ if (this.isAgent) { }}
           <td>
-            <button id="chatReqLocBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-eye-open"></i></button>
+            <button id="chatReqLocBtn" data-theme="a" data-mini="true"><i class="ui-icon-eye-open"></i></button>
           </td>
           {{ }                     }}
           {{ if (this.isClient) { }}
@@ -439,40 +435,33 @@
             <input type="text" id="chatMessageInput" value="" data-mini="true" />
           </td>
           <td>
-            <button id="chatSendBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true">{{= loc('send') }}</button>
+            <button id="chatSendBtn" data-theme="a" data-mini="true">{{= loc('send') }}</button>
           </td>
         </tr>
       </table-->
       <div class="floatleft">
-        <button id="chatCaptureBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-camera"></i></button>
+        <button id="chatCaptureBtn" data-theme="a" data-mini="true"><i class="ui-icon-camera"></i></button>
       </div>
       {{ if (this.isAgent) { }}
       <div class="floatleft">
-        <button id="chatReqLocBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-eye-open"></i></button>
+        <button id="chatReqLocBtn" data-theme="a" data-mini="true"><i class="ui-icon-eye-open"></i></button>
       </div>
       {{ }                     }}
       {{ if (this.isClient) { }}
       <div class="floatleft" style="padding-top:0px">
         <!--input type="radio" id="chatShareLocBtn" value="off" data-mini="true" />
         <label for="chatShareLocBtn"><i class="ui-icon-map-marker"></i></label-->
-        <button id="chatShareLocBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-map-marker"></i></button>
+        <button id="chatShareLocBtn" data-theme="a" data-mini="true"><i class="ui-icon-map-marker"></i></button>
       </div>  
       {{ }                     }}
       <div class="floatleft" style="width:40%">
         <input type="text" id="chatMessageInput" class="miniinputheight" value="" data-mini="true" />
       </div>  
       <div class="floatleft">
-        <button id="chatSendBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true">{{= loc('send') }}</button>
+        <button id="chatSendBtn" data-theme="a" data-mini="true">{{= loc('send') }}</button>
       </div>
     </div>
     
-    <!--div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}">
-      <div id="chatInputs" style="padding:0 0 0 5px;">
-        <div style="width:10%; margin: 2px 5px 0 0; float:left"><button id="chatCaptureBtn" data-theme="{{= G.theme.activeButton }}" data-icon="camera" data-iconpos="notext">{{= loc('capture') }}</button></div>
-        <div style="width:65%; float:left"><input type="text" id="chatMessageInput" value="" /></div>
-        <div style="width:20%; padding-right:5px; margin-top: 2px; float:right"><button id="chatSendBtn" class="submit" type="submit" data-theme="{{= G.theme.activeButton }}">{{= loc('send') }}</button></div>
-      </div>
-    </div-->
   {{ }                                          }}
   </div>
 </script>
@@ -500,12 +489,12 @@
 
 <script type="text/template" id="menuP">
   <!-- Left-side slide-out menu panel -->
-  <ul data-role="none" data-theme="{{= G.theme.menu }}" id="menuItems" class="menuItems"></ul>
+  <ul data-role="none" data-theme="a" id="menuItems" class="menuItems"></ul>
 </script>  
 
 <script type="text/template" id="rightMenuP">
   <!-- Right-side slide-out menu panel -->
-  <ul data-role="none" data-theme="{{= G.theme.menu }}" id="rightMenuItems" class="menuItems"></ul>
+  <ul data-role="none" data-theme="a" id="rightMenuItems" class="menuItems"></ul>
 </script>  
 
 <script type="text/template" id="stringPT">
@@ -576,7 +565,7 @@
 </script-->
 
 <script type="text/template" id="complexDatePT">
-  <span>{{= typeof displayName != 'undefined' ? displayName : (U.isCloneOf(prop, 'ScheduledItem.start')  || U.isCloneOf(prop, 'ScheduledItem.end') ? G.U.getFormattedDate1(value) :  G.U.getFormattedDate(value)) }}</span>
+  <span>{{= typeof displayName != 'undefined' ? displayName : (prop.dateFormat ?  U.getFormattedDate2(value, prop.dateFormat) : (U.isCloneOf(prop, 'ScheduledItem.start')  || U.isCloneOf(prop, 'ScheduledItem.end') ? G.U.getFormattedDate1(value) :  G.U.getFormattedDate(value))) }}</span>
 </script>
 
 <script type="text/template" id="resourcePT">
@@ -768,7 +757,7 @@
 
 <script type="text/template" id="menuHeaderTemplate">
   <!-- menu header -->
-  <li data-icon="{{= icon }}" data-theme="{{= G.theme.menu}}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} style="font-size:18px;font-weight: normal;">
+  <li data-icon="{{= icon }}" data-theme="a" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} style="font-size:18px;font-weight: normal;">
     {{= title }}
   </li>
 </script>
@@ -808,14 +797,14 @@
 <script type="text/template" id="cpTemplate">
 <!-- readwrite backlink in resource view -->
 <li data-propName="{{= shortName }}"
-{{= obj.inline ? ' data-theme="{0}">'.format(G.theme.footer) : '' }}
+{{= obj.inline ? ' data-theme="d"' : '' }}
 >
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}
        <span class="ui-li-count">{{= value }}</span>
      </a>
-     <a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp" data-theme="{{= G.theme.list }}">
+     <a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp" data-theme="c">
        <i class="ui-icon-plus-sign"></i>
      </a>
      {{ if (typeof comment != 'undefined') { }}
@@ -885,14 +874,14 @@
 <script type="text/template" id="cpTemplateNoAdd">
 <!-- readonly backlink in resource view -->
 <li data-propName="{{= shortName }}"
-  {{= obj.inline ? ' data-theme="{0}">'.format(G.theme.activeButton) : '' }}
+  {{= obj.inline ? ' data-theme="a"' : '' }}
 >
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}
        <span class="ui-li-count">{{= value }}</span>
      </a>
-     <a target="#" data-theme="{{= G.theme.list }}" data-iconshadow="false" class="cp">
+     <a target="#" data-theme="c" data-iconshadow="false" class="cp">
        <i class="ui-icon-chevron-right"></i>
      </a>
    </li>
@@ -905,22 +894,18 @@
 
 <script type="text/template" id="propGroupsDividerTemplate">
   <!-- row divider / property group header in resource view -->
-  <li data-theme="{{= G.theme.list }}" data-role="list-divider">{{= value }}</li>
+  <li data-theme="c" data-role="list-divider">{{= value }}</li>
 </script>
 
-<!--script type="text/template" id="viewTemplate">
-  <div>
-    {{ for (var name in props) { }} 
-      {{ if (props.hasOwnProperty(name)) { }}
-        <div class="propRow">{{ name }}: {{ props[name] }}</div>
-      {{ } }}
-    {{ } }}
-  </div>
-</script-->
+<script type="text/template" id="saveButtonTemplate">
+  <!-- header button for saving changes -->
+  <a target="#" data-icon="ok"></a>
+</script>
 
-<!--script type="text/template" id="editButtonTemplate">
-  <a id="edit" target="#" class="icon next ui-btn-right">Edit</a>
-</script-->
+<script type="text/template" id="cancelButtonTemplate">
+  <!-- header button for canceling changes -->
+  <a target="#" data-icon="remove"></a>
+</script>
 
 <script type="text/template" id="mapItButtonTemplate">
   <!-- button that toggles map view -->
@@ -976,8 +961,8 @@
 
 <script type="text/template" id="buyPopupTemplate">
   <!-- popup for trial / purchase -->
-  <div id="buy_popup" style="text-align: center; background: #eeeeee;" data-role="popup" data-transition="slidedown" data-overlay-theme="{{= G.theme.menu }}" class="ui-content">
-    <!-- a href="#" data-rel="back" data-role="button" data-theme="{{= G.theme.activeButton }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a -->
+  <div id="buy_popup" style="text-align: center; background: #eeeeee;" data-role="popup" data-transition="slidedown" data-overlay-theme="a" class="ui-content">
+    <!-- a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a -->
     <div data-theme="c" role="main">
       <h4 id="buyMsg">{{= msg }}</h4>
       <a data-mini="true" data-role="button"  data-inline="true" id="buyLink" href="{{= href }}">{{= loc('buy') }}<span style="display:none;" id="buyName">{{= displayName }}</span></a> 
@@ -990,9 +975,9 @@
 <script type="text/template" id="loginPopupTemplate">
   <!-- login popup with various social network based logins -->
   {{ var canDismiss = typeof dismissible === 'undefined' || dismissible == true; }}
-  <div id="login_popup" data-role="popup" data-transition="slidedown" data-overlay-theme="{{= G.theme.menu }}" data-dismissible="false" class="ui-content">
+  <div id="login_popup" data-role="popup" data-transition="slidedown" data-overlay-theme="a" data-dismissible="false" class="ui-content">
     <h4 style="color: #aaa" id="loginMsg">{{= msg }}</h4>
-    <a href="#" data-cancel="cancel" data-rel="back" data-role="button" data-theme="{{= G.theme.menu }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
+    <a href="#" data-cancel="cancel" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
     
     {{ _.forEach(nets, function(net) { }} 
 
@@ -1099,8 +1084,8 @@
 
 <script type="text/template" id="headerTemplate">
   <!-- the page header, including buttons and the page title, used for all pages except the home page -->
-  <div id="callInProgress" data-theme="{{= G.theme.header}}"></div>
-  <div data-role="header" class="ui-header" data-theme="{{= G.theme.header}}" id="header" {{= obj.style ? style : '' }} {{= obj.more || '' }} >
+  <div id="callInProgress" data-theme="d"></div>
+  <div data-role="header" class="ui-header" data-theme="d" id="header" {{= obj.style ? style : '' }} {{= obj.more || '' }} >
     <div data-role="navbar">
       <ul id="headerUl" class="navbarUl">
       </ul>
@@ -1319,7 +1304,7 @@
         {{= typeof isIdea == 'undefined' ? '' : '<p class="ui-li-aside ui-li-desc">Idea</p>'}}
 </script>
 
-<script type="text/template" id="gridColTemplate">
+<!--script type="text/template" id="gridColTemplate">
   <gridCol data-prop="{{= property }}">
     <span data-prop="{{= property }}" class="label">{{= label }}</span>
     {{ if (obj.href) { }}
@@ -1330,7 +1315,7 @@
       <span>{{= value }}</span>
     {{ }               }}
   </gridCol>
-</script>
+</script-->
 
 <script type="text/template" id="fileUpload">
   <!-- a file upload form -->
@@ -1405,7 +1390,7 @@
 <script type="text/template" id="messageListTemplate">
 <!-- collapsible error list -->
 
-<div id="messageList" data-theme="{{= obj.theme ||  G.theme.error || 'c' }}">
+<div id="messageList">
 {{  _.each(messages, function(msg) {  }}
      <div style="display:block;position:relative;" id="{{= msg.id }}" class="headerMessageBar {{= msg['class'] || obj['class'] || '' }}">
   {{ if (msg.link) {            }}
@@ -1447,34 +1432,34 @@
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">
 <!-- the edit page for any particular resource -->
-<div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
-<div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu ? G.theme.propertiesMenu : G.theme.menu }}" data-position="right"></div> 
+<div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="a" data-position="right"></div> 
+<div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="a" data-position="right"></div> 
 <!--div id="headerMessageBar"></div-->
 <div id="headerDiv"></div>
 <div id="resourceEditView">
-  <div id="resourceImage"></div>
+  <!-- div id="resourceImage"></div -->
   <form data-ajax="false" id="{{= viewId + '_editForm'}}" action="#">
-    <ul data-role="listview" data-theme="{{= G.theme.list }}" id="fieldsList" class="action-list" data-inset="true">
+    <ul data-role="listview" data-theme="c" id="fieldsList" class="action-list" data-inset="true">
     </ul>
     
     <div name="errors" style="float:left"></div>
     {{ if (this.resource.isAssignableFrom("InterfaceImplementor")) { }}
     <div data-role="fieldcontain" id="ip">
       <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true" data-theme="{{= G.theme.activeButton }}">{{= loc('checkAll') }}</a></div>
-        <div class="ui-block-b"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true" data-theme="{{= G.theme.footer }}">{{= loc('uncheckAll') }}</a></div>
+        <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true" data-theme="a">{{= loc('checkAll') }}</a></div>
+        <div class="ui-block-b"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true" data-theme="a">{{= loc('uncheckAll') }}</a></div>
       </fieldset>
       <fieldset data-role="controlgroup" id="interfaceProps">
       </fieldset>
     </div>
     {{ }                                                             }}
     
-    <div class="ui-body ui-body-b">
+    <!--div class="ui-body ui-body-b">
       <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><button name="cancelBtn" type="cancel" id="cancel" data-theme="{{= G.theme.footer }}" class="cancel">{{= obj.cancel || loc('cancel') }}</button></div>
-        <div class="ui-block-b"><button name="submitBtn" type="submit" id="submit" data-theme="{{= G.theme.activeButton }}" class="submit">{{= obj.submit || loc('submit') }}</button></div>
+        <div class="ui-block-a"><button name="cancelBtn" type="cancel" id="cancel" data-theme="d" class="cancel">{{= obj.cancel || loc('cancel') }}</button></div>
+        <div class="ui-block-b"><button name="submitBtn" type="submit" id="submit" data-theme="a" class="submit">{{= obj.submit || loc('submit') }}</button></div>
       </fieldset>
-    </div>
+    </div-->
 
   </form>
   <br/>
@@ -1485,7 +1470,7 @@
 </div>
 
 
-  <!--div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
+  <!--div data-role="footer" class="ui-bar" data-theme="d">
      <a data-role="button" data-icon="repeat" id="homeBtn" target="#">Home</a>
   </div-->
 </script>
@@ -1558,7 +1543,7 @@
 <script type="text/template" id="stringPET">
   {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 100; }}
   {{ if (name) { }}
-  <label for="{{= id }}" data-theme="{{= G.theme.list }}">{{= name }}</label>
+  <label for="{{= id }}" data-theme="c">{{= name }}</label>
     <{{= isInput ? 'input type="text"' : 'textarea rows="10" cols="20" ' }} name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   {{ } }} 
   {{ if (!name) { }}
@@ -1567,7 +1552,7 @@
 </script>
 
 <script type="text/template" id="moneyPET">
-  <label for="{{= id }}" data-theme="{{= G.theme.list }}">{{= name }} <b>{{= typeof value.currency === 'undefined' ? '$' : value.currency }}</b></label>
+  <label for="{{= id }}" data-theme="c">{{= name }} <b>{{= typeof value.currency === 'undefined' ? '$' : value.currency }}</b></label>
   <input type="text" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '' }}" {{= rules }} data-mini="true"></input>
 </script>
 
@@ -1623,7 +1608,7 @@
 </script>
 
 <script type="text/template" id="cameraPopupTemplate">
-  <div data-role="popup" id="cameraPopup" data-overlay-theme="{{= G.theme.menu }}" data-dismissible="false" class="ui-content ui-body-d">
+  <div data-role="popup" id="cameraPopup" data-overlay-theme="a" data-dismissible="false" class="ui-content ui-body-d">
     <div>
     {{ if (obj.video || obj.image) { }}
       <video id="camVideo" autoplay="autoplay"></video>

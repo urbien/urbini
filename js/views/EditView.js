@@ -101,8 +101,8 @@ define('views/EditView', [
       return this;
     },
     events: {
-      'click #cancel'                     :'cancel',
-      'submit form'                       :'submit',
+//      'click #cancel'                     :'cancel',
+//      'submit form'                       :'submit',
       'click .resourceProp'               :'chooser',
       'click input[data-duration]'        :'scrollDuration',
       'click input[data-date]'            :'scrollDate',
@@ -114,6 +114,11 @@ define('views/EditView', [
       'keydown input'                     :'onKeyDownInInput',
       'change select'                     :'onSelected',
       'change input[type="checkbox"]'     :'onSelected'
+    },
+    
+    globalEvents: {
+      'userSaved': 'submit',
+      'userCanceled': 'cancel'
     },
 
     /** 
@@ -740,11 +745,8 @@ define('views/EditView', [
     },
     
     submit: function(e, options) {
-      e && Events.stopEvent(e);
-      if (this._submitted) {
-        if (!this.isActive())
-          return;
-      }
+      if (!this.isActive() || this._submitted)
+        return;
 
       if (G.currentUser.guest) {
         // TODO; save to db before making them login? To prevent losing data entry
@@ -857,7 +859,9 @@ define('views/EditView', [
         this.onerror(errors);
     },
     cancel: function(e) {
-      Events.stopEvent(e);
+      if (!this.isActive())
+        return;
+      
       if (this.action === 'edit') {
         this.resource.clear();
         this.resource.set(this.originalResource);

@@ -17,7 +17,7 @@ define('views/Header', [
 //  'views/PublishButton'
 ], function(G, Events, U, Voc, BasicView, Physics, DOM/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
   var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate', 'installApp'];
-  var REGULAR_BUTTONS = ['back', 'mapIt', 'add', 'video', 'chat', 'login', 'rightMenu'];
+  var REGULAR_BUTTONS = ['back', 'cancel', 'save', 'mapIt', 'add', 'video', 'chat', 'login', 'rightMenu'];
   var commonTypes = G.commonTypes;
   var friendlyTypes = [G.commonTypes.Urbien, 'http://urbien.com/voc/dev/ImpressBackup/Movie', 'http://urbien.com/voc/dev/ImpressBackup/Artist', 'model/social/App'];
   var editablePhysicsConstants = ['drag', 'springStiffness', 'springDamping', 'tilt'];
@@ -318,7 +318,6 @@ define('views/Header', [
         
       function doRender() {
         self.renderHelper.apply(self, args);
-        self.addToWorld(null, true);
         self.finish();
         if (G.isBootstrap())
           self.$('#headerUl div').$attr('class', 'navbar-header');
@@ -582,7 +581,7 @@ define('views/Header', [
 //      this.$el.prevObject.attr('data-theme', G.theme.list);
       var pageData = this.pageView.el.dataset;
       pageData.title = this.pageTitle;
-      pageData.theme = G.theme.list;
+//      pageData.theme = G.theme.list;
       var frag = document.createDocumentFragment();
       var btns = this.buttonViews;
       var isMapItToggleable = !!this.collection;
@@ -665,7 +664,7 @@ define('views/Header', [
       // HACK
       // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view 
       var header = this.$('.ui-header')[0];
-      var barClass = 'ui-bar-{0}'.format(G.theme.header);
+      var barClass = 'ui-bar-c';//{0}'.format(G.theme.header);
       if (header && !header.classList.contains(barClass))
         header.classList.add(barClass);
       
