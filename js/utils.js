@@ -1480,6 +1480,25 @@ define('utils', [
 //      }
     },
 
+    getFormattedDate2: function(time, dateFormat) {
+      if (dateFormat.indexOf('~') == 0)
+        dateFormat = dateFormat.substring(1);
+      var hasSeconds = dateFormat.indexOf(":ss") != -1;
+      if (dateFormat.indexOf("MMM-dd, yyyy HH:mm") == 0) {
+        var d = new Date(time);
+        var ds = d.toString();
+        var idx = 4;
+        var idx1 = ds.indexOf(' ', idx);
+        var mon = ds.substring(idx, idx1);
+        var day = ds.substring(idx1 + 1, idx1 + 3);
+        var year = ds.substring(idx1 + 4, idx1 + 8);
+        idx1 += 9;
+        
+        return mon + '-' + day + ', ' + year + ' ' + (hasSeconds ? ds.substring(idx1, idx1 + 8) : ds.substring(idx1, idx1 + 5)); 
+      }
+      else
+        return getFormattedDate(time);
+    },
     getFormattedDate1: function(time) {
       var d = new Date(time);
 
@@ -1861,8 +1880,12 @@ define('utils', [
           var href = window.location.hash;
           var isView = href.startsWith("#view/");
 
-          if (isDisplayName)
-            val = "<span>" + val + "</span>";
+          if (isDisplayName) {
+            if (prop.setLinkTo)
+              val = "<a href='" + res.get(prop.setLinkTo) + "'><span>" + val + "</span></a>";
+            else
+              val = "<span>" + val + "</span>";
+          }
 //            val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
           else if (!isView  &&  prop.maxSize > 1000) {
             var color;
