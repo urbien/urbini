@@ -7,7 +7,7 @@
  *  
  * directives. However, there are also a million special cases. Until they are standardized, there's the hackery below. 
  */
-define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocManager', 'collections/ResourceList'], function(G, _, U, C, Events, Voc, ResourceList) {
+define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocManager', 'collections/ResourceList', '@widgets'], function(G, _, U, C, Events, Voc, ResourceList, $m) {
   var redirecter,
       interfaceImplementorType = 'system/designer/InterfaceImplementor',
       connectionType = G.commonTypes.Connection;
