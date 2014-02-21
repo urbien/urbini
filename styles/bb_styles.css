@@ -207,6 +207,9 @@ section[data-type="sidebar"]:after {
 #sidebar div {
   font-size: 1.6rem;
 }
+#sidebar div.masonry-brick {
+  cursor: pointer;
+}
 .home {
   float:right; 
   position:relative; 

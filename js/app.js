@@ -568,10 +568,13 @@ define('app', [
     Voc.checkUser();
     G.checkVersion();
     if (G.coverImage) {
-      G.coverImage.color = U.colorLuminance("#" + G.coverImage.lightColor.toString(16), 0.4);
-      G.coverImage.background = "#" + G.coverImage.darkColor.toString(16);
+      G.coverImage.color = G.lightColor = U.colorLuminance("#" + G.coverImage.lightColor.toString(16), 0.4);
+      G.coverImage.background = G.darkColor = "#" + G.coverImage.darkColor.toString(16);
     }
-
+    else {
+      G.lightColor = '#eeeeee';
+      G.darkColor = '#757575';
+    }
     Templates.loadTemplates();
     extendMetadataKeys();
     setupNetworkEvents();

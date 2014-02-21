@@ -1483,8 +1483,7 @@ define('utils', [
     getFormattedDate2: function(time, dateFormat) {
       if (dateFormat.indexOf('~') == 0)
         dateFormat = dateFormat.substring(1);
-      var hasSeconds = dateFormat.indexOf(":ss") != -1;
-      if (dateFormat.indexOf("MMM-dd, yyyy HH:mm") == 0) {
+      if (dateFormat.indexOf("MMM-dd, yyyy") == 0) {
         var d = new Date(time);
         var ds = d.toString();
         var idx = 4;
@@ -1494,10 +1493,12 @@ define('utils', [
         var year = ds.substring(idx1 + 4, idx1 + 8);
         idx1 += 9;
         
-        return mon + '-' + day + ', ' + year + ' ' + (hasSeconds ? ds.substring(idx1, idx1 + 8) : ds.substring(idx1, idx1 + 5)); 
+        var hasSeconds = dateFormat.indexOf(":ss") != -1;
+        var hasMinutes = dateFormat.indexOf(":mm") != -1;
+        return mon + '-' + day + ', ' + year + ' ' + (hasSeconds ? ds.substring(idx1, idx1 + 8) : (hasMinutes ? ds.substring(idx1, idx1 + 5) : '')); 
       }
       else
-        return getFormattedDate(time);
+        return U.getFormattedDate(time);
     },
     getFormattedDate1: function(time) {
       var d = new Date(time);
@@ -1838,7 +1839,21 @@ define('utils', [
 //      var currentlum = (0.2126*rgbaA[0]) + (0.7152*rgbaA[1]) + (0.0722*rgbaA[2]);
 
       return rgb;
-    },   
+    },
+    getColorLuminance: function(hex) {
+      hex = String(hex).replace(/[^0-9a-f]/gi, '');
+      if (hex.length < 6) {
+        hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+      }
+      // convert to decimal and change luminosity
+      var rgb = "#", c, i;
+      var rgba = [];
+      var currentlum = 0;
+      for (i = 0; i < 3; i++) 
+        rgba[i] = parseInt(hex.substr(i*2,2), 16);
+      return (0.2126*rgba[0]) + (0.7152*rgba[1]) + (0.0722*rgba[2]);
+      
+    },
     colorLuminanceRGB: function(rgb, lum) {
       // validate hex string
       var idx1 = rgb.indexOf('(');
@@ -1890,7 +1905,7 @@ define('utils', [
           else if (!isView  &&  prop.maxSize > 1000) {
             var color;
             if (G.coverImage)
-              color = G.coverImage.color;
+              color = G.coverImage.background;
             /*
             if (!color) {
               color = $('[data-role="page"]').css('color');
@@ -1907,8 +1922,10 @@ define('utils', [
             */ 
 //            var dColor = G.theme.descriptionColor;
             if (color) {
+              var lum = U.getColorLuminance(color);
               if (color.charAt(0) != '#')
                 color = '#' + color;
+              
               val = '<div class="u-desc" style="color: ' + color + ';">' + val + '</div>';
             }
             else
