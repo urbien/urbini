@@ -34,6 +34,7 @@ define('views/BasicView', [
   
   var BasicView = Backbone.View.extend({
 //    viewType: 'resource',
+    myBrick: null,
     _scrollerType: 'verticalMain',
     _numBricks: 0,
     _initializedCounter: 0,
@@ -45,7 +46,7 @@ define('views/BasicView', [
     _rail: true,
     _scrollAxis: 'y',
     initialize: function(options) {
-      _.bindAll(this, 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_render',  '_refresh', 'finish', '_onViewportDimensionsChanged', '_recheckDimensions', '_onMutation', '_updateSize');
+      _.bindAll(this, 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_render',  '_refresh', 'finish', '_onViewportDimensionsChanged', '_recheckDimensions', '_onMutation', '_updateSize', 'invalidateSize');
       this._initializedCounter++;
       this.TAG = this.TAG || this.constructor.displayName;
 //      this.log('newView', ++this.constructor._instanceCounter);
@@ -123,7 +124,8 @@ define('views/BasicView', [
       this.loc = G.localize;
       if (this.model)
         this.listenTo(Events, 'preparingModelForDestruction.' + this.model.cid, this._preventModelDeletion);
-      
+    
+      this.children = {};
       this._dimensions = {};
       this._bounds = new Array(4);
 //      if (this.resource)
@@ -389,6 +391,7 @@ define('views/BasicView', [
           disableHover(this.el);
 
         this._checkScrollbar();
+        this.invalidateSize();
         return result;
       }
       else {
@@ -613,10 +616,6 @@ define('views/BasicView', [
 //    },
     
     addChild: function(view) {
-      var self = this;
-      if (!this.children)
-        this.children = {};
-      
       this.children[view.cid] = view;
       view.parentView = view.parentView || this;
       view.pageView = this.getPageView() || view.pageView;      
@@ -706,6 +705,7 @@ define('views/BasicView', [
     
     _recheckDimensions: function() {
       if (this.el && this.mason && this._updateSize()) {
+        this.trigger('resized');
         if (this._viewBrick)
           this.buildViewBrick();
         
@@ -1107,8 +1107,9 @@ define('views/BasicView', [
       Physics.addDraggable(this.hammer(), this._flexigroup ? this.getFlexigroupId() : this.getContainerBodyId(), this._dragAxis);
     },
 
-    _updateSize: function() {
+    _updateSize: function(el) {
       // TODO - move this to domUtils - it's per DOM element, not per view
+      el = el || this.el;
       var viewport = G.viewport,
           doUpdate = false,
           oldOuterWidth = this._outerWidth,
@@ -1116,17 +1117,17 @@ define('views/BasicView', [
           oldWidth = this._width,
           oldHeight = this._height;
 
-      this._offsetLeft = this.el.offsetLeft;
-      this._offsetTop = this.el.offsetTop;
+      this._offsetLeft = el.offsetLeft;
+      this._offsetTop = el.offsetTop;
 
       // TODO: fix this nonsense
-      this._outerWidth = this.el.$outerWidth();
+      this._outerWidth = el.$outerWidth();
       if (this._outerWidth)
         this._width = Math.min(this._outerWidth, viewport.width);
       else
         this._width = viewport.width > this._offsetLeft ? viewport.width - this._offsetLeft : viewport.width;
       
-      this._outerHeight = this.el.$outerHeight();
+      this._outerHeight = el.$outerHeight();
       if (this._outerHeight)
         this._height = Math.min(this._outerHeight, viewport.height);
       else
@@ -1170,6 +1171,17 @@ define('views/BasicView', [
     _onPhysicsMessage: function() {
       // override me
     },
+    
+//    addBrick: function(el, id) {
+//      var brick = this.buildBrick({
+//        id: id,
+//        el: el
+//      });
+//      
+//      Physics.here.addBody(el, id);
+//      this.addBricksToWorld([brick]);
+//      return brick;
+//    },
     
     addToWorld: function(options, addViewBrick) {      
 //      var viewport = G.viewport;
@@ -1241,7 +1253,7 @@ define('views/BasicView', [
           clearTimeout(this._mutationTimeout);
       }
       
-      this._mutationTimeout = setTimeout(this._onViewportDimensionsChanged, 20);
+      this._mutationTimeout = setTimeout(this.invalidateSize, 20);
 //      if (this.mason && this._updateSize()) {
 //        this.updateMason();
 //      }
@@ -1390,6 +1402,7 @@ define('views/BasicView', [
     },
     
     addViewBrick: function() {
+//      Physics.here.addBody(this.el, this.getBodyId());
       this.addBricksToWorld([this.buildViewBrick()]);
       
       // TODO: get rid of this when we make everything into bricks 
@@ -1446,7 +1459,8 @@ define('views/BasicView', [
                 var cOf = U.getCloneOf(vocModel, iface + '.' + prop);
                 var len = cOf.length;
                 if (len)
-                  cloned[prop] = len == 1 ? cOf[0] : cOf;
+                  cloned[prop] = cOf; //cOf[0];
+//                  cloned[prop] = len == 1 ? cOf[0] : cOf;
               }
             }
           }
