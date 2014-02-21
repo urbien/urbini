@@ -1184,7 +1184,7 @@ define('globals', function() {
   }, false);
 
   $.extend(G, {
-    _widgetLibrary: G.currentApp.widgetLibrary || 'JQuery Mobile',
+    _widgetLibrary: G.currentApp.widgetLibrary || 'topcoat',
     isJQM: function() {
       return G.getWidgetLibrary().toLowerCase() == 'jquery mobile';
     },
@@ -1561,7 +1561,7 @@ define('globals', function() {
     hasLocalStorage: hasLocalStorage,
     hasFileSystem: !!(window.requestFileSystem || window.webkitRequestFileSystem),
     hasBlobs: typeof window.Blob !== 'undefined',
-    hasWebWorkers: false,//typeof window.Worker !== 'undefined',
+    hasWebWorkers: typeof window.Worker !== 'undefined',
     TAG: 'globals',
     checkpoints: [],
     tasks: {},
@@ -1694,6 +1694,7 @@ define('globals', function() {
 //      return space;
 //    },
     
+    _logArray: new Array(0),
     log: function(tag, type) {
       if (!G.DEBUG || !TRACE.ON || !console || !console.log || !type)
         return;
@@ -1717,7 +1718,8 @@ define('globals', function() {
 
         var txt = type + ' : ' + tag + ' : ' + msgStr + ' : ';
         var d = new Date(G.currentServerTime());
-        console.log((css ? '%c ' : '') + txt + new Array(Math.max(100 - txt.length, 0)).join(' ') + d.toUTCString().slice(17, 25) + ':' + d.getUTCMilliseconds(), css ? 'background: ' + (typeTrace.bg || '#FFF') + '; color: ' + (typeTrace.color || '#000') : '');        
+        G._logArray.length = Math.max(100 - txt.length, 0);
+        console.log((css ? '%c ' : '') + txt + G._logArray.join(' ') + d.toUTCString().slice(17, 25) + ':' + d.getUTCMilliseconds(), css ? 'background: ' + (typeTrace.bg || '#FFF') + '; color: ' + (typeTrace.color || '#000') : '');        
       }
     },
     
