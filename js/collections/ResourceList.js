@@ -440,10 +440,10 @@ define('collections/ResourceList', [
         this._lastFetchedOn = G.currentServerTime();
       
       var vocModel = this.vocModel;
-//      for (var i = 0, len = response.length; i < len; i++) {
-//        var res = response[i];
-//        res._uri = U.getLongUri1(res._uri, vocModel);
-//      }
+      for (var i = 0, len = response.length; i < len; i++) {
+        var res = response[i];
+        res._uri = U.getLongUri1(res._uri, vocModel);
+      }
       
       var adapter = this.vocModel.adapter;
       if (adapter && adapter.parseCollection)
