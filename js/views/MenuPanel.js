@@ -23,7 +23,7 @@ define('views/MenuPanel', [
       display: 'table',
       width: '100%',
       background: 'none',
-      visibility: 'hidden',
+      visibility: 'visible',
       'transform-origin': '100% 0%'
     },
     _hidden: true,
