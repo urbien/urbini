@@ -10,7 +10,7 @@ define('views/ResourceView', [
     var p = prop.shortName;
     var doShow = p.charAt(0) != '_' && p != 'davDisplayName'  &&  !prop.avoidDisplayingInView  &&  U.isPropVisible(res, prop, role);
     // if property marked as Display name element show only on case it is of resource range.
-    return doShow ? (!prop.displayNameElm  ||  prop.range.indexOf("/") != -1) : doShow;
+    return doShow ? (!prop.displayNameElm  ||  prop.setLinkTo  ||  prop.range.indexOf("/") != -1) : doShow;
       
   };
 
@@ -106,7 +106,7 @@ define('views/ResourceView', [
 //      var wl = G.currentApp.widgetLibrary
 //      if (wl  &&  wl != 'Jquery Mobile') {
         Events.stopEvent(e);
-        t.parentNode.$('ul').$toggleClass('hidden');        
+        t.parentNode.$('ul').$toggleClass('hidden');
         return;
 //      }
     },

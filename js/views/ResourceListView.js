@@ -21,7 +21,7 @@ define('views/ResourceListView', [
   var defaultSlidingWindowOptions = {
     // <MASONRY INITIAL CONFIG>
     slidingWindow: true,
-//    tilt: 'forward',
+    tilt: 'forward',
 //    gradient: true,
 //    squeeze: false,
     horizontal: false,
@@ -70,6 +70,7 @@ define('views/ResourceListView', [
     className: 'scrollable',
     style: { 
       opacity: DOM.maxOpacity,
+//      position: 'absolute',
       'transform-origin': '50% 50%'
     },
     stashed: [],
@@ -78,6 +79,7 @@ define('views/ResourceListView', [
       options = options || {};
       BasicView.prototype.initialize.call(this, options);
       this.displayMode = options.displayMode || 'vanillaList';
+      this._flexigroup = this._flexigroup && this.displayMode != 'vanillaList';
 //      this._masonryOptions = _.defaults({
 //        gutterWidth: GUTTER_WIDTH
 //      }, defaultMasonryOptions);
@@ -325,7 +327,7 @@ define('views/ResourceListView', [
       if (!self || self.mvProp) // ||  self.TAG == 'HorizontalListItemView') 
         return;
       
-      if (self.TAG !== 'HorizontalListItemView' && this.displayMode != 'vanillaList')
+      if (self.TAG !== 'HorizontalListItemView' && this.displayMode != 'vanillaList'  && !this._flexigroup)
         navOptions.via = self;
       
       if (link) {
@@ -734,12 +736,12 @@ define('views/ResourceListView', [
           fromTheHead = from == this._displayedRange.from,
           childNodes = this._childEls,
           displayed = this._displayedRange,
-          removedViews = [];
+          removedViews = [],
+          i = fromTheHead ? 0 : childNodes.length - numToRemove,
+          end = end = fromTheHead ? numToRemove : childNodes.length;
 
 //      this.log("PAGER", "REMOVING", to - from, "BRICKS FROM THE", fromTheHead ? "HEAD" : "TAIL", "FOR A TOTAL OF", this._displayedRange.to - this._displayedRange.from - (to - from));
-      for (var i = fromTheHead ? 0 : childNodes.length - numToRemove, 
-               end = fromTheHead ? numToRemove : childNodes.length; i < end; i++) {
-        
+      for (; i < end; i++) {
         var childEl = childNodes[i],
             childView;
 
@@ -1021,12 +1023,24 @@ define('views/ResourceListView', [
     },
     
     renderItem: function(res, prepend) {
-      var options = {
-            delegateEvents: false,
-            resource: res
-          },
+      var options,
           liView = this.getCachedItemView(),
           preinitializedItem;
+      
+      if (!this._initializeItemOptions) {
+        this._initializeItemOptions = {
+          delegateEvents: false
+        };
+      }
+      
+      options = this._initializeItemOptions;
+      options.resource = res;
+      options.el = null;
+      
+      if (!this._renderItemOptions)
+        this._renderItemOptions = {};
+
+      this._renderItemOptions.unlazifyImages = !this._scrollable;
       
       if (this.isMultiValueChooser) {
         options.checked = _.contains(this.mvVals, res.get('davDisplayName'));
@@ -1059,23 +1073,25 @@ define('views/ResourceListView', [
         liView = new preinitializedItem(options);
 //        this.log("Creating a list item view took " + (_.now() - now));
 //        this.log("CREATED NEW LIST ITEM: " + liView.getBodyId());
-        this.addChild(liView, prepend);      
       }
+            
+      liView.render(this._renderItemOptions);
       
-      liView.render({
-        unlazifyImages: !this._scrollable
-      });
-      
-//      if (!this._itemTemplateElement && this.displayMode == 'masonry') // remove this when we change ResourceListItemView to update DOM instead of replace it
-//        this._itemTemplateElement = liView.el;
+      if (!this._itemTemplateElement && this.displayMode == 'masonry') // remove this when we change ResourceListItemView to update DOM instead of replace it
+        this._itemTemplateElement = liView.el;
         
+      this.postRenderItem(liView);
+//      return liView;
+    },
+    
+    postRenderItem: function(liView) {
       liView.el.style.opacity = 0;
       if (!liView.el.parentNode) {
         // need to append right away, otherwise we can't figure out its size
         this.el.appendChild(liView.el); // we don't care about its position in the list, as it's absolutely positioned
       }
       
-//      return liView;
+      this.addChild(liView);
       this._currentAddBatch.push(liView);
     },
     
@@ -1134,6 +1150,7 @@ define('views/ResourceListView', [
       numBricks = Math.max(10, numBricks) | 0;
       while (numBricks--) {
         placeholder = doc.createElement(tagName);
+        placeholder.style.position = 'absolute';
         this.el.appendChild(placeholder);
         this._placeholders.push(placeholder);
       }
