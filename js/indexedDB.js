@@ -131,6 +131,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     var promises = [],
         _item = item; // for now we don't need a new object
     
+    delete item.__tasks__; // HACK
     for (var prop in item) {
       var val = item[prop];
       
