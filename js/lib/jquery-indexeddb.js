@@ -89,13 +89,15 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
                 dfd.resolveWith(idbRequest, [idbRequest.result, e]);
               };
               idbRequest.onerror = function(e) {
-								log("req failed", idbRequest, e, this);
+//								log("req failed", idbRequest, e, this);
+                debugger;
+                log("req failed");
                 dfd.rejectWith(idbRequest, [idbRequest.error, e]);
               };
               if (typeof idbRequest.onblocked !== "undefined" && idbRequest.onblocked === null) {
                 idbRequest.onblocked = function(e) {
 								  debugger;
-									log("Blocked", idbRequest, e, this);
+									log("Blocked");
                   var res;
                   try {
                     res = idbRequest.result;
