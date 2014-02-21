@@ -2213,6 +2213,7 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
             }
             
             Physics.util.extend(this.state.renderData, {
+              encoded: [],
               changed: [],
               json: {
                 opacity: 0,
@@ -2275,8 +2276,8 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
                 }
               },
               getChanges: function(clone) {
-                if (!body.rendered())
-                  return this.toJSON(clone);
+//                if (!body.rendered())
+//                  return this.toJSON(clone);
                 
                 var i = this.changed.length,
                     prop,
@@ -4468,6 +4469,7 @@ Physics.behavior('verlet-constraints', function( parent ){
           if (data.body == args[i]) {
             self._world.unsubscribe('remove:body', removeConstraint);
             self.remove(cst);
+            break;
           }
         }
       });

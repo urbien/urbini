@@ -1,4 +1,3 @@
-
 /**
  * DOM-Batch
  *
@@ -24,6 +23,17 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
       numModes = modeOrder.length,
       BYPASS = false,
       TIMER_RESOLUTION = 20,
+      timerId = 0,
+      
+      // JOBS
+      TYPE_IDX = 0,
+      FN_IDX = 1,
+      CTX_IDX = 2,
+      ARGS_IDX = 3,
+      OPTIONS_IDX = 4,
+      // END JOBS
+
+      TIMEOUTS = {},
       hasRAF = G.hasRequestAnimationFrame;
   
   /**
@@ -33,6 +43,7 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
    * @constructor
    */
   function FastDom() {
+    _.bindAll(this, '_frameTask');
     this.frameNum = 0;
     this.timestamps = [];
     this.lastId = 0;
@@ -63,11 +74,16 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
        * }
        */
       FastDom.prototype[mode] = function(fn, ctx, args, options) {
-        var jobs = this.jobs;
+        var jobs = this.jobs,
+            job;
+        
         if (options && options.throttle) {
-          var first = options.first;
-          for (var id in jobs) {
-            var jFn = jobs[id].fn;
+          var first = options.first,
+              id,
+              jFn;
+          
+          for (id in jobs) {
+            jFn = jobs[id][FN_IDX];
             if (fn === jFn) {
               if (first)
                 return;
@@ -77,10 +93,10 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
           }
         }
 
-        var job = this.add(mode, fn, ctx, args, options);
-        this.queue[mode].push(job.id);
+        job = this.add(mode, fn, ctx, args, options);
+        this.queue[mode].push(job._jobId);
         this.request(mode);
-        return job.id;
+        return job._jobId;
       }
     })(i);
   }  
@@ -182,15 +198,17 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
     this.scheduleFrame();
   };
 
-  FastDom.prototype._frameTaskId = -1;
+//  FastDom.prototype._frameTaskId = -1;
   FastDom.prototype._frameTask = function() {
-    FrameWatch.unsubscribe(this._frameTaskId);
+//    FrameWatch.unsubscribe(this._frameTaskId);
+    FrameWatch.stopListeningToTick(this._frameTask);
     this.frame();
   };
   
   FastDom.prototype.scheduleFrame = function() {
     this.pending = true;
-    FrameWatch.subscribe(this._frameTask, this, null, this._frameTaskId);
+//    FrameWatch.subscribe(this._frameTask, this, null, this._frameTaskId);
+    FrameWatch.listenToTick(this._frameTask);
   };
 
   FastDom.prototype.startFrame = function() {
@@ -212,7 +230,7 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
 
   FastDom.prototype.isOutOfTime = function() {
 //    return false;
-    this.frameEnd = _.last(this.timestamps);
+    this.frameEnd = this.timestamps[this.timestamps.length - 1];
     this._frameTime = this.frameEnd - this.frameStart;
     return this._frameTime >= MAX_FRAME_SIZE; //Math.max(MIN_FRAME_SIZE, MAX_FRAME_SIZE - this.lastBlackoutDuration);
   };
@@ -240,7 +258,7 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
         continue;
       
       this.run(lastJob);
-      var numTimestamps = this.timestamps.length;
+//      var numTimestamps = this.timestamps.length;
 //      this.debug('JOB: ', lastJob, 'TOOK: ', this.timestamps[numTimestamps - 1] - this.timestamps[numTimestamps - 2]);
     }
     
@@ -256,7 +274,7 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
     var now = _.now();
     this.timestamps.push(now);
     if (this.timestamps.length > 50)
-      this.timestamps = this.timestamps.slice(0, 10);
+      Array.removeFromTo(this.timestamps, 0, this.timestamps.length - 10);
     
     return now;
   };
@@ -268,15 +286,15 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
    * @api private
    */
   FastDom.prototype.frame = function() {
-    var postponed = false;
+//    var postponed = false;
     
     // Set the pending flag to
     // false so that any new requests
     // that come in will schedule a new frame
     this.startFrame();
     
-    var idx = this.mode ? modeOrder.indexOf(this.mode) : 0;
-    for (var i = idx; i < numModes; i++) {
+    var i = this.mode ? modeOrder.indexOf(this.mode) : 0;
+    for (; i < numModes; i++) {
       this.mode = modeOrder[i];
       if (this.flush(this.queue[this.mode]) == false) // postponed to next frame
         return;
@@ -308,9 +326,9 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
 //      Array.remove(waiting, promise);
 //    });
     
-    task = FrameWatch.subscribe(function wrapped() {
+    task = FrameWatch.listenToTick(function wrapped() {
       if (!(frames--)) {
-        FrameWatch.unsubscribe(task._taskId);
+        FrameWatch.stopListeningToTick(wrapped);
         dfd.resolve();
         return;
       }
@@ -358,16 +376,16 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
     var self = this;
     var job = this.add('defer', this[type].bind(this, fn, ctx, args, options)); // use regular queueing mechanism
     
-    var task = FrameWatch.subscribe(function wrapped() {
+    var task = FrameWatch.listenToTick(function wrapped() {
       if (!(frames--)) {
-        FrameWatch.unsubscribe(task._taskId);
+        FrameWatch.stopListeningToTick(wrapped);
         self.run(job);
         job = null; // prevent circular ref in case job has a property that points to this (like ctx) 
         return;
       }
     });
 
-    return job.id;
+    return job._jobId;
   };
 
   /**
@@ -381,15 +399,20 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
    * @api private
    */
   FastDom.prototype.add = function(type, fn, ctx, args, options) {
-    var id = this.uniqueId();
-    var job = this.jobs[id] = {
-      id: id,
-      type: type,
-      fn: fn,
-      ctx: ctx,
-      args: args,
-      options: options
-    };
+    var id = this.uniqueId(),
+        job = arguments;
+    
+    job._jobId = id;
+    this.jobs[id] = job;
+    
+//    var job = this.jobs[id] = {
+//      id: id,
+//      type: type,
+//      fn: fn,
+//      ctx: ctx,
+//      args: args,
+//      options: options
+//    };
     
     if (BYPASS)
       this.run(job);
@@ -433,7 +456,7 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
 //    var ctx = job.ctx || this;
 
     // Clear reference to the job
-    delete this.jobs[job.id];
+    delete this.jobs[job._jobId];
 
 //    if (G.DEBUG)
       return this._run(job);
@@ -448,20 +471,23 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
 
   FastDom.prototype._run = function(job) {
     // Call the job in
-    var args = job.args,
-        ctx = job.ctx;
+//    var args = job.args,
+//        ctx = job.ctx;
+    var args = job[ARGS_IDX],
+        ctx = job[CTX_IDX],
+        fn = job[FN_IDX];
   
 //    console.debug('running job', job.fn);
     if (args) {
       if (_.isArray(args) || _.isArguments(args))
-        job.fn.apply(ctx, args);
+        fn.apply(ctx, args);
       else
-        job.fn.call(ctx, args);
+        fn.call(ctx, args);
     }
     else if (ctx)
-      job.fn.call(ctx);
+      fn.call(ctx);
     else
-      job.fn();
+      fn();
     
     this.time();
     return job;
@@ -507,10 +533,11 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
      * @return true if the timer was successfully reset, false otherwise
      */
     FastDom.prototype.resetTimeout = function(id) {
+//      console.log("TIMEOUT RESET - " + id);
       if (typeof id == 'undefined')
         return false;
       
-      var task = FrameWatch.getTask(id);
+      var task = TIMEOUTS[id];
       if (task) {
         task._timeLeft = task._timeout;
         return true;
@@ -524,24 +551,40 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
      */
     FastDom.prototype.setTimeout = function(fn, ms /*, args... */) {
       ms = ms || 0;
-      var args = arguments[2];
-      var task = FrameWatch.subscribe(function wrapped() {
+      var args = arguments[2],
+          task = arguments,
+          id = timerId++;
+      
+//      console.log("TIMEOUT SET - " + id);
+      task._taskId = id;
+      task._timeout = task._timeLeft = ms;
+      task._fn = function wrapped() {
         task._timeLeft -= FrameWatch.lastFrameDuration();
         if (task._timeLeft < TIMER_RESOLUTION) {
-          FrameWatch.unsubscribe(task._taskId); // important to unsubscribe first, otherwise if resetTimeout is called inside fn, it will give the illusion of resetting the timer without actually resetting it
+          delete TIMEOUTS[id];
+          if (!FrameWatch.stopListeningToTick(wrapped)) // important to unsubscribe first, otherwise if resetTimeout is called inside fn, it will give the illusion of resetting the timer without actually resetting it
+            debugger;
+          
           if (args)
             fn.apply(null, args);
           else
             fn();
         }
-      });
+      };
       
-      task._timeout = task._timeLeft = ms;
-      return task._taskId;
+      TIMEOUTS[id] = task;
+      FrameWatch.listenToTick(task._fn);
+      return id;
     };
     
     FastDom.prototype.clearTimeout = function(id) {
-      return FrameWatch.unsubscribe(id);
+      if (id != null) {
+        var timeout = TIMEOUTS[id];
+        if (timeout) {
+          FrameWatch.stopListeningToTick(timeout._fn);
+          delete TIMEOUTS[id];
+        }
+      }
     };
     
     window.setTimeout = fastdom.setTimeout;

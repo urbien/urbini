@@ -6,7 +6,7 @@ var ArrayProto = Array.prototype,
 //		JUST_HIDDEN = [],
 		world,
 		integrator,
-		NUMBER_UNITS = ['px', 'em'],
+		NUMBER_UNITS = ['px', 'em', '%'],
 		CONSTANTS,
 		LAST_STEP_TIME,
     LAST_STEP_DT,
@@ -27,6 +27,18 @@ var ArrayProto = Array.prototype,
       timestep: 1000 / 60,
       maxIPF: 6
     },
+    
+    // START Transfer protocol props
+    STYLE_BUFFER_LENGTH,
+    STYLE_ORDER,
+//    UNIT_MAP,
+//    PREFIX,
+//    SUFFIX,
+//    UNITS,
+//    SEPARATOR,
+    STYLE_NUM_VALUES,
+    // END Transfer protocol
+    
 //    airDragBodies = [],
 		constrainer,
 //    boxer,
@@ -70,11 +82,67 @@ var ArrayProto = Array.prototype,
     RERENDER = false,
     MAX_OPACITY = 0.999999,
 		HEAD_STR = "head (top / left)",
-		TAIL_STR = "tail (bottom / right)";
-
+		TAIL_STR = "tail (bottom / right)",
+		BUFFERS = [];
 
 String.prototype.endsWith = function(str) {
   return this.slice(this.length - str.length) === str;
+};
+
+function getStyleBufferLength() {
+  if (!STYLE_BUFFER_LENGTH) {
+    STYLE_BUFFER_LENGTH = 0;
+    var i = STYLE_ORDER.length;
+    while (i--) {
+      STYLE_BUFFER_LENGTH += STYLE_NUM_VALUES[STYLE_ORDER[i]] || 1;
+    }
+  }
+  
+  return STYLE_BUFFER_LENGTH;
+};
+
+function newStyleArray() {
+  return new Float64Array(getStyleBufferLength());
+};
+
+function toStyleArray(style, array) {
+  array = array || newStyleArray();
+  var prop,
+      val,
+      numVals,
+      idx = 0;
+      
+  for (var i = 0; i < STYLE_ORDER.length; i++) {
+    prop = STYLE_ORDER[i];
+    numVals = STYLE_NUM_VALUES[prop] || 1;
+    if (style.hasOwnProperty(prop)) {
+      val = style[prop];
+      if (val == null)
+        val = NaN;
+      else if (val instanceof Array) { //numVals == 1)
+        for (var j = 0; j < numVals; j++) {
+          array[idx++] = val[j];
+        }
+      }
+      else if (typeof val == 'string') {
+        array[idx++] = parseFloat(val);
+//        unit = val.match(/[^\d]+/);
+//        if (unit)
+//          unit = unit[0];
+      }
+      else if (typeof val == 'number')
+        array[idx++] = val;
+      else
+        throw "unsupported value for property " + prop;
+    }
+    else {
+      for (var j = 0; j < numVals; j++) {
+        array[idx++] = Infinity; // to distinguish from null, which means to remove. "Infinity" is used to signify "ignore"
+      }
+    }
+  }
+  
+  return array;
 };
 
 function index(obj, i) {
@@ -340,6 +408,17 @@ function _onmessage(e) {
 	if (!world) {
 	  importScripts(e.data.physicsJSUrl, e.data.masonryUrl);
 	  DEBUG = e.data.debug;
+//	  with (e.data.styleInfo) {
+	    // Transfer protocol props
+//	  UNIT_MAP = e.data.styleInfo.units;
+	  STYLE_ORDER = e.data.styleInfo.order;
+	  STYLE_NUM_VALUES = e.data.styleInfo.values;
+//      PREFIX = prefix;
+//      SUFFIX = suffix;
+//      UNITS = units;
+//      SEPARATOR = separator;
+//	  }
+	  
 	  CONSTANTS = {};
 	  Object.keys(CONSTANTS).forEach(function(c) {
 	    if (c != 'degree') {
@@ -903,13 +982,40 @@ function getOverlapArea(body, bounds, bodyArea, boundsArea) {
   return area;
 };
 
-function render() {
-	var bodies = world.getBodies(),
-  		body,
-  		styles = {},
-  		style,
-  		update = false;
+function recycleStyleArray(body, array) {
+  if (body && array)
+    body.state.renderData.encoded.push(array);
+};
 
+function recycle(recycled) {
+  bodies = getBodies.apply(null, Object.keys(recycled).concat(true)); // last arg specifies to get back a map, not an array
+  var ids = Object.keys(recycled),
+      i = ids.length;
+  
+//    while (i--) {
+//      id = ids[i];
+//      if (body = bodies[id])
+//        body.state.renderData.encoded = recycled[id];
+
+  for (var id in recycled) {
+    recycleStyleArray(bodies[id], recycled[id]);
+  }
+};
+
+function render() {
+	var bodies,
+  		body,
+  		id,
+  		msg = {
+	      topic: 'render',
+	      bodies: {}
+	    },
+	    styles = msg.bodies,
+  		style;//,
+//  		update = false;
+
+  bodies = world.getBodies();
+	BUFFERS.length = 0;
 	world.publish({
 	  topic: 'beforeRender'
 	});
@@ -918,33 +1024,50 @@ function render() {
     body = bodies[i];
     if (!body.hidden && getId(body)) {
       body.state.rendered.isTranslated = isTranslationRenderable(body);
-
 //      body.state.rendered.isRotated = isRotationRenderable(body);
     }
   };
   
 	for (var i = 0; i < bodies.length; i++) {
 		body = bodies[i];
-		if (!body.hidden && getId(body)) {
-			style = renderBody(body);
-			if (style) {
-				update = true;
-				styles[getId(body)] = style;
-			}
+		id = getId(body);
+		if (id && !body.hidden) {
+//			style = renderBody(body);
+//			if (style) {
+//				update = true;
+//				styles[getId(body)] = style;
+//			}
+		  
+		  if (style = renderBody(body)) {
+		    styles[id] = style;
+		    BUFFERS.push(style.buffer);
+		  }
 		}
 	};
 
 	RENDERED_SINCE_BOUNDS_CHANGE = true;
-	RERENDER = !update;
-	if (update) {
-		postMessage({
-			topic: 'render',
-			bodies: styles
-		});	
+//	RERENDER = !update;
+	RERENDER = !BUFFERS.length;
+	if (!RERENDER) {
+//		postMessage({
+//			topic: 'render',
+//			bodies: styles
+//		});
+	  postMessage(msg, BUFFERS);
+	  if (BUFFERS[0].byteLength) {
+	    debugger; // transferables not supported
+	  }
+	  
+//	  bodies = getBodies.apply(null, Object.keys(msg.bodies));
+//	  var i = bodies.length;
+//	  while (i--) {
+//	    bodies[i].state.renderData.encoded = newStyleArray();
+//	  }
 	}
 	
 	world.publish({
-    topic: 'postRender'
+    topic: 'postRender',
+    rendered: !RERENDER
   });
 };
 
@@ -971,12 +1094,19 @@ function calcTransform(body) {
       pos = body.state.pos,
       scale = body.state.renderData.get('scale'),
       rotate = body.state.renderData.get('rotate'),
-      skew = body.state.renderData.get('skew'),
-      m = body.state.renderData.get('transform');
+//      skew = body.state.renderData.get('skew'),
+      m = body.state.renderData.get('transform'),
+      invisible = body.state.renderData.get('opacity') == 0,
+      minified = arrayEquals(scale, MIN_SCALE);
   
   Physics.util.extend(m, IDENTITY_TRANSFORM);
-  if (arrayEquals(scale, MIN_SCALE) || body.state.renderData.get('opacity') == 0)
+  if (invisible || minified) {
+    if (invisible)
+      scale = MIN_SCALE;
+    
     Matrix.scale3d(m, scale[0], scale[1], scale[2]);
+    Matrix.translate3d(m, -BOUNDS._hw * 2, -BOUNDS._hh * 2, 0);
+  }
   else {
     Matrix.rotate3d(m, rotate[0], rotate[1], rotate[2]);
     Matrix.scale3d(m, scale[0], scale[1], scale[2]);
@@ -986,8 +1116,8 @@ function calcTransform(body) {
       getZ(body)
     );
   
-    m[4] = Math.atan(skew[1]); // skew X
-    m[1] = Math.atan(skew[0]); // skew Y
+//    m[4] = Math.atan(skew[1]); // skew X
+//    m[1] = Math.atan(skew[0]); // skew Y
   }
   // TODO: skew Z
   
@@ -1034,13 +1164,19 @@ function renderBody(body) {
 //      isRotated = !arrayEquals(body.state.rotation, body.state.rendered.rotation)), // is only for rendering, so it will be reflected in styleChanged (until we get rotation into physics)
 	    opacityChanged = !wasRendered || body.state.renderData.isChanged('opacity'), 
 	    styleChanged = opacityChanged || body.state.renderData.isChanged(),
-  		style = styleChanged && body.state.renderData.getChanges(true),
+  		style = styleChanged && body.state.renderData.getChanges(), //true),
+  		styleArrays = body.state.renderData.encoded,
+  		styleArray,
   		transform,
   		rx, ry, rz;
 				
 	if (!wasRendered || styleChanged || isTranslated) {
-    if (!style)
-      style = {};
+	  if (!style)
+	    style = {};
+	  
+    styleArray = styleArrays.pop();
+    if (!styleArray)
+      styleArray = newStyleArray();
     
 		if (!wasRendered) {
 			body.rendered(true);
@@ -1056,25 +1192,27 @@ function renderBody(body) {
 //      transform.rotate.unit = 'deg';
 //		}
 		
-    style.transform = calcTransform(body);
+//    style.transform = calcTransform(body);
     if (styleChanged) {
       Physics.util.extend(body.state.rendered.renderData, style);
-      delete style.scale;
-      delete style.rotate;
+//      delete style.skew;
+//      delete style.scale;
+//      delete style.rotate;
       
-      if (opacityChanged) {
-        if (body.state.renderData.get('opacity') == 0)
-          Matrix.multiply(style.transform, MIN_SCALE_TRANSFORM);
-//          transform.scale = MIN_SCALE;
-      }
+//      if (opacityChanged) {
+//        if (body.state.renderData.get('opacity') == 0)
+//          Matrix.multiply(style.transform, MIN_SCALE_TRANSFORM);
+////          transform.scale = MIN_SCALE;
+//      }
       
       body.state.renderData.clearChanges();
     }
       
+    style.transform = calcTransform(body);
 //    if (transform.translate || transform.scale || transform.rotate)
 //      style.transform = transform;
     
-		return style;
+		return toStyleArray(style, styleArray);
 	}
 };
 
@@ -1148,6 +1286,12 @@ function initWorld(_world, stepSelf) {
 	  Physics.util.ticker.subscribe(API.step);
 	
 	Physics.util.extend(Physics.util, {
+	  extendArray: function(target, source) {
+	    var i = source.length;
+	    while (i--) {
+	      target[i] = source[i];
+	    }
+	  },
     removeFromTo: function(array, fromIdx, toIdx) {
       var howMany = toIdx - fromIdx;
       for (var i = fromIdx, len = array.length - howMany; i < len; i++) {
@@ -1358,13 +1502,14 @@ function initWorld(_world, stepSelf) {
 	world.subscribe('add:body', function(data) {
 	  var body = data.body,
 	      renderData = body.options.renderData,
-	      id = getId(body);
+	      id = getId(body),
+	      prop;
 	  
-	  if (id) {
+//	  if (id) {
 //	    body._id = getId(body);
-	    if (world.getBodies().filter(function(b) {return getId(b) == id}).length > 1)
-	      debugger;
-	  }
+//	    if (world.getBodies().filter(function(b) {return getId(b) == id}).length > 1)
+//	      debugger;
+//	  }
 
 	  if (renderData) {
       for (prop in renderData) {
@@ -1372,8 +1517,11 @@ function initWorld(_world, stepSelf) {
       }          
 	  }
 	  
-	  if (body.options.style)
+	  if (body.options.style) {
 	    API.style(body, body.options.style);
+	    Physics.util.extend(body.state.rendered.renderData, body.options.style); // this is initial style, already set
+	    body.state.renderData.clearChanges(); // this is initial style, already set
+	  }
 
 //	  if (body.options.drag)
 //	    airDragBodies.push(body);
@@ -1428,43 +1576,46 @@ function getBody(bodyId) {
   return typeof bodyId == 'string' ? getBodies(bodyId)[0] : bodyId;
 }
 
-function getBodies(/* ids */) {
+/**
+ * @param map - if true, returns a map from id to body, otherwise an array 
+ */
+function getBodies(/* ids, map */) {
 	var args = arguments,
-	    bodies = world.getBodies(),
+	    makeMap = typeof arguments[arguments.length - 1] == 'boolean' && arguments[arguments.length - 1] == true,
+	    layoutManager,
+	    bodies,
+	    bodiesArrays = [world.getBodies()],
   		body,
   		id,
-  		filtered = [],
-  		i = bodies.length;
+  		filtered = makeMap ? {} : [],
+  		i;
 		
   if (args[0] instanceof Array)
     args = args[0];
+  
+//  i = layoutManagers.length;
+//  while (i--) {
+//    layoutManager = layoutManagers[i];
+//    bodiesArrays.push(layoutManager.getBricks());
+//  }
 
-	while (i--) {
-		body = bodies[i];
-		if ((id = getId(body)) && ~indexOf.call(args, id)) {
-			filtered.push(body);
-		}
-	}
-	
+  for (var j = 0; j < bodiesArrays.length; j++) {
+    bodies = bodiesArrays[j];
+    i = bodies.length;
+  	while (i--) {
+  		body = bodies[i];
+  		if ((id = getId(body)) && ~indexOf.call(args, id)) {
+  		  if (makeMap)
+  		    filtered[id] = body;
+  		  else
+  		    filtered.push(body);
+  		}
+  	}
+  }
+		
 	return filtered;
 };
 
-function getBodiesMap(/* ids */) {
-  var bodies = world.getBodies(),
-      body,
-      id,
-      map = {},
-      i = bodies.length;
-    
-  while (i--) {
-    body = bodies[i];
-    if ((id = getId(body)) && ~indexOf.call(arguments, id)) {
-      map[id] = body;
-    }
-  }
-  
-  return map;
-};
 
 
 /**
@@ -1653,12 +1804,32 @@ function getRectVertices(width, height) {
 //      }
 
       if (this.flexigroup) {
+        this.constrainer = Physics.behavior('verlet-constraints');
+        world.addBehavior(this.constrainer);
+        
         this.flexigroupOffset = -100000;
         this.flexigroupId = this.flexigroup;
         masonryOptions.flexigroup = this.flexigroup = getBody(this.flexigroupId);
+        this.flexigroup.hidden = true;
         this.flexigroup.mass = 10000;
         this.flexigroup.state.pos.setComponent(this.axisIdx, this.flexigroupOffset);
         this.flexigroup.state.pos.setComponent(this.orthoAxisIdx, this.bounds[this.aabbOrthoAxisDim]);
+        this._subscribe('remove:body', function(data) {
+          var body = data.body;
+          if (~this.getBricks().indexOf(body)) {
+            var csts = this.constraints,
+                i = csts.length;
+            
+            while (i--) {
+              c = csts[i];
+              if (body == c.bodyA) {
+//                constrainer.remove(c);
+                Physics.util.removeFromTo(csts, i, i + 1);
+                break;
+              }
+            }
+          }
+        }, this);
       }
       else {
         this.flexigroupOffset = 0;
@@ -1697,15 +1868,15 @@ function getRectVertices(width, height) {
       if (this.oneElementPerRow || this.oneElementPerCol)
         this.averageBrickNonScrollDim = this.pageNonScrollDim;
         
-      if (doSlidingWindow) {
+//      if (doSlidingWindow) {
 //        this._subscribe('integrate:velocities', this._onIntegrateVelocities, this, -Infinity); // lowest priority
         this._subscribe('integrate:positions', this._onIntegratePositions, this, -Infinity); // lowest priority
 //        this._onIntegratePositions = Physics.util.throttle(this._onIntegratePositions.bind(this), 30);
 //        this._onIntegrateVelocities = Physics.util.throttle(this._onIntegrateVelocities.bind(this), 30);
-        Physics.util.bindAll(this, '_onIntegratePositions'); //, '_onIntegrateVelocities');
+//        Physics.util.bindAll(this, '_onIntegratePositions'); //, '_onIntegrateVelocities');
 //        this._onIntegratePositions = this._onIntegratePositions.bind(this);
 //        this._onIntegrateVelocities = this._onIntegrateVelocities.bind(this);        
-      }
+//      }
       
       this.mason = new Mason(masonryOptions);
       if (this.bricks) {
@@ -1791,12 +1962,10 @@ function getRectVertices(width, height) {
             i = bricks.length;
         
         if (this._sleeping) {
-          if (i) {
-            while (i--) {
-              brick = bricks[i];
-              API.completePendingActions(brick);
-              world.removeBody(brick);
-            }
+          while (i--) {
+            brick = bricks[i];
+            API.completePendingActions(brick);
+            world.removeBody(brick);
           }
           
           if (this.scrollbar)
@@ -1898,9 +2067,9 @@ function getRectVertices(width, height) {
     },
 
     calcOpacity: function(body) {
-      if (body.state.renderData.isChanged('opacity'))
-        return;
-      
+//      if (body.state.renderData.isChanged('opacity'))
+//        return;
+//      
 //      var opacity = 1;
       var opacity;
       if (body.geometry.name == 'point') // HACK for now, as we use points to represent all kinds of shapes for now
@@ -2318,11 +2487,16 @@ function getRectVertices(width, height) {
           for (var event in self._listeners) {
             self._unsubscribe(event);
           }
-          
+
           if (callback)
             doCallback(callback);
         }
       }
+      
+      if (this.scrollbar)
+        world.removeBody(this.scrollbar);
+      if (this.constrainer)
+        world.removeBehavior(this.constrainer);
       
       if (!animate || !l)
         return doDestroy();
@@ -2332,8 +2506,6 @@ function getRectVertices(width, height) {
       else if (this.fade)
         this.fadeOut(bricks, 1000, 'random', doDestroy);
       
-      if (this.scrollbar)
-        world.removeBody(this.scrollbar);
     },
     
     transition: function(bricks, totalTime, action, callback) {
@@ -2613,7 +2785,7 @@ function getRectVertices(width, height) {
             opacity,
             percentOffset;
         
-        this.scrollbar.state.renderData.set(this.horizontal ? 'width' : 'height', dim, 'px');
+        this.scrollbar.state.renderData.set(this.horizontal ? 'width' : 'height', dim); //, 'px');
         if (this.scrollbarRail.railBody.state.pos.get(2) == 0)
           this.scrollbarRail.railBody.state.pos.setComponent(2, 1);
 
@@ -2669,7 +2841,7 @@ function getRectVertices(width, height) {
       if (this.headEdgeConstraint.isArmed() || (this.tailEdgeConstraint && this.tailEdgeConstraint.isArmed()))
         this.offsetBody.state.vel.mult(1 - CONSTANTS.drag); // extra drag
       
-      if (absDiff > 50) {
+      if (this.slidingWindow && absDiff > 50) {
 //        if (this._waiting && absDiff < 100)
 //          return;
         
@@ -2797,6 +2969,9 @@ function getRectVertices(width, height) {
           edge = (reverse ? viewport.max : viewport.min) | 0,
           offset;
       
+      if (this.flexigroup)
+        this.removeFlexigroupConstraints();
+      
       log("Reloading layout: " + this.containerId + (reverse ? " tail to head" : ""));
       if (this.slidingWindow) {
         offset = {};
@@ -2810,6 +2985,14 @@ function getRectVertices(width, height) {
         this.mason.reload();
       }
       
+//        while (i--) {
+//          brick = bricks[i];
+//          this.constraints.push(API.distanceConstraint(brick, this.flexigroup, stiffness, brick.state.pos.dist(flexiPos), this.dirHead));
+//        }
+      if (this.flexigroup)
+        this.constrainToFlexigroup(this.mason.bricks, reverse);
+      
+//      this.offsetBody.stop();
       // TODO: redo rails for bricks
     },
 
@@ -2968,16 +3151,72 @@ function getRectVertices(width, height) {
       }
     },
 
+    getBricks: function() {
+      return this.mason.bricks || [];
+    },
+    
     numBricks: function() {
       return this.mason.bricks.length;
     },
 
-    removeFlexigroupConstraints: function() {
-      this.constraints.map(function(c) {
-        constrainer.remove(c);
-      });
+    constrainToFlexigroup: function(bricks, prepend) {
+      bricks = bricks || this.mason.bricks;
+      var brick,
+          pos,
+          flexiPos = this.flexigroup.state.pos,
+          range = 20,
+          idx,
+          limit = this.brickLimit == Infinity ? 500 : this.brickLimit,
+          baseStiffness = 0.08,
+          l = bricks.length;
       
+    //  this.removeFlexigroupConstraints();
+      
+      for (var i = 0; i < l; i++) {
+        brick = bricks[i];
+    ////    pos = brick.state.pos;
+    //    if (this.horizontal)
+    //      brick._rail = API.addRail(brick, 1, 0);
+    //    else
+    //      brick._rail = API.addRail(brick, 0, 1);
+        
+    //    stiffness = 0.07 + Math.random() * 0.1;
+    //    stiffness = 0.08 - 0.00025 * (this.mason.bricks.length - l/2 + i);
+        if (limit < Infinity) {
+          if (prepend)
+            idx = this.range.from - l + i;
+          else
+            idx = this.range.to + i;
+          
+          stiffness = baseStiffness - Math.min(Math.pow((idx - limit / 2) / limit, 4), 0.05);
+        }
+        else
+          stiffness = baseStiffness;
+        
+        this.constraints.push(this.constrainer.distanceConstraint(brick, this.flexigroup, stiffness, brick.state.pos.dist(flexiPos), this.dirHead));
+      }
+      
+    //  for (var i = 0, n = this.numBricks(); i < n; i++) {
+    //    brick = this.mason.bricks[i];
+    //    stiffness = 0.08 - Math.min(Math.pow((i - n/2) / n, 4), 0.05);
+    //    this.constraints.push(API.distanceConstraint(brick._rail.railBody, this.flexigroup, stiffness, brick._rail.railBody.state.pos.dist(flexiPos), this.dirHead));
+    //  }
+    },
+    
+    removeFlexigroupConstraints: function() {
       this.constraints.length = 0;
+      this.constrainer._distanceConstraints.length = 0;
+//      bricks = bricks || this.mason.bricks;
+//      var csts = this.constraints,
+//          i = csts.length;
+//      
+//      while (i--) {
+//        c = csts[i];
+//        if (~bricks.indexOf(c.bodyA)) {
+////          constrainer.remove(c);
+//          Physics.util.removeFromTo(csts, i, i + 1);
+//        }
+//      }
     },
     
     addBricks: function(optionsArr, prepend) {
@@ -2993,12 +3232,11 @@ function getRectVertices(width, height) {
           viewportOrthoDim = BOUNDS[this.aabbOrthoAxisDim] * 2,
           coords = new Array(3),
           destX, destY, destZ,
-          l = optionsArr.length,
           options;
       
       this.scrolled = this.scrolled || viewport.min != 0;
       log("ADDING BRICKS: " + optionsArr.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
-      for (var i = 0; i < l; i++) {
+      for (var i = 0, l = optionsArr.length; i < l; i++) {
         options = optionsArr[i];
         if (!this.flexigroup)
           options.frame = this.container;
@@ -3027,47 +3265,8 @@ function getRectVertices(width, height) {
       else
         this.mason[prepend ? 'prepended' : 'appended'](bricks);
       
-      if (this.flexigroup) {
-        var brick,
-            pos,
-            flexiPos = this.flexigroup.state.pos,
-            range = 20,
-            idx,
-            limit = this.brickLimit == Infinity ? 500 : this.brickLimit,
-            baseStiffness = 0.08;
-        
-//        this.removeFlexigroupConstraints();
-        
-        for (var i = 0; i < l; i++) {
-          brick = bricks[i];
-////          pos = brick.state.pos;
-//          if (this.horizontal)
-//            brick._rail = API.addRail(brick, 1, 0);
-//          else
-//            brick._rail = API.addRail(brick, 0, 1);
-          
-//          stiffness = 0.07 + Math.random() * 0.1;
-//          stiffness = 0.08 - 0.00025 * (this.mason.bricks.length - l/2 + i);
-          if (limit < Infinity) {
-            if (prepend)
-              idx = this.range.from - l + i;
-            else
-              idx = this.range.to + i;
-            
-            stiffness = baseStiffness - Math.min(Math.pow((idx - limit / 2) / limit, 4), 0.05);
-          }
-          else
-            stiffness = baseStiffness;
-          
-          API.distanceConstraint(brick, this.flexigroup, stiffness, brick.state.pos.dist(flexiPos), this.dirHead);
-        }
-        
-//        for (var i = 0, n = this.numBricks(); i < n; i++) {
-//          brick = this.mason.bricks[i];
-//          stiffness = 0.08 - Math.min(Math.pow((i - n/2) / n, 4), 0.05);
-//          this.constraints.push(API.distanceConstraint(brick._rail.railBody, this.flexigroup, stiffness, brick._rail.railBody.state.pos.dist(flexiPos), this.dirHead));
-//        }
-      }
+      if (this.flexigroup)
+        this.constrainToFlexigroup(bricks, prepend);
       
       if (prepend)
         this.range.from -= l;
@@ -3190,11 +3389,11 @@ function getRectVertices(width, height) {
       if (!DEBUG)
         return;
       
+      var bounds = this.mason.getContentBounds();
       if (this.range.to < this.range.from)
         throw "range integrity lost - range is of a negative length";
       if (this.range.to - this.range.from !== this.mason.bricks.length)
         throw "range integrity lost - saved range doesn't have the same length as the number of bricks in the layout";
-      var bounds = this.mason.getContentBounds();
       if (isNaN(bounds.min) || isNaN(bounds.max))
         throw "one of sliding window bounds is NaN";
     },
@@ -4175,7 +4374,7 @@ var API = {
   //  world.subscribe('step', checkStopped);
     
     function onIntegrateVelocities() {
-      if (Math.abs(body.state.pos.dist(destination)) < distThresh && body.state.vel.norm() < velThresh && body.state.acc.norm() < accThresh) {
+      if (body.state.pos.dist(destination) < distThresh && body.state.vel.norm() < velThresh && body.state.acc.norm() < accThresh) {
         snapAction.complete();
       }
       else {
@@ -4308,22 +4507,22 @@ var API = {
 		this.removeBodies.call(this, id);
 	},
 
-  benchBodies: function(/* ids */) {
-    Physics.util.extend(benchedBodies, getBodiesMap.apply(null, arguments));
-  },
-  
-  unbenchBodies: function(/* ids */) {
-    var i = arguments.length,
-        id,
-        body;
-    
-    while (i--) {
-      id = arguments[i];
-      body = benchedBodies[id];
-      if (body)
-        world.addBody(body);
-    }
-  },
+//  benchBodies: function(/* ids */) {
+//    Physics.util.extend(benchedBodies, getBodiesMap.apply(null, arguments));
+//  },
+//  
+//  unbenchBodies: function(/* ids */) {
+//    var i = arguments.length,
+//        id,
+//        body;
+//    
+//    while (i--) {
+//      id = arguments[i];
+//      body = benchedBodies[id];
+//      if (body)
+//        world.addBody(body);
+//    }
+//  },
 
 	addBody: function(type, options) {
 		var body = Physics.body(type, options);
@@ -4844,6 +5043,7 @@ var API = {
     }
   },
   
+  recycle: recycle,
   render: render
 };
 
@@ -4930,15 +5130,15 @@ var Matrix = {
     if (!x && !y && !z)
       return a;
     
-    var i = this.identity();
+    var i = this.identity(),
+        result;
+    
     i[12] = x;
     i[13] = y;
     i[14] = z;
-    try {
-      return this.multiply(a, i);
-    } finally {
-      this.recycle(i);
-    }
+    result = this.multiply(a, i);
+    this.recycle(i);
+    return result;
   },
   
   multiply: function(a, b) {
@@ -4958,7 +5158,7 @@ var Matrix = {
       result[idx] = cellResult;
     }
     
-    Physics.util.extend(a, result);
+    Physics.util.extendArray(a, result);
     this.recycle(result);
     return this;
   },
@@ -4967,51 +5167,46 @@ var Matrix = {
       return a;
     
     var tmp = this.getNewMatrix(
-      1, 0, 0, 0,
-      0, Math.cos(rad), Math.sin(-rad), 0,
-      0, Math.sin(rad), Math.cos(rad), 0,
-      0, 0, 0, 1
-    );
+        1, 0, 0, 0,
+        0, Math.cos(rad), Math.sin(-rad), 0,
+        0, Math.sin(rad), Math.cos(rad), 0,
+        0, 0, 0, 1
+      ),
+      result = Matrix.multiply(a, tmp);
     
-    try {
-      return Matrix.multiply(a, tmp);
-    } finally {
-      this.recycle(tmp);
-    }
+    this.recycle(tmp);
+    return result;
   },
   rotateY: function(a, rad) {
     if (rad == 0)
       return a;
       
     var tmp = this.getNewMatrix(
-      Math.cos(rad), 0, Math.sin(rad), 0,
-      0, 1, 0, 0,
-      Math.sin(-rad), 0, Math.cos(rad), 0,
-      0, 0, 0, 1
-    );
+        Math.cos(rad), 0, Math.sin(rad), 0,
+        0, 1, 0, 0,
+        Math.sin(-rad), 0, Math.cos(rad), 0,
+        0, 0, 0, 1
+      ),
+      result;
     
-    try {
-      return Matrix.multiply(a, tmp);
-    } finally {
-      this.recycle(tmp);
-    }
+    result = Matrix.multiply(a, tmp);
+    this.recycle(tmp);
+    return result;
   },
   rotateZ: function(a, rad) {
     if (rad == 0)
       return a;
     
     var tmp = this.getNewMatrix(
-      Math.cos(rad), Math.sin(-rad), 0, 0,
-      Math.sin(rad), Math.cos(rad), 0, 0,
-      0, 0, 1, 0,
-      0, 0, 0, 1
-    );
+        Math.cos(rad), Math.sin(-rad), 0, 0,
+        Math.sin(rad), Math.cos(rad), 0, 0,
+        0, 0, 1, 0,
+        0, 0, 0, 1
+      ), 
+      result = Matrix.multiply(a, tmp);
     
-    try {
-      return Matrix.multiply(a, tmp);
-    } finally {
-      this.recycle(tmp);
-    }
+    this.recycle(tmp);
+    return result;
   },
   rotate3d: function(a, xRad, yRad, zRad) {
     this.rotateX(a, xRad);

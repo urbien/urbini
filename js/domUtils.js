@@ -203,7 +203,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           
           break;
         case 2:
-          this.style[arguments[0]] = arguments[1];
+          this.style[DOM.prefix(arguments[0])] = arguments[1];
           break;
         default:
           throw "invalid arguments to style method of Node";
@@ -1239,9 +1239,19 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
      */
     parseHTML: function(html) {
 //      return $.parseHTML(html);
-      var tmp = document.implementation.createHTMLDocument();
-      tmp.body.innerHTML = html;
-      return tmp.body.children; // live NodeList
+//      var tmp = document.createDocumentFragment(),
+      var div = document.createElement('div');
+      
+//      tmp.appendChild(div);
+      div.innerHTML = html;
+      return div.childNodes; // live NodeList
+//      var tmp = document.implementation.createHTMLDocument();
+//      tmp.body.innerHTML = html;
+//      tmp.innerHTML = html;
+//      return tmp.body.children; // live NodeList
+//      var copy = tmp.body.childNodes.$slice();
+//      tmp.body.$empty(); //childNodes.$remove();
+//      return copy;
     },
     
     /**
