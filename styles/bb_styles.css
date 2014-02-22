@@ -263,7 +263,7 @@ fieldset {
   background: none;
 }
 
-#cpView > li > p, #resourceView > li > p, #other > ul > li > p {
+#resourceView > li > p, #other > ul > li > p {
   margin: 0 1rem;
 }
 
