@@ -96,7 +96,7 @@
       <br/-->
     {{ } }}
     <section data-type="list">
-      <ul id="cpView" style="padding: 10px;">
+      <ul id="cpView" style="margin: -10px 0 0 10px;">
       </ul>
     </section>
   </div>
@@ -555,12 +555,12 @@
 
 <script type="text/template" id="propRowTemplate">
   <!-- wrapper for one row on a list page (short) -->
-  <li data-shortname="{{= shortName }}" {{= obj.rules || '' }}><p style="color:{{= G.darkColor }};">{{= name }}<div style="position:absolute; right:1.5rem;top:1rem; font-weight: normal;">{{= value }}</div></p></li>
+  <li class="section group" data-shortname="{{= shortName }}" {{= obj.rules || '' }}><div class="col span_1_of_2" {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';"' : '' }}>{{= name }}</div><div class="col span_1_of_2" style="font-weight: normal;">{{= value }}</div></li>
 </script>
 
 <script type="text/template" id="propRowTemplate2">
   <!-- wrapper for one row on a list page (long) -->
-  <li data-shortname="{{= shortName }}" {{= obj.rules || '' }}><p style="color:{{= G.darkColor }};">{{= name }}<div style="margin-left:1rem;font-weight: normal;">{{= value }}</div></p></li>
+  <li class="section group" data-shortname="{{= shortName }}" {{= obj.rules || '' }}><div class="col span_1_of_2" {{= G.coverImage ? ' style="color:' + G.coverImage.background + ';"' : '' }}>{{= name }}</div><div class="col span_1_of_2" style="font-weight: normal;">{{= value }}</div></li>
 </script>
 
 <script type="text/template" id="menuHeaderTemplate">
