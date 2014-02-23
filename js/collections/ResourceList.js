@@ -71,9 +71,9 @@ define('collections/ResourceList', [
           }
         }
         
-        if (!valid) {
-          // TODO handle error
-        }
+//        if (!valid) {
+//          // TODO handle error
+//        }
       }
       
       try {
