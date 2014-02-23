@@ -1048,9 +1048,9 @@ define('models/Resource', [
         Events.trigger('updatedResources', [this]);
         if (this.isNew()) // was a synchronous mkresource operation
           this.checkIfLoaded();
-        else if (isNew) { 
-          // completed sync with db
-        }
+//        else if (isNew) { 
+//          // completed sync with db
+//        }
         
         this.triggerPlugs(options);
         if (!opts.fromDB)
