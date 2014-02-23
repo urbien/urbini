@@ -391,7 +391,7 @@ define('views/BasicView', [
           disableHover(this.el);
 
         this._checkScrollbar();
-        this.invalidateSize();
+//        this.invalidateSize();
         return result;
       }
       else {
@@ -506,6 +506,8 @@ define('views/BasicView', [
       this._loadingDfd.resolve();
       if (!options || options.delegateEvents !== false)
         this.redelegateEvents();
+
+      this.getPageView().invalidateSize();
     },
     
     _queueTask: function(fn, scope, args) {
