@@ -90,7 +90,7 @@ define('views/PublishButton', [
     doTry: function(e) {
       Events.stopEvent(e);
       var res = this.resource;
-      window.location.href = G.serverName + '/app/' + res.get('appPath');      
+      Events.trigger('navigate', G.serverName + '/app/' + res.get('appPath'));      
 //      this.router.navigate('app/' + res.get('appPath'), {trigger: true});
     },
     publish: function(e) {

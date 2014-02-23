@@ -897,6 +897,15 @@
   <li data-theme="c" data-role="list-divider">{{= value }}</li>
 </script>
 
+<script type="text/template" id="saveButtonTemplate">
+  <!-- header button for saving changes -->
+  <a target="#" data-icon="ok"></a>
+</script>
+
+<script type="text/template" id="cancelButtonTemplate">
+  <!-- header button for canceling changes -->
+  <a target="#" data-icon="remove"></a>
+</script>
 
 <script type="text/template" id="mapItButtonTemplate">
   <!-- button that toggles map view -->
@@ -1295,6 +1304,19 @@
         {{= typeof isIdea == 'undefined' ? '' : '<p class="ui-li-aside ui-li-desc">Idea</p>'}}
 </script>
 
+<!--script type="text/template" id="gridColTemplate">
+  <gridCol data-prop="{{= property }}">
+    <span data-prop="{{= property }}" class="label">{{= label }}</span>
+    {{ if (obj.href) { }}
+      <a href="{{= obj.href }}">{{= value }}</a>
+    {{ }               }}
+    
+    {{ if (!obj.href) { }}
+      <span>{{= value }}</span>
+    {{ }               }}
+  </gridCol>
+</script-->
+
 <script type="text/template" id="fileUpload">
   <!-- a file upload form -->
   
@@ -1432,12 +1454,12 @@
     </div>
     {{ }                                                             }}
     
-    <div class="ui-body ui-body-b">
+    <!--div class="ui-body ui-body-b">
       <fieldset class="ui-grid-a">
         <div class="ui-block-a"><button name="cancelBtn" type="cancel" id="cancel" data-theme="d" class="cancel">{{= obj.cancel || loc('cancel') }}</button></div>
         <div class="ui-block-b"><button name="submitBtn" type="submit" id="submit" data-theme="a" class="submit">{{= obj.submit || loc('submit') }}</button></div>
       </fieldset>
-    </div>
+    </div-->
 
   </form>
   <br/>

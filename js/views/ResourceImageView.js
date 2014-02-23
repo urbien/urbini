@@ -483,9 +483,10 @@ define('views/ResourceImageView', [
       if (!pe)
         return;
       pe.$append(coverDiv);  
+/*
       while (!pe.id  ||  pe.id != 'resourceViewHolder')
         pe = pe.parentElement;
-/*
+
       if (!G.isBB()) {
         pe.style.position = "absolute";
         pe.style.top = "0";

@@ -281,11 +281,11 @@ define('app', [
       });
 
       Events.on('messageFromApp:home', function() {
-        window.location.href = window.location.href.split('#')[0];
+        Events.trigger('navigate', window.location.href.split('#')[0]);
       });
 
       Events.on('messageFromApp:navigate', function(url) {
-        window.location.href = url;
+        Events.trigger('navigate', url);
       });
 
 //      browserMod.onpush(function() {
@@ -855,7 +855,7 @@ define('app', [
   
   function setupLoginLogout() {
     Events.on('req-login', function(options) {
-      options = _.extend({online: 'Login via a Social Net', offline: 'You are currently offline, please get online and try again'}, options);
+      options = _.extend({online: G.localize('login'), offline: G.localize('youreOfflinePleaseLogin')}, options);
       var onDismiss;
       if (!G.online) {
         Errors.offline();

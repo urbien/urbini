@@ -32,6 +32,7 @@ define('views/MainMenuPanel', [
 //      'click #add': 'add',
 //      'click #delete': 'delete',
 //      'click #subscribe': 'subscribe',
+      'click #login'     : 'login',
       'click #logout'    : 'logout',
       'click #home123'   : 'home',
       'click #urbien123' : 'home',
@@ -44,6 +45,13 @@ define('views/MainMenuPanel', [
 //      this.router.navigate(U.makeMobileUrl('edit', this.resource.getUri()), {trigger: true, replace: true});
 //      return this;
 //    },
+    login: function(e) {
+      Events.stopEvent(e);
+      Events.trigger('req-login', {
+        dismissible: true
+      });
+    },    
+
     logout: function(e) {
       Events.stopEvent(e);
 //      G.log(this.TAG, "Recording step for tour: selector: #logout");
@@ -59,9 +67,9 @@ define('views/MainMenuPanel', [
       
 //      G.log(this.TAG, "Recording step for tour: selector = 'id'; value = '" + t.id + "'");
       if (t.id == 'home123') 
-        window.location.href = here.slice(0, here.indexOf('#'));
+        Events.trigger('navigate', here.slice(0, here.indexOf('#')));
       else 
-        window.location.href = G.serverName + '/app/UrbienApp';
+        Events.trigger('navigate', G.serverName + '/app/UrbienApp');
       
       return this;
     },
@@ -111,9 +119,10 @@ define('views/MainMenuPanel', [
 
       var ul = this.ul = this.$('#menuItems')[0];
       var html = "";
-//      var frag = document.createDocumentFragment();
-
-      if (!G.currentUser.guest) {
+      
+      if (G.currentUser.guest)
+        html += this.menuItemTemplate({title: this.loc('login'), icon: 'user', mobileUrl: 'view/profile', homePage: 'y', id: 'login'});
+      else {
         var mobileUrl = 'view/profile';
         if (!hash  ||  hash != mobileUrl) {
           var params = {
@@ -227,7 +236,7 @@ define('views/MainMenuPanel', [
 
 //        if (user.newAlertsCount) {
 //          U.addToFrag(frag, this.menuItemNewAlertsTemplate({title: this.loc('notifications'), newAlerts: user.newAlertsCount, pageUrl: U.makePageUrl('list', 'model/workflow/Alert', {to: '_me'/*, markedAsRead: false*/}) }));
-          html += this.menuItemNewAlertsTemplate({title: this.loc('notifications'), newAlerts: user.newAlertsCount, pageUrl: U.makePageUrl('list', 'model/workflow/Alert', {to: '_me'/*, markedAsRead: false*/}) });
+          html += this.menuItemNewAlertsTemplate({title: this.loc('notifications'), newAlerts: user.newAlertsCount, pageUrl: U.makePageUrl('list', 'model/workflow/Alert', {to: '_me', '$orderBy': 'dateReceived', '$asc': 0 /*, markedAsRead: false*/}) });
 //        }
         /*
         if (user.alertsCount) {

@@ -34,7 +34,7 @@ define('views/ContextMenuPanel', [
       'click .chattee'           : 'chat',
       'click #urbien123'         : 'home',
       'click #physics123'        : 'physics',
-      'click #login'             : 'login',
+//      'click #login'             : 'login',
       'click [data-href]'        : MenuPanel.clickDataHref
 //        ,
 //      'click'                    : 'click'
@@ -43,7 +43,7 @@ define('views/ContextMenuPanel', [
 
     home: function(e) {
       Events.stopEvent(e);
-      window.location.href = G.serverName + '/app/UrbienApp';
+      Events.trigger('navigate', G.serverName + '/app/UrbienApp');
     },
     
     physics: function(e) {
@@ -134,13 +134,6 @@ define('views/ContextMenuPanel', [
       });
       
       return this;
-    },
-    
-    login: function(e) {
-      Events.stopEvent(e);
-      Events.trigger('req-login', {
-        dismissible: true
-      });
     },
     
 //    edit: function(e) {
@@ -308,8 +301,8 @@ define('views/ContextMenuPanel', [
           res = this.model,
           model = this.vocModel,
           html = "";
-          
-      if (!model) {
+                
+//      if (!model) {
         var commentVerb = this.loc('commentVerb'),
             likeVerb = this.loc('likeVerb');
         
@@ -335,18 +328,14 @@ define('views/ContextMenuPanel', [
           var icon =  isAllowedToEdit ? 'wrench' : 'copy';
           html += this.menuItemTemplate({title: title, pageUrl: uri, icon: icon, homePage: 'y'});
         }
-        var uri = 'view/profile';
-        if (G.currentUser.guest) {
-          html += this.menuItemTemplate({title: this.loc('login'), icon: 'user', mobileUrl: uri, homePage: 'y', id: 'login'});
-        }
 //        else
 //          U.addToFrag(frag, this.menuItemTemplate({title: 'Profile', icon: 'user', mobileUrl: uri, image: G.currentUser.thumb, cssClass: 'menu_image_fitted', homePage: 'y'}));
         
         if (G.pageRoot != 'app/UrbienApp') {
           html += this.menuItemTemplate({title: this.loc("urbienHome"), icon: 'repeat', id: 'urbien123', mobileUrl: '#', homePage: 'y'});
         }        
-      }
-      else {
+//      }
+//      else {
         var json = this.resource && res.toJSON();
   //      var isSuperUser = isCreatorOrAdmin(res);
         this.html(this.template(json));      
@@ -385,7 +374,7 @@ define('views/ContextMenuPanel', [
             }
           }
         }
-      }
+//      }
       
       if (G.pageRoot == 'app/Aha') {
         var browser = G.browser,

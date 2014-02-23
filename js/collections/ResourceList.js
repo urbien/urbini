@@ -29,7 +29,7 @@ define('collections/ResourceList', [
         offset: 0,
         firstPage: 0,
         params: {},
-        model: (models && models[0] && models[0].vocModel),
+        model: (models && models.length && models[0].vocModel),
         listId: G.nextId()
       });
       
@@ -457,7 +457,12 @@ define('collections/ResourceList', [
     
     set: function(resources, options) {
       options = _.defaults(options || {}, {partOfUpdate: true});
-      return Backbone.Collection.prototype.set.call(this, resources, options);
+//      var start = _.now();
+//      try {
+        return Backbone.Collection.prototype.set.call(this, resources, options);
+//      } finally {
+//        log("Collection.set for {0} resources took {1}ms".format(resources.length, _.now() - start | 0));
+//      }
     },
 
     disablePaging: function() {
@@ -811,6 +816,6 @@ define('collections/ResourceList', [
     displayName: 'ResourceList'
   });
   
-//  U.toTimedFunction(Backbone.Collection.prototype, 'set');
+//  _.toTimedFunction(Backbone.Collection.prototype, 'set');
   return ResourceList;
 });

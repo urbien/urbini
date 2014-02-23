@@ -9,6 +9,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       PHYSICS_TIME = _.now(), // from here on in,
       NOW = PHYSICS_TIME,     // these diverge
       UNRENDERED = {},
+//      UNRENDERED,
       hammerOptions = {},
       hammer = new Hammer(document, hammerOptions),
       Physics,
@@ -17,10 +18,12 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       MouseWheelHandler,
       MOUSE_WHEEL_TIMEOUT,
       KeyHandler,
-      ARROW_KEY_VECTOR_MAG = 80,
+      PAGE_VECTOR_MAG = 60,
+      ARROW_KEY_VECTOR_MAG = 25,
       ID_TO_LAYOUT_MANAGER = {},
       ID_TO_EL = {},
       ID_TO_LAST_TRANSFORM = {},
+//      ID_TO_LAST_TRANSITION = {},
       ZERO_TRANSLATION = [0, 0, 0],
       DEFAULT_SCALE = [1, 1, 1],
       MIN_SCALE = [0.0001, 0.0001, 1],
@@ -87,9 +90,48 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //      },
       DRAG_LOCK = null,
       MOUSE_OUTED = false,
-      TICKING = false;
+      TICKING = false,
+      FORCE_GPU = true,
+      STYLE_ORDER = ['transform', 'opacity', 'z-index', 'width', 'height'],
+      FIX = {
+        transform: true // issue toFixed on float
+      },
+      PREFIX = {
+        transform: 'matrix3d('
+      },
+      SUFFIX = {          
+        transform: ')'        
+      },
+      SEPARATOR = {
+        transform: ', '
+      },
+//      UNITS_MAP = {
+//        px: 0,
+//        em: 1,
+//        '%': 2
+//      },
+//      UNITS = ['px', 'em', '%'],
+      UNITS = {
+        width: 'px',
+        height: 'px'
+      },
+      NEED_UNITS = ['width', 'height'],
+      STYLE_NUM_VALUES = {
+        transform: 16
+      },
+      STYLE_INFO = {
+        order: STYLE_ORDER,
+//        units: UNITS_MAP,
+        needUnits: NEED_UNITS,
+//        prefix: PREFIX,
+//        suffix: SUFFIX,
+//        units: UNITS,
+//        separator: SEPARATOR,
+        values: STYLE_NUM_VALUES
+      };
+      
 //      ,
-//      STYLE_ORDER = ['opacity', 'translation', 'rotation'];
+//      STYLE_MAP = ['opacity', 'translation', 'rotation'];
 
   function log() {
     var args = [].slice.call(arguments);
@@ -353,15 +395,13 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         if (this._keyHeld)
           return;
         
-        vector[0] = viewport.width;
-        vector[1] = viewport.height;
+        vector[0] = vector[1] = PAGE_VECTOR_MAG;
         break;
       case 34: // page down
         if (this._keyHeld)
           return;
         
-        vector[0] = -viewport.width;
-        vector[1] = -viewport.height;
+        vector[0] = vector[1] = -PAGE_VECTOR_MAG;
         break;
       case 35: // end
         if (this._keyHeld)
@@ -616,146 +656,252 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     }
   };
   
+//  function renderOld() {
+//    THERE.rpc(null, 'render'); // signal readiness for next set of render data    
+//    for (var id in UNRENDERED) {
+//      renderBody(id, UNRENDERED[id]);
+//    }
+//    
+//    invokeListeners(renderListeners.render['']);
+//    UNRENDERED = {};
+//  };
+  
   function render() {
-    THERE.rpc(null, 'render'); // signal readiness for next set of render data    
-    var el,
-        style,
-        styles = UNRENDERED,
-        propVal,
-        transform,
-        translate,
-        scale,
-        rotate,
-        oldTranslate,
-        oldRotate,
-        oldScale,
-        transformStr,
-        listeners,
-        dtx, dty, dtz,
-        drx, dry, drz;
+    worker.postMessage({
+      method: 'render'
+    });
     
-    for (var id in styles) {
-      el = ID_TO_EL[id];
-      if (el) {
-        oldTransform = ID_TO_LAST_TRANSFORM[id] || IDENTITY_TRANSFORM;
-        style = styles[id];
-        for (var prop in style) {
-          if (TRANSFORM_PROPS.indexOf(prop) == -1) {
-            propVal = style[prop];
-            if (propVal == null)
-              el.style.removeProperty(prop)
-            else
-              el.style[DOM.prefix(prop)] = propVal;
+    var id,
+        buffers = [];
+    
+    for (id in UNRENDERED) {
+      renderBody(id, UNRENDERED[id], buffers);
+    }
+
+    invokeListeners(renderListeners.render['']);    
+    worker.postMessage({
+      method: 'recycle',
+      args: [UNRENDERED]
+    }, buffers);
+  };
+  
+  function renderBody(id, style, buffers) {
+    /* UNRENDERED: { // map of body id to css property values in order of STYLE_ORDER array, with as many values per property as specified by STYLE_NUM_VALUES 
+    *   'ListPage.view12': []
+    * } 
+    */
+
+    var el = ID_TO_EL[id],
+        numVals,
+        suffix,
+        separator,
+        unit,
+        prop,
+        prefixed,
+        val,
+        fix,
+        remove,
+        ignore,
+        subVal,
+        j;
+        
+    if (el) {
+//      throw "no element found for id " + id;
+      for (i = 0, l = style.length, propIdx = 0; i < l; propIdx++) { // i is incremented in inner loop
+        j = 0;
+        prop = STYLE_ORDER[propIdx];
+        prefixed = DOM.prefix(prop);
+        numVals = STYLE_NUM_VALUES[prop];
+        unit = UNITS[prop];
+        separator = SEPARATOR[prop];
+        val = PREFIX[prop];
+        remove = false;
+        ignore = false;
+        fix = FIX[prop];
+        if (prop == 'transform') {
+          fix = true;
+          if (style[i] == MIN_SCALE[0]) {
+            el.style[prefixed] = 'scale3d(0.0001, 0.0001, 1)';
+            i += numVals;
+            continue;
           }
         }
         
-        transform = style.transform;
-        if (transform) {
-          el.style[TRANSFORM_PROP] = DOM.toMatrix3DString(transform);
-          el.style[TRANSITION_PROP] = '';          
-          invokeListeners(renderListeners.render[id], el, oldTransform, transform);
-        }
+        for (j = 0; j < numVals; i++, j++) {
+          if (j)
+            val += separator;
+      
+          subVal = style[i];
+          if ((ignore = subVal == Infinity) || 
+              (remove = isNaN(subVal))) {
+            i += numVals - j;
+            break;
+          }
           
-//        if (!transform)
-//          continue;
-//
-//        translate = transform.translate;
-//        scale = transform.scale;
-//        rotate = transform.rotate;
-//        transformStr = null;
-//        if (translate || scale) {
-//          transformStr = '';
-//          if (scale) {
-//            if (!_.isEqual(scale, DEFAULT_SCALE)) {
-//              transformStr = 'scale3d(' + scale[0] + ', ' + scale[1] + ', ' + scale[2] + ')';
-//              if (_.isEqual(scale, MIN_SCALE)) 
-//                translate = null;
-//            }
-//            
-//            oldScale = oldTransform.scale || DEFAULT_SCALE;
-//            dsx = scale[0] - oldScale[0];
-//            dsy = scale[1] - oldScale[1];
-//            dsz = scale[2] - oldScale[2];
-//            invokeListeners(renderListeners.scale[''][id], el, dsx, dsy, dsz);
-//            invokeListeners(renderListeners.scale.x[id], el, dsx);
-//            invokeListeners(renderListeners.scale.y[id], el, dsy);
-//            invokeListeners(renderListeners.scale.z[id], el, dsz);
-//          }
-//          else
-//            scale = DEFAULT_SCALE;
-//          
-//          if (translate) {
-//            transformStr = 'matrix3d(' + scale[0] + ', 0, 0, 0, 0, ' + scale[1] + ', 0, 0, 0, 0, ' + scale[2] + ', 0, ';
-//  //        transformStr = 'translate(';
-//            transformStr += translate[0].toFixed(10) + ', ' + translate[1].toFixed(10) + ', ' + translate[2].toFixed(10) + ', 1)';
-//  //          transformStr += translate[0].toFixed(10) + 'px, ' + translate[1].toFixed(10) + 'px)';
-//            oldTranslate = oldTransform.translate || ZERO_TRANSLATION;
-//            dtx = translate[0] - oldTranslate[0];
-//            dty = translate[1] - oldTranslate[1];
-//            dtz = translate[2] - oldTranslate[2];
-//            invokeListeners(renderListeners.translate[''][id], el, dtx, dty, dtz);
-//            invokeListeners(renderListeners.translate.x[id], el, dtx);
-//            invokeListeners(renderListeners.translate.y[id], el, dty);
-//            invokeListeners(renderListeners.translate.z[id], el, dtz);
-//          }          
-//        }
-//          
-////        else {
-////          transformStr += '0, 0, 0';
-//////          transformStr += '0px, 0px)';
-////        }
-////        
-//        
-//        // ROTATION
-//        if (rotate) {
-//          // TODO: all axes, no need for now
-//          transformStr = transformStr || '';
-//          var unit = rotate.unit || 'deg';
-//          if (rotate[0])
-//            transformStr += ' rotateX(' + rotate[0].toFixed(10) + unit +')';
-//          if (rotate[1])
-//            transformStr += ' rotateY(' + rotate[1].toFixed(10) + unit +')';
-//          if (rotate[2])
-//            transformStr += ' rotateZ(' + rotate[2].toFixed(10) + unit +')';
-//          
-////          if (rotate[2])
-////            transformStr += 'rotate(' + rotate[2].toFixed(10) + 'rad)'; // for now, only around Z axis
-//          
-//          oldRotate = oldTransform.rotate || ZERO_ROTATION;
-////          drx = rotate[0] - oldRotate[0];
-////          dry = rotate[1] - oldRotate[1];
-//          drz = rotate[2] - oldRotate[2];
-//          invokeListeners(renderListeners.rotate[''][id], el, drx, dry, drz);
-////          invokeListeners(renderListeners.rotate.z[id], drx);
-////          invokeListeners(renderListeners.rotate.y[id], dry);
-//          invokeListeners(renderListeners.rotate.z[id], drz);
-//        }
-//        
-//        if (transformStr != null) {
-//          el.style[TRANSFORM_PROP] = transformStr;
-//          el.style[TRANSITION_PROP] = '';
-////          el.style[TRANSFORM_ORIGIN_PROP] = '0% 0%';
-////          if (isMoz) {
-////            el.style.transform = transformStr;
-////            el.style.transition = '';
-////            el.style['transform-origin'] = '0% 0%';
-////          }
-//          
-//        }
-//        
-////        el.style[TRANSFORM_PROP] = 'matrix3d(' + transform.join(',') + ')';
-//        
-//        invokeListeners(renderListeners.render[id], el, oldTransform, transform);
-
-        ID_TO_LAST_TRANSFORM[id] = transform;
-//        if (!el.parentNode)  // nodes of known size or irrelevant size can be attached at first render instead of at some arbitrary view build time
-//          groupEl.appendChild(el);
+          if (fix)
+            subVal = subVal.toFixed(10);
+          
+          if (unit)
+            subVal += unit;
+          
+          val += subVal;
+        }
+        
+        if (remove)
+          el.style.removeProperty(prefixed);
+        else if (!ignore) {
+          val += SUFFIX[prop];
+          el.style[prefixed] = val;
+        }
       }
+      
+      invokeListeners(renderListeners.render[id], el); //, oldTransform, transform);
     }
     
-    invokeListeners(renderListeners.render['']);
-    UNRENDERED = {};
+    buffers.push(style.buffer);
   };
+  
+//  function renderBodyOld(id, style) {
+//    var el = ID_TO_EL[id],
+//        propVal,
+//        transform,
+//        translate,
+//        scale,
+//        rotate,
+//        oldTransition,
+//        oldTranslate,
+//        oldRotate,
+//        oldScale,
+//        transformStr,
+//        listeners,
+//        dtx, dty, dtz,
+//        drx, dry, drz;
+//
+//    if (!el)
+//      return false;
+//    
+//    oldTransform = ID_TO_LAST_TRANSFORM[id] || IDENTITY_TRANSFORM;
+//    for (var prop in style) {
+//      if (TRANSFORM_PROPS.indexOf(prop) == -1) {
+//        propVal = style[prop];
+//        if (propVal == null)
+//          el.style.removeProperty(prop)
+//        else
+//          el.style[DOM.prefix(prop)] = propVal;
+//      }
+//    }
+//    
+//    transform = style.transform;
+//    if (transform) {
+//      if (FORCE_GPU)
+//        el.style[TRANSFORM_PROP] = DOM.toMatrix3DString(transform);
+//      else {
+//        el.style.top = transform[13] + 'px';
+//        el.style.left = transform[12] + 'px';
+//      }
+//        
+////        oldTransition = ID_TO_LAST_TRANSITION[id] || '';
+////        if (oldTransition)
+////          el.style[TRANSITION_PROP] = ID_TO_LAST_TRANSITION[id] = '';
+//      
+//      invokeListeners(renderListeners.render[id], el, oldTransform, transform);
+//    }
+//      
+////      if (!transform)
+////        continue;
+////
+////      translate = transform.translate;
+////      scale = transform.scale;
+////      rotate = transform.rotate;
+////      transformStr = null;
+////      if (translate || scale) {
+////        transformStr = '';
+////        if (scale) {
+////          if (!_.isEqual(scale, DEFAULT_SCALE)) {
+////            transformStr = 'scale3d(' + scale[0] + ', ' + scale[1] + ', ' + scale[2] + ')';
+////            if (_.isEqual(scale, MIN_SCALE)) 
+////              translate = null;
+////          }
+////          
+////          oldScale = oldTransform.scale || DEFAULT_SCALE;
+////          dsx = scale[0] - oldScale[0];
+////          dsy = scale[1] - oldScale[1];
+////          dsz = scale[2] - oldScale[2];
+////          invokeListeners(renderListeners.scale[''][id], el, dsx, dsy, dsz);
+////          invokeListeners(renderListeners.scale.x[id], el, dsx);
+////          invokeListeners(renderListeners.scale.y[id], el, dsy);
+////          invokeListeners(renderListeners.scale.z[id], el, dsz);
+////        }
+////        else
+////          scale = DEFAULT_SCALE;
+////        
+////        if (translate) {
+////          transformStr = 'matrix3d(' + scale[0] + ', 0, 0, 0, 0, ' + scale[1] + ', 0, 0, 0, 0, ' + scale[2] + ', 0, ';
+//////        transformStr = 'translate(';
+////          transformStr += translate[0].toFixed(10) + ', ' + translate[1].toFixed(10) + ', ' + translate[2].toFixed(10) + ', 1)';
+//////          transformStr += translate[0].toFixed(10) + 'px, ' + translate[1].toFixed(10) + 'px)';
+////          oldTranslate = oldTransform.translate || ZERO_TRANSLATION;
+////          dtx = translate[0] - oldTranslate[0];
+////          dty = translate[1] - oldTranslate[1];
+////          dtz = translate[2] - oldTranslate[2];
+////          invokeListeners(renderListeners.translate[''][id], el, dtx, dty, dtz);
+////          invokeListeners(renderListeners.translate.x[id], el, dtx);
+////          invokeListeners(renderListeners.translate.y[id], el, dty);
+////          invokeListeners(renderListeners.translate.z[id], el, dtz);
+////        }          
+////      }
+////        
+//////      else {
+//////        transformStr += '0, 0, 0';
+////////        transformStr += '0px, 0px)';
+//////      }
+//////      
+////      
+////      // ROTATION
+////      if (rotate) {
+////        // TODO: all axes, no need for now
+////        transformStr = transformStr || '';
+////        var unit = rotate.unit || 'deg';
+////        if (rotate[0])
+////          transformStr += ' rotateX(' + rotate[0].toFixed(10) + unit +')';
+////        if (rotate[1])
+////          transformStr += ' rotateY(' + rotate[1].toFixed(10) + unit +')';
+////        if (rotate[2])
+////          transformStr += ' rotateZ(' + rotate[2].toFixed(10) + unit +')';
+////        
+//////        if (rotate[2])
+//////          transformStr += 'rotate(' + rotate[2].toFixed(10) + 'rad)'; // for now, only around Z axis
+////        
+////        oldRotate = oldTransform.rotate || ZERO_ROTATION;
+//////        drx = rotate[0] - oldRotate[0];
+//////        dry = rotate[1] - oldRotate[1];
+////        drz = rotate[2] - oldRotate[2];
+////        invokeListeners(renderListeners.rotate[''][id], el, drx, dry, drz);
+//////        invokeListeners(renderListeners.rotate.z[id], drx);
+//////        invokeListeners(renderListeners.rotate.y[id], dry);
+////        invokeListeners(renderListeners.rotate.z[id], drz);
+////      }
+////      
+////      if (transformStr != null) {
+////        el.style[TRANSFORM_PROP] = transformStr;
+////        el.style[TRANSITION_PROP] = '';
+//////        el.style[TRANSFORM_ORIGIN_PROP] = '0% 0%';
+//////        if (isMoz) {
+//////          el.style.transform = transformStr;
+//////          el.style.transition = '';
+//////          el.style['transform-origin'] = '0% 0%';
+//////        }
+////        
+////      }
+////      
+//////      el.style[TRANSFORM_PROP] = 'matrix3d(' + transform.join(',') + ')';
+////      
+////      invokeListeners(renderListeners.render[id], el, oldTransform, transform);
+//
+//    ID_TO_LAST_TRANSFORM[id] = transform;
+////      if (!el.parentNode)  // nodes of known size or irrelevant size can be attached at first render instead of at some arbitrary view build time
+////        groupEl.appendChild(el);
+//  };
 
   function endAllDrags(currentDraggable) {
     for (var id in DRAGGABLES) {
@@ -1126,6 +1272,23 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         debugger;
       },
       init: function() {
+        var i = STYLE_ORDER.length,
+            styleProp;
+        
+        while (i--) {
+          styleProp = STYLE_ORDER[i];
+          if (!_.has(UNITS, styleProp))
+            UNITS[styleProp] = '';
+          if (!_.has(STYLE_NUM_VALUES, styleProp))
+            STYLE_NUM_VALUES[styleProp] = 1;
+          if (!_.has(PREFIX, styleProp))
+            PREFIX[styleProp] = '';
+          if (!_.has(SUFFIX, styleProp))
+            SUFFIX[styleProp] = '';
+          if (!_.has(SEPARATOR, styleProp))
+            SEPARATOR[styleProp] = ' ';
+        }
+        
 //        var clone = _.deepExtend({}, Physics.constants);
 //        for (var i = 0; i < SCROLLER_TYPES.length; i++) {
 //          Physics.constants.byScrollerType[SCROLLER_TYPES[i]] = _.deepExtend({}, clone);
@@ -1221,7 +1384,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           masonryUrl: jsBase + (masonryModuleInfo.fullName || masonryModuleInfo.name),
           debug: G.DEBUG,
           stepSelf: !LOCK_STEP,
-          constants: CONSTANTS
+          constants: CONSTANTS,
+          styleInfo: STYLE_INFO
         });
         
         this.updateBounds();

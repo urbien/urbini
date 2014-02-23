@@ -17,7 +17,7 @@ define('views/Header', [
 //  'views/PublishButton'
 ], function(G, Events, U, Voc, BasicView, Physics, DOM/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
   var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate', 'installApp'];
-  var REGULAR_BUTTONS = ['back', 'mapIt', 'add', 'video', 'chat', 'login', 'rightMenu'];
+  var REGULAR_BUTTONS = ['back', 'cancel', 'save', 'mapIt', 'add', 'video', 'chat', 'login', 'rightMenu'];
   var commonTypes = G.commonTypes;
   var friendlyTypes = [G.commonTypes.Urbien, 'http://urbien.com/voc/dev/ImpressBackup/Movie', 'http://urbien.com/voc/dev/ImpressBackup/Artist', 'model/social/App'];
   var editablePhysicsConstants = ['drag', 'springStiffness', 'springDamping', 'tilt'];
@@ -318,7 +318,6 @@ define('views/Header', [
         
       function doRender() {
         self.renderHelper.apply(self, args);
-        self.addToWorld(null, true);
         self.finish();
         if (G.isBootstrap())
           self.$('#headerUl div').$attr('class', 'navbar-header');

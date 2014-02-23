@@ -23,7 +23,7 @@ define('views/HorizontalListView', [
 //    },
 //    _flexigroup: true,
     style: {
-      visibility: 'hidden',
+//      visibility: 'hidden',
       opacity: 0,
       height:'115px', // 150 + 5 for scrollbar
       perspective: '300px'
@@ -90,12 +90,12 @@ define('views/HorizontalListView', [
     },
     
     renderItem: function(res, info) {
-      var source = this.parentView.resource,
+//      var source = this.parentView.resource,
 //          xUris = this._renderedIntersectionUris,
-          a,
-          b;
-
-      source = source && source.getUri();
+//          a,
+//          b;
+//
+//      source = source && source.getUri();
 //      if (this._isIntersectingWithCollection) {
 //        a = res.get('Intersection.a');
 //        b = res.get('Intersection.b');
@@ -122,7 +122,7 @@ define('views/HorizontalListView', [
 //          xUris.push(b);
 //      }
       
-      this.addChild(liView);
+      this.postRenderItem(liView);
       return liView;
     },
     
@@ -138,6 +138,8 @@ define('views/HorizontalListView', [
 //        this.el.style.height = '150px';
         if (G.isJQM())
           this.$el.trigger("create");
+        
+        this.getPageView().invalidateSize();
       }
       
       return ResourceListView.prototype.postRender.apply(this, arguments);

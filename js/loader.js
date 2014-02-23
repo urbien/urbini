@@ -1059,7 +1059,7 @@ define('globals', function() {
         bg: '#000'
       },
       db: {
-        on: true,
+        on: false,
         color: '#FFFFFF',
         bg: '#000'
       },
@@ -1694,6 +1694,7 @@ define('globals', function() {
 //      return space;
 //    },
     
+    _logArray: new Array(0),
     log: function(tag, type) {
       if (!G.DEBUG || !TRACE.ON || !console || !console.log || !type)
         return;
@@ -1717,7 +1718,8 @@ define('globals', function() {
 
         var txt = type + ' : ' + tag + ' : ' + msgStr + ' : ';
         var d = new Date(G.currentServerTime());
-        console.log((css ? '%c ' : '') + txt + new Array(Math.max(100 - txt.length, 0)).join(' ') + d.toUTCString().slice(17, 25) + ':' + d.getUTCMilliseconds(), css ? 'background: ' + (typeTrace.bg || '#FFF') + '; color: ' + (typeTrace.color || '#000') : '');        
+        G._logArray.length = Math.max(100 - txt.length, 0);
+        console.log((css ? '%c ' : '') + txt + G._logArray.join(' ') + d.toUTCString().slice(17, 25) + ':' + d.getUTCMilliseconds(), css ? 'background: ' + (typeTrace.bg || '#FFF') + '; color: ' + (typeTrace.color || '#000') : '');        
       }
     },
     

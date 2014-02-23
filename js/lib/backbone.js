@@ -1542,9 +1542,9 @@
         if (oldVal != null && newVal != null && oldValType == '[object Object]' && newValType == '[object Object]')
           target[prop] = _.defaults(newVal, oldVal);
         else {
-          if (newValType == '[object Object]')
-            target[prop] = _.clone(newVal);
-          else
+//          if (newValType == '[object Object]')
+//            target[prop] = _.clone(newVal);
+//          else
             target[prop] = newVal;
         }
         

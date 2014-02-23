@@ -41,10 +41,13 @@ define('views/EditPage', [
       
       var isGeo = this.isGeo();
       this.buttons = {
-        back: true,
+//        back: true,
+        save: true,
+        cancel: true
+//        ,
 //        menu: true,
-        rightMenu: !G.currentUser.guest,
-        login: G.currentUser.guest
+//        login: G.currentUser.guest,
+//        rightMenu: !G.currentUser.guest
       };
     
       this.header = new Header({
@@ -101,12 +104,12 @@ define('views/EditPage', [
     home: function() {
 //      this.router.navigate('', {trigger: true, replace: false});
       var here = window.location.href;
-      window.location.href = here.slice(0, here.indexOf('#'));
+      Events.trigger('navigate', here.slice(0, here.indexOf('#')));
       return this;
     },
     edit: function(e) {
       Events.stopEvent(e);
-      this.router.navigate(U.makeMobileUrl('edit', this.resource), {trigger: true, replace: true});
+      Events.trigger('navigate', U.makeMobileUrl('edit', this.resource), {trigger: true, replace: true});
       return this;
     },
 

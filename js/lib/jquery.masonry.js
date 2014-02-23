@@ -38,9 +38,17 @@
 //    return common;
 //  };
   
+  function getAxis(idx) {
+    return idx == 0 ? 'x' : 
+            idx == 1 ? 'y' : 'z';
+  };
+  
   function getBrickCoord(brick, idx) {
     brick = brick._rail ? brick._rail.railBody : brick;
-    return brick.state.pos.get(idx);
+    if (brick._masonryPos)
+      return brick._masonryPos[getAxis(idx)];
+    else
+      return brick.state.pos.get(idx);
   }
 
   // our "Widget" object constructor
@@ -289,9 +297,12 @@
           top = extremeDepth /*+ this.offset.y*/ + brick.geometry._aabb._hh + this._getOffsetDueToFlexigroup();
       }
 
-      console.log("adding " + brick.options._id + " (" + brick.geometry._aabb._hw * 2, "x", brick.geometry._aabb._hh * 2, ") brick at (" + left + ", " + top + ")");
-      brick.state.pos.set(left, top, getBrickCoord(brick, 2));
-
+//      console.log("adding " + brick.options._id + " (" + brick.geometry._aabb._hw * 2, "x", brick.geometry._aabb._hh * 2, ") brick at (" + left + ", " + top + ")");
+//      brick.state.pos.set(left, top, getBrickCoord(brick, 2));
+      brick.stop(left, top, getBrickCoord(brick, 2));
+      if (this.flexigroup)
+        brick._masonryPos = brick.state.pos.values();
+      
       // apply setHeight to necessary columns
       for ( i=0; i < setSpan; i++ ) {
         colYs[ shortCol + i ] = setHeight;
@@ -463,6 +474,7 @@
           dim,
           colSpan,
           col,
+          numCols = this.cols,
           fromCol,
           colYs = this.topColYs;
       
@@ -473,7 +485,8 @@
         dim = this[dimensionMethod](brick) + gutterWidth;
         while (colSpan--) {
           col = fromCol + colSpan;
-          colYs[col] += dim;
+          if (col < numCols)
+            colYs[col] += dim;
         }
       }
     },
@@ -487,6 +500,7 @@
           dim,
           colSpan,
           col,
+          numCols = this.cols,
           fromCol,
           colYs = this.bottomColYs;
       
@@ -497,7 +511,8 @@
         dim = this[dimensionMethod](brick) + gutterWidth;
         while (colSpan--) {
           col = fromCol + colSpan;
-          colYs[col] -= dim;
+          if (col < numCols)
+            colYs[col] -= dim;
         }
       }
     },

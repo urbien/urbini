@@ -592,11 +592,8 @@ define('views/ControlPanel', [
               continue;
             if (prop['app']  &&  (!currentAppProps  || $.inArray(p, currentAppProps) == -1))
               continue;
-            if (!prop  ||  prop.mainBackLink  ||  (!_.has(json, p)  &&  typeof prop.readOnly != 'undefined')) {
-//              delete json[p];
+            if (!prop  ||  prop.mainBackLink  ||  (!_.has(atts, p)  &&  typeof prop.readOnly != 'undefined'))
               continue;
-            }
-                  
             if (!U.isPropVisible(res, prop))
               continue;
   
@@ -610,7 +607,7 @@ define('views/ControlPanel', [
             var doShow = false;
             var cnt;
             var pValue = this.resource.get(p); //json[p];
-            if (!_.has(json, p)) { 
+            if (!_.has(atts, p)) { 
               var count = pValue ? pValue.count : 0;
               cnt = count > 0 ? count : 0;
               
@@ -708,13 +705,15 @@ define('views/ControlPanel', [
               continue;
             var pp = p.substring(0, p.length - 5);
             var pMeta = meta[pp];
-            if (!pMeta  ||  !pMeta.backLink || json[pp]) 
+            if (!pMeta  ||  !pMeta.backLink || atts[pp]) 
               continue;
-            count = json[p];
+            count = atts[p];
 //            p = pp;
             prop = pMeta;
             json[pp] = {count: count};
           }
+          
+          hasValue = _.has(atts, p);
           if (count == -1) {
             if (!prop)
               continue;
@@ -738,7 +737,7 @@ define('views/ControlPanel', [
           var n = U.getPropDisplayName(prop);
           var cnt;
           var pValue = atts[p];
-          if (!_.has(atts, p)) {
+          if (!hasValue) {
             cnt = count > 0 ? count : 0;
             if (cnt != 0 || isPropEditable)
               doShow = true;

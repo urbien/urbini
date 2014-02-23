@@ -88,7 +88,7 @@ define('views/ResourceView', [
       
       var href = t.href;
       if (href && !G.domainRegExp.test(href)) {
-        window.location.href = href;
+        Events.trigger('navigate', href);
         return;
       }
       
@@ -106,7 +106,7 @@ define('views/ResourceView', [
 //      var wl = G.currentApp.widgetLibrary
 //      if (wl  &&  wl != 'Jquery Mobile') {
         Events.stopEvent(e);
-        t.parentNode.$('ul').$toggleClass('hidden');        
+        t.parentNode.$('ul').$toggleClass('hidden');
         return;
 //      }
     },

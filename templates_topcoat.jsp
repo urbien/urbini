@@ -270,6 +270,20 @@
   <li class="topcoat-list__header" {{= G.coverImage ? 'style="text-shadow:none;background:' + G.coverImage.color + ';color: ' + G.coverImage.background + ';"' : '' }}><h3>{{= value }}</h3></li>
 </script>
 
+<script type="text/template" id="saveButtonTemplate">
+  <!-- header button for saving changes -->
+  <button class="topcoat-button-bar__button">
+    <a target="#"><i class="ui-icon-ok"></i></a>
+  </button>
+</script>
+
+<script type="text/template" id="cancelButtonTemplate">
+  <!-- header button for canceling changes -->
+  <button class="topcoat-button-bar__button">
+    <a target="#"><i class="ui-icon-remove"></i></a>
+  </button>
+</script>
+
 <script type="text/template" id="mapItButtonTemplate">
   <!-- button that toggles map view -->
   <button class="topcoat-button-bar__button">
@@ -337,7 +351,7 @@
   {{ var canDismiss = typeof dismissible === 'undefined' || dismissible == true; }}
   <section id="login_popup" style="position:absolute; top:15%; border:1px solid #aaa; border-radius:1rem; z-index:1000000; background:#d2d2d2;width:auto;">
   <div style="padding:0 1rem 1rem 1rem;">
-    <h4 style="margin:10px 0;color:#757575;" id="loginMsg">{{= msg }}</h4>
+    <h4 style="text-align:center;margin:10px 0;color:#757575;" id="loginMsg">{{= msg }}</h4>
     {{ _.forEach(nets, function(net) { }} 
     <button class="topcoat-button-bar__button" style="width:100%;margin-top:1rem;padding:0.5rem;">
       <a href="{{= net.url }}" style="text-align:center;border-radius:1rem;width:85%;font-weight:bold;" {{= net.name == 'Facebook' ? ' target="_top"' : '' }}>
@@ -572,12 +586,12 @@
     </div>
     {{                                                             }}
     
-    <div>
+    <!--div>
       <fieldset id= "submitBtns">
         <div><button class="topcoat-button--large" type="cancel" id="cancel" {{= G.coverImage ? 'style="background:' + G.coverImage.background + ';color:' +  G.coverImage.color + ';"' : '' }}>{{= obj.cancel || loc('cancel') }}</button></div>
         <div><button class="topcoat-button--large" type="submit" id="submit" {{= G.coverImage ? 'style="background:' + G.coverImage.color + ';color:' +  G.coverImage.background + ';"' : '' }}>{{= obj.submit || loc('submit') }}</button></div>
       </fieldset>
-    </div>
+    </div-->
 
   </form>
   
@@ -617,7 +631,7 @@
 
 <script type="text/template" id="booleanPET">
   <label class="topcoat-switch" style="z-index:10001;float:right;">
-    <input type="checkbox" name="{{= shortName }}" id="{{= id }}" class="formElement topcoat-switch__input" />
+    <input type="checkbox" name="{{= shortName }}" id="{{= id }}" class="formElement topcoat-switch__input" {{= obj.value ? 'checked="checked"' : '' }} />
     <div class="topcoat-switch__toggle"></div>
   </label>
   {{ if (name && name.length > 0) { }}

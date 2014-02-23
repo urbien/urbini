@@ -83,6 +83,7 @@
 <actions "Actions">
 <wouldYouLikeToChatInPrivate "Would you like to chat in private?">
 <login "Login">
+<youreOfflinePleaseLogin "You are currently offline, please get online and try again">
 <allow "Allow">
 <deny "Deny">
 <changedYourMindClickToInstall "If you change your mind about installing {{ $appName }}, click <a href='{{ $installUrl }}'>here</a>">

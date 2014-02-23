@@ -268,14 +268,14 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
     if (offset > foo.length)
       return [];
     
-    return foo.slice(offset);
+    return Array.removeFromTo(foo, 0, offset);
   }
 
   function arrayLimit(foo, limit) {
     if (!limit || limit > foo.length)
       return foo;
 
-    return foo.slice(0, limit);
+    return Array.removeFromTo(foo, limit, foo.length);
   }
 
   function arrayUnion(foo, bar) {

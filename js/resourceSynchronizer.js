@@ -524,7 +524,7 @@ define('resourceSynchronizer', [
         type = item.vocModel.type,
         uri = item.get('_uri');
     
-    G.log(RM.TAG, 'db', 'deleting item', uri);
+    G.log('db', 'db', 'deleting item', uri);
     IDB['delete'](type, uri);
     IDB.queryByIndex('_uri').eq(uri).getAll(REF_STORE.name).done(function(results) {
       IDB['delete'](REF_STORE.name, _.pluck(results || [], REF_STORE.options.keyPath));

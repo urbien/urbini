@@ -451,9 +451,12 @@ define('modelLoader', [
       m = loadEnumModel(m);
     else
       m = loadNonEnumModel(m);
-    
-    Events.trigger('newModel', m);
-    gotModel(m);
+
+    if (m) {
+      // model may not be ready for loading, we may need to wait for appProvider, appConsumer models to be loaded first
+      Events.trigger('newModel', m);
+      gotModel(m);
+    }
   }
 
   function loadEnumModel(m) {

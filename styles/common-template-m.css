@@ -23,6 +23,9 @@ body {
   min-height: 100%; 
   position: absolute; 
   border: 0; 
+  background-color: inherit;
+  min-height: 100%;
+  overflow:hidden;
 }
 
 input {
@@ -37,12 +40,6 @@ html { height: 100%; }
 
 .masonry-brick div[data-viewid] {
   border-bottom: 1px solid #aaa;
-}
-
-[data-role="page"] {
-  background-color: inherit;
-  min-height: 100%;
-  overflow:hidden;
 }
 
 /* Gallery */
@@ -251,6 +248,7 @@ div.nabBtn {
 .table-stroke tbody td {
   border-bottom: 1px solid rgba(0, 0, 0, .05);
 }
+
 #resourceViewHolder .cp {text-decoration: none; font-size: 14px; }
 
 .commentList .cl { padding-left: 5px; }
@@ -287,7 +285,7 @@ div.nabBtn {
   #sidebarDiv #nabs_grid {margin-left: 0px;margin-right: -25px;}
 }
 
-#nabs_grid {padding: 0;}
+#nabs_grid {padding: 0; width:0px; height:0px;}
 .u-desc {
   padding-top:7px; font-size: 14px;
 }
