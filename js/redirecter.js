@@ -111,7 +111,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       if (redirect) {
         redirect = res.get(redirect);
         if (redirect) {
-          window.location.href = redirect;
+          Events.trigger('navigate', redirect);
           return;
         }
       }

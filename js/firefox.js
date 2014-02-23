@@ -64,7 +64,7 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
     }
     
     if (/^https?\:/.test(match.channelName))
-      window.location.href = match.channelName;
+      Events.trigger('navigate', match.channelName);
     else
       Events.trigger('navigate', match.channelName);
     

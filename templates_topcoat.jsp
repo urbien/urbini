@@ -631,7 +631,7 @@
 
 <script type="text/template" id="booleanPET">
   <label class="topcoat-switch" style="z-index:10001;float:right;">
-    <input type="checkbox" name="{{= shortName }}" id="{{= id }}" class="formElement topcoat-switch__input" />
+    <input type="checkbox" name="{{= shortName }}" id="{{= id }}" class="formElement topcoat-switch__input" {{= obj.value ? 'checked="checked"' : '' }} />
     <div class="topcoat-switch__toggle"></div>
   </label>
   {{ if (name && name.length > 0) { }}

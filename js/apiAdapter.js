@@ -71,7 +71,7 @@ define('apiAdapter', ['globals', 'underscore'], function(G, _) {
 //      oauthVersion = getOAuthVersion(oauthVersion);
 //      window.location.href = G.apiUrl + 'oauth' + oauthVersion + '?' + $.param(params);
 
-      window.location.href = G.apiUrl + 'oauth?' + $.param(params);
+      Events.trigger('navigate', G.apiUrl + 'oauth?' + $.param(params));
 
 //      var self = this,
 //          authDfd = $.Deferred(),

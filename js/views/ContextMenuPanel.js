@@ -43,7 +43,7 @@ define('views/ContextMenuPanel', [
 
     home: function(e) {
       Events.stopEvent(e);
-      window.location.href = G.serverName + '/app/UrbienApp';
+      Events.trigger('navigate', G.serverName + '/app/UrbienApp');
     },
     
     physics: function(e) {

@@ -89,10 +89,10 @@ define('views/SocialNetworkPage', [
         Events.trigger('navigate', U.makeMobileUrl('edit', access.getUri()));      
       }
       else {
-        window.location.href = U.buildSocialNetOAuthUrl({
+        Events.trigger('navigate', U.buildSocialNetOAuthUrl({
           net: net,
           action: 'Connect'
-        });
+        }));
       }
     },
     

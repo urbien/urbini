@@ -317,7 +317,7 @@ define('views/ListPage', [
     }, 
     home: function() {
       var here = window.location.href;
-      window.location.href = here.slice(0, here.indexOf('#'));
+      Events.trigger('navigate', here.slice(0, here.indexOf('#')));
       return this;
     },
     

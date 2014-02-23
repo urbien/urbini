@@ -139,7 +139,7 @@ define('views/HorizontalListView', [
         if (G.isJQM())
           this.$el.trigger("create");
         
-        this.parentView.invalidateSize();
+        this.getPageView().invalidateSize();
       }
       
       return ResourceListView.prototype.postRender.apply(this, arguments);

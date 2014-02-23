@@ -67,9 +67,9 @@ define('views/MainMenuPanel', [
       
 //      G.log(this.TAG, "Recording step for tour: selector = 'id'; value = '" + t.id + "'");
       if (t.id == 'home123') 
-        window.location.href = here.slice(0, here.indexOf('#'));
+        Events.trigger('navigate', here.slice(0, here.indexOf('#')));
       else 
-        window.location.href = G.serverName + '/app/UrbienApp';
+        Events.trigger('navigate', G.serverName + '/app/UrbienApp');
       
       return this;
     },

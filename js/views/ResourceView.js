@@ -88,7 +88,7 @@ define('views/ResourceView', [
       
       var href = t.href;
       if (href && !G.domainRegExp.test(href)) {
-        window.location.href = href;
+        Events.trigger('navigate', href);
         return;
       }
       

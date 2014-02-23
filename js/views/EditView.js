@@ -268,7 +268,7 @@ define('views/EditView', [
         // trigger native file dialog or camera capture 
         Events.stopEvent(e);
         var input = $(target).parent().children().find('input[type="file"]');
-        input.trigger('click');
+        input.triggerHandler('click');
       }
       else if (e.type === 'change') {
         loadFile();
@@ -422,7 +422,7 @@ define('views/EditView', [
           }
         }
         
-//        Events.trigger('back');
+        Events.trigger('back');
 //        this.router.navigate(hash, {trigger: true, replace: true});
       }.bind(this);
 //      G.Router.changePage(self.parentView);
@@ -844,7 +844,7 @@ define('views/EditView', [
         if (prevHash && !prevHash.startsWith('chooser/'))
           Events.trigger('back');
         else
-          Events.trigger('navigate', this.resource.getUri());
+          Events.trigger('navigate', U.makeMobileUrl('view', this.resource));
         
         return;
       }
@@ -1486,7 +1486,7 @@ define('views/EditView', [
         if (scrollers.length) {
           var scrollerWithValue = _.find(scrollers, function(s) { return !!s.value });
           if (scrollerWithValue) {
-            $(scrollerWithValue).trigger('click', [true]);
+            $(scrollerWithValue).triggerHandler('click', [true]);
             return true;
           }
         }

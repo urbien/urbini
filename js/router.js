@@ -314,6 +314,9 @@ define('router', [
         if (fragment.startsWith(appPath)) // link within app
           fragment = fragment.slice(appPath.length + 1); // cut off #
         else {
+          if (~fragment.indexOf("?") && fragment.indexOf("#") == -1)
+            debugger; // are we leaving the app?
+          
           window.location.href = fragment;
           return;
         }
@@ -321,6 +324,7 @@ define('router', [
       else if (fragment.startsWith(pageRoot)) // link within app
         fragment = fragment.slice(pageRoot.length + 1); // cut off #
       else if (/app\/[a-zA-Z]+\#/.test(fragment)) { // link to another app
+        debugger;
         window.location.href = G.serverName + '/' + fragment;
         return;
       }
@@ -771,7 +775,7 @@ define('router', [
 //    },
 
     goHome: function() {
-      window.location.href = G.pageRoot; 
+      Events.trigger('navigate', G.pageRoot); 
     },
     
     _requestLogin: function(options) {

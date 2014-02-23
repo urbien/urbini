@@ -232,7 +232,7 @@ define('views/MenuPanel', [
           outerWidth = this.ul.$outerWidth(),
           outerHeight = this.ul.$outerHeight();
 
-      if (outerWidth == G.viewport.width) {
+      if (outerWidth >= G.viewport.width) {
         if (!resetTimeout(this._measureMenuTimeout))
           this._measureMenuTimeout = setTimeout(this._updateSize.bind(this), 50); // HACK - ul is full screen width on first check
       }
