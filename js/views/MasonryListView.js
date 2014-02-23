@@ -5,10 +5,12 @@ define('views/MasonryListView', [
   'events',
   'views/ResourceListView',
   'views/ResourceMasonryItemView',
+  'views/ResourceListItemView',
   'collections/ResourceList',
   'jqueryMasonry',
-  '@widgets'
-], function(G, U, Events, ResourceListView, ResourceMasonryItemView, ResourceList, Mason, $m) {
+  '@widgets',
+  'lib/fastdom'
+], function(G, U, Events, ResourceListView, ResourceMasonryItemView, ResourceListItemView, ResourceList, Mason, $m, Q) {
   var MASONRY_FN = 'masonry', // in case we decide to switch to Packery or some other plugin
       ITEM_SELECTOR = '.nab';
 
@@ -20,27 +22,17 @@ define('views/MasonryListView', [
     return getTop(child) + child.offsetHeight;
   }
 
-  function getBricks(pages) {
-    return pages.reduce(function(memo, page) {
-      memo.push.apply(memo, page.childNodes);
-      return memo;
-    }, []);
-    
-//    var bricks = [],
-//        i = pages.length;
-//    
-//    while (i--) {
-//      bricks.push.apply(bricks, pages[i].childNodes);
-//    }
-//    
-//    return bricks;
+  function getBricks(views) {
+    return views.map(function(view) {
+      return view.el;
+    });
   }
   
   return ResourceListView.extend({
     className: 'masonry',
     autoFinish: false, // we want to say we finished rendering after the masonry is done doing its magic, which may happen async
     type: 'masonry',
-    _elementsPerPage: 10,
+    _averageElementSize: 150,
     events: {
       'refresh': 'refresh'
 //        ,
@@ -53,16 +45,8 @@ define('views/MasonryListView', [
     },
     
     initialize: function(options) {
-      var self = this;
 //      _.bindAll(this, 'reloadMasonry');
       ResourceListView.prototype.initialize.apply(this, arguments);      
-//      this.listenTo(Events, 'pageChange', function(prev, current) {
-//        if (self.pageView == current && self.rendered) {
-////          self.$el.imagesLoaded(function() {
-//            self.masonry('reload');
-////          });
-//        }
-//      });
     },
     
     resizeMasonry: function() {
@@ -70,128 +54,102 @@ define('views/MasonryListView', [
         this.masonry.resize();
     },
     
-    _updateConstraints: function() {
-      ResourceListView.prototype._updateConstraints.call(this);
-      if (this._viewportDim) {
-        if (G.browser.mobile && this._viewportDim < 500)
-          this._elementsPerPage = 4;
-        else
-          this._elementsPerPage = 20;
-      }
-    },    
-
-    setDummyDimension: function(el, value) {
-      // do nothing
-    },
-    
-    getPageTag: function() {
-      return 'div';
-    },
-
     preinitializeItem: function(res) {
       return ResourceMasonryItemView.preinitialize({
         vocModel: this.vocModel,
-        className: 'nab', // nabBoard',
         parentView: this
       });
     },
     
     renderItem: function(res, info) {
-      var liView = this.addChild(new this._preinitializedItem({
-        resource: res
-      }));
+      var liView = this.getCachedItemView(),
+          options = {
+            resource: res
+          };
+      
+      if (liView) {
+        console.log("RECYCLING LIST ITEM");
+        liView.reset().initialize(options);
+      }
+      else {
+        console.log("CREATING NEW LIST ITEM, TOTAL CHILD VIEWS:", _.size(this.children));
+        liView = this.addChild(new this._preinitializedItem(options));
+      }
       
       liView.render(this._itemRenderOptions);
       return liView;
     },
-/*    
-    reloadMasonry: function(e) {
-      if (!this.rendered) 
-        return;
-      
-      var ww = G.viewport.width;
-      var brickW = (G.viewport.height > ww  &&  ww < 420) ? 272 : 205;
-      var w = $(this.$el.find('.nab')).attr('width');
-      if (!w) {
-        w = $(this.$el.find('.nab')).css('width');
-        if (w)
-          w = w.substring(0, w.length - 2);
-      }
-      
-      var imgP = U.getImageProperty(this.collection);
-      if (imgP) {
-        var prop = this.vocModel.properties[imgP];
-        brickW = prop.imageWidth || prop.maxImageDimension;
-      }
-      if (w < brickW  ||  w > brickW + 20) 
-        this.refresh({orientation: true});
-      else
-        this.masonry.reload();
-//        this._reloadMasonry();
-      this.centerMasonry(this);
-    },
-*/
-    _getSlidingWindowOffset: function(head) {
-      if (!this._pages.length)
-        return 0;
-
-      if (head)
-        return getTop(_.min(this._pages[0].childNodes, getTop));
-      else
-        return getBottom(_.max(this._pages[0].childNodes, getBottom));
-    },
     
-    getElementsPerPage: function() {
-      if (this._pages.length) {
-        this._optimizedElementsPerPage = true;
-        var viewportDim = this.getViewport().height,
-            page = this._pages[0],
-            pageDim = getBottom(_.max(page.childNodes, getBottom)) - getTop(_.min(page.childNodes, getTop)),
-            numEls = page.childElementCount;
-
-        return Math.ceil(numEls * viewportDim / pageDim);
-      }
-      else {
-        var dimensions = this._containerDimensions;
-        return Math.min(dimensions.width * dimensions.height / (200 * 200) | 0, 15);
-      }
-    },
-
-    getSlidingWindow: function() {
-      if (!this.masonry) {
-        return {
-          head: 0,
-          tail: 0
-        };
-      }
-      
-//      var slidingWindow = {},
-//          lastPage = this.el.lastChild,
-//          firstPage = this.el.firstChild;
+//    reloadMasonry: function(e) {
+//      if (!this.rendered) 
+//        return;
 //      
-//      if (!firstPage || !firstPage.childElementCount)
-//        slidingWindow.head = slidingWindow.tail = 0;
-//      else {
-//        slidingWindow.head = getTop(_.max(firstPage.childNodes, getTop)); // get the top offset of the child closest to the bottom the screen in the first page 
-//        slidingWindow.tail = getBottom(_.min(lastPage.childNodes, getBottom)); // get the top offset of the child closest to the top of the screen in the last page
+//      var ww = G.viewport.width;
+//      var brickW = (G.viewport.height > ww  &&  ww < 420) ? 272 : 205;
+//      var w = $(this.$el.find('.nab')).attr('width');
+//      if (!w) {
+//        w = $(this.$el.find('.nab')).css('width');
+//        if (w)
+//          w = w.substring(0, w.length - 2);
 //      }
 //      
-//      return slidingWindow;
-      var bounds = this.masonry.getBounds();
-      return {
-        head: bounds.min,
-        tail: bounds.max
-      };
-    },    
-   
-    isDummyPadded: function() {
-      return false;
+//      var imgP = U.getImageProperty(this.collection);
+//      if (imgP) {
+//        var prop = this.vocModel.properties[imgP];
+//        brickW = prop.imageWidth || prop.maxImageDimension;
+//      }
+//      if (w < brickW  ||  w > brickW + 20) 
+//        this.refresh({orientation: true});
+//      else
+//        this.masonry.reload();
+////        this._reloadMasonry();
+//      this.centerMasonry(this);
+//    },
+
+    calcElementsPerViewport: function() {
+      var num;
+      if (this._childEls.length) {
+        this._calculatedElementsPerPage = true;
+        var containersFitInWindow = this.getSlidingWindowDimension() / this.getContainerDimension(),
+            numEls = this._childEls.length;
+
+        num = Math.ceil(numEls / containersFitInWindow);
+      }
+      else
+        num = Math.min(this.getContainerArea() / (200 * 200) | 0, 15);
+      
+      this._elementsPerViewport = num;
     },
 
-    doRemovePages: function(pages, fromTheHead) {
-//      console.log("REMOVED", pages.length, "PAGES, id:", this._slidingWindowOpInfo.id);
-      this.masonry.remove(pages);
-//      this._slidingWindowOpInfo.removed = true;
+    getSlidingWindowArea: function() {
+      var otherDim = this._containerDimensions[this._horizontal ? 'height' : 'width'];
+      return this.getSlidingWindowDimension() * otherDim; 
+    },
+    
+    calcAverageElementSize: function() {
+      if (!this._childEls.length)
+        return;
+      
+//      this._averageElementSize = Math.sqrt(this.getSlidingWindowArea()) / Math.sqrt(this._childEls.length);
+      this._averageElementSize = this.getSlidingWindowDimension() / this._childEls.length;
+    },
+    
+    calcSlidingWindow: function() {
+      var sw = this._slidingWindowRange;
+      if (this.masonry) {
+        var bounds = this.masonry.getBounds();
+        sw.head = bounds.min;
+        sw.tail = bounds.max;
+      }
+      else {
+        sw.head = 0;
+        sw.tail = this.getViewportDimension();
+      }
+    },    
+   
+    doRemove: function(childViews, fromTheHead) {
+      ResourceListView.prototype.doRemove.apply(this, arguments);
+      this.masonry.removedBricks(getBricks(childViews));
     },
 
     preRender: function() {
@@ -202,6 +160,10 @@ define('views/MasonryListView', [
       if (!this.rendered) {
         this.masonry = new Mason({
           itemSelector: ITEM_SELECTOR
+//          ,
+//          containerStyle: {
+//            position: 'relative'
+//          }
         }, this.el);
  
         this.centerMasonry(this);
@@ -213,28 +175,41 @@ define('views/MasonryListView', [
 //          removedFromBottom = info.removedFromBottom.length && info.removedFromBottom.slice(),      // need this while using imagesLoaded (async)    
       var prepended = info.prepended.length && info.prepended.slice(),// need this while using imagesLoaded (async)
           appended = info.appended.length && info.appended.slice(),   // need this while using imagesLoaded (async)
-          hasUpdated = !!_.size(info.updated);
+          hasUpdated = !!_.size(info.updated),
+          dfd = $.Deferred();
       
       if (hasUpdated || prepended || appended) {
-        if (hasUpdated)
-          this.masonry.reload();
-        else {
-          if (appended) {
-            var bricks = getBricks(appended);
-//            console.log("APPENDED", appended.length, "PAGES, id:", this._slidingWindowOpInfo.id, _.pluck(appended, 'id').join(', '));
-            this.masonry.appended(bricks, null, true);
+        Q.read(function() { // because appended/prepended read brick offsetWidth/offsetHeight
+          if (hasUpdated)
+            this.masonry.reload();
+          else {
+            var needsReset = this._offsets.length && (appended && appended.length == this._childEls.length  || 
+                                                      prepended && prepended.length == this._childEls.length);
+
+            if (needsReset) {
+              debugger;
+              this.masonry.setOffset(this._offsets[appended ? this._displayedCollectionRange.from : this._displayedCollectionRange.to]);
+            }
+              
+            if (appended) {
+              var bricks = getBricks(appended);
+  //            console.log("APPENDED", appended.length, "PAGES, id:", this._slidingWindowOpInfo.id, _.pluck(appended, 'id').join(', '));
+              this.masonry.appended(bricks, null, true);
+            }
+            if (prepended) {
+              var bricks = getBricks(prepended);
+              bricks.reverse();
+  //            console.log("PREPENDED", prepended.length, "PAGES, id:", this._slidingWindowOpInfo.id, _.pluck(appended, 'id').join(', '));
+              this.masonry.prepended(bricks, null, true);
+            }
           }
-          if (prepended) {
-            var bricks = getBricks(prepended);
-            bricks.reverse();
-//            console.log("PREPENDED", prepended.length, "PAGES, id:", this._slidingWindowOpInfo.id, _.pluck(appended, 'id').join(', '));
-            this.masonry.prepended(bricks, null, true);
-          }
-        }
-        
-        this.trigger('refreshed');
+          
+          this.trigger('refreshed');
+          dfd.resolve();
+        }, this);
       }
       
+      return dfd.promise();
 //      this._slidingWindowOpInfo.removed = false;
     },
 
@@ -247,7 +222,7 @@ define('views/MasonryListView', [
 //        return refreshResult;
 //      }
       this.masonry.reload();
-      this.centerMasonry();
+//      this.centerMasonry();
     },
     
     centerMasonry: function(list) {
@@ -269,6 +244,42 @@ define('views/MasonryListView', [
 //        else
 //          list.$el.attr('style', style + 'left: ' + d + 'px;');
 //      }
+    },
+    
+    calcElementsPerViewport: function() {
+      var num;
+      if (this._childEls.length) {
+        this._calculatedElementsPerPage = true;
+        var containersFitInWindow = this.getSlidingWindowDimension() / this.getContainerDimension(),
+            numEls = this._childEls.length;
+
+        num = Math.ceil(numEls / containersFitInWindow);
+      }
+      else
+        num = Math.min(this.getContainerArea() / (200 * 200) | 0, 15);
+      
+      this._elementsPerViewport = num;
+    },
+
+    calcAverageElementSize: function() {
+      if (!this._childEls.length)
+        return;
+      
+//      this._averageElementSize = Math.sqrt(this.getSlidingWindowArea()) / Math.sqrt(this._childEls.length);
+      this._averageElementSize = this.getSlidingWindowDimension() / this._childEls.length;
+    },
+    
+    calcSlidingWindow: function() {
+      var sw = this._slidingWindowRange;
+      if (this.masonry) {
+        var bounds = this.masonry.getBounds();
+        sw.head = bounds.min;
+        sw.tail = bounds.max;
+      }
+      else {
+        sw.head = 0;
+        sw.tail = this.getViewportDimension();
+      }
     }
   }, {
     displayName: "MasonryListView",

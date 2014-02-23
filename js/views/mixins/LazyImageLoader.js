@@ -9,19 +9,21 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
       AXIS_INDEX = {
         X: 0,
         Y: 1
-      },
+      };
+//  ,
 //      WIN_HEIGHT,
       // Vertical offset in px. Used for preloading images while scrolling
-      IMG_OFFSET = 1000,
-      intersectTest = U.isIntersecting.bind(U);
+//      IMG_OFFSET = 1000;
+//      ,
+//      intersectTest = U.isIntersecting.bind(U);
 
 //  Events.once('startingApp', function() {    
 //    DUMMY_IMG = G.getBlankImgSrc();
 //  });
-  
-  window.addEventListener('debouncedresize', function() {
-    IMG_OFFSET = Math.max(G.viewport.height * 3, 500);
-  });
+//  
+//  window.addEventListener('debouncedresize', function() {
+//    IMG_OFFSET = Math.max(G.viewport.height * 3, 500);
+//  });
 
   function isSickLazyImage(img) {
     var lazyVal = img.getAttribute(LAZY_DATA_ATTR);
@@ -40,12 +42,12 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
     events: {
 //      'imageOnload': '_queueImageLoad',
       'page_show': '_onpageshow',
-      'page_hide': '_stop',
+      'page_hide': '_hideImages',
       'scrollocontent': '_queueImagesJob'
     },
     
     myEvents: {
-      'viewportDestination': '_onViewportDestinationChanged',
+//      'viewportDestination': '_onViewportDestinationChanged',
       'loadLazyImages': '_queueImagesJob'
     },
     
@@ -54,7 +56,7 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
     },
     
     initialize: function() {
-      _.bindAll(this, '_showImages', /*'_queueImageLoad', */'_queueImageFetch', '_queueImageUpdate', '_showAndHideImages', '_updateBasedOnViewportDestination', '_onpageshow', '_stop');
+      _.bindAll(this, '_showImages', /*'_queueImageLoad', */'_queueImageFetch', '_queueImageUpdate', /*'_showAndHideImages', '_updateBasedOnViewportDestination',*/ '_onpageshow', '_hideImages');
     },
 
     _lazyImagesTimeout: function(fn, timeout) {
@@ -68,62 +70,48 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
       this._lazyImagesTimer = setTimeout(fn, timeout);
     },
     
-    _onViewportDestinationChanged: function(x, y, timeToDestination) {
-      this._lazyImagesTimeout(this._updateBasedOnViewportDestination, Math.min(timeToDestination, 300));
-    },
-    
-    _updateBasedOnViewportDestination: function() {
-      var prevDest = this._lastImagesJobCoords,
-          axis = this.getScrollAxis(),
-          dest = this.getViewportDestination();
-      
-      if (prevDest) {
-        if (Math.abs(dest[axis] - prevDest[axis]) < IMG_OFFSET * 2 / 3) {
-          // we load images within IMG_OFFSET of out current viewport position but we trigger a load when we're 1/3 of an IMG_OFFSET away from the lazy/loaded border
-          // For example, if IMG_OFFSET is viewport.height * 3, we will load images as far as IMG_OFFSET AWAY, but then we won't load more until we are viewport.height away from the closest unloaded image
-          return;
-        }
-      }
-      else
-        prevDest = this._lastImagesJobCoords = {};
-        
-      _.extend(prevDest, dest);
-      this._queueImagesJob();
-    },
+//    _onViewportDestinationChanged: function(x, y, timeToDestination) {
+//      this._lazyImagesTimeout(this._updateBasedOnViewportDestination, Math.min(timeToDestination, 300));
+//    },
+//    
+//    _updateBasedOnViewportDestination: function() {
+//      var prevDest = this._lastImagesJobCoords,
+//          axis = this.getScrollAxis(),
+//          dest = this.getViewportDestination();
+//      
+//      if (prevDest) {
+//        if (Math.abs(dest[axis] - prevDest[axis]) < IMG_OFFSET * 2 / 3) {
+//          // we load images within IMG_OFFSET of out current viewport position but we trigger a load when we're 1/3 of an IMG_OFFSET away from the lazy/loaded border
+//          // For example, if IMG_OFFSET is viewport.height * 3, we will load images as far as IMG_OFFSET AWAY, but then we won't load more until we are viewport.height away from the closest unloaded image
+//          return;
+//        }
+//      }
+//      else
+//        prevDest = this._lastImagesJobCoords = {};
+//        
+//      _.extend(prevDest, dest);
+//      this._queueImagesJob();
+//    },
     
     _onpageshow: function() {
-      var info = this.getScrollInfo() || {
-        scrollTop: 0,
-        scrollLeft: 0
-      };
-      
-      this._lastImagesJobCoords = {
-        X: -Infinity,
-        Y: -Infinity
-      };
+//      var info = this.getScrollInfo() || {
+//        scrollTop: 0,
+//        scrollLeft: 0
+//      };
+//      
+//      this._lastImagesJobCoords = {
+//        X: -Infinity,
+//        Y: -Infinity
+//      };
       
       this._queueImagesJob();
     },
     
     _queueImagesJob: function() {
-      this._lazyImagesTimeout(this._showAndHideImages, 50);      
+      this._lazyImagesTimeout(this._showImages, 50);      
+//      this._lazyImagesTimeout(this._showAndHideImages, 50);      
     },
     
-    _showAndHideImages: function() {
-      this._showImages();
-      this._hideOffscreenImages();
-    },
-    
-//    _start: function() { 
-//      if (!this._started)
-//        this._showImages();
-//    },
-
-    _stop: function() {
-      this._started = false;
-      this._hideOffscreenImages();
-    },
-
     /**
      * override this if you want to optimize it
      */
@@ -138,19 +126,14 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
       return this.el.getElementsByClassName('lazyImage');
     },
     
-    _hideOffscreenImages: function() {
+    _hideImages: function() {
 //      var offscreenImgs = this.el.querySelectorAll('img:not([src="{0}"])'.format(DUMMY_IMG));
-      var offscreenImgs = this._getWasLazyImages(this.el),
-          viewport = this._getAdjustedViewport();
-          
-      if (this.isActive()) {
-        offscreenImgs = _.filter(offscreenImgs, function(img) {
-          return !intersectTest(img.getBoundingClientRect(), viewport);
-        });
-      }
+      var offscreenImgs = this._getWasLazyImages(this.el);
+//      ,
+//          viewport = this._getAdjustedViewport();
           
       if (offscreenImgs.length)
-        DOM.lazifyImages.apply(DOM, offscreenImgs);
+        DOM.lazifyImages(offscreenImgs);
     },
 
     _imageJobIds: [],
@@ -175,7 +158,6 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
 
     _showImages: function() {
       this._clearImageJobs();
-//      this._started = true;
       var lazy = this._getLazyImages()
           bad = _.filter(lazy, isSickLazyImage);
 
@@ -227,77 +209,35 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
       this._updateImages(this._updateQueue);
       this._updateQueue.length = 0;
     }, 100),
-
-//    _delayImage: function(img) {
-//      var idx = this._delayedImages.indexOf(img);
-//      if (~idx) {
-//        var count = this._delayedImagesCounts[idx];
-//        if (count > 3) {
-//          this._delayedImages.splice(idx, 1);
-//          this._delayedImagesCounts.splice(idx, 1);
-//        }
-//        else
-//          this._delayedImagesCounts[idx]++;
-//      }
-//      else {
-//        this._delayedImages.push(img)
-//        this._delayedImagesCounts.push(0);
-//        this._loadDelayedImages();
-//      }
-//    },
-//    
-//    _loadDelayedImages: Q.debounce(function() {
-//      if (!this._delayedImages.length)
-//        return;
-//      
-//      var self = this,
-//          counts = U.clone(this._delayedImagesCounts),
-//          delayedImages = U.clone(this._delayedImages),
-//          newCounts;
-//      
-//      this._delayedImages.length = 0;
-//      this._loadImages(delayedImages).always(function() {
-//        U.recycle(delayedImages);
-//        newCounts = self._delayedImagesCounts;
-//        for (var i = counts.length - 1; i >= 0; i--) {
-//          if (counts[i] == newCounts[i]) {
-//            self._delayedImages.splice(i, 1);
-//            self._delayedImagesCounts.splice(i, 1); 
-//          }
-//        }
-//        
-//        if (self._delayedImages.length)
-//          self._loadDelayedImages();
-//      });
-//    }, 100),
     
-    _getAdjustedViewport: function() {
-      var viewport = G.viewport,
-          viewportDestination = this.getViewportDestination(),
-          translation = DOM.getTranslation(this.el),
-          viewportPositionX = -translation.X, // if we scroll the page down, we will be looking at elements with positive offset, like top:200px, 
-          viewportPositionY = -translation.Y, // while translation will be negative, like translate(0px, -200px), meaning the top of the page is 200px submerged into the header
-          xAdjustment = viewportDestination.X - viewportPositionX,
-          yAdjustment = viewportDestination.Y - viewportPositionY,
-//          favorX = xAdjustment > 0 ? 1 - xAdjustment / IMG_OFFSET : 1 + xAdjustment / IMG_OFFSET,
-//          favorY = yAdjustment > 0 ? 1 - yAdjustment / IMG_OFFSET : 1 + yAdjustment / IMG_OFFSET,
-          adjustedViewport = {        
-            top: yAdjustment - IMG_OFFSET, // * favorY, // favor the current scroll direction
-            left: xAdjustment - IMG_OFFSET // * favorX
-          };
-      
-      adjustedViewport.right = adjustedViewport.left + viewport.width + 2 * IMG_OFFSET;
-      adjustedViewport.bottom = adjustedViewport.top + viewport.height + 2 * IMG_OFFSET;
-//      console.log("Viewport Y", viewportPositionY);
-//      console.log("Viewport Destination Y", viewportDestination.Y);
-//      console.log("Y adjustment", yAdjustment);
-//      console.debug("Adjusted Viewport", adjustedViewport);
-      return (this._adjustedViewport = adjustedViewport);
-    },
+//    _getAdjustedViewport: function() {
+//      var viewport = G.viewport,
+//          viewportDestination = this.getViewportDestination(),
+//          translation = DOM.getTranslation(this.el),
+//          viewportPositionX = -translation.X, // if we scroll the page down, we will be looking at elements with positive offset, like top:200px, 
+//          viewportPositionY = -translation.Y, // while translation will be negative, like translate(0px, -200px), meaning the top of the page is 200px submerged into the header
+//          xAdjustment = viewportDestination.X - viewportPositionX,
+//          yAdjustment = viewportDestination.Y - viewportPositionY,
+////          favorX = xAdjustment > 0 ? 1 - xAdjustment / IMG_OFFSET : 1 + xAdjustment / IMG_OFFSET,
+////          favorY = yAdjustment > 0 ? 1 - yAdjustment / IMG_OFFSET : 1 + yAdjustment / IMG_OFFSET,
+//          adjustedViewport = {        
+//            top: yAdjustment - IMG_OFFSET, // * favorY, // favor the current scroll direction
+//            left: xAdjustment - IMG_OFFSET // * favorX
+//          };
+//      
+//      adjustedViewport.right = adjustedViewport.left + viewport.width + 2 * IMG_OFFSET;
+//      adjustedViewport.bottom = adjustedViewport.top + viewport.height + 2 * IMG_OFFSET;
+////      console.log("Viewport Y", viewportPositionY);
+////      console.log("Viewport Destination Y", viewportDestination.Y);
+////      console.log("Y adjustment", yAdjustment);
+////      console.debug("Adjusted Viewport", adjustedViewport);
+//      return (this._adjustedViewport = adjustedViewport);
+//    },
     
     _getImageInfos: function(imgs) {
-      var infos = [],
-          viewport = this._getAdjustedViewport();
+      var infos = [];
+//          ,
+//          viewport = this._getAdjustedViewport();
       for (var i = 0; i < imgs.length; i++) {
         var img = imgs[i],
             resInfoStr = img.getAttribute('data-for'),
@@ -308,16 +248,17 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
             info;
         
         if (realSrc) {
-          rect = img.getBoundingClientRect();
+//          rect = img.getBoundingClientRect();
           info = {
             src: img.src,
             realSrc: realSrc,
             inDoc: docEl.contains(img),
-            resource: res,
+            resource: res
+//            ,
 //            data: res.get(resInfo.prop + '.data'),
 //            data: img.file || img.blob,
 //            distance: distance(rect, viewport, adjustment),
-            inBounds: intersectTest(rect, viewport)
+//            inBounds: intersectTest(rect, viewport)
           }
               
           if (resInfo)
@@ -377,11 +318,11 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
           }
           
           if (info.inDoc) {
-            if (info.inBounds) {
+//            if (info.inBounds) {
               toFetch.push(img);
               toFetchInfos.push(info);
               continue;
-            }
+//            }
 //            else
 //              outOfBounds.push(img, info);
             
@@ -526,7 +467,12 @@ define('views/mixins/LazyImageLoader', ['globals', 'underscore', 'utils', 'domUt
         else if (hasData) {
           res.fetch({
             dbOnly: true,
-            success: this._queueImageFetch.bind(this, img)
+            success: function() {
+              if (!res.get(dataProp))
+                res.unset(hasDataProp, {silent: true});
+              
+              self._queueImageFetch(img);
+            }
 //            error: function() {
 //              debugger;
 //            }

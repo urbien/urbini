@@ -1,4 +1,4 @@
-define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils', 'hammer'], function(G, _, Backbone, Events, U, Hammer) {
+define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils', 'hammer', 'domUtils'], function(G, _, Backbone, Events, U, Hammer, DOM) {
   (function(doc, _, Backbone) {
     Backbone.hammerOptions = {
 //      prevent_default: true,
@@ -21,7 +21,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       var fn = obj[key];
       fn = typeof fn == 'function' ? fn : this[fn];
       return fn;
-    };
+    }
     
     function getEventName(key) {
       return getEventInfo(key).eventName;
@@ -129,6 +129,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       
       setElement: function(element, delegate) {
         var $element = element instanceof $ ? element : $(element),
+            renderData = DOM.blankRenderData(),
             attrs,
             classes,
             style;
@@ -150,23 +151,24 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         
         if (classes && _.isArray(classes))
           classes = classes.join(' '); //classes.split(' ');
+
+        if (classes)
+          renderData['class']['set'] = classes;
         
-        if (this.style) { 
-          style = _.result(this, 'style');
-          if (style)
-            this.el.$css(style);
-        }
+        if (this.style) 
+          renderData.style.add = _.result(this, 'style');
         
         attrs = _.extend({}, _.result(this, 'attributes'));
         if (this.id) 
           attrs.id = _.result(this, 'id');
-        if (classes)
-          this.el.$addClass.apply(this.el, _.compact(classes.split(' ')));
-          //attrs['class'] = classes;
         
-        this.el.$attr(attrs);
+        if (attrs)
+          renderData.attributes.add = attrs;
+          
+        DOM.render(this.el, renderData);
         if (this.viaHammer)
           this.hammer();
+        
         if (delegate !== false) 
           this.delegateEvents();
         
@@ -192,7 +194,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         if (!this.el)
           throw "can't set HTML for a view with no element";
         
-        this.el.innerHTML = html; // it's the responsibility of the dev to call view.redelegateEvents();
+        this.el.$html(html); // it's the responsibility of the dev to call view.redelegateEvents();
       },
       
       empty: function() {
@@ -258,8 +260,8 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
 
       delegateNonDOMEvents: function() {
         this._nondomDelegated ? this._nondomDelegated++ : this._nondomDelegated = 1;
-        if (this._nondomDelegated > 1)
-          this.log("delegate", "non-DOM", this._nondomDelegated);
+//        if (this._nondomDelegated > 1)
+//          this.log("delegate", "non-DOM", this._nondomDelegated);
         
         var globalEvents = this.globalEvents,
             windowEvents = this.windowEvents,
@@ -414,8 +416,8 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       delegateEvents: function() {
         if (this.el) {
           this._domDelegated ? this._domDelegated++ : this._domDelegated = 1;
-          if (this._domDelegated > 1)
-            this.log("delegate", "DOM", this._domDelegated);
+//          if (this._domDelegated > 1)
+//            this.log("delegate", "DOM", this._domDelegated);
           
   //        if (!this.rendered)
   //          return;
@@ -526,7 +528,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
 //      _.defaults(to.globalEvents, from.globalEvents);
 //      _.defaults(to.myEvents, from.myEvents);
     }
-  };
+  }
 
   function namespaceEvents(events, namespaceStr, postpend) {
     var namespaced = {};
@@ -580,7 +582,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         return this.prototype.mixes(mixin);
       };
     })
-  };
+  }
   
   patchBackboneExtend();
   Backbone.Mixin = {

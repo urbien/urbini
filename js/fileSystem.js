@@ -33,7 +33,7 @@ define('fileSystem', ['globals', 'utils'], function(G, U) {
 
     G.log(G.TAG, 'fileSystem', msg);
     defer.reject(e);
-  };
+  }
   
   function readAsBlob(file, contentType) {
     this.readAsDataURL(file);
@@ -42,7 +42,7 @@ define('fileSystem', ['globals', 'utils'], function(G, U) {
       event.target.result = U.dataURLToBlob(event.target.result, contentType);
       onload(event);
     };
-  };
+  }
   
   function getFile(filePath) {
     return $.Deferred(function(defer) {
@@ -50,7 +50,7 @@ define('fileSystem', ['globals', 'utils'], function(G, U) {
         fileEntry.file(defer.resolve, getErrorFunc('file read error', defer));
       }).fail(getErrorFunc('fileEntry error', defer));
     }).promise();
-  };
+  }
   
   function readFile(options) {
     return $.Deferred(function(defer) {
@@ -87,14 +87,14 @@ define('fileSystem', ['globals', 'utils'], function(G, U) {
         };
       }).fail(getErrorFunc('fileEntry error', defer));
     }).promise();
-  };
+  }
   
   function getFileSystem(options) {
     options = options || {};
     return $.Deferred(function(defer) {
       window.requestFileSystem(options.type || TEMP, options.size || 0, defer.resolve, defer.reject);    
     }).promise();
-  };
+  }
   
   function getFileEntry(filePath, options) {
     return $.Deferred(function(defer) {
@@ -104,7 +104,7 @@ define('fileSystem', ['globals', 'utils'], function(G, U) {
         fileSystem.root.getFile(filePath, options || {create: false}, defer.resolve, getErrorFunc('fileEntry error', defer));
       }).fail(getErrorFunc('requestFileSystem error', defer));
     }).promise();
-  };
+  }
 
   function getDir(fileSystem, path, options) {
     var self = this; 
@@ -115,7 +115,7 @@ define('fileSystem', ['globals', 'utils'], function(G, U) {
         defer.reject(e);
       });
     }).promise();
-  };
+  }
   
   function getErrorFunc(level, dfd1) {
     return function(e, dfd2) {

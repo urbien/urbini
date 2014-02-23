@@ -42,35 +42,6 @@ $.extend({
       });
     }).promise();
   }
-//,
-//  
-//  LazyDeferred: (function() {
-//    var dfd = $.Deferred();
-//    
-//    function LazyDeferred(init) {
-//      if (!(this instanceof LazyDeferred))
-//        return new LazyDeferred(init);
-//      
-//      this._started = false;
-//      this.start = function() {
-//        this._started = true;
-//        init.call(dfd, dfd);
-//        return this.promise();
-//      };
-//      
-//      this.isRunning = function() {
-//        return this._started;
-//      };
-//    };
-//      
-//    for (var fn in dfd) {
-//      if (typeof dfd[fn] == 'function') {
-//        LazyDeferred.prototype[fn] = dfd[fn].bind(dfd);
-//      }
-//    }
-//    
-//    return LazyDeferred;
-//  })()
 });
 
 define('globals', function() {
@@ -126,7 +97,7 @@ define('globals', function() {
                           browser.ms ? 'ms' : '';
     
     return browser;
-  };
+  }
   
   function hasLocalStorage() {
     var supported = false;
@@ -135,7 +106,7 @@ define('globals', function() {
     } catch(e) {}
     
     return supported;
-  };
+  }
   
   function saveBootInfo() {
     var ls = G.localStorage,
@@ -162,7 +133,7 @@ define('globals', function() {
     ls.put('VERSION', JSON.stringify(Lablz.VERSION));
     delete Lablz.VERSION;
     ls.put('Globals', JSON.stringify(Lablz));
-  };
+  }
 
   function addModule(text) {
   //  console.log("evaling/injecting", text.slice(text.lastIndexOf('# sourceURL')));
@@ -239,7 +210,7 @@ define('globals', function() {
           break;
       }      
     }).promise();
-  };
+  }
 
   var orgLoad = require.load;
   require.load = function(name) {
@@ -313,19 +284,35 @@ define('globals', function() {
   
   function getDomain() {
     return G.serverName.match(/([^\.\/]+\.com)/)[0];
-  };
+  }
   
   function testCSS(prop) {
     return prop in doc.documentElement.style;
-  }
+  };
     
   function getSpinnerId(name) {
     return 'loading-spinner-holder-' + (name || '').replace(/[\.\ ]/g, '-');
-  }
+  };
+
+  function getFilePathInStorage(url) {
+    url = isFilePathKey(url) ? url : 'file:' + url;
+    if (G.minify && !/\.min$/.test(url))
+      url += ".min";
+    
+    return url;
+  };
+
+  function isFilePathKey(str) {
+    return /^file:/.test(str); 
+  };
+
+  function isFilePathMetadataKey(str) {
+    return /^file:metadata:/.test(str); 
+  };
 
   function getMetadataURL(url) {
-    return 'metadata:' + url;
-  }
+    return 'metadata:' + getFilePathInStorage(url);
+  };
 
   function putCached(keyToData, options) {
     options = options || {};
@@ -335,6 +322,9 @@ define('globals', function() {
         keyPath = storeInfo.options.keyPath;        
     
     if (storage === 'localStorage') {
+      if (!G.prunedLocalStorage)
+        G.pruneLocalStorage();
+      
       for (var key in keyToData) {
         var val = keyToData[key];
         if (typeof val == 'object')
@@ -349,6 +339,9 @@ define('globals', function() {
       if (G.dbType === 'none')
         return REJECTED_PROMISE;
             
+      if (!G.prunedIndexedDB)
+        G.pruneIndexedDB();
+      
       var stuff = [];
       for (var key in keyToData) {
         var stuffInfo = {
@@ -371,8 +364,7 @@ define('globals', function() {
         devVoc = G.DEV_PACKAGE_PATH.replace('/', '\/'),
         regex = devVoc + appPath + '\/[^\/]*$',
         commonTypes = G.commonTypes, 
-        defaultVocPath = G.defaultVocPath,
-        css = G.crossBrowser.css;
+        defaultVocPath = G.defaultVocPath;
     
     G.serverNameHttp = G.serverName.replace(/^[a-zA-Z]+:\/\//, 'http://');
     $.extend(G, {
@@ -380,6 +372,7 @@ define('globals', function() {
       sqlUrl: G.serverNameHttp + '/' + G.sqlUri,
       modelsUrl: G.serverName + '/backboneModel',
       storeFilesInFileSystem: G.hasBlobs && G.hasFileSystem && G.browser.chrome,
+      useInlineWorkers: G.hasBlobs && G.hasWebWorkers,
       apiUrl: G.serverName + '/api/v1/',
       timeOffset: G.localTime - G.serverTime,
       firefoxManifestPath: G.serverName + '/wf/' + G.currentApp.attachmentsUrl + '/firefoxManifest.webapp',
@@ -394,34 +387,6 @@ define('globals', function() {
     for (var type in commonTypes) {
       commonTypes[type] = defaultVocPath + commonTypes[type];
     }  
-
-//    css.transform = (function() {
-      var prefix, stylePropertyPrefix, transformLookup, docEl = document.documentElement;
-      if (document.createElement('div').style.transform !== undefined) {
-//        prefix = '';
-        stylePropertyPrefix = '';
-        transformLookup = 'transform';
-      } else if (browser.opera) {
-//        prefix = '-o-';
-        stylePropertyPrefix = 'O';
-        transformLookup = 'OTransform';
-      } else if (docEl.style.MozTransform !== undefined) {
-//        prefix = '-moz-';
-        stylePropertyPrefix = 'Moz';
-        transformLookup = 'MozTransform';
-      } else if (docEl.style.webkitTransform !== undefined) {
-//        prefix = '-webkit-';
-        stylePropertyPrefix = 'webkit';
-        transformLookup = '-webkit-transform';
-      } else if (typeof navigator.cpuClass === 'string') {
-//        prefix = '-ms-';
-        stylePropertyPrefix = 'ms';
-        transformLookup = '-ms-transform';
-      }
-      
-      css.prefix = browser.prefix ? '-' + browser.prefix + '-' : '';
-      css.stylePropertyPrefix = stylePropertyPrefix;
-      css.transformLookup = transformLookup;
   };
   
   function adjustForVendor() {
@@ -508,7 +473,7 @@ define('globals', function() {
     G.log(G.TAG, 'webview', 'inWebview:', G.inWebview);
     G.log(G.TAG, 'ffIframe', 'inFFIframe:', G.inFirefoxOS);
   //    ALL_IN_APPCACHE = G.inFirefoxOS;
-  };
+  }
   
   function determineMinificationMode() {
     // Determine whether we want the server to minify stuff
@@ -534,7 +499,7 @@ define('globals', function() {
     }
 
     G.minify = minified === 'y' ? true : minified === 'n' ? false : G.minifyByDefault;
-  };
+  }
 
   function setupLocalStorage() {
     if (!hasLocalStorage)
@@ -554,14 +519,7 @@ define('globals', function() {
   
         value = Object.prototype.toString.call(value) === '[object String]' ? value : JSON.stringify(value);
         try {
-  //        G.localStorage.del(key);
-          if (window.fastdom) {
-            window.fastdom.nonDom(function() {              
-              localStorage.setItem(key, value);
-            });
-          }
-          else
-            localStorage.setItem(key, value);
+          localStorage.setItem(key, value);
         } catch(e) {
           debugger;
           if (['QuotaExceededError', 'QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
@@ -665,7 +623,7 @@ define('globals', function() {
     
     G.localStorage.putAsync = G.localStorage.put.async(100);
     G.localStorage.cleanAsync = G.localStorage.clean.async(100);
-  };
+  }
 
   function setupWidgetLibrary() {
     var widgets = G._widgetsLib = [],
@@ -729,7 +687,7 @@ define('globals', function() {
     }
     else
       loadRegular();
-  };
+  }
   
   function getCSS(/* bundles */) {
     var css = [];
@@ -783,7 +741,7 @@ define('globals', function() {
         extrasBundle._deferred.resolve();
       });
     });    
-  };
+  }
   
   var Bundler = {
     pruneUnneededModules: function() {
@@ -866,7 +824,7 @@ define('globals', function() {
         source = 'indexedDB';
       
       if (!modules.length)
-        return $.Deferred().resolve(modules).promise;
+        return $.Deferred().resolve(modules).promise();
       
       var minify = G.minify,
           def = G.minifyByDefault;
@@ -895,7 +853,7 @@ define('globals', function() {
             }
 
             if (!fetch) {
-              return G.getCached(url, source).then(function(text) {                
+              return G.getCached(getFilePathInStorage(url), source).then(function(text) {                
                 G.modules[url] = text;
               }).fail(function() {
                 pruned.push(url);
@@ -921,7 +879,7 @@ define('globals', function() {
       
       return prunePromise;
     },
-
+    
 //    _queuedToLoad: [],
 //    queueLoadBundle: function(/* module names */) {
 //      var self = this;
@@ -964,8 +922,8 @@ define('globals', function() {
           }
         }
         
-        var newModules = {};
         if (resp && !resp.error && resp.modules) {
+          var newModules = {};
           var modules = resp.modules;
           for (var i = 0; i < modules.length; i++) {
             var m = modules[i];
@@ -974,29 +932,19 @@ define('globals', function() {
             var minIdx = name.indexOf('.min.js');
             name = minIdx == -1 ? name : name.slice(0, minIdx) + '.js';
             G.modules[name] = m.body;
-            newModules[name] = m;
-//              break;
-//            }
-//            newModules.push(m);
-          }
-        }
-      
-        setTimeout(function() {
-          for (var name in newModules) {
-            var m = newModules[name];
+            newModules[getFilePathInStorage(name)] = m.body;
             newModules[getMetadataURL(name)] = {
               dateModified: m.dateModified,
               minified: G.isMinified(name, m.body)
             };
-            
-            newModules[name] = m.body; // yes, overwrite
           }
           
-          G.putCached(newModules, {
-            storage: source
-          });
-          
-        }, 100);
+          setTimeout(function() {
+            G.putCached(newModules, {
+              storage: source
+            });          
+          }, 100);
+        }
         
         bundleDfd.resolve();
       };
@@ -1070,6 +1018,11 @@ define('globals', function() {
     ON: true,
     DEFAULT: {on: true},
     types : {
+      info: {
+        on: false,
+        color: '#FFFFFF',
+        bg: '#000'      
+      },
       error: {
         on: true,
         color: '#FF0000',
@@ -1106,7 +1059,7 @@ define('globals', function() {
         bg: '#000'
       },
       db: {
-        on: false,
+        on: true,
         color: '#FFFFFF',
         bg: '#000'
       },
@@ -1116,7 +1069,7 @@ define('globals', function() {
         bg: '#DDD'
       },
       events: {
-        on: false,
+        on: true,
         color: '#baFF00',
         bg: '#555'
       },
@@ -1136,6 +1089,7 @@ define('globals', function() {
   var requireConfig = {
     paths: {
       '@widgets': 'widgetsLibAdapter',
+      physics: 'physicsBridge',
       hammer: 'lib/hammer',
       mobiscroll: 'lib/mobiscroll-datetime-min',
       simplewebrtc: 'lib/simplewebrtc',
@@ -1230,7 +1184,7 @@ define('globals', function() {
   }, false);
 
   $.extend(G, {
-    _widgetLibrary: G.currentApp.widgetLibrary || 'JQuery Mobile',
+    _widgetLibrary: G.currentApp.widgetLibrary || 'topcoat',
     isJQM: function() {
       return G.getWidgetLibrary().toLowerCase() == 'jquery mobile';
     },
@@ -1270,11 +1224,12 @@ define('globals', function() {
     putCached: function(urlToData, options) {
       var args = arguments;
       return G.onAppStart(function() {
-        return G.whenNotRendering(function() {
+//        return G.whenNotRendering(function() {
           putCached.apply(null, args);
-        });
+//        });
       });
     },
+    
     getCached: function(url, source, storeName) {
       if (source === 'localStorage') {
         return $.Deferred(function(defer) {        
@@ -1295,6 +1250,78 @@ define('globals', function() {
         });
       }
     },
+    
+    pruneLocalStorage: function() {
+      G.prunedLocalStorage = true;
+      var except = [],
+          remove = [],
+          bundle,
+          url,
+          i,
+          key;
+      
+      for (var bName in bundles) {
+        bundle = bundles[bName];
+        if (bName == 'pre' || bName == 'post' || bName == 'widgetsFramework' || bName == 'appcache') { // TODO: this preference should be set in one spot, not all over the place
+          i = bundle.length;
+          while (i--) {
+            url = G.getCanonicalPath(require.toUrl(bundle[i].name));
+            except.push(getFilePathInStorage(url));
+            except.push(getMetadataURL(url));
+          }
+        }
+      }
+      
+      for (var key in localStorage) {
+        if ((isFilePathKey(key) || isFilePathMetadataKey(key)) && except.indexOf(key) == -1) {
+          remove.push(key); // just in case removing while looping affects the loop order
+        }
+      }
+      
+      i = remove.length;
+      while (i--) {
+        key = remove[i];
+        G.log("localStorage", "removing item: " + key);
+        localStorage.removeItem(key);
+      }
+    },
+
+    pruneIndexedDB: function(except) {
+      G.prunedIndexedDB = true;
+      var idb = G.IDB.getIDB(),
+          except = [],
+          remove = [],
+          key,
+          bundle,
+          url,
+          i;
+      
+      for (var bName in bundles) {
+        bundle = bundles[bName];
+        if (bName != 'pre' && bName != 'post') {
+          i = bundle.length;
+          while (i--) {
+            url = G.getCanonicalPath(require.toUrl(bundle[i].name));
+            except.push(getFilePathInStorage(url));
+            except.push(getMetadataURL(url));
+          }          
+        }
+      }
+
+      idb.getAllKeys('modules').then(function(keys) {
+        i = keys ? keys.length : 0;
+        while (i--) {
+          key = keys[i];
+          if ((isFilePathKey(key) || isFilePathMetadataKey(key)) && except.indexOf(key) == -1) {
+            remove.push(key); // just in case removing while looping affects the loop order
+          }
+        }
+        
+        if (remove.length)
+          idb['delete']('modules', remove);
+      });
+    },
+
     dbType: (function() {
 //      if (browser.chrome) // testing how things work without indexeddb
 //        return 'shim';
@@ -1712,44 +1739,6 @@ define('globals', function() {
       head.appendChild(style);
     },
     
-//    removeHoverStyles: function() {
-//      function hasHover(selector) {
-//        return /:hover|-hover-/.test(selector);
-//      };
-//      
-//      function addCSSRule(sheet, selector, rules, index) {
-//        if (sheet.insertRule) {
-//          sheet.insertRule(selector + "{" + rules + "}", index);
-//        }
-//        else {
-//          sheet.addRule(selector, rules, index);
-//        }
-//      };
-//      
-//      $.each(document.styleSheets, function(i, sheet) {
-//        $.each(sheet.rules, function(i, rule) {
-//          var selector = rule.selectorText,
-//              css = rule.cssText;
-//          
-//          if (hasHover(selector)) {
-//            while (/,/.test(selector) && hasHover(selector)) {
-//              selector = selector.replace(/(,?)[^,]+(:hover|-hover-)[^,]*(,?)/g, "$1$3").replace(/,+/g, ',');
-//            }
-//
-//            if (selector.startsWith(','))
-//              selector = selector.slice(1);
-//            if (selector.endsWith(','))
-//              selector = selector.slice(0, selector.length - 1);
-//
-//            sheet.deleteRule(i);
-//            if (selector && selector != rule.selectorText) {
-//              addCSSRule(sheet, selector, css, i);
-//            }
-//          } 
-//        });
-//      });
-//    },
-    
     getCanonicalPath: function(path, separator) {
       separator = separator || '/';
       var parts = path.split(separator);
@@ -1765,7 +1754,10 @@ define('globals', function() {
     },
 
 //    mainWorkerName: 'main',
+    maxXhrWorkers: 3,
+    numXhrWorkers: 0,
     workers: [],
+    workerDeferreds: [],
 //    isWorkerAvailable: function(worker) {
 //      return !worker.__lablzTaken;
 //    },
@@ -1797,27 +1789,51 @@ define('globals', function() {
 //        }
 //      }).promise();
 //    },
+    
+    loadWorker: function(relUrl) {
+      var worker;
+      if (G.useInlineWorkers) {
+        var blob = new Blob([G.modules[relUrl]], { type: "text/javascript" });
+        worker = new Worker(window.URL.createObjectURL(blob));
+      }
+      else {
+        var xw = G.files[relUrl.slice(relUrl.lastIndexOf('/') + 1)];
+        worker = new Worker(G.serverName + '/js/' + (xw.fullName || xw.name));
+      }
+      
+      return worker;
+    },
+    
     getXhrWorker: function() {
       return $.Deferred(function(dfd) {
         var worker;
         if (G.workers.length)
           worker = G.workers.shift();
         else {
-          var xw = G.files['xhrWorker.js'];
-          worker = new Worker(G.serverName + '/js/' + (xw.fullName || xw.name));
+          if (G.numXhrWorkers == G.maxXhrWorkers) {
+            G.workerDeferreds.push(dfd);
+            return;
+          }
+          else {
+            G.numXhrWorkers++;
+            worker = G.loadWorker('js/xhrWorker.js');
+          }
         }
         
         dfd.resolve(worker);
       }).promise();
     },
-    
+
     /**
      * when you're done with a worker, let it go with this method so that others can use it
      */
     recycleXhrWorker: function(worker) {
       worker.onerror = null;
       worker.onmessage = null;
-      G.workers.push(worker);
+      if (G.workerDeferreds.length)
+        G.workerDeferreds.pop().resolve(worker);
+      else
+        G.workers.push(worker);
 //      worker.__lablzTaken = false;
 //      var q = G.workerQueues[worker._taskType];
 //      if (q && q.length)
@@ -1873,45 +1889,55 @@ define('globals', function() {
         message: 'Please log in'
       }
     },
-    crossBrowser: {
-      css: {}
-    },
     _clickDisabled: false,
     enableClick: function() {
-      this.log('events', 'CLICK MONITOR', 'ENABLED CLICK');
-      this._clickDisabled = false;
+      if (this._clickDisabled) {
+        this.log('Globals', 'events', 'ENABLED CLICK');
+        this._clickDisabled = false;
+      }
     },
     disableClick: function() {
-      this.log('events', 'CLICK MONITOR', 'DISABLED CLICK');
-      this._clickDisabled = true;
+      if (!this._clickDisabled) {
+        this.log('Globals', 'events', 'DISABLED CLICK');
+        this._clickDisabled = true;
+      }
     },
     canClick: function() {
       return !this._clickDisabled;
     },
-    lazifyImages: true,
+    lazifyImages: false,
+//    tween: false,
     isModuleNeeded: function(name) {
       if (~G.skipModules.indexOf(name))
         return false;
       
       switch (name) {
+//      case 'lib/physicsjs-custom.js':
+//        return false;
+//      case 'lib/jquery.masonry.js':
+//        return false;
       case '../templates_topcoat.jsp':
         return G.isTopcoat();
       case '../templates_bb.jsp':
         return G.isBB();
       case '../templates_bootstrap.jsp':
         return G.isBootstrap();
-      case 'lib/IndexedDBShim':
+      case 'lib/IndexedDBShim.js':
         return G.dbType == 'shim';
-      case 'lib/whammy':
+      case 'lib/whammy.js':
         return browser.chrome;
-      case 'chrome':
+      case 'chrome.js':
         return G.inWebview;
-      case 'firefox':
+      case 'firefox.js':
         return G.hasFFApps;
+//      case 'lib/tween.js':
+//        return G.tween;
       default:
         return true;
       }
-    }
+    },
+    
+    viewport: { width: null, height: null }
   });
 
   if (G.globalCss) {

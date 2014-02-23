@@ -2,10 +2,47 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
   var doc = document,
       LAZY_DATA_ATTR = G.lazyImgSrcAttr,
       LAZY_ATTR = LAZY_DATA_ATTR.slice(5),
+      MAX_OPACITY = 0.999999,
       isFF = G.browser.firefox,
       vendorPrefixes = ['-moz-', '-ms-', '-o-', '-webkit-'],
       ArrayProto = Array.prototype,
-      resizeTimeout;
+      resizeTimeout,
+      DOM,
+      cssPrefix = {
+//        read: {},
+//        write: {}
+      },
+      renderQueue = [],
+      tmpdiv = document.createElement("div"),
+      OPAQUE_STYLE = {
+        style: {
+          add: {
+            opacity: MAX_OPACITY
+          }
+        }
+      },
+      TRANSPARENT_STYLE = {
+        style: {
+          add: {
+            opacity: 0
+          }
+        }
+      },
+      SHOW_STYLE = {
+        style: {
+          add: {
+            visibility: 'visible'
+          }
+        }
+      },
+      HIDE_STYLE = {
+        style: {
+          add: {
+            visibility: 'hidden'
+          }
+        }
+      },
+      isMoz = G.browser.mozilla;
 
   window.addEventListener('resize', function(e) {
     clearTimeout(resizeTimeout);
@@ -16,12 +53,31 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     console.log("debounced resize event");
   });
 
+  function toTitleCase(str) {
+    return str.replace(/(?:^|\s|-)\w/g, function(match) {
+        return match.toUpperCase();
+    }).replace(/-/, ''); 
+  };
+
   function fireResizeEvent() {
-    if (saveViewportSize()) {
+    var v = G.viewport,
+        heightChanged = window.innerHeight !== v.height,
+        widthChanged = window.innerWidth !== v.width;
+    
+    if (heightChanged || widthChanged) {
+      saveViewportSize();
       window.dispatchEvent(new Event('debouncedresize'));
       window.dispatchEvent(new Event('viewportdimensions'));
+      if (heightChanged)
+        window.dispatchEvent(new Event('viewportheightchanged'));
+      if (widthChanged)
+        window.dispatchEvent(new Event('viewportwidthchanged'));
     }
-  };
+//    if (saveViewportSize()) {
+//      window.dispatchEvent(new Event('debouncedresize'));
+//      window.dispatchEvent(new Event('viewportdimensions'));
+//    }
+  }
   
   window.addEventListener('orientationchange', function() {
     clearTimeout(resizeTimeout);
@@ -35,46 +91,49 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
   function fireOrientationchangeEvent() {
     window.dispatchEvent(new Event('debouncedorientationchange'));
     window.dispatchEvent(new Event('viewportdimensions'));
-  };
+  }
 
   function saveViewportSize() {
-    var viewport = G.viewport,
-        width = window.innerWidth,
-        height = window.innerHeight,
-        oldWidth = 0,
-        oldHeight = 0,
-        changed = false;
-    
-    if (viewport) {
-      oldWidth = viewport.width;
-      oldHeight = viewport.height;
-    }
-    else
-      viewport = G.viewport = {};
-    
-    if (oldWidth !== width) {
-      viewport.width = width;
-      changed = true;
-    }
-    if (oldHeight !== height) {
-      viewport.height = height;
-      changed = true;
-    }
-
-    if (changed)
-      console.log("Viewport size changed from " + oldWidth + 'x' + oldHeight + ', to ' + width + 'x' + height);
-
-    return changed;
+    var viewport = G.viewport;
+    viewport.width = window.innerWidth;
+    viewport.height = window.innerHeight;
+//    var viewport = G.viewport,
+//        width = window.innerWidth,
+//        height = window.innerHeight,
+//        oldWidth = 0,
+//        oldHeight = 0,
+//        changed = false;
+//    
+//    if (viewport) {
+//      oldWidth = viewport.width;
+//      oldHeight = viewport.height;
+//    }
+//    else
+//      viewport = G.viewport = {};
+//    
+//    if (oldWidth !== width) {
+//      viewport.width = width;
+//      changed = true;
+//    }
+//    if (oldHeight !== height) {
+//      viewport.height = height;
+//      changed = true;
+//    }
+//
+//    if (changed)
+//      console.log("Viewport size changed from " + oldWidth + 'x' + oldHeight + ', to ' + width + 'x' + height);
+//
+//    return changed;
 //    Events.trigger('viewportResize', viewport);
-  };
+  }
 
   function $wrap(el) {
     return el instanceof $ ? el : $(el);
-  };
+  }
 
   function $unwrap(el) {
     return el instanceof $ ? el[0] : el;
-  };
+  }
 
   saveViewportSize();  
 //  window.addEventListener('orientationchange', saveViewportSize); 
@@ -84,7 +143,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     return els instanceof Array ||
            els instanceof NodeList || 
            els instanceof HTMLCollection ? els : els && [els];
-  };
+  }
 
   function newNodeList() {
     var frag = document.createDocumentFragment();
@@ -136,8 +195,11 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           var arg0 = arguments[0];
           if (typeof arg0 == 'string')
             return this.style[arg0];
-          else
-            _.extend(this.style, arg0);
+          else {
+            for (var prop in arg0) {
+              this.style[DOM.prefix(prop)] = arg0[prop];
+            }
+          }
           
           break;
         case 2:
@@ -145,7 +207,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           break;
         default:
           throw "invalid arguments to style method of Node";
-        };
+        }
         
         return this;
       },
@@ -175,12 +237,24 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           break;
         default:
           throw "invalid arguments to style method of Node";
-        };
+        }
         
         return this;
       },
+
+      $onremove: function(fn) {
+        if (!this._removeListeners)
+          this._removeListeners = [];
+        
+        this._removeListeners.push(fn);
+      },
       
       $remove: function() {
+        if (this._removeListeners) {
+          this._removeListeners.forEach(function(fn) { fn() });
+          delete this._removeListeners;
+        }
+          
         if (this.parentNode)
           this.parentNode.removeChild(this);
         
@@ -188,13 +262,17 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       },
   
       $hide: function() {
+        this.dataset._style_display = this.style.display;
         this.style.display = 'none';
         return this;
       },
       
       $show: function() {
-        if (this.style.display)
-          this.style.display = "";
+        if (this.style.display) {
+          var display = this.dataset._style_display || "";
+          delete this.dataset._style_display;
+          this.style.display = display;
+        }
         
         return this;
       },
@@ -224,16 +302,12 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       },
       
       $html: function(htmlOrFrag) {
-        if (typeof htmlOrFrag == 'string')
+        if (typeof htmlOrFrag == 'string') {
           this.innerHTML = htmlOrFrag;
-        else if (htmlOrFrag instanceof DocumentFragment) {
-          this.innerHTML = "";
-          this.appendChild(htmlOrFrag);
+          return this;
         }
-        else
-          throw "only HTML string or DocumentFragment are supported";
         
-        return this;
+        return this.$empty().$append(htmlOrFrag);        
       }
     },
         
@@ -244,7 +318,14 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     
     var NodeAug = {
       $: function(selector) {
-        return this.nodeType == 1 ? this.querySelectorAll(selector) : newNodeList();
+        switch (this.nodeType) {
+        case 1:
+        case 9:
+        case 11:
+          return this.querySelectorAll(selector);
+        default:
+          return newNodeList();
+        }
       },
     
       $offset: function() {
@@ -318,13 +399,18 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
         var i = arguments.length;
         while (i--) {
           var htmlOrFrag = arguments[i];
+          if (htmlOrFrag instanceof Array || htmlOrFrag instanceof NodeList) {
+            this.$prepend.apply(this, htmlOrFrag);
+            continue;
+          }
+          
           if (!this.firstChild) {
             this.$append(htmlOrFrag);
             continue;
           }
           
           if (typeof htmlOrFrag == 'string')
-            htmlOrFrag = $.parseHTML(htmlOrFrag);
+            htmlOrFrag = DOM.parseHTML(htmlOrFrag);
           
           (htmlOrFrag instanceof Array) ? htmlOrFrag[0].$before(this.firstChild) : htmlOrFrag.$before(this.firstChild);
 //           htmlOrFrag.$before(this.firstChild);
@@ -336,10 +422,17 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       $append: function(/* htmlOrFrag, htmlOrFrag, ... */) {
         for (var i = 0; i < arguments.length; i++) {
           var htmlOrFrag = arguments[i];
-          if (typeof htmlOrFrag == 'string')
-            this.innerHTML += htmlOrFrag;
-          else if (htmlOrFrag instanceof DocumentFragment)
+          if (typeof htmlOrFrag == 'string') {
+            this.$append(DOM.parseHTML(htmlOrFrag));
+            continue;
+          }
+          else if (htmlOrFrag instanceof Node)
             this.appendChild(htmlOrFrag);
+          else if (htmlOrFrag instanceof Array || htmlOrFrag instanceof NodeList || htmlOrFrag instanceof HTMLCollection) {
+            for (var j = 0; j < htmlOrFrag.length; j++) {
+              this.appendChild(htmlOrFrag[j]);
+            }
+          }
           else
             throw "only HTML string or DocumentFragment are supported";
         }
@@ -370,6 +463,63 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
             setTimeout(fader, time -= timeInterval);
           }
         })();
+        
+        return this;
+      },
+
+      $padding: function() {
+        var style = window.getComputedStyle(this);
+        return {
+          top: parseFloat(style.paddingTop),
+          left: parseFloat(style.paddingLeft),
+          bottom: parseFloat(style.paddingBottom),
+          right: parseFloat(style.paddingRight)
+        }
+      },
+
+      $margin: function() {
+        var style = window.getComputedStyle(this);
+        return {
+          top: parseFloat(style.marginTop || 0),
+          left: parseFloat(style.marginLeft || 0),
+          bottom: parseFloat(style.marginBottom || 0),
+          right: parseFloat(style.marginRight || 0)
+        }
+      },
+      
+      $outerHeight: function(includeMargin) {
+        if (!includeMargin)
+          return this.offsetHeight;
+        else {
+          var margin = this.$margin();
+          return this.offsetHeight + margin.top + margin.bottom;
+        }
+      },
+      
+      $outerWidth: function(includeMargin) {
+        if (!includeMargin)
+          return this.offsetWidth;
+        else {
+          var margin = this.$margin();
+          return this.offsetWidth + margin.left + margin.right;
+        }
+      },
+      
+      $data: function(/* key, val or properties object */) {
+        var arg0 = arguments[0];
+        if (arguments.length == 2) {
+          this.dataset[arg0] = arguments[1];
+        }
+        else {
+          if (typeof arg0 == 'string')
+            return this.dataset[arg0];
+          else {
+            for (var key in arg0) {
+              if (arg0.hasOwnProperty(key))
+                this.dataset[key] = arg0[key];
+            }
+          }
+        }
         
         return this;
       }
@@ -421,7 +571,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           return this;
         }
       }
-    };
+    }
     
     _.defaults(nodeProto, NodeAug, NodeAndNodeListAug);
   
@@ -434,7 +584,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     }
   })(window, document);
 
-  return {    
+  DOM = {
     getBezierCoordinate: function(p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y, percentComplete) {
       percentComplete = Math.max(0, Math.min(percentComplete, 1));
       var percent = 1 - percentComplete;
@@ -480,44 +630,33 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       //return the y value.
       return bezier[1];
     },
-    getNewIdentityMatrix: function(n) {
-      n = n || 4;
-      var rows = new Array(n);
-      for (var i = 0; i < n; i++) {
-        rows[i] = new Array(n);
-        for (var j = 0; j < n; j++) {
-          rows[i][j] = +(i==j);
-        }
-      }
-      
-      return rows;
+    getNewIdentityTransform: function(n) {
+      return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
     },
 
+    identityTransformString: function() {
+      return 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)';
+    },
+    
     parseTransform: function(transformStr) {
-      if (transformStr == 'none')
-        return this.getNewIdentityMatrix(4);
+      if (!transformStr || transformStr == 'none')
+        return this.getNewIdentityTransform();
       
       var split = transformStr.slice(transformStr.indexOf('(') + 1).split(', '),
           xIdx = split.length == 6 ? 4 : 12,
           yIdx = xIdx + 1; 
 
-      split = _.map(split, parseFloat.bind(window));
+      split = split.map(parseFloat.bind(window));
       if (split.length == 6) {
         return [
-          [split[0], split[2], 0, 0],
-          [split[2], split[3], 0, 0],
-          [0,        0,        1, 0],
-          [split[4], split[5], 0, 1]
+          split[0], split[2], 0, 0,
+          split[2], split[3], 0, 0,
+          0,        0,        1, 0,
+          split[4], split[5], 0, 1
         ];
       }
-      else {
-        return [
-          split.slice(0, 4),
-          split.slice(4, 8),
-          split.slice(8, 12),
-          split.slice(12)
-        ];
-      }
+      else
+        return split;
     },
 
     getTranslationString: function(position) {
@@ -533,7 +672,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
         z = arguments[2];
       }
       
-      return 'translate(' + (x || 0) + 'px, ' + (y || 0) + 'px) translateZ(' + (z || 0) + 'px)' + (isFF ? ' rotate(0.01deg)' : '');
+      return 'translate3d(' + (x || 0) + 'px, ' + (y || 0) + 'px, ' + (z || 0) + 'px)'; //+ (isFF ? ' rotate(0.01deg)' : '');
     },
     
     _zeroTranslation: {
@@ -550,11 +689,13 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       if (!transformStr || transformStr == 'none')
         return _.clone(this._zeroTranslation);
       
-      if (/matrix/.test(transformStr)) {
+      var match = transformStr.match(/^matrix/);
+      if (match) {
         var matrix = this.parseTransform(transformStr);
         return {
-          X: matrix[3][0],
-          Y: matrix[3][1]
+          X: matrix[12],
+          Y: matrix[13],
+          Z: matrix[14]
         }
       }
       
@@ -569,53 +710,55 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           Z: parseFloat(xyz[2] || 9, 10)
         }
       }
-      
-      throw "can't parse transform";
+      else {
+        return {
+          X: 0,
+          Y: 0,
+          Z: 0
+        }
+      }
+
+//      throw "can't parse transform";
     },
     
     getStylePropertyValue: function(computedStyle, prop) {
-      var value,
-          vendorSpecific = G.crossBrowser.css;
-      
-      if (vendorSpecific) {
-        value = computedStyle.getPropertyValue(vendorSpecific.prefix + prop);
-        if (value === undefined)
-          value = computedStyle.getPropertyValue(prop);
-      }
-      else {
-        for (var i = 0; i < vendorPrefixes.length; i++) {
-          value = computedStyle.getPropertyValue(vendorPrefixes[i] + prop);
-          if (value && value !== 'none')
-            break;
-        }
-      }
-      
-      return value || 'none';
+      return computedStyle.getPropertyValue(this.prefix(prop));
     },
+
+    setTransform: function(el, transform, transition) {
+      var transformProp = this.prefix('transform');
+      if (typeof transform == 'string')
+        el.style[transformProp] = transform;
+      else
+        el.style[transformProp] = this.toMatrix3DString(transform);
       
+      if (arguments.length == 3)
+        el.style[this.prefix('transition')] = transition || '';
+    },
+    
+    toMatrix3DString: function(transform) {
+      var transformStr = 'matrix3d(';
+      for (var i = 0; i < 16; i++) {
+        transformStr += transform[i].toFixed(10);
+        if (i != 15)
+          transformStr += ", ";
+      }
+      
+      return transformStr + ")";
+    },
+
     setStylePropertyValues: function(style, propMap) {
       for (var prop in propMap) {
-        var value = propMap[prop],
-            vendorSpecific = G.crossBrowser.css;
-        
-        style[prop] = value;
-        if (vendorSpecific) {
-          style[vendorSpecific.prefix + prop] = value;
-        }
-        else {
-          for (var i = 0; i < vendorPrefixes.length; i++) {
-            style[vendorPrefixes[i] + prop] = value;
-          }
-        }
+        style[this.prefix(prop)] = propMap[prop];
       }
     },
 
     getTranslation: function(el) {
-      return this.parseTranslation(this.getStylePropertyValue(window.getComputedStyle(el), 'transform'));
+      return this.parseTranslation(el.style[this.prefix('transform')]);
     },
 
     getTransform: function(el) {
-      return this.parseTransform(this.getStylePropertyValue(window.getComputedStyle(el), 'transform'));
+      return this.parseTransform(el.style[this.prefix('transform')]);
     },
     
     empty: function(els) {
@@ -800,19 +943,25 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
 //        img.$on('load', callback);
     },
     
-    lazifyImages: function(/* images */) {
+    lazifyImage: function(img, immediately) {
       if (!G.lazifyImages)
-        return;
+        return img;
       
-      var images = arguments,
-          infos = [],
+      return this.lazifyImages([img], immediately)[0];
+    },
+    
+    lazifyImages: function(images, immediately) {
+      if (!G.lazifyImages)
+        return images;
+      
+      var infos = [],
           lazyImgAttr = G.lazyImgSrcAttr,
           blankImg = G.getBlankImgSrc(),
           img,
           src,
           realSrc,
           isHTMLElement = images[0] instanceof HTMLElement,
-          get = isHTMLElement ? function(el, attr) { return el.getAttribute(attr) } : _.index;
+          get = isHTMLElement ? function(el, attr) { return el.getAttribute(attr) || el.style[attr] } : _.index;
       
       function read() {
         for (var i = 0, num = images.length; i < num; i++) {
@@ -832,7 +981,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
             });  
           }
         }
-      };
+      }
 
       function write() {
         for (var i = images.length - 1; i >= 0; i--) { // MUST be backwards loop, as this may be a NodeList and thus may be automatically updated by the browser when we add/remove a class
@@ -865,9 +1014,9 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           
           img.src = blankImg;
         }
-      };
+      }
       
-      if (isHTMLElement) {
+      if (isHTMLElement && !immediately) {
         Q.read(read);
         Q.write(write);
       }
@@ -894,6 +1043,218 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
         $wrap(p).popup('close');
       else
         $unwrap(p).$remove();
-    }
+    },
+    
+    getCachedWidth: function(el) {
+      var width = el.dataset.width;
+      if (width)
+        return parseInt(width);
+    },
+
+    getCachedHeight: function(el) {
+      var height = el.dataset.height;
+      if (height)
+        return parseInt(height);
+    },
+
+//    positionToMatrix3D: function(x, y, z) {
+//      return [
+//        [1, 0, 0, 0],
+//        [0, 1, 0, 0],
+//        [0, 0, 1, 0],
+//        [x || 0, y || 0, z || 0, 1]
+//      ];
+//    },
+//    
+//    positionToMatrix3DString: function(x, y, z) {
+//      return 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, ' + (x || 0) + ', ' + (y || 0) + ', ' + (z || 0) + ', 1)';
+//    },
+   
+    prefix: function(prop) {
+      if (cssPrefix[prop]){
+        return cssPrefix[prop];
+      }
+
+      var arrayOfPrefixes = ['Webkit', 'Moz', 'Ms', 'O'],
+          TitleCase = toTitleCase(prop),
+          titleCase = TitleCase.slice(0, 1).toLowerCase() + TitleCase.slice(1),
+          name;
+
+      if (isMoz) {
+        switch (prop) {
+        case 'transform':
+        case 'perspective':
+        case 'transform-origin':
+        case 'transition':
+          return cssPrefix[prop] = prop;
+        default:
+          // handle as usual
+          break;
+        }
+      }
+      
+      for (var i = 0, l = arrayOfPrefixes.length; i < l; ++i) {
+        name = arrayOfPrefixes[i] + TitleCase;
+
+        if (name in tmpdiv.style){
+          return cssPrefix[prop] = name;
+        }
+      }
+
+      if (titleCase in tmpdiv.style){
+        return cssPrefix[prop] = titleCase;
+      }
+
+      G.log("DOMUtils", "error", "no such css property: " + prop);
+      return false;
+    },
+
+    /**
+     * @param renderData - e.g. {
+     *    innerHTML: <blah>...</blah>
+     *    style: {
+     *      add: {
+     *        width: '100px'
+     *      },
+     *      remove: ['height']
+     *    }, 
+     *    attributes: {
+     *      add: {
+     *        'data-blah': 12
+     *      },
+     *      remove: ['stupid']
+     *    }, 
+     *    class: {
+     *      add: ['hey', 'ho'],
+     *      remove: ['yo', 'booya'],
+     *      set: 'yo there'
+     *    }
+     * }
+     */
+    queueRender: function(el, renderData) {
+      renderQueue[renderQueue.length] = arguments;
+      if (renderQueue.length == 1) // no need to queue processing multiple times
+        Q.write(this.processRenderQueue, this);
+    },
+
+    processRenderQueue: function() {
+      var i = renderQueue.length,
+          item;
+          
+      while (i--) {
+        item = renderQueue[i];
+        this.render(item[0] /* el */, item[1] /* renderData */);  // see queueRender method
+      }
+      
+      renderQueue.length = 0;
+    },
+    
+    blankRenderData: function() {
+      return { 
+        style: {}, 
+        attributes: {}, 
+        'class': {}
+      };
+    },
+    
+    _renderCallbacks: [],
+    onNextRender: function(callback) {
+      this._renderCallbacks.push(callback);
+    },
+    
+    /**
+     * changes an element's styles, attributes, classes (see queueRender method signature for parameter definitions)
+     */
+    render: function(el, renderData) {
+      var html = renderData.innerHTML,
+          style = renderData.style, 
+          attrs = renderData.attributes, 
+          classes = renderData['class'], 
+          add, remove, replace,
+          i = this._renderCallbacks.length;
+      
+      if (i) {
+        while (i--) {
+          this._renderCallbacks[i]();
+        }
+        
+        this._renderCallbacks.length = 0;
+      }
+      
+      if (html)
+        el.innerHTML = html;
+      
+      if (style) {
+        if ((add = style.add))
+          el.$css(add);
+        if ((remove = style.remove)) {
+          i = remove.length;
+          while (i--) {
+            el.style.removeProperty(remove[i]);
+          }
+        }
+      }
+      
+      if (attrs) {
+        if ((add = attrs.add))
+          el.$attr(add);
+        if ((remove = attrs.remove)) {
+          i = remove.length;
+          while (i--) {
+            el.removeAttribute(remove[i]);
+          }
+        }
+      }
+
+      if (classes) {
+        if ((add = classes.add)) {
+          if (typeof add == 'string')
+            el.$addClass(add);
+          else
+            el.$addClass.apply(el, add);
+        }
+
+        if ((remove = classes.remove)) {
+          if (typeof remove == 'string')
+            el.$removeClass(remove);
+          else
+            el.$removeClass.apply(el, remove);
+        }
+        
+        if ((replace = classes['set']) !== undefined) {
+          if (replace instanceof Array)
+            replace = replace.join(' ');
+          
+          el.setAttribute('class', replace);
+        }
+      }
+    },
+
+    maxOpacity: MAX_OPACITY,
+    
+    parseHTML: function(html) {
+//      return $.parseHTML(html.trim());
+      var tmp = document.implementation.createHTMLDocument();
+      tmp.body.innerHTML = html;
+      return tmp.body.children;
+    },
+    
+    /**
+     * Replaces all of a's child nodes with b's
+     */
+    replaceChildNodes: function(a, b) {
+      a.$empty();
+      var nodes = b.childNodes;
+      for (var i = 0, l = nodes.length; i < l; i++) {
+        a.appendChild(nodes[i]);
+      }
+    },
+    
+    transparentStyle: TRANSPARENT_STYLE,
+    opaqueStyle: OPAQUE_STYLE,
+    hideStyle: HIDE_STYLE,
+    showStyle: SHOW_STYLE
   };
+  
+  return DOM;
 });

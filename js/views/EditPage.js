@@ -17,6 +17,7 @@ define('views/EditPage', [
   var editParams = ['action', 'viewId'];
   return BasicPageView.extend({
     autoFinish: false,
+    className: 'scrollable',
     initialize: function(options) {
       _.bindAll(this, 'render', 'edit', 'home', 'set', 'resetForm');
       BasicPageView.prototype.initialize.apply(this, arguments);
@@ -110,6 +111,9 @@ define('views/EditPage', [
     },
 
     render: function(options) {
+      if (!this.rendered) 
+        this.addToWorld(null, true);
+      
       var self = this;
       this.getFetchPromise().done(function() {
         self.renderHelper(options);
@@ -124,15 +128,12 @@ define('views/EditPage', [
         '#headerDiv'       : this.header
       };
       
-      if (this.imageView)
-        views['div#resourceImage'] = this.imageView;
+//      if (this.imageView)
+//        views['div#resourceImage'] = this.imageView;
 
       this.assign(views);      
-
-      if (!this.el.parentNode) 
-        document.body.appendChild(this.el);
-      if (G.theme.backgroundImage) 
-        this.$('#resourceEditView').$css('background-image', 'url(' + G.theme.backgroundImage +')');
+//      if (G.theme.backgroundImage) 
+//        this.$('#resourceEditView').$css('background-image', 'url(' + G.theme.backgroundImage +')');
 
       // Comments inline
       var isComment = U.isAssignableFrom(this.vocModel, U.getLongUri1("model/portal/Comment"));

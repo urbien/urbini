@@ -3,16 +3,21 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
       connectedDfd = $.Deferred(),
       connectedPromise = connectedDfd.promise(),
       inIFrame = G.inFirefoxOS;
-
+  
   if (G.appWindow || (G.hasFFApps && !G.inFirefoxOS))
     connectedDfd.resolve();
 
+  
   function log() {
     var args = [].slice.call(arguments);
     args.unshift('Firefox', 'app comm');
     G.log.apply(G, args);
     U.rpc.apply(null, ['log'].concat(args));
   }
+  
+  console.log = function() {
+    U.rpc.apply(U, ['log'].concat(args));
+  };
   
   connectedPromise.done(function() {
     log("2. CONNECTED TO APP!");
@@ -36,7 +41,7 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
     delete data.type;
     args.unshift('messageFromApp:' + type);
     Events.trigger.apply(Events, args);
-  };
+  }
 
   function onpush(message) {
     debugger;
@@ -72,7 +77,7 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
 //        console.log('push message notification closed');
 //      }
 //    });
-  };
+  }
   
   /**
    * @param eventName the event to listen to and upon receiving which to call the "callback" 
@@ -93,7 +98,7 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
     });
     
     return eventName;
-  };
+  }
   
   function setPaths(obj) {
     for (var pkgName in obj) {
@@ -108,7 +113,7 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
           break;
       }
     }
-  };
+  }
   
   function sendMessageToApp(msg) {
     connectedPromise.done(function() {
@@ -118,7 +123,7 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
       else
         console.debug("can't send message to app, don't know app's window and/or origin");
     });
-  };
+  }
 
   function makeReq(obj, path, success, error) {
     if (inIFrame) {
@@ -135,7 +140,7 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
       
       return req;
     }
-  };
+  }
   
   function setupPush() {
     Voc.getModels(G.commonTypes.PushEndpoint).then(_setupPush);
@@ -199,7 +204,7 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
     firefox.setMessageHandler('activity', function(aReq) {
       debugger;
     });
-  };
+  }
   
   function setup() {
     setupPush();

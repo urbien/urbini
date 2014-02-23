@@ -7,13 +7,15 @@ define('views/ControlPanel', [
   'views/BasicView',
   'vocManager',
   'collections/ResourceList',
-  'cache'
-], function(G, _, Events, U, BasicView, Voc, ResourceList, C) {
+  'cache',
+  'lib/fastdom',
+  'physicsBridge'
+], function(G, _, Events, U, BasicView, Voc, ResourceList, C, Q, Physics) {
   return BasicView.extend({
     tagName: "tr",
     autoFinish: false,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'refresh', 'add', 'update'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'refresh', 'add', 'update', 'insertInlineScroller', 'removeInlineScroller', 'toggleInlineScroller'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
@@ -25,13 +27,17 @@ define('views/ControlPanel', [
       this.makeTemplate('cpTemplateNoAdd', 'cpTemplateNoAdd', type);
       this.listenTo(this.resource, 'change', this.refresh);
       this.isMainGroup = options.isMainGroup;
-      this.dontStyle = this.isMainGroup && options.dontStyle
+      this.dontStyle = this.isMainGroup && options.dontStyle;
+      this._backlinkInfo = {};
 //      this.resource.on('inlineList', this.setInlineList, this);
   //    Globals.Events.on('refresh', this.refresh);
       return this;
     },
     events: {
-      'click a[data-shortName]': 'add'
+      'click a[data-shortName]': 'add',
+//      'pinchout li[data-propname]': 'insertInlineScroller',
+//      'pinchin li[data-propname]': 'removeInlineScroller',
+      'hold li[data-propname]': 'toggleInlineScroller'
 //        ,
 //      'click': 'click'
     },
@@ -74,7 +80,7 @@ define('views/ControlPanel', [
       if (t.tagName != 'A')
         return;
       
-      e.preventDefault();
+      Events.stopEvent(e);
       if ($(t).parents('.__dragged__').length)
         return;
       
@@ -165,6 +171,122 @@ define('views/ControlPanel', [
 //        G.log(self.TAG, 'add', 'user wants to add to backlink');
       });
     },
+
+    toggleInlineScroller: function(e) {
+      var pName = e.currentTarget.dataset.propname;
+      var li = e.currentTarget,
+          pName = li.dataset.propname,
+          info = this._backlinkInfo[pName];
+      
+      if (info && info.scroller)
+        this.removeInlineScroller(e);
+      else
+        this.insertInlineScroller(e);
+    },
+    
+    removeInlineScroller: function(e) {
+      e.gesture.preventDefault();
+      e.gesture.stopPropagation();
+      e.gesture.stopDetect();
+      e.stopPropagation();
+      
+      var self = this,
+          li = e.currentTarget,
+          pName = li.dataset.propname,
+          info = this._backlinkInfo[pName];
+      
+      if (info.scroller) {
+        info.scroller.mason.destroy(true, function() {
+          info.scroller.mason = null;
+          info.scroller.destroy(true); // don't remove element
+          li.$empty();
+          for (var i = 0; i < info.originalContent.length; i++) {
+            li.appendChild(info.originalContent[i]);
+          }
+          
+          self.removeChild(info.scroller);
+          info.scroller = null;
+          info.originalContent = null;
+        });
+      }
+    },
+
+    insertInlineScroller: function(e) {
+      e.gesture.preventDefault();
+      e.gesture.stopPropagation();
+      e.gesture.stopDetect();
+      e.stopPropagation();
+      var li = e.currentTarget,
+          pName = li.dataset.propname,
+          info = this._backlinkInfo[pName];
+      
+      if (!info || !info.scroller) {
+        // TODO - check count, if 0, don't bother or throw up an error message
+        if (!info)
+          this._backlinkInfo[pName] = {};
+            
+        this._insertInlineScroller(li, pName);
+      }
+    },
+    
+    _insertInlineScroller: function(li, pName) {
+      var self = this,
+          prop = this.vocModel.properties[pName],
+          modelPromise = Voc.getModels(prop.range),
+          viewPromise = U.require('views/HorizontalListView'),
+          listDfd = $.Deferred(),
+          params = {},
+          list,
+          info = this._backlinkInfo[pName];
+      
+      function fail() {
+        // TODO: tell user
+      };
+      
+      params[prop.backLink] = this.resource.getUri();
+      
+      modelPromise.done(function(blModel) {
+        if (!U.isA(blModel, 'ImageResource'))
+          return fail();
+        
+        list = new ResourceList(null, {
+          model: blModel,
+          params: params
+        });
+        
+        list.fetch({
+          success: listDfd.resolve,
+          error: listDfd.reject
+        });
+      }).fail(fail);
+      
+      $.when(viewPromise, listDfd.promise()).done(function(HorizontalListView) {
+        if (!list.length)
+          return fail();
+
+        var headerId = pName + '-gal-header',
+            galleryId = pName + '-gal';
+        
+        info.originalContent = li.childNodes.$slice();
+        li.innerHTML = _.template("<div id=\"{{= headerId }}\" style=\"top: -3px;\" data-role=\"footer\" data-theme=\"{{= G.theme.photogrid }}\" class=\"thumb-gal-header\"><h3>{{= title }}</h3></div>" +
+        		                      "<div id=\"{{= galleryId }}\" data-inset=\"true\" data-filter=\"false\" class=\"thumb-gal\"></div>")({
+          G: G,
+          headerId: headerId,
+          galleryId: galleryId,
+          title: U.getPropDisplayName(prop)
+        });
+        
+
+        info.scroller = new HorizontalListView({
+          el: li.$('#' + galleryId)[0],
+          model: list, 
+          parentView: self
+        });
+        
+        info.scroller.render();
+        self.addChild(info.scroller);
+      }).fail(fail);
+    },
     
     refresh: function(res, options) {
       options = options || {};
@@ -193,7 +315,18 @@ define('views/ControlPanel', [
 //    },
 
     render: function(options) {
-      return this.getFetchPromise().done(this.renderHelper.bind(this, options));
+      var invisible = false;
+      if (!this.resource.isLoaded()) {
+        this.toggleVisibility(true);
+        invisible = true;
+      }
+      
+      var self = this;
+      return this.getFetchPromise().done(function() {
+        self.renderHelper(options);
+        if (invisible)
+          self.toggleVisibility();
+      });
     },
     
     renderHelper: function(options) {
@@ -204,7 +337,8 @@ define('views/ControlPanel', [
       if (!meta)
         return this;
       
-      var json = res.toJSON();
+      var json = this.getBaseTemplateData(); //res.toJSON();
+      var atts = res.attributes;
       var frag = document.createDocumentFragment();
   
       var mainGroup = U.getArrayOfPropertiesWith(meta, "mainGroup");
@@ -425,7 +559,8 @@ define('views/ControlPanel', [
               }
             }
 
-            var action = iRes.vocModel.adapter || U.isAssignableFrom(iRes.vocModel, 'Intersection') ? 'view' : 'edit';
+//            var action = iRes.vocModel.adapter || U.isAssignableFrom(iRes.vocModel, 'Intersection') ? 'view' : 'edit';
+            var action = (U.isAssignableFrom(iRes.vocModel, 'WebProperty')) ? 'edit' : 'view';
             params._uri = U.makePageUrl(action, iRes.getUri(), {title: params.name});
             params.resource = iRes;
             U.addToFrag(frag, this.inlineListItemTemplate(params));
@@ -437,6 +572,7 @@ define('views/ControlPanel', [
       }
       
       if (propGroups.length) {
+        var tmpl_data = {};
         for (var i = 0; i < propGroups.length; i++) {
           var grMeta = propGroups[i];
           if (!this.isMainGroup  &&  grMeta.mainGroup)
@@ -473,8 +609,9 @@ define('views/ControlPanel', [
             
             var doShow = false;
             var cnt;
-            var pValue = json[p];
+            var pValue = this.resource.get(p); //json[p];
             if (!_.has(json, p)) { 
+              var count = pValue ? pValue.count : 0;
               cnt = count > 0 ? count : 0;
               
               if (cnt != 0 || isPropEditable)
@@ -510,22 +647,35 @@ define('views/ControlPanel', [
               }
               else
                 icon = prop['icon'];
-              var common = {range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, borderColor: borderColor[colorIdx], color: color[colorIdx], chat: isChat};
+              
+              tmpl_data.icon = null;
+              tmpl_data.range = range;
+              tmpl_data.backlink = prop.backLink;
+              tmpl_data.shortName = p;
+              tmpl_data.name = n;
+              tmpl_data.value = cnt;
+              tmpl_data._uri = uri;
+              tmpl_data.title = t;
+              tmpl_data.comment = prop.comment;
+              tmpl_data.borderColor = borderColor[colorIdx];
+              tmpl_data.color = color[colorIdx];
+              tmpl_data.chat = isChat;
+//              var common = {range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, borderColor: borderColor[colorIdx], color: color[colorIdx], chat: isChat};
               colorIdx++;
               if (this.isMainGroup) {
 //                if (!icon)
 //                  icon = 'ui-icon-star-empty';
-                
+                tmpl_data.icon = icon;
                 if (isHorizontal)
-                  U.addToFrag(frag, this.cpMainGroupTemplateH(_.extend({icon: icon}, common)));
+                  U.addToFrag(frag, this.cpMainGroupTemplateH(tmpl_data));
                 else
-                  U.addToFrag(frag, this.cpMainGroupTemplate(_.extend({icon: icon}, common)));
+                  U.addToFrag(frag, this.cpMainGroupTemplate(tmpl_data));
               }
               else {
                 if (isPropEditable)
-                  U.addToFrag(frag, this.cpTemplate(common));
+                  U.addToFrag(frag, this.cpTemplate(tmpl_data));
                 else
-                  U.addToFrag(frag, this.cpTemplateNoAdd(common));                
+                  U.addToFrag(frag, this.cpTemplateNoAdd(tmpl_data));                
               }
 //              if (isPropEditable)
 //                U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: res.getUri()}));
@@ -537,8 +687,10 @@ define('views/ControlPanel', [
       }
       if (!this.isMainGroup) {
         groupNameDisplayed = false;
-        var tmpl_data;
+        var tmpl_data = {};
+        var cnt = 0;        
         for (var p in meta) {
+          cnt++;
           if (!/^[a-zA-Z]/.test(p))
             continue;
           
@@ -559,14 +711,22 @@ define('views/ControlPanel', [
             if (!pMeta  ||  !pMeta.backLink || json[pp]) 
               continue;
             count = json[p];
-            p = pp;
+//            p = pp;
             prop = pMeta;
-            tmpl_data = _.extend(json, {p: {count: count}});
+            json[pp] = {count: count};
           }
           if (count == -1) {
-            if (!prop  ||  (!_.has(json, p)  &&  typeof prop.readOnly != 'undefined')) {
-  //            delete json[p];
+            if (!prop)
               continue;
+            if (!_.has(atts, p)) {
+              if (typeof prop.readOnly != 'undefined') {
+    //            delete json[p];
+                continue;
+              }
+            }
+            else {
+              if (prop.range.indexOf('/voc/dev/') == -1)
+                continue;
             }
           }
                 
@@ -577,8 +737,8 @@ define('views/ControlPanel', [
           var doShow = false;
           var n = U.getPropDisplayName(prop);
           var cnt;
-          var pValue = json[p];
-          if (!_.has(json,p)) {
+          var pValue = atts[p];
+          if (!_.has(atts, p)) {
             cnt = count > 0 ? count : 0;
             if (cnt != 0 || isPropEditable)
               doShow = true;
@@ -601,17 +761,23 @@ define('views/ControlPanel', [
   //          var uri = U.getShortUri(res.getUri(), vocModel); 
             var uri = res.getUri();
             var t = title + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + n;
-            var comment = prop.comment;
-            var common = {range: range, shortName: p, backlink: prop.backLink, value: cnt, _uri: uri, title: t, comment: comment, name: n};
+            tmpl_data.range = range;
+            tmpl_data.shortName = p;
+            tmpl_data.backlink = prop.backLink;
+            tmpl_data.value = cnt;
+            tmpl_data._uri = uri;
+            tmpl_data.title = t;
+            tmpl_data.comment = prop.comment;
+            tmpl_data.name = n;
+//            var common = {range: range, shortName: p, backlink: prop.backLink, value: cnt, _uri: uri, title: t, comment: comment, name: n};
             if (isPropEditable)
-              U.addToFrag(frag, this.cpTemplate(common));
+              U.addToFrag(frag, this.cpTemplate(tmpl_data));
             else
-              U.addToFrag(frag, this.cpTemplateNoAdd(common));            
+              U.addToFrag(frag, this.cpTemplateNoAdd(tmpl_data));            
           }
         }
       }
       
-      this.el.$html(frag);
 //      if (this.hashParams.$tour) {
 //        var s = this.$el.find(this.hashParams.$tourS + '=' + this.hashParams.$tourV);
 //        s.css('class', 'hint--left');
@@ -633,7 +799,30 @@ define('views/ControlPanel', [
 //          this.$el.listview('refresh');
       }
 
-      this.finish();
+      Q.write(function() {
+        this.el.$html(frag);
+//        this.addToWorld(null, false);
+//        this.addToWorld({
+//          slidingWindow: true
+//        }, false);
+        this.finish();
+//        Q.read(function() {
+//          var self = this,
+//              id;
+//          
+//          this.propBricks = this.$('[data-propname],header').$map(function(el) {
+//            id = el.dataset.propname || el.innerText;
+//            Physics.here.addBody(el, id);
+//            return self.buildBrick({
+//              _id: id,
+//              el: el
+//            });            
+//          });
+//          
+//          this.addBricksToWorld(this.propBricks);
+//        }, this);
+      }, this);
+      
       return this;
     }
   }, {

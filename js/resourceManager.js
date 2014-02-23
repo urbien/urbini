@@ -18,7 +18,7 @@ define('resourceManager', [
       
   function getSynchronizer(method, data, options) {
     return U.isModel(data) ? new ResourceSynchronizer(method, data, options) : new CollectionSynchronizer(method, data, options);
-  };
+  }
 
   var Blob = window.Blob,
       FileSystem,
@@ -37,6 +37,7 @@ define('resourceManager', [
       MAX_DATA_AGE = G.MAX_DATA_AGE,
       IDB = IndexedDBModule.getIDB(G.serverName, {
         defaultStoreOptions: {keyPath: '_uri', autoIncrement: false},
+//        defaultStoreOptions: {keyPath: '_defaultIndex', autoIncrement: true},
         defaultIndexOptions: {unique: false, multiEntry: false},
         filePropertyName: G.storeFilesInFileSystem ? '_filePath' : null,
         fileTypePropertyName: G.storeFilesInFileSystem ? '_contentType' : null
@@ -47,7 +48,7 @@ define('resourceManager', [
 
   function isStale(timestamp, now) {
     return !timestamp || (now || G.currentServerTime()) - timestamp > MAX_DATA_AGE;
-  };
+  }
   
   Backbone.defaultSync = Backbone.sync;
   Backbone.sync = function(method, data, options) {
@@ -316,9 +317,9 @@ define('resourceManager', [
   
   Events.on('updatedResources', function(resources) {
     if (resources.length) {
-      G.whenNotRendering(function() {
+//      G.whenNotRendering(function() {
         Q.nonDom(RM.addItems.bind(RM, resources));
-      });
+//      });
     }
   });
 
@@ -413,7 +414,7 @@ define('resourceManager', [
     });    
     
     return typeToInfos;
-  };
+  }
   
   /**
    * @param resources - map of propName to info objects: {

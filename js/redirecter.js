@@ -13,7 +13,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       connectionType = G.commonTypes.Connection;
   
   function Redirecter() {
-  };
+  }
   
   _.extend(Redirecter.prototype, {    
     _forType: {}, // for redirecting after edit/mkresource
@@ -231,7 +231,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     }
     
     return info;
-  };
+  }
 
   Redirecter.prototype._default = function(res, options) {
     Events.trigger('back', function ifNoHistory() {
@@ -334,7 +334,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   Redirecter.prototype._forType[interfaceImplementorType] = function(res, options) {
     var iClName = U.getValueDisplayName(res, 'interfaceClass'),
         title = iClName ? U.makeHeaderTitle(iClName, 'Properties') : 'Interface properties',
-        fragment = U.makeMobileUrl('list', webPropType, {
+        fragment = U.makeMobileUrl('list', G.commonTypes.WebProperty, {
           domain: res.get('implementor'), 
           $title: title
         });
@@ -349,6 +349,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       case 'Link':
       case 'Collection':
         Events.trigger('navigate', U.makeMobileUrl('edit', res), options);
+        break;
       default: 
         Events.trigger('navigate', U.makeMobileUrl('view', res.get('domain')), options);
     }
@@ -511,7 +512,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       this._multivalueChooser(res, prop, e, options);
       return;
     }
-    
+    var self = this;  
     redirected = _.any(_.keys(this._chooserForType), function(type) {
       if (U.isAssignableFrom(vocModel, type))
         return self._chooserForType[type](res, options) !== false;
@@ -682,7 +683,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
                 totalEditable = grouped.length + ungrouped.length;
     
     return totalEditable ? Array.prototype.concat.apply([], _.pluck(grouped, 'props')).concat(ungrouped) : null;
-  };
+  }
     
   // FAST FORWARD 'MAKE' FOR TYPES
 //  Redirecter.prototype._ffwdMakeForType[G.commonTypes.AppInstall] = function(res) {

@@ -182,11 +182,6 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
   };
 
   FastDom.prototype.scheduleFrame = function() {
-    if (this.pending) { // sanity check, to make sure we're not running the queue in two callbacks
-      debugger;
-      return;
-    }
-    
     this.pending = true;
     var task = FrameWatch.subscribe(function() {
       FrameWatch.unsubscribe(task._taskId);
@@ -212,8 +207,8 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
   };
 
   FastDom.prototype.isOutOfTime = function() {
-//    return false;
-    return (this._frameTime = _.last(this.timestamps) - this.frameStart) >= FRAME_END;
+    return false;
+//    return (this._frameTime = _.last(this.timestamps) - this.frameStart) >= FRAME_END;
   };
   
   /**
@@ -406,12 +401,12 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
     return total;
   };
   
-  FastDom.prototype.whenIdle = function(type, fn, ctx, args, options) {
-    if (BYPASS || this.queueLength() == 0)
-      this[type](fn, ctx, args, options);
-    else
-      this.defer(5, 'nonDom', this.whenIdle.bind(this, type, fn, ctx, args, options));
-  };
+//  FastDom.prototype.whenIdle = function(type, fn, ctx, args, options) {
+//    if (BYPASS || this.queueLength() == 0)
+//      this[type](fn, ctx, args, options);
+//    else
+//      this.defer(5, 'nonDom', this.whenIdle.bind(this, type, fn, ctx, args, options));
+//  };
   
   /**
    * Called when a callback errors.
@@ -434,15 +429,15 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
     // Clear reference to the job
     delete this.jobs[job.id];
 
-    if (G.DEBUG)
+//    if (G.DEBUG)
       return this._run(job);
     
-    try { 
-      return this._run(job);
-    } catch(e) {
-      debugger;
-      this.onError(e);
-    }
+//    try { 
+//      return this._run(job);
+//    } catch(e) {
+//      debugger;
+//      this.onError(e);
+//    }
   };
 
   FastDom.prototype._run = function(job) {

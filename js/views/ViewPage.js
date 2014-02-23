@@ -7,10 +7,12 @@ define('views/ViewPage', [
   'views/Header',
   'views/ResourceView',
   'views/ControlPanel',
-  'lib/fastdom'
-], function(G, U, Events, BasicPageView, Header, ResourceView, ControlPanel, Q) {
+  'lib/fastdom',
+  'physicsBridge'
+], function(G, U, Events, BasicPageView, Header, ResourceView, ControlPanel, Q, Physics) {
   return BasicPageView.extend({
     clicked: false,
+    className: 'scrollable',
     initialize: function(options) {
       _.bindAll(this, 'render', 'home', 'edit', 'pageChange');
       BasicPageView.prototype.initialize.apply(this, arguments);
@@ -21,6 +23,9 @@ define('views/ViewPage', [
 //      this.$el.on('page_show', function() {
 //        setTimeout(self.pageChange, 1000);
 //      });
+      
+      if (options.style)
+        _.extend(this.style, options.style);
       
       this.makeTemplate('resource', 'template', this.vocModel.type);
       this.viewId = options.viewId;
@@ -37,7 +42,7 @@ define('views/ViewPage', [
       var params = _.getParamMap(window.location.hash);
       var isApp = this.isApp = U.isAssignableFrom(res, commonTypes.App);
       var isAbout = this.isAbout = (isApp  &&  !!params['$about']  &&  !!res.get('description')) || !!params['$fs'];
-      var commonParams = {
+      var commonParams = this.commonChildViewParams = {
         model: res,
         parentView: this,
         isAbout: isAbout
@@ -54,10 +59,10 @@ define('views/ViewPage', [
         if (res.isA('Intersection')) {
           var aFeatured = U.getCloneOf(this.vocModel, 'Intersection.aFeatured')[0];
           var bFeatured = U.getCloneOf(this.vocModel, 'Intersection.bFeatured')[0];
-          if ((aFeatured  &&  res.get(aFeatured))  || (bFeatured  &&  res.get(bFeatured))) {
-            viewType = 'views/PhotogridView';
-            this.imgDiv = 'div#resourceImageGrid';
-          }
+//          if ((aFeatured  &&  res.get(aFeatured))  || (bFeatured  &&  res.get(bFeatured))) {
+//            viewType = 'views/PhotogridView';
+//            this.imgDiv = 'div#resourceImageGrid';
+//          }
         }
         if (!this.imgDiv) {
           viewType = 'views/ResourceImageView';
@@ -80,6 +85,7 @@ define('views/ViewPage', [
           self.imageView = new viewMod(_.extend({el: this.$(this.imgDiv)[0], arrows: false}, commonParams));
           self.addChild(self.imageView);
           self.imgReadyDfd.resolve();
+//          self._onViewportDimensionsChanged();
   //        renderDfd.done(self.imageView.finalize);
         });
       }
@@ -103,10 +109,11 @@ define('views/ViewPage', [
       }  
       
       this.isPurchasable = res.isOneOf(["ItemListing","Buyable"]);
-      if (this.isPurchasable) { 
-        this.buyGroup = new ResourceView(_.extend({isBuyGroup: true}, commonParams));
-        this.addChild(this.buyGroup);
-      }
+//      if (this.isPurchasable) { 
+//        this.buyGroup = new ResourceView(_.extend({isBuyGroup: true}, commonParams));
+//        this.addChild(this.buyGroup);
+//      }
+      this.isImageCover = U.isA(this.vocModel, 'ImageCover')  &&  U.getCloneOf(this.vocModel, 'ImageCover.coverPhoto');
         
       this.resourceView = new ResourceView(commonParams);
       this.addChild(this.resourceView);
@@ -122,44 +129,49 @@ define('views/ViewPage', [
       var isUrbien = U.isAssignableFrom(res, commonTypes.Urbien);
       var isArtist = U.isAssignableFrom(res, U.getTypeUri('classifieds/movies/Artist')) || res.type.endsWith("/Artist");
       var isMovie = U.isAssignableFrom(res, U.getTypeUri('classifieds/movies/Movie')) || res.type.endsWith("/Movie");
-      if (isApp || isUrbien || isArtist  ||  isMovie) {
+      if (!options.mock && (isApp || isUrbien || isArtist  ||  isMovie)) {
         var uri = res.getUri();
-        var friendType, friendName, title = 'Friends', friend1 = 'friend1', friend2 = 'friend2';
+        var friendType, friendName, title = 'Friends', friendProp; //, friend1 = 'friend1', friend2 = 'friend2';
         if (isApp) {
           friendType = commonTypes.FriendApp;
-          friendName = 'Connection'
+          friendName = 'Connection';
+          friendProp = 'friend1';
         }
         else if (isUrbien) {
           friendType = commonTypes.Friend;
           friendName = 'Friend';
+          friendProp = 'friend1';
         }
         else if (isArtist) {
 //          friendType = 'http://urbien.com/voc/dev/Impress/ArtistImpression';
           friendType = 'http://urbien.com/voc/dev/ImpressBackup/ArtistImpression';
           friendName = 'ArtistImpression';
           title = 'Impressions';
-          friend1 = 'impression';
-          friend2 = 'artist';
+//          friend1 = 'impression';
+//          friend2 = 'artist';
+          friendProp = isArtist ? 'artist' : 'impression';
         }
         else if (isMovie) {
   //        friendType = 'http://urbien.com/voc/dev/Impress/ArtistImpression';
           friendType = 'http://urbien.com/voc/dev/ImpressBackup/MovieImpression';
           friendName = 'MovieImpression';
           title = 'Impressions';
-          friend1 = 'impression';
-          friend2 = 'movie';
+//          friend1 = 'impression';
+//          friend2 = 'movie';
+          friendProp = isMovie ? 'movie' : 'impression';
         }
 
         this.onload(function() {          
           U.require(['collections/ResourceList', 'vocManager', 'views/HorizontalListView'], function(ResourceList, Voc, HorizontalListView) {
-            Voc.getModels(friendType).done(function() {
+            Voc.getModels(friendType).done(function(friendModel) {
               var friendProps = {};
-              friendProps[friend1] = friendProps[friend2] = uri;
+              friendProps[friendProp] = uri; //friendProps[friend2] = uri;
               self.friends = new ResourceList(null, {
-                params: {
-                  $or: U.getQueryString(friendProps, {delimiter: '||'})
-                },
-                model: U.getModel(friendType),
+//                params: {
+//                  $or: U.getQueryString(friendProps, {delimiter: '||'})
+//                },
+                params: friendProps,
+                model: friendModel,
                 title: title //U.getDisplayName(res) + "'s " + U.getPlural(friendName)
               });
               
@@ -190,6 +202,13 @@ define('views/ViewPage', [
       
       this.listenTo(Events, "mapReady", this.showMapButton);
     },
+//    _updateSize: function() {
+//      try {
+//        return this.resourceView._updateSize();
+//      } finally {
+//        _.extend(this, _.pick(this.resourceView, '_outerHeight', '_outerWidth', '_width', '_height', '_bounds'));
+//      }
+//    },
 //    doInlineBacklinks: function(bls) {
 //      var ranges = _.pluck(bls, "range");
 //      this.inlineXBacklinks = [];
@@ -267,22 +286,30 @@ define('views/ViewPage', [
       return this;
     },
 
-    render: function() {
-      var res = this.resource;
-//      var json = res.toJSON();
-      var json = this.getBaseTemplateData();
-//      json.viewId = this.cid;
-      this.html(this.template(json));      
-      var self = this;
+    render: function(options) {
+      options = options || {};
+      if (!this.rendered && !options.mock)
+        this.addToWorld(null, true); // auto-add view page brick
+      
+      var self = this,
+          res = this.resource;
+          viewTag = this.isAbout  &&  this.isApp ? '#about' : '#resourceView',
+          views = {};
+      
+      this.html(this.template(this.getBaseTemplateData()));
+      
       this.photogridPromise.done(function() {        
-        var pHeader = self.$('#photogridHeader')[0];
-        var h3 = pHeader.querySelector('h3');
-        if (h3)
-          h3.innerHTML = self.friends.title;
-        
-        pHeader.classList.remove('hidden');
         self.assign({
           '#photogrid': self.photogrid
+        }, options);
+        
+        self.photogrid.onload(function() {
+          var pHeader = self.$('.thumb-gal-header')[0];
+          var h3 = pHeader.querySelector('h3');
+          if (h3)
+            h3.innerHTML = self.friends.title;
+          
+          pHeader.classList.remove('hidden');
         });
       });
 
@@ -293,61 +320,76 @@ define('views/ViewPage', [
 //        });
 //      });
 
-      var viewTag = this.isAbout  &&  this.isApp ? 'div#about' : 'ul#resourceView';
-      var views = {};
-      views[viewTag] = this.resourceView;
-      if (this.cp)
-        views['ul#cpView'] = this.cp;
-      if (this.cpMain)
-        views['div#mainGroup'] = this.cpMain;
+      if (!options.mock) {
+        views[viewTag] = this.resourceView;
+        if (this.cp)
+          views['#cpView'] = this.cp;
+        if (this.cpMain)
+          views['#mainGroup'] = this.cpMain;
+      }
  
-      if (this.isPurchasable) {
-        var purchasesBLProp; 
-        
-        if (res.isA("ItemListing"))
-          purchasesBLProp = U.getCloneOf(this.vocModel, "ItemListing.ordersPlaced")[0];
-        else if (res.isA("Buyable"))
-          purchasesBLProp = U.getCloneOf(this.vocModel, "Buyable.orderItems")[0];
-        
-        if (purchasesBLProp) {
-          this.isBuyGroup = true;
-          this.purchasesBLProp = purchasesBLProp;
-          views['div#buyGroup'] = this.buyGroup;
-        }
-        else
-          this.isBuyGroup = false;
-
-      }     
 //      var isGeo = this.isGeo();
 //      this.headerButtons.aroundMe = isGeo;
       
       
-      this.assign('#headerDiv', this.header, {buttons: this.headerButtons});
+      this.assign('#headerDiv', this.header, _.extend({buttons: this.headerButtons}, options));
       this.assign(views);
       this.imgReady.done(function() {
-        this.assign(this.imgDiv, this.imageView);
-      }.bind(this));
-      
-      this.onload(Q.write.bind(Q, function() {          
-        if (!this.isAbout) {
-          if (G.currentUser.guest) {
-            this.$('#edit').$hide();
+        self.assign(self.imgDiv, self.imageView, options);
+      });
+
+      if (!options.mock && this.isPurchasable && !this.buyGroup && this.el.querySelector('#buyGroup')) {
+        this.getFetchPromise().done(function() {
+          if (res.get('price') == null)
+            return;
+          
+          var purchasesBLProp; 
+          self.buyGroup = new ResourceView(_.extend({isBuyGroup: true}, self.commonChildViewParams));
+          self.addChild(self.buyGroup);
+          
+          if (res.isA("ItemListing"))
+            purchasesBLProp = U.getCloneOf(self.vocModel, "ItemListing.ordersPlaced")[0];
+          else if (res.isA("Buyable"))
+            purchasesBLProp = U.getCloneOf(self.vocModel, "Buyable.orderItems")[0];
+          
+          if (purchasesBLProp) {
+            self.isBuyGroup = true;
+//            self.purchasesBLProp = purchasesBLProp;
+//            views['div#buyGroup'] = self.buyGroup;
+            self.assign('#buyGroup', self.buyGroup);
           }
-        }       
-        
-        if (!this.el.parentNode) 
-          document.body.appendChild(this.el);
+          else
+            self.isBuyGroup = false;
+        });
+      }     
+
+      if (!this.isAbout) {
+        if (G.currentUser.guest) {
+          this.$('#edit').$hide();
+        }
+      }       
       
-        this.el.dataset.theme = G.theme.swatch;
-        if (G.theme.backgroundImage) 
-          this.$('#resourceViewHolder').$css('background-image', 'url(' + G.theme.backgroundImage +')');
-  
-        this.$('#chatbox').$hide();      
-      }, this));
-//      renderDfd.resolve();
-//      this.restyle();
+//      this.el.dataset.theme = G.theme.swatch;
+//      if (G.theme.backgroundImage) 
+//        this.$('#resourceViewHolder').$css('background-image', 'url(' + G.theme.backgroundImage +')');
+
+      this.$('#chatbox').$hide();
+            
+//      this.onload(function() {
+//        Q.write(function() {
+//          if (!self.el.parentNode) {
+//            document.body.appendChild(self.el);
+//            self.addToWorld(null, true); // auto-add view page brick
+//          }
+//        
+//        });
+//      });
       
       return this;
+    },
+    
+    onLoadedImage: function(callback, context) {
+      return this.imageView ? this.imageView.onload(callback, context) : G.getRejectedPromise();
     }
   }, {
     displayName: 'ViewPage'

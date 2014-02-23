@@ -1,25 +1,25 @@
 {
   pre: [
-	  'lib/underscore.js', 'underscoreMixins.js', 'lib/backbone.js', 'backboneMixins.js', 'taskQueue.js', 'lib/IndexedDBShim.js', 'lib/jquery-indexeddb.js', 'lib/queryIndexedDB.js', 'templates.js', 'cache.js', 'utils.js', 'domUtils.js', 'error.js', 'events.js', 'models/Resource.js', 
+	  'lib/underscore.js', 'underscoreMixins.js', 'lib/backbone.js', 'backboneMixins.js', 'physicsBridge.js', 'taskQueue.js', 'lib/IndexedDBShim.js', 'lib/jquery-indexeddb.js', 'lib/queryIndexedDB.js', 'templates.js', 'cache.js', 'utils.js', 'domUtils.js', 'error.js', 'events.js', 'models/Resource.js', 
 	  'collections/ResourceList.js', 'views/HomePage.js', 'vocManager.js', 'modelLoader.js', 'plugManager.js', 'resourceManager.js', 'indexedDB.js', 'idbQueryBuilder.js', 'synchronizer.js', 'resourceSynchronizer.js', 'collectionSynchronizer.js', 'router.js', 
-	  'app.js', 'appAuth.js', 'apiAdapter.js', 'redirecter.js', 'views/BasicView.js', 'views/BasicPageView.js', 'lib/hammer.js', 'lib/fastdom.js', 'FrameWatch.js', 'views/mixins/LazyImageLoader.js', 'views/mixins/Scrollable.js', 'transitions.js', 'lib/l20n.js', 'widgetsLibAdapter.js',
-	  {path: 'lib/jqm-icon-pack-3.0.0-fa.css', priority: 100}, '../styles/styles.css', '../styles/common-template-m.css',
+	  'app.js', 'appAuth.js', 'apiAdapter.js', 'redirecter.js', 'views/BasicView.js', 'views/BasicPageView.js', 'lib/hammer.js', 'lib/fastdom.js', 'FrameWatch.js', 'views/mixins/LazyImageLoader.js', 'physicsTransitions.js', 'lib/l20n.js', 'widgetsLibAdapter.js',
+	  {path: 'lib/jqm-icon-pack-3.0.0-fa.css', priority: 100}, '../styles/styles.css', '../styles/common-template-m.css', 'xhrWorker.js', 'physicsWorker.js', 
  	  '../templates.jsp'
   ],
   post: [
- 		'views/MessageBar.js', 'tourGuide.js', 'views/ResourceView.js', 'views/ControlPanel.js', 'views/Header.js', 'views/BackButton.js', 'views/MapItButton.js', 'views/AddButton.js', 'views/RightMenuButton.js', 'views/LoginButton.js', 'views/ToggleButton.js', 'views/ResourceImageView.js', 
-	  'views/EditPage.js', 'views/EditView.js', 'views/ResourceListItemView.js', 'views/ResourceListView.js', 'views/MasonryListView.js', 'lib/jquery.masonry.js', 'views/CommentListView.js', 'views/ResourceMasonryItemView.js', 'views/CommentListItemView.js', 'views/ListPage.js', 'views/ViewPage.js', 'views/MenuPanel.js',
-	  'views/RightMenuPanel.js', 'views/PublishButton.js', 'lib/mobiscroll-datetime-min.js', 'mobiscroll-duration.js', 'views/IntersectionListView.js', 'views/IntersectionListItemView.js', 'views/HorizontalListView.js', 'views/HorizontalListItemView.js', 'views/ChatPage.js', 'views/VideoButton.js', 
-	  'views/ToggleButton1.js', 'views/ChatButton.js', 'views/CallInProgressHeader.js', 'chrome.js', 'firefox.js',
-	  '../styles/mobiscroll.datetime.min.css'
+ 		'views/ResourceView.js', 'views/ControlPanel.js', 'views/Header.js', 'views/BackButton.js', 'views/MapItButton.js', 'views/AddButton.js', 'views/RightMenuButton.js', 'views/LoginButton.js', 'views/ToggleButton.js', 'views/ResourceImageView.js', 
+	  'views/ResourceListItemView.js', 'views/ResourceListView.js', 'views/ResourceMasonryItemView.js', 'views/ListPage.js', 'views/ViewPage.js',
+	  'views/ToggleButton1.js', 'chrome.js', 'firefox.js' 
   ],
   extras: [
-		'views/MapView.js', 'lib/leaflet.js', 'lib/leaflet.markercluster.js', 'maps.js', 'lib/codemirror.js', 'lib/codemirrorXMLMode.js', 'lib/codemirrorHTMLMode.js', 'lib/codemirrorJSMode.js', 'lib/codemirrorCSSMode.js', 'views/CameraPopup.js', 'lib/whammy.js',
-		'lib/recorder.js', 'lib/recorderWorker.js', 'lib/socket.io.js', 'lib/simplewebrtc.js', 'fileSystem.js', 'lib/jquery.draggable.js', 'lib/d3.js', 'd3widgets.js', 'views/SocialNetworkPage.js', 'views/StaticPage.js',
-		'../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css', '../styles/leaflet/leaflet.ie.css', '../styles/leaflet/MarkerCluster.Default.ie.css', '../styles/mobiscroll.datetime.min.css', '../styles/codemirror.css'
+		'views/EditPage.js', 'views/EditView.js', 'views/ChatPage.js', 'views/HorizontalListView.js', 'views/HorizontalListItemView.js', 'views/VideoButton.js', 'views/CallInProgressHeader.js', 'lib/mobiscroll-datetime-min.js', 'mobiscroll-duration.js', 
+		'views/IntersectionListView.js', 'views/IntersectionListItemView.js', 'views/MapView.js', 'lib/leaflet.js', 'lib/leaflet.markercluster.js', 'maps.js', 'lib/codemirror.js', 'lib/codemirrorXMLMode.js', 'lib/codemirrorHTMLMode.js', 'lib/codemirrorJSMode.js', 'lib/codemirrorCSSMode.js', 
+		'views/CameraPopup.js', 'lib/whammy.js', 'lib/recorder.js', 'lib/recorderWorker.js', 'lib/socket.io.js', 'lib/simplewebrtc.js', 'fileSystem.js', 'lib/jquery.draggable.js', 'lib/d3.js', 'd3widgets.js', 'views/SocialNetworkPage.js', 'views/StaticPage.js',
+		'views/CommentListView.js', 'views/CommentListItemView.js', 'views/PublishButton.js', 'views/ChatButton.js', 'views/MessageBar.js', 'tourGuide.js', 'views/MenuPanel.js', 'views/MainMenuPanel.js', 'views/ContextMenuPanel.js',
+		'../styles/mobiscroll.datetime.min.css', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css', '../styles/leaflet/leaflet.ie.css', '../styles/leaflet/MarkerCluster.Default.ie.css', '../styles/mobiscroll.datetime.min.css', '../styles/codemirror.css'
   ],
   appcache: [
-  	'xhrWorker.js', 'loader.js', 'simpleRequirePlusJQuery.js', 'bootoffline.js'
+  	'lib/physicsjs-custom.js', 'lib/jquery.masonry.js', 'loader.js', 'simpleRequirePlusJQuery.js', 'bootoffline.js'
   ],
   widgetsFramework: {
     bb: [

@@ -3,6 +3,7 @@ define('underscoreMixins', ['_underscore'], function(_) {
       concat = ArrayProto.concat,
       slice = ArrayProto.slice,
       indexOf = ArrayProto.indexOf,
+      promiseFunctions = ['done', 'fail', 'always', 'state', 'then'],
       __htmlCommentRegex = /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/,
       __htmlCommentRegexGM = /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/gm,
       __jsCommentRegex = /(?:\/\*(?:[\s\S]*?)\*\/)|(?:\/\/(?:.*)$)/,
@@ -65,6 +66,25 @@ define('underscoreMixins', ['_underscore'], function(_) {
   };
   
   _.extend(Array, {
+    copy: function (from, to) {
+      var i = from.length;
+      while (i--) {
+        to[i] = from[i];
+      }
+    },
+    prepend: function(arr, more) {
+      var orgLen = arr.length,
+          addLen = more.length;
+          
+      arr.length = orgLen + addLen;
+      while (orgLen--) {
+        arr[orgLen + addLen] = arr[orgLen];
+      }
+      
+      while (addLen--) {
+        arr[addLen] = more[addLen];
+      }    
+    },
     remove: function(array /* items */) {
       for (var i = 1, len = arguments.length; i < len; i++) {
         var arg = arguments[i];
@@ -205,7 +225,7 @@ define('underscoreMixins', ['_underscore'], function(_) {
           child;
       
       if (lastSep == -1)
-        return obj;
+        return obj[path];
       else {
         try {
           parent = _leaf(obj, path.slice(0, lastSep), separator);
@@ -406,6 +426,31 @@ define('underscoreMixins', ['_underscore'], function(_) {
       }
     },
     
+    proxyPromise: function(proxy, promise) {
+      var i = promiseFunctions.length,
+          fn;
+      
+      while (i--) {
+        fn = promiseFunctions[i];
+        proxy[fn] = promise[fn].bind(promise);
+      }
+    },
+    
+    oppositeAxis: function(axis) {
+      switch (axis) {
+      case 'x':
+        return 'y';
+      case 'X':
+        return 'Y';
+      case 'y':
+        return 'x';
+      case 'Y':
+        return 'X';
+      default:
+        throw "unsupported axis " + axis;
+      }
+    },
+  
     now: window.performance ? window.performance.now.bind(window.performance) : Date.now.bind(Date)
   });
   

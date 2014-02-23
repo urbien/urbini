@@ -14,7 +14,7 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'indexedDB'], funct
   
   function getIDB() {
     return IDB || (IDB = IndexedDBModule.getIDB(G.serverName));
-  };
+  }
   
   function buildOrQuery(orClause, vocModel, indexNames) {
     orClause = orClause.split('||');
@@ -55,7 +55,7 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'indexedDB'], funct
     }
     
     return query;
-  };
+  }
     
   /**
    * @param val value or a combination of operator and value, e.g. ">=7"
@@ -118,7 +118,7 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'indexedDB'], funct
 
     val = U.getTypedValue(vocModel, name, val);
     return Index(name)[op](val); // Index(name)[op].apply(this, op === 'oneof' ? val.split(',') : [val]);
-  };
+  }
   
   function buildQuery(data, filter) {
     if (U.isModel(data))
@@ -139,7 +139,7 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'indexedDB'], funct
     
     if (params) {
       orderBy = params.$orderBy;
-      asc = U.isTrue(params.$asc);
+      asc = !_.has(params, '$asc') || U.isTrue(params.$asc);
     }
     
     if (orderBy) {
@@ -247,7 +247,7 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'indexedDB'], funct
     }
     
     return query;
-  };
+  }
 
   function parseAPIClause(clause, vocModel) {
     var name, opVal, op, val, numArgs = arguments.length;
@@ -316,7 +316,7 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'indexedDB'], funct
       op: op || U.DEFAULT_WHERE_OPERATOR, 
       value: val
     };
-  };
+  }
 
   return {
     buildQuery: buildQuery    

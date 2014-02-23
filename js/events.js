@@ -11,10 +11,12 @@ define('events', [
     stopEvent: function(e) {
       e.preventDefault();
       e.stopImmediatePropagation();
+      if (e.type == 'tap')
+        G.disableClick();
     },
     getEventName: function(event) {
-      if (!G.browser.touch)
-        return event;
+//      if (!G.browser.touch)
+//        return event;
 //      if (event == 'resize')
 //        return 'debouncedresize';
 //      if (event == 'orientationchange')

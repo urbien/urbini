@@ -982,7 +982,7 @@
   // Creating a Backbone.View creates its initial element outside of the DOM,
   // if an existing element is not provided...
   var View = Backbone.View = function(options) {
-    this.cid = _.uniqueId('view');
+    this.cid = this._getCID(options);
     this._configure(options || {});
     this._ensureElement(options);
     this.initialize.apply(this, arguments);
@@ -1008,6 +1008,10 @@
       return this.$el.find(selector);
     },
 
+    _getCID: function(options) {
+      return _.uniqueId('view');
+    },
+    
     // Initialize is an empty function by default. Override it with your own
     // initialization logic.
     initialize: function(){},
@@ -1389,7 +1393,8 @@
       if (this._hasPushState) {
         Backbone.$(window).on('popstate', this.checkUrl);
       } else if (this._wantsHashChange && ('onhashchange' in window) && !oldIE) {
-        Backbone.$(window).on('hashchange', this.checkUrl);
+//        Backbone.$(window).on('hashchange', this.checkUrl);
+        window.addEventListener('hashchange', this.checkUrl);
       } else if (this._wantsHashChange) {
         this._checkUrlInterval = setInterval(this.checkUrl, this.interval);
       }
@@ -1517,6 +1522,58 @@
   // Helpers
   // -------
 
+  function carefulExtend(target /*, source1, source2, ...*/) {
+    var prop,
+        newVal,
+        oldVal,
+        newValType,
+        oldValType;
+    
+    for (var i = 1; i < arguments.length; i++) {
+      source = arguments[i];
+      for (prop in source) {
+        if (prop == '__super__')
+          continue;
+        
+        newVal = source[prop];
+        oldVal = target[prop];
+        oldValType = Object.prototype.toString.call(oldVal);
+        newValType = Object.prototype.toString.call(newVal);
+        if (oldVal != null && newVal != null && oldValType == '[object Object]' && newValType == '[object Object]')
+          target[prop] = _.defaults(newVal, oldVal);
+        else {
+          if (newValType == '[object Object]')
+            target[prop] = _.clone(newVal);
+          else
+            target[prop] = newVal;
+        }
+        
+  //      if (val == null) {
+  //        target = val; // allow override with null
+  //        continue;
+  //      }
+  //
+  //      if (!target.hasOwnProperty(prop)) {
+  //        target[prop] = val;
+  //        continue;
+  //      }
+  //      
+  //      oldValType = Object.prototype.toString.call(val);
+  //      newValType = Object.prototype.toString.call(target[prop]);
+  //      
+  //      if (oldValType !== newValType) {
+  //        target[prop] = val;
+  //        continue;          
+  //      }
+  //
+  //      if (oldValType == '[object Object]')
+  //        _.defaults(val, target[prop]); // use new values with old values as fallbacks
+  //      else
+  //        target[prop] = val;
+      }
+    }
+  };
+  
   // Helper function to correctly set up the prototype chain, for subclasses.
   // Similar to `goog.inherits`, but uses a hash of prototype properties and
   // class properties to be extended.
@@ -1534,7 +1591,8 @@
     }
 
     // Add static properties to the constructor function, if supplied.
-    _.extend(child, parent, staticProps);
+//    _.extend(child, parent, staticProps);
+    carefulExtend(child, parent, staticProps);
 
     // Set the prototype chain to inherit from `parent`, without calling
     // `parent`'s constructor function.
@@ -1544,7 +1602,10 @@
 
     // Add prototype properties (instance properties) to the subclass,
     // if supplied.
-    if (protoProps) _.extend(child.prototype, protoProps);
+    if (protoProps) {
+      carefulExtend(child.prototype, protoProps);
+//    _.extend(child.prototype, protoProps);
+    }
 
     // Set a convenience property in case the parent's prototype is needed
     // later.

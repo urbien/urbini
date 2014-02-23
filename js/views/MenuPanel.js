@@ -4,245 +4,269 @@ define('views/MenuPanel', [
   'utils',
   'events',
   'vocManager',
-  'views/BasicView'
-], function(G, U, Events, Voc, BasicView) {
+  'views/BasicView',
+  'domUtils',
+  'physicsBridge',
+  'lib/fastdom'
+], function(G, U, Events, Voc, BasicView, DOM, Physics, Q) {
   return BasicView.extend({
 //    role: 'data-panel',
 //    id: 'menuPanel',
 //    theme: 'd',
+//    _flySpeed: 3.5,
+//    _acceleration: 0.05,
+    _drag: 0.2,
+    _stiffness: 0.1,
+    _damping: 0.3,
+    style: {
+      opacity: 0,
+      display: 'table',
+      width: '100%',
+      background: 'none',
+      visibility: 'hidden',
+      'transform-origin': '100% 0%'
+    },
+    _hidden: true,
+    _dragAxis: 'y',
+    _scrollAxis: 'y',
+    _scrollbar: true,
+    _draggable: true,
+//    _dragAxis: 'y',
+//    style: (function() {
+//      var style = {};
+//      style[DOM.prefix('transform')] = DOM.positionToMatrix3DString(0, 0, -100);
+//      return style;
+//    })(),
     initialize: function(options) {
-      _.bindAll(this, 'render','click', 'hide');
+      var self = this,
+          type = this.modelType;
+      
+      _.bindAll(this, 'show', 'hide');
       BasicView.prototype.initialize.apply(this, arguments);
-  //    this.resource.on('change', this.render, this);
       this.tagName = options.tagName;
-      var type = this.modelType;
-      this.makeTemplate('menuP', 'template', type);
       this.makeTemplate('menuItemTemplate', 'menuItemTemplate', type);
-      this.makeTemplate('homeMenuItemTemplate', 'homeMenuItemTemplate', type);
       this.makeTemplate('propGroupsDividerTemplate', 'groupHeaderTemplate', type);
-      this.makeTemplate('menuItemNewAlertsTemplate', 'menuItemNewAlertsTemplate', type);
-//      this.makeTemplate('filterTemplate', 'filterTemplate', type);
       this.viewId = options.viewId;
       this.isPanel = true;      
-      this.listenToOnce(Events, 'pageChange', this.destroy);
-    },
-    tabs: {},
-    events: {
-//      'click #edit'      : 'edit',
-//      'click #add': 'add',
-//      'click #delete': 'delete',
-//      'click #subscribe': 'subscribe',
-      'click #logout'    : 'logout',
-      'click #home123'   : 'home',
-      'click #urbien123' : 'home',
-      'click'            : 'click',
-      'click [data-href]': BasicView.clickDataHref
+      
+      this.onload(function() {
+        self.addToWorld(null, true);
+//        Physics.there.rpc(null, 'squeezeAndStretch', [self.getContainerRailBodyId(), self.getContainerBodyId()]);
+//        Physics.there.rpc(null, 'skewWhenMoving', [self.getContainerRailBodyId(), self.getContainerBodyId(), 'x']);
+        self.show();
+      });
+
+//      document.$on('click', function hide(e) {
+////        if (G.canClick())
+//        if (!self.isHidden() && !self._transitioning)
+//          self.hide(e);
+//      }, true);
+//      
+//      this.once('destroy', function() {
+//        document.$off('click', hide);
+//      }, this);
     },
     
     pageEvents: {
-      'page_beforehide': 'hide'
+      'page_beforehide': 'hide',
+      'page_hide': 'destroy',
+      'tap': 'hide'
     },
     
-    hide: function() {
-      if (G.isJQM())
-        this.$el.closest('[data-role="panel"]').panel('close');
-//      else
-//        this.$el.css('visibility', 'visible');
-    },
-    
-//    edit: function(e) {
-//      Events.stopEvent(e);
-//      this.router.navigate(U.makeMobileUrl('edit', this.resource.getUri()), {trigger: true, replace: true});
-//      return this;
+//    windowEvents: {
+//      'viewportdimensions': '_resizePanel'
 //    },
-    logout: function(e) {
-      Events.stopEvent(e);
-//      G.log(this.TAG, "Recording step for tour: selector: #logout");
-      Events.trigger('logout');
-      return;
+    
+    isHidden: function() {
+      return this._hidden;
     },
-    home: function(e) {
-      Events.stopEvent(e);
-      var here = window.location.href;
-      var t = e.target;
-      while (t.tagName.toLowerCase() != 'li') 
-        t = t.parentNode;
-      
-//      G.log(this.TAG, "Recording step for tour: selector = 'id'; value = '" + t.id + "'");
-      if (t.id == 'home123') 
-        window.location.href = here.slice(0, here.indexOf('#'));
-      else 
-        window.location.href = G.serverName + '/app/UrbienApp';
-      
-      return this;
+    
+    _finishTransition: function() {
+      this._transitioning = false;
+      if (this._repositionAfterTransition) {
+        this._repositionAfterTransition = false;
+        this._repositionPanel();
+      }
     },
-    click: function(e) {
-      var t = e.target,
-          $t,
-          hashIdx,
-          href,
-          text = U.removeHTML(t.innerHTML).trim();
-      
-      this.hide();
-      if ((href = this.tabs[text]) != null) {
-        e.originalEvent.preventDefault();
-        Events.trigger('navigate', U.replaceParam(href, '$title', text));
-        return;
-      }
-
-      if (!href)
-        return;
-            
-      debugger; // we should really get rid of this block
-      if (href.indexOf("Alert?") != -1) 
-        G.currentUser.newAlertsCount = 0;
-      
-      Events.stopEvent(e);
-      Events.trigger('navigate', href);
-    },
-//    tap: Events.defaultTapHandler,
-    render:function (eventName) {
-      var menu = document.getElementById(this.viewId);
-      var mi = menu && menu.querySelector('#menuItems');
-      if (mi && G.isJQM()) {
-//        $('#' + this.viewId).panel().panel("open");
-        $(menu).panel("open");
-        return;
-      }
-      var self = this;
-      var res = this.model;
-      var json = this.resource && res.toJSON();
-      
-      if (!res)
-        this.html(this.template({}));      
-      else
-        this.html(this.template(json));      
-
-      var ul = this.$('#menuItems')[0];
-      var frag = document.createDocumentFragment();
-
-      if (!G.currentUser.guest) {
-        var mobileUrl = 'view/profile';
-        if (!hash  ||  hash != mobileUrl) {
-          U.addToFrag(frag, this.menuItemTemplate({title: this.loc('profile'), mobileUrl: mobileUrl, image: G.currentUser.thumb, cssClass: 'menu_image_fitted' }));
-        } 
-      }
-      
-      if (G.tabs) {
-        var tabs = _.clone(G.tabs);
-        for (var name in tabs) {
-          var t = tabs[name];
-          t.pageUrl = t.hash;
-          U.addToFrag(frag, this.menuItemTemplate(t))
-        }
-      }
-      
-      var params = {lastPublished: '!null'};
-      if (!G.currentUser.guest) {
-        params.creator = '_me';
-//        params.webClassesCount = 'null';
-        params = {'$or': U.getQueryString(params, {delimiter: '||'})};
-      }
-      
-      params.dashboard = '!=null';
-      var hash = window.location.hash;
-      hash = G.pageRoot + hash;
-      
-//      var url = encodeURIComponent('model/social/App') + "?" + $.param(params);
-/*      
-      var url = U.makePageUrl('list', 'model/social/App', params);
-      if (!hash  ||  hash != url) 
-        U.addToFrag(frag, this.menuItemTemplate({title: 'App gallery', pageUrl: url }));
-      url = U.makePageUrl('list', 'model/social/Theme', {isTemplate: true});
-      if (!hash  ||  hash != url) 
-        U.addToFrag(frag, this.menuItemTemplate({title: 'Theme gallery', pageUrl: url }));
-      url = U.makePageUrl('list', 'model/social/AppIdea');
-      if (!hash  ||  hash != url) 
-        U.addToFrag(frag, this.menuItemTemplate({title: 'Idea gallery', pageUrl: url }));
-      url = U.makePageUrl('list', 'model/social/NominationForConnection');
-      if (!hash  ||  hash != url) 
-        U.addToFrag(frag, this.menuItemTemplate({title: 'Connection ideas gallery', pageUrl: url}));    
-*/      
-
-      if (!G.currentUser.guest) {
-        U.addToFrag(frag, self.groupHeaderTemplate({value: this.loc('account')}));
-//        var mobileUrl = 'view/profile';
-//        if (!hash  ||  hash != mobileUrl) {
-//          var title = 'Profile';
-////          var dim = U.fitToFrame(60, 60, G.currentUser.originalWidth / G.currentUser.originalHeight);
-////          var width = dim.w;
-////          var height = dim.h;
-////          var top = dim.y;
-////          var right = dim.w - dim.x;
-////          var bottom = dim.h - dim.y;
-////          var left = dim.x;
-////
-//          
-////          U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl, image: G.currentUser.thumb, width: width, height: height, top: top, right: right, bottom: bottom, left: left, cssClass: 'menu_image_fitted'}));
-//          U.addToFrag(frag, this.menuItemTemplate({title: title, mobileUrl: mobileUrl, image: G.currentUser.thumb, cssClass: 'menu_image_fitted' }));
-//          self.tabs[title] = U.getPageUrl(mobileUrl);
-//  
-//        }
+    
+    show: function(e) {
+      if (this._hidden) {
+        if (e)
+          Events.stopEvent(e);
         
-        var isCreatorOrAdmin = (G.currentUser._uri == G.currentApp.creator  ||  U.isUserInRole(U.getUserRole(), 'admin', res));
-//        var isCreatorOrAdmin = (G.currentUser._uri == G.currentApp.creator  ||  (this.resource  &&  U.isUserInRole(U.getUserRole(), 'admin', res)) || (this.collection &&  this.collection.models.length  &&  U.isUserInRole(U.getUserRole(), 'admin', res.models[0])));
+        if (this.ulWidth == G.viewport.width) {
+          // HACK!!
+          setTimeout(this.show);
+          return;
+        }
+        
+        var self = this,
+            accActionId = _.uniqueId('accAction');
+        
+        this._hidden = false;
+        this._transitioning = true;
+        Physics.there.chain(
+          {
+            method: 'style',
+            args: [this.getContainerBodyId(), {
+              'z-index': 10002,
+              visibility: 'visible'
+            }]
+          },
+          {
+            method: 'teleport', 
+            args: [this.getContainerRailBodyId(), this.ulWidth]
+          },
+//          {
+//            method: 'accelerateTo', 
+//            args: [{
+//              actionId: accActionId,
+//              body: this.getContainerRailBodyId(), 
+//              x: 0, 
+//              a: this._acceleration,
+//              drag: this._drag
+//            }]
+//          },
+          {
+            method: 'snapTo', 
+            args: [{
+              actionId: accActionId,
+              body: this.getContainerRailBodyId(),
+              stiffness: this._stiffness,
+              damping: this._damping,
+              drag: this._drag,
+              x: 0 
+            }]
+          },
+          {
+            method: 'animateStyle',
+            args: [{
+              body: this.getContainerBodyId(),
+              property: 'opacity',
+              end: DOM.maxOpacity,
+              duration: 200
+//              trackAction: {
+//                body: this.getContainerRailBodyId(),
+//                action: accActionId
+//              }
+            }]
+          }
+        );
+        
+        Physics.here.once('render', this.getContainerBodyId(), function() {
+          self._finishTransition();
+          Q.write(function() {
+            self.ul.style.visibility = 'visible';
+          });
+        });
+      }
+    },
+
+    hide: function(e) {
+      if (!this._hidden) {
+        if (e)
+          Events.stopEvent(e);
+        
+        var self = this,
+            accActionId = _.uniqueId('accAction');
+
+        this._hidden = true;
+        this._transitioning = true;
+        if (G.isJQM())
+          this.$el.closest('[data-role="panel"]').panel('close');
+
+        Physics.there.chain(
+          {
+//            method: 'accelerateTo',
+            method: 'snapTo',
+            args: [{
+//              actionId: accActionId,
+              body: this.getContainerRailBodyId(), 
+              x: this.ulWidth, 
+              stiffness: this._stiffness,
+              damping: this._damping,
+              drag: this._drag,
+//              a: this._acceleration,
+              oncomplete: function() {
+                self._finishTransition();
+                Physics.there.style(self.getContainerBodyId(), {
+                  'z-index': 0,
+                  visibility: 'hidden'
+                });
                 
-        var user = G.currentUser;
-        var installed = user.installedApps;
-        if (_.size(installed)) {
-//          // get the _uri values of all the apps, cut out their primary key appId, make a small csv. Url hashes can be arbirarily long? 
-//          var $in = 'appId,' + _.map(_.pluck(_.toArray(installed), '_uri'), function(uri) {
-//            return uri.slice(uri.indexOf('=') + 1);
-//          }).join(',');
-          
-          var $in = '_uri,' + _.pluck(_.toArray(installed), 'application').join(',');
-          
-          // Apps I installed
-          U.addToFrag(frag, this.menuItemTemplate({title: this.loc("myApps"), mobileUrl: U.makeMobileUrl('list', "model/social/App", {$in: $in, $myApps: 'y'})}));
-        }
+                Q.write(function() {
+                  self.ul.style.visibility = 'hidden';
+                });
+              }
+            }]
+          },
+          {
+            method: 'animateStyle',
+            args: [{
+              body: this.getContainerBodyId(),
+              property: 'opacity',
+              end: 0,
+              duration: 200
+//              trackAction: {
+//                body: this.getContainerRailBodyId(),
+//                action: accActionId
+//              }
+            }]
+          }
+        );
         
-        // Apps I created
-//        U.addToFrag(frag, this.menuItemTemplate({title: "My Apps", mobileUrl: U.makeMobileUrl('list', "model/social/App", {creator: '_me'})}));
+        return true;
+      }
+    },
+    
+    _updateSize: function() {
+      var viewport = G.viewport,
+          height = this.ulHeight = parseInt(this.ul.style.height || 0),
+          outerWidth = this.ul.$outerWidth(),
+          outerHeight = this.ul.$outerHeight();
+      
+      this.ulWidth = outerWidth;
+      if (this._outerWidth != viewport.width || this._outerHeight != outerHeight || height != viewport.height) {
+        this._bounds[0] = this._bounds[1] = 0;
+        this._outerWidth = this._width = this._bounds[2] = viewport.width;
+        this._outerHeight = outerHeight;
+        this._height = this._bounds[3] = viewport.height;
+        Q.write(function() {
+          this.ul.style.height = viewport.height + 'px'; // to keep the menu the same height as the screen
+        }, this);
+        
+        return true;
+      }
+    },
 
-//        if (user.newAlertsCount) {
-          U.addToFrag(frag, this.menuItemNewAlertsTemplate({title: this.loc('notifications'), newAlerts: user.newAlertsCount, pageUrl: U.makePageUrl('list', 'model/workflow/Alert', {to: '_me'/*, markedAsRead: false*/}) }));
-//        }
-        /*
-        if (user.alertsCount) {
-          var loc = window.location.href;
-          loc += (loc.indexOf('?') == -1 ? '?' : '&') + '$clearAlerts=y' + "&-info=" + encodeURIComponent("Notifications were successfully deleted");
-          U.addToFrag(frag, this.menuItemTemplate({title: 'Clear Notifications', pageUrl: lo }));
-//        U.addToFrag(frag, this.menuItemTemplate({title: 'Clear Notifications', pageUrl: U.makePageUrl('list', 'model/workflow/Alert', {sender: '_me', $clear: 'true', $returnUri: window.location.href}) }));
-        }
-        */
-        U.addToFrag(frag, this.menuItemTemplate({title: this.loc("logout"), id: 'logout', pageUrl: G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.pageRoot) }));
-      }
+//    _resizePanel: function() {
+////      BasicView.prototype._recheckDimensions.apply(this, arguments);
+//      this._recheckDimensions();
+//      var viewport = G.viewport;
+//      this._width = this._bounds[2] = viewport.width;
+//      this._height = this._bounds[3] = viewport.height;
+//      this.buildViewBrick();
+//      this.updateMason();
+//    },
+    
+    repositionPanel: function() {
+      if (this._transitioning)
+        this._repositionAfterTransition = true;
+      else
+        Physics.there.rpc(null, 'teleport', [this.getContainerBodyId(), this.isHidden() ? this.ulWidth : 0]);
+    },
 
-//      U.addToFrag(frag, this.homeMenuItemTemplate({title: "App Home", icon: 'repeat', id: 'home123'}));
-      if (window.location.hash.length > 0)
-        U.addToFrag(frag, this.menuItemTemplate({title: this.loc("appHome"), icon: 'repeat', id: 'home123'}));
+    getBodyId: function() {
+      return BasicView.prototype.getBodyId.apply(this, arguments) + '-' + this.TAG;
+    },
+    
+    getContainerBodyOptions: function() {
+      var options = BasicView.prototype.getContainerBodyOptions.apply(this, arguments);
       
-      if (G.pageRoot != 'app/UrbienApp') {
-//        U.addToFrag(frag, this.homeMenuItemTemplate({title: "Urbien Home", icon: 'repeat', id: 'urbien123'}));
-        U.addToFrag(frag, this.menuItemTemplate({title: this.loc("urbienHome"), icon: 'repeat', id: 'urbien123', mobileUrl: '#home/'}));
-      }
-      
-      ul.appendChild(frag);      
-      var p = document.getElementById(this.viewId);
-      p.appendChild(this.el);
-      if (!G.isJQM()) 
-        p.style.visibility = 'visible';
-      else {
-        $(p).panel().panel("open");
-        $(ul).listview();
-//        $(this.$('#menuItems')).listview();
-      }
-//      p.panel().panel("open");
-//      this.$('#menuItems').listview();
-//      if (U.isMasonry(this.vocModel))
-//        this.$el.blurjs({source: '#nabs_grid', radius: 5});
-      
-      return this;
+      // make sure it starts just offscreen
+      options.x = G.viewport.width;
+//      options.lock.y = 0;
+      return options;
     }
   }, 
   {

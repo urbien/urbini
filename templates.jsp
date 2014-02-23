@@ -6,13 +6,13 @@
 <!-- Templates -->
 <script type="text/template" id="resource-list">
   <!-- Resource list page -->
-  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
-  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="a" data-position="right"></div> 
+  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="a" data-position="right"></div> 
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" role="main">
-    <div id="sidebar" data-theme="{{= G.theme.list }}"  data-filter-theme="{{= G.theme.list }}" 
+    <div id="sidebar" data-theme="c"  data-filter-theme="d" 
       {{ if (this.collection.models.length > 5) { }}
        data-filter="{{= this.canSearch }}" data-filter-placeholder="{{= loc(obj.placeholder || 'search') }}"
      {{ } }}
@@ -31,56 +31,55 @@
     </form>  
     <form data-ajax="false" id="editRlForm" action="#">
       <input type="submit" id="editRlSubmit" value="Submit" />
-      <ul data-role="listview" data-theme="{{= G.theme.list }}" id="editRlList" class="action-list" data-inset="true">
+      <ul data-role="listview" data-theme="c" id="editRlList" class="action-list" data-inset="true">
       </ul>
     </form>  
   </div>
 </script>  
- 
+
+<script type="text/template" id="scrollbarTemplate">
+  <div id="{{= obj.id || 'scrollbar' + G.nextId() }}" class="scrollbar" style="position:absolute; {{= (obj.width ? 'width:' + width + 'px;' : '') + (obj.height ? 'height:' + height + 'px;' : '') }}">
+    <div class="scrollbarinner">
+    </div>
+  </div>
+</script>
+
 <script type="text/template" id="resource">
   <!-- Single resource view -->  
-  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div>
-  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="c" data-position="right"></div>
+  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="a" data-position="right"></div> 
 
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
   <div id="resourceViewHolder">
     <div class="ui-grid-a" style="width: 100%;padding-right:10px;">
-      <div class="ui-block-a" id="resourceImage"><!-- style="width:auto" --></div>
+      <div class="ui-block-a" id="resourceImage" {{= U.getArrayOfPropertiesWith(this.vocModel.properties, "mainGroup") &&  U.isA(this.vocModel, 'ImageResource') ? 'style="min-height:210px"' : ''}}><!-- style="width:auto" --></div>
       <div id="mainGroup" class="ui-block-b" style="min-width: 130px;padding-left:7px;"></div>
       <div id="buyGroup" class="ui-block-b" style="min-width: 130px"></div>
     </div>
-    <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
-    <div id="photogridHeader" style="top: -3px;" data-role="footer" data-theme="{{= G.theme.photogrid }}" class="hidden"><h3></h3></div>
-    <!--div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="grid-listview hidden">
-      <div class="dummy head"></div>
-      <div class="dummy tail"></div>
+    <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="d" class="hidden"></div>
+    <div style="top: -3px;" data-role="footer" data-theme="d" class="thumb-gal-header hidden"><h3></h3></div>
+    <!--div id="photogrid" style="padding: 7px;" data-theme="d" data-role="content" class="hidden">
     </div-->
     
     <div id="photogrid" data-inset="true" data-filter="false" class="thumb-gal hidden">
-      <div class="dummy head"></div>
-      <div class="dummy tail"></div>
     </div>
     
     {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
-          <div style="padding:10px;"><a data-role="button" class="{{= 'ui-btn-hover-' + G.theme.swatch }}" data-icon="heart" data-theme="{{= G.theme.swatch }}" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></div>
+          <div style="padding:10px;"><a data-role="button" class="ui-btn-hover-c" data-icon="heart" data-theme="c" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></div>
     {{ } }}
-    <ul data-theme="{{= G.theme.list }}" id="resourceView">
+    <ul data-theme="c" id="resourceView">
     </ul>
-    <div id="about" class="hidden" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}"></div>
+    <div id="about" class="hidden" style="padding: 7px;" data-theme="d"></div>
     
     {{ if ($('#other')) { }}
       <!--br/>
       <br/-->
     {{ } }}
     
-    <ul data-theme="{{= G.theme.list }}" id="cpView" data-inset="true">
+    <ul data-theme="c" id="cpView" data-inset="true">
     </ul>
   </div>
-  <!--div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
-     <a data-role="button" data-shadow="false" data-icon="repeat" id="homeBtn" target="#">Home</a>
-     <a data-role="button" data-shadow="false" data-icon="edit" id="edit" target="#" style="float:right;" id="edit">{{= loc('edit') }}</a>
-  </div-->
   <br/>
 </script>  
 
@@ -191,8 +190,8 @@
 
 <script type="text/template" id="chatPageTemplate">
   <!-- Chat page -->
-  <div id="{{= viewId }}" data-role="panel" data-display="overlay" style="z-index: 3000;" data-theme="{{= G.theme.menu}}" data-position="right"></div> 
-  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" style="z-index: 3001;" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" style="z-index: 3000;" data-theme="a" data-position="right"></div> 
+  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" style="z-index: 3001;" data-theme="a" data-position="right"></div> 
   <div id="headerDiv"></div>
   <div id="videoChat" class="videoChat">
     <div id="localMedia"></div>
@@ -218,27 +217,27 @@
   {{ }                                          }}
   </div>
   {{ if (!this.isWaitingRoom || this.isAgent) { }}
-  <div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}" class="fieldcontain closespacing forceinline" style="z-index:3000">
+  <div data-role="footer" data-position="fixed" data-theme="d" class="fieldcontain closespacing forceinline" style="z-index:3000">
     <div class="floatleft">
-      <button id="chatCaptureBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-camera"></i></button>
+      <button id="chatCaptureBtn" data-theme="a" data-mini="true"><i class="ui-icon-camera"></i></button>
     </div>
     {{ if (this.isAgent) { }}
     <div class="floatleft">
-      <button id="chatReqLocBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-eye-open"></i></button>
+      <button id="chatReqLocBtn" data-theme="a" data-mini="true"><i class="ui-icon-eye-open"></i></button>
     </div>
     {{ }                     }}
     {{ if (this.isClient) { }}
     <div class="floatleft" style="padding-top:0px">
       <!--input type="radio" id="chatShareLocBtn" value="off" data-mini="true" />
       <label for="chatShareLocBtn"><i class="ui-icon-map-marker"></i></label-->
-      <button id="chatShareLocBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-map-marker"></i></button>
+      <button id="chatShareLocBtn" data-theme="a" data-mini="true"><i class="ui-icon-map-marker"></i></button>
     </div>  
     {{ }                     }}
     <div class="floatleft" style="width:40%">
       <input type="text" id="chatMessageInput" class="miniinputheight" value="" data-mini="true" />
     </div>  
     <div class="floatleft">
-      <button id="chatSendBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true">{{= loc('send') }}</button>
+      <button id="chatSendBtn" data-theme="a" data-mini="true">{{= loc('send') }}</button>
     </div>
   </div>
   {{ } }}
@@ -325,8 +324,8 @@
 
 <script type="text/template" id="socialNetworkPageTemplate">
 <!-- View where the user can connect various social networks -->  
-  <div id="{{= this.cid }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div>
-  <div id="{{= this.cid + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
+  <div id="{{= this.cid }}" data-role="panel" data-display="overlay" data-theme="a" data-position="right"></div>
+  <div id="{{= this.cid + 'r' }}" data-role="panel" data-display="overlay" data-theme="a" data-position="right"></div> 
   <div id="headerDiv"></div>
   <div id="socialButtons" style="min-width:200px; margin: 0 auto;"></div>
 </script>  
@@ -373,7 +372,7 @@
   {{ }                 }}
   
   {{ if (obj.ok === false && obj.cancel === false) { }}
-    <a href="#" data-cancel="cancel" data-rel="back" data-role="button" data-theme="{{= G.theme.menu }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
+    <a href="#" data-cancel="cancel" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
   {{ }                 }}
 
   <div data-role="content" data-theme="d" class="ui-corner-bottom ui-content">
@@ -385,11 +384,11 @@
     
     <div style="display:block">
     {{ if (obj.cancel) { }}
-    <a href="#" data-role="button" data-cancel="" data-inline="true" data-rel="back" data-theme="{{= G.theme.footer }}">{{= loc(typeof cancel === 'string' ? cancel : 'cancel') }}</a>
+    <a href="#" data-role="button" data-cancel="" data-inline="true" data-rel="back" data-theme="d">{{= loc(typeof cancel === 'string' ? cancel : 'cancel') }}</a>
     {{ }                 }}
     
     {{ if (obj.ok) { }}
-    <a href="#" data-role="button" data-ok="" data-inline="true" data-rel="back" data-transition="flow" data-theme="{{= G.theme.activeButton }}">{{= loc(typeof ok === 'string' ? ok : 'ok') }}</a>
+    <a href="#" data-role="button" data-ok="" data-inline="true" data-rel="back" data-transition="flow" data-theme="a">{{= loc(typeof ok === 'string' ? ok : 'ok') }}</a>
     {{ }                 }}
     </div>
   </div>
@@ -415,15 +414,15 @@
       <div id="messages" width="100%">
       </div>
     </div>
-        <div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}" class="fieldcontain closespacing forceinline" style="z-index:3000">
+        <div data-role="footer" data-position="fixed" data-theme="d" class="fieldcontain closespacing forceinline" style="z-index:3000">
       <!--table>
         <tr>
           <td>
-            <button id="chatCaptureBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-camera"></i></button>
+            <button id="chatCaptureBtn" data-theme="a" data-mini="true"><i class="ui-icon-camera"></i></button>
           </td>
           {{ if (this.isAgent) { }}
           <td>
-            <button id="chatReqLocBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-eye-open"></i></button>
+            <button id="chatReqLocBtn" data-theme="a" data-mini="true"><i class="ui-icon-eye-open"></i></button>
           </td>
           {{ }                     }}
           {{ if (this.isClient) { }}
@@ -436,40 +435,33 @@
             <input type="text" id="chatMessageInput" value="" data-mini="true" />
           </td>
           <td>
-            <button id="chatSendBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true">{{= loc('send') }}</button>
+            <button id="chatSendBtn" data-theme="a" data-mini="true">{{= loc('send') }}</button>
           </td>
         </tr>
       </table-->
       <div class="floatleft">
-        <button id="chatCaptureBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-camera"></i></button>
+        <button id="chatCaptureBtn" data-theme="a" data-mini="true"><i class="ui-icon-camera"></i></button>
       </div>
       {{ if (this.isAgent) { }}
       <div class="floatleft">
-        <button id="chatReqLocBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-eye-open"></i></button>
+        <button id="chatReqLocBtn" data-theme="a" data-mini="true"><i class="ui-icon-eye-open"></i></button>
       </div>
       {{ }                     }}
       {{ if (this.isClient) { }}
       <div class="floatleft" style="padding-top:0px">
         <!--input type="radio" id="chatShareLocBtn" value="off" data-mini="true" />
         <label for="chatShareLocBtn"><i class="ui-icon-map-marker"></i></label-->
-        <button id="chatShareLocBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true"><i class="ui-icon-map-marker"></i></button>
+        <button id="chatShareLocBtn" data-theme="a" data-mini="true"><i class="ui-icon-map-marker"></i></button>
       </div>  
       {{ }                     }}
       <div class="floatleft" style="width:40%">
         <input type="text" id="chatMessageInput" class="miniinputheight" value="" data-mini="true" />
       </div>  
       <div class="floatleft">
-        <button id="chatSendBtn" data-theme="{{= G.theme.activeButton }}" data-mini="true">{{= loc('send') }}</button>
+        <button id="chatSendBtn" data-theme="a" data-mini="true">{{= loc('send') }}</button>
       </div>
     </div>
     
-    <!--div data-role="footer" data-position="fixed" data-theme="{{= G.theme.header }}">
-      <div id="chatInputs" style="padding:0 0 0 5px;">
-        <div style="width:10%; margin: 2px 5px 0 0; float:left"><button id="chatCaptureBtn" data-theme="{{= G.theme.activeButton }}" data-icon="camera" data-iconpos="notext">{{= loc('capture') }}</button></div>
-        <div style="width:65%; float:left"><input type="text" id="chatMessageInput" value="" /></div>
-        <div style="width:20%; padding-right:5px; margin-top: 2px; float:right"><button id="chatSendBtn" class="submit" type="submit" data-theme="{{= G.theme.activeButton }}">{{= loc('send') }}</button></div>
-      </div>
-    </div-->
   {{ }                                          }}
   </div>
 </script>
@@ -497,23 +489,20 @@
 
 <script type="text/template" id="menuP">
   <!-- Left-side slide-out menu panel -->
-  <ul data-role="none" data-theme="{{= G.theme.menu }}" id="menuItems" class="menuItems">
-  </ul>
+  <ul data-role="none" data-theme="a" id="menuItems" class="menuItems"></ul>
 </script>  
 
 <script type="text/template" id="rightMenuP">
   <!-- Right-side slide-out menu panel -->
-  <ul data-role="none" data-theme="{{= G.theme.menu }}" id="rightMenuItems" class="menuItems">
-  </ul>
-  
+  <ul data-role="none" data-theme="a" id="rightMenuItems" class="menuItems"></ul>
 </script>  
 
 <script type="text/template" id="stringPT">
   <!-- Left-side slide-out menu panel -->
-  {{ if (typeof value != 'undefined' && value.indexOf('<span') == -1) { }}
+  {{ if (obj.value  &&  value.indexOf('<span') == -1) { }}
      <div style="white-space: normal;font-size:16px;">{{= value }}</div>
   {{ } }}
-  {{ if (typeof value != 'undefined' && value.indexOf('<span') != -1) { }}
+  {{ if (obj.value  &&  value.indexOf('<span') != -1) { }}
     {{= value }}
   {{ } }}
 </script>
@@ -576,7 +565,7 @@
 </script-->
 
 <script type="text/template" id="complexDatePT">
-  <span>{{= typeof displayName != 'undefined' ? displayName : (U.isCloneOf(prop, 'ScheduledItem.start')  || U.isCloneOf(prop, 'ScheduledItem.end') ? G.U.getFormattedDate1(value) :  G.U.getFormattedDate(value)) }}</span>
+  <span>{{= typeof displayName != 'undefined' ? displayName : (prop.dateFormat ?  U.getFormattedDate2(value, prop.dateFormat) : (U.isCloneOf(prop, 'ScheduledItem.start')  || U.isCloneOf(prop, 'ScheduledItem.end') ? G.U.getFormattedDate1(value) :  G.U.getFormattedDate(value))) }}</span>
 </script>
 
 <script type="text/template" id="resourcePT">
@@ -584,7 +573,7 @@
 </script>
 
 <!--script type="text/template" id="mapItemTemplate">
-<span><a href="{{= U.makePageUrl('view', value) }}">{{= typeof displayName == 'undefined' ? value : displayName }} {{= image ? '<br />' + image : '' }} </a></span>
+<span><a href="{{= U.makePageUrl('view', uri) }}">{{= typeof displayName == 'undefined' ? uri : displayName }} {{= image ? '<br />' + image : '' }} </a></span>
 </script-->
 
 <script type="text/template" id="mapItemTemplate">
@@ -617,14 +606,14 @@
   {{ var action = action ? action : 'view' }}
   <div class="ui-btn-inner ui-li ui-li-has-thumb" data-viewid="{{= viewId }}">
   {{ if (!obj.v_submitToTournament) { }}
-    <div class="ui-btn-text" style="padding:0.7em 10px 10px 90px;min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
+    <div class="ui-btn-text" style="padding:0.7em 10px 10px 90px;{{= obj.image ? 'min-height:59px;' : '' }}" data-uri="{{= U.makePageUrl(action, _uri) }}">
   {{ } }}
   {{ if (obj.v_submitToTournament) { }}
     <div class="ui-btn-text" style="padding:0em 10px 0 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
   {{ } }}
-    <img data-lazysrc="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : G.blankImgDataUrl}}" 
+    <img data-lazysrc="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : G.getBlankImgSrc()}}" 
     {{ if (obj.right) { }}  
-      class="lazyImage" style="
+      class="lazyImage" style="position:absolute;
         left:-{{= left }}px; top:-{{= top }}px;
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px); {{= obj.mH ? 'max-height:' + mH + 'px;' : '' }}"
     {{ } }}
@@ -705,7 +694,7 @@
   -->  
   
   {{ if (obj.comment) { }}
-    <p>{{= comment }}</p>
+    <p style="padding-left: 5px; margin:7px 0 0 0; font-size:12px">{{= comment }}</p>
   {{ } }}
   </div>
   </div>
@@ -759,7 +748,7 @@
 <script type="text/template" id="homeMenuItemTemplate">
   <!-- app home page menu item -->
   <li {{= obj.icon ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}  id="{{= typeof id == 'undefined' ? 'home123' : id }}">
-    <img src="{{= typeof image != 'undefined' ? image : G.blankImgDataUrl }}" style="float: right;" class="ui-li-thumb" /> 
+    <img src="{{= typeof image != 'undefined' ? image : G.getBlankImgSrc() }}" style="float: right;" class="ui-li-thumb" /> 
     <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} target="#">
       {{= title }}
     </a>
@@ -768,7 +757,7 @@
 
 <script type="text/template" id="menuHeaderTemplate">
   <!-- menu header -->
-  <li data-icon="{{= icon }}" data-theme="{{= G.theme.menu}}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} style="font-size:18px;font-weight: normal;">
+  <li data-icon="{{= icon }}" data-theme="a" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} style="font-size:18px;font-weight: normal;">
     {{= title }}
   </li>
 </script>
@@ -808,19 +797,19 @@
 <script type="text/template" id="cpTemplate">
 <!-- readwrite backlink in resource view -->
 <li data-propName="{{= shortName }}"
-{{= obj.inline ? ' data-theme="{0}">'.format(G.theme.footer) : '' }}
+{{= obj.inline ? ' data-theme="d"' : '' }}
 >
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}
        <span class="ui-li-count">{{= value }}</span>
      </a>
-     <a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp" data-theme="{{= G.theme.list }}">
+     <a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp" data-theme="c">
        <i class="ui-icon-plus-sign"></i>
-     {{ if (typeof comment != 'undefined') { }}
-       <p style="padding-left: 15px;">{{= comment }}</p>
-     {{ } }}
      </a>
+     {{ if (typeof comment != 'undefined') { }}
+       <p style="padding-left: 10px;margin-top:-10px;font-weight:normal;font-size:0.8rem;color:#808080">{{= comment }}</p>
+     {{ } }}
    </li>
 </script>
 
@@ -885,14 +874,14 @@
 <script type="text/template" id="cpTemplateNoAdd">
 <!-- readonly backlink in resource view -->
 <li data-propName="{{= shortName }}"
-  {{= obj.inline ? ' data-theme="{0}">'.format(G.theme.activeButton) : '' }}
+  {{= obj.inline ? ' data-theme="a"' : '' }}
 >
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}
        <span class="ui-li-count">{{= value }}</span>
      </a>
-     <a target="#" data-theme="{{= G.theme.list }}" data-iconshadow="false" class="cp">
+     <a target="#" data-theme="c" data-iconshadow="false" class="cp">
        <i class="ui-icon-chevron-right"></i>
      </a>
    </li>
@@ -905,22 +894,9 @@
 
 <script type="text/template" id="propGroupsDividerTemplate">
   <!-- row divider / property group header in resource view -->
-  <li data-theme="{{= G.theme.list }}" data-role="list-divider">{{= value }}</li>
+  <li data-theme="c" data-role="list-divider">{{= value }}</li>
 </script>
 
-<!--script type="text/template" id="viewTemplate">
-  <div>
-    {{ for (var name in props) { }} 
-      {{ if (props.hasOwnProperty(name)) { }}
-        <div class="propRow">{{ name }}: {{ props[name] }}</div>
-      {{ } }}
-    {{ } }}
-  </div>
-</script-->
-
-<!--script type="text/template" id="editButtonTemplate">
-  <a id="edit" target="#" class="icon next ui-btn-right">Edit</a>
-</script-->
 
 <script type="text/template" id="mapItButtonTemplate">
   <!-- button that toggles map view -->
@@ -951,7 +927,8 @@
 
 <script type="text/template" id="addButtonTemplate">
   <!-- button used for creating new resources -->
-  <a target="#" data-icon="plus-sign" {{= obj.empty ? 'class="hint--bottom hint--always" data-hint="Add item"' : '' }}>Create</a>
+  <!--a target="#" data-icon="plus-sign" {{= obj.empty ? 'class="hint--bottom hint--always" data-hint="Add item"' : '' }}>Create</a-->
+  <a target="#" data-icon="plus-sign">Create</a>
 </script>
 
 <script type="text/template" id="menuButtonTemplate">
@@ -963,7 +940,7 @@
 
 <script type="text/template" id="rightMenuButtonTemplate">
   <!-- button that toggles the object properties panel -->
-  <a target="#" href="#{{= viewId }}" data-icon="reorder"><!--{{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}-->
+  <a target="#" href="#{{= viewId }}" data-icon="{{= obj.icon || 'reorder' }}"><!--{{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}-->
     {{= '<span class="menuBadge">{0}</span>'.format(obj.newAlerts || '') }}
   </a>
 </script>
@@ -975,8 +952,8 @@
 
 <script type="text/template" id="buyPopupTemplate">
   <!-- popup for trial / purchase -->
-  <div id="buy_popup" style="text-align: center; background: #eeeeee;" data-role="popup" data-transition="slidedown" data-overlay-theme="{{= G.theme.menu }}" class="ui-content">
-    <!-- a href="#" data-rel="back" data-role="button" data-theme="{{= G.theme.activeButton }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a -->
+  <div id="buy_popup" style="text-align: center; background: #eeeeee;" data-role="popup" data-transition="slidedown" data-overlay-theme="a" class="ui-content">
+    <!-- a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a -->
     <div data-theme="c" role="main">
       <h4 id="buyMsg">{{= msg }}</h4>
       <a data-mini="true" data-role="button"  data-inline="true" id="buyLink" href="{{= href }}">{{= loc('buy') }}<span style="display:none;" id="buyName">{{= displayName }}</span></a> 
@@ -989,9 +966,9 @@
 <script type="text/template" id="loginPopupTemplate">
   <!-- login popup with various social network based logins -->
   {{ var canDismiss = typeof dismissible === 'undefined' || dismissible == true; }}
-  <div id="login_popup" data-role="popup" data-transition="slidedown" data-overlay-theme="{{= G.theme.menu }}" data-dismissible="false" class="ui-content">
+  <div id="login_popup" data-role="popup" data-transition="slidedown" data-overlay-theme="a" data-dismissible="false" class="ui-content">
     <h4 style="color: #aaa" id="loginMsg">{{= msg }}</h4>
-    <a href="#" data-cancel="cancel" data-rel="back" data-role="button" data-theme="{{= G.theme.menu }}" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
+    <a href="#" data-cancel="cancel" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
     
     {{ _.forEach(nets, function(net) { }} 
 
@@ -1098,8 +1075,8 @@
 
 <script type="text/template" id="headerTemplate">
   <!-- the page header, including buttons and the page title, used for all pages except the home page -->
-  <div id="callInProgress" data-theme="{{= G.theme.header}}"></div>
-  <div data-role="header" class="ui-header" data-theme="{{= G.theme.header}}" id="header" {{= obj.style ? style + ';z-index:1000;': 'style="z-index:1000;"' }} {{= obj.more || '' }} >
+  <div id="callInProgress" data-theme="d"></div>
+  <div data-role="header" class="ui-header" data-theme="d" id="header" {{= obj.style ? style : '' }} {{= obj.more || '' }} >
     <div data-role="navbar">
       <ul id="headerUl" class="navbarUl">
       </ul>
@@ -1146,6 +1123,7 @@
         </div>
       </div>
     </div>
+    <div class="physicsConstants" style="background-color:#606060; display:none; color: #ffffff;"></div>    
     <!--div id="headerErrorBar">
     </div-->
   </div>
@@ -1198,11 +1176,10 @@
 </script>
 
 <script type="text/template" id="masonry-mod-list-item">
-<div>
   <div class="anab" data-viewid="{{= viewId }}">
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img data-lazysrc="{{= obj.resourceMediumImage || G.blankImgDataUrl }}" border="0" 
+        <img data-lazysrc="{{= obj.resourceMediumImage || G.getBlankImgSrc() }}" border="0" 
         {{ if (typeof imgWidth != 'undefined') { }} 
          style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"
          {{ } }}
@@ -1212,11 +1189,12 @@
       </a>
     </div>
   </div>
+  <div class="nabRL">
   <table width="100%" class="modP">
     <tr>
       <td class="urbien" width="55px">
         <a href="{{= modifiedBy }}">
-          <img data-lazysrc="{{= obj.v_modifiedByPhoto || G.blankImgDataUrl }}" class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, 'v_modifiedByPhoto') }}" border="0" />
+          <img data-lazysrc="{{= obj.v_modifiedByPhoto || G.getBlankImgSrc() }}" class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, 'v_modifiedByPhoto') }}" border="0" />
         </a>
       </td>
       <td>
@@ -1227,108 +1205,95 @@
       </td>
     </tr>
   </table>
-  <table width="100%">
-    <tr>
-    <td colspan="2">
-      <div class="nabBtn" style="background:#eeeeee; padding: 10px 0 0 5px;margin:-3px;">
-        {{ if (typeof v_showCommentsFor != 'undefined') { }}
-          <!--a data-icon="comments" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor, '-makeId': G.nextId()}) }}">
-          </a -->
-          <a style="float:left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor.uri, '-makeId': G.nextId()}) }}">Comment
-          </a>
-          {{ if (v_showCommentsFor.count) { }}
-            <a style="float:right; font-size:12px;" href="{{= U.makePageUrl('list', 'model/portal/Comment', {forum: v_showCommentsFor.uri}) }} "><span class="ui-icon-comment-alt"></span>{{= v_showCommentsFor.count }}</a>
-          {{ } }}
-          
-        {{ } }}
-        {{ if (typeof v_showVotesFor != 'undefined') { }}
-          <!--a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}"> 
-          </a -->
-          <a class="like" style="float: left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}">
-          {{ if (typeof v_showCommentsFor != 'undefined') { }}
-             &#160;&#160;&#8226;
-          {{ } }}
-          &#160;&#160;Like 
-          </a>
-          {{ if (v_showVotesFor.count) { }}
-          <div style="float:right; font-size:12px;"> 
-            <a href="{{= U.makePageUrl('list', 'aspects/tags/Vote', {votable: v_showVotesFor.uri, $title: davDisplayName + ' liked by'}) }}"><span class="ui-icon-heart-empty"></span>{{= v_showVotesFor.count }}</a> 
-          </div>
-          {{ } }}
+  <div class="nabBtn" style="background:#eeeeee; padding: 10px 0 0 5px;margin:-3px;">
+    {{ if (typeof v_showCommentsFor != 'undefined') { }}
+      <!--a data-icon="comments" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor, '-makeId': G.nextId()}) }}">
+      </a -->
+      <a style="float:left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor.uri, '-makeId': G.nextId()}) }}">Comment
+      </a>
+      {{ if (v_showCommentsFor.count) { }}
+        <a style="float:right; font-size:12px;" href="{{= U.makePageUrl('list', 'model/portal/Comment', {forum: v_showCommentsFor.uri}) }} "><span class="ui-icon-comment-alt"></span>{{= v_showCommentsFor.count }}</a>
+      {{ } }}
+      
+    {{ } }}
+    {{ if (typeof v_showVotesFor != 'undefined') { }}
+      <!--a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}"> 
+      </a -->
+      <a class="like" style="float: left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}">
+      {{ if (typeof v_showCommentsFor != 'undefined') { }}
+         &#160;&#160;&#8226;
+      {{ } }}
+      &#160;&#160;Like 
+      </a>
+      {{ if (v_showVotesFor.count) { }}
+      <div style="float:right; font-size:12px;"> 
+        <a href="{{= U.makePageUrl('list', 'aspects/tags/Vote', {votable: v_showVotesFor.uri, $title: davDisplayName + ' liked by'}) }}"><span class="ui-icon-heart-empty"></span>{{= v_showVotesFor.count }}</a> 
+      </div>
+      {{ } }}
 <!--          {{ if (v_showVotesFor.count) { }}
              v_showVotesFor.count
           {{ } }}
 -->          
-        {{ } }}
-        <!--
-        {{ if (typeof v_showRenabFor != 'undefined') { }}
-          <a data-icon="pushpin" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'nabit?originalImageUrl=' + encodeURIComponent(v_showRenabFor) + '&amp;sourceUrl=' + encodeURIComponent(rUri) }}">
-          </a>
-        {{ } }}
-        -->
-        </div>
-    </td>
-    </tr>
-  </table>
-</div>  
+    {{ } }}
+    <!--
+    {{ if (typeof v_showRenabFor != 'undefined') { }}
+      <a data-icon="pushpin" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= 'nabit?originalImageUrl=' + encodeURIComponent(v_showRenabFor) + '&amp;sourceUrl=' + encodeURIComponent(rUri) }}">
+      </a>
+    {{ } }}
+    -->
+    </div>
+  </div>
 </script>
 
 <script type="text/template" id="masonry-list-item">
   <!-- a masonry item brick -->
   
-  <div class="anab" data-viewid="{{= viewId }}">
-    <div class="galleryItem_css3"
-         {{ if (obj.imgWidth) { }}
-            style="{{= (obj.top ? '' : 'height:' + imgHeight + 'px;') + (obj.left ? '' : 'width:' + imgWidth + 'px;') }}"
-         {{ } }}
-    >
-      <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img data-lazysrc="{{= obj.resourceMediumImage || G.blankImgDataUrl }}" {{= obj.width ? 'width="' + width + '"' : '' }} {{= obj.height ? 'height="' + height + '"' : '' }} class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" />
-      </a>
-    </div>
-    <!-- {{= typeof friendsCount == 'undefined' ? '' : '<div class="appBadge">' + friendsCount + '</div>' }} -->
-    {{= typeof friendMeCount == 'undefined' ? '' : '<div class="appBadge"><a style="color:white;" href="' + friendMeUri + '">' + friendMeCount + '</a></div>' }}
+  <div class="galleryItem_css3">
+    <a href="{{= obj.rUri || 'about:blank' }}">
+      <img data-lazysrc="{{= obj.resourceMediumImage || G.blankImgDataUrl }}" {{= obj.width ? 'width="' + width + '"' : '' }} {{= obj.height ? 'height="' + height + '"' : '' }} class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" />
+    </a>
+  </div>
+  <!-- {{= typeof friendsCount == 'undefined' ? '' : '<div class="appBadge">' + friendsCount + '</div>' }} -->
+  {{= typeof friendMeCount == 'undefined' ? '' : '<div class="appBadge"><a style="color:white; position:absolute;" href="' + friendMeUri + '">' + friendMeCount + '</a></div>' }}
   <div class="nabRL">
-    <div>
+    <div class="gridCols">
       {{= gridCols }}
     </div>
     {{ if (typeof v_showCommentsFor != 'undefined'  ||  typeof v_showVotesFor != 'undefined' ) { }}
-      <div class="nabBtn" style="padding-top:10px">
+      <!-- div style="background: #eeeeee; padding-top: 10px; padding-bottom: 0px;" class="btn" -->
+      <div class="nabBtn">
+
         {{ if (typeof v_showCommentsFor != 'undefined') { }}
-          <a style="float:left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor.uri, '-makeId': G.nextId()}) }}">Comment
+          <a style="position:absolute;left:10px;" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: v_showCommentsFor.uri, '-makeId': G.nextId()}) }}">Comment
           </a>
           {{ if (v_showCommentsFor.count) { }}
-            <a style="float:right; font-size:12px;" href="{{= U.makePageUrl('list', 'model/portal/Comment', {forum: v_showCommentsFor.uri}) }} "><span class="ui-icon-comment-alt"></span>{{= v_showCommentsFor.count }}</a>
+            <a style="position:absolute;right:40px;" href="{{= U.makePageUrl('list', 'model/portal/Comment', {forum: v_showCommentsFor.uri}) }} "><span class="ui-icon-comment-alt"></span>{{= v_showCommentsFor.count }}</a>
           {{ } }}
         {{ } }}
         {{ if (typeof v_showVotesFor != 'undefined') { }}
-          <a class="like" style="float: left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}">
+          <a style="position:absolute;left:70px;" class="like" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}">
           {{ if (typeof v_showCommentsFor != 'undefined') { }}
              &#160;&#160;&#8226;
           {{ } }}
           &#160;&#160;Like 
           </a>
           {{ if (v_showVotesFor.count) { }}
-          <div style="float:right; font-size:12px;"> 
-            <a href="{{= U.makePageUrl('list', 'aspects/tags/Vote', {votable: v_showVotesFor.uri, $title: davDisplayName + ' liked by'}) }}"><span class="ui-icon-heart-empty"></span>{{= v_showVotesFor.count }}</a> 
-          </div>
+            <a style="position:absolute;right:10px;" href="{{= U.makePageUrl('list', 'aspects/tags/Vote', {votable: v_showVotesFor.uri, $title: davDisplayName + ' liked by'}) }}"><span class="ui-icon-heart-empty"></span>{{= v_showVotesFor.count }}</a> 
           {{ } }}
         {{ } }}
         <!--
         {{ if (typeof tryApp != 'undefined') { }}
-            <a href="{{= tryApp }}" style="float:left;">&#160;&#160;&#8226;&#160;&#160;<span style="color:#f54416;">Try</span></a>
+            <a href="{{= tryApp }}">&#160;&#160;&#8226;&#160;&#160;<span style="color:#f54416;">Try</span></a>
         {{ } }}
         -->
      </div>
     {{ } }}
-    {{ if (typeof v_submitForTournament != 'undefined') { }}
-      <a class="b" href="{{= v_submitForTournament }}" data-role="button" data-icon="star" data-theme="e">Submit an entry</a>
+    {{ if (obj.v_submitForTournament) { }}
+      <div><a  class="b" href="{{= v_submitForTournament }}" data-role="button" data-icon="star" data-theme="e">Submit an entry</a></div>
     {{ } }}
   </div>     
         {{= typeof isIdea == 'undefined' ? '' : '<p class="ui-li-aside ui-li-desc">Idea</p>'}}
-</div>
 </script>
-
 
 <script type="text/template" id="fileUpload">
   <!-- a file upload form -->
@@ -1346,8 +1311,7 @@
 </script>
 
 <script type="text/template" id="horizontalListItem">
-  <a href="{{= target }}">
-  </a> 
+  <a style="position:absolute" href="{{= target }}">
     {{ if (obj.image) { }}
       <img data-lazysrc="{{= image }}" class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" 
       {{ if (obj.right) { }}  
@@ -1356,6 +1320,7 @@
       {{ } }}
       />    
     {{ }              }}
+  </a> 
   <div class="phOverlay">
     {{= obj.title ? '<h3>{0}</h3>'.format(obj.title) : '' }}
     {{= obj.caption  &&  obj.caption.trim() ? '<p>{0}</p>'.format(obj.caption) : '' }}
@@ -1403,7 +1368,7 @@
 <script type="text/template" id="messageListTemplate">
 <!-- collapsible error list -->
 
-<div id="messageList" data-theme="{{= obj.theme ||  G.theme.error || 'c' }}">
+<div id="messageList">
 {{  _.each(messages, function(msg) {  }}
      <div style="display:block;position:relative;" id="{{= msg.id }}" class="headerMessageBar {{= msg['class'] || obj['class'] || '' }}">
   {{ if (msg.link) {            }}
@@ -1429,25 +1394,38 @@
 
 </script>
 
+<script type="text/template" id="physicsConstantsTemplate">
+{{ for (var p in constants) { }}
+  <div>
+    <label for="{{= p }}">{{= p.splitCamelCase(true) }}</label><br/>
+    <input type="range" id="{{= p }}" name="{{= p }}" value={{= constants[p] * 100 }} min="1" max="99">
+  </div>  
+{{ }                    }}
+  <!--div>
+    <label for="degree">Sensitivity</label><br/>
+    <input type="range" id="degree" name="degree" value={{= degree }} min="-10" max="10">
+  </div-->
+</script>
+
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">
 <!-- the edit page for any particular resource -->
-<div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.menu }}" data-position="right"></div> 
-<div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="{{= G.theme.propertiesMenu ? G.theme.propertiesMenu : G.theme.menu }}" data-position="right"></div> 
+<div id="{{= viewId }}" data-role="panel" data-display="overlay" data-theme="a" data-position="right"></div> 
+<div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" data-theme="a" data-position="right"></div> 
 <!--div id="headerMessageBar"></div-->
 <div id="headerDiv"></div>
 <div id="resourceEditView">
-  <div id="resourceImage"></div>
+  <!-- div id="resourceImage"></div -->
   <form data-ajax="false" id="{{= viewId + '_editForm'}}" action="#">
-    <ul data-role="listview" data-theme="{{= G.theme.list }}" id="fieldsList" class="action-list" data-inset="true">
+    <ul data-role="listview" data-theme="c" id="fieldsList" class="action-list" data-inset="true">
     </ul>
     
     <div name="errors" style="float:left"></div>
     {{ if (this.resource.isAssignableFrom("InterfaceImplementor")) { }}
     <div data-role="fieldcontain" id="ip">
       <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true" data-theme="{{= G.theme.activeButton }}">{{= loc('checkAll') }}</a></div>
-        <div class="ui-block-b"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true" data-theme="{{= G.theme.footer }}">{{= loc('uncheckAll') }}</a></div>
+        <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true" data-theme="a">{{= loc('checkAll') }}</a></div>
+        <div class="ui-block-b"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true" data-theme="a">{{= loc('uncheckAll') }}</a></div>
       </fieldset>
       <fieldset data-role="controlgroup" id="interfaceProps">
       </fieldset>
@@ -1456,8 +1434,8 @@
     
     <div class="ui-body ui-body-b">
       <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><button name="cancelBtn" type="cancel" id="cancel" data-theme="{{= G.theme.footer }}" class="cancel">{{= obj.cancel || loc('cancel') }}</button></div>
-        <div class="ui-block-b"><button name="submitBtn" type="submit" id="submit" data-theme="{{= G.theme.activeButton }}" class="submit">{{= obj.submit || loc('submit') }}</button></div>
+        <div class="ui-block-a"><button name="cancelBtn" type="cancel" id="cancel" data-theme="d" class="cancel">{{= obj.cancel || loc('cancel') }}</button></div>
+        <div class="ui-block-b"><button name="submitBtn" type="submit" id="submit" data-theme="a" class="submit">{{= obj.submit || loc('submit') }}</button></div>
       </fieldset>
     </div>
 
@@ -1470,7 +1448,7 @@
 </div>
 
 
-  <!--div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
+  <!--div data-role="footer" class="ui-bar" data-theme="d">
      <a data-role="button" data-icon="repeat" id="homeBtn" target="#">Home</a>
   </div-->
 </script>
@@ -1543,7 +1521,7 @@
 <script type="text/template" id="stringPET">
   {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 100; }}
   {{ if (name) { }}
-  <label for="{{= id }}" data-theme="{{= G.theme.list }}">{{= name }}</label>
+  <label for="{{= id }}" data-theme="c">{{= name }}</label>
     <{{= isInput ? 'input type="text"' : 'textarea rows="10" cols="20" ' }} name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }} data-mini="true">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   {{ } }} 
   {{ if (!name) { }}
@@ -1552,7 +1530,7 @@
 </script>
 
 <script type="text/template" id="moneyPET">
-  <label for="{{= id }}" data-theme="{{= G.theme.list }}">{{= name }} <b>{{= typeof value.currency === 'undefined' ? '$' : value.currency }}</b></label>
+  <label for="{{= id }}" data-theme="c">{{= name }} <b>{{= typeof value.currency === 'undefined' ? '$' : value.currency }}</b></label>
   <input type="text" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '' }}" {{= rules }} data-mini="true"></input>
 </script>
 
@@ -1608,7 +1586,7 @@
 </script>
 
 <script type="text/template" id="cameraPopupTemplate">
-  <div data-role="popup" id="cameraPopup" data-overlay-theme="{{= G.theme.menu }}" data-dismissible="false" class="ui-content ui-body-d">
+  <div data-role="popup" id="cameraPopup" data-overlay-theme="a" data-dismissible="false" class="ui-content ui-body-d">
     <div>
     {{ if (obj.video || obj.image) { }}
       <video id="camVideo" autoplay="autoplay"></video>

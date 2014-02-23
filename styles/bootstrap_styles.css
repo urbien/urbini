@@ -5,8 +5,10 @@ html {
 li {
   position: relative;
 }
-#categories {font-size:20px;}
 
+.masonry-brick div[data-viewid] {
+  border: none;
+}
 #headerUl div {
   text-align:center;
   font-size:30px;
@@ -49,12 +51,14 @@ li {
 }
 #menuItems, #rightMenuItems {
   background: #2d2d2d;
-  position: absolute;
-  top:0;
   width: 21rem;
   z-index:1000000;
   height:100%;
+/*
   right: 0;
+  position: absolute;
+  top:0;
+*/  
 }
 #menuItems li, #rightMenuItems li {
 /*  padding-top: 1rem; */
@@ -91,7 +95,7 @@ a:hover {
   border-radius:1rem;
 }
 
-#photogridHeader {
+.thumb-gal-header {
   border: 1px solid #707070;
   background: #eee;
   color: #f9f9f9;
@@ -101,7 +105,7 @@ a:hover {
   text-align: center;
   top: -3px;
 }
-#photogridHeader h3 {
+.thumb-gal-header h3 {
 /*  font-size: 1.8rem; */
   margin: 0.5rem;
 }
@@ -116,7 +120,7 @@ a:hover {
   right:1rem;
   font-size:22px;
 }
-.ui-icon-plus-sign:before, .ui-icon-chevron-left:before {
+.ui-icon-plus-sign:before, .ui-icon-chevron-left:before, .ui-icon-map-marker:before { 
   margin-top:0;
 }
 /*
@@ -368,43 +372,8 @@ div.nabBtn {
   padding: 10px 15px;
 }
 
-/*
-@media all and (min-width:420px) {
-  .editList select {
-    width: 76%;
-    border: 1px solid #bbb;
-    padding: 0.5rem;
-    font-size: 1.6rem;
-  }
-  li label.ui-input-text, li label.select {
-    display: inline-block;
-    width: 18%;
-  }
-  div.ui-input-text, input.ui-input-text, textarea {
-    display: inline-block;
-    width: 75%;
-  }
+#resourceImage div, #resourceImage div::before, #resourceImage div::after {
+  box-sizing:content-box;
+  -moz-box-sizing:content-box;
+  -webkit-box-sizing:content-box;
 }
-
-.editList select {
-  border: 1px solid #bbb;
-  padding: 0.5rem;
-  font-size: 1.6rem;
-  width: 100%;
-}
-
-fieldset div {
-  margin: 1rem -.5px 0 -.5rem;
-} 
-
-fieldset#submitBtns {
-  border: none;
-}
-.editList a {
-  display:block;
-  cursor: pointer;
-}
-#mvSubmit {
-  font-size: 2.4rem;
-}
-*/

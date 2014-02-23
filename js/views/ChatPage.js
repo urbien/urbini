@@ -55,6 +55,7 @@ define('views/ChatPage', [
 
   return BasicPageView.extend({
     autoFinish: false,
+    className: 'scrollable',
     initialize: function(options) {
       _.bindAll(this, 'render', 'toggleChat', 'videoFadeIn', 'videoFadeOut', 'chatFadeIn', 'chatFadeOut', 'resize', 'restyleGoodies', 'pagehide', 'enableChat', 'disableChat',
                       'onMediaAdded', 'onMediaRemoved', 'onDataChannelOpened', 'onDataChannelClosed', 'onDataChannelMessage', 'onDataChannelError', 'shareLocation', 
@@ -500,14 +501,12 @@ define('views/ChatPage', [
         this.startChat();
       }
       
-      if (!this.el.parentNode) 
-        document.body.appendChild(this.el);
-
       this.$('#header').$css({
         'z-index': 1000,
         'opacity': 0.7
       });
       
+      this.addToWorld(null, true);
       this.finish();
     },
 

@@ -1,19 +1,19 @@
 //'use strict';
-define('views/RightMenuPanel', [
+define('views/ContextMenuPanel', [
   'globals',
   'utils',
   'events',
   'vocManager',
-  'views/BasicView'
-], function(G, U, Events, Voc, BasicView) {
+  'views/MenuPanel'
+], function(G, U, Events, Voc, MenuPanel) {
   function isCreatorOrAdmin(res) {
     return (G.currentUser._uri == G.currentApp.creator  ||  U.isUserInRole(U.getUserRole(), 'admin', res));
   };
   
-  return BasicView.extend({
+  return MenuPanel.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'grab', 'release', 'chat');
-      BasicView.prototype.initialize.apply(this, arguments);
+      _.bindAll(this, 'render', 'grab', 'release', 'chat', 'physics');
+      MenuPanel.prototype.initialize.apply(this, arguments);
   //    this.resource.on('change', this.render, this);
       var type = this.modelType;
       this.makeTemplate('rightMenuP', 'template', type);
@@ -22,7 +22,7 @@ define('views/RightMenuPanel', [
       this.makeTemplate('menuHeaderTemplate', 'headerTemplate', type);
       this.viewId = options.viewId + 'r';
       this.isPanel = true;
-      this.listenToOnce(Events, 'pageChange', this.destroy);
+//      this.listenToOnce(Events, 'pageChange', this.destroy);
     },
     events: {
       'click [data-grab]'        : 'grab',
@@ -33,15 +33,32 @@ define('views/RightMenuPanel', [
       'click #subscribe'         : 'subscribe',
       'click .chattee'           : 'chat',
       'click #urbien123'         : 'home',
+      'click #physics123'        : 'physics',
       'click #login'             : 'login',
-      'click [data-href]'        : BasicView.clickDataHref
+      'click [data-href]'        : MenuPanel.clickDataHref
 //        ,
 //      'click'                    : 'click'
 //      'click #logout': 'logout',
     },
+
     home: function(e) {
       Events.stopEvent(e);
       window.location.href = G.serverName + '/app/UrbienApp';
+    },
+    
+    physics: function(e) {
+      Events.stopEvent(e);
+
+      var physics = this.getPageView().el.querySelector('.physicsConstants'),
+          style = physics.style;
+      
+      if (style.display == 'none')
+        style.removeProperty('display');
+      else
+        style.display = 'none';        
+      
+      window.dispatchEvent(new Event("viewportdimensions"));
+      this.hide();
     },
     
 //    click: function(e) {
@@ -194,12 +211,10 @@ define('views/RightMenuPanel', [
     
     renderChatParticipants: function() {
       this.el.$empty();
-      var p = document.getElementById(this.viewId);
-      p.$empty();
       
       this.html(this.template());
-      var frag = document.createDocumentFragment();
-      U.addToFrag(frag, this.groupHeaderTemplate({value: this.loc("whosHere") }));
+      var html = "";
+      html += this.groupHeaderTemplate({value: this.loc("whosHere") });
       
       var myId = this.pageView.getUserId();
       var me = G.currentUser;
@@ -234,8 +249,9 @@ define('views/RightMenuPanel', [
           }
         };
         
-        if (!img) 
-          U.addToFrag(frag, this.menuItemTemplate(common));
+        if (!img) {
+          html += this.menuItemTemplate(common);
+        }
         else {
           var oW = info.oW;
           var oH = info.oH;
@@ -250,23 +266,25 @@ define('views/RightMenuPanel', [
             right = dim.w - dim.x;
             bottom = dim.h - dim.y;
             left = dim.x;
-            U.addToFrag(frag, this.menuItemTemplate(_.extend({image: img, width: width, height: height, top: top, bottom: bottom, right: right, left: left}, common)));
+            html += this.menuItemTemplate(_.extend({image: img, width: width, height: height, top: top, bottom: bottom, right: right, left: left}, common));
           }
-          else
-            U.addToFrag(frag, this.menuItemTemplate(_.extend({image: img}, common)));
+          else {
+            html += this.menuItemTemplate(_.extend({image: img}, common));
+          }
         }
       }
       
       var ul = this.$('#rightMenuItems')[0];
-      ul.appendChild(frag);
-      var p = document.getElementById(this.viewId);
-      p.appendChild(this.el);
+      ul.innerHTML = html;
+//      var p = document.getElementById(this.viewId);
+//      p.appendChild(this.el);
       
-      if (!G.isJQM()) 
-        p.style.visibility = 'visible';
-      else {
+//      if (!G.isJQM()) 
+//        this.el.style.visibility = 'visible';
+//      else {
+      if (G.isJQM()) {
 //        p.panel().panel("open");
-        $(p).panel("open");
+        this.$el.panel("open");
         $(ul).listview();
       }
     },
@@ -277,66 +295,64 @@ define('views/RightMenuPanel', [
         return;
       }
       
-      var menu = document.getElementById(this.viewId);
-      var mi = menu.querySelector('ul#rightMenuItems');
-      if (mi) {
-        $(menu).panel("open");
-//        $('#' + this.viewId).panel().panel("open");
-        return;
+      if (G.isJQM()) {
+        var mi = this.el.querySelector('#rightMenuItems');
+        if (mi) {
+          this.$el.panel("open");
+  //        $('#' + this.viewId).panel().panel("open");
+          return;
+        }
       }
       
       var self = this,
           res = this.model,
           model = this.vocModel,
-          frag;
+          html = "";
           
       if (!model) {
         var commentVerb = this.loc('commentVerb'),
             likeVerb = this.loc('likeVerb');
         
         this.html(this.template({}));      
-        frag = document.createDocumentFragment();
         uri = U.makePageUrl('make', 'aspects/tags/Vote', {votable: G.currentApp._uri, '-makeId': G.nextId, $title: U.makeHeaderTitle(likeVerb, G.currentApp.davDisplayName)});
-        U.addToFrag(frag, this.menuItemTemplate({title: likeVerb, pageUrl: uri, icon: 'heart', homePage: 'y'}));
+        html += this.menuItemTemplate({title: likeVerb, pageUrl: uri, icon: 'heart', homePage: 'y'});
 
         if (!G.currentUser.guest) {
           var icons = _.map(['Facebook', 'Twitter', 'LinkedIn', 'Google'], function(n) { return '<i class="ui-icon-{0}"></i>'.format(U.getSocialNetFontIcon(n)) }).join(' ');
-          U.addToFrag(frag, this.menuItemTemplate({title: icons, mobileUrl: U.makePageUrl('social', '', {}), homePage: 'y'}));
+          html += this.menuItemTemplate({title: icons, mobileUrl: U.makePageUrl('social', '', {}), homePage: 'y'});
         }
 
         uri = U.makePageUrl('make', 'model/portal/Comment', {$editCols: 'description', forum: G.currentApp._uri, '-makeId': G.nextId, $title: U.makeHeaderTitle(commentVerb, G.currentApp.davDisplayName)});
-        U.addToFrag(frag, this.menuItemTemplate({title: commentVerb, pageUrl: uri, icon: 'comments', homePage: 'y'}));
+        html += this.menuItemTemplate({title: commentVerb, pageUrl: uri, icon: 'comments', homePage: 'y'})
         var isAllowedToEdit = G.currentUser != 'guest'  &&  (G.currentUser._uri == G.currentApp._creator  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'));
         if (isAllowedToEdit) {
           uri = U.makePageUrl('list', 'model/portal/Bookmark', {dashboard: U.getLongUri1(G.currentApp.dashboard), $edit: 'y', $title: U.makeHeaderTitle(this.loc('menu'), G.currentApp.davDisplayName)});
-          U.addToFrag(frag, this.menuItemTemplate({title: this.loc('editMenu'), pageUrl: uri, icon: 'cog', homePage: 'y'}));
+          html += this.menuItemTemplate({title: this.loc('editMenu'), pageUrl: uri, icon: 'cog', homePage: 'y'});
         }
         if (isAllowedToEdit  ||  (G.currentApp.webClasses && G.currentApp.webClasses.count)) {
           uri = U.makePageUrl('view', G.currentApp._uri);
           var title = this.loc(isAllowedToEdit ? 'editApp' : 'forkMe');
           var icon =  isAllowedToEdit ? 'wrench' : 'copy';
-          U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: uri, icon: icon, homePage: 'y'}));
+          html += this.menuItemTemplate({title: title, pageUrl: uri, icon: icon, homePage: 'y'});
         }
         var uri = 'view/profile';
-        if (G.currentUser.guest)
-          U.addToFrag(frag, this.menuItemTemplate({title: this.loc('login'), icon: 'user', mobileUrl: uri, homePage: 'y', id: 'login'}));
+        if (G.currentUser.guest) {
+          html += this.menuItemTemplate({title: this.loc('login'), icon: 'user', mobileUrl: uri, homePage: 'y', id: 'login'});
+        }
 //        else
 //          U.addToFrag(frag, this.menuItemTemplate({title: 'Profile', icon: 'user', mobileUrl: uri, image: G.currentUser.thumb, cssClass: 'menu_image_fitted', homePage: 'y'}));
         
         if (G.pageRoot != 'app/UrbienApp') {
-//        U.addToFrag(frag, this.homeMenuItemTemplate({title: "Urbien Home", icon: 'repeat', id: 'urbien123'}));
-          U.addToFrag(frag, this.menuItemTemplate({title: this.loc("urbienHome"), icon: 'repeat', id: 'urbien123', mobileUrl: '#', homePage: 'y'}));
+          html += this.menuItemTemplate({title: this.loc("urbienHome"), icon: 'repeat', id: 'urbien123', mobileUrl: '#', homePage: 'y'});
         }        
       }
       else {
         var json = this.resource && res.toJSON();
   //      var isSuperUser = isCreatorOrAdmin(res);
         this.html(this.template(json));      
-        
-        frag = document.createDocumentFragment();
 
         var title = '<div class="gradientEllipsis">' + this.loc(this.resource ? 'objProps' : 'listProps') + '</div>';
-        U.addToFrag(frag, this.headerTemplate({title: title, icon: 'gear'}));
+        html += this.headerTemplate({title: title, icon: 'gear'});
         var isItemListing = res.isA("ItemListing");
         var isBuyable = res.isA("Buyable");
         if (isItemListing || isBuyable) {
@@ -349,23 +365,24 @@ define('views/RightMenuPanel', [
             })[0];
             
             if (licenceMeta) {
-              U.addToFrag(frag, this.menuItemTemplate({title: this.loc('license'), image: licenseMeta.icon}));
+              html += this.menuItemTemplate({title: this.loc('license'), image: licenseMeta.icon});
             }
           }
         }
         
 //        this.buildGrabbed(frag);
 //        this.buildGrab(frag);
-        this.buildActionsMenu(frag);
-        
+        html += this.buildActionsMenu();
+        html += this.menuItemTemplate({title: this.loc("Physics"), id: 'physics123'});
         if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory')) {
           var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.allowedChangeHistory');
           if (!ch  ||  !ch.length)
             ch = U.getCloneOf(this.vocModel, 'ModificationHistory.changeHistory');
           if (ch  &&  ch.length  && !this.vocModel.properties[ch[0]].hidden) { 
             var cnt = res.get(ch[0]) && res.get(ch[0]).count;
-            if (cnt  &&  cnt > 0) 
-              U.addToFrag(frag, this.menuItemTemplate({title: this.loc("activity"), pageUrl: U.makePageUrl('list', 'system/changeHistory/Modification', {forResource: this.resource.getUri()})}));
+            if (cnt  &&  cnt > 0) { 
+              html += this.menuItemTemplate({title: this.loc("activity"), pageUrl: U.makePageUrl('list', 'system/changeHistory/Modification', {forResource: this.resource.getUri()})});
+            }
           }
         }
       }
@@ -399,20 +416,20 @@ define('views/RightMenuPanel', [
             template: pageTemplate
           });
           
-          U.addToFrag(frag, this.menuItemTemplate({title: "Aha! Button", icon: 'bookmark', mobileUrl: fragment}));
+          html += this.menuItemTemplate({title: "Aha! Button", icon: 'bookmark', mobileUrl: fragment});
         }
       }
 
-      var ul = this.$('#rightMenuItems')[0];
-      ul.appendChild(frag);
-      var p = document.getElementById(this.viewId);
-      p.appendChild(this.el);
+      var ul = this.ul = this.$('#rightMenuItems')[0];
+      ul.$append(html);
+//      var p = document.getElementById(this.viewId);
+//      p.appendChild(this.el);
       
       if (!G.isJQM()) 
-        p.style.visibility = 'visible';
+        this.el.style.visibility = 'visible';
       else {
 
-        $(p).panel().panel("open");
+        this.$el.panel().panel("open");
 //      p.panel().panel("open");
         $(ul).listview();
 //      p.trigger("updatelayout")
@@ -434,7 +451,7 @@ define('views/RightMenuPanel', [
       }).length;
     },
     
-    buildGrab: function(frag) {
+    buildGrab: function() {
       if (G.currentUser.guest)
         return;
       
@@ -442,7 +459,8 @@ define('views/RightMenuPanel', [
           res = this.resource,
           isList = !res,
           pageTitle = this.getPageTitle(),
-          grabVerb = this.loc('grabVerb'); //$('#pageTitle').text();
+          grabVerb = this.loc('grabVerb'), //$('#pageTitle').text();
+          html = "";
       
       if (isList) {
         var grab = {
@@ -452,22 +470,22 @@ define('views/RightMenuPanel', [
         };
 
         if (this.grabExists(grab))
-          return;
+          return html;
         
-        U.addToFrag(frag, this.groupHeaderTemplate({value: grabVerb}));
-        U.addToFrag(frag, this.menuItemTemplate({
+        html += this.groupHeaderTemplate({value: grabVerb});
+        html += this.menuItemTemplate({
           title: pageTitle, 
           data: {
             grab: $.param(grab)
           }
-        }));
+        });
         
-        return;
+        return html;
       }
       
       var uri = res.getUri();
       if (U.isTempUri(uri))
-        return this;
+        return html;
       
       var grab = {
         grabClass: this.vocModel.type,
@@ -479,14 +497,20 @@ define('views/RightMenuPanel', [
       var meta = this.vocModel.properties;
       var resName = U.getDisplayName(res);
       if (!this.grabExists(grab)) {
-        U.addToFrag(frag, this.groupHeaderTemplate({value: grabVerb}));
+        html += this.groupHeaderTemplate({value: grabVerb});
         addedHeader = true;
-        U.addToFrag(frag, this.menuItemTemplate({
+//        U.addToFrag(frag, this.menuItemTemplate({
+//          title: resName, 
+//          data: {
+//            grab: $.param(grab)
+//          }
+//        }));
+        html += this.menuItemTemplate({
           title: resName, 
           data: {
             grab: $.param(grab)
           }
-        }));
+        });
       }
       /*
       var backlinks = U.getBacklinks(meta);
@@ -518,32 +542,38 @@ define('views/RightMenuPanel', [
         }));
       }
       */
+      
+      return html;
     },
     
-    buildGrabbed: function(frag) {
+    buildGrabbed: function() {
       if (G.currentUser.guest)
         return;
       
-      var grabbed = G.currentUser.grabbed; // maybe it should just be a regular collection, req'd after stuff loads
+      var grabbed = G.currentUser.grabbed, // maybe it should just be a regular collection, req'd after stuff loads
+          html = "";
+      
       if (grabbed  &&  grabbed.length) {
-        U.addToFrag(frag, this.groupHeaderTemplate({value: this.loc('grabbed')}));
+        html += this.groupHeaderTemplate({value: this.loc('grabbed')});
         grabbed.each(function(item) {
-          U.addToFrag(frag, this.menuItemTemplate({
+          html += this.menuItemTemplate({
             title: item.get('title'), 
             data: {
               release: item.getUri()
             }
-          }));
-        }.bind(this));
+          });
+        });
       }
+      
+      return html;
     },
     
-    buildActionsMenu: function(frag) {
-      var haveActions;
+    buildActionsMenu: function() {
+      var html;
       if (this.resource)
-        haveActions = this.buildActionsMenuForRes(frag);
+        html = this.buildActionsMenuForRes();
       else
-        haveActions = this.buildActionsMenuForList(frag);
+        html = this.buildActionsMenuForList();
       
       if (!G.currentUser.guest) {
         if (this.resource  &&  U.isA(this.vocModel, 'CollaborationPoint')  &&  !U.isAssignableFrom(this.vocModel, 'Contact')) {
@@ -558,8 +588,9 @@ define('views/RightMenuPanel', [
               });
               
               if (!haveActions)
-                this.addActionsHeader(frag);
-              U.addToFrag(frag, this.menuItemTemplate({title: this.get("follow"), id: 'follow', mobileUrl: U.makePageUrl('make', 'model/portal/MySubscription', {owner: '_me', forum: this.resource._uri, $returnUri: loc})}));
+                html += this.buildActionsHeader();
+              
+              html += this.menuItemTemplate({title: this.get("follow"), id: 'follow', mobileUrl: U.makePageUrl('make', 'model/portal/MySubscription', {owner: '_me', forum: this.resource._uri, $returnUri: loc})});
             }
           }
         }
@@ -568,32 +599,31 @@ define('views/RightMenuPanel', [
       }
 
       var model = this.vocModel;
-      U.addToFrag(frag, this.groupHeaderTemplate({value: this.loc('pageAssets')}));        
+      html += this.groupHeaderTemplate({value: this.loc('pageAssets')});
       var wHash = U.getHash();
       var params = {};
       params.modelName = model.displayName;
-      U.addToFrag(frag, this.menuItemTemplate({title: this.loc('templates'), pageUrl: U.makePageUrl('templates', wHash, params)}));
-//      U.addToFrag(frag, this.menuItemTemplate({title: 'Views', pageUrl: U.makePageUrl('views', wHash, params)}));
-      U.addToFrag(frag, this.menuItemTemplate({title: this.loc('plugs'), pageUrl: U.makePageUrl('list', G.commonTypes.Handler, {effectDavClassUri: model.type})}));      
+      html += this.menuItemTemplate({title: this.loc('templates'), pageUrl: U.makePageUrl('templates', wHash, params)});
+      html += this.menuItemTemplate({title: this.loc('plugs'), pageUrl: U.makePageUrl('list', G.commonTypes.Handler, {effectDavClassUri: model.type})});      
 
       if (!this.resource)
-        return this;
+        return html;
       
       var res = this.resource;
       var isSuperUser = isCreatorOrAdmin(res);
       if (!isSuperUser)
-        return this;
+        return html;
             
       if (U.isAssignableFrom(this.vocModel, 'App')  ||  U.isAssignableFrom(this.vocModel, 'WebClass')  ||  U.isAssignableFrom(this.vocModel, 'WebProperty'))
-        return this;
+        return html;
       
-      U.addToFrag(frag, this.groupHeaderTemplate({value: this.loc('misc')}));        
+      html += this.groupHeaderTemplate({value: this.loc('misc')});        
       var uri = U.getLongUri1(G.currentApp._uri);
       pageUrl = U.makePageUrl('view', uri);
       var title = this.loc('editApp'); // + G.currentApp.title;
       var img = G.currentApp.smallImage;
       if (!img) 
-        U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl}));
+        html += this.menuItemTemplate({title: title, pageUrl: pageUrl});
       else {
         if (typeof G.currentApp.originalWidth != 'undefined' &&
             typeof G.currentApp.originalHeight != 'undefined') {
@@ -608,38 +638,40 @@ define('views/RightMenuPanel', [
 //              var bottom = dim.h - dim.y;
 //              var left = dim.x;
 //              U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl, image: img, width: width, height: height, top: top, right: right, bottom: bottom, left: left, cssClass: 'menu_image_fitted'}));
-          U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl, image: img, cssClass: 'menu_image_fitted'}));
+          html += this.menuItemTemplate({title: title, pageUrl: pageUrl, image: img, cssClass: 'menu_image_fitted'});
         }
         else
-          U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl, image: img}));
+          html += this.menuItemTemplate({title: title, pageUrl: pageUrl, image: img});
       }
       
-      return this;
+      return html;
     },
 
-    addActionsHeader: function(frag) {
-      U.addToFrag(frag, this.groupHeaderTemplate({value: this.loc('actions')}));      
+    buildActionsHeader: function() {
+      return this.groupHeaderTemplate({value: this.loc('actions')});      
     },
     
-    buildActionsMenuForList: function(frag) {
+    buildActionsMenuForList: function() {
       var m = this.vocModel,
-          loc = G.localize;
-      var cMojo = m.classMojoMultiplier;
-      var user = G.currentUser;
+          loc = G.localize,
+          cMojo = m.classMojoMultiplier,
+          user = G.currentUser,
+          html = "";
+      
       if (!user.guest && typeof cMojo !== 'undefined' && user.totalMojo > cMojo) {
-        this.addActionsHeader(frag);
-        U.addToFrag(frag, this.menuItemTemplate({title: this.loc('add'), mobileUrl: U.makeMobileUrl('make', m.type), id: 'add'}));
-        return true;
+        html += this.buildActionsHeader();
+        html += this.menuItemTemplate({title: this.loc('add'), mobileUrl: U.makeMobileUrl('make', m.type), id: 'add'});
       }
       
-      return false;
+      return html;
     },
     
-    buildActionsMenuForRes: function(frag) {
-      var m = this.resource;
-      var user = G.currentUser;
-      var edit = m.get('edit');
-      var isMakeOrEditRequest =  window.location.hash.indexOf('#edit') != -1  ||  window.location.hash.indexOf('#make') != -1;
+    buildActionsMenuForRes: function() {
+      var m = this.resource,
+          user = G.currentUser,
+          edit = m.get('edit'),
+          isMakeOrEditRequest =  window.location.hash.indexOf('#edit') != -1  ||  window.location.hash.indexOf('#make') != -1,
+          html = "";
       
       if (!user.guest  &&  !isMakeOrEditRequest  &&  (!edit  ||  user.totalMojo > edit)) {
         var paintAdd;
@@ -649,17 +681,17 @@ define('views/RightMenuPanel', [
         if (!U.isAssignableFrom(this.vocModel, 'Contact')  ||  m.getUri() == user._uri)
           paintEdit = true;
         if (paintAdd || paintEdit) {
-          this.addActionsHeader(frag);
+          html += this.buildActionsHeader();
           if (paintAdd)
-            U.addToFrag(frag, this.menuItemTemplate({title: this.loc('add'), mobileUrl: U.makeMobileUrl('make', m.vocModel.type), id: 'add'}));
+            html += this.menuItemTemplate({title: this.loc('add'), mobileUrl: U.makeMobileUrl('make', m.vocModel.type), id: 'add'});
           if (paintEdit)
-            U.addToFrag(frag, this.menuItemTemplate({title: this.loc('edit'), mobileUrl: U.makeMobileUrl('edit', m.getUri()), id: 'edit'}));
+            html += this.menuItemTemplate({title: this.loc('edit'), mobileUrl: U.makeMobileUrl('edit', m.getUri()), id: 'edit'});
         }
-//        U.addToFrag(frag, this.menuItemTemplate({title: this.loc('delete'), mobileUrl: '', id: 'delete'}));
-        return true;
+        
+        return html;
       }
       
-      return false;
+      return html;
     },
         
     subscribe: function(e) {
@@ -728,6 +760,6 @@ define('views/RightMenuPanel', [
     }    
   }, 
   {
-    displayName: 'RightMenuPanel'
+    displayName: 'ContextMenuPanel'
   });
 });

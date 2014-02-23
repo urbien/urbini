@@ -12,8 +12,9 @@ define('app', [
  'modelLoader',
  'vocManager',
  'resourceManager',
- 'collections/ResourceList'
- ], function(G, _, Backbone, __bbMxns__, Templates, U, Events, Errors, C, ModelLoader, Voc, ResourceManager, ResourceList) {
+ 'collections/ResourceList',
+ 'physicsBridge'
+ ], function(G, _, Backbone, __bbMxns__, Templates, U, Events, Errors, C, ModelLoader, Voc, ResourceManager, ResourceList, Physics) {
 //  var Chrome;
   var Router;
   Backbone.emulateHTTP = true;
@@ -57,7 +58,7 @@ define('app', [
     }
     else
       G.linkedModelsMetadata = {};
-  };
+  }
   
   function loadCurrentModel(dfd, waitTime) {
     var self = this,
@@ -85,7 +86,7 @@ define('app', [
     }); 
     
     return promise;
-  }; 
+  } 
 
 //  function buildLocalizationContext() {
 //    G.localizationContext = {
@@ -120,7 +121,7 @@ define('app', [
         currentApp.dataProviders = new ResourceList(providers, {
           model: U.getModel(providerType)
         });
-      };
+      }
 
       if (consumers.length) {
         currentApp.dataConsumerAccounts = new ResourceList(consumers, {
@@ -129,7 +130,7 @@ define('app', [
             $in: 'provider,' + _.pluck(providers, '_uri').join(',')
           }
         });
-      };
+      }
 
       if (accesses.length) {
         currentApp.dataAccesses = new ResourceList(accesses, {
@@ -142,7 +143,7 @@ define('app', [
         });
       }
     });
-  };
+  }
 
   function getTemplates() {
     var currentApp = G.currentApp,
@@ -176,7 +177,7 @@ define('app', [
         error: defer.resolve
       });
     }).promise();
-  }; 
+  } 
 
   function getViews() {
     var jsType = G.commonTypes.JS,
@@ -215,7 +216,7 @@ define('app', [
         error: defer.resolve
       });
     }).promise(); 
-  };
+  }
   
   function initGrabs() {
     if (G.currentUser.guest)
@@ -229,7 +230,7 @@ define('app', [
         }
       });
     });
-  };
+  }
   
   function setupPackagedApp() {
     if (navigator.mozApps) {
@@ -244,7 +245,7 @@ define('app', [
       
       Events.once('firefoxAppInstalled', dfd.resolve.bind(dfd));
     }
-  };
+  }
   
   function setupPushNotifications() {
     if (G.currentUser.guest)
@@ -291,46 +292,46 @@ define('app', [
 //        
 //      });
     });
-  };
+  }
 
-  function setupAvailibilityMonitor(dont) {
-    function run(fn, context) {
-      if (context)
-        fn.call(context);
-      else
-        fn();
-    }
-    
-    if (dont) {
-      // run everything right away
-      G.whenNotRendering = run;
-      return;
-    }
-    
-    var dfd, promise;
-    
-    function reset() {
-      var oldDfd = dfd,
-          oldPromise = promise;
-      
-      dfd = $.Deferred();
-      promise = dfd.promise();
-      
-      if (oldDfd)
-        Events.off('pageChange', oldDfd.resolve);
-      
-      Events.once('pageChange', dfd.resolve);
-      if (oldPromise && oldPromise.state() === 'pending')
-        promise.then(oldDfd.resolve);
-
-    }
-    
-    reset();
-    Events.on('changingPage', reset);
-    G.whenNotRendering = function(fn, context) {
-      return promise.then(run.bind(null, fn, context));
-    };
-  };
+//  function setupAvailibilityMonitor(dont) {
+//    function run(fn, context) {
+//      if (context)
+//        fn.call(context);
+//      else
+//        fn();
+//    }
+//    
+//    if (dont) {
+//      // run everything right away
+//      G.whenNotRendering = run;
+//      return;
+//    }
+//    
+//    var dfd, promise;
+//    
+//    function reset() {
+//      var oldDfd = dfd,
+//          oldPromise = promise;
+//      
+//      dfd = $.Deferred();
+//      promise = dfd.promise();
+//      
+//      if (oldDfd)
+//        Events.off('pageChange', oldDfd.resolve);
+//      
+//      Events.once('pageChange', dfd.resolve);
+//      if (oldPromise && oldPromise.state() === 'pending')
+//        promise.then(oldDfd.resolve);
+//
+//    }
+//    
+//    reset();
+//    Events.on('changingPage', reset);
+//    G.whenNotRendering = function(fn, context) {
+//      return promise.then(run.bind(null, fn, context));
+//    };
+//  }
   
   function hashToResourceOrList(hash) {
     var hashInfo = U.getUrlInfo(hash),
@@ -370,7 +371,7 @@ define('app', [
       
       return data ? data : G.getRejectedPromise();
     });
-  };
+  }
   
   function prefetchResources() {
     var tabs = G.tabs,
@@ -408,7 +409,7 @@ define('app', [
     
 //    if (Voc.isDelayingModelsFetch())
 //      Voc.getModels(null, {go: true});    
-  };
+  }
   
   function doPostStartTasks() {
     Voc.getModels();
@@ -424,7 +425,7 @@ define('app', [
   //        App.sendMessageToApp(msg);
   //      });
   //    }
-  };
+  }
   
   function prepDB() {
     var requiredStores = {    
@@ -466,7 +467,7 @@ define('app', [
     
     ModelLoader.init('indexedDB');
     ResourceManager.init();
-  };
+  }
   
 //  function setupHashMonitor() {
 //    $(window).on('hashchange')
@@ -497,15 +498,16 @@ define('app', [
         }
       });
     }).promise();
-  };
+  }
   
   function setupUser() {
     G.currentUser.role = G.currentUser.guest ? 'guest' : G.currentUser.role || 'contact';
-  };
+  }
   
   function setupWidgetLibrary() {
     if (G.isJQM()) {
-      var jqmEvents = ['pagebeforecreate', 'pagecreate', 'pagebeforehide', 'pagehide', 'pagebeforeshow', 'pageshow', 'pagebeforechange', 'pagechange'],
+      var jqmEvents = ['pagebeforecreate', 'pagecreate', 'pagebeforechange', 'pagechange'],
+          jqmTransitionEvents = ['pagebeforehide', 'pagehide', 'pagebeforeshow', 'pageshow'],
           $doc = $(document);
       
       function fwdEvent(page_event) {
@@ -519,7 +521,14 @@ define('app', [
             page_event = 'page_' + pageevent.slice(4);
             
         $doc.on(pageevent, fwdEvent(page_event));        
-      }      
+      }
+      
+      for (var i = 0, len = jqmTransitionEvents.length; i < len; i++) {
+        var pageevent = jqmTransitionEvents[i],
+            page_event = 'page_' + pageevent.slice(4);
+            
+        $doc.on(page_event, fwdEvent(pageevent));        
+      }
     }
   }
   
@@ -540,13 +549,16 @@ define('app', [
     setupWidgetLibrary();
     setupPackagedApp();
     setupUser();
-    setupAvailibilityMonitor();
+//    setupAvailibilityMonitor();
     setupCleaner();
     prepDB();
     var localized = localize();
-    var modelsViewsTemplatesAndDB = ResourceManager.openDB().then(function() {
-      return getAppAccounts().then(loadCurrentModel).then(function() {
-        return $.whenAll(getTemplates(), getViews());
+    var modelsViewsTemplatesAndDB = $.Deferred();
+    ResourceManager.openDB().done(function() {
+      return getAppAccounts().done(function() {
+        loadCurrentModel().done(function() {
+          $.whenAll.apply($, getTemplates(), getViews()).done(modelsViewsTemplatesAndDB.resolve);
+        });
       });
     });
       
@@ -555,16 +567,25 @@ define('app', [
 //        getAppAccounts().always(loadModels);
     Voc.checkUser();
     G.checkVersion();
+    if (G.coverImage) {
+      G.coverImage.color = G.lightColor = U.colorLuminance("#" + G.coverImage.lightColor.toString(16), 0.4);
+      G.coverImage.background = G.darkColor = "#" + G.coverImage.darkColor.toString(16);
+    }
+    else {
+      G.lightColor = '#eeeeee';
+      G.darkColor = '#757575';
+    }
     Templates.loadTemplates();
     extendMetadataKeys();
     setupNetworkEvents();
 //    if (G.browser.mobile)
 //      G.removeHoverStyles();
     
-    return $.whenAll(modelsViewsTemplatesAndDB, localized, require(['@widgets', 'router']).done(function($w, r) {
+    Physics.init();
+    return $.whenAll(modelsViewsTemplatesAndDB.promise(), localized, require(['@widgets', 'router']).done(function($w, r) {
       Router = r;
     }));
-  };
+  }
   
   
   function setupCleaner() {
@@ -624,7 +645,7 @@ define('app', [
 //        _.wipe(view);
 //      }, 0);
 //    });
-  };
+  }
   
   function setupMisc() {
     Events.on('location', function(position) {
@@ -634,7 +655,7 @@ define('app', [
       
       G.currentUser.location = position;        
     });
-  };
+  }
   
   function setupRTCCallMonitor() {
     G.callInProgress = null;
@@ -663,11 +684,11 @@ define('app', [
     Events.on('localVideoMonitor:off', function() {
       G.localVideoMonitor = null;
     });
-  };
+  }
   
   function setupWorkers() {
     Backbone.ajax = U.ajax;
-  };
+  }
   
   function setupNetworkEvents() {
     G.connectionListeners = [];
@@ -676,7 +697,7 @@ define('app', [
       fn.apply(this, arguments);
       Events.trigger(online ? 'online' : 'offline');
     };      
-  };
+  }
   
   function startApp() {
     Events.trigger('startingApp');
@@ -708,7 +729,7 @@ define('app', [
       
       dfd.resolve();
     }).promise();
-  };
+  }
       
 //  replaceGetUserMedia: function() {
 //    navigator.getUserMedia = function(options, success, error) {
@@ -758,7 +779,7 @@ define('app', [
         }
       });
     }).promise();
-  };
+  }
   
 //  _subscribeToNotifications: function(endpoints) {
 //    endpoints = _.isArray(endpoints) ? endpoints : [endpoints];
@@ -904,7 +925,7 @@ define('app', [
         window.location.reload();
       });        
     });
-  };
+  }
   
   var App = {
     TAG: 'App',
@@ -912,7 +933,8 @@ define('app', [
     initialize: function() {            
       var self = this;
       doPreStartTasks().always(function() {
-        G.whenNotRendering(doPostStartTasks);
+//        G.whenNotRendering(doPostStartTasks);
+        doPostStartTasks();
         startApp().always(function() {
           Events.trigger('appStart');
         });

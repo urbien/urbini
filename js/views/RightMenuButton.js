@@ -6,8 +6,8 @@ define('views/RightMenuButton', [
   'utils',
   'views/BasicView'
 ], function(G, _, Events, U, BasicView) {
-  var MenuPanel,
-      RightMenuPanel;
+  var MainMenuPanel,
+      ContextMenuPanel;
   
   return BasicView.extend({
     tagName: 'li',
@@ -18,35 +18,40 @@ define('views/RightMenuButton', [
       'hold': 'rightMenu'
     },
     
-    pageEvents: {
-      'tap': 'hidePanels'
-    },
-
-    hideLeftPanel: function() {
-      if (this.leftMenuPanel) {
-//      this.leftMenuPanel.destroy();
-        this.leftMenuEl.style.visibility = 'hidden';
-//      this.leftMenuPanel = null;
-      }
-    },
-    hideRightPanel: function() {
-      if (this.rightMenuPanel) {
-//      this.rightMenuPanel.destroy();
-        this.rightMenuEl.style.visibility = 'hidden';
-  //      this.rightMenuPanel = null;
-      }
-    },
-    
-    hidePanels: function(e) {
-//      if (e && e.currentTarget == this.el)
-//        return;
-      
-      this.hideLeftPanel();
-      this.hideRightPanel();
-    },
+//    pageEvents: {
+//      'tap': 'hidePanels'
+//    },
+//    
+//    hideLeftPanel: function() {
+//      if (this.leftMenuPanel) {
+////      this.leftMenuPanel.destroy();
+////        this.leftMenuEl.style.visibility = 'hidden';
+////      this.leftMenuPanel = null;
+//        this.leftMenuPanel.hide();
+//        return true;
+//      }
+//    },
+//    
+//    hideRightPanel: function() {
+//      if (this.contextMenuPanel) {
+////      this.ContextMenuPanel.destroy();
+////        this.rightMenuEl.style.visibility = 'hidden';
+//  //      this.ContextMenuPanel = null;
+//        this.contextMenuPanel.hide();
+//        return true;
+//      }
+//    },
+//    
+//    hidePanels: function(e) {
+////      if (e && e.currentTarget == this.el)
+////        return;
+//      
+//      Events.stopEvent(e);
+//      return this.hideLeftPanel() || this.hideRightPanel();
+//    },
     
     initialize: function(options) {
-      _.bindAll(this, 'render', 'refresh', 'leftMenu', 'rightMenu', 'hidePanels');
+      _.bindAll(this, 'render', 'refresh', 'leftMenu', 'rightMenu'); //, 'hidePanels');
       BasicView.prototype.initialize.apply(this, arguments);
       this.makeTemplate(this.templateName, 'template', this.modelType);
       this.viewId = options.viewId;
@@ -65,23 +70,24 @@ define('views/RightMenuButton', [
 
    _leftMenu: function(e) {
       var self = this;
-      var p = this.leftMenuEl; //$('#' + this.viewId);
-      // HACK
-      var tagName = (p  &&  p.tagName.toLowerCase() == 'section') ? 'nav' : 'div'; 
+//      var p = this.leftMenuEl; //$('#' + this.viewId);
+//      // HACK
+//      var tagName = (p  &&  p.tagName.toLowerCase() == 'section') ? 'nav' : 'div'; 
 
 //      if (!this.initialLeftMenuStyle)
 //        this.initialLeftMenuStyle = p[0].style;
       if (this.leftMenuPanel) {
         if (G.isJQM())
           $(this.leftMenuEl).panel('open');
-        this.leftMenuEl.style.visibility = 'visible';
+        this.leftMenuPanel.show(e);
+//        this.leftMenuEl.style.visibility = 'visible';
       }
       else {
-        this.leftMenuPanel = new MenuPanel({viewId: this.viewId, model: this.model, tagName: tagName, parentView: this.getPageView()});
+        this.leftMenuPanel = new MainMenuPanel({viewId: this.viewId, model: this.model, el: this.leftMenuEl, parentView: this.getPageView()});
         this.leftMenuPanel.render();
         this.leftMenuPanel.on('destroyed', function del() {
           self.leftMenuPanel.off('destroyed', del);
-          self.hideLeftPanel();
+//          self.leftMenuPanel.hide(); //hideLeftPanel();
           delete self.leftMenuPanel;
         });
       }
@@ -90,13 +96,20 @@ define('views/RightMenuButton', [
     },
     
     leftMenu: function(e) {
+      if (!this.leftMenuEl) {
+        if (this.rightMenuEl)
+          this.rightMenu.apply(this, arguments);
+        
+        return;
+      }
+      
       Events.stopEvent(e);
       var self = this;
-      if (MenuPanel)
+      if (MainMenuPanel)
         return this._leftMenu(e);
       else {
-        U.require('views/MenuPanel', function(mp) {
-          MenuPanel = mp;
+        U.require('views/MainMenuPanel', function(mp) {
+          MainMenuPanel = mp;
           self._leftMenu(e);
         });
       }
@@ -105,40 +118,48 @@ define('views/RightMenuButton', [
     },
     
     _rightMenu: function(e) {
-      var p = this.rightMenuEl; //$('#' + this.viewId + 'r');
-      // HACK
-      var tagName = (G.isBB()  ||  G.isBootstrap()) ? 'nav' : 'div'; 
+//      var p = this.rightMenuEl; //$('#' + this.viewId + 'r');
+//      // HACK
+//      var tagName = (G.isBB()  ||  G.isBootstrap()) ? 'nav' : 'div'; 
 //      if (!this.initialRightMenuStyle)
 //        this.initialRightMenuStyle = p[0].style;
 
-      if (this.rightMenuPanel) {
+      if (this.contextMenuPanel) {
         if (G.isJQM())
           $(this.rightMenuEl).panel('open');
-        this.rightMenuEl.style.visibility = 'visible';
+        this.contextMenuPanel.show(e);
+//        this.rightMenuEl.style.visibility = 'visible';
       }
       else {
         var self = this;
-        this.rightMenuPanel = new RightMenuPanel({viewId: this.viewId, model: this.model, tagName: tagName, parentView: this.getPageView()});
-        this.rightMenuPanel.render();
-        this.rightMenuPanel.on('destroyed', function del() {
-          self.rightMenuPanel.off('destroyed', del);
-          self.hideRightPanel();
-          delete self.rightMenuPanel;
+        this.contextMenuPanel = new ContextMenuPanel({viewId: this.viewId, model: this.model, el: this.rightMenuEl, parentView: this.getPageView()});
+        this.contextMenuPanel.render();
+        this.contextMenuPanel.on('destroyed', function del() {
+          self.contextMenuPanel.off('destroyed', del);
+//          self.contextMenuPanel.hide(); //hideRightPanel();
+          delete self.contextMenuPanel;
         });
       }
     },
     
     rightMenu: function(e) {
+      if (!this.rightMenuEl) {
+        if (this.leftMenuEl)
+          this.leftMenu.apply(this, arguments);
+        
+        return;
+      }
+      
       Events.stopEvent(e);
       if (G.currentUser.guest)
         return;
       
-      if (RightMenuPanel)
+      if (ContextMenuPanel)
         return this._rightMenu(e);
       else {
         var self = this;
-        U.require('views/RightMenuPanel', function(rmp) {
-          RightMenuPanel = rmp;
+        U.require('views/ContextMenuPanel', function(rmp) {
+          ContextMenuPanel = rmp;
           self._rightMenu(e);
         });
       }
@@ -152,9 +173,18 @@ define('views/RightMenuButton', [
     },
     
     render: function(options) {
-      this.html(this.template({viewId: this.viewId}));
+      if (this.el.childElementCount && !this.icon) {
+        this.icon = this.el.querySelector('i').className;
+      }
+      
+      this.html(this.template({
+        viewId: this.viewId, icon: this.icon
+      }));
+      
       this.findMenuBadge();
       if (!this.rendered) {
+        var self = this;
+        
         this.leftMenuEl = this.pageView.$('#' + this.viewId)[0];
         this.rightMenuEl = this.pageView.$('#' + this.viewId + 'r')[0];
 

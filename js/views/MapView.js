@@ -187,7 +187,7 @@ define('views/MapView', [
       }
       
       resourceLink = resourceLink || res.get('davDisplayName');
-      var data = {resourceLink: resourceLink, uri: res.getUri(), rows: grid};
+      var data = {resourceLink: resourceLink, uri: res.getUri(), rows: grid, displayName: U.getDisplayName(res) };
       
       if (res.isA("ImageResource")) {
         var medImg = res.get('mediumImage') || res.get('featured');

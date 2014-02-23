@@ -665,7 +665,16 @@ define('utils', [
 
     getTypeUri: function(typeName, hint) {
       if (typeName.indexOf('/') != -1) {
-        var type = typeName.startsWith('http://') ? typeName : G.defaultVocPath + typeName;
+        
+        var type;
+        if (typeName.startsWith('http://'))
+          type = typeName;
+        else {
+          if (("http://" + typeName).startsWith(G.DEV_PACKAGE_PATH))
+            type = "http://" + typeName;
+          else
+            type = G.defaultVocPath + typeName;
+        }
         var sqlIdx = type.indexOf(G.sqlUri);
         if (sqlIdx != -1)
           type = 'http://' + type.slice(sqlIdx + G.sqlUri.length + 1);
@@ -945,7 +954,7 @@ define('utils', [
     splitRequestFirstHalf: '$gridCols,$images,$displayNameElm,$alwaysReturnToClient',  // change these together
     setSplitRequest: function(vocModel) {        // change these together
       var meta = vocModel.properties,
-          gridCols = U.getColsMeta(vocModel, 'grid'),
+          gridCols = U.getGridColsMeta(vocModel),
           imageProps = U.getPropsRanged(vocModel, G.commonTypes.Image), //U.getClonedProps(vocModel, 'ImageResource'),
           displayNameProps = U.getDisplayNameProps(vocModel),
           firstHalf,
@@ -969,7 +978,15 @@ define('utils', [
       
       vocModel.splitRequest = secondHalf && secondHalf.length > 3;
     },
+
+    getViewColsMeta: function(vocModel) {
+      return this.getColsMeta(vocModel, 'view');
+    },
     
+    getGridColsMeta: function(vocModel) {
+      return this.getColsMeta(vocModel, 'grid');
+    },
+
     getColsMeta: function(vocModel, colsType) {
       colsType = colsType || 'grid';
       var colsProp = colsType + 'Cols';
@@ -988,44 +1005,47 @@ define('utils', [
     },
     
     makeCols: function(res, cols, isListView) {
+      if (!cols)
+        return null;
+      
       var vocModel = res.vocModel;
       var resourceLink;
       var rows = {};
-      var i = 0;
-      if (cols) {
-        _.each(cols, function (col) {
-          col = col.trim();
-          var prop = vocModel.properties[col];
-          if (!prop)
-            return;
-          
-          var val = res.get(col);
-          if (!val) {
-            var pGr = prop.propertyGroupList;
-            if (pGr) {
-              var s = U.getPropDisplayName(prop);
-              var nameVal = {name: s, value: pGr};
-              rows[s] = {value : pGr};  
-              rows[s].propertyName = col;  
-              rows[s].idx = i++;
-            }
-            
-            return;
+      var total = 0;
+      for (var i = 0; i < cols.length; i++) {
+        var col = cols[i].trim();
+        if (col == '')
+          continue;
+        var prop = vocModel.properties[col];
+        if (!prop)
+          return;
+        
+        var val = res.get(col);
+        if (!val) {
+          var pGr = prop.propertyGroupList;
+          if (pGr) {
+            var s = U.getPropDisplayName(prop);
+            var nameVal = {name: s, value: pGr};
+            rows[s] = {value : pGr};  
+            rows[s].propertyName = col;  
+            rows[s].idx = total++;
           }
           
-          var nameVal = U.makeProp({resource: res, prop: prop, value: val, isDisplayName: isListView ? prop.displayNameElm : undefined});
-          var nvn = nameVal.name;
-          rows[nvn] = {value: nameVal.value};
-          rows[nvn].idx = i++;
-          rows[nvn].propertyName = col;
-          if (prop.resourceLink)
-            rows[nvn].resourceLink = true;
-    //        resourceLink = nameVal.value;
-    //      else
-        });
-      }  
+          continue;
+        }
+        
+        var nameVal = U.makeProp(res, prop, val);
+        var nvn = nameVal.name;
+        rows[nvn] = {value: nameVal.value};
+        rows[nvn].idx = total++;
+        rows[nvn].propertyName = col;
+        if (prop.resourceLink)
+          rows[nvn].resourceLink = true;
+  //        resourceLink = nameVal.value;
+  //      else
+      }
       
-      return i == 0 ? null : rows;
+      return total == 0 ? null : rows;
     },
 
     
@@ -1298,8 +1318,10 @@ define('utils', [
      * @params (resource or resource.attributes, [model or model.properties])
      */
     getDisplayName: function(resource, vocModel) {
+      if (resource instanceof Backbone.Model && !resource.isLoaded())
+        return resource.vocModel.displayName;
+            
       var dn = U.getValue(resource, 'davDisplayName');
-      
       if (dn) {
         if (dn == 'null')
           dn = '* Not Specified *';
@@ -1458,6 +1480,26 @@ define('utils', [
 //      }
     },
 
+    getFormattedDate2: function(time, dateFormat) {
+      if (dateFormat.indexOf('~') == 0)
+        dateFormat = dateFormat.substring(1);
+      if (dateFormat.indexOf("MMM-dd, yyyy") == 0) {
+        var d = new Date(time);
+        var ds = d.toString();
+        var idx = 4;
+        var idx1 = ds.indexOf(' ', idx);
+        var mon = ds.substring(idx, idx1);
+        var day = ds.substring(idx1 + 1, idx1 + 3);
+        var year = ds.substring(idx1 + 4, idx1 + 8);
+        idx1 += 9;
+        
+        var hasSeconds = dateFormat.indexOf(":ss") != -1;
+        var hasMinutes = dateFormat.indexOf(":mm") != -1;
+        return mon + '-' + day + ', ' + year + ' ' + (hasSeconds ? ds.substring(idx1, idx1 + 8) : (hasMinutes ? ds.substring(idx1, idx1 + 5) : '')); 
+      }
+      else
+        return U.getFormattedDate(time);
+    },
     getFormattedDate1: function(time) {
       var d = new Date(time);
 
@@ -1550,16 +1592,17 @@ define('utils', [
 //        day_diff > 365 && (years = Math.round( day_diff / 365 )) + " years and " + U.getFormattedDate(now + (day_diff % 365));  
     },
     
-    toHTMLElement: function(html) {
-      return $(html.trim())[0];
-    },
-    
     getShortName: function(uri) {
       return uri.slice(uri.lastIndexOf('/') + 1); // if lastIndexOf is -1, return original string
     },
     
     addToFrag: function(frag, html) {
-      frag.appendChild(U.toHTMLElement(html));
+      var els = DOM.parseHTML(html),
+          l = els.length;
+      
+      for (var i = 0; i < l; i++) {
+        frag.appendChild(els[i]);
+      }
     },
     
     getUris: function(data) {
@@ -1621,7 +1664,8 @@ define('utils', [
       var bCloneOf;
       var hasImgs;
 //      var isIntersection = !hasImgs  &&  this.isA(vocModel, 'Intersection'); 
-      var isIntersection = this.isA(vocModel, 'Intersection'); 
+      var isIntersection = this.isA(vocModel, 'Intersection');
+      var isImageCover = this.isA(vocModel, 'ImageCover');
       var isResourceView = window.location.hash  &&  (window.location.hash.indexOf('#view/') == 0  ||  window.location.hash.indexOf('#edit/') == 0);
       if (isIntersection) {
         if (isResourceView) {
@@ -1640,8 +1684,19 @@ define('utils', [
       
       if (U.isA(vocModel, 'ImageResource')) {
         var isMasonry = !isResourceView  &&  U.isMasonry(vocModel)  &&  U.isMasonryModel(vocModel);
-        var cloneOfTmp = isMasonry ? U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0]  ||  U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0] 
-                                   : (isResourceView  ?  U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0] || U.getCloneOf(vocModel, 'ImageResource.bigImage')[0] : U.getCloneOf(vocModel, 'ImageResource.smallImage')[0] || U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0]);
+        var cloneOfTmp;
+        if (isMasonry)
+          cloneOfTmp = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0]  ||  U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
+        else if (isResourceView) {
+          if (isImageCover)
+            cloneOfTmp = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0]  ||  U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
+//            cloneOfTmp = U.getCloneOf(vocModel, 'ImageResource.smallImage')[0] || U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
+          else
+            cloneOfTmp = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0] || U.getCloneOf(vocModel, 'ImageResource.bigImage')[0];
+        }
+        else
+          cloneOfTmp = U.getCloneOf(vocModel, 'ImageResource.smallImage')[0] || U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];          
+
         if (cloneOfTmp) {
           if (isMasonry) {
             var viewport = G.viewport;
@@ -1781,9 +1836,24 @@ define('utils', [
         c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
         rgb += ("00"+c).substr(c.length);
       }
+//      var currentlum = (0.2126*rgbaA[0]) + (0.7152*rgbaA[1]) + (0.0722*rgbaA[2]);
 
       return rgb;
-    },   
+    },
+    getColorLuminance: function(hex) {
+      hex = String(hex).replace(/[^0-9a-f]/gi, '');
+      if (hex.length < 6) {
+        hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+      }
+      // convert to decimal and change luminosity
+      var rgb = "#", c, i;
+      var rgba = [];
+      var currentlum = 0;
+      for (i = 0; i < 3; i++) 
+        rgba[i] = parseInt(hex.substr(i*2,2), 16);
+      return (0.2126*rgba[0]) + (0.7152*rgba[1]) + (0.0722*rgba[2]);
+      
+    },
     colorLuminanceRGB: function(rgb, lum) {
       // validate hex string
       var idx1 = rgb.indexOf('(');
@@ -1792,7 +1862,6 @@ define('utils', [
       if (!rgbA)
         return null;
       lum = lum || 0;
-
       // convert to decimal and change luminosity
       var rgba = "#", c, i;
       for (i = 0; i < 3; i++) {
@@ -1803,15 +1872,13 @@ define('utils', [
 
       return rgba;
     },   
-    makeProp: function(info) {
-      var res = info.resource;
+    makeProp: function(res, prop, value) {
+//      var res = info.resource;
       var vocModel = res.vocModel;
-      var propName = info.propName;
-      var prop = info.prop || propName && vocModel && vocModel.properties[propName];
-      propName = propName || prop.shortName;
-      var val = info.value || U.getValue(res, propName);
+      var propName = prop.shortName; //info.propName;
+      var val = value || U.getValue(res, propName);
       val = typeof val !== 'undefined' ? U.getTypedValue(res, propName, val) : val;
-      var isDisplayName = info.isDisplayName || prop.displayNameElm;
+      var isDisplayName = prop.displayNameElm;
       
       var cc = prop.colorCoding;
       if (!prop.code) {
@@ -1824,15 +1891,21 @@ define('utils', [
               val = "<span style='color:" + cc + "'>" + val + "</span>";
           }
         }
-        else if (prop.range == 'string') {
+        else if (val && prop.range == 'string') {
           var href = window.location.hash;
           var isView = href.startsWith("#view/");
 
-          if (isDisplayName)
-            val = "<span>" + val + "</span>";
+          if (isDisplayName) {
+            if (prop.setLinkTo)
+              val = "<a href='" + res.get(prop.setLinkTo) + "'><span>" + val + "</span></a>";
+            else
+              val = "<span>" + val + "</span>";
+          }
 //            val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
           else if (!isView  &&  prop.maxSize > 1000) {
-            var color = G.theme.descColor; 
+            var color;
+            if (G.coverImage)
+              color = G.coverImage.background;
             /*
             if (!color) {
               color = $('[data-role="page"]').css('color');
@@ -1849,8 +1922,10 @@ define('utils', [
             */ 
 //            var dColor = G.theme.descriptionColor;
             if (color) {
+              var lum = U.getColorLuminance(color);
               if (color.charAt(0) != '#')
                 color = '#' + color;
+              
               val = '<div class="u-desc" style="color: ' + color + ';">' + val + '</div>';
             }
             else
@@ -2081,12 +2156,12 @@ define('utils', [
         val.comment = prop.comment;
       
       var propInfo = {
-        value: U.template(propTemplate)(val)
+        value: U.template(propTemplate)(val),
+        prop: prop
       };
       
       if (prop.comment)
         propInfo.comment = prop.comment;
-      
       return propInfo;
     },
     
@@ -2390,7 +2465,7 @@ define('utils', [
     clipToFrame: function(frmWidth, frmHeight, oWidth, oHeight, maxDim, minDim) {
       if (!maxDim)
         return;
-      if (oWidth < maxDim  &&  oHeight < maxDim)
+      if (oWidth < frmHeight  &&  oHeight < frmHeight)
         return {clip_top: 0, clip_right: oWidth, clip_bottom: oHeight, clip_left: 0, top: 0, left: 0};
       if (maxDim  &&  (maxDim > frmWidth)) {
         var mdW, mdH;
@@ -2692,7 +2767,7 @@ define('utils', [
       var primaryKeys = U.getPrimaryKeys(model),
           keyVals = _.pick(atts, primaryKeys);
       
-      if (!_.size(keyVals))
+      if (_.size(keyVals) != primaryKeys.length)
         return null;
       
       for (var key in keyVals) {
@@ -2980,13 +3055,15 @@ define('utils', [
         }
       });
       
-      return function(val) {
-        for (var i = 0; i < rules.length; i++) {
-          if (!rules[i](val))
-            return false;
+      if (rules.length) {
+        return function(val) {
+          for (var i = 0; i < rules.length; i++) {
+            if (!rules[i](val))
+              return false;
+          }
+          
+          return true;
         }
-        
-        return true;
       }
     },
     
@@ -3182,12 +3259,23 @@ define('utils', [
       }
     },
     
-    getRequiredCodemirrorModes: function(vocModel) {
-      var codeProps = U.getPropertiesWith(vocModel.properties, 'code');
-      var scriptTypes = [];
-      var codemirrorModes = [];
+    getRequiredCodemirrorModes: function(res, mode) {
+      var codeProps = U.getPropertiesWith(res.vocModel.properties, 'code'),
+          scriptTypes = [],
+          codemirrorModes = [],
+          userRole = U.getUserRole(),
+          prop,
+          code;
+      
       for (var cp in codeProps) {
-        var code = codeProps[cp].code;
+        prop = codeProps[cp];
+        if (!U.isPropVisible(res, prop, userRole))
+          continue;
+
+        if (mode != 'edit' && !res.get(prop))
+          continue;
+        
+        code = prop.code;
         switch (code) {
           case 'html':
             codemirrorModes.push('codemirrorXMLMode');
@@ -3202,7 +3290,9 @@ define('utils', [
         }
       }
       
-      codemirrorModes = _.uniq(codemirrorModes);
+      if (codemirrorModes.length)
+        codemirrorModes = _.uniq(codemirrorModes);
+      
       return codemirrorModes;
     },
     
@@ -3293,7 +3383,7 @@ define('utils', [
       if (G.isJQM())
         $(dialog).trigger('create').popup().popup("open");
       else
-        dialog.style['z-index'] = 1000000;
+        dialog.style['zIndex'] = 1000000;
       if (options.onok)
         dialog.$('[data-cancel]').$on('click', options.oncancel);
       if (options.onok)
@@ -3499,10 +3589,10 @@ define('utils', [
      * sends a remote procedure call to the packaged app code
      */
     rpc: function(method) {
-      log('app', method);
+//      log('app', method);
       var args = slice.call(arguments, 1),
           msg = {
-              type: 'rpc:' + method
+            type: 'rpc:' + method
           };
       
       if (args && args.length)
@@ -3608,7 +3698,7 @@ define('utils', [
 
     isMasonryModel: function(vocModel) {
       var type = vocModel.type;
-      return type.startsWith(G.defaultVocPath) && _.any(['Tournament', 'Theme', 'Goal', 'Coupon', 'VideoResource', 'Movie', 'App', 'ThirtyDayTrial', 'Tree'], function(className) {
+      return type.startsWith(G.defaultVocPath) && _.any(['Tournament', 'Theme', 'Goal', 'Coupon', 'VideoResource', 'Movie', 'App', 'ThirtyDayTrial', 'TreeSpecies', 'Tree', 'Urbien'], function(className) {
         return type.endsWith('/' + className);
       });
     },
@@ -3711,7 +3801,12 @@ define('utils', [
         return G.getResolvedPromise();
       else {
         var dfd = $.Deferred();
-        return dfd.resolve.apply(dfd, concat.apply(ArrayProto, slice.call(arguments))).promise();
+        switch (arguments.length) { // small optimizations to avoid creating arrays
+          case 1: return dfd.resolve.call(dfd, arguments[0]);
+          case 2: return dfd.resolve.call(dfd, arguments[0], arguments[1]);
+          case 3: return dfd.resolve.call(dfd, arguments[0], arguments[1], arguments[2]);
+          default: return dfd.resolve.apply(dfd, concat.apply(ArrayProto, slice.call(arguments))).promise();
+        }
       }
     },
     
@@ -3806,20 +3901,40 @@ define('utils', [
     },
     
     toTimedFunction: function(obj, name, thresh) {
-      var fn = obj[name];
-      return function() {
+      var fn = name ? obj[name] : obj;
+      function timed() {
         var now = _.now(),
-            frame = window.fastdom.frameNum;
+            frame = window.fastdom.frameNum,
+            result,
+            time;
         
-        try {
-          return fn.apply(this, arguments);
-        } finally {
-          var time = _.now() - now;
+        function measure() {
+          time = _.now() - now;
           if (!thresh || time > thresh)
-            console.log("function", name, "took", time, "millis", window.fastdom.frameNum - frame, "frames");
-        }
+            console.log("function", name, "took", time, "millis", window.fastdom.frameNum - frame, "frames");          
+        };
+        
+        result = fn.apply(this, arguments);
+        if (_.isPromise(result))
+          result.always(measure);
+        else
+          measure();
+        
+        return result;
       };
+      
+      if (name)
+        obj[name] = timed;
+      
+      return timed;
     },
+    
+//    arrayFnProxy: function(arrayFn, fn, objOrArray) {
+//      if (objOrArray instanceof Array)
+//        return objOrArray[arrayFn](fn);
+//      else
+//        return fn(objOrArray);
+//    },
     
     dataURLToBlob: function(dataURL) {
       var BASE64_MARKER = ';base64,',
@@ -3904,6 +4019,8 @@ define('utils', [
     getDisplayNameProps: '_displayNameProps', 
     getPrimaryKeys: '_primaryKeys', 
 //    getModelImageProperty: '_imageProperty',
+    getGridColsMeta: '_gridCols',
+    getViewColsMeta: '_viewCols',
     isResourceProp: '_isResourceProp',
     getPropCloneOf: '_clonedProperties',
     getPositionProps: '_positionProperties',
@@ -4113,3 +4230,92 @@ define('utils', [
 
   return (Lablz.U = U);
 });
+//      getNewBrightnessColor: function(rgbcode, brightness) {
+//        var r = parseInt(rgbcode.slice(1, 3), 16),
+//            g = parseInt(rgbcode.slice(3, 5), 16),
+//            b = parseInt(rgbcode.slice(5, 7), 16),
+//            HSL = this.rgbToHsl(r, g, b),
+//            RGB;
+//            
+//        RGB = this.hslToRgb(HSL[0], HSL[1], brightness / 100);
+//        rgbcode = '#'
+//            + this.convertToTwoDigitHexCodeFromDecimal(RGB[0])
+//            + this.convertToTwoDigitHexCodeFromDecimal(RGB[1])
+//            + this.convertToTwoDigitHexCodeFromDecimal(RGB[2]);
+//        
+//        return rgbcode;
+//    },
+//
+//    convertToTwoDigitHexCodeFromDecimal: function(decimal){
+//        var code = Math.round(decimal).toString(16);
+//        
+//        (code.length > 1) || (code = '0' + code);
+//        return code;
+//    },
+//    /**
+//     * Converts an RGB color value to HSL. Conversion formula
+//     * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
+//     * Assumes r, g, and b are contained in the set [0, 255] and
+//     * returns h, s, and l in the set [0, 1].
+//     *
+//     * @param   Number  r       The red color value
+//     * @param   Number  g       The green color value
+//     * @param   Number  b       The blue color value
+//     * @return  Array           The HSL representation
+//     */
+//    rgbToHsl: function(r, g, b){
+//        r /= 255, g /= 255, b /= 255;
+//        var max = Math.max(r, g, b), min = Math.min(r, g, b);
+//        var h, s, l = (max + min) / 2;
+//
+//        if(max == min){
+//            h = s = 0; // achromatic
+//        }else{
+//            var d = max - min;
+//            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+//            switch(max){
+//                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+//                case g: h = (b - r) / d + 2; break;
+//                case b: h = (r - g) / d + 4; break;
+//            }
+//            h /= 6;
+//        }
+//
+//        return [h, s, l];
+//    },
+//
+//    /**
+//     * Converts an HSL color value to RGB. Conversion formula
+//     * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
+//     * Assumes h, s, and l are contained in the set [0, 1] and
+//     * returns r, g, and b in the set [0, 255].
+//     *
+//     * @param   Number  h       The hue
+//     * @param   Number  s       The saturation
+//     * @param   Number  l       The lightness
+//     * @return  Array           The RGB representation
+//     */
+//    hslToRgb: function(h, s, l){
+//        var r, g, b;
+//
+//        if(s == 0){
+//            r = g = b = l; // achromatic
+//        }else{
+//            function hue2rgb(p, q, t){
+//                if(t < 0) t += 1;
+//                if(t > 1) t -= 1;
+//                if(t < 1/6) return p + (q - p) * 6 * t;
+//                if(t < 1/2) return q;
+//                if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+//                return p;
+//            }
+//
+//            var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+//            var p = 2 * l - q;
+//            r = hue2rgb(p, q, h + 1/3);
+//            g = hue2rgb(p, q, h);
+//            b = hue2rgb(p, q, h - 1/3);
+//        }
+//
+//        return [r * 255, g * 255, b * 255];
+//    }

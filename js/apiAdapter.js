@@ -12,7 +12,7 @@ define('apiAdapter', ['globals', 'underscore'], function(G, _) {
       throw errMsg;
     
     return oauthVersion;
-  };
+  }
   
   /**
    * @param consumer - the app's API account
@@ -20,7 +20,7 @@ define('apiAdapter', ['globals', 'underscore'], function(G, _) {
   function API(consumer, provider) {
     this.consumer = consumer;
     this.provider = provider;
-  };
+  }
   
   _.extend(API.prototype, {
     getUrl: function(type, endpoint, params, authenticated) {

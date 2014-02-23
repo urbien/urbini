@@ -5,8 +5,9 @@ define('views/ResourceImageView', [
   'utils',
   'domUtils',
   'events',
+  'vocManager',
   'views/BasicView'
-], function(G, _, U, DOM, Events, BasicView) {
+], function(G, _, U, DOM, Events, Voc, BasicView) {
 
 //  $(function() {
 //    var $allVideos = $("iframe[src^='http://player.vimeo.com'], iframe[src^='http://www.youtube.com'], object, embed"),
@@ -43,6 +44,7 @@ define('views/ResourceImageView', [
       this.isAudioResource = res.isA('AudioResource');
       this.isAudio = res.isAssignableFrom('Audio')  ||  this.isAudioResource;
       this.isImage = res.isA('ImageResource');
+      this.isImageCover = U.isA(this.vocModel, 'ImageCover');//  &&  U.getCloneOf(this.vocModel, 'ImageCover.coverPhoto');
       this.resource.on('change', this.refresh, this);
       return this;
     },
@@ -56,8 +58,8 @@ define('views/ResourceImageView', [
         return;
       
       var v = this.video,
-          width = v.videoWidth || this.$video.width(),
-          height = v.videoHeight || this.$video.height(),
+          width = v.videoWidth || v.$outerWidth(),
+          height = v.videoHeight || v.$outerHeight(),
           preventOversize = !!width;
       
       if (width && height) {
@@ -80,8 +82,8 @@ define('views/ResourceImageView', [
       width = width || maxWidth;
       height = height || maxHeight;
       var downscaleRatio = Math.max(width / maxWidth, height / maxHeight, false);
-      this.$video.attr('width', Math.round(width / downscaleRatio));
-      this.$video.attr('height', Math.round(height / downscaleRatio));
+      this.video.$attr('width', Math.round(width / downscaleRatio));
+      this.video.$attr('height', Math.round(height / downscaleRatio));
     },
     
     refresh: function() {
@@ -92,7 +94,7 @@ define('views/ResourceImageView', [
     },
     
     _getVideoEl: function() {
-      return this.isLocalVideo ? this.$('video') : this.$('iframe');
+      return (this.isLocalVideo ? this.$('video') : this.$('iframe'))[0];
     },
     
     renderVideo: function() {
@@ -135,21 +137,20 @@ define('views/ResourceImageView', [
         }
       }
       
-      this.$video = this._getVideoEl();
-      this.video = this.$video[0];
+      this.video = this._getVideoEl();
       if (this.video) {
         if (this.video.tagName === 'VIDEO') {
           var checkSize = function(e) {
             if (self.video.videoWidth) {
               self.resizeVideo();
               _.each(G.media_events, function(e) {
-                self.$video.off(e, checkSize);
+                self.video.$off(e, checkSize);
               });
             }
           };
               
           _.each(G.media_events, function(e) {
-            self.$video.one(e, checkSize);
+            self.video.$once(e, checkSize);
           });
         }
         else {
@@ -165,6 +166,8 @@ define('views/ResourceImageView', [
     
     render: function(options) {
       this.getFetchPromise().done(this.renderHelper.bind(this, options));
+      if (this.isImageCover)
+        this.getFetchPromise().done(this.renderHelperCover.bind(this, options));
     },
     
     renderHelper: function(options) {
@@ -202,9 +205,9 @@ define('views/ResourceImageView', [
 
       if (!this.isImage)
         return this;
-      
+
       // fallback to image
-      var imagePropName = U.getImageProperty(this.vocModel),
+      var imagePropName = (U.isAssignableFrom(this.vocModel, 'model/workflow/Alert')) ? 'resourceMediumImage': U.getImageProperty(this.vocModel),
           imageProp = imagePropName && meta[imagePropName],
           image = imagePropName && res.get(imagePropName);
       
@@ -232,13 +235,40 @@ define('views/ResourceImageView', [
 
       var oWidth, oHeight, metaW, metaH, metaDim;
       var isIntersection = U.isA(this.vocModel, 'Intersection');
-      
+      var hIfImgWidth;
       if (!isIntersection) {
         oWidth = res.get('ImageResource.originalWidth');
         oHeight = res.get('ImageResource.originalHeight');
         metaW = imageProp['imageWidth'];
         metaH = imageProp['imageHeight'];
         metaDim = imageProp['maxImageDimension'];
+        if (metaW)
+          metaDim = metaW;
+        if (oWidth < metaW)
+          metaDim = oWidth;
+        if (this.isImageCover) { 
+//          if (metaDim < 140) 
+//            metaDim = metaW ? metaW : 140;
+//          if (oHeight > oWidth) {
+//            var ratio = metaDim / oWidth;
+//            metaDim = oHeight * ratio;
+//          }
+          if (metaW) {
+            var ratio = metaDim / oWidth;
+            hIfImgWidth = oHeight * ratio;
+          }
+            
+        }
+        if (!metaDim) {
+          if (metaW) {
+            if (oWidth > oHeight) 
+              metaDim = metaW;
+            else {
+              var ratio = metaW / oWidth;
+              metaDim = oHeight * ratio;
+            }
+          }
+        }
       } 
       else {
         var range, iProp;
@@ -258,7 +288,7 @@ define('views/ResourceImageView', [
         if (im) {
           var imeta = im.properties;
           var imgP = iProp  &&  imeta[U.getCloneOf(im, 'ImageResource.mediumImage')]; 
-          maxDim = imgP && imgP.maxImageDimension;
+          metaDim = imgP && imgP.maxImageDimension;
         }
       }
       
@@ -268,12 +298,17 @@ define('views/ResourceImageView', [
       if (image.indexOf('Image/') == 0)
         image = decodeURIComponent(image.slice(6));
   
-      var clip = U.clipToFrame(winW, winH, oWidth, oHeight, metaDim);
+      var clip;
+      if (this.isImageCover)
+        clip = U.clipToFrame(140, 140, oWidth, oHeight, metaDim);
+      else
+        clip = U.clipToFrame(winW, winH, oWidth, oHeight, metaDim);
+
 
 
       var w, h, t, r, b, l, left, top, maxW;
 
-      var clip;
+      
       if (metaDim) {
         if (winW >= metaDim) {
           if (oWidth >= oHeight)
@@ -302,10 +337,10 @@ define('views/ResourceImageView', [
         }
       }
       
-      imgAtts = DOM.lazifyImages({
+      imgAtts = DOM.lazifyImage({
         src: image,
         'data-for': U.getImageAttribute(res, imagePropName)
-      })[0];
+      });
       
 //      if (l) {
 //        iTemplate += '<a href="#cameraPopup" class="cameraCapture" target="#" data-icon="camera" data-prop="'+ cOf[0] + '"></a>';
@@ -315,7 +350,7 @@ define('views/ResourceImageView', [
         if (l)
           iTemplate += '<a href="#cameraPopup" class="cameraCapture" target="#" data-icon="camera" data-prop="'+ cOf[0] + '"></a>';
 //        imgAtts.style = 'position:absolute; clip: rect(' + t + 'px,' + r + 'px,' + b + 'px,' + l + 'px); left:' + left + 'px; '; // + (top ? 'top: ' + top + 'px;' : '');   
-        imgAtts.style = 'position:absolute; clip: rect(' + clip.clip_top + 'px,' + clip.clip_right + 'px,' + clip.clip_bottom + 'px,' + clip.clip_left + 'px); left:-' + clip.clip_left + 'px; top:-' + clip.clip_top; // + (top ? 'top: ' + top + 'px;' : '');
+        imgAtts.style = 'position:absolute; clip: rect(' + clip.clip_top + 'px,' + clip.clip_right + 'px,' + clip.clip_bottom + 'px,' + clip.clip_left + 'px); left:-' + clip.clip_left + 'px; top:-' + clip.clip_top + 'px;'; // + (top ? 'top: ' + top + 'px;' : '');
       }
       else if (!isIntersection) {
         if (w) imgAtts.width = w;
@@ -323,6 +358,7 @@ define('views/ResourceImageView', [
       }
       
       var imgTag = DOM.tag('img', null, imgAtts);
+      
       var iTemplate = DOM.toHTML(imgTag);
       
 //      var iTemplate = w ? "<img data-frz-src='" + image +"' width='" + w + "'" + (h ? " height='" + h : '') + "' />"
@@ -345,8 +381,19 @@ define('views/ResourceImageView', [
       if (mg == null  ||  mg.length == 0)
         li = '<div style="margin-top: -15px; margin-left: {0}px;">{1}</div>'.format(padding, iTemplate);
       else {
-        if (clip)
-          li = '<div style="position:relative;height:' + (clip.clip_bottom - clip.clip_top) + 'px">{0}</div>'.format(iTemplate);
+        if (clip) {
+          if (this.isImageCover) {
+            if (!hIfImgWidth  ||  hIfImgWidth >= 140) 
+              li = '<div style="border: solid #ccc;width:140px;height:140px;left:10px;position:absolute">{0}</div>'.format(iTemplate);
+            else 
+              li = '<div style="border: solid #ccc;width:140px;height:' + Math.floor(hIfImgWidth) + 'px;left:15px;position:absolute">{0}</div>'.format(iTemplate);
+          }
+          else
+            li = '<div style="position:relative;height:' + (clip.clip_bottom - clip.clip_top) + 'px">{0}</div>'.format(iTemplate);
+        }
+        else if (this.isImageCover  &&  metaDim == 140  &&  oWidth) {
+          li = '<div style="border: solid #ccc;width:140px;left:15px;position:absolute">{0}</div>'.format(iTemplate);
+        }
         else
           li = '<div style="height:' + h + 'px">{0}</div>'.format(iTemplate);
       }
@@ -360,13 +407,91 @@ define('views/ResourceImageView', [
         this.el.appendChild(frag);
       }
         
+      if (this.isImageCover) {
+        
+        if (U.isAssignableFrom(this.vocModel, 'model/company/ContactBySocial')) {
+          var friends = this.resource.get('friendsCount') || (this.resource.get('friends') && this.resource.get('friends').count);
+          this.el.style.top = '95px'; //!G.isBB() ? (friends ? '155px' : '190px') : '95px';
+        }
+        else
+          this.el.style.top = '155px'; //!G.isBB() ? '195px' : '155px';
+      }  
       if (l) {
         var h = t ? b - t : b;
         this.el.style.height = h + 'px';
       }
       
+      // HACK to update scroll bounds, remove when we start using mutation observer
+      this.pageView._onViewportDimensionsChanged();
       this.pageView.trigger('loadLazyImages', this.el);
       return this;
+    },
+    
+    renderHelperCover: function(options) {
+      var ic = U.getCloneOf(this.vocModel, 'ImageCover.coverPhoto')[0],
+               coverPhoto,
+               riView = this,
+               type;
+      if (ic)
+        coverPhoto = this.resource.get(ic);
+      if (!coverPhoto) {
+        this.renderCoverImage(G.coverImage);
+        return this;
+      }
+      if (!coverPhoto) 
+        return this;
+
+//      var prop = this.vocModel(ic);
+      type = U.getTypeUri(coverPhoto);
+      Voc.getModels(type).done(function(m) {
+        var res = new m({_uri: coverPhoto});
+        var haha = riView;
+        res.fetch({
+          success: function() {
+            riView.renderCoverImage(res);
+//            var coverImage = res.get('originalImage');
+//            var coverDiv = '<div id="coverImage" style="background-image:url(' + coverImage + ');height: 350px;">';
+//            var pe = riView.el.parentElement;
+//            if (!pe)
+//              return;
+//            pe.$append(coverDiv);  
+//            while (!pe.id  ||  pe.id != 'resourceViewHolder')
+//              pe = pe.parentElement;
+//            pe.style.position = "absolute";
+//            pe.style.top = "0";
+//            pe.style.width = "100%";
+          }
+        });
+      });
+      return this;
+    },
+    renderCoverImage: function(res) {
+      var coverImage, coverDiv;
+      if (res) { 
+        coverImage = res.attributes ? res.get('coverImage') : res.coverImage;
+        if (!coverImage)
+          coverImage = res.originalImage;
+        if (coverImage.indexOf('http://') == -1)
+          coverImage = G.serverName + '/' + coverImage;
+        coverDiv = '<div id="coverImage" style="background-repeat:no-repeat;background-image:url(' + coverImage + ');background-size:cover;height:';
+      }
+      else
+        coverDiv = '<div id="coverImage" style="height:';
+      coverDiv += '290px;'; //!G.isBB() ? '350px;' : '290px;';
+      coverDiv += 'z-index:100;"></div>';
+      var pe = this.el.parentElement;
+      if (!pe)
+        return;
+      pe.$append(coverDiv);  
+      while (!pe.id  ||  pe.id != 'resourceViewHolder')
+        pe = pe.parentElement;
+/*
+      if (!G.isBB()) {
+        pe.style.position = "absolute";
+        pe.style.top = "0";
+        pe.style.width = "100%";
+      }
+*/      
     }
   },
   {

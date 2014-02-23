@@ -10,7 +10,7 @@ define('views/ResourceView', [
     var p = prop.shortName;
     var doShow = p.charAt(0) != '_' && p != 'davDisplayName'  &&  !prop.avoidDisplayingInView  &&  U.isPropVisible(res, prop, role);
     // if property marked as Display name element show only on case it is of resource range.
-    return doShow ? (!prop.displayNameElm  ||  prop.range.indexOf("/") != -1) : doShow;
+    return doShow ? (!prop.displayNameElm  ||  prop.setLinkTo  ||  prop.range.indexOf("/") != -1) : doShow;
       
   };
 
@@ -35,8 +35,8 @@ define('views/ResourceView', [
 //        });
 //      }
 
-      var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
-      this.isCode = codemirrorModes.length; // we don't need to use the actual modes, just need to know whether we need codemirror stuff
+      var codemirrorModes = U.getRequiredCodemirrorModes(this.resource, 'view');
+      this.isCode = !!codemirrorModes.length; // we don't need to use the actual modes, just need to know whether we need codemirror stuff
       var promises = [this.getFetchPromise()];
       if (this.isCode)
         promises.push(U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes)));
@@ -57,7 +57,8 @@ define('views/ResourceView', [
 //        else
         this.purchasesBacklinkProp = this.vocModel.properties[options.purchasesBLProp];
       }
-      
+    
+      this.toggleVisibility(true); // set to invisible until it's rendered
       return this;
     },
     events: {
@@ -132,23 +133,31 @@ define('views/ResourceView', [
 //    tap: Events.defaultTapHandler,  
 //    click: Events.defaultClickHandler,
     
-    pruneProps: function(json) {
-      if (this.resource.isA("VideoResource")) {
-        var videoHtml5Prop = U.getCloneOf(this.vocModel, "VideoResource.videoHtml5")[0];
-        if (videoHtml5Prop)
-          delete json[videoHtml5Prop];
-      }
-    },
+//    pruneProps: function(json) {
+//      if (this.resource.isA("VideoResource")) {
+//        var videoHtml5Prop = U.getCloneOf(this.vocModel, "VideoResource.videoHtml5")[0];
+//        if (videoHtml5Prop)
+//          delete json[videoHtml5Prop];
+//      }
+//    },
     
     render: function() {
-      var args = arguments;
-//      if (!this.ready)
-//        return this.renderHelper.apply(this, args);
+      var self = this,
+          args = arguments,
+          invisible = false;
+      
+      if (!this.resource.isLoaded()) {
+        this.toggleVisibility(true);
+        invisible = true;
+      }
       
       return this.ready.then(function() {
-        this.renderHelper.apply(this, args);
-        this.finish();
-      }.bind(this));
+        self.renderHelper.apply(self, args);
+        if (invisible)
+          self.toggleVisibility();
+        
+        self.finish();
+      });
     },
     
     renderHelper: function(options) {
@@ -167,8 +176,9 @@ define('views/ResourceView', [
       }
       var meta = vocModel.properties;
       var userRole = U.getUserRole();
-      var json = res.toJSON();
-      this.pruneProps(json);
+      var json = res.attributes;
+//      var json = res.toJSON();
+//      this.pruneProps(json);
 
       var frag = document.createDocumentFragment();
 
@@ -268,7 +278,7 @@ define('views/ResourceView', [
             if (prop['app']  &&  (!currentAppProps || $.inArray(p, currentAppProps) == -1))
               continue;
             displayedProps[p] = true;
-            var val = U.makeProp({resource: res, prop: prop, value: res.get(p)});
+            var val = U.makeProp(res, prop, res.get(p));
             if (!groupNameDisplayed) {
               U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
               groupNameDisplayed = true;
@@ -284,7 +294,7 @@ define('views/ResourceView', [
             else
               U.addToFrag(frag, this.propRowTemplate(val));
             
-            json[p] = val;
+//            json[p] = val;
           }
         }
       }
@@ -329,9 +339,9 @@ define('views/ResourceView', [
           if (isJQM)
             otherLi = '<li id="other" style="border:0px;' + (G.theme.backgroundImage ? 'background-image: url(' + G.theme.backgroundImage + ')' : '') + '" data-content-theme="' + G.theme.list + '"  data-theme="' + G.theme.list + '"><h3 style="margin:0px;"><i class="ui-icon-plus-sign"></i>&#160;Other</h3><ul class="hidden"">';
           else if (isBB)
-            otherLi = '<section id="other"><header style="margin:0px;cursor:pointer;"><i class="ui-icon-plus-sign"></i>&#160;Other</header><ul class="other hidden">';
+            otherLi = '<section id="other"><header style="margin:0px;cursor:pointer;' + (G.coverImage ? 'color:' + G.coverImage.background + ';border-bottom:0.1rem solid ' + G.coverImage.background + ';"' : '') + '"><i class="ui-icon-plus-sign"></i>&#160;Other</header><ul class="other hidden">';
           else if (G.isTopcoat())
-            otherLi = '<li id="other" class="topcoat-list__item"><h3><i class="ui-icon-plus-sign"></i>&#160;Other</h3><ul class="topcoat-list__container hidden">';
+            otherLi = '<li id="other" class="topcoat-list__item" ' +  (G.coverImage ? 'style="text-shadow:none;background:' + G.coverImage.color + ';color: ' + G.coverImage.background + ';"' : '') + '><h3><i class="ui-icon-plus-sign"></i>&#160;Other</h3><ul class="topcoat-list__container hidden">';
           else if (G.isBootstrap())
             otherLi = '<li id="other"><h3 style="font-size:18px;"><i class="ui-icon-plus-sign"></i>&#160;Other</h3><ul class="list-group-container hidden">';
   //        this.$el.append('<li data-role="collapsible" data-content-theme="c" id="other"><h2>Other</h2><ul data-role="listview">'); 
@@ -339,7 +349,7 @@ define('views/ResourceView', [
         }
         
         displayedProps[p] = true;
-        var val = U.makeProp({resource: res, propName: p, prop: prop, value: res.get(p)});
+        var val = U.makeProp(res, prop, res.get(p));
         if (prop.code) {
           val.value = this.__prependNumbersDiv(prop, val.value);          
         }
@@ -436,6 +446,7 @@ define('views/ResourceView', [
           }
           
           editor = CodeMirror.fromTextArea(textarea, {
+            dragDrop: false,
             mode: mode,
             tabMode: 'indent',
             lineNumbers: true,

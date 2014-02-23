@@ -137,7 +137,7 @@ section[data-type="sidebar"] > header .icon {
 }
 
 section[data-type="sidebar"]:after {
-  content: "";
+  #content: "";
   width: 1rem;
   background: url(drawer/images/ui/shadow.png) right top repeat-y;
   height: 100%;

@@ -4,7 +4,7 @@ define('d3widgets', ['lib/d3'], function() {
     return function(t) {
       return d3.hsl(i(t));
     };
-  };
+  }
 
   return {
     concentricCircles: function(divId, options) {

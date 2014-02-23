@@ -1,4 +1,6 @@
 /**
+ * Adapted for PhysicsJS
+ * 
  * jQuery Masonry v2.0.110517 beta
  * The flip-side of CSS Floats.
  * jQuery plugin that rearranges item elements to a grid.
@@ -8,142 +10,108 @@
  * Copyright 2011 David DeSandro
  */
 
-define('lib/jquery.masonry', ['underscore'], function(_) {
+(function(root, Physics) {
   // ========================= Masonry ===============================
 
+  var ArrayProto = Array.prototype;
+  var slice = ArrayProto.slice;
+  var concat = ArrayProto.concat;
+  function difference(array) {
+    var rest = concat.apply(ArrayProto, slice.call(arguments, 1));
+    return array.filter(function(value){ return rest.indexOf(value) == -1; });
+  }
+  
+//  function intersection(a, b) {
+//    var common = [],
+//        id,
+//        idInt;
+//    
+//    for (var i = 0; i < a.length; i++) {
+//      id = a[i]._id;
+//      idInt = parseInt(a[i]._id.match(/\d+/)[0]);
+//      for (var j = 0; j < b.length; j++) {
+//        if (id == b[j]._id || idInt == parseInt(b[j]._id.match(/\d+/)[0]))
+//          common.push([i, j, id]);
+//      }      
+//    }
+//    
+//    return common;
+//  };
+  
+  function getBrickCoord(brick, idx) {
+    brick = brick._rail ? brick._rail.railBody : brick;
+    return brick.state.pos.get(idx);
+  }
+
   // our "Widget" object constructor
-  function Mason( options, element ){
-    this.element = element;
+  function Mason( options, bricks ){
+    this.flexigroup = options.flexigroup;
+    this.bricks = bricks || [];
     this._create( options );
-    this._init();
+    if (this.bricks.length)
+      this._init();
   };
 
-  // styles of container element we want to keep track of
-  var masonryContainerStyles = [ 'position', 'height' ];
-
   Mason.settings = {
+    horizontal: false,
+    oneElementPerCol: false,
+    oneElementPerRow: false,
+    stretchRow: false,
+    stretchCol: false,
     fromBottom: false,
     isResizable: true,
-    isAnimated: false,
-    animationOptions: {
-      queue: false,
-      duration: 500
-    },
-    gutterWidth: 0,
-    isRTL: false,
-    isFitWidth: false,
-    containerStyle: {
-      position: 'relative'
-    }
+    gutterWidthHorizontal: 0,
+    gutterWidthVertical: 0
   };
 
   Mason.prototype = {
-    _getBricks: function( elems ) {
-      var selector = this.options.itemSelector;
-      // if there is a selector
-      // filter/find appropriate item elements
-      if (!selector)
-        return elems;
-  
-      var matches = [],
-          brick,
-          i = elems.length;
-  
-      while (i--) {
-        var el = elems[i];
-        if (el.nodeType == 1 && el.$matches(selector))
-          matches.push(el);
-      }
-  
-      i = elems.length;
-      while (i--) {
-        elems[i].$(selector).$forEach(function(innerMatch) {
-          matches.push(innerMatch);
-        });
-      }
-  
-      i = matches.length;
-      this._brickify.apply(this, matches);
-      return matches;
-    },
-    
-    _brickify: function(/* brickWannabes */) {
-      var i = arguments.length;
-      while (i--) {
-        arguments[i].$css({ position: 'absolute' })
-                    .$addClass('masonry-brick')
-      }
-    },
-
     // sets up widget
-    _create : function( options ) {
-  
-      this.options = $.extend( true, {}, Mason.settings, options );
+    _create: function( options ) {        
+      this.options = Physics.util.extend( {}, Mason.settings, options );
+        
+      this.axis = this.options.horizontal ? 'x' : 'y';
+      this.axisIdx = this.options.horizontal ? 0 : 1;
+      this.orthoAxisIdx = this.axisIdx ^ 1;
+      this.aabbAxisDim = this.options.horizontal ? '_hw' : '_hh';
+      this.aabbOrthoAxisDim = this.options.horizontal ? '_hh' : '_hw';
+      this.initialAxisOffset = this.flexigroup ? this.flexigroup.state.pos.get(this.axisIdx) : 0;
+//      this.AXIS = this.axis.toUpperCase();
       this.originalFromBottom = this.options.fromBottom;
-      this.styleQueue = [];
-      // need to get bricks
-      this.reloadItems();
-  
-  
-      // get original styles in case we re-apply them in .destroy()
-      var elemStyle = this.element.style;
-      this.originalStyle = {};
-      for ( var i=0, len = masonryContainerStyles.length; i < len; i++ ) {
-        var prop = masonryContainerStyles[i];
-        this.originalStyle[ prop ] = elemStyle[ prop ] || null;
-      }
-  
-      this.element.$css({
-        position : 'relative'
-      });
-  
-      this.horizontalDirection = this.options.isRTL ? 'right' : 'left';
-      this.offset = {};
-  
-      // get top left position of where the bricks should be
-      var $element = $(this.element);
-      var $cursor = $( document.createElement('div') ); 
-      $element.prepend( $cursor );
-      this.offset.y = Math.round( $cursor.position().top );
-      // get horizontal offset
-      if ( this.options.isRTL ) {
-        this.offset.x = Math.round( $cursor.position().left );
-      } else {
-        $cursor.css({ 'float': 'right', display: 'inline-block'});
-        this.offset.x = Math.round( $element.outerWidth() - $cursor.position().left );
-      }
-      $cursor.remove();
-  
-      // add masonry class first time around
-      var instance = this;
-      setTimeout( function() {
-        instance.element.$addClass('masonry');
-      }, 0 );
-  
-      // bind resize method
-      if ( this.options.isResizable ) {
-        this._resizeEventHandler = this.resize.bind(this);
-        window.addEventListener('debouncedresize', this._resizeEventHandler);
-        //        this.bindDOMEvent(window, 'debouncedresize', );
-      }
-  
+      this.setBounds(options.bounds);
     },
   
     // _init fires when your instance is first created
     // (from the constructor above), and when you
     // attempt to initialize the widget again (by the bridge)
     // after it has already been initialized.
-    _init : function( callback ) {
-  
-      this.reLayout( callback );
-  
+    _init: function() {
+      this.reLayout();
+      this._initialized = true;
+    },
+
+    setBounds: function(bounds) {
+      this.bounds = bounds;
+      this.offset = {
+        x: this.bounds._pos.get(0) - this.bounds._hw,
+        y: this.bounds._pos.get(1) - this.bounds._hh
+      };
     },
     
-    getBounds: function() {
-      return {
-        min: Math.max.apply(Math, this.topColYs),
-        max: Math.min.apply(Math, this.bottomColYs)
+    getContentBounds: function() {
+      return this.topColYs ? {
+        min: Math.min.apply(Math, this.topColYs),
+        max: Math.max.apply(Math, this.bottomColYs)
+      } : {
+        min: this.offset[this.axis],
+        max: this.offset[this.axis]
       }
+    },
+
+    _getOffsetDueToFlexigroup: function() {
+      if (this.options.flexigroup)
+        return this.flexigroup.state.pos.get(this.axisIdx) - this.initialAxisOffset;
+      else
+        return 0;
     },
   
     option: function( key, value ){
@@ -153,8 +121,8 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
       // but here's how:
   
       // signature: $('#foo').bar({ cool:false });
-      if ( $.isPlainObject( key ) ){
-        this.options = $.extend(true, this.options, key);
+      if ( Physics.util.isObject( key ) ){
+        this.options = Physics.util.extend({}, this.options, key);
   
         // signature: $('#foo').option('cool');  - getter
       } else if ( key && typeof value === "undefined" ){
@@ -168,30 +136,28 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
       return this; // make sure to return the instance!
     },
   
-    // ====================== General Layout ======================
-  
+    // ====================== General Layout ======================  
+        
     // used on collection of atoms (should be filtered, and sorted before )
     // accepts atoms-to-be-laid-out to start with
-    layout : function( bricks, callback ) {
+    layout: function( bricks ) {
+      var self = this,
+          brick, colSpan, groupCount, groupY, groupColY, j, 
+          colYs = this._getColYs(), 
+          extreme = this.options.fromBottom ? Math.min : Math.max;
   
-      // layout logic
-      var brick, colSpan, groupCount, groupY, groupColY, j, 
-      colYs = this._getColYs(), 
-      extreme = this.options.fromBottom ? Math.min : Math.max;
-  
-      for (var i=0, len = bricks.length; i < len; i++) {
-        brick = bricks[i];
-        //how many columns does this brick span
-        colSpan = Math.ceil( this._getOuterWidth(brick) / this.columnWidth );
-        colSpan = Math.min( colSpan, this.cols );
+//      for (var i=0, len = bricks.length; i < len; i++) {
+      Physics.util.loop(bricks, function(brick) {        
+        // how many columns does this brick span
+        colSpan = self._getColSpan(brick);
   
         if ( colSpan === 1 ) {
           // if brick spans only one column, just like singleMode
-          this._placeBrick( brick, this.cols, colYs );
+          self._placeBrick( brick, self.cols, colYs );
         } else {
           // brick spans more than one column
           // how many different places could this brick fit horizontally
-          groupCount = this.cols + 1 - colSpan;
+          groupCount = self.cols + 1 - colSpan;
           groupY = [];
   
           // for each group potential horizontal position
@@ -202,107 +168,100 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
             groupY[j] = extreme.apply( Math, groupColY );
           }
   
-          this._placeBrick( brick, groupCount, groupY );
+          self._placeBrick( brick, groupCount, groupY );
         }
-      }
-  
-      // set the size of the container
-      // TODO: adjust this if necessary to take into account both sets of cols
-      var containerSize = {};
-//      containerSize.height = Math.max.apply( Math, this.bottomColYs ) - Math.min.apply( Math, this.topColYs ) + 'px';
-      containerSize.height = Math.max.apply( Math, this.bottomColYs ) - this.offset.y + 'px';
-      if ( this.options.isFitWidth ) {
-        containerSize.width = this.cols * this.columnWidth - this.options.gutterWidth + 'px';
-      }
-  
-      this.styleQueue.push({ el: this.element, style: containerSize });
-  
-      // are we animating the layout arrangement?
-      // use plugin-ish syntax for css or animate
-      var animated = !this.isLaidOut && this.options.isAnimated;
-      var animOpts = this.options.animationOptions;
-  
-      // process styleQueue
-      var obj;
-      for (i=0, len = this.styleQueue.length; i < len; i++) {
-        obj = this.styleQueue[i];
-        if (animated)
-          obj.el.$animate(obj.style, animOpts);
-        else
-          obj.el.$css(obj.style);
-      }
-  
-      // clear out queue for next time
-      this.styleQueue = [];
-  
-      // provide elems as context for the callback
-      if ( callback ) {
-        callback.call( bricks );
-      }
-  
-      this.isLaidOut = true;
-  
-      return this;
+      }, this.options.fromBottom);
     },
   
+    // _calcBrickMargin: function() {
+      // if (!this.hasOwnProperty('_brickMarginX') && this.bricks.length) {
+        // var brick = this.bricks[0].view;
+        // this._brickMarginY = outerHeight(brick, true) - brick.offsetHeight;
+        // this._brickMarginX = outerHeight(brick, true) - brick.offsetWidth;
+        // this._calcOuterDimensions(brick);
+      // }
+    // },
+    
+    getGutterWidth: function(ortho) {
+      if (this.options.horizontal && ortho || (!this.options.horizontal && !ortho))
+        return this.options.gutterWidthVertical;
+      else
+        return this.options.gutterWidthHorizontal;
+    },
+    
     // calculates number of columns
-    // i.e. this.columnWidth = 200
-    _getColumns : function() {
-      var container = this.options.isFitWidth ? this.element.parentNode : this.element,
-          containerWidth = container.offsetWidth;
+    // i.e. this.alleyDim = 200
+    _getColumns: function() {
+      if (this.options.oneElementPerRow || this.options.stretchRow) {
+        this.alleyDim = this.bounds._hw * 2 - this.getGutterWidth(true);
+        this.cols = 1;
+        return;
+      }
+      else if (this.options.oneElementPerCol || this.options.stretchCol) {
+        this.alleyDim = this.bounds._hh * 2 - this.getGutterWidth(true);
+        this.cols = 1;
+        return;
+      }
+      
+      var brick = this.bricks[0],
+          dimensionMethod = this.options.horizontal ? '_getOuterHeight' : '_getOuterWidth',
+          containerDim = this.options.horizontal ? this.bounds._hh * 2 : this.bounds._hw * 2;
   
-      this.columnWidth = this.options.columnWidth ||
-          // or use the size of the first item
-          this.bricks.length && this._getOuterWidth(this.bricks[0]) ||
-          // if there's no items, use size of container
-          containerWidth;
+      // this._calcBrickMargin();
+      this.alleyDim = this.options.alleyDim ||
+                         // or use the size of the first item
+                         this[dimensionMethod](brick) ||
+                         // if there's no items, use size of container
+                         containerDim;
   
-      this.columnWidth += this.options.gutterWidth;
+      this.alleyDim += this.getGutterWidth(true);
   
-      this.cols = Math.floor( ( containerWidth + this.options.gutterWidth ) / this.columnWidth );
+      this.cols = Math.floor( ( containerDim - this.getGutterWidth(true) ) / this.alleyDim );
       this.cols = Math.max( this.cols, 1 );
   
       return this;
-  
     },
   
     _getColYs: function() {
       return this.options.fromBottom ? this.topColYs : this.bottomColYs;
     },
   
-    _getOuterHeight: function( brick ) {
-      var offsetHeight = brick.offsetHeight;
-      if (!this.hasOwnProperty('_brickExtraHeight'))
-        this._brickExtraHeight = $(brick).outerHeight(true) - offsetHeight;
-  
-      return offsetHeight + this._brickExtraHeight; 
+    _getOuterWidth: function(brick) {
+      // return parseFloat(brick.view.dataset.outerWidth);
+      if (brick.geometry._aabb)
+        return brick.geometry._aabb._hw * 2;
+      else
+        return brick.aabb().halfWidth * 2;
     },
-  
-    _getOuterWidth: function( brick ) {
-      var offsetWidth = brick.offsetWidth;
-      if (!this.hasOwnProperty('_brickExtraWidth'))
-        this._brickExtraWidth = $(brick).outerWidth(true) - offsetWidth;
-  
-      return offsetWidth + this._brickExtraWidth; 
+
+    _getOuterHeight: function(brick) {
+      // return parseFloat(brick.view.dataset.outerHeight);
+      if (brick.geometry._aabb)
+        return brick.geometry._aabb._hh * 2;
+      else
+        return brick.aabb().halfHeight * 2;
     },
-  
-    _placeBrick : function( brick, setCount, setY ) {
+
+    _placeBrick: function( brick, setCount, setY ) {
       // get the minimum Y value from the columns
-      var extreme = this.options.fromBottom ? Math.max : Math.min,
-          extremeY  = extreme.apply( Math, setY ),
+      var view = brick.view,
+          dimensionMethod = this.options.horizontal ? '_getOuterWidth' : '_getOuterHeight',
+          extreme = this.options.fromBottom ? Math.max : Math.min,
+          extremeDepth  = extreme.apply( Math, setY ),
           multiplier = this.options.fromBottom ? -1 : 1,
-              setHeight = extremeY + (this._getOuterHeight(brick) * multiplier),
-              i = setY.length,
-              shortCol  = i,
-              setSpan   = this.cols + 1 - i,
-              position  = {},
-              colYs = this._getColYs();
+          setHeight = extremeDepth + multiplier * (this[dimensionMethod](brick) + this.getGutterWidth()),
+          i = setY.length,
+          shortCol  = i,
+          setSpan   = this.cols + 1 - i,
+          style     = {},
+          colYs = this._getColYs(),
+          lock;
   
       //    Which column has the min/max Y value, 
       //         closest to the left/right, 
       // based on if we're appending/prepending
       while (i--) {
-        if ( setY[i] === extremeY ) {
+        if ( setY[i] === extremeDepth ) {
           shortCol = i;
           if (this.options.fromBottom)
             break;
@@ -310,24 +269,36 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
       }
   
       // position the brick
-      if (this.options.fromBottom)
-        position.top = setHeight - this.offset.y + 'px';
-      else
-        position.top = extremeY + this.offset.y + 'px';
-  
-        //position.top = minimumY;
-        // position.left or position.right
-        position[ this.horizontalDirection ] = this.columnWidth * shortCol + this.offset.x + 'px';
-      this.styleQueue.push({ el: brick, style: position });
-  
+      var top,
+          left;
+      
+      if (this.options.horizontal) {        
+        top = this.getGutterWidth(true) + this.alleyDim * shortCol + /*this.offset.y +*/ brick.geometry._aabb._hh; // alleyDim includes gutterWidth
+        
+        if (this.options.fromBottom)
+          left = extremeDepth /*- this.offset.x*/ - brick.geometry._aabb._hw + this._getOffsetDueToFlexigroup();
+        else
+          left = extremeDepth /*+ this.offset.x*/ + brick.geometry._aabb._hw + this._getOffsetDueToFlexigroup();
+      }
+      else {
+        left = this.getGutterWidth(true) + this.alleyDim * shortCol + this.offset.x + brick.geometry._aabb._hw; // alleyDim includes gutterWidth
+      
+        if (this.options.fromBottom)
+          top = extremeDepth /*- this.offset.y*/ - brick.geometry._aabb._hh + this._getOffsetDueToFlexigroup();
+        else
+          top = extremeDepth /*+ this.offset.y*/ + brick.geometry._aabb._hh + this._getOffsetDueToFlexigroup();
+      }
+
+      console.log("adding " + brick.options._id + " (" + brick.geometry._aabb._hw * 2, "x", brick.geometry._aabb._hh * 2, ") brick at (" + left + ", " + top + ")");
+      brick.state.pos.set(left, top, getBrickCoord(brick, 2));
+
       // apply setHeight to necessary columns
       for ( i=0; i < setSpan; i++ ) {
         colYs[ shortCol + i ] = setHeight;
       }
-  
     },
   
-    resize : function() {
+    resize: function() {
       var prevColCount = this.cols;
       // get updated colCount
       this._getColumns('masonry');
@@ -337,80 +308,121 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
       }
     },
   
-  
-    reLayout : function( callback ) {
-      this._getColumns('masonry');
-      this._reloadLayout( callback );
-    },
-  
-    _reloadLayout : function( callback ) {
-      // reset columns
-      var i = this.cols;
-      this.options.fromBottom = this.originalFromBottom;
-      this.topColYs = [];
-      this.bottomColYs = [];
-      while (i--) {
-        this.topColYs.push( this.offset.y );
-        this.bottomColYs.push( this.offset.y );
+//    reset: function(bricks) {
+//      this._resetColYs();
+//      if (bricks) {
+//        this.bricks = bricks;
+//        this.reLayout();
+//      }
+//      else
+//        this.bricks.length = 0;
+//    },
+    
+    reLayout: function() {
+      if (this.bricks.length) {
+        this._getColumns('masonry');
+        this._reloadLayout();
       }
-      // apply layout logic to all bricks
-      this.layout( this.bricks, callback );
     },
   
+    _reloadLayout: function() {
+      // reset columns
+      this.options.fromBottom = this.originalFromBottom;
+      this._resetColYs();
+      
+      // apply layout logic to all bricks
+      this.layout( this.bricks );
+    },
+  
+    _resetColYs: function() {
+      var i = this.cols,
+          offset = this.offset[this.axis];
+      
+      if (!this.topColYs)
+        this.topColYs = new Array(i);
+      
+      if (!this.bottomColYs)
+        this.bottomColYs = new Array(i);
+      
+      while (i--) {
+        this.topColYs[i] = offset;
+        this.bottomColYs[i] = offset + this.getGutterWidth();
+      }
+      
+      this.topColYs.length = this.bottomColYs.length = this.cols;
+    },
+    
     // ====================== Convenience methods ======================
   
     // goes through all children again and gets bricks in proper order
-    reloadItems : function() {
-      this.bricks = this._getBricks( this.element.childNodes );
+    // reloadItems: function() {
+      // this.bricks = this._getBricks();
+    // },
+  
+    setOffset: function(offset) {
+      var top = this.topColYs,
+          bottom = this.bottomColYs,
+          i = this.cols;
+      
+      while (i--) {
+        top[i] = offset;
+        bottom[i] = offset;
+      }
+    },
+    
+    reload: function(offset) {
+      // this.reloadItems();
+      if (offset)
+        this.offset = offset;
+      
+      this.reLayout();
     },
   
-  
-    reload : function( callback ) {
-      this.reloadItems();
-      this.reLayout( callback );
-    },
-  
-    appended: function( content, callback, contentIsBricks ) {
+    appended: function( content ) {
       this.options.fromBottom = false;
       this._appended.apply(this, arguments);    
     },
   
-    prepended: function(content, callback, contentIsBricks) {
+    prepended: function(content) {
       this.options.fromBottom = true;
       return this._appended.apply(this, arguments);
     },
   
     // convienence method for working with Infinite Scroll
-    _appended : function( content, callback, contentIsBricks ) {
+    _appended: function( newBricks ) {
       // add new bricks to brick pool
-      var newBricks;
-      if (contentIsBricks) {
-        this._brickify.apply(this, content);
-        newBricks = content;
-      }
-      else
-        newBricks = this._getBricks(content);
-      
+//      var common = intersection(this.bricks, newBricks);
       this.bricks = this.options.fromBottom ? newBricks.concat(this.bricks) : this.bricks.concat( newBricks );
-      this.layout( newBricks, callback );
+//      if (common.length) {
+////        if (Physics.util.unique(this.bricks.map(function(b) {return b.options._uri})).length)
+//          debugger;
+//      }
+      
+      if (!this._initialized)
+        this._init();
+      else
+        this.layout( newBricks );
     },
   
     _getLeftmostColumn: function(brick) {
-      var offset = parseInt(brick.style[this.horizontalDirection], 10) || 0;
-      var edgeCol = Math.round(offset / this.columnWidth);
-      if (this.horizontalDirection == 'right')
-        return this.cols - edgeCol - this._getColSpan(brick);
-      else
-        return edgeCol;
+      var offset = getBrickCoord(brick, this.orthoAxisIdx) - brick.geometry._aabb[this.aabbOrthoAxisDim];
+      var edgeCol = Math.round(offset / this.alleyDim);
+      return edgeCol;
     },
-    
+
     _getColSpan: function(brick) {
-      var colSpan = Math.ceil( this._getOuterWidth(brick) / this.columnWidth );
-          return Math.min( colSpan, this.cols );
+      var colSpan = Math.ceil( this._getOuterWidth(brick) / this.alleyDim );
+      return Math.min( colSpan, this.cols );
     },
 
     _recalcColYs: function() {
-      var bricks = this.bricks,
+      if (!this.bricks.length) {
+        this._resetColYs();
+        return;
+      }
+      
+      var dimensionMethod = this.options.horizontal ? '_getOuterWidth' : '_getOuterHeight',
+          bricks = this.bricks,
           brick,
           fromCol,
           offset = this.offset.y,
@@ -418,20 +430,21 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
           bottomColYs = this.topColYs.slice(),
           cols = this.cols,
           col,
-          top,
-          height,
-          i = bricks.length;
+          head,
+          dim,
+          i = bricks.length,
+          flexigroupOffset = this._getOffsetDueToFlexigroup();
 
       while (i--) {
         brick = bricks[i];
         fromCol = this._getLeftmostColumn(brick);
         colSpan = this._getColSpan(brick);
-        height = this._getOuterHeight(brick);
-        top = parseInt(brick.style.top, 10) || 0;
+        dim = this[dimensionMethod](brick);
+        head = getBrickCoord(brick, this.axisIdx) - brick.geometry._aabb[this.aabbAxisDim] - flexigroupOffset;
         while (colSpan--) {
           col = fromCol + colSpan;
-          topColYs[col] = Math.min(top, topColYs[col]);
-          bottomColYs[col] = Math.max(top + height, bottomColYs[col]);
+          topColYs[col] = Math.min(head - this.getGutterWidth(), topColYs[col]);
+          bottomColYs[col] = Math.max(head + dim + this.getGutterWidth(), bottomColYs[col]);
         }
       }
     
@@ -439,52 +452,67 @@ define('lib/jquery.masonry', ['underscore'], function(_) {
       this.bottomColYs = bottomColYs;
     },
 
-    remove: function(content) {
-      var bricks = this._getBricks(content),
-          i = content.length;
-      
-      this.bricks = _.difference(this.bricks, bricks);
-      while (i--) {
-        content[i].$remove();
-      }
-      
-      this._recalcColYs();
-    },
-        
-    // removes elements from Masonry widget
-    removeBricks : function( bricks ) {
-      this.bricks = _.difference(this.bricks, bricks);
-      var i = bricks.length;
-      while (i--) {
-        bricks[i].$remove();
-      }
-    },
-  
-    // destroys widget, returns elements and container back (close) to original style
-    destroy : function() {
-      var bricks = this.bricks,
+    removedFromHead: function(n, bricks) {
+//      this.bricks = difference(this.bricks, bricks);
+//      this.bricks = this.bricks.slice(Math.min(this.bricks.length, n), this.bricks.length);
+      Physics.util.removeFromTo(this.bricks, 0, n);
+      var dimensionMethod = this.options.horizontal ? '_getOuterWidth' : '_getOuterHeight',
+          gutterWidth = this.getGutterWidth(),
+          i = bricks.length,
           brick,
-          style,
-          i = bricks.length;
-  
+          dim,
+          colSpan,
+          col,
+          fromCol,
+          colYs = this.topColYs;
+      
       while (i--) {
         brick = bricks[i];
-        style = brick.style;
-        brick.classList.remove('masonry-brick');
-        style.position = style.top = style.left = '';
+        fromCol = this._getLeftmostColumn(brick);
+        colSpan = this._getColSpan(brick);
+        dim = this[dimensionMethod](brick) + gutterWidth;
+        while (colSpan--) {
+          col = fromCol + colSpan;
+          colYs[col] += dim;
+        }
       }
-  
-      // re-apply saved container styles
-      var elemStyle = this.element.style;
-      for ( var i=0, len = masonryContainerStyles.length; i < len; i++ ) {
-        var prop = masonryContainerStyles[i];
-        elemStyle[ prop ] = this.originalStyle[ prop ];
+    },
+
+    removedFromTail: function(n, bricks) {
+//      this.bricks = difference(this.bricks, bricks);
+      this.bricks.length = Math.max(0, this.bricks.length - n);
+      var dimensionMethod = this.options.horizontal ? '_getOuterWidth' : '_getOuterHeight',
+          gutterWidth = this.getGutterWidth(),
+          brick,
+          dim,
+          colSpan,
+          col,
+          fromCol,
+          colYs = this.bottomColYs;
+      
+      for (var i = 0; i < bricks.length; i++) {
+        brick = bricks[i];
+        fromCol = this._getLeftmostColumn(brick);
+        colSpan = this._getColSpan(brick);
+        dim = this[dimensionMethod](brick) + gutterWidth;
+        while (colSpan--) {
+          col = fromCol + colSpan;
+          colYs[col] -= dim;
+        }
       }
-  
-      this.element.$removeClass('masonry');
-      window.removeEventListener('debouncedresize', this._resizeEventHandler);
+    },
+
+    removed: function(bricks) {
+      this.bricks = difference(this.bricks, bricks);      
+      this._recalcColYs();
     }
   };
-
-  return Mason;  
-});
+  
+  if (typeof define === 'function' && define.amd) {
+    // AMD. Register as an anonymous module.
+    define('masonry', function(){ return Mason });
+  } else {
+    // Browser globals (root is window)
+    root.Mason = Mason;
+  }
+})(this, this.Physics);

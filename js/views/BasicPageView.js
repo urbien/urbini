@@ -4,19 +4,22 @@ define('views/BasicPageView', [
   'underscore',
   'utils',
   'events',
+  'error',
   'views/BasicView',
   'views/mixins/LazyImageLoader',
-  'views/mixins/Scrollable',
+//  'views/mixins/Scrollable',
   'lib/fastdom',
-  '@widgets'
+  '@widgets',
+  'domUtils'
 //  ,
 //  'jqueryImagesLoaded'
-], function(G, _, U, Events, BasicView, LazyImageLoader, Scrollable, Q, $m) {
+], function(G, _, U, Events, Errors, BasicView, LazyImageLoader, Q, $m, DOM) {
   var MESSAGE_BAR_TYPES = ['info', 'error', 'tip', 'countdown'],
       pageEvents = ['page_show', 'page_hide', 'page_beforeshow'],
       doc = document,
       viewport = G.viewport,
-      mixins = [Scrollable];
+      mixins = [];
+//      mixins = [Scrollable];
 
   if (G.lazifyImages)
     mixins.unshift(LazyImageLoader);
@@ -24,7 +27,7 @@ define('views/BasicPageView', [
   function isInsideDraggableElement(element) {
     return !!$(element).parents('[draggable=true]').length;
   };
-
+  
   function getTooltipPos(el) {
     var position = el.$offset();
     var t = position.top + el.offsetHeight / 2 - 20;
@@ -40,10 +43,22 @@ define('views/BasicPageView', [
   
   var PageView = BasicView.extend({
 //    mixins: [Scrollable],
+    _autoFetch: true,
     _fetchPromise: null,
+    _draggable: true,
+    _scrollbar: true,
+    _dragAxis: 'y',
+    _scrollbar: true,
+    _flexigroup: false,
     viaHammer: true,
+    attributes: {
+      'data-role': 'page'
+    },
     style: {
-      'min-height': '100%'
+      opacity: 0,
+      'min-height': '100%',
+      'transform-origin': '50% 50%',
+      perspective: '1000px'
     },
     mixins: mixins,
 //    constructor: function(options) {
@@ -65,6 +80,8 @@ define('views/BasicPageView', [
     initialize: function(options) {
       var self = this;
       BasicView.prototype.initialize.apply(this, arguments);
+      if (!options.mock)
+        this.addContainerBodyToWorld();
       _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft'/*, 'scroll', '_onScroll'*/, '_onViewportDimensionsChanged'); //, 'onpage_show', 'onpage_hide');            
       
 //      this._subscribeToImageEvents();
@@ -97,6 +114,9 @@ define('views/BasicPageView', [
       
       var render = this.render;
       this.render = function() {
+        if (!this.el.parentNode)
+          document.body.appendChild(this.el);
+        
         render.apply(self, arguments);
 //        self.checkError();
         if (G.callInProgress)
@@ -105,7 +125,7 @@ define('views/BasicPageView', [
       
       if (this.model) {
         if (this.resource) {
-          if (this.resource.loaded || !this.resource.getUri()) {
+          if (this.resource.loaded || this.resource.isNew() || !this.resource.getUri()) {
             this._fetchPromise = G.getResolvedPromise();
             return;
           }
@@ -117,18 +137,22 @@ define('views/BasicPageView', [
           }
         }
         
-        var fetchDfd = $.Deferred();
-        this._fetchPromise = fetchDfd.promise();
-        this.model.fetch(_.extend({
-          success: fetchDfd.resolve,
-          error: fetchDfd.reject
-        }, options.fetchOptions));
-      }
+        this._fetchDfd = $.Deferred();
+        this._fetchPromise = this._fetchDfd.promise();
+        this._fetchPromise.fail(Errors.getBackboneErrorHandler());
+        if (this._autoFetch) {
+          this.model.fetch(_.extend({
+            sync: true,
+            success: self._fetchDfd.resolve,
+            error: self._fetchDfd.reject
+          }, options.fetchOptions));
+        }
+      }      
     },
     
     events: {
-      'scrollstart.page': 'reverseBubbleEvent',
-      'scrollstop.page': 'reverseBubbleEvent',      
+//      'scrollstart.page': 'reverseBubbleEvent',
+//      'scrollstop.page': 'reverseBubbleEvent',      
 //      'scroll.page': 'scroll',
       'page_hide.page': 'onpageevent',
       'page_show.page': 'onpageevent',
@@ -168,14 +192,18 @@ define('views/BasicPageView', [
     
     _onActive: function() {
 //      this.trigger('active');
+      var self = this;
       BasicView.prototype._onActive.apply(this, arguments);
       var onload = function() {
-        this._checkMessageBar();
-        this._checkAutoClose();
-      }.bind(this);
+//        self.addToWorld(true);
+        self._checkMessageBar();
+        self._checkAutoClose();
+      };
 
-      if (this.rendered)
+      if (this.rendered) {
         onload();
+//        this.reconnectToWorld();
+      }
       else
         this.onload(onload);
       
@@ -185,6 +213,7 @@ define('views/BasicPageView', [
     
     _onInactive: function() {
 //      this.trigger('inactive');
+//      this.disconnectFromWorld();
       BasicView.prototype._onInactive.apply(this, arguments);
       this._clearMessageBar();        
     },
@@ -200,7 +229,7 @@ define('views/BasicPageView', [
 //      else if (e.type == 'page_hide')
 //        this.trigger('inactive');
       
-      this.reverseBubbleEvent.apply(this, arguments);      
+//      this.reverseBubbleEvent.apply(this, arguments);      
     },
 
 //    scroll: function() {
@@ -268,6 +297,7 @@ define('views/BasicPageView', [
 //    }, 100),
 
     _onViewportDimensionsChanged: function(e) {
+      BasicView.prototype._onViewportDimensionsChanged.apply(this, arguments);
       this._fixTooltips();
     },
 
@@ -468,9 +498,10 @@ define('views/BasicPageView', [
       }
     },
     
-//    _onDestroyed: function() {
-//      return BasicView.prototype._onDestroyed.apply(this, arguments);
-//    },
+    _onDestroyed: function() {
+//      this.removeFromWorld();
+      return BasicView.prototype._onDestroyed.apply(this, arguments);
+    },
 
     _checkAutoClose: function() {
       var self = this,
@@ -598,6 +629,10 @@ define('views/BasicPageView', [
     
     getFetchPromise: function() {
       return this._fetchPromise;
+    },
+    
+    isListPage: function() {
+      return this.model == this.collection;
     }
   }, {
     displayName: 'BasicPageView'

@@ -13,14 +13,15 @@ define('router', [
   '@widgets',
   'appAuth',
   'redirecter',
-  'transitions',
+  'physicsTransitions',
   'domUtils',
-  'lib/fastdom'
+  'lib/fastdom',
+  'physicsBridge'
 //  , 
 //  'views/ListPage', 
 //  'views/ViewPage'
 //  'views/EditPage' 
-], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth, Redirecter, Transitioner, DOM, Q /*, ListPage, ViewPage*/) {
+], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth, Redirecter, Transitioner, DOM, Q, Physics /*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
   var Modules = {},
       doc = document,
@@ -31,9 +32,15 @@ define('router', [
     args.unshift("router");
     G.log.apply(G, args);
   };
+  
+//  function newPageElement() {
+//    var page = document.createElement('div');
+//    page.dataset.role = "page";
+//  };
 
   var lastViewportWidth = G.viewport.width,
-      transformLookup = G.crossBrowser.css.transformLookup;
+      transitionLookup = DOM.prefix('transition'),
+      transformLookup = DOM.prefix('transform');
   
   window.addEventListener('resize', Q.debounce(function() {
     if (!lastViewportWidth) {
@@ -53,13 +60,12 @@ define('router', [
     
     while (i--) {
       page = pages[i];
-      translation = DOM.parseTranslation(page.style[transformLookup]);
-      if (translation && (x = translation.X)) {
+      transform = DOM.getTransform(page);
+      if (transform && (x = transform[12])) {
         var sign = x < 0 ? -1 : 1;
-        DOM.setStylePropertyValues(page.style, {
-          transform: DOM.getTranslationString(newWidth * sign),
-          transition: null
-        });
+        transform[12] = newWidth * sign;
+        page.style[transformLookup] = DOM.toMatrix3DString(transform);
+        page.style[transitionLookup] = '';
       }
     }
   }, 20));
@@ -296,7 +302,7 @@ define('router', [
       
       
       options = options || {};
-      var adjustedOptions = _.extend({}, this.defaultOptions, _.pick(options, 'forceFetch', 'errMsg', 'info', 'replace', 'postChangePageRedirect')),
+      var adjustedOptions = _.extend({}, this.defaultOptions, _.pick(options, 'forceFetch', 'errMsg', 'info', 'replace', 'postChangePageRedirect', 'via')),
           hashInfo = G.currentHashInfo,
           pageRoot = G.pageRoot;
       
@@ -306,14 +312,14 @@ define('router', [
       if (fragment.startsWith('http://')) {
         var appPath = G.serverName + '/' + pageRoot;
         if (fragment.startsWith(appPath)) // link within app
-          fragment = fragment.slice(appPath.length);
+          fragment = fragment.slice(appPath.length + 1); // cut off #
         else {
           window.location.href = fragment;
           return;
         }
       }
       else if (fragment.startsWith(pageRoot)) // link within app
-        fragment = fragment.slice(pageRoot.length);
+        fragment = fragment.slice(pageRoot.length + 1); // cut off #
       else if (/app\/[a-zA-Z]+\#/.test(fragment)) { // link to another app
         window.location.href = G.serverName + '/' + fragment;
         return;
@@ -382,11 +388,7 @@ define('router', [
           delete G.homePage;
         }
         
-        var homePageEl = doc.querySelector('#homePage');
-        if (!homePageEl)
-          debugger;
-        
-        homePage = new HomePage({el: homePageEl });
+        homePage = new HomePage({el: doc.querySelector('#homePage') });
       }
       
       this.changePage(homePage);
@@ -504,12 +506,12 @@ define('router', [
         cachedView.setMode(mode || G.LISTMODES.LIST);
         this.changePage(cachedView, _.extend({page: page}));
         Events.trigger('navigateToList:' + list.listId, list);
-        G.whenNotRendering(function() {
+//        G.whenNotRendering(function() {
           list.fetch({
             page: page, 
             forceFetch: forceFetch
           });
-        });
+//        });
         
         this.monitorCollection(list);
 //        setTimeout(function() {c.fetch({page: page, forceFetch: forceFetch})}, 100);
@@ -829,7 +831,8 @@ define('router', [
     },
 
     getChangePageOptions: function(fragment) {
-      return this.fragmentToOptions[fragment || U.getHash()] || {};
+      fragment = fragment || U.getHash();
+      return this.fragmentToOptions[fragment] || (this.fragmentToOptions[fragment] = {});
     },
     
     edit: function(path) {
@@ -1075,13 +1078,13 @@ define('router', [
       var forceFetch = options.forceFetch;
       if (res) {
         this.currentModel = res;
-        view = cachedView || new viewPageCl({model: res, source: this.previousHash});
+        view = cachedView || new viewPageCl({model: res, source: this.previousHash });
         
         this.changePage(view);
         Events.trigger('navigateToResource:' + res.resourceId, res);
-        G.whenNotRendering(function() {
+//        G.whenNotRendering(function() {
           res.fetch({forceFetch: forceFetch});
-        });
+//        });
         
         if (wasTemp && !isTemp)
           this.navigate(U.makeMobileUrl(action, newUri), {trigger: false, replace: true});
@@ -1314,25 +1317,45 @@ define('router', [
       if (fromView == toView)
         return;
       
+      var toBlur,
+          changePageOptions = this.getChangePageOptions(),
+          transOptions = _.extend({ 
+            direction: options && options.reverse ? 'right' : 'left',
+            from: fromView,
+            to: toView
+          }, changePageOptions, options);
+      
+      delete changePageOptions.via;
+      if (fromView && !fromView.isListPage())
+        delete transOptions.via; // HACK - for when user clicks on ListPage and then clicks on another item before transition has completed, issuing a faux transition from ViewPage with "via"
+      
       this._previousView = toView;
       
       // kill the keybord, from JQM
       try {
-        var toBlur;
         Q.read(function() {          
           if ( document.activeElement && document.activeElement.nodeName.toLowerCase() !== 'body' ) {
             toBlur = document.activeElement;
           } else {
-            toBlur = $( "input:focus, textarea:focus, select:focus" );
+            toBlur = fromView && fromView.$( "input:focus, textarea:focus, select:focus" );
           }
           
-          Q.write(function() {
-            toBlur.blur();
-          });
+          if (toBlur && toBlur.length) {
+            Q.write(function() {
+              toBlur.blur();
+            });
+          }
         });
       } catch( e ) {}
       
-      Transitioner[options && options.reverse ? 'right' : 'left'](fromView, toView, null, this.firstPage ? 0 : 400).done(function() {
+//      Transitioner[options && options.reverse ? 'right' : 'left'](fromView, toView, null, this.firstPage ? 0 : 400).done(function() {
+//        G.$activePage = $m.activePage = toView.$el;
+//        G.activePage = toView.el;
+//      });
+      
+      transOptions.transition = transOptions.via ? 'zoomInTo' : 'snap';//'slide';
+//      transOptions.transition = transOptions.via ? 'rotateAndZoomInTo' : 'snap';
+      Transitioner.transition(transOptions).done(function() {
         G.$activePage = $m.activePage = toView.$el;
         G.activePage = toView.el;
       });
@@ -1533,12 +1556,14 @@ define('router', [
     },
     
     changePage1: function(view) {
-      var activated = false,
+      var self = this,
+          activated = false,
           prev = this.currentView,
           options = this.getChangePageOptions(),
           replace = options.replace,
           transition = 'slide',
-          isReverse = false;
+          isReverse = false,
+          renderPromise;
       
       if (view == this.currentView) {
         G.log(this.TAG, "render", "Not replacing view with itself, but will refresh it");
@@ -1561,7 +1586,10 @@ define('router', [
       if (!view.rendered) {
 //        view.trigger('active', true);
         activated = true;
-        view.render();
+//        view.render();
+        this.getChangePageOptions().render = true;
+        document.body.appendChild(view.el);
+//        renderPromise = view.render();
 //        view.onload(function() {          
 //          view.$el.attr({
 //            id: 'page' + G.nextId(),
@@ -1604,7 +1632,25 @@ define('router', [
 //        $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
         
 //        if (G.isJQM()) 
-        this.$changePage({changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});        
+      
+//      Physics.echo(function() {
+//        console.log("CHANGING PAGE");
+      this.$changePage({changeHash: false, transition: self.nextTransition || transition, reverse: self.backClicked});
+      
+//      if (_.isPromise(renderPromise))
+//        renderPromise.done(doChangePage);
+//      else
+//        doChangePage();
+      
+//      }.bind(this));
+        
+//        Physics.echo(function() {
+//          console.log("CHANGING PAGE");
+//          this.$changePage({changeHash: false, transition: this.nextTransition || transition, reverse: this.backClicked});
+//          this.nextTransition = null;
+//          Events.trigger('pageChange', prev, view);
+//        }.bind(this));
+
 /*
         if (G.currentApp.widgetLibrary  && G.currentApp.widgetLibrary == 'Building Blocks') {
           var hdr = $('div.ui-page-active .hdr');

@@ -6,8 +6,7 @@ define('views/IntersectionListItemView', [
   'events',
   'views/BasicView',
   'views/HorizontalListItemView',
-  'lib/fastdom',
-  'jqueryMasonry'
+  'lib/fastdom'
 ], function(G, _, Backbone, U, Events, BasicView, HorizontalListItemView, Q) {
   return BasicView.extend({
     template: 'intersectionListItemTemplate',
@@ -31,6 +30,7 @@ define('views/IntersectionListItemView', [
         cloneOf: 'Intersection.a',
         renderToHtml: true
       }, options);
+      
       var _options2 = _.defaults({
         force: true,
         cloneOf: 'Intersection.b',
@@ -43,7 +43,8 @@ define('views/IntersectionListItemView', [
           htmlB = this.hItemB._html;
       
       if (!htmlA || !htmlB)
-        return false;
+        debugger; // should never happen
+//        return false;
       
       var html = this.template({
         a: htmlA,

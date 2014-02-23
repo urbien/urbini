@@ -268,36 +268,37 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
         "cursor": function(idbCursor, callback) {
           return $.Deferred(function(dfd) {
             try {
+              var cursorReq = typeof idbCursor === "function" ? idbCursor() : idbCursor,
+                  result,
+                  elem = {
+                    // Delete, update do not move 
+                    "delete": function() {
+                      return wrap.request(function() {
+                        return cursorReq.result["delete"]();
+                      });
+                    },
+                    "update": function(data) {
+                      return wrap.request(function() {
+                        return cursorReq.result["update"](data);
+                      });
+                    },
+                    "next": function(key) {
+                      this.data = key;
+                    }
+                  };
               
-              var cursorReq = typeof idbCursor === "function" ? idbCursor() : idbCursor;
               cursorReq.onsuccess = function(e) {
-                
                 if (!cursorReq.result) {
                   dfd.resolveWith(cursorReq, [null, e]);
                   return;
                 }
-                var elem = {
-                  // Delete, update do not move 
-                  "delete": function() {
-                    return wrap.request(function() {
-                      return cursorReq.result["delete"]();
-                    });
-                  },
-                  "update": function(data) {
-                    return wrap.request(function() {
-                      return cursorReq.result["update"](data);
-                    });
-                  },
-                  "next": function(key) {
-                    this.data = key;
-                  },
-                  "key": cursorReq.result.key,
-                  "value": cursorReq.result.value
-                };
                 
-                dfd.notifyWith(cursorReq, [elem, e]);
-                var result = callback.apply(cursorReq, [elem]);
+                elem.key = cursorReq.result.key;
+                elem.value = cursorReq.result.value;
+                delete elem.data;
                 
+//                dfd.notifyWith(cursorReq, [elem, e]);
+                result = callback.apply(cursorReq, [elem]);
                 try {
                   if (result === false) {
                     dfd.resolveWith(cursorReq, [null, e]);
@@ -308,7 +309,6 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
                     else cursorReq.result["continue"]();
                   }
                 } catch (e) {
-                  
                   dfd.rejectWith(cursorReq, [cursorReq.result, e]);
                 }
               };

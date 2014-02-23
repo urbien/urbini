@@ -98,9 +98,11 @@ define('vocManager', [
       return linkedModels;
     },
     
-    fetchLinkedAndReferredModels: function(listOrRes) {
-      G.whenNotRendering(fetchLinkedAndReferredModels.bind(null, listOrRes));
-    },
+//    fetchLinkedAndReferredModels: function(listOrRes) {
+//      G.whenNotRendering(fetchLinkedAndReferredModels.bind(null, listOrRes));
+//    },
+    
+    fetchLinkedAndReferredModels: fetchLinkedAndReferredModels,
 
     detectReferredModels: function(list) {      
       var resources = U.isCollection(list) ? list.models : _.isArray(list) ? list : [list];
@@ -278,22 +280,22 @@ define('vocManager', [
     });
   }, 500));
   
-  Events.on('newResourceList', function(list) {
-    _.each(['updated', 'added', 'reset'], function(event) {
-      Voc.stopListening(list, event);
-      Voc.listenTo(list, event, function(resources) {
-        Voc.fetchLinkedAndReferredModels(resources || list.models);
-      });
-    });
-  });
-
-  Events.on('newResource', function(res) {
-    if (!res.collection) {
-      setTimeout(function() {
-        Q.nonDom(fetchLinkedAndReferredModels.bind(Voc, ([res])));
-      }, 1000);
-    }
-  });
+//  Events.on('newResourceList', function(list) {
+//    _.each(['updated', 'added', 'reset'], function(event) {
+//      Voc.stopListening(list, event);
+//      Voc.listenTo(list, event, function(resources) {
+//        Voc.fetchLinkedAndReferredModels(resources || list.models);
+//      });
+//    });
+//  });
+//
+//  Events.on('newResource', function(res) {
+//    if (!res.collection) {
+//      setTimeout(function() {
+//        Q.nonDom(fetchLinkedAndReferredModels.bind(Voc, ([res])));
+//      }, 1000);
+//    }
+//  });
 
 //  Events.on('newPlugs', Q.defer.bind(Q, 30, 'nonDom', function() {
 //    Q.defer(30, 'nonDom', Voc.savePlugsToStorage, Voc);
@@ -302,6 +304,6 @@ define('vocManager', [
   Events.on('getModels', function(models, dfd) {
     Voc.getModels(models).then(dfd.resolve, dfd.reject);
   });
-  
-  return (G.Voc = Voc);
+  G.Voc = Voc;
+  return Voc;
 });

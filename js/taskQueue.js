@@ -44,13 +44,13 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
         return _.contains(_.pluck(queue, 'name'), name);
       }
     }
-  };
+  }
   
   function log() {
     var args = [].slice.call(arguments);
     args.unshift("taskQueue");
     G.log.apply(G, args);
-  };
+  }
   
   function TaskQueue(name) {
     if (!(this instanceof TaskQueue))
@@ -107,7 +107,7 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
         if (runningBlockingTask)
           throw "About to run a non-blocking task {0} alongside a blocking task: {1}!".format(task.name, runningBlockingTask.name);
       }
-    };
+    }
     
     function runTask(task) {
       if (!(task instanceof Task))
@@ -122,14 +122,14 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
       } catch (err) {
         debugger;
         log('error', 'task crashed: ', task.name);
-        task.reject();
+        task.reject(err);
       }
       
       var promise = task.promise();
       running.push(task);
       promise.always(function() {
         var resolved = promise.state() === 'resolved';
-        log(resolved? 'taskQueue' : 'error', 'Task {0}: {1}'.format(resolved ? 'completed' : 'failed', task.name), arguments[0]);
+        log(resolved? 'taskQueue' : 'error', 'Task {0}: {1}'.format(resolved ? 'completed' : 'failed', task.name), arguments[0] || '');
         running.splice(running.indexOf(task), 1);
         if (tq.isBlocked())
           tq.open();
@@ -141,14 +141,14 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
         next();
       
       return promise;
-    };
+    }
     
     function push(task) {
       if (!running.length)
         debugger;
       
       queue.push(task);
-    };
+    }
     
     function queueTask(task) {
       if (!(task instanceof Task))
@@ -173,7 +173,7 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
         runTask(task);
       
       return task.promise();
-    };
+    }
     
     function next() {
       if (tq.isBlocked() || !queue.length())
@@ -186,7 +186,7 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
       }
       else if (!tq.isPaused())
         runTask(queue.pop());
-    };
+    }
     
     return {
       debug: function(debug) {
@@ -211,7 +211,7 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
         return queued.length ? $.whenAll.apply($, queued) : null;
       }
     }
-  };
+  }
   
   function Task(name, taskFn, blocking, priority) {
     if (!(this instanceof Task))
@@ -255,7 +255,7 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
     this.isFinished = function() {
       return started && promise.state() == 'resolved';
     };
-  };
+  }
   
   return TaskQueue;
 });

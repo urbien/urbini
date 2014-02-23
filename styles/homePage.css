@@ -1,23 +1,9 @@
-/*
 html {
-  font-size: 10px;
+ height: 100%;
 }
-#homePage.demo:after {
-  content: "";  
-  z-index: -1;
-  position: absolute;
-  top: 0; right: 0; bottom: 0; left: 0;
-  background: #000;
-  background: -webkit-radial-gradient(center center, circle cover, rgba(0,0,0,0.5), rgba(0,0,0,0.95));
-  background: -moz-radial-gradient(center center, circle cover, rgba(0,0,0,0.3), rgba(0,0,0,0.95));
-  background: -ms-radial-gradient(center center, circle cover, rgba(0,0,0,0.3), rgba(0,0,0,0.95));
-  background: -o-radial-gradient(center center, circle cover, rgba(0,0,0,0.3), rgba(0,0,0,0.95));
-  background: radial-gradient(center center, circle cover, rgba(0,0,0,0.3), rgba(0,0,0,0.95));
-}
-*/
-//#homePage {height: 99.9%;}
 
 #homePage {
+  height: 100%;
   background: none;
   background-image: none;
   text-shadow: 0 1px 0 #000;
@@ -54,6 +40,7 @@ h2 {font-size: 28px; line-height: 34px; margin-top: 3px; font-weight:normal;}
   background: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.5));
   color: #eee; padding-top:5px;
 }
+
 body { 
   margin: 0; 
   height:99.9%; 
@@ -61,8 +48,8 @@ body {
   /*background-color: #fff;*/ 
   font-family: Helvetica, Arial, sans-serif; 
   color: #757575;
-  overflow: hidden; 
 }
+
 .demo {
   position:absolute;
   top:0;
@@ -138,7 +125,7 @@ body {
    }
 }
 
-///////////// ROUND BUTTONS
+/* ROUND BUTTONS */
 .nav {
   list-style: none;
   text-align: center;

@@ -1,28 +1,25 @@
 html {
   font-size: 10px;
 }
-
-[data-role="page"] { 
-  top: 0; 
-  left: 0;
- /* bottom: 0; */ 
-  width: 100%; 
-  min-height: 100%; 
-  position: absolute; 
-  border: 0; 
+#name.resTitle {
+  padding-bottom: 4px;
 }
 
+.menuItems {
+  list-style: none;
+  padding-left: 0;
+}
 [data-type="list"] {
   padding: 0;
   background: #eee;
 }
 [data-type="list"] li, #sidebar li.image_fitted {
-  border-bottom: solid 0.1rem #e3e3e3;
+  border-bottom: solid 1px #e3e3e3;
   height: 8rem;
 }
 
 #headerDiv {
-  margin-top:10px;
+  margin-top:3px; 
 }
 #name h4 {
   font-weight:normal;
@@ -34,12 +31,6 @@ html {
   width:100%;height:40px
 }
 
-#categories {
-  font-size:20px;
-  background: #eee;
-  border-radius: 1.5rem;
-  padding: .2rem;
-}
 #headerUl  {
   display:block;
   max-width:100%;
@@ -52,28 +43,35 @@ html {
 #headerUl s { color: #757575 }
 #headerUl li {
 /*  border-right: 1px solid #757575; */ 
-  font-size:32px;
+  font-size:28px;
   float:left;
   text-align:center;
   margin:-1px -1px 0 0;
   cursor: pointer;
   height:100%;
-  margin-top:0.5rem;
+  margin-top:1rem;
 }
 #headerUl li i {
-  font-size:3.2rem;
+  font-size:2.8rem;
   margin-top:1rem;
 }
 #headerUl li:last-child {
   border-right: none;
 }
+
 [data-type="list"] li.u-noimg {
   cursor:pointer;
   padding:0.5rem;
   min-height:3.2rem;
 }
+
+#resourceView li {
+ border-bottom: 1px solid #e3e3e3;
+}
+
+
 #buttons {
-  margin-top: -5px;
+  margin-top: -15px;
 }
 button {
   border-radius: 1rem;
@@ -82,14 +80,14 @@ button {
 }
 
 #headerDiv h4 {
-  padding-top: 10px;
+  padding-top: 5px; 
 }
 
 #headerButtons a[role="button"] {
   width: auto;
   height: 2.3rem;
   background: #fafafa url(buttons/images/ui/default.png) repeat-x left bottom / auto 100%;
-  border: 0.1rem solid #a6a6a6;
+  border: 1px solid #a6a6a6;
   font-size: 1rem;
   line-height: 2.3rem;
   border-radius: 0.5rem;
@@ -154,15 +152,15 @@ section[data-type="sidebar"] {
   width: 21rem; 
   text-shadow: none;
 }
-section[data-type="sidebar"] > nav > ul > li {
-  border-bottom: 0.1rem solid #000000;
+section[data-type="sidebar"] > ul > li {
+  border-bottom: 1px solid #000000;
 }
 
 [data-type="list"] header:before {
   border:none;
 }
 
-section[data-type="sidebar"] > nav > ul > header {
+section[data-type="sidebar"] >  ul > header {
   position: relative;
   z-index: 10;
   height: 3rem;
@@ -175,7 +173,7 @@ section[data-type="sidebar"] > nav > ul > header {
   font-weight: normal;
   font-size: 18px; 
   line-height: 2rem;
-  border-bottom: 0.1rem solid #596068;
+  border-bottom: 1px solid #596068;
 }
 
 .acounter {
@@ -206,7 +204,12 @@ section[data-type="sidebar"] > nav > ul > header {
 section[data-type="sidebar"]:after {
   background: none;
 }
-
+#sidebar div {
+  font-size: 1.6rem;
+}
+#sidebar div.masonry-brick {
+  cursor: pointer;
+}
 .home {
   float:right; 
   position:relative; 
@@ -260,8 +263,8 @@ fieldset {
   background: none;
 }
 
-#cpView > li > p, #resourceView > li > p, #other > ul > li > p {
-  margin: 0 1.5rem;
+#resourceView > li > p, #other > ul > li > p {
+  margin: 0 1rem;
 }
 
 [data-type="list"] #cpView > li, #resourceView > li {
@@ -285,8 +288,11 @@ fieldset {
   padding: 1.5rem;
 }
 .editList li {
-/*  padding: 0.5rem 1.5rem; */ 
-  min-height: 3rem;
+/*
+  min-height: 2rem;
+  padding: 0.5rem 1.5rem; 
+*/ 
+  min-height: 4rem;
   font-size: 1.6rem;
 }
 
@@ -353,7 +359,7 @@ a {
   border-radius:1rem;
 }
 
-#photogridHeader {
+.thumb-gal-header {
   border: 1px solid #707070;
   background: #eee;
   color: #f9f9f9;
@@ -363,7 +369,7 @@ a {
   text-align: center;
   top: -3px;
 }
-#photogridHeader h3 {
+.thumb-gal-header h3 {
   font-size: 1.8rem;
   margin: 0.8rem;
 }
@@ -423,10 +429,25 @@ section#login_popup {
   left: 50%;
   top:  0.5rem;
 }
+/*
+.resourceProp {
+  font-size:1.6rem;
+  cursor:pointer;
+  min-height:3rem;
+}
+*/
 .cameraCapture i {
   position:absolute;
   right:1rem;
   font-size:2.3rem;
   top:1.5rem;
   overflow:hidden;
+}
+/*
+.commonLI {
+  padding-left: 1rem;
+}
+*/
+#sidebar .ui-li-count {
+  float: right;
 }

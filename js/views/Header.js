@@ -4,7 +4,9 @@ define('views/Header', [
   'events', 
   'utils',
   'vocManager',
-  'views/BasicView'
+  'views/BasicView',
+  'physicsBridge',
+  'domUtils'
 //  ,
 //  'views/BackButton',
 //  'views/LoginButton',
@@ -13,12 +15,19 @@ define('views/Header', [
 //  'views/AroundMeButton',
 //  'views/MenuButton',
 //  'views/PublishButton'
-], function(G, Events, U, Voc, BasicView/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
+], function(G, Events, U, Voc, BasicView, Physics, DOM/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
   var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate', 'installApp'];
   var REGULAR_BUTTONS = ['back', 'mapIt', 'add', 'video', 'chat', 'login', 'rightMenu'];
   var commonTypes = G.commonTypes;
+  var friendlyTypes = [G.commonTypes.Urbien, 'http://urbien.com/voc/dev/ImpressBackup/Movie', 'http://urbien.com/voc/dev/ImpressBackup/Artist', 'model/social/App'];
+  var editablePhysicsConstants = ['drag', 'springStiffness', 'springDamping', 'tilt'];
   return BasicView.extend({
 //    viewType: 'any',
+    style: {
+      opacity: 0.75//, //DOM.maxOpacity
+//      zIndex: 10001
+    },
+    _draggable: false,
     autoFinish: false,
     template: 'headerTemplate',
     initialize: function(options) {
@@ -45,7 +54,8 @@ define('views/Header', [
       this.on('destroyed', function() {
         self.buttonViews = {};
       });
-      
+    
+      this.makeTemplate('physicsConstantsTemplate', 'physicsConstantsTemplate', this.vocModel && this.vocModel.type);
       return this;
     },
     
@@ -98,8 +108,13 @@ define('views/Header', [
       this.ready = $.when(this.btnsReq, this.getFetchPromise());
     },
     
+    recalcTitle: function() {
+      this.pageTitle = null;
+      this.calcTitle();
+    },
+    
     calcTitle: function() {      
-      if (typeof this.pageTitle !== 'undefined') {
+      if (this.pageTitle != null) {
         this._title = this.title = this.pageTitle;
         return this;
       }
@@ -131,28 +146,63 @@ define('views/Header', [
             title = U.getPlural(res);
           else {
             title = U.getDisplayName(res);
-            if (hash  &&  hash.indexOf('make/') == 0) {
-//              title = this.pageTitle;
-            }
-            else {
+            if (this._hashInfo.route != 'make') {
               if (!U.isAssignableFrom(this.vocModel, "Contact"))
-//                titleHTML = U.makeHeaderTitle(encodeURIComponent(this.vocModel['displayName']), title);
-              this.pageTitle = this.vocModel['displayName'] + ": " + title;
+                this.pageTitle = res.isLoaded() ? this.vocModel['displayName'] + ": " + title : title;
             }
           }
         }
       }
       
-      this._title = title;
+      document.title = this._title = title;
       this.title = titleHTML || title;
 
       return this;
     },
     events: {
       'change #fileUpload'         : 'fileUpload',
-      'click #categories'         : 'showCategories',
+      'change .physicsConstants input' : 'changePhysics',
+      'click #categories'          : 'showCategories',
 //      'click #installApp'         : 'installApp',
-      'click #moreRanges'         : 'showMoreRanges'
+      'click #moreRanges'          : 'showMoreRanges'
+    },
+    
+    changePhysics: function(e) {
+      var val = parseInt(e.target.value),
+          type = 'verticalMain';
+      
+      switch (e.target.name) {
+      case 'degree':
+        val *= -1;
+        break;
+      case 'tilt':
+        val -= 1; // min at 0 instead of 1
+        // fall through;
+      default:
+        val /= 100;
+        break;
+      }
+      
+//      if (this._hashInfo.route == 'view') {
+//        type = 'horizontal';
+//      }
+      
+      switch (this._hashInfo.route) {
+        case 'view':
+          var i = friendlyTypes.length;
+          
+          while (i--) {
+            if (U.isAssignableFrom(this.vocModel, friendlyTypes[i])) {
+              type = 'horizontal';
+              break;
+            }
+          }
+          
+        break;
+      }
+      
+      this.log('PHYSICS: ' + e.target.name + ' = ' + val);
+      Physics.there.set(type, e.target.name, val);
     },
     
     fileUpload: function(e) {
@@ -233,6 +283,32 @@ define('views/Header', [
     },
     
     render: function(options) {
+      var self = this,
+          args = arguments;
+
+      if (!this.rendered) {
+        this.onload(function() {
+          if (self.pageView.TAG == 'ListPage') {
+            self._updateSize();
+            self._rail = [self.getContainerBodyId(), 0, 0, 0, -self._outerHeight];
+            self.addToWorld(null, false);
+//            Physics.there.trackDrag(self.getContainerBodyId(), 'vel'); // 'pos' for exact tracking, 'vel' for parallax 
+            self.getPageView().listView.onload(function() {              
+//              Physics.there.trackDrag(self.getContainerBodyId(), 'vel', self.pageView.listView.getContainerBodyId()); // 'pos' for exact tracking, 'vel' for parallax
+              Physics.there.rpc(self.getPageView().listView.mason.id, 'attachHeader', [self.getContainerBodyId(), 0.02]);
+            });
+          }
+          
+//          if (self.pageView.TAG == 'ListPage') {
+//            self.pageView.listView.onload(function() {              
+//              Physics.there.track(self.getContainerBodyId(), self.pageView.listView.getContainerBodyId(), 'vel');
+//            });
+//          }
+//          else
+//            Physics.there.track(self.getContainerBodyId(), self.pageView.getContainerBodyId(), 'vel');
+        });
+      }
+      
       options = options || {};
       if (!this.buttons || options.buttons) {
         this.buttons = options.buttons;
@@ -240,14 +316,16 @@ define('views/Header', [
         this.getButtonViews();
       }
         
-      var self = this,
-          args = arguments;
-      
       function doRender() {
         self.renderHelper.apply(self, args);
+        self.addToWorld(null, true);
         self.finish();
         if (G.isBootstrap())
           self.$('#headerUl div').$attr('class', 'navbar-header');
+        if (G.coverImage) 
+          self.$('#headerUl a').$forEach(function(elm) {
+            elm.style.color = G.coverImage.background;
+          });
       };
       
       if (this.btnsReq.state() !== 'pending') {
@@ -266,7 +344,7 @@ define('views/Header', [
     },
 
     refreshTitle: function() {
-      this.calcTitle();
+      this.recalcTitle();
       this.$('#pageTitle')[0].innerHTML = this.title;
 //      $('title').text(this.title);
       this.pageView.trigger('titleChanged', this._title);
@@ -363,25 +441,36 @@ define('views/Header', [
         var returnUri = this.hashParams['$returnUri'];
         var pr = this.hashParams['$prop'];
         if (forResource  &&  location  &&  pr) {
-          var type = U.getTypeUri(forResource);      
-          var cModel = U.getModel(type);
-          var self = this;
+          var self = this,
+              type = U.getTypeUri(forResource),      
+              cModel = U.getModel(type);
+          
           if (!cModel) {
             Voc.getModels(type).done(function() {
               cModel = U.getModel(type);
               if (cModel  &&  !cModel.properties[pr].readOnly) {
-                var frag = document.createDocumentFragment();
-                var rules = ' data-formEl="true"';
+                var frag = document.createDocumentFragment(),
+                    existing = self.$('#fileUpload')[0],
+                    rules = ' data-formEl="true"';
+                
                 U.addToFrag(frag, self.fileUploadTemplate({name: pr, forResource: forResource, rules: rules, type: type, location: location, returnUri: returnUri }));
-                self.$el.append(frag);
+                if (existing)
+                  DOM.replaceChildNodes(existing, frag);
+                else
+                  self.$el.append(frag);
               }
             });
           }
           else {
-            var frag = document.createDocumentFragment();
-            var rules = ' data-formEl="true"';
+            var frag = document.createDocumentFragment(),
+                existing = self.$('#fileUpload')[0],
+                rules = ' data-formEl="true"';
+            
             U.addToFrag(frag, self.fileUploadTemplate({name: pr, forResource: forResource, rules: rules, type: type, location: location }));
-            self.$el.append(frag);
+            if (existing)
+              DOM.replaceChildNodes(existing, frag);
+            else
+              self.$el.append(frag);
           }
           
         }
@@ -390,6 +479,45 @@ define('views/Header', [
 //      if (!this.publish  &&  !this.doTry  &&  !this.forkMe  &&  !this.testPlug  &&  !this.enterTournament  && ) 
       if (!_.any(SPECIAL_BUTTONS, function(b) { return this[b]; }.bind(this)))
         this.noButtons = true;      
+    },
+    
+    getPhysicsTemplateData: function() {
+      if (!this._physicsTemplateData) {
+        this._physicsTemplateData = {
+            constants: {}
+        };
+      }
+      
+      var constants = this._physicsTemplateData.constants,
+          i = editablePhysicsConstants.length,
+          cName;
+      
+      while (i--) {
+        cName = editablePhysicsConstants[i];
+        constants[cName] = Physics.constants[cName];
+      }
+        
+      if (this.pageView.TAG != 'ListPage') {
+        var i = friendlyTypes.length,
+            keepTilt = false;
+        
+        while (i--) {
+          if (U.isAssignableFrom(this.vocModel, friendlyTypes[i])) {
+            keepTilt = true;
+            break;
+          }
+        }
+
+        if (!keepTilt)
+          delete constants.tilt;
+      }
+        
+      return this._physicsTemplateData;
+    },
+    
+    renderPhysics: function() {
+      this.physicsConstantsEl = this.el.querySelector('.physicsConstants');
+      this.physicsConstantsEl.innerHTML = this.physicsConstantsTemplate(this.getPhysicsTemplateData());
     },
     
     restyleNavbar: function() {
@@ -437,6 +565,7 @@ define('views/Header', [
       }
 
       var templateSettings = this.getBaseTemplateData();
+//      templateSettings.physics = this.getPhysicsConstants(); //Physics.scrollerConstants[this._scrollerType]);
       if (U.isChatPage()) {
 //        templateSettings.more = $.param({
 //          "data-position": "fixed"
@@ -447,12 +576,13 @@ define('views/Header', [
           templateSettings.className = 'ui-grid-b';
       }      
       this.html(this.template(templateSettings));
+      this.renderPhysics();
       this.refreshTitle();
 //      this.$el.prevObject.attr('data-title', this.pageTitle);
 //      this.$el.prevObject.attr('data-theme', G.theme.list);
       var pageData = this.pageView.el.dataset;
       pageData.title = this.pageTitle;
-      pageData.theme = G.theme.list;
+//      pageData.theme = G.theme.list;
       var frag = document.createDocumentFragment();
       var btns = this.buttonViews;
       var isMapItToggleable = !!this.collection;
@@ -512,7 +642,7 @@ define('views/Header', [
           // this.$el.find('#pageTitle').css('margin-bottom', '0px'); 
         }
       }      
-      if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges  &&  !this.isEdit) {
+      if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges  &&  !this.isEdit  &&  !G.isBB()) {
         this.$('#name.resTitle').$css('padding-bottom', '0px');
       }
 //      var wl = G.currentApp.widgetLibrary;
@@ -535,7 +665,7 @@ define('views/Header', [
       // HACK
       // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view 
       var header = this.$('.ui-header')[0];
-      var barClass = 'ui-bar-{0}'.format(G.theme.header);
+      var barClass = 'ui-bar-c';//{0}'.format(G.theme.header);
       if (header && !header.classList.contains(barClass))
         header.classList.add(barClass);
       

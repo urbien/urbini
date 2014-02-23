@@ -1,7 +1,7 @@
-define('transitions', ['globals', 'utils', 'domUtils', 'lib/fastdom'], function(G, U, DOM, Q) {  
+define('transitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'physicsBridge'], function(G, U, DOM, Q, Physics) {  
   var identityMatrix;
   var vendorPrefixes = ['', '-moz-', '-ms-', '-o-', '-webkit-'];
-  var cssNoTranslation = DOM.getTranslationString(0, 0);
+  var cssNoTranslation = DOM.positionToMatrix3DString(0, 0);
   var transitions = {
 		none: {
       fromPageTransition: function(fromView) {
@@ -102,11 +102,12 @@ define('transitions', ['globals', 'utils', 'domUtils', 'lib/fastdom'], function(
 	};
 	
 	function adjustTranslation(view, x, y) {
-  	var pos = view._getScrollPosition(),
-  	    currentX = pos && pos.X || 0,
-        currentY = pos && pos.Y || 0;
-        
-	  return DOM.getTranslationString(currentX + (x || 0), currentY + (y || 0));
+//  	var pos = view._getScrollPosition(),
+//  	    currentX = pos && pos.X || 0,
+//        currentY = pos && pos.Y || 0;
+//        
+//	  return DOM.getTranslationString(currentX + (x || 0), currentY + (y || 0));
+	  return DOM.positionToMatrix3DString(x || 0, y || 0);
 	}
 	
   function defaultToPageTransition(view) {
@@ -138,10 +139,7 @@ define('transitions', ['globals', 'utils', 'domUtils', 'lib/fastdom'], function(
     $to.trigger('page_beforeshow');
     Q.write(function() {
       if (fromView) {
-        DOM.setStylePropertyValues(to.style, {
-          transform: transition.toPageBeforeTransition(toView),
-          transition: null
-        });
+        DOM.setTransform(to, transition.toPageBeforeTransition(toView), '');
       }
       
       if (isJQM) {
@@ -153,18 +151,11 @@ define('transitions', ['globals', 'utils', 'domUtils', 'lib/fastdom'], function(
     Q.defer(1, 'write', function() {
       if (from) {
         console.log("FROM PAGE:", $from.width());
-        DOM.setStylePropertyValues(from.style, {
-          transition: ease,
-          transform: transition.fromPageTransition(fromView)
-        });        
+        DOM.setTransform(from, transition.fromPageTransition(fromView), ease);
       }
     
 //      console.log("TO PAGE:", $to.width());
-      DOM.setStylePropertyValues(to.style, {
-        transition: ease,
-        transform: transition.toPageTransition(toView)
-      });
-      
+      DOM.setTransform(to, transition.toPageTransition(toView), ease);
       if (isJQM)
         $to.trigger('create');
       
