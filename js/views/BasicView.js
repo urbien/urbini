@@ -1117,19 +1117,32 @@ define('views/BasicView', [
           oldOuterWidth = this._outerWidth,
           oldOuterHeight = this._outerHeight,
           oldWidth = this._width,
-          oldHeight = this._height;
+          oldHeight = this._height,
+          margin;
 
       this._offsetLeft = el.offsetLeft;
       this._offsetTop = el.offsetTop;
 
       // TODO: fix this nonsense
-      this._outerWidth = el.$outerWidth();
+//      if (el.scrollHeight > el.offsetHeight) {
+//        margin = el.$margin();
+//        this._outerHeight = el.scrollHeight + margin.top + margin.bottom;
+//      }
+//      else
+        this._outerHeight = el.$outerHeight();
+        
+//      if (el.scrollWidth > el.offsetWidth) {
+//        margin = margin || el.$margin();
+//        this._outerWidth = el.scrollWidth + margin.left + margin.right;
+//      }
+//      else
+        this._outerWidth = el.$outerWidth();
+      
       if (this._outerWidth)
         this._width = Math.min(this._outerWidth, viewport.width);
       else
         this._width = viewport.width > this._offsetLeft ? viewport.width - this._offsetLeft : viewport.width;
       
-      this._outerHeight = el.$outerHeight();
       if (this._outerHeight)
         this._height = Math.min(this._outerHeight, viewport.height);
       else
