@@ -35,6 +35,10 @@ define('FrameWatch', ['underscore'], function() {
     return false;
   };
 
+  function hasTickListener(fn) {
+    return tickListeners.indexOf(fn) != -1;
+  };
+
   function start() {
     if (frameId === undefined) {
       frameId = raf(publish);
@@ -110,6 +114,7 @@ define('FrameWatch', ['underscore'], function() {
 //    unsubscribe: unsubscribe,
     listenToTick: listenToTick,
     stopListeningToTick: stopListeningToTick,
+    hasTickListener: hasTickListener,
     lastFrameDuration: function() {
       return lastFrameDuration;
     },

@@ -90,7 +90,6 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //      },
       DRAG_LOCK = null,
       MOUSE_OUTED = false,
-      TICKING = false,
       FORCE_GPU = true,
       STYLE_ORDER = ['transform', 'opacity', 'z-index', 'width', 'height'],
       FIX = {
@@ -260,36 +259,34 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     e.preventDefault(); // prevent browser context menu on mac/mobile
   });
 
-  function dragOnTick() {
-    if (TICKING)
-      return;
+  function tickMonitor(lastFrameDuration) {      
+    var keepTicking = false;
+    if (numDraggables) {
+      for (var id in DRAGGABLES) {
+        keepTicking = DRAGGABLES[id].tick() || keepTicking;
+      }
+    }
     
-    TICKING = true;
-    FrameWatch.listenToTick(function tickMonitor(lastFrameDuration) {      
-      var keepTicking = false;
-      if (numDraggables) {
-        for (var id in DRAGGABLES) {
-          keepTicking = DRAGGABLES[id].tick() || keepTicking;
-        }
-      }
-      
-      if (!keepTicking) {
-        FrameWatch.stopListeningToTick(tickMonitor);
-        TICKING = false;
-        return;
-      }
+    if (!keepTicking) {
+      FrameWatch.stopListeningToTick(tickMonitor);
+      return;
+    }
 
-      
-//      if (LOCK_STEP) {
-//        var newNow = _.now(),
-//        delay = TIMESTEP > newNow - NOW;    
-//        if (!delay) {
-//          newNow = NOW;
-//          PHYSICS_TIME += TIMESTEP;
-//          THERE.step(PHYSICS_TIME);
-//        }
+    
+//    if (LOCK_STEP) {
+//      var newNow = _.now(),
+//      delay = TIMESTEP > newNow - NOW;    
+//      if (!delay) {
+//        newNow = NOW;
+//        PHYSICS_TIME += TIMESTEP;
+//        THERE.step(PHYSICS_TIME);
 //      }
-    });
+//    }
+  };
+  
+  function dragOnTick() {
+    if (!FrameWatch.hasTickListener(tickMonitor))
+      FrameWatch.listenToTick(tickMonitor);
   };
   
 //  function enableClick() {
@@ -667,6 +664,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //  };
   
   function render() {
+//    console.log("RENDERING");
     worker.postMessage({
       method: 'render'
     });
