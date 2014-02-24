@@ -83,7 +83,8 @@ var ArrayProto = Array.prototype,
     MAX_OPACITY = 0.999999,
 		HEAD_STR = "head (top / left)",
 		TAIL_STR = "tail (bottom / right)",
-		BUFFERS = [];
+		BUFFERS = [],
+		STYLE_ARRAY_CACHE = [];
 
 String.prototype.endsWith = function(str) {
   return this.slice(this.length - str.length) === str;
@@ -102,7 +103,7 @@ function getStyleBufferLength() {
 };
 
 function newStyleArray() {
-  return new Float64Array(getStyleBufferLength());
+  return STYLE_ARRAY_CACHE.pop() || new Float64Array(getStyleBufferLength());
 };
 
 function toStyleArray(style, array) {
@@ -983,8 +984,10 @@ function getOverlapArea(body, bounds, bodyArea, boundsArea) {
 };
 
 function recycleStyleArray(body, array) {
-  if (body && array)
+  if (body)
     body.state.renderData.encoded.push(array);
+  else
+    STYLE_ARRAY_CACHE.push(array);
 };
 
 function recycle(recycled) {
@@ -1593,11 +1596,11 @@ function getBodies(/* ids, map */) {
   if (args[0] instanceof Array)
     args = args[0];
   
-//  i = layoutManagers.length;
-//  while (i--) {
-//    layoutManager = layoutManagers[i];
-//    bodiesArrays.push(layoutManager.getBricks());
-//  }
+  i = layoutManagers.length;
+  while (i--) {
+    layoutManager = layoutManagers[i];
+    bodiesArrays.push(layoutManager.getBricks());
+  }
 
   for (var j = 0; j < bodiesArrays.length; j++) {
     bodies = bodiesArrays[j];
