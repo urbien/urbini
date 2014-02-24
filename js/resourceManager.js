@@ -382,11 +382,14 @@ define('resourceManager', [
     RM.cleanDatabaseAndReopen();
   });
   
-  Events.on('VERSION', function(init) {
+  function onVersionChange(init) {
     RM.deleteDatabase().then(function() {
       Voc.storeModels();
     })
-  });
+  };
+  
+  Events.on('VERSION', onVersionChange);
+  Events.on('VERSION:DB', onVersionChange);
   
   Events.on('delete', function(res) {
     RM.deleteItem(res);
