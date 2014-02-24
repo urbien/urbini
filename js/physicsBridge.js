@@ -1273,7 +1273,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       },
       init: function() {
         var i = STYLE_ORDER.length,
-            styleProp;
+            styleProp,
+            writeOptions = {
+              throttle: true,
+              last: true
+            };
         
         while (i--) {
           styleProp = STYLE_ORDER[i];
@@ -1319,14 +1323,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           
           switch (topic) {
             case 'render':
-//              if (_.size(UNRENDERED))
+//              if (_.any(UNRENDERED, _.size))
 //                debugger; // should never happen
                 
               UNRENDERED = e.data.bodies;
-              Q.write(render, this, null, {
-                throttle: true,
-                last: true
-              });
+              Q.write(render, this, null, writeOptions);
               
               break;
             case 'callback':
