@@ -2551,6 +2551,9 @@ define('utils', [
       if (typeof val !== 'object') {
         if (range.indexOf('/') != -1 && /^[a-z]+\/.*\?/.test(val)) // don't bother extending short uris like ShoppingList/32004, but do extend stuff like commerce/urbien/ShoppingList?id=32004
           return U.getLongUri1(val);
+
+//        if (range == 'boolean')
+//          return U.isFalsy(val, range) ? false : true;
         
         return val;
       }      
