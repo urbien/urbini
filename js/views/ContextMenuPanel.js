@@ -141,11 +141,12 @@ define('views/ContextMenuPanel', [
 //      this.router.navigate(U.makeMobileUrl('edit', this.resource.getUri()), {trigger: true, replace: true});
 //      return this;
 //    },
-    logout: function(e) {
-      Events.stopEvent(e);
-      Events.trigger('logout');
-      return;
-    },
+//    logout: function(e) {
+//      Events.stopEvent(e);
+//      Events.trigger('logout');
+//      this.hide();
+//      return;
+//    },
 //    click: function(e) {
 //      var t = e.target;
 //      var text = t.innerHTML;
@@ -200,6 +201,7 @@ define('views/ContextMenuPanel', [
         redirectOptions.transition = 'none';
       
       this.router.navigate(chatPageUrl.slice(chatPageUrl.indexOf('#') + 1), redirectOptions);
+      this.hide();
     },
     
     renderChatParticipants: function() {
@@ -739,6 +741,7 @@ define('views/ContextMenuPanel', [
       });
 
       this.loc('subscribed...not really though');
+      this.hide();
     },
     
     add: function() {
@@ -746,6 +749,7 @@ define('views/ContextMenuPanel', [
     
     "delete": function() {
       alert('deleted...not really though');
+      this.hide();
     }    
   }, 
   {

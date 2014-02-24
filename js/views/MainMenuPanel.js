@@ -50,12 +50,15 @@ define('views/MainMenuPanel', [
       Events.trigger('req-login', {
         dismissible: true
       });
+      
+      this.hide();
     },    
 
     logout: function(e) {
       Events.stopEvent(e);
 //      G.log(this.TAG, "Recording step for tour: selector: #logout");
       Events.trigger('logout');
+      this.hide();
       return;
     },
     home: function(e) {
@@ -71,6 +74,7 @@ define('views/MainMenuPanel', [
       else 
         Events.trigger('navigate', G.serverName + '/app/UrbienApp');
       
+      this.hide();
       return this;
     },
     click: function(e) {
