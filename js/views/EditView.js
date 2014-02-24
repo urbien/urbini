@@ -818,6 +818,8 @@ define('views/EditView', [
         else if (input.dataset.code) {
           atts[name] = $(input).data('codemirror').getValue();
         }
+        else if (input.type.startsWith('select'))
+          atts[name] = val;
 //        else if (!_.has(unsaved, name) && val)
 //          atts[name] = val;
       }

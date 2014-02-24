@@ -319,7 +319,7 @@ define('views/ContextMenuPanel', [
 
         uri = U.makePageUrl('make', 'model/portal/Comment', {$editCols: 'description', forum: G.currentApp._uri, '-makeId': G.nextId, $title: U.makeHeaderTitle(commentVerb, G.currentApp.davDisplayName)});
         html += this.menuItemTemplate({title: commentVerb, pageUrl: uri, icon: 'comments', homePage: 'y'})
-        var isAllowedToEdit = G.currentUser != 'guest'  &&  (G.currentUser._uri == G.currentApp._creator  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'));
+        var isAllowedToEdit = G.currentUser != 'guest'  &&  (G.currentUser._uri == G.currentApp.creator  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'));
         if (isAllowedToEdit) {
           uri = U.makePageUrl('list', 'model/portal/Bookmark', {dashboard: U.getLongUri1(G.currentApp.dashboard), $edit: 'y', $title: U.makeHeaderTitle(this.loc('menu'), G.currentApp.davDisplayName)});
           html += this.menuItemTemplate({title: this.loc('editMenu'), pageUrl: uri, icon: 'cog', homePage: 'y'});

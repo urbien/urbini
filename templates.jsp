@@ -1453,14 +1453,6 @@
       </fieldset>
     </div>
     {{ }                                                             }}
-    
-    <!--div class="ui-body ui-body-b">
-      <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><button name="cancelBtn" type="cancel" id="cancel" data-theme="d" class="cancel">{{= obj.cancel || loc('cancel') }}</button></div>
-        <div class="ui-block-b"><button name="submitBtn" type="submit" id="submit" data-theme="a" class="submit">{{= obj.submit || loc('submit') }}</button></div>
-      </fieldset>
-    </div-->
-
   </form>
   <br/>
   {{ if (U.isAssignableFrom(this.vocModel, U.getLongUri1("model/portal/Comment"))) { }}

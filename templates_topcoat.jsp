@@ -575,7 +575,7 @@
   <ul id="fieldsList" class="editList topcoat-list__container">
   </ul>
     <div name="errors" style="float:left"></div>
-    {{ if (this.resource.isAssignableFrom("InterfaceImplementor")) }}
+    {{ if (this.resource.isAssignableFrom("InterfaceImplementor")) { }}
     <div data-role="fieldcontain" id="ip">
       <fieldset class="ui-grid-a">
         <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true">{{= loc('checkAll') }}</a></div>
@@ -584,15 +584,7 @@
       <fieldset data-role="controlgroup" id="interfaceProps">
       </fieldset>
     </div>
-    {{                                                             }}
-    
-    <!--div>
-      <fieldset id= "submitBtns">
-        <div><button class="topcoat-button--large" type="cancel" id="cancel" {{= G.coverImage ? 'style="background:' + G.coverImage.background + ';color:' +  G.coverImage.color + ';"' : '' }}>{{= obj.cancel || loc('cancel') }}</button></div>
-        <div><button class="topcoat-button--large" type="submit" id="submit" {{= G.coverImage ? 'style="background:' + G.coverImage.color + ';color:' +  G.coverImage.background + ';"' : '' }}>{{= obj.submit || loc('submit') }}</button></div>
-      </fieldset>
-    </div-->
-
+    {{ }                                                             }}
   </form>
   
   {{ if (U.isAssignableFrom(this.vocModel, U.getLongUri1("model/portal/Comment"))) { }}

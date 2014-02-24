@@ -547,7 +547,7 @@
     </ul>
   </section>
     <div name="errors" style="float:left"></div>
-    {{ if (this.resource.isAssignableFrom("InterfaceImplementor")) }}
+    {{ if (this.resource.isAssignableFrom("InterfaceImplementor")) { }}
     <div data-role="fieldcontain" id="ip">
       <fieldset class="ui-grid-a">
         <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true">{{= loc('checkAll') }}</a></div>
@@ -556,13 +556,7 @@
       <fieldset id="interfaceProps">
       </fieldset>
     </div>
-    {{                                                             }}
-    
-    <fieldset id= "submitBtns">
-      <div><button type="cancel" class="btn btn-primary" id="cancel" {{= G.coverImage ? 'style="background:' + G.coverImage.background + ';color:' +  G.coverImage.color + ';"' : '' }}>{{= obj.cancel || loc('cancel') }}</button></div>
-      <div><button type="submit" class="btn btn-default" id="submit" {{= G.coverImage ? 'style="background:' + G.coverImage.color + ';color:' +  G.coverImage.background + ';"' : '' }}>{{= obj.submit || loc('submit') }}</button></div>
-    </fieldset>
-
+    {{ }                                                             }}    
   </form>
   <br/>
   {{ if (U.isAssignableFrom(this.vocModel, U.getLongUri1("model/portal/Comment"))) { }}
