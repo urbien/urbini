@@ -785,7 +785,6 @@ var idbModules = window.idbModules = {};
                                 idbModules.DEBUG && console.log("Updating the indexes in table", me.__idbObjectStore.__storeProps);
                                 tx.executeSql("UPDATE __sys__ set indexList = ? where name = ?", [me.__idbObjectStore.__storeProps.indexList, me.__idbObjectStore.name], function(){
                                     me.__idbObjectStore.__setReadyState("createIndex", true);
-                                    success(me);
                                     defer.resolve();
                                 }, error);
                             }
@@ -1166,6 +1165,12 @@ var idbModules = window.idbModules = {};
         return cursorRequest;
     };
     
+    IDBObjectStore.prototype.openKeyCursor = function(range, direction){
+      var cursorRequest = new idbModules.IDBRequest();
+      var cursor = new idbModules.IDBCursor(range, direction, this, cursorRequest, "key", "key");
+      return cursorRequest;
+    };
+    
     IDBObjectStore.prototype.index = function(indexName){
         var index = new idbModules.IDBIndex(indexName, this);
         return index;
@@ -1176,9 +1181,9 @@ var idbModules = window.idbModules = {};
         optionalParameters = optionalParameters || {};
         me.__setReadyState("createIndex", false);
         var result = new idbModules.IDBIndex(indexName, me, optionalParameters);
-//        me.__waitForReady(function(){
+        me.__waitForReady(function(){
             result.__createIndex(indexName, keyPath, optionalParameters);
-//        }, "createObjectStore");
+        }, "createObjectStore");
         me.indexNames.push(indexName);
         return result;
     };
@@ -1443,7 +1448,7 @@ var idbModules = window.idbModules = {};
     };
     
     IDBDatabase.prototype.transaction = function(storeNames, mode){
-        var transaction = new idbModules.IDBTransaction(storeNames, mode || 1, this);
+        var transaction = new idbModules.IDBTransaction(storeNames, typeof mode == 'undefined' ? 1 : mode, this);
         return transaction;
     };
     
