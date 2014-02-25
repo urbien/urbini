@@ -58,7 +58,7 @@
       {{ if (this.isImageCover) { }} 
         <div id="resourceImage" style="position:absolute;z-index:1"></div>
         <div data-role="footer" class="thumb-gal-header hidden" 
-          style="opacity:0.7;position:absolute;top:251px;width:100%;background:#eee;text-shadow:none;color:{{= G.coverImage ? G.coverImage.background : '#eeeeee' }}"><h3></h3></div>    
+          style="opacity:0.7;position:absolute;top:251px;width:100%;background:#eee;text-shadow:none;color:{{= G.darkColor }};"><h3></h3></div>    
         <div id="mainGroup" style="top:0px;right:1.3rem;position:absolute;"></div>
       {{ } }}
       {{ if (!this.isImageCover) { }}
@@ -432,7 +432,7 @@
   <div id="header" {{= obj.style ? style : '' }} {{= obj.more || '' }} >
     <div class="hdr">
     <section role="region">
-      <header style="height:4rem;{{= G.coverImage ? 'background:' + G.coverImage.color + ';"' : '' }}>
+      <header style="height:4rem;color:{{= G.lightColor }};background:{{= G.lightColor }};">
       <ul id="headerUl">
       </ul>
       </header>
@@ -445,7 +445,7 @@
        <i class="ui-icon-tags"></i></a></div> 
     {{ } }} 
     {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
-    <div id="name" class="resTitle" style="background:{{= G.coverImage ? G.coverImage.background : '#757575' }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
+    <div id="name" class="resTitle" style="background:{{= G.darkColor }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
       <h4 id="pageTitle" style="font-weight:normal;">{{= this.title }}</h4>
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
         <button style="max-width:200px; display: inline-block;" id="doTryBtn">
@@ -570,7 +570,7 @@
   </li>
 </script>
 
-<!-- EDIT TEMPLATES -->
+<!-- EDIT TEMPLATES -->g
 <script type="text/template" id="resourceEdit">
 <!-- the edit page for any particular resource -->
   <section id="{{= viewId }}" data-type="sidebar"></section>
@@ -632,7 +632,7 @@
 <div id="_prim">
   {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 250; }}
   {{ if (name) { }}
-    <label for="{{= id }}" class="ui-input-text" {{= isInput ? '' : 'style="vertical-align:top"' }}>{{= name }}</label>
+    <label for="{{= id }}" class="ui-input-text" style="{{= isInput ? '' : 'vertical-align:top;' }}color:{{= G.darkColor }};">{{= name }}</label>
     <{{= isInput ? 'input type="text"' : 'textarea rows="3" cols="20" ' }} name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}  class="ui-input-text">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   {{ } }} 
   {{ if (!name) { }}
@@ -646,11 +646,11 @@
 <script type="text/template" id="booleanPET">
 <div id="_prim">
   {{ if (name && name.length > 0) { }}
-    <label for="{{= id }}">{{= name }}</label>
+    <label for="{{= id }}" style="color:{{= G.darkColor }}">{{= name }}</label>
     {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }} 
   {{ } }}
   <section>
-  <label class="pack-switch" style="right: 2rem;top:0rem;left:auto;position:absolute;">
+  <label class="pack-switch" style="right: 2rem;top:0rem;left:auto;position:absolute;color:{{= G.darkColor }};">
     <input type="checkbox" name="{{= shortName }}" id="{{= id }}" class="formElement boolean" />
     <span style="top:2rem"></span>
   </label>
@@ -687,7 +687,7 @@
       "/>
     {{ }              }}
     
-    <label for="{{= id }}" style="font-weight:normal">{{= name }}</label>
+    <label for="{{= id }}" style="font-weight:normal;color:{{= G.darkColor }};">{{= name }}</label>
     {{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ||  value.length == 0 ? '' : value) : displayName }}
     {{ if (!obj.value) { }}
       {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
@@ -699,14 +699,14 @@
 </script>
 <script type="text/template" id="telPET">
 <div id="_prim">
-  <label for="{{= id }}" class="ui-input-text">{{= name }}</label>
+  <label for="{{= id }}" class="ui-input-text" style="color:{{= G.darkColor }};">{{= name }}</label>
   <input type="tel" name="{{= shortName }}" id="{{= id }}" class="ui-input-text" value="{{= typeof value === 'undefined' ? '' : value }}" />
 </div>
 </script>
 
 <script type="text/template" id="emailPET">
 <div id="_prim">
-  <label for="{{= id }}" class="ui-input-text">{{= name }}</label>
+  <label for="{{= id }}" class="ui-input-text" style="color:{{= G.darkColor }};">{{= name }}</label>
   <input type="email" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= 'formElement ' }}ui-input-text" {{= rules }} />
 </div>
 </script>
@@ -718,7 +718,7 @@
 <script type="text/template" id="longEnumPET">
 <div id="_prim">
   {{ if (name && name.length > 0) { }}
-  <label for="{{= id }}" class="select">{{= name }}</label>
+  <label for="{{= id }}" class="select" style="color:{{= G.darkColor }};">{{= name }}</label>
   {{ } }}
   
   <select name="{{= shortName }}" id="{{= id }}" data-mini="true" {{= rules }} >
