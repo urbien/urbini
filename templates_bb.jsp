@@ -274,6 +274,16 @@
   <header {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';border-bottom:1px solid ' + G.coverImage.background + ';"' : '' }}>{{= value }}</header>
 </script>
 
+<script type="text/template" id="saveButtonTemplate">
+  <!-- header button for saving changes -->
+  <a target="#"><i class="ui-icon-ok"></i></a>
+</script>
+
+<script type="text/template" id="cancelButtonTemplate">
+  <!-- header button for canceling changes -->
+  <a target="#"><i class="ui-icon-remove"></i></a>
+</script>
+
 <script type="text/template" id="mapItButtonTemplate">
   <!-- button that toggles map view -->
   <a id="mapIt" target="#"><i class="ui-icon-map-marker"></i></a>
