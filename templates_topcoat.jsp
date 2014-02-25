@@ -349,7 +349,7 @@
 <script type="text/template" id="loginPopupTemplate">
   <!-- login popup with various social network based logins -->
   {{ var canDismiss = typeof dismissible === 'undefined' || dismissible == true; }}
-  <section id="login_popup" style="position:absolute; top:15%; border:1px solid #aaa; border-radius:1rem; z-index:1000000; background:#d2d2d2;width:auto;">
+  <section id="login_popup" style="position:absolute; top:15%; border:1px solid #aaa; border-radius:1rem; z-index:1000000; background:#d2d2d2;width:250px;text-align:center;">
   <div style="padding:0 1rem 1rem 1rem;">
     <h4 style="text-align:center;margin:10px 0;color:#757575;" id="loginMsg">{{= msg }}</h4>
     {{ _.forEach(nets, function(net) { }} 

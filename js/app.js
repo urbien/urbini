@@ -458,7 +458,7 @@ define('app', [
     }; 
     
     G.getBaseObjectStoresInfo = function() {
-      return _.clone(requiredStores);
+      return $.extend(true, {}, requiredStores);
     };
     
     for (var storeName in requiredStores) {
