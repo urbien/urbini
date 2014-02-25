@@ -7,7 +7,9 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       useFileSystem,
       RESOLVED_PROMISE = G.getResolvedPromise(),
       REJECTED_PROMISE = G.getRejectedPromise(),
-      fileMap = {};
+      fileMap = {},
+      READ_ONLY = 0,
+      READ_WRITE = 1;
 //      ,
 //      defaultStoreOptions = {keyPath: prepPropName('_uri'), autoIncrement: false},
 //      defaultIndexOptions = {unique: false, multiEntry: false};
@@ -257,11 +259,6 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     this.setDefaultIndexOptions(options.defaultIndexOptions || {});
     this.taskQueue = new TaskQueue("indexedDB");
 //    this.defaultStoreOptions = defaultStoreOptions
-    this._openDfd = $.Deferred();
-    this._openPromise = this._openDfd.promise().done(function() {
-      Events.trigger('dbOpen');
-    });
-    
     for (var fn in IDB.prototype) {
       this[fn] = this[fn].bind(this);
     }
@@ -270,7 +267,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   IDB.prototype.onOpen = function(cb) {
     return this._openPromise.then(cb);
   };
-
+  
   IDB.prototype._clearStoreMonitors = function() {
     this.storesToMake = [];
     this.storesToKill = [];
@@ -420,7 +417,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   IDB.prototype.clearObjectStore = function(storeName, reason) {
     var self = this;
     this._queueTask('clearing object store {0}. {1}'.format(storeName, reason || ''), function() {
-      return self.$idb.objectStore(storeName, IDBTransaction.READ_WRITE).clear();
+      return self.$idb.objectStore(storeName, READ_WRITE).clear();
     }, true);
     
     return this;
@@ -441,7 +438,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   };
   
   IDB.prototype.getVersion = function() {
-    return this.db ? this.db.version : null;
+    return this.dbVersion; //this.db ? this.db.version : null;
   };
 
   IDB.prototype.start = function() {
@@ -463,7 +460,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   };
   
   function deleteAndReopen() {
-    this.db = null;
+//    this.db = null;
     return this.$idb.deleteDatabase().then(this.open);
   }
   
@@ -488,6 +485,12 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   };
   
   IDB.prototype.open = function(version) {
+    if (this._openDfd && this._openDfd.state() == 'pending') {
+//      debugger;
+//      this._openDfd.reject();
+      return this._openPromise;
+    }
+    
     var self = this,
         settings = {
           upgrade: doUpgrade
@@ -495,11 +498,15 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     
     if (version)
       settings.version = version;
-    
+
+    this._openDfd = $.Deferred();
+    this._openPromise = this._openDfd.promise();
     this.$idb = $.indexedDB(this.name, settings);
     this.$idb.done(function(db, event) {
       self.db = db;
+      self.dbVersion = db.version;
       self._openDfd.resolve();
+      Events.trigger('dbOpen');
     });
     
     return this.$idb;
@@ -507,7 +514,11 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   
   function restart(version) {
     version = version || this.getVersion();
-    this.db && this.db.close();
+    if (this.db) {
+      this.db.close();
+//      this.db = null;
+    }
+    
     return this.open(version);
   }
   
@@ -525,7 +536,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       
     var resultDfd = $.Deferred(),
         resultPromise = resultDfd.promise(),
-        transPromise = this.$idb.transaction([storeName], IDBTransaction.READ_ONLY).progress(function(trans) {
+        transPromise = this.$idb.transaction([storeName], READ_ONLY).progress(function(trans) {
           log('started transaction to get ' + primaryKey);
           trans.objectStore(storeName).get(primaryKey).done(function(item) {
             resultDfd.resolve(item);
@@ -559,7 +570,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       return REJECTED_PROMISE;
 
     var resultDfd = $.Deferred(),
-        transPromise = this.$idb.transaction([storeName], IDBTransaction.READ_ONLY).progress(function(trans) {
+        transPromise = this.$idb.transaction([storeName], READ_ONLY).progress(function(trans) {
           trans.objectStore(storeName).getAllKeys().then(resultDfd.resolve, resultDfd.reject);
         });
     
@@ -616,7 +627,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
 
       var args = arguments;
       return instance._queueTask('querying object store {0} by indices'.format(storeName), function(defer) {
-        args[0] = instance.$idb.objectStore(args[0], IDBTransaction.READ_ONLY);
+        args[0] = instance.$idb.objectStore(args[0], READ_ONLY);
         return backup.apply(query, args).then(function(results) {
           if (results) {
             queueParse.apply(null, results);
@@ -632,7 +643,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
 //          storeName = args[0];
 //      
 //      return self._queueTask('querying object store {0} by indices'.format(storeName), function(defer) {
-//        var trans = self.$idb.transaction([storeName], IDBTransaction.READ_ONLY),
+//        var trans = self.$idb.transaction([storeName], READ_ONLY),
 //            parseDfd = $.Deferred(),
 //            parsePromise = parseDfd.promise();
 //        
@@ -661,7 +672,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
 //    if (!this.hasStore(storeName))
 //      return REJECTED_PROMISE;
 //
-////    var trans = this.$idb.transaction([storeName], IDBTransaction.READ_ONLY),
+////    var trans = this.$idb.transaction([storeName], READ_ONLY),
 //    var results = [],
 //        orderBy = options.orderBy,
 //        asc = options.asc,
@@ -683,7 +694,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
 ////    filter = filter || G.trueFn;    
 ////    transPromise = trans.progress(function(trans) {
 ////      var store = trans.objectStore(storeName);
-//    this.$idb.objectStore(storeName, IDBTransaction.READ_ONLY).each(
+//    this.$idb.objectStore(storeName, READ_ONLY).each(
 //      function processItem(item) {
 ////        var t = _.now();
 //        tmp = _.now();
@@ -734,7 +745,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
 //    if (!this.hasStore(storeName))
 //      return REJECTED_PROMISE;
 //
-////    var trans = this.$idb.transaction([storeName], IDBTransaction.READ_ONLY),
+////    var trans = this.$idb.transaction([storeName], READ_ONLY),
 //    var results = [],
 //        orderBy = options.orderBy,
 //        asc = options.asc,
@@ -756,7 +767,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
 ////    filter = filter || G.trueFn;    
 ////    transPromise = trans.progress(function(trans) {
 ////      var store = trans.objectStore(storeName);
-//    this.$idb.objectStore(storeName, IDBTransaction.READ_ONLY).each(
+//    this.$idb.objectStore(storeName, READ_ONLY).each(
 //      function processItem(item) {
 ////        var t = _.now();
 //        tmp = _.now();
@@ -807,7 +818,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
 //    if (!this.hasStore(storeName))
 //      return REJECTED_PROMISE;
 //
-//    var trans = this.$idb.transaction([storeName], IDBTransaction.READ_ONLY),
+//    var trans = this.$idb.transaction([storeName], READ_ONLY),
 //        results = [],
 //        orderBy = options.orderBy,
 //        asc = options.asc,
@@ -882,7 +893,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     if (!this.hasStore(storeName))
       return REJECTED_PROMISE;
 
-    var trans = this.$idb.transaction([storeName], IDBTransaction.READ_ONLY),
+    var trans = this.$idb.transaction([storeName], READ_ONLY),
         results = [],
         orderBy = options.orderBy,
         asc = options.asc,
@@ -971,7 +982,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     // do them consecutively instead of in parallel because we don't want the db transaction to timeout in case prep() needs time to store stuff to the fileSystem
     // if prep doesn't involve saving files to the fileSystem, it's synchronous and takes very little time
     return prep(items).then(function(items) {      
-      return instance.$idb.transaction(storeName, IDBTransaction.READ_WRITE).progress(function(trans) {
+      return instance.$idb.transaction(storeName, READ_WRITE).progress(function(trans) {
         var store = trans.objectStore(storeName);
         for (var i = 0, len = items.length; i < len; i++) {
           store.put(items[i]);
@@ -994,7 +1005,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
 
   function del(storeName, primaryKeys) {
     log('db', 'deleting items', primaryKeys.join(', '));
-    return this.$idb.transaction([storeName], IDBTransaction.READ_WRITE).progress(function(trans) {
+    return this.$idb.transaction([storeName], READ_WRITE).progress(function(trans) {
       var store = trans.objectStore(storeName);
       primaryKeys.forEach(function(primaryKey) {
         store['delete'](primaryKey).done(function() {
