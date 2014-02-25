@@ -4,7 +4,9 @@ html {
 #name.resTitle {
   padding-bottom: 4px;
 }
-
+#other li {
+  min-height: 3rem;
+}
 .menuItems {
   list-style: none;
   padding-left: 0;
@@ -450,4 +452,8 @@ section#login_popup {
 */
 #sidebar .ui-li-count {
   float: right;
+}
+.u-desc a {
+  text-decoration:underline;
+  color: red;
 }

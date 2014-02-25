@@ -630,7 +630,7 @@
 
 <script type="text/template" id="stringPET">
 <div id="_prim">
-  {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 100; }}
+  {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 250; }}
   {{ if (name) { }}
     <label for="{{= id }}" class="ui-input-text" {{= isInput ? '' : 'style="vertical-align:top"' }}>{{= name }}</label>
     <{{= isInput ? 'input type="text"' : 'textarea rows="3" cols="20" ' }} name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}  class="ui-input-text">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
