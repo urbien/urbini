@@ -15,7 +15,7 @@ define('views/EditView', [
       switchClass = 'boolean',
       secs = [/* week seconds */604800, /* day seconds */ 86400, /* hour seconds */ 3600, /* minute seconds */ 60, /* second seconds */ 1];
       
-  function isHidden(prop, currentAtts, reqParams) {
+  function isHidden(prop, currentAtts, reqParams, isEdit) {
     var p = prop.shortName; 
     return prop.required  &&  currentAtts[p]  &&  prop.containerMember && (isEdit || reqParams[p]);
   };
@@ -1077,7 +1077,7 @@ define('views/EditView', [
       var prop = info.prop,
           p = prop.shortName;
       
-      if (isHidden(prop, info.params, info.reqParams)) {
+      if (isHidden(prop, info.params, info.reqParams, info.isEdit)) {
         var rules = ' data-formEl="true"',
             longUri = U.getLongUri1(info.params[p]);
         
@@ -1285,7 +1285,7 @@ define('views/EditView', [
       
       if (!grouped.length || reqParams['$editCols']) {
         _.each(ungrouped, function(p) {          
-          _.extend(state, {name: p, prop: meta[p]});
+          _.extend(state, {name: p, prop: meta[p], isEdit: self.isEdit});
           self.addProp(state);
         });
       }        
