@@ -339,8 +339,8 @@ define('globals', function() {
       if (G.dbType === 'none')
         return REJECTED_PROMISE;
             
-      if (!G.prunedIndexedDB)
-        G.pruneIndexedDB();
+//      if (!G.prunedIndexedDB)
+//        G.pruneIndexedDB();
       
       var stuff = [];
       for (var key in keyToData) {
