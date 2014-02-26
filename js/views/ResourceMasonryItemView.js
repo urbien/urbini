@@ -222,17 +222,34 @@ define('views/ResourceMasonryItemView', [
           imgSrc = obj.resourceMediumImage,
           cloned = this.clonedProperties,
           gridCols = this.el.querySelector('.gridCols');
-          blankImg = G.getBlankImgSrc();
-          
-//          comments = data.v_showCommentsFor && nabRLSocial.firstChild,
-//          votes = data.v_showVotesFor && nabRLSocial.firstChild
+          blankImg = G.getBlankImgSrc(),
+          prevStyle = this._prevGalleryItemStyle || "",
+          newStyle = "";
+              
+//              comments = data.v_showCommentsFor && nabRLSocial.firstChild,
+//              votes = data.v_showVotesFor && nabRLSocial.firstChild
       if (obj.imgWidth) {
-//        debugger;
-        gItem.$attr('style', _.template("{{= (obj.top ? '' : 'height:' + imgHeight + 'px;') + (obj.left ? '' : 'width:' + imgWidth + 'px;') }}")(obj));
+        if (!obj.top)
+          newStyle += "height:" + imgHeight + "px;";
+
+        if (!obj.left)
+          newStyle += "width:" + imgWidth + "px;";
+
+        if (newStyle != prevStyle)
+          gItem.$attr('style', newStyle);
       }
       else {
-        gItem.$attr('style', _.template("{{= (obj.height ? 'height:' + height + 'px;' : '') + (obj.width ? 'width:' + width + 'px;' : '') }}")(obj));
+        if (obj.height)
+          newStyle += "height:" + height + "px;";
+
+        if (obj.width)
+          newStyle += "width:" + width + "px;";
+        
+        if (newStyle != prevStyle)
+          gItem.$attr('style', newStyle);
       }
+      
+      this._prevGalleryItemStyle = newStyle;
       
       gItemA.href = obj.rUri || 'about:blank';
       gItemImg.dataset['for'] = U.getImageAttribute(this.resource, obj.imageProperty);
