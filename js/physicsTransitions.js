@@ -378,7 +378,8 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
         stiffness = options.stiffness,
         damping = options.damping,
         drag = options.drag,
-        finished = 2,
+//        finished = 2,
+        isFinished = false,
         toSnapId = _.uniqueId('snapAction'),
         fromSnapId = _.uniqueId('snapAction');
     
@@ -386,7 +387,9 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
 //    options.springDamping = Math.min(0.99, Physics.constants.springDamping);
     
     function finish() {
-      if (--finished == 0) {
+//      if (--finished == 0) {
+      if (!isFinished) {
+        isFinished = true;
         Physics.there.style(self.from.getContainerBodyId(), {
           opacity: 0
         });
