@@ -442,7 +442,7 @@
   <div id="header" {{= obj.style ? style : '' }} {{= obj.more || '' }} >
     <div class="hdr">
     <section role="region">
-      <header style="height:4rem;color:{{= G.lightColor }};background:{{= G.lightColor }};">
+      <header>
       <ul id="headerUl">
       </ul>
       </header>
@@ -451,12 +451,12 @@
   </div>
   <div id="buttons">  
     {{ if (this.categories) { }}
-       <div style="margin:10px 0 0 10px; float:left"><a id="categories" href="#" {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';background:' + G.coverImage.color +';"' : '' }}>
+       <div style="margin:10px 0 0 10px; float:left"><a id="categories" href="#" {{= G.coverImage ? 'style="color:' + G.lightColor + ';background:' + G.coverImage.darkColor +';"' : '' }}>
        <i class="ui-icon-tags"></i></a></div> 
     {{ } }} 
     {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
-    <div id="name" class="resTitle" style="background:{{= G.darkColor }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
-      <h4 id="pageTitle" style="font-weight:normal;">{{= this.title }}</h4>
+    <div id="name" class="resTitle" style="background:{{= G.darkColor }};color:{{= G.lightColor }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
+      <h4 id="pageTitle" style="font-weight:normal;color:{{= G.lightColor }};">{{= this.title }}</h4>
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
         <button style="max-width:200px; display: inline-block;" id="doTryBtn">
           {{ if (obj.tryApp) { }}
@@ -632,7 +632,7 @@
 
 <script type="text/template" id="stringPET">
 <div id="_prim">
-  {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 100; }}
+  {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 250; }}
   {{ if (name) { }}
     <label for="{{= id }}" class="ui-input-text" style="{{= isInput ? '' : 'vertical-align:top;' }}color:{{= G.darkColor }};">{{= name }}</label>
     <{{= isInput ? 'input type="text"' : 'textarea rows="3" cols="20" ' }} name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}  class="ui-input-text">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>

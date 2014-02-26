@@ -568,8 +568,22 @@ define('app', [
     Voc.checkUser();
     G.checkVersion();
     if (G.coverImage) {
-      G.coverImage.color = G.lightColor = U.colorLuminance("#" + G.coverImage.lightColor.toString(16), 0.4);
-      G.coverImage.background = G.darkColor = "#" + G.coverImage.darkColor.toString(16);
+      G.coverImage.color = G.lightColor = U.colorLuminance("#" + G.coverImage.lightColor.toString(16), 0.2);
+      var num =  G.coverImage.darkColor;
+      var b = num & 0xFF,
+          g = (num & 0xFF00) >>> 8,
+          r = (num & 0xFF0000) >>> 16;
+      var rcolor = r.toString(16);
+      if (rcolor.length < 2)
+        rcolor = '0' + rcolor;
+      var bcolor = b.toString(16);
+      if (bcolor.length < 2)
+        bcolor = '0' + bcolor;
+      var gcolor = b.toString(16);
+      if (gcolor.length < 2)
+        gcolor = '0' + gcolor;
+      var color = '#' + rcolor+bcolor+gcolor;
+      G.coverImage.background = G.darkColor = U.colorLuminance(color, -0.2);
     }
     else {
       G.lightColor = '#eeeeee';
