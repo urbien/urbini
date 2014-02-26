@@ -432,7 +432,7 @@
   <div id="header" {{= obj.style ? style : '' }} {{= obj.more || '' }} >
     <div class="hdr">
     <section role="region">
-      <header style="height:4rem;color:#eeeeee;">
+      <header>
       <ul id="headerUl">
       </ul>
       </header>
