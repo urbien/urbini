@@ -15,6 +15,9 @@ html {
   padding: 0;
   background: #eee;
 }
+[data-type="list"] header {
+  padding: 0.5rem 0rem;
+}
 [data-type="list"] li, #sidebar li.image_fitted {
   border-bottom: solid 1px #e3e3e3;
   height: 8rem;

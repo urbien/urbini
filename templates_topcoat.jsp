@@ -61,7 +61,7 @@
         <div id="resourceImage" style="position:absolute;z-index:1"></div>
         <div data-role="footer" class="thumb-gal-header hidden" 
           style="opacity:0.7;position:absolute;top:251px;width:100%;background:#eee;text-shadow:none;color:{{= G.coverImage ? G.coverImage.background : '#eeeeee' }}"><h3></h3></div>    
-        <div id="mainGroup" style="top:0px;right:1.3rem;position:absolute;"></div>
+        <div id="mainGroup" style="top:0px;right:1.3rem;"></div>
       {{ } }}
       {{ if (!this.isImageCover) { }}
         <div id="resourceImage" style="width:50%;float:left;margin:0; padding:0;{{= U.getArrayOfPropertiesWith(this.vocModel.properties, "mainGroup") &&  U.isA(this.vocModel, 'ImageResource') ? 'min-height:210px;' : ''}}" ><!-- style="width:auto" --></div>
