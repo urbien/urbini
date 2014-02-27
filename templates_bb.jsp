@@ -86,7 +86,7 @@
     {{ } }}
     
     <section data-type="list">
-      <ul id="resourceView" style="padding:10px;">
+      <ul id="resourceView" style="padding:10px 10px 0 10px;">
       </ul>
     </section>
     <div id="about" class="hidden" style="padding: 7px;"></div>
@@ -95,8 +95,8 @@
       <!--br/>
       <br/-->
     {{ } }}
-    <section data-type="list">
-      <ul id="cpView" style="margin: -10px 0 0 10px;">
+    <section data-type="list" style="background: #eeffff">
+      <ul id="cpView" style="margin: -0px 10px 0 10px;">
       </ul>
     </section>
   </div>
@@ -333,7 +333,7 @@
 <script type="text/template" id="loginPopupTemplate">
   <!-- login popup with various social network based logins -->
   {{ var canDismiss = typeof dismissible === 'undefined' || dismissible == true; }}
-  <section id="login_popup" role="region" class="loginPopup">
+  <section id="login_popup" role="region" class="loginPopup" style="width:250px;text-align:center;">
   <ul class="compact">
     <h4 style="margin:10px 0;color:#757575;" id="loginMsg">{{= msg }}</h4>
     {{ _.forEach(nets, function(net) { }} 
@@ -442,7 +442,7 @@
   <div id="header" {{= obj.style ? style : '' }} {{= obj.more || '' }} >
     <div class="hdr">
     <section role="region">
-      <header>
+      <header style="background: none;height:inherit;">
       <ul id="headerUl">
       </ul>
       </header>
