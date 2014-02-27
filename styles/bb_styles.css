@@ -4,7 +4,9 @@ html {
 #name.resTitle {
   padding-bottom: 4px;
 }
-
+#other li {
+  min-height: 3rem;
+}
 .menuItems {
   list-style: none;
   padding-left: 0;
@@ -13,13 +15,17 @@ html {
   padding: 0;
   background: #eee;
 }
+[data-type="list"] header {
+  padding: 0.5rem 0rem;
+}
 [data-type="list"] li, #sidebar li.image_fitted {
   border-bottom: solid 1px #e3e3e3;
   height: 8rem;
 }
 
 #headerDiv {
-  margin-top:3px; 
+  margin-top:-13px; 
+  line-height: 40px; 
 }
 #name h4 {
   font-weight:normal;
@@ -28,16 +34,20 @@ html {
   color:#eee;
 }
 .hdr {
-  width:100%;height:40px
+  width:100%;
+  height:37px;
 }
 
 #headerUl  {
   display:block;
   max-width:100%;
   list-style:none;
+  /*
   position:relative;
-  overflow:visible;margin: -10px -1px 0 0;
+  overflow:visible;
+  margin: -10px -1px 0 0;
   padding:0;
+  */
 }
 
 #headerUl s { color: #757575 }
@@ -49,7 +59,7 @@ html {
   margin:-1px -1px 0 0;
   cursor: pointer;
   height:100%;
-  margin-top:1rem;
+/*  margin-top:1rem; */
 }
 #headerUl li i {
   font-size:2.8rem;
@@ -65,7 +75,7 @@ html {
   min-height:3.2rem;
 }
 
-#resourceView li {
+#resourceView li, #cpView li {
  border-bottom: 1px solid #e3e3e3;
 }
 
@@ -450,4 +460,8 @@ section#login_popup {
 */
 #sidebar .ui-li-count {
   float: right;
+}
+.u-desc a {
+  text-decoration:underline;
+  color: red;
 }

@@ -59,11 +59,11 @@
         <div id="resourceImage" style="position:absolute;z-index:1"></div>
         <div data-role="footer" class="thumb-gal-header hidden" 
           style="opacity:0.7;position:absolute;top:251px;width:100%;background:#eee;text-shadow:none;color:{{= G.darkColor }};"><h3></h3></div>    
-        <div id="mainGroup" style="top:0px;right:1.3rem;position:absolute;"></div>
+        <div id="mainGroup" style="top:0px;right:1.3rem;"></div>
       {{ } }}
       {{ if (!this.isImageCover) { }}
         <div id="resourceImage" style="width:50%;float:left;margin:0; padding:0;{{= U.getArrayOfPropertiesWith(this.vocModel.properties, "mainGroup") &&  U.isA(this.vocModel, 'ImageResource') ? 'min-height:210px;' : ''}}" ><!-- style="width:auto" --></div>
-        <div id="mainGroup" style="right:1.3rem;position:absolute;"></div>
+        <div id="mainGroup" style="right:1.3rem;"></div>
       {{ } }}
 
 
@@ -86,7 +86,7 @@
     {{ } }}
     
     <section data-type="list">
-      <ul id="resourceView" style="padding:10px;">
+      <ul id="resourceView" style="padding:10px 10px 0 10px;">
       </ul>
     </section>
     <div id="about" class="hidden" style="padding: 7px;"></div>
@@ -95,8 +95,8 @@
       <!--br/>
       <br/-->
     {{ } }}
-    <section data-type="list">
-      <ul id="cpView" style="margin: -10px 0 0 10px;">
+    <section data-type="list" style="background: #eeffff">
+      <ul id="cpView" style="margin: -0px 10px 0 10px;">
       </ul>
     </section>
   </div>
@@ -124,7 +124,7 @@
       data-for="{{= U.getImageAttribute(resource, imageProperty) }}"
       class="lazyImage" />
     {{ } }}
-    <span style="position:absolute;padding:1rem;font-size:1.6rem;font-weight:bold;">{{= name }}{{= obj.gridCols ? '<br/>' + gridCols : '' }}</span>
+    <span style="position:absolute;padding:1rem 0 1rem 0;font-size:1.6rem;font-weight:bold;">{{= name }}{{= obj.gridCols ? '<br/>' + gridCols : '' }}</span>
   </a>
   {{ if (typeof comment != 'undefined') { }}
     <p>{{= comment }}</p>
@@ -333,7 +333,7 @@
 <script type="text/template" id="loginPopupTemplate">
   <!-- login popup with various social network based logins -->
   {{ var canDismiss = typeof dismissible === 'undefined' || dismissible == true; }}
-  <section id="login_popup" role="region" class="loginPopup">
+  <section id="login_popup" role="region" class="loginPopup" style="width:250px;text-align:center;">
   <ul class="compact">
     <h4 style="margin:10px 0;color:#757575;" id="loginMsg">{{= msg }}</h4>
     {{ _.forEach(nets, function(net) { }} 
@@ -442,7 +442,7 @@
   <div id="header" {{= obj.style ? style : '' }} {{= obj.more || '' }} >
     <div class="hdr">
     <section role="region">
-      <header style="height:4rem;color:{{= G.lightColor }};background:{{= G.lightColor }};">
+      <header style="background: none;height:inherit;">
       <ul id="headerUl">
       </ul>
       </header>
@@ -451,12 +451,12 @@
   </div>
   <div id="buttons">  
     {{ if (this.categories) { }}
-       <div style="margin:10px 0 0 10px; float:left"><a id="categories" href="#" {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';background:' + G.coverImage.color +';"' : '' }}>
+       <div style="margin:10px 0 0 10px; float:left"><a id="categories" href="#" {{= G.coverImage ? 'style="color:' + G.lightColor + ';background:' + G.coverImage.darkColor +';"' : '' }}>
        <i class="ui-icon-tags"></i></a></div> 
     {{ } }} 
     {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
-    <div id="name" class="resTitle" style="background:{{= G.darkColor }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
-      <h4 id="pageTitle" style="font-weight:normal;">{{= this.title }}</h4>
+    <div id="name" class="resTitle" style="background:{{= G.darkColor }};color:{{= G.lightColor }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
+      <h4 id="pageTitle" style="font-weight:normal;color:{{= G.lightColor }};">{{= this.title }}</h4>
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
         <button style="max-width:200px; display: inline-block;" id="doTryBtn">
           {{ if (obj.tryApp) { }}
@@ -632,7 +632,7 @@
 
 <script type="text/template" id="stringPET">
 <div id="_prim">
-  {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 100; }}
+  {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 250; }}
   {{ if (name) { }}
     <label for="{{= id }}" class="ui-input-text" style="{{= isInput ? '' : 'vertical-align:top;' }}color:{{= G.darkColor }};">{{= name }}</label>
     <{{= isInput ? 'input type="text"' : 'textarea rows="3" cols="20" ' }} name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}  class="ui-input-text">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>

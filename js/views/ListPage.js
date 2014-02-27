@@ -90,12 +90,27 @@ define('views/ListPage', [
             showAddButton = type.endsWith('/App')                      || 
                             U.isAnAppClass(type)                       ||
                             vocModel.properties['autocreated']         ||
-                            vocModel.skipAccessControl                 ||
-                            U.isUserInRole(U.getUserRole(), 'siteOwner');
+                            vocModel.skipAccessControl;
+//                            U.isUserInRole(U.getUserRole(), 'siteOwner');
             if (!showAddButton) {
               var p = U.getContainerProperty(vocModel);
-              if (p && params[p])
-                showAddButton = true;
+              if (!p) 
+                showButton = U.isUserInRole(U.getUserRole(), 'siteOwner');
+              else if (params[p]) {
+                var self = this;
+                Voc.getModels(this.vocModel.properties[p].range).done(function(m) {
+                  var bp = U.getPropertiesWith(m.properties, 'backLink');
+                  for (var cp in bp) {
+                    var prop = bp[cp];
+                    if (prop.range == self.vocModel.type  &&  !prop.readOnly) {
+                      showAddProperty = true;
+                      break;
+                    }
+                  }
+                });
+              }
+              if (!p) 
+                showButton = U.isUserInRole(U.getUserRole(), 'siteOwner');
             }
           }
     //                           (vocModel.skipAccessControl  &&  (isOwner  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'))));

@@ -539,8 +539,16 @@ define('views/Header', [
       
       var isTemplates = window.location.hash && window.location.hash.indexOf('#templates/') != -1; 
       
-      if (!isTemplates  &&  !res && (U.isAssignableFrom(this.vocModel, G.commonTypes.App) || (U.isA(this.vocModel, 'Taggable')  &&  U.getCloneOf(this.vocModel, 'Taggable.tags').length/*  &&  U.isAssignableFrom(this.vocModel, 'Urbien')*/)))
-        this.categories = true;
+      if (!isTemplates  &&  !res)
+        if (U.isAssignableFrom(this.vocModel, G.commonTypes.App))
+          this.categories = true;
+        else if (U.isA(this.vocModel, 'Taggable')) {
+          var cOf = U.getCloneOf(this.vocModel, 'Taggable.tags');
+          if (cOf.length) {
+            if (!this.vocModel.properties[cOf[0]].avoidDisplaying)
+              this.categories = true; 
+          }
+        }
       else if (!res) {
         var hash = window.location.hash;
         var isChooser =  hash  &&  hash.indexOf('#chooser/') == 0;
