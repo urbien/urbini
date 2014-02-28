@@ -556,6 +556,10 @@
   <span>{{= value }}</span>
 </script>
 
+<script type="text/template" id="percentPT">
+  <span>{{= value + '%' }}</span>
+</script>
+
 <script type="text/template" id="moneyPT">
   <span>{{= (typeof value.currency === 'undefined' ? '$' : value.currency) + (typeof value.value === 'undefined' ? (typeof value === 'number' ? value : 0) : value.value) }}</span>
 </script>
@@ -1493,6 +1497,11 @@
 <script type="text/template" id="emailPET">
   <label for="{{= id }}">{{= name }}</label>
   <input type="email" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true" />
+</script>
+
+<script type="text/template" id="percentPET">
+  <label for="{{= id }}">{{= name }}</label>
+  <input type="range" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" {{= rules }} data-mini="true" max="100" />
 </script>
 
 <script type="text/template" id="editRowTemplate">

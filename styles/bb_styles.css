@@ -18,6 +18,9 @@ html {
 [data-type="list"] header {
   padding: 0.5rem 0rem;
 }
+[data-type="list"] .editList header {
+  padding: 0.5rem 0rem 0.5rem 1rem;
+}
 [data-type="list"] li, #sidebar li.image_fitted {
   border-bottom: solid 1px #e3e3e3;
   height: 8rem;
@@ -42,11 +45,11 @@ html {
   display:block;
   max-width:100%;
   list-style:none;
+  padding:0;
   /*
   position:relative;
   overflow:visible;
   margin: -10px -1px 0 0;
-  padding:0;
   */
 }
 
