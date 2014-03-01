@@ -95,8 +95,8 @@
       <!--br/>
       <br/-->
     {{ } }}
-    <section data-type="list" style="background: #eeffff">
-      <ul id="cpView" style="margin: -0px 10px 0 10px;">
+    <section data-type="list">
+      <ul id="cpView" style="margin: -10px 10px 0 10px;">
       </ul>
     </section>
   </div>
@@ -644,6 +644,12 @@
   {{ } }}
 </div>   
 </script>
+<script type="text/template" id="percentPET">
+<div id="_prim">
+  <label for="{{= id }}"  class="ui-input-text" >{{= name }}</label>
+  <input type="range" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '0' }}" {{= rules }} data-mini="true" max="100" min="0" style="width:75%" />
+</div>
+</script>
 
 <script type="text/template" id="booleanPET">
 <div id="_prim">
@@ -733,6 +739,9 @@
   </select>
 </div>
 </script>
+
+
+
 </div>
 
 

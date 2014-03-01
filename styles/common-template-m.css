@@ -1087,7 +1087,7 @@ div {
 .span_1_of_2 {
 	width: 49.2%;
 }
-.col:nth-child(2) span {
+.col:nth-child(2) span, .col:nth-child(2) div {
   float: right;
 }
 /*  GO FULL WIDTH AT LESS THAN 480 PIXELS */
