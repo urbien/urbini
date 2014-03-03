@@ -58,12 +58,14 @@
       {{ if (this.isImageCover) { }} 
         <div id="resourceImage" style="position:absolute;z-index:1"></div>
         <div data-role="footer" class="thumb-gal-header hidden" 
-          style="opacity:0.7;position:absolute;top:251px;width:100%;background:#eee;text-shadow:none;color:{{= G.darkColor }};"><h3></h3></div>    
-        <div id="mainGroup" style="top:0px;right:1.3rem;"></div>
+          style="opacity:0.7;position:absolute;top:251px;width:100%;background:#eee;text-shadow:none;color:{{= G.darkColor }};">
+          <h3></h3>
+        </div>    
+        <div id="mainGroup" style="padding-right:5px;"></div>
       {{ } }}
       {{ if (!this.isImageCover) { }}
         <div id="resourceImage" style="width:50%;float:left;margin:0; padding:0;{{= U.getArrayOfPropertiesWith(this.vocModel.properties, "mainGroup") &&  U.isA(this.vocModel, 'ImageResource') ? 'min-height:210px;' : ''}}" ><!-- style="width:auto" --></div>
-        <div id="mainGroup" style="right:1.3rem;"></div>
+        <div id="mainGroup" style="padding-right:5px;"></div>
       {{ } }}
 
 
@@ -86,7 +88,7 @@
     {{ } }}
     
     <section data-type="list">
-      <ul id="resourceView" style="padding:10px 10px 0 10px;">
+      <ul id="resourceView">
       </ul>
     </section>
     <div id="about" class="hidden" style="padding: 7px;"></div>
@@ -95,8 +97,8 @@
       <!--br/>
       <br/-->
     {{ } }}
-    <section data-type="list">
-      <ul id="cpView" style="margin: -10px 10px 0 10px;">
+    <section data-type="list" style="background:{{= G.lightColor }}">
+      <ul id="cpView">
       </ul>
     </section>
   </div>
@@ -451,7 +453,7 @@
   </div>
   <div id="buttons">  
     {{ if (this.categories) { }}
-       <div style="margin:10px 0 0 10px; float:left"><a id="categories" href="#" {{= G.coverImage ? 'style="color:' + G.lightColor + ';background:' + G.coverImage.darkColor +';"' : '' }}>
+       <div style="margin:-5px 0 0 10px; float:left"><a id="categories" href="#" {{= G.coverImage ? 'style="background:' + G.lightColor + ';color:' + G.darkColor +';"' : '' }}>
        <i class="ui-icon-tags"></i></a></div> 
     {{ } }} 
     {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
@@ -511,7 +513,7 @@
 
 <script type="text/template" id="menuItemTemplate">
   <!-- one item on the left-side slide-out menu panel -->
-  <li style="{{= obj.image ? 'padding-top: 0;padding-right:0px;' : 'padding-bottom:0px;' }}"  id="{{= obj.id ? obj.id : G.nextId() }}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
+  <li style="position:relative;{{= obj.image ? 'padding-top: 0;padding-right:0px;' : 'padding-bottom:0px;' }}"  id="{{= obj.id ? obj.id : G.nextId() }}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
       {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl) + '"' : '' }} >
     
     <!-- {{ if (!obj.homePage) { }} -->   
@@ -535,7 +537,7 @@
       <i class="ui-icon-{{= icon }}" style="float-left; font-size: 20px; padding-right: 5px;"></i>
     {{ }               }}
       {{= title }}
-      {{= obj.image || title.length < 20 ? '' : '<div class="dimmer">' }}
+      {{= obj.image || title.length < 20 || obj.social  ? '' : '<div class="dimmer">' }}
     </div>
     
     {{ if (obj.icon  &&  !obj.homePage) { }}

@@ -104,7 +104,7 @@ define('views/MainMenuPanel', [
 //    tap: Events.defaultTapHandler,
     render:function (eventName) {
       if (G.isJQM()) {
-        var mi = this.el.querySelector('#menuItems');
+        var mi = this.el.$('#menuItems')[0];
         if (mi) {
   //        $('#' + this.viewId).panel().panel("open");
           this.$el.panel("open");

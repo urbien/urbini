@@ -1087,7 +1087,7 @@ div {
 .span_1_of_2 {
 	width: 49.2%;
 }
-.col:nth-child(2) span, .col:nth-child(2) div {
+.col:nth-child(2) span, .col:nth-child(2) div, .col:nth-child(2) a {
   float: right;
 }
 /*  GO FULL WIDTH AT LESS THAN 480 PIXELS */
@@ -1099,4 +1099,7 @@ div {
 	.span_1_of_2 {
 		width: 100%; 
 	}
+}
+#headerUl {
+  margin: 0;
 }

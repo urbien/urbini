@@ -65,7 +65,7 @@
       {{ } }}
       {{ if (!this.isImageCover) { }}
         <div id="resourceImage" style="width:50%;float:left;margin:0; padding:0;{{= U.getArrayOfPropertiesWith(this.vocModel.properties, "mainGroup") &&  U.isA(this.vocModel, 'ImageResource') ? 'min-height:210px;' : ''}}" ><!-- style="width:auto" --></div>
-        <div id="mainGroup" style="right:1.3rem;position:absolute;"></div>
+        <div id="mainGroup" style="right:1.3rem;"></div>
       {{ } }}
       <!--div id="buyGroup" class="ui-block-b" style="width:50%; min-width: 130px"></div-->
     </div>
