@@ -703,7 +703,11 @@ define('views/ControlPanel', [
             var idx;
             if (p.length <= 5  ||  p.indexOf('Count') != p.length - 5) 
               continue;
+            
             var pp = p.substring(0, p.length - 5);
+            if (_.has(displayedProps, pp))  
+              continue;
+            
             var pMeta = meta[pp];
             if (!pMeta  ||  !pMeta.backLink || atts[pp]) 
               continue;
@@ -711,6 +715,7 @@ define('views/ControlPanel', [
 //            p = pp;
             prop = pMeta;
             json[pp] = {count: count};
+            p = pp;
           }
           
           hasValue = _.has(atts, p);
@@ -751,6 +756,7 @@ define('views/ControlPanel', [
               doShow = true;
           }
           if (doShow) {
+            displayedProps[p] = true;
   //          if (isPropEditable)
   //            U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: res.getUri()}));
   //          else
