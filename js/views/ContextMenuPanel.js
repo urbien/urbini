@@ -303,6 +303,7 @@ define('views/ContextMenuPanel', [
           res = this.model,
           model = this.vocModel,
           html = "";
+<<<<<<< Updated upstream
 
       if (model) {
         var json = this.resource && res.toJSON();
@@ -313,6 +314,8 @@ define('views/ContextMenuPanel', [
       }
       else
         this.html(this.template({}));      
+=======
+>>>>>>> Stashed changes
 //      if (!model) {
         var commentVerb = this.loc('commentVerb'),
             likeVerb = this.loc('likeVerb');
@@ -347,12 +350,13 @@ define('views/ContextMenuPanel', [
 //        }        
 //      }
 //      else {
-//        var json = this.resource && res.toJSON();
-//  //      var isSuperUser = isCreatorOrAdmin(res);
-//        this.html(this.template(json));      
-//
-//        var title = '<div class="gradientEllipsis">' + this.loc(this.resource ? 'objProps' : 'listProps') + '</div>';
-//        html += this.headerTemplate({title: title, icon: 'gear'});
+//      if (model) {
+        var json = this.resource && res.toJSON();
+  //      var isSuperUser = isCreatorOrAdmin(res);
+        this.html(this.template(json));      
+
+        var title = '<div class="gradientEllipsis">' + this.loc(this.resource ? 'objProps' : 'listProps') + '</div>';
+        html += this.headerTemplate({title: title, icon: 'gear'});
         var isItemListing = res.isA("ItemListing");
         var isBuyable = res.isA("Buyable");
         if (isItemListing || isBuyable) {
