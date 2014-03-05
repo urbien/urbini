@@ -230,20 +230,20 @@ define('views/ResourceMasonryItemView', [
 //              votes = data.v_showVotesFor && nabRLSocial.firstChild
       if (obj.imgWidth) {
         if (!obj.top)
-          newStyle += "height:" + imgHeight + "px;";
+          newStyle += "height:" + obj.imgHeight + "px;";
 
         if (!obj.left)
-          newStyle += "width:" + imgWidth + "px;";
+          newStyle += "width:" + obj.imgWidth + "px;";
 
         if (newStyle != prevStyle)
           gItem.$attr('style', newStyle);
       }
       else {
         if (obj.height)
-          newStyle += "height:" + height + "px;";
+          newStyle += "height:" + obj.height + "px;";
 
         if (obj.width)
-          newStyle += "width:" + width + "px;";
+          newStyle += "width:" + obj.width + "px;";
         
         if (newStyle != prevStyle)
           gItem.$attr('style', newStyle);

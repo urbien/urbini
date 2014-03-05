@@ -12,13 +12,14 @@
   <name>Default Urbini Config.xml</name>
 
   <description>
-    Default Urbini description 
+    Urbini mobile apps framework
   </description>
 
-  <author href="http://urbien.com" email="noreply@urbien.com">
+  <author href="http://urbien.com" email="info@urbien.com">
     Urbien
   </author>
-    
+  <gap:platform name="ios" />
+  <gap:platform name="android" />    
   <gap:plugin name="com.phonegap.plugins.pushplugin" />
   <gap:plugin name="org.apache.cordova.dialogs" />
   <gap:plugin name="org.apache.cordova.vibration" />

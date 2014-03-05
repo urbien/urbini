@@ -65,7 +65,7 @@
       {{ } }}
       {{ if (!this.isImageCover) { }}
         <div id="resourceImage" style="width:50%;float:left;margin:0; padding:0;{{= U.getArrayOfPropertiesWith(this.vocModel.properties, "mainGroup") &&  U.isA(this.vocModel, 'ImageResource') ? 'min-height:210px;' : ''}}" ><!-- style="width:auto" --></div>
-        <div id="mainGroup" style="right:1.3rem;position:absolute;"></div>
+        <div id="mainGroup" style="right:1.3rem;"></div>
       {{ } }}
       <!--div id="buyGroup" class="ui-block-b" style="width:50%; min-width: 130px"></div-->
     </div>
@@ -132,13 +132,13 @@
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      
-   <a target="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp">
+   <!--a target="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp">
      <i class="ui-icon-plus-sign"></i>
-   </a>
+   </a-->
 
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
      </a>
-     <div style="display:inline;position:absolute;right:4rem;font-size: 11px;top:1.5rem;border-radius:1rem;border: 1px solid #777;padding: 0.1rem 0.3rem;">{{= value }}</div>
+     <div style="color:{{= G.lightColor }};font-weight:bold;background:{{= G.darkColor }};display:inline;position:absolute;right:1rem;font-size: 11px;top:1.5rem;border-radius:1rem;border: 1px solid {{= G.darkColor }};padding: 0.1rem 0.3rem;">{{= value }}</div>
      
      {{ if (typeof comment != 'undefined') { }}
        <p style="padding-left:1.25rem; font-size:1.3rem;color:#808080; position:absolute;top:2rem;">{{= comment }}</p>
@@ -155,7 +155,7 @@
      
      <!--span class="ui-li-count">{{= value }}</span></a><a target="#" data-icon="chevron-right" data-iconshadow="false" class="cp" -->
      </a>
-     <div style="display:inline;position:absolute;right:4rem;top:1rem;font-size: 11px;border-radius:1rem;border: 1px solid #777;padding: 0.1rem 0.3rem;">{{= value }}</div>
+     <div style="display:inline;position:absolute;right:1rem;top:1rem;font-size: 11px;border-radius:1rem;border: 1px solid {{= G.darkColor }};padding: 0.1rem 0.3rem;">{{= value }}</div>
    </li>
 </script>
 
@@ -434,7 +434,7 @@
        <i class="ui-icon-tags"></i></a></div> 
     {{ } }} 
     {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
-    <div id="name" class="resTitle" style="background:{{= G.coverImage ? G.coverImage.background : '#757575' }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
+    <div id="name" class="resTitle" style="background:{{= G.darkColor }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
       <h4 id="pageTitle" style="font-weight:normal;color:{{= G.coverImage ? G.coverImage.color : '#eeeeee;'}}">{{= this.title }}</h4>
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
         <button style="max-width:200px; display: inline-block;{{= G.coverImage ? 'background-color:' + G.coverImage.color + ';color:' + G.coverImage.background : ''}}" id="doTryBtn" class="topcoat-button--cta">

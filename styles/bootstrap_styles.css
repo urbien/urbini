@@ -9,6 +9,9 @@ li {
 .masonry-brick div[data-viewid] {
   border: none;
 }
+#sidebar .masonry-brick {
+  cursor: pointer;
+}
 #headerUl div {
   text-align:center;
   font-size:30px;

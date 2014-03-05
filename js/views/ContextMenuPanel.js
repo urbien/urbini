@@ -303,18 +303,30 @@ define('views/ContextMenuPanel', [
           res = this.model,
           model = this.vocModel,
           html = "";
-                
+<<<<<<< Updated upstream
+
+      if (model) {
+        var json = this.resource && res.toJSON();
+  //      var isSuperUser = isCreatorOrAdmin(res);
+        this.html(this.template(json));      
+        var title = this.loc(this.resource ? 'objProps' : 'listProps');
+        html += this.groupHeaderTemplate({value: title, icon: 'gear'});
+      }
+      else
+        this.html(this.template({}));      
+=======
+>>>>>>> Stashed changes
 //      if (!model) {
         var commentVerb = this.loc('commentVerb'),
             likeVerb = this.loc('likeVerb');
         
-        this.html(this.template({}));      
+//        this.html(this.template({}));      
         uri = U.makePageUrl('make', 'aspects/tags/Vote', {votable: G.currentApp._uri, '-makeId': G.nextId, $title: U.makeHeaderTitle(likeVerb, G.currentApp.davDisplayName)});
         html += this.menuItemTemplate({title: likeVerb, pageUrl: uri, icon: 'heart', homePage: 'y'});
 
         if (!G.currentUser.guest) {
           var icons = _.map(['Facebook', 'Twitter', 'LinkedIn', 'Google'], function(n) { return '<i class="ui-icon-{0}"></i>'.format(U.getSocialNetFontIcon(n)) }).join(' ');
-          html += this.menuItemTemplate({title: icons, mobileUrl: U.makePageUrl('social', '', {}), homePage: 'y'});
+          html += this.menuItemTemplate({title: icons, mobileUrl: U.makePageUrl('social', '', {}), homePage: 'y', social: true});
         }
 
         uri = U.makePageUrl('make', 'model/portal/Comment', {$editCols: 'description', forum: G.currentApp._uri, '-makeId': G.nextId, $title: U.makeHeaderTitle(commentVerb, G.currentApp.davDisplayName)});
@@ -333,11 +345,12 @@ define('views/ContextMenuPanel', [
 //        else
 //          U.addToFrag(frag, this.menuItemTemplate({title: 'Profile', icon: 'user', mobileUrl: uri, image: G.currentUser.thumb, cssClass: 'menu_image_fitted', homePage: 'y'}));
         
-        if (G.pageRoot != 'app/UrbienApp') {
-          html += this.menuItemTemplate({title: this.loc("urbienHome"), icon: 'repeat', id: 'urbien123', mobileUrl: '#', homePage: 'y'});
-        }        
+//        if (G.pageRoot != 'app/UrbienApp') {
+//          html += this.menuItemTemplate({title: this.loc("urbienHome"), icon: 'repeat', id: 'urbien123', mobileUrl: '#', homePage: 'y'});
+//        }        
 //      }
 //      else {
+//      if (model) {
         var json = this.resource && res.toJSON();
   //      var isSuperUser = isCreatorOrAdmin(res);
         this.html(this.template(json));      
@@ -609,7 +622,9 @@ define('views/ContextMenuPanel', [
         return html;
       
       html += this.groupHeaderTemplate({value: this.loc('misc')});        
+      /*      
       var uri = U.getLongUri1(G.currentApp._uri);
+      
       pageUrl = U.makePageUrl('view', uri);
       var title = this.loc('editApp'); // + G.currentApp.title;
       var img = G.currentApp.smallImage;
@@ -619,22 +634,41 @@ define('views/ContextMenuPanel', [
         if (typeof G.currentApp.originalWidth != 'undefined' &&
             typeof G.currentApp.originalHeight != 'undefined') {
           
-//              this.$el.addClass("image_fitted");
-          
-//              var dim = U.fitToFrame(60, 60, G.currentApp.originalWidth / G.currentApp.originalHeight);
-//              var width = dim.w;
-//              var height = dim.h;
-//              var top = dim.y;
-//              var right = dim.w - dim.x;
-//              var bottom = dim.h - dim.y;
-//              var left = dim.x;
+          var params = {
+              title: title, 
+              pageUrl: pageUrl, 
+              image: img, 
+              cssClass: 'menu_image_fitted'
+            };
+          var w = G.currentApp.originalWidth, h = G.currentApp.originalHeight;
+          var maxDim = 105; // for app
+          if (w < h) {
+            var r = 105 / w;
+            maxDim = Math.floor(h * r); 
+ 
+          }
+          var clip;
+          if (w == h)  
+            clip = U.clipToFrame(47, 47, w, h, maxDim);
+          else
+            clip = U.clipToFrame(47, 47, w, h, maxDim, 80);
+
+          if (clip) {
+            params.top = clip.clip_top;
+            params.clip_right = clip.clip_right;
+            params.bottom = clip.clip_bottom;
+            params.clip_left = clip.clip_left;
+            params.right = clip.clip_left - 1; 
+          }
+
+          html += this.menuItemTemplate(params);
 //              U.addToFrag(frag, this.menuItemTemplate({title: title, pageUrl: pageUrl, image: img, width: width, height: height, top: top, right: right, bottom: bottom, left: left, cssClass: 'menu_image_fitted'}));
-          html += this.menuItemTemplate({title: title, pageUrl: pageUrl, image: img, cssClass: 'menu_image_fitted'});
+//          html += this.menuItemTemplate({title: title, pageUrl: pageUrl, image: img, cssClass: 'menu_image_fitted'});
         }
         else
           html += this.menuItemTemplate({title: title, pageUrl: pageUrl, image: img});
       }
-      
+*/      
       return html;
     },
 

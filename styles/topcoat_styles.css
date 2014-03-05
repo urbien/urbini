@@ -20,6 +20,9 @@ li {
   position: relative;
 }
 
+#headerUl button {
+  cursor: pointer;
+}
 #headerUl .topcoat-button-bar__button--large {
   border-radius: 0;
 }
@@ -127,7 +130,7 @@ a {
 .cpA {
   font-weight:normal;width:100%;height:100%;
   position:absolute;
-  padding:0 0 0 1.25rem;
+  padding:0;
 }
 
 .cp i {

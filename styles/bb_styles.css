@@ -11,25 +11,36 @@ html {
   list-style: none;
   padding-left: 0;
 }
+#rightMenuItems header {
+  padding-left: 15px;
+}
+
 [data-type="list"] {
   padding: 0;
   background: #eee;
 }
+
+[data-type="list"] li p:first-of-type {
+  font-size:1.6rem;
+}
 [data-type="list"] header {
   padding: 0.5rem 0rem;
+}
+[data-type="list"] .editList header {
+  padding: 0.5rem 0rem 0.5rem 1rem;
 }
 [data-type="list"] li, #sidebar li.image_fitted {
   border-bottom: solid 1px #e3e3e3;
   height: 8rem;
+  color: #606060;
 }
 
 #headerDiv {
-  margin-top:-13px; 
   line-height: 40px; 
 }
 #name h4 {
   font-weight:normal;
-  margin: 15px 0 7px 0;
+/*  margin: 15px 0 7px 0; */
   font-size:2.3rem;
   color:#eee;
 }
@@ -42,11 +53,11 @@ html {
   display:block;
   max-width:100%;
   list-style:none;
+  padding:0;
   /*
   position:relative;
   overflow:visible;
   margin: -10px -1px 0 0;
-  padding:0;
   */
 }
 
@@ -76,9 +87,12 @@ html {
 }
 
 #resourceView li, #cpView li {
- border-bottom: 1px solid #e3e3e3;
+  border-bottom: 1px solid #e3e3e3;
+  padding: 0 10px;
 }
-
+#resourceView header, #cpView header {
+  padding: 10px;
+}
 
 #buttons {
   margin-top: -15px;
@@ -230,6 +244,7 @@ section[data-type="sidebar"]:after {
 
 [data-type="list"] li > a {
   height: auto;
+  color: #606060;
 }
 
 li label.ui-input-text, li label.select {
@@ -361,7 +376,7 @@ fieldset#submitBtns div:nth-child(2) button {
   background: #333;
 }
 a {
-  color: #333333;
+  color: #606060;
 }
 #login_popup .popup {
   background: #ccc;
@@ -464,4 +479,7 @@ section#login_popup {
 .u-desc a {
   text-decoration:underline;
   color: red;
+}
+#headerButtons button {
+  font-weight: normal;
 }

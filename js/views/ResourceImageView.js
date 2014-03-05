@@ -408,13 +408,12 @@ define('views/ResourceImageView', [
       }
         
       if (this.isImageCover) {
-        
         if (U.isAssignableFrom(this.vocModel, 'model/company/ContactBySocial')) {
           var friends = this.resource.get('friendsCount') || (this.resource.get('friends') && this.resource.get('friends').count);
           this.el.style.top = '95px'; //!G.isBB() ? (friends ? '155px' : '190px') : '95px';
         }
         else
-          this.el.style.top = '155px'; //!G.isBB() ? '195px' : '155px';
+          this.el.style.top = '95px'; //'155px'; //!G.isBB() ? '195px' : '155px';
       }  
       if (l) {
         var h = t ? b - t : b;
@@ -438,8 +437,6 @@ define('views/ResourceImageView', [
         this.renderCoverImage(G.coverImage);
         return this;
       }
-      if (!coverPhoto) 
-        return this;
 
 //      var prop = this.vocModel(ic);
       type = U.getTypeUri(coverPhoto);
@@ -467,6 +464,11 @@ define('views/ResourceImageView', [
     },
     renderCoverImage: function(res) {
       var coverImage, coverDiv;
+      var pe = this.el.parentElement;
+      if (!pe)
+        return;
+      if (pe.querySelector('#coverImage'))
+        return;
       if (res) { 
         coverImage = res.attributes ? res.get('coverImage') : res.coverImage;
         if (!coverImage)
@@ -479,9 +481,6 @@ define('views/ResourceImageView', [
         coverDiv = '<div id="coverImage" style="height:';
       coverDiv += '290px;'; //!G.isBB() ? '350px;' : '290px;';
       coverDiv += 'z-index:100;"></div>';
-      var pe = this.el.parentElement;
-      if (!pe)
-        return;
       pe.$append(coverDiv);  
 /*
       while (!pe.id  ||  pe.id != 'resourceViewHolder')

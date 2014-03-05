@@ -579,10 +579,10 @@ define('app', [
       var bcolor = b.toString(16);
       if (bcolor.length < 2)
         bcolor = '0' + bcolor;
-      var gcolor = b.toString(16);
+      var gcolor = g.toString(16);
       if (gcolor.length < 2)
         gcolor = '0' + gcolor;
-      var color = '#' + rcolor+bcolor+gcolor;
+      var color = '#' + rcolor + ('' + gcolor) + ('' + bcolor);
       G.coverImage.background = G.darkColor = U.colorLuminance(color, -0.2);
     }
     else {
