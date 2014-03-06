@@ -332,39 +332,6 @@
   <a target="#"><i class="ui-icon-signin"></i></a>
 </script>
 
-<script type="text/template" id="loginPopupTemplate">
-  <!-- login popup with various social network based logins -->
-  {{ var canDismiss = typeof dismissible === 'undefined' || dismissible == true; }}
-  <section id="login_popup" role="region" class="loginPopup" style="width:250px;text-align:center;">
-  <ul class="compact">
-    <h4 style="margin:10px 0;color:#757575;" id="loginMsg">{{= msg }}</h4>
-    {{ _.forEach(nets, function(net) { }} 
-<li>
-    <a role="button" href="{{= net.url }}" class="lpButton" {{= net.name == 'Facebook' ? ' target="_top"' : '' }}>
-      <i class="big_symbol 
-      {{ if(net.name == "Facebook") { }} ui-icon-facebook-sign {{ } }}
-      {{ if(net.name == "Google") { }} ui-icon-google-plus-sign {{ } }}
-      {{ if(net.name == "Twitter") { }} ui-icon-twitter-sign {{ } }}
-      {{ if(net.name == "LinkedIn") { }} ui-icon-linkedin-sign {{ } }}
-      {{ if(net.name == "Live") { }} ui-icon-live-sign {{ } }}
-        ">
-       </i>
-     <span>{{= net.name }}</span>
-    </a>
-</li>
-    {{ }); }}
-</ul>
-    <!--h5>Login by Email</h5>
-    <form id="loginForm" action="j_security_check" method="POST" onsubmit="return hash(this, 'j_security_check')" autocomplete="off">
-      <table>
-        <tr><td>Email: </td><td><input name="j_username" /></td></tr>
-        <tr><td>Password: </td><td><input type="password" name="j_password" /></td></tr>
-        <tr><td colspan="2"><input type="submit" value="Submit" /></td></tr>
-      </table>
-    </form-->
-  </section>
-</script>
-
 <script type="text/template" id="genericDialogTemplate">
 <section role="region" class="loginPopup" id="{{= id }}">
   {{ if (obj.header) { }}

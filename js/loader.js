@@ -650,11 +650,15 @@ define('globals', function() {
   }
   
   function load() {
-    var spinner = 'app init',
+    var spinner = {
+          name: 'app init',
+          timeout: 10000,
+          blockClick: true
+        },
         priorityModules = [];
 
     G.startedTask("loading pre-bundle");
-    G.showSpinner({name: spinner, timeout: 10000});
+    G.showSpinner(spinner);
     APP_START_PROMISE.done(function() {
       G.hideSpinner(spinner);
       G.log(G.TAG, 'stats', "App start took: " + (new Date().getTime() - __started) + ' millis');
@@ -1387,13 +1391,17 @@ define('globals', function() {
 //      m && m.bind(navigator);
       return !!m;
     })(),
+    clickBlocker: function(e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    },
     showSpinner: function(options) {
       options = options || {};
       if (typeof options === 'string')
         options = {name: options};
       
       var id = getSpinnerId(options.name);
-      var cl = options.nonBlockingOverlay ? '' : 'spinner_bg';
+      var cl = 'vcenter' + (options.nonBlockingOverlay ? '' : ' spinner_bg');
       var color;
       if (G.tabs) {
         var t0 = G.tabs[0];
@@ -1402,28 +1410,32 @@ define('globals', function() {
       }
       
       var style = ' style="z-index:1000;' + (color ? color + ';' : '') + '"';
-      var innerHTML = '<div id="spinner_container"><div id="spinner"' + style + '>' + (options.content || '<i class="ui-icon-spinner icon-spin" style="font-size: 64px;"></i>') + '</div></div>';
+      var innerHTML = '<div><div ' + style + ' class="spinner">' + (options.content || '<i class="ui-icon-spinner icon-spin" style="font-size: 64px;"></i>') + '</div></div>';
       var spinner = doc.createElement('div');
       spinner.id = id;
-      if (cl)
-        spinner.classList.add(cl);
+      spinner.className = cl;
       
       spinner.innerHTML = innerHTML;
 //      var spinner = '<div id="' + id + '" class="' + cl + '">' + innerHTML + '</div>';
       body.appendChild(spinner);
       if (options.timeout) {
         setTimeout(function() {
-          G.hideSpinner(options.name);
+          G.hideSpinner(options);
         }, options.timeout);
       }
+      
+      if (options.blockClick)
+        document.addEventListener('click', this.clickBlocker, true);
     },
-    hideSpinner: function(name) {
-      var spinners = doc.querySelectorAll('#' + getSpinnerId(name));
+    hideSpinner: function(options) {
+      var spinners = doc.querySelectorAll('#' + getSpinnerId(options.name));
       var i = spinners.length;
       while (i--) {
         var spinner = spinners[i];
         spinner.parentNode.removeChild(spinner);
       }
+      
+      document.removeEventListener('click', this.clickBlocker, true);
     },
     getVersion: function(old) {
       if (!old && G.VERSION)
@@ -1561,7 +1573,7 @@ define('globals', function() {
     hasLocalStorage: hasLocalStorage,
     hasFileSystem: !!(window.requestFileSystem || window.webkitRequestFileSystem),
     hasBlobs: typeof window.Blob !== 'undefined',
-    hasWebWorkers: typeof window.Worker !== 'undefined',
+    hasWebWorkers: false,//typeof window.Worker !== 'undefined',
     TAG: 'globals',
     checkpoints: [],
     tasks: {},
