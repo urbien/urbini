@@ -141,13 +141,13 @@
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      
-   <a target="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp">
+   <!--a target="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp">
      <i class="ui-icon-plus-sign"></i>
-   </a>
+   </a-->
 <p>
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
      </a>
-     <div style="display:inline;position:absolute;right:4rem;font-size: 11px;top:1.5rem;border-radius:1rem;border: 1px solid #777;padding: 0.1rem 0.3rem;">{{= value }}</div>
+     <div style="color:{{= G.lightColor }};font-weight:bold;background:{{= G.darkColor }};display:inline;position:absolute;right:1rem;font-size: 11px;top:1.5rem;border-radius:1rem;border: 1px solid {{= G.darkColor }};padding: 0.1rem 0.3rem;">{{= value }}</div>
 </p>     
      {{ if (typeof comment != 'undefined') { }}
        <br/><p style="padding: 0.7rem 0;font-size:1.3rem;color:#808080; line-height:1.5rem;">{{= comment }}</p>
@@ -165,7 +165,7 @@
      
      <!--span class="ui-li-count">{{= value }}</span></a><a target="#" data-icon="chevron-right" data-iconshadow="false" class="cp" -->
      </a>
-     <div style="display:inline;position:absolute;right:4rem;top:1rem;font-size: 11px;border-radius:1rem;border: 1px solid #777;padding: 0.1rem 0.3rem;">{{= value }}</div>
+     <div style="{{= G.darkColor }}display:inline;position:absolute;right:1rem;top:1rem;font-size: 11px;border-radius:1rem;border: 1px solid {{= G.darkColor }};padding: 0.1rem 0.3rem;">{{= value }}</div>
 </p>     
    </li>
 </script>
@@ -330,39 +330,6 @@
 <script type="text/template" id="loginButtonTemplate">
   <!-- button that summons the login popup -->
   <a target="#"><i class="ui-icon-signin"></i></a>
-</script>
-
-<script type="text/template" id="loginPopupTemplate">
-  <!-- login popup with various social network based logins -->
-  {{ var canDismiss = typeof dismissible === 'undefined' || dismissible == true; }}
-  <section id="login_popup" role="region" class="loginPopup" style="width:250px;text-align:center;">
-  <ul class="compact">
-    <h4 style="margin:10px 0;color:#757575;" id="loginMsg">{{= msg }}</h4>
-    {{ _.forEach(nets, function(net) { }} 
-<li>
-    <a role="button" href="{{= net.url }}" class="lpButton" {{= net.name == 'Facebook' ? ' target="_top"' : '' }}>
-      <i class="big_symbol 
-      {{ if(net.name == "Facebook") { }} ui-icon-facebook-sign {{ } }}
-      {{ if(net.name == "Google") { }} ui-icon-google-plus-sign {{ } }}
-      {{ if(net.name == "Twitter") { }} ui-icon-twitter-sign {{ } }}
-      {{ if(net.name == "LinkedIn") { }} ui-icon-linkedin-sign {{ } }}
-      {{ if(net.name == "Live") { }} ui-icon-live-sign {{ } }}
-        ">
-       </i>
-     <span>{{= net.name }}</span>
-    </a>
-</li>
-    {{ }); }}
-</ul>
-    <!--h5>Login by Email</h5>
-    <form id="loginForm" action="j_security_check" method="POST" onsubmit="return hash(this, 'j_security_check')" autocomplete="off">
-      <table>
-        <tr><td>Email: </td><td><input name="j_username" /></td></tr>
-        <tr><td>Password: </td><td><input type="password" name="j_password" /></td></tr>
-        <tr><td colspan="2"><input type="submit" value="Submit" /></td></tr>
-      </table>
-    </form-->
-  </section>
 </script>
 
 <script type="text/template" id="genericDialogTemplate">

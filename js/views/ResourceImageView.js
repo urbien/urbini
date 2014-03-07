@@ -464,6 +464,11 @@ define('views/ResourceImageView', [
     },
     renderCoverImage: function(res) {
       var coverImage, coverDiv;
+      var pe = this.el.parentElement;
+      if (!pe)
+        return;
+      if (pe.querySelector('#coverImage'))
+        return;
       if (res) { 
         coverImage = res.attributes ? res.get('coverImage') : res.coverImage;
         if (!coverImage)
@@ -476,9 +481,6 @@ define('views/ResourceImageView', [
         coverDiv = '<div id="coverImage" style="height:';
       coverDiv += '290px;'; //!G.isBB() ? '350px;' : '290px;';
       coverDiv += 'z-index:100;"></div>';
-      var pe = this.el.parentElement;
-      if (!pe)
-        return;
       pe.$append(coverDiv);  
 /*
       while (!pe.id  ||  pe.id != 'resourceViewHolder')

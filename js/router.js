@@ -414,8 +414,22 @@ define('router', [
         return;
       
       var view = C.getCachedView();
-      if (!view)
-        view = new Modules.StaticPage();
+      if (!view) {
+        var hashInfo = G.currentHashInfo;
+        if (hashInfo.params.template)
+          view = new Modules.StaticPage();
+        else if (hashInfo.params.selector) {
+          var el = doc.body.$(hashInfo.params.selector)[0]; // + '[data-role="page"]')[0];
+          if (!el) {
+            Events.trigger('navigate', 'home/', { replace: true, trigger: true });
+            return;
+          }
+            
+          view = new Modules.StaticPage({
+            el: el
+          });
+        }
+      }
       
       this.changePage(view);
     },

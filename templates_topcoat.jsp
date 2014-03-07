@@ -132,13 +132,13 @@
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      
-   <a target="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp">
+   <!--a target="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp">
      <i class="ui-icon-plus-sign"></i>
-   </a>
+   </a-->
 
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
      </a>
-     <div style="display:inline;position:absolute;right:4rem;font-size: 11px;top:1.5rem;border-radius:1rem;border: 1px solid #777;padding: 0.1rem 0.3rem;">{{= value }}</div>
+     <div style="color:{{= G.lightColor }};font-weight:bold;background:{{= G.darkColor }};display:inline;position:absolute;right:1rem;font-size: 11px;top:1.5rem;border-radius:1rem;border: 1px solid {{= G.darkColor }};padding: 0.1rem 0.3rem;">{{= value }}</div>
      
      {{ if (typeof comment != 'undefined') { }}
        <p style="padding-left:1.25rem; font-size:1.3rem;color:#808080; position:absolute;top:2rem;">{{= comment }}</p>
@@ -155,7 +155,7 @@
      
      <!--span class="ui-li-count">{{= value }}</span></a><a target="#" data-icon="chevron-right" data-iconshadow="false" class="cp" -->
      </a>
-     <div style="display:inline;position:absolute;right:4rem;top:1rem;font-size: 11px;border-radius:1rem;border: 1px solid #777;padding: 0.1rem 0.3rem;">{{= value }}</div>
+     <div style="display:inline;position:absolute;right:1rem;top:1rem;font-size: 11px;border-radius:1rem;border: 1px solid {{= G.darkColor }};padding: 0.1rem 0.3rem;">{{= value }}</div>
    </li>
 </script>
 
@@ -346,7 +346,7 @@
   </button>
 </script>
 
-<script type="text/template" id="loginPopupTemplate">
+<!--script type="text/template" id="loginPopupTemplate">
   <!-- login popup with various social network based logins -->
   {{ var canDismiss = typeof dismissible === 'undefined' || dismissible == true; }}
   <section id="login_popup" style="position:absolute; top:15%; border:1px solid #aaa; border-radius:1rem; z-index:1000000; background:#d2d2d2;width:250px;text-align:center;">
@@ -376,7 +376,7 @@
       </table>
     </form-->
   </section>
-</script>
+</script-->
 
 <script type="text/template" id="logoutButtonTemplate">
   <li id="logout">

@@ -892,17 +892,22 @@ define('app', [
         returnUri = G.pageRoot;
       }
       
-      var nets = _.map(G.socialNets, function(net) {
-        return {
-          name: net.socialNet,
-          url: U.buildSocialNetOAuthUrl({
-            net: net,
-            action: 'Login', 
-            returnUri: returnUri,
-            returnUriHash: returnUriHash
-          })
-        };
+      var nets = _.map(['Facebook', 'Twitter', 'LinkedIn', 'Google', 'Live'], function(name) {
+        net = _.find(G.socialNets, function(net) { return net.socialNet == name });
+        if (net) {
+          return {
+            name: name,
+            url: U.buildSocialNetOAuthUrl({
+              net: net,
+              action: 'Login', 
+              returnUri: returnUri,
+              returnUriHash: returnUriHash
+            })
+          };
+        }
       });
+      
+      nets = _.compact(nets);
       
       if (!options.dismissible) {
         onDismiss = options.onDismiss || function() { 
@@ -912,7 +917,8 @@ define('app', [
         
 //      existingPopup.remove();
       var popupHtml = U.template('loginPopupTemplate')({nets: nets, msg: options.online, dismissible: false});
-      $(document.body).append(popupHtml);
+      $('.modal-popup-holder').append(popupHtml);
+//      $(document.body).append(popupHtml);
       var $popup = $('#login_popup');
       if (onDismiss) {
         $popup.find('[data-cancel]').click(onDismiss);
@@ -924,8 +930,20 @@ define('app', [
         $popup.parent().css('z-index', 1000000);
       }  
       else {
-        $popup.css('left', (G.viewport.width - 255) / 2);
+//        $popup.css('left', (G.viewport.width - 255) / 2);
+        U.require('views/ModalDialog', function(MD) {
+          var popup = $popup[0];
+          MD.show(popup, onDismiss);
+          
+          nets.map(function(net) {
+            popup.$('.' + net.name.toLowerCase()).$on('click', function(e) {
+              MD.hide();
+              window.location.href = net.url;
+            });
+          });
+        });
       }
+      
       return false; // prevents login button highlighting
     });
     
