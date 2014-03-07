@@ -977,6 +977,53 @@
 </script>
 
 <script type="text/template" id="loginPopupTemplate">
+<table id="login_popup" class="social-login modal-popup">
+  <!--h2>LOGIN</h2-->
+  <tr>
+    <td class="facebook">
+      <div class="encircled">
+        <i class="big_symbol ui-icon-facebook"></i>
+      </div>
+      <br />
+      <span>Login with Facebook</span>
+    </td>
+    <td class="twitter">
+      <div class="encircled">
+        <i class="big_symbol ui-icon-twitter"></i>
+      </div>
+      <br />
+      <span>Login with Twitter</span>
+    </td>
+  </tr>
+  <tr>
+    <td class="linkedin" colspan="2">
+      <div class="encircled">
+        <i class="big_symbol ui-icon-linkedin"></i>
+      </div>
+      <br />
+      <span>Login with LinkedIn</span>
+    </td>
+  </tr>
+  <tr>
+    <td class="google">
+      <div class="encircled">
+        <i class="big_symbol ui-icon-google-plus"></i>
+      </div>
+      <br />
+      <span>Login with Google+</span>
+    </td>
+    <td class="live">
+      <div class="encircled">
+        <i class="big_symbol ui-icon-live"></i>
+      </div>
+      <br />
+      <span>Login with Live</span>
+    </td>
+  </tr>
+</table>
+</script>
+
+<!--script type="text/template" id="loginPopupTemplate">
   <!-- login popup with various social network based logins -->
   {{ var canDismiss = typeof dismissible === 'undefined' || dismissible == true; }}
   <div id="login_popup" data-role="popup" data-transition="slidedown" data-overlay-theme="a" data-dismissible="false" class="ui-content">
@@ -999,7 +1046,7 @@
 
     {{ }); }}
   </div>
-</script>
+</script-->
 
 <script type="text/template" id="socialConnectButtonTemplate">
   <li id="login">   

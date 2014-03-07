@@ -34,9 +34,9 @@ define('views/StaticPage', [
     
     render: function() {
       if (this.template)
-        this.$el.html(this.template());
+        this.el.$html(this.template());
       
-      if (!this.$el.parentNode) 
+      if (!this.el.parentNode) 
         $('body').append(this.$el);
     }    
   }, {

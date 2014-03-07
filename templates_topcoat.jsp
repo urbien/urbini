@@ -346,7 +346,7 @@
   </button>
 </script>
 
-<script type="text/template" id="loginPopupTemplate">
+<!--script type="text/template" id="loginPopupTemplate">
   <!-- login popup with various social network based logins -->
   {{ var canDismiss = typeof dismissible === 'undefined' || dismissible == true; }}
   <section id="login_popup" style="position:absolute; top:15%; border:1px solid #aaa; border-radius:1rem; z-index:1000000; background:#d2d2d2;width:250px;text-align:center;">
@@ -376,7 +376,7 @@
       </table>
     </form-->
   </section>
-</script>
+</script-->
 
 <script type="text/template" id="logoutButtonTemplate">
   <li id="logout">
