@@ -303,7 +303,6 @@ define('views/ContextMenuPanel', [
           res = this.model,
           model = this.vocModel,
           html = "";
-<<<<<<< Updated upstream
 
       if (model) {
         var json = this.resource && res.toJSON();
@@ -314,9 +313,8 @@ define('views/ContextMenuPanel', [
       }
       else
         this.html(this.template({}));      
-=======
->>>>>>> Stashed changes
-//      if (!model) {
+
+      //      if (!model) {
         var commentVerb = this.loc('commentVerb'),
             likeVerb = this.loc('likeVerb');
         
