@@ -54,6 +54,9 @@ define('views/StaticPage', [
       
       if (!this.el.parentNode) 
         $('body').append(this.$el);
+      
+      if (!this.rendered)
+        this.addToWorld(null, true);
     }    
   }, {
     displayName: 'StaticPage'
