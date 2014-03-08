@@ -19,7 +19,7 @@ define('views/ResourceView', [
     initialize: function(options) {
       _.bindAll(this, 'render', 'refresh'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);
-      _.each(['propRowTemplate', 'propRowTemplate2', 'propGroupsDividerTemplate', 'priceTemplate', 'buyTemplate', 'sellTemplate'], function(t) {
+      _.each(['propRowTemplate', 'propRowTemplate2', 'propRowTemplate3', 'propGroupsDividerTemplate', 'priceTemplate', 'buyTemplate', 'sellTemplate'], function(t) {
         this.makeTemplate(t, t, this.vocModel.type);
       }.bind(this));
       
@@ -163,6 +163,9 @@ define('views/ResourceView', [
     renderHelper: function(options) {
       var res = this.resource;
       var vocModel = this.vocModel;
+      var frag = document.createDocumentFragment();
+//      if (res.isA("CollaborationPoint"))
+//        this.renderCollaborationPoint(frag);
 
       var params = _.getParamMap(window.location.hash);
       var isApp = U.isAssignableFrom(res, G.commonTypes.App);
@@ -180,7 +183,6 @@ define('views/ResourceView', [
 //      var json = res.toJSON();
 //      this.pruneProps(json);
 
-      var frag = document.createDocumentFragment();
 
       var currentAppProps = U.getCurrentAppProps(meta);
       var propGroups;
@@ -254,6 +256,7 @@ define('views/ResourceView', [
       var idx = 0;
       var groupNameDisplayed;
       var maxChars = 30;
+      var maxCharsBeforeSkippingLabel = 100;
 
       if (propGroups.length) {
         for (var i = 0; i < propGroups.length; i++) {
@@ -289,7 +292,11 @@ define('views/ResourceView', [
             if (prop.code) {
               val.value = this.__prependNumbersDiv(prop, val.value);          
             }
-            if (val.name.length + v.length > maxChars)
+            
+            var valLength = val.name.length + v.length;
+            if (valLength > maxCharsBeforeSkippingLabel)
+              U.addToFrag(frag, this.propRowTemplate3(val));
+            else if (valLength > maxChars)
               U.addToFrag(frag, this.propRowTemplate2(val));
             else
               U.addToFrag(frag, this.propRowTemplate(val));
@@ -464,6 +471,33 @@ define('views/ResourceView', [
 
       return this;
     },
+    
+//    renderCollaborationPoint: function(frag) {
+//      if (!this.authorTemplate)
+//        this.authorTemplate = this.makeTemplate('authorTemplate', 'authorTemplate', model.type);
+//      
+//      var res = this.resource,
+//          model = this.vocModel,
+//          desc = res.get("Submission.description"),
+//          authorPropName = U.getCloneOf(vocModel, "Submission.submittedBy")[0],
+//          authorName = res.get(authorPropName + ".displayName"),
+//          authorThumb = res.get(authorPropName + ".thumb"),
+//          authorHtml = this.authorTemplate({
+//            img: authorThumb && U.getExternalFileUrl(authorThumb),
+//            name: authorName
+//          }),
+//          dateSubmitted = res.get("Submission.dateSubmitted"),
+//          dateDiv = document.createElement('div'),
+//      
+//      dateDiv.classList.add('dateSubmitted');
+//      dateDiv.textContent = dateSubmitted;
+//      U.addToFrag(frag, authorHtml);
+//      frag.appendChild(dateDiv);
+//
+//      <li class="collaborationPoint"></li>
+//      this.el.classList.add("collaborationPoint");
+//      
+//    },
     
     __prependNumbersDiv: function(prop, html) {
 //      return '<div id="{0}_numbers" style="float: left; width: 2em; margin-right: .5em; text-align: right; font-family: monospace; color: #CCC;"></div>'.format(prop.shortName) + html;

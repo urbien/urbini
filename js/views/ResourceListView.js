@@ -1022,7 +1022,13 @@ define('views/ResourceListView', [
       return preinitializer.preinitialize(params);
     },
     
-    renderItem: function(res, prepend) {
+    renderItem: function(res, info) {
+      var liView = this.doRenderItem(res, info);
+      this.postRenderItem(liView);
+      return liView;
+    },
+    
+    doRenderItem: function(res, prepend) {
       var options,
           liView = this.getCachedItemView(),
           preinitializedItem;
@@ -1075,13 +1081,13 @@ define('views/ResourceListView', [
 //        this.log("CREATED NEW LIST ITEM: " + liView.getBodyId());
       }
             
+      this.addChild(liView);
       liView.render(this._renderItemOptions);
       
       if (!this._itemTemplateElement && this.displayMode == 'masonry') // remove this when we change ResourceListItemView to update DOM instead of replace it
         this._itemTemplateElement = liView.el;
-        
-      this.postRenderItem(liView);
-//      return liView;
+      
+      return liView;
     },
     
     postRenderItem: function(liView) {
@@ -1091,7 +1097,6 @@ define('views/ResourceListView', [
         this.el.appendChild(liView.el); // we don't care about its position in the list, as it's absolutely positioned
       }
       
-      this.addChild(liView);
       this._currentAddBatch.push(liView);
     },
     

@@ -89,43 +89,6 @@ define('views/HorizontalListView', [
       });
     },
     
-    renderItem: function(res, info) {
-//      var source = this.parentView.resource,
-//          xUris = this._renderedIntersectionUris,
-//          a,
-//          b;
-//
-//      source = source && source.getUri();
-//      if (this._isIntersectingWithCollection) {
-//        a = res.get('Intersection.a');
-//        b = res.get('Intersection.b');
-//        if ((source == a && ~xUris.indexOf(b)) ||
-//            (source == b && ~xUris.indexOf(a))) {
-//          // if we're in a resource view and are showing intersections with this resource, there may be cases like Friend where there are two intersections to represent the relationship. In that case, only paint one (to avoid having two of the same image) 
-//          return false;
-//        }
-//      }
-      
-      var liView = new this._preinitializedItem({
-        resource: res
-      });
-      
-      liView.render(this._itemRenderOptions);
-//      if (rendered === false)
-//        debugger;
-//        return false;
-            
-//      if (this._isIntersectingWithCollection) {
-//        if (source !== a)
-//          xUris.push(a);
-//        if (source !== b)
-//          xUris.push(b);
-//      }
-      
-      this.postRenderItem(liView);
-      return liView;
-    },
-    
     postRender: function() {
       if (!this._visible) {
         this.setStyle({

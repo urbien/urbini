@@ -109,6 +109,26 @@
   <br/>
 </script>  
 
+<!--script type="text/template" id="authorBlock">
+    <div class="author">
+      {{ var authorNameProp = U.getCloneOf('Submission.submittedBy')[0]; }}
+      {{ var imgProp = authorPropName + '.thumb';                        }}
+      {{ var img = this.resource.get(imgProp);                           }}
+      {{ if (img) {                                                      }}
+        <img src="{{= img }}" />
+      {{ }                                                               }}
+      <h6>{{= this.resource.get(authorPropName) || '' }}</h6>
+    </div>
+    <div class="dateSubmitted">
+      {{= this.resource.get('Submission.dateSubmitted')                  }}
+    </div>
+  </li>
+  <li>
+    {{= this.resource.get('Submission.description');                     }}
+  </li>
+</script-->
+
+
 <script type="text/template" id="inlineListItemTemplate">
 <!-- one row of an inline backlink in view mode -->
 <li data-viewid="{{= viewId }}">
@@ -540,6 +560,11 @@
 <script type="text/template" id="propRowTemplate2">
   <!-- wrapper for one row on a list page (long) -->
   <li class="section group" data-shortname="{{= shortName }}" {{= obj.rules || '' }}><div class="col span_1_of_2" {{= G.coverImage ? ' style="color:' + G.coverImage.background + ';"' : '' }}>{{= name }}</div><div class="col span_1_of_2" style="font-weight: normal;">{{= value }}</div></li>
+</script>
+
+<script type="text/template" id="propRowTemplate3">
+  <!-- wrapper for one row on a list page (longest) -->
+  <li class="section group" data-shortname="{{= shortName }}" {{= obj.rules || '' }}><div class="col" style="font-weight: normal;">{{= value }}</div></li>
 </script>
 
 <script type="text/template" id="menuHeaderTemplate">
