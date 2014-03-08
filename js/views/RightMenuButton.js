@@ -168,6 +168,8 @@ define('views/RightMenuButton', [
     },
     
     findMenuBadge: function() {
+      if (this.viewId.indexOf('viewHome') == 0)
+        return;
       if (!this.menuBadge)
         this.menuBadge = (G.isBootstrap() ? this.$('.badge') : G.isTopcoat() ? this.$('.topcoat-notification') : this.$('.menuBadge'))[0];
     },

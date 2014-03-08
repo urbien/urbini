@@ -1102,6 +1102,7 @@ div {
 #headerUl {
   margin: 0;
 }
+.section div.intro { font-size: 18px; line-height: 26px; color: #aaaaaa;}
 
 
 /* MODAL DIALOG */
