@@ -10,7 +10,9 @@ define('views/EditView', [
   '@widgets',
   'lib/fastdom'
 ], function(G, Events, Errors, U, C, Voc, BasicView, $m, Q) {
-  var spinner = 'loading edit view',
+  var spinner = {
+        name: 'loading edit view'
+      },
       scrollerClass = 'i-txt',
       switchClass = 'boolean',
       secs = [/* week seconds */604800, /* day seconds */ 86400, /* hour seconds */ 3600, /* minute seconds */ 60, /* second seconds */ 1];
@@ -943,12 +945,14 @@ define('views/EditView', [
         return;
       }
             
-      var sync = !U.canAsync(this.vocModel);
+      var sync = !U.canAsync(this.vocModel),
+          spinner = {
+            content: 'Saving...',
+            name: 'saving-resource'
+          };
+    
       if (sync) {
-        G.showSpinner({
-          content: 'Saving...',
-          name: 'saving-resource'
-        });
+        G.showSpinner(spinner);
       }
         
       res.save(props, {
@@ -959,7 +963,7 @@ define('views/EditView', [
           self.disable('Changes submitted');
 //          self.redirect();
           if (sync)
-            G.hideSpinner('saving-resource');
+            G.hideSpinner(spinner);
         }, 
 //        skipRefresh: true,
         error: self.onSaveError
