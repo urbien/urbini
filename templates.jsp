@@ -1014,7 +1014,7 @@
     </td>
     <td class="live">
       <div class="encircled">
-        <i class="big_symbol ui-icon-live"></i>
+        <i class="big_symbol ui-icon-th-large"></i>
       </div>
       <br />
       <span>Login with Live</span>
