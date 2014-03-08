@@ -896,6 +896,11 @@
   <li data-shortname="{{= shortName }}" {{= obj.rules || '' }}>{{= name }}<div style="font-weight: normal;">{{= value }}</div></li>
 </script>
 
+<script type="text/template" id="propRowTemplate3">
+  <!-- wrapper for one row on a list page (longest) -->
+  <li data-shortname="{{= shortName }}" {{= obj.rules || '' }}><div style="font-weight: normal;">{{= value }}</div></li>
+</script>
+
 <script type="text/template" id="propGroupsDividerTemplate">
   <!-- row divider / property group header in resource view -->
   <li data-theme="c" data-role="list-divider">{{= value }}</li>
@@ -1014,7 +1019,7 @@
     </td>
     <td class="live">
       <div class="encircled">
-        <i class="big_symbol ui-icon-live"></i>
+        <i class="big_symbol ui-icon-th-large"></i>
       </div>
       <br />
       <span>Login with Live</span>

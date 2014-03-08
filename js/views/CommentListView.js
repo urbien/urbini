@@ -25,17 +25,8 @@ define('views/CommentListView', [
       return CommentListItemView;
     },
 
-    renderItem: function(res, prepend) {
-      var liView = this.addChild(new CommentListItemView({
-        resource: res
-      }));
-      
-      this.addChild(liView, prepend);
-      liView.render(this._itemRenderOptions);
-      return liView;
-    },
-    
     postRender: function() {
+      var result = ResourceListView.prototype.postRender.apply(this, arguments);
       if (this.rendered && G.isJQM()) {
         this.$el.trigger('create');
         if (this.el.$hasClass('ui-listview'))
@@ -43,6 +34,7 @@ define('views/CommentListView', [
       }
 
       this.el.$css('display', 'block');
+      return result;
     }
   },
   {

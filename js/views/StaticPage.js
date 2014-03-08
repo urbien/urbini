@@ -36,6 +36,22 @@ define('views/StaticPage', [
       if (this.template)
         this.el.$html(this.template());
       
+      if (!this.rendered) {
+        var menuBtnEl = this.el.querySelector('#hpRightPanel');
+        if (menuBtnEl) {
+          this.menuBtn = new MenuButton({
+            el: menuBtnEl,
+            pageView: this,
+            viewId: this.viewId,
+            homePage: true
+          });
+          
+          this.menuBtn.render();
+        }
+        
+        this.addToWorld(null, true);
+      }
+      
       if (!this.el.parentNode) 
         $('body').append(this.$el);
     }    

@@ -1653,7 +1653,7 @@ define('router', [
       
 //      Physics.echo(function() {
 //        console.log("CHANGING PAGE");
-      this.$changePage({changeHash: false, transition: self.nextTransition || transition, reverse: self.backClicked});
+      this.$changePage({changeHash: false, transition: self.nextTransition || transition, reverse: this.getTransitionDirection() == 'right'});
       
 //      if (_.isPromise(renderPromise))
 //        renderPromise.done(doChangePage);
@@ -1727,6 +1727,14 @@ define('router', [
 //      }.bind(this));
       
       return view;
+    },
+    
+    getTransitionDirection: function() {
+      var dirParam = G.currentHashInfo.params['-transitionDirection'];
+      if (dirParam)
+        return dirParam;
+      else
+        return this.backClicked ? 'right' : 'left';
     },
     
     checkBackClick: function() {

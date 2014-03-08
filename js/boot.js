@@ -4,7 +4,18 @@
 DOMReady.add( function () {
   'use strict';
   var l = Lablz,
-      head = d.head;
+      head = d.head,
+      mc = d.createElement('div'),
+      mp = d.createElement('div'),
+      mph = d.createElement('div');
+  
+  mc.className = 'modal-cover';
+  mp.className = 'modal-popups vcenter';
+  mph.className = 'modal-popup-holder';
+  mp.appendChild(mph);
+
+  d.body.appendChild(mc);
+  d.body.appendChild(mp);
   
   if (localStorage  &&  localStorage.getItem) {
     localStorage.setItem('homePage', l.homePage);
