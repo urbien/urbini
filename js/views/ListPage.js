@@ -109,8 +109,6 @@ define('views/ListPage', [
                   }
                 });
               }
-              if (!p) 
-                showButton = U.isUserInRole(U.getUserRole(), 'siteOwner');
             }
           }
     //                           (vocModel.skipAccessControl  &&  (isOwner  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'))));
