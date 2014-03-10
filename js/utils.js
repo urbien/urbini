@@ -335,7 +335,9 @@ define('utils', [
     },
 
     isAnAppClass: function(type) {
-      return type.indexOf("/voc/dev/" + G.currentApp.appPath) != -1;
+      var idx = G.currentApp.name.indexOf('/');
+      
+      return type.indexOf(G.currentApp.name.substring(idx)) != -1;
     },
     
     getTypes: function(vocModel) {
