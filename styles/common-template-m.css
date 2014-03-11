@@ -1086,8 +1086,8 @@ div {
 .span_1_of_2 {
 	width: 49.2%;
 }
-.col:nth-child(2) span, .col:nth-child(2) div, .col:nth-child(2) a {
-  float: right;
+#resourceView .col:nth-child(2) span, #resourceView .col:nth-child(2) div, #resourceView .col:nth-child(2) a {
+  float: right; 
 }
 /*  GO FULL WIDTH AT LESS THAN 480 PIXELS */
 
@@ -1103,7 +1103,6 @@ div {
   margin: 0;
 }
 .section div.intro { font-size: 18px; line-height: 26px; color: #aaaaaa;}
-
 
 /* MODAL DIALOG */
 
