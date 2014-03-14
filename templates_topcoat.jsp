@@ -22,10 +22,8 @@
     </form>
    {{ } }}
    -->
-    <div  id="sidebar" data-type="list" class="topcoat-list__container" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
-      <div class="dummy head"></div>
-      <div class="dummy tail"></div>
-   </div>
+    <div  id="sidebar" data-type="list" class="topcoat-list__container">
+    </div>
     </section>
     <div id="nabs_grid" class="masonry"></div>
     
@@ -58,24 +56,25 @@
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
   <div id="resourceViewHolder">
-    <div style="width: 100%;position:relative;padding-right:10px;overflow:hidden">
-      <div id="resourceImage" style="width:50%;float:left;margin:0; padding:0;"><!-- style="width:auto" --></div>
-      <div id="mainGroup" style="position:absolute;top:0;right:1.3rem;"></div>
+    <div style="width: 100%;position:relative;min-height:40px;overflow:hidden">
+      {{ if (this.isImageCover) { }} 
+        <div id="resourceImage" style="position:absolute;z-index:1"></div>
+        <div data-role="footer" class="thumb-gal-header hidden" 
+          style="opacity:0.7;position:absolute;top:251px;width:100%;background:#eee;text-shadow:none;color:{{= G.coverImage ? G.coverImage.background : '#eeeeee' }}"><h3></h3></div>    
+        <div id="mainGroup" style="top:0px;right:1.3rem;"></div>
+      {{ } }}
+      {{ if (!this.isImageCover) { }}
+        <div id="resourceImage" style="width:50%;float:left;margin:0; padding:0;{{= U.getArrayOfPropertiesWith(this.vocModel.properties, "mainGroup") &&  U.isA(this.vocModel, 'ImageResource') ? 'min-height:210px;' : ''}}" ><!-- style="width:auto" --></div>
+        <div id="mainGroup" style="right:1.3rem;"></div>
+      {{ } }}
       <!--div id="buyGroup" class="ui-block-b" style="width:50%; min-width: 130px"></div-->
     </div>
-    <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
+    <div id="resourceImageGrid" data-role="content" style="padding: 2px;" class="grid-listview hidden"></div>
     
-    <div data-role="footer" data-theme="{{= G.theme.photogrid }}" class="thumb-gal-header hidden"><h3></h3></div>
-    <!--div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="grid-listview hidden">
-      <div class="dummy head"></div>
-      <div class="dummy tail"></div>
-    </div-->
-    
-    <div id="photogrid" data-inset="true" data-filter="false" class="thumb-gal hidden">
-      <div class="dummy head"></div>
-      <div class="dummy tail"></div>
-    </div>
-    <br/>
+    {{ if (!this.isImageCover) { }}
+      <div data-role="footer" class="thumb-gal-header hidden"><h3></h3></div>    
+    {{ } }}
+    <div id="photogrid" data-inset="true" data-filter="false" class="thumb-gal hidden"></div>
     {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
        <div style="text-align:center;width:100%;padding-bottom:0.5rem">
        <button class="topcoat-button--cta" style="width:80%;font-size:1.8rem; padding:0.5rem 0; font-weight:bold;">
@@ -85,9 +84,9 @@
        </div>
     {{ } }}
     
-    <ul data-theme="{{= G.theme.list }}" class="topcoat-list__container" id="resourceView">
+    <ul class="topcoat-list__container" id="resourceView">
     </ul>
-    <div id="about" class="hidden" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}"></div>
+    <div id="about" class="hidden" style="padding: 7px;"></div>
     
     {{ if ($('#other')) { }}
       <!--br/>
@@ -96,10 +95,6 @@
     <ul class="topcoat-list__container" id="cpView">
     </ul>
   </div>
-  <!--div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
-     <a data-role="button" data-shadow="false" data-icon="repeat" id="homeBtn" target="#">Home</a>
-     <a data-role="button" data-shadow="false" data-icon="edit" id="edit" target="#" style="float:right;" id="edit">{{= loc('edit') }}</a>
-  </div-->
   <br/>
 </script>  
 
@@ -133,38 +128,34 @@
 
 <script type="text/template" id="cpTemplate">
 <!-- readwrite backlink in resource view -->
-<li class="topcoat-list__item" data-propName="{{= shortName }}"
-{{= obj.inline ? ' data-theme="{0}">'.format(G.theme.footer) : '' }}
->
+<li class="topcoat-list__item" data-propName="{{= shortName }}" {{= obj.comment ? 'style="min-height: 6rem;"' : '' }}>
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      
-   <a target="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp">
+   <!--a target="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp">
      <i class="ui-icon-plus-sign"></i>
-   </a>
+   </a-->
 
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
      </a>
-     <div style="display:inline;position:absolute;right:4rem;font-size: 11px;top:1.5rem;border-radius:1rem;border: 1px solid #777;padding: 0.1rem 0.3rem;">{{= value }}</div>
+     <div style="color:{{= G.lightColor }};font-weight:bold;background:{{= G.darkColor }};display:inline;position:absolute;right:1rem;font-size: 11px;top:1.5rem;border-radius:1rem;border: 1px solid {{= G.darkColor }};padding: 0.1rem 0.3rem;">{{= value }}</div>
      
      {{ if (typeof comment != 'undefined') { }}
-       <p style="font-size:1.3rem;color:#808080; line-height:1rem;">{{= comment }}</p>
+       <p style="padding-left:1.25rem; font-size:1.3rem;color:#808080; position:absolute;top:2rem;">{{= comment }}</p>
      {{ } }}
    </li>
 </script>
 
 <script type="text/template" id="cpTemplateNoAdd">
 <!-- readonly backlink in resource view -->
-<li class="topcoat-list__item" data-propName="{{= shortName }}"
-  {{= obj.inline ? ' data-theme="{0}">'.format(G.theme.activeButton) : '' }}
->
+<li class="topcoat-list__item" data-propName="{{= shortName }}">
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
      
-     <!--span class="ui-li-count">{{= value }}</span></a><a target="#" data-theme="{{= G.theme.list }}" data-icon="chevron-right" data-iconshadow="false" class="cp" -->
+     <!--span class="ui-li-count">{{= value }}</span></a><a target="#" data-icon="chevron-right" data-iconshadow="false" class="cp" -->
      </a>
-     <div style="display:inline;position:absolute;right:4rem;top:1rem;font-size: 11px;border-radius:1rem;border: 1px solid #777;padding: 0.1rem 0.3rem;">{{= value }}</div>
+     <div style="display:inline;position:absolute;right:1rem;top:1rem;font-size: 11px;border-radius:1rem;border: 1px solid {{= G.darkColor }};padding: 0.1rem 0.3rem;">{{= value }}</div>
    </li>
 </script>
 
@@ -173,37 +164,41 @@
  {{ var params = {}; }}
  {{ params[backlink] = _uri; }}
  <div style="width:100%;padding:5px;">
-  <button class="topcoat-button--cta" style="width:95%;border:1px solid {{= borderColor }}; background-color: {{= color }}">
  {{ if (!obj.value  &&  !obj.chat) { }}  
    <a data-shortName="{{= shortName }}" data-title="{{= title }}" href="#">
-     <span><i class="{{= icon }}"></i>&#160;{{= name }}</span>
+	   <button class="topcoat-button--cta" style="cursor:pointer; width:95%;border:1px solid {{= borderColor }}; background-color: {{= color }}">
+	     <span><i class="{{= icon }}"></i>&#160;{{= name }}</span>
+	   </button>  
    </a>
  {{ } }}
  {{ if (obj.value || obj.chat) { }}  
    <a data-propName="{{= shortName }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" style="width:95%;">
-     <span><i class="{{= icon }}"></i>&#160;{{= name }}</span>
-     
-     {{= obj.value ? '<div style="display:inline-block;position:absolute;top:-35%;right:1px"><span class="counter" style="padding:1px 5px;background:#EEF;border-radius:1rem;font-size:1.2rem;">' + value + '</span></div>' :  ''  }}
+     <button class="topcoat-button--cta" style="width:95%;border:1px solid {{= borderColor }}; background-color: {{= color }}">
+       <span><i class="{{= icon }}"></i>&#160;{{= name }}</span>
+       {{= obj.value ? '<div style="display:inline-block;position:absolute;top:-35%;right:1px"><span class="counter" style="padding:1px 5px;background:#EEF;border-radius:1rem;font-size:1.2rem;">' + value + '</span></div>' :  ''  }}
+    </button>
    </a>
  {{ } }}
- </button></div>
  </script>
 
 <script type="text/template" id="cpMainGroupTemplateH">
 <!-- button for an important backlink on a resource on the resource's view page (horizontal mode) -->
  {{ var params = {}; }}
  {{ params[backlink] = _uri; }}
- {{ if (!value) { }}  
-   <a role="button" data-shortName="{{= shortName }}" style="width:auto;margin:5px;text-align:left; border: 1px solid #ccc; min-width:115px; float:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="#" data-title="{{= title }}">
+  <button class="topcoat-button--cta hmg" style="text-shadow:0 1px 0 {{= borderColor }};border:1px solid {{= borderColor }}; background-color: {{= color }}">
+ {{ if (!obj.value) { }}  
+   <a data-shortName="{{= shortName }}" href="#" data-title="{{= title }}">
       <span>{{= obj.icon ? '<i class="' + icon + '" style="margin-left:-5px;"></i>' : '' }} {{= name }}</span> 
    </a>
  {{ } }}
- {{ if (typeof value != 'undefined') { }}  
-   <a role="button" data-propName="{{= shortName }}" style="width:auto;margin:5px;text-align:left; border: 1px solid #ccc; min-width:115px;float:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
+ {{ if (obj.value) { }}  
+   <a data-propName="{{= shortName }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
      <!-- {{= obj.icon ? '<i class="' + icon + '" style="font-size:20px;top:35%"></i>' : '' }} -->
-     <span>{{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="float: right;position:relative;margin: -17px;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}</span>
+     <span>{{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="float: right;position:relative;margin-right:-10px;margin-top: -17px;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}</span>
    </a>
  {{ } }}
+ </button>
+
 </script>
 
 
@@ -212,7 +207,7 @@
   {{ var action = action ? action : 'view' }}
   <div style="margin:0" data-viewid="{{= viewId }}">
   {{ if (!obj.v_submitToTournament) { }}
-    <div style="padding-left: 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
+    <div style="padding-left: 90px;{{= obj.image ? 'min-height:59px;' : '' }}" data-uri="{{= U.makePageUrl(action, _uri) }}">
   {{ } }}
   {{ if (obj.v_submitToTournament) { }}
     <div style="padding-left: 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
@@ -272,7 +267,21 @@
 
 <script type="text/template" id="propGroupsDividerTemplate">
   <!-- row divider / property group header in resource view -->
-  <li class="topcoat-list__header"><h3>{{= value }}</h3></li>
+  <li class="topcoat-list__header" {{= G.coverImage ? 'style="text-shadow:none;background:' + G.coverImage.color + ';color: ' + G.coverImage.background + ';"' : '' }}><h3>{{= value }}</h3></li>
+</script>
+
+<script type="text/template" id="saveButtonTemplate">
+  <!-- header button for saving changes -->
+  <button class="topcoat-button-bar__button">
+    <a target="#"><i class="ui-icon-ok"></i></a>
+  </button>
+</script>
+
+<script type="text/template" id="cancelButtonTemplate">
+  <!-- header button for canceling changes -->
+  <button class="topcoat-button-bar__button">
+    <a target="#"><i class="ui-icon-remove"></i></a>
+  </button>
 </script>
 
 <script type="text/template" id="mapItButtonTemplate">
@@ -337,12 +346,12 @@
   </button>
 </script>
 
-<script type="text/template" id="loginPopupTemplate">
+<!--script type="text/template" id="loginPopupTemplate">
   <!-- login popup with various social network based logins -->
   {{ var canDismiss = typeof dismissible === 'undefined' || dismissible == true; }}
-  <section id="login_popup" style="position:absolute; top:15%; border:1px solid #aaa; border-radius:1rem; z-index:1000000; background:#d2d2d2;width:auto;">
+  <section id="login_popup" style="position:absolute; top:15%; border:1px solid #aaa; border-radius:1rem; z-index:1000000; background:#d2d2d2;width:250px;text-align:center;">
   <div style="padding:0 1rem 1rem 1rem;">
-    <h4 style="margin:10px 0;color:#757575;" id="loginMsg">{{= msg }}</h4>
+    <h4 style="text-align:center;margin:10px 0;color:#757575;" id="loginMsg">{{= msg }}</h4>
     {{ _.forEach(nets, function(net) { }} 
     <button class="topcoat-button-bar__button" style="width:100%;margin-top:1rem;padding:0.5rem;">
       <a href="{{= net.url }}" style="text-align:center;border-radius:1rem;width:85%;font-weight:bold;" {{= net.name == 'Facebook' ? ' target="_top"' : '' }}>
@@ -367,7 +376,7 @@
       </table>
     </form-->
   </section>
-</script>
+</script-->
 
 <script type="text/template" id="logoutButtonTemplate">
   <li id="logout">
@@ -402,7 +411,7 @@
 
 <script type="text/template" id="enterTournamentBtnTemplate">
   <!-- button that will enter the user into a tournament -->
-  <a target="#" data-icon="star" id="enterTournament" data-theme="e" data-role="button" data-position="notext">{{= loc('enterData') + ': ' + name }}</a>
+  <a target="#" data-icon="star" id="enterTournament" data-role="button" data-position="notext">{{= loc('enterData') + ': ' + name }}</a>
 </script>
 
 <script type="text/template" id="testPlugBtnTemplate">
@@ -420,102 +429,52 @@
     </section>
   </div>
   <div id="buttons">  
-    {{= this.categories ? '<div style="margin:10px 0 0 10px; float:left"><a id="categories" href="#"><i class="ui-icon-tags"></i></a></div>' : '' }} 
+    {{ if (this.categories) { }}
+       <div style="margin:10px 0 0 10px; float:left"><a id="categories" href="#" {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';background:' + G.coverImage.color +';"' : '' }}>
+       <i class="ui-icon-tags"></i></a></div> 
+    {{ } }} 
     {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
-    <div id="name" class="resTitle" {{= this.categories ? 'style="width: 100%;background:#757575;"' : 'style="min-height: 20px;background:#757575;"' }} align="center">
-      <h4 id="pageTitle" style="font-weight:normal;">{{= this.title }}</h4>
+    <div id="name" class="resTitle" style="background:{{= G.darkColor }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
+      <h4 id="pageTitle" style="font-weight:normal;color:{{= G.coverImage ? G.coverImage.color : '#eeeeee;'}}">{{= this.title }}</h4>
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
-        <button style="max-width:200px; display: inline-block;" id="doTryBtn" class="topcoat-button--cta">
+        <button style="max-width:200px; display: inline-block;{{= G.coverImage ? 'background-color:' + G.coverImage.color + ';color:' + G.coverImage.background : ''}}" id="doTryBtn" class="topcoat-button--cta">
           {{ if (obj.tryApp) { }}
               {{= tryApp }}
           {{ } }}
         </button>
-        <button style="max-width:200px; display: inline-block;" id="forkMeBtn" class="topcoat-button--cta">
+        <button style="max-width:200px; display: inline-block;{{= G.coverImage ? 'background-color:' + G.coverImage.color + ';color:' + G.coverImage.background : ''}}" id="forkMeBtn" class="topcoat-button--cta">
           {{ if (obj.forkMeApp) { }}
               {{= forkMeApp }}
           {{ } }}
         </button>
-        <button style="max-width:400px;" id="publishBtn" class="headerSpecialBtn topcoat-button--cta">
+        <button style="max-width:400px;{{= G.coverImage ? 'background-color:' + G.coverImage.color + ';color:' + G.coverImage.background : ''}}" id="publishBtn" class="headerSpecialBtn topcoat-button--cta">
           {{ if (obj.publishApp) { }}
               {{= publish }}
           {{ } }}
         </button>
-        <button style="max-width:200px;" id="testPlugBtn" class="headerSpecialBtn topcoat-button--cta">
+        <button style="max-width:200px;{{= G.coverImage ? 'background-color:' + G.coverImage.color + ';color:' + G.coverImage.background : ''}}" id="testPlugBtn" class="headerSpecialBtn topcoat-button--cta">
           {{ if (obj.testPlug) { }}
               {{= testPlug }}
           {{ } }}
         </button>
-        <button style="max-width:200px;" id="installAppBtn"  class="headerSpecialBtn topcoat-button--cta">
+        <button style="max-width:200px;{{= G.coverImage ? 'background-color:' + G.coverImage.color + ';color:' + G.coverImage.background : ''}}" id="installAppBtn"  class="headerSpecialBtn topcoat-button--cta">
           {{ if (obj.installApp) { }}
             {{= installApp }}
           {{ } }}
         </button>
-        <button style="max-width:320px;" id="enterTournamentBtn" class="headerSpecialBtn topcoat-button--cta">
+        <button style="max-width:320px;{{= G.coverImage ? 'background-color:' + G.coverImage.color + ';color:' + G.coverImage.background : ''}}" id="enterTournamentBtn" class="headerSpecialBtn topcoat-button--cta">
           {{ if (obj.enterTournament) { }}
               {{= enterTournament }}
           {{ } }}
         </button>
-        <button style="max-width:320px;" id="resetTemplateBtn" class="headerSpecialBtn topcoat-button--cta">
+        <button style="max-width:320px;{{= G.coverImage ? 'background-color:' + G.coverImage.color + ';color:' + G.coverImage.background + ';color:' + G.coverImage.background : ''}}" id="resetTemplateBtn" class="headerSpecialBtn topcoat-button--cta">
           {{ if (obj.resetTemplate) { }}
               {{= resetTemplate }}
           {{ } }}
         </button>
       </div>
-    </div>
-        <div class="physics" style="display:none; background-color:#606060; color:#FFFFFF; padding:5px;">
-      <!--section role="region">
-        <div role="slider" aria-valuemin="1" aria-valuenow="{{= drag }}" aria-valuemax="99" aria-valuetext="Air drag">
-          <div>
-            <progress value="{{= drag }}" max="99"></progress>
-            <button>handler</button>
-          </div>
-        </div>
-        <div role="slider" aria-valuemin="1" aria-valuenow="{{= springDamping }}" aria-valuemax="99" aria-valuetext="Spring damping">
-          <div>
-            <progress value="{{= springDamping }}" max="99"></progress>
-            <button>handler</button>
-          </div>
-        </div>
-        <div role="slider" aria-valuemin="1" aria-valuenow="{{= springStiffness }}" aria-valuemax="99" aria-valuetext="Spring stiffness">
-          <div>
-            <progress value="{{= springStiffness }}" max="99"></progress>
-            <button>handler</button>
-          </div>
-        </div>
-      </section-->
-      <table class="physics" cellspacing="0" celladding="2" width="100%" style="background-color:#606060;display:none; ">
-        <tr>
-        <td>
-          <label for="drag">Air drag</label><br/>
-          <input type="range" id="drag" name="drag" value={{= drag * 100 }} min="1" max="99">
-        </td>  
-        <td>
-          <label for="springDamping">Spring damping</label><br/>
-          <input type="range" id="springDamping" name="springDamping" value={{= springDamping * 100 }} min="1" max="99">
-        </td>  
-        <td>
-          <label for="springStiffness">Spring stiffness</label><br/>
-          <input type="range" id="springStiffness" name="springStiffness" value={{= springStiffness * 100 }} min="1" max="99">
-        </td>
-        <!--td>
-          <label for="degree">Sensitivity</label><br/>
-          <input type="range" id="degree" name="degree" value={{= degree }} min="-10" max="10">
-        </td-->
-        </tr>
-      </table>
-      <!--div class="physicsLabels">
-        <label for="drag" style="min-width:10%;">Air drag</label>
-        <label for="springDamping" style="min-width:10%">Spring damping</label>
-        <label for="springStiffness" style="min-width:10%">Spring stiffness</label><br />      
-      </div>
-      <div class="physicsProps">
-        1<input type="range" style="min-width:10%" name="drag" value={{= drag * 100 }} min="1" max="99">100
-        1<input type="range" style="min-width:10%" name="springDamping" value={{= springDamping * 100 }} min="1" max="99">100
-        1<input type="range" style="min-width:10%" name="springStiffness" value={{= springStiffness * 100 }} min="1" max="99">100
-      </div-->
-    </div>    
-  </div>
-    
+    </div>  
+    <div class="physicsConstants" style="background-color:#606060; color: #ffffff; display:none;"></div>
   </div>
 </script>
 
@@ -538,12 +497,11 @@
     
     {{ if (obj.image) { }}   
       <img src="{{= obj.image || 'icons/blank.png'}}" class="thumb" 
-      {{ if (typeof obj.width != 'undefined'  &&  obj.width.length) { }}  
-        style="
-          width:{{= width }}px; height:{{= height }}px;
-          left:-{{= left }}px; top:-{{= top }}px;
-          clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
-      {{ } }}
+    {{ if (obj.clip_right) { }}  
+      style="
+        right:-{{= right }}px; top:-{{= top }}px;
+        clip:rect({{= top }}px, {{= clip_right }}px, {{= bottom }}px, {{= clip_left }}px);"
+    {{ } }}
       /> 
     {{ } }}
     <div style="min-height:38px;max-width:100%;padding-top:10px;font-size:18px;margin-left:15px;" 
@@ -588,12 +546,12 @@
 
 <script type="text/template" id="propRowTemplate">
   <!-- wrapper for one row on a list page (short) -->
-  <li data-shortname="{{= shortName }}" class="topcoat-list__item" {{= obj.rules || '' }}>{{= name }}<div style="float:right;font-weight: normal;">{{= value }}</div></li>
+  <li data-shortname="{{= shortName }}" class="topcoat-list__item" {{= obj.rules || '' }} {{= G.coverImage ? ' style="color:' + G.coverImage.background + ';"' : '' }}>{{= name }}<div style="float:right;font-weight: normal;">{{= value }}</div></li>
 </script>
 
 <script type="text/template" id="propRowTemplate2">
   <!-- wrapper for one row on a list page (long) -->
-  <li data-shortname="{{= shortName }}" class="topcoat-list__item" {{= obj.rules || '' }}>{{= name }}<div style="display:inline-block;margin-left:1.5rem;font-weight: normal;">{{= value }}</div></li>
+  <li data-shortname="{{= shortName }}" class="topcoat-list__item" {{= obj.rules || '' }} {{= G.coverImage ? ' style="color:' + G.coverImage.background + ';"' : '' }}>{{= name }}<div style="display:inline-block;margin-left:1.5rem;font-weight: normal;">{{= value }}</div></li>
 </script>
 
 <script type="text/template" id="menuHeaderTemplate">
@@ -612,29 +570,21 @@
 <!--div id="headerMessageBar"></div-->
   <div id="headerDiv"></div>
   <div id="resourceEditView">
-  <div id="resourceImage"></div>
+  <!-- div id="resourceImage"></div -->
   <form data-ajax="false" id="{{= viewId + '_editForm'}}" action="#">
   <ul id="fieldsList" class="editList topcoat-list__container">
   </ul>
     <div name="errors" style="float:left"></div>
-    {{ if (this.resource.isAssignableFrom("InterfaceImplementor")) }}
+    {{ if (this.resource.isAssignableFrom("InterfaceImplementor")) { }}
     <div data-role="fieldcontain" id="ip">
       <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true" data-theme="{{= G.theme.activeButton }}">{{= loc('checkAll') }}</a></div>
-        <div class="ui-block-b"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true" data-theme="{{= G.theme.footer }}">{{= loc('uncheckAll') }}</a></div>
+        <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true">{{= loc('checkAll') }}</a></div>
+        <div class="ui-block-b"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true">{{= loc('uncheckAll') }}</a></div>
       </fieldset>
       <fieldset data-role="controlgroup" id="interfaceProps">
       </fieldset>
     </div>
-    {{                                                             }}
-    
-    <div>
-      <fieldset id= "submitBtns">
-        <div><button class="topcoat-button--large" type="cancel" id="cancel">{{= obj.cancel || loc('cancel') }}</button></div>
-        <div><button class="topcoat-button--large" type="submit" id="submit">{{= obj.submit || loc('submit') }}</button></div>
-      </fieldset>
-    </div>
-
+    {{ }                                                             }}
   </form>
   
   {{ if (U.isAssignableFrom(this.vocModel, U.getLongUri1("model/portal/Comment"))) { }}
@@ -655,7 +605,7 @@
 
 <script type="text/template" id="editRowTemplate">
   <!-- one property row in edit mode -->
-  <li data-role="fieldcontain" class="topcoat-list__item">{{= value }}</li>
+  <li data-role="fieldcontain" class="topcoat-list__item {{= !_.isUndefined(prop.maxSize) && prop.maxSize > 100 && !prop.multiValue ? 'textarea' : ''}}">{{= value }}</li>
 </script>
 
 <script type="text/template" id="stringPET">
@@ -673,7 +623,7 @@
 
 <script type="text/template" id="booleanPET">
   <label class="topcoat-switch" style="z-index:10001;float:right;">
-    <input type="checkbox" name="{{= shortName }}" id="{{= id }}" class="formElement topcoat-switch__input" />
+    <input type="checkbox" name="{{= shortName }}" id="{{= id }}" class="formElement topcoat-switch__input" {{= obj.value ? 'checked="checked"' : '' }} />
     <div class="topcoat-switch__toggle"></div>
   </label>
   {{ if (name && name.length > 0) { }}
@@ -694,7 +644,7 @@
   {{ }                                                                                                                                                                                        }}
 
   <!--a target="#"  name="{{= shortName }}" class="resourceProp" id="{{= id }}" {{= rules }}--> 
-  <a target="#"  name="{{= shortName }}" style="min-height:3rem;{{= obj.img ? 'padding: 0 1.5rem;' : ''}}" class="resourceProp" id="{{= id }}" {{= rules }}> 
+  <a target="#"  name="{{= shortName }}" style="min-height:3rem;" class="resourceProp" id="{{= id }}" {{= rules }}> 
     {{ if (obj.img) { }}    
       <img name="{{= shortName }}" src="{{= img }}" style="
       
@@ -767,7 +717,7 @@
   </div>
 </script>
 <script type="text/template" id="moneyPET">
-  <label for="{{= id }}" class="ui-input-text"  data-theme="{{= G.theme.list }}">{{= name }} <b>{{= typeof value.currency === 'undefined' ? '$' : value.currency }}</b></label>
+  <label for="{{= id }}" class="ui-input-text"">{{= name }} <b>{{= typeof value.currency === 'undefined' ? '$' : value.currency }}</b></label>
   <input type="text" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '' }}" {{= rules }} class="topcoat-text-input"></input>
 </script>
 <script type="text/template" id="datePET">
@@ -775,7 +725,6 @@
   <input id="{{= id }}" class="i-txt topcoat-text-input" name="{{= shortName }}" {{= rules }} data-mini="true" value="{{= value }}" />
   <!--input type="hidden" id="{{= id + '.hidden' }}" name="{{= shortName }}" {{= rules }} data-mini="true" /-->
 </script>
-
 </div>
 
 

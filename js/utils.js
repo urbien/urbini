@@ -40,8 +40,13 @@ define('utils', [
 
   function isFileUpload(prop, val) {
     return prop.range && /model\/portal\/(Image|Video)/.test(prop.range) && typeof val === 'object';
-  }
+  };
   
+  function getName(res, name) {
+    // HACK
+//    return (U.isModel(res) ? res.attributes : res).hasOwnProperty('__uri') ? '_' + name : name;
+    return name;
+  };
   
 //  Array.prototype.remove = function() {
 //    var what, a = arguments, L = a.length, ax;
@@ -219,14 +224,17 @@ define('utils', [
               
 //              Events.trigger('garbage', resp);
               if (headers.length) {
-                var h = headers.splitAndTrim(/\n/);
+                var h = headers.splitAndTrim(/\n/),
+                    i = h.length,
+                    pair;
+                
                 headers = {};
-                _.each(h, function(pair) {
-                  if (pair) {
+                while (i--) {
+                  if (pair = h[i]) {
                     var cIdx = pair.indexOf(':');
                     headers[pair.slice(0, cIdx)] = pair.slice(cIdx + 1);
                   }
-                });
+                }
               }
               else
                 headers = {};
@@ -327,7 +335,9 @@ define('utils', [
     },
 
     isAnAppClass: function(type) {
-      return type.indexOf("/voc/dev/" + G.currentApp.appPath) != -1;
+      var idx = G.currentApp.name.indexOf('/');
+      
+      return type.indexOf(G.currentApp.name.substring(idx)) != -1;
     },
     
     getTypes: function(vocModel) {
@@ -544,7 +554,7 @@ define('utils', [
     },   
     
     isResourceProp: function(prop) {
-      return prop && !prop.backLink && prop.range && prop.range.indexOf('/') != -1 && !U.isInlined(prop);
+      return prop && !prop.backLink && prop.range &&  !prop.range.endsWith('/Percent')  &&  prop.range.indexOf('/') != -1 && !U.isInlined(prop);
     },
 //    getSortProps: function(model) {
 //      var meta = this.model.__proto__.constructor.properties;
@@ -665,7 +675,16 @@ define('utils', [
 
     getTypeUri: function(typeName, hint) {
       if (typeName.indexOf('/') != -1) {
-        var type = typeName.startsWith('http://') ? typeName : G.defaultVocPath + typeName;
+        
+        var type;
+        if (typeName.startsWith('http://'))
+          type = typeName;
+        else {
+          if (("http://" + typeName).startsWith(G.DEV_PACKAGE_PATH))
+            type = "http://" + typeName;
+          else
+            type = G.defaultVocPath + typeName;
+        }
         var sqlIdx = type.indexOf(G.sqlUri);
         if (sqlIdx != -1)
           type = 'http://' + type.slice(sqlIdx + G.sqlUri.length + 1);
@@ -1006,6 +1025,7 @@ define('utils', [
       for (var i = 0; i < cols.length; i++) {
         var col = cols[i].trim();
         if (col == '')
+          continue;
         var prop = vocModel.properties[col];
         if (!prop)
           return;
@@ -1470,6 +1490,26 @@ define('utils', [
 //      }
     },
 
+    getFormattedDate2: function(time, dateFormat) {
+      if (dateFormat.indexOf('~') == 0)
+        dateFormat = dateFormat.substring(1);
+      if (dateFormat.indexOf("MMM-dd, yyyy") == 0) {
+        var d = new Date(time);
+        var ds = d.toString();
+        var idx = 4;
+        var idx1 = ds.indexOf(' ', idx);
+        var mon = ds.substring(idx, idx1);
+        var day = ds.substring(idx1 + 1, idx1 + 3);
+        var year = ds.substring(idx1 + 4, idx1 + 8);
+        idx1 += 9;
+        
+        var hasSeconds = dateFormat.indexOf(":ss") != -1;
+        var hasMinutes = dateFormat.indexOf(":mm") != -1;
+        return mon + '-' + day + ', ' + year + ' ' + (hasSeconds ? ds.substring(idx1, idx1 + 8) : (hasMinutes ? ds.substring(idx1, idx1 + 5) : '')); 
+      }
+      else
+        return U.getFormattedDate(time);
+    },
     getFormattedDate1: function(time) {
       var d = new Date(time);
 
@@ -1567,12 +1607,7 @@ define('utils', [
     },
     
     addToFrag: function(frag, html) {
-      var els = DOM.parseHTML(html),
-          l = els.length;
-      
-      for (var i = 0; i < l; i++) {
-        frag.appendChild(els[i]);
-      }
+      frag.$append(DOM.parseHTML(html));
     },
     
     getUris: function(data) {
@@ -1634,7 +1669,8 @@ define('utils', [
       var bCloneOf;
       var hasImgs;
 //      var isIntersection = !hasImgs  &&  this.isA(vocModel, 'Intersection'); 
-      var isIntersection = this.isA(vocModel, 'Intersection'); 
+      var isIntersection = this.isA(vocModel, 'Intersection');
+      var isImageCover = this.isA(vocModel, 'ImageCover');
       var isResourceView = window.location.hash  &&  (window.location.hash.indexOf('#view/') == 0  ||  window.location.hash.indexOf('#edit/') == 0);
       if (isIntersection) {
         if (isResourceView) {
@@ -1653,8 +1689,19 @@ define('utils', [
       
       if (U.isA(vocModel, 'ImageResource')) {
         var isMasonry = !isResourceView  &&  U.isMasonry(vocModel)  &&  U.isMasonryModel(vocModel);
-        var cloneOfTmp = isMasonry ? U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0]  ||  U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0] 
-                                   : (isResourceView  ?  U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0] || U.getCloneOf(vocModel, 'ImageResource.bigImage')[0] : U.getCloneOf(vocModel, 'ImageResource.smallImage')[0] || U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0]);
+        var cloneOfTmp;
+        if (isMasonry)
+          cloneOfTmp = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0]  ||  U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
+        else if (isResourceView) {
+          if (isImageCover)
+            cloneOfTmp = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0]  ||  U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
+//            cloneOfTmp = U.getCloneOf(vocModel, 'ImageResource.smallImage')[0] || U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
+          else
+            cloneOfTmp = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0] || U.getCloneOf(vocModel, 'ImageResource.bigImage')[0];
+        }
+        else
+          cloneOfTmp = U.getCloneOf(vocModel, 'ImageResource.smallImage')[0] || U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];          
+
         if (cloneOfTmp) {
           if (isMasonry) {
             var viewport = G.viewport;
@@ -1812,9 +1859,24 @@ define('utils', [
         c = Math.round(Math.min(Math.max(0, c + (c * lum)), 255)).toString(16);
         rgb += ("00"+c).substr(c.length);
       }
+//      var currentlum = (0.2126*rgbaA[0]) + (0.7152*rgbaA[1]) + (0.0722*rgbaA[2]);
 
       return rgb;
-    },   
+    },
+    getColorLuminance: function(hex) {
+      hex = String(hex).replace(/[^0-9a-f]/gi, '');
+      if (hex.length < 6) {
+        hex = hex[0]+hex[0]+hex[1]+hex[1]+hex[2]+hex[2];
+      }
+      // convert to decimal and change luminosity
+      var rgb = "#", c, i;
+      var rgba = [];
+      var currentlum = 0;
+      for (i = 0; i < 3; i++) 
+        rgba[i] = parseInt(hex.substr(i*2,2), 16);
+      return (0.2126*rgba[0]) + (0.7152*rgba[1]) + (0.0722*rgba[2]);
+      
+    },
     colorLuminanceRGB: function(rgb, lum) {
       // validate hex string
       var idx1 = rgb.indexOf('(');
@@ -1823,7 +1885,6 @@ define('utils', [
       if (!rgbA)
         return null;
       lum = lum || 0;
-
       // convert to decimal and change luminosity
       var rgba = "#", c, i;
       for (i = 0; i < 3; i++) {
@@ -1857,11 +1918,16 @@ define('utils', [
           var href = window.location.hash;
           var isView = href.startsWith("#view/");
 
-          if (isDisplayName)
-            val = "<span>" + val + "</span>";
+          if (isDisplayName) {
+            if (prop.setLinkTo)
+              val = "<a href='" + res.get(prop.setLinkTo) + "'><span>" + val + "</span></a>";
+            else
+              val = "<span>" + val + "</span>";
+          }
 //            val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
           else if (!isView  &&  prop.maxSize > 1000) {
-            var color = G.theme.descColor; 
+            var color;
+            color = G.darkColor;
             /*
             if (!color) {
               color = $('[data-role="page"]').css('color');
@@ -1878,8 +1944,10 @@ define('utils', [
             */ 
 //            var dColor = G.theme.descriptionColor;
             if (color) {
+              var lum = U.getColorLuminance(color);
               if (color.charAt(0) != '#')
                 color = '#' + color;
+              
               val = '<div class="u-desc" style="color: ' + color + ';">' + val + '</div>';
             }
             else
@@ -2110,12 +2178,12 @@ define('utils', [
         val.comment = prop.comment;
       
       var propInfo = {
-        value: U.template(propTemplate)(val)
+        value: U.template(propTemplate)(val),
+        prop: prop
       };
       
       if (prop.comment)
         propInfo.comment = prop.comment;
-      
       return propInfo;
     },
     
@@ -2436,7 +2504,7 @@ define('utils', [
     clipToFrame: function(frmWidth, frmHeight, oWidth, oHeight, maxDim, minDim) {
       if (!maxDim)
         return;
-      if (oWidth < maxDim  &&  oHeight < maxDim)
+      if (oWidth < frmHeight  &&  oHeight < frmHeight)
         return {clip_top: 0, clip_right: oWidth, clip_bottom: oHeight, clip_left: 0, top: 0, left: 0};
       if (maxDim  &&  (maxDim > frmWidth)) {
         var mdW, mdH;
@@ -2520,6 +2588,9 @@ define('utils', [
       if (typeof val !== 'object') {
         if (range.indexOf('/') != -1 && /^[a-z]+\/.*\?/.test(val)) // don't bother extending short uris like ShoppingList/32004, but do extend stuff like commerce/urbien/ShoppingList?id=32004
           return U.getLongUri1(val);
+
+//        if (range == 'boolean')
+//          return U.isFalsy(val, range) ? false : true;
         
         return val;
       }      
@@ -2934,8 +3005,10 @@ define('utils', [
     },
     
     buildValueTester: function(params, vocModel) {
-      var rules = [], meta = vocModel.properties;
-      var query = U.parseAPIQuery(params);
+      var rules = [], 
+          meta = vocModel.properties,
+          query = U.parseAPIQuery(params);
+      
       _.each(query, function(clause) {
         var param = clause.name;
         switch (param) {
@@ -2955,7 +3028,7 @@ define('utils', [
             
             if (subClause.name.startsWith('$')) {
               debugger;
-              return function() {return true};
+              return G.trueFn;
             }
             
             return U.makeTest(meta[subClause.name], subClause.op, subClause.value);
@@ -2975,7 +3048,7 @@ define('utils', [
           var prop = meta[propName];
           if (!prop) {
             debugger;
-            return function() {return true};
+            return G.trueFn;
           }
           
           values = values.slice(1);
@@ -2998,7 +3071,7 @@ define('utils', [
           var prop = meta[propName];
           if (!prop) {
             debugger;
-            return function() {return true};
+            return G.trueFn;
           }
           
           var value = nameVal[1].toLowerCase();
@@ -3026,13 +3099,15 @@ define('utils', [
         }
       });
       
-      return function(val) {
-        for (var i = 0; i < rules.length; i++) {
-          if (!rules[i](val))
-            return false;
+      if (rules.length) {
+        return function(val) {
+          for (var i = 0; i < rules.length; i++) {
+            if (!rules[i](val))
+              return false;
+          }
+          
+          return true;
         }
-        
-        return true;
       }
     },
     
@@ -3061,10 +3136,10 @@ define('utils', [
       var range = prop.range;
       var name = prop.shortName;
       var falsy = function(res) {
-        return U.isFalsy(U.getValue(res, name), range);
+        return U.isFalsy(U.getValue(res, getName(res, name)), range);
       }
       var truthy = function(res) {
-        return !U.isFalsy(U.getValue(res, name), range);
+        return !U.isFalsy(U.getValue(res, getName(res, name)), range);
       }
       
       if (bound === 'null')
@@ -3086,7 +3161,7 @@ define('utils', [
         default: {
           return function(res) {
             try {
-              return new Function("a", "b", "return a {0} b".format(op))(U.getValue(res, name), bound);
+              return new Function("a", "b", "return a {0} b".format(op))(U.getValue(res, getName(res, name)), bound);
             } catch (err){
               return false;
             }
@@ -3228,12 +3303,23 @@ define('utils', [
       }
     },
     
-    getRequiredCodemirrorModes: function(vocModel) {
-      var codeProps = U.getPropertiesWith(vocModel.properties, 'code');
-      var scriptTypes = [];
-      var codemirrorModes = [];
+    getRequiredCodemirrorModes: function(res, mode) {
+      var codeProps = U.getPropertiesWith(res.vocModel.properties, 'code'),
+          scriptTypes = [],
+          codemirrorModes = [],
+          userRole = U.getUserRole(),
+          prop,
+          code;
+      
       for (var cp in codeProps) {
-        var code = codeProps[cp].code;
+        prop = codeProps[cp];
+        if (!U.isPropVisible(res, prop, userRole))
+          continue;
+
+        if (mode != 'edit' && !res.get(prop))
+          continue;
+        
+        code = prop.code;
         switch (code) {
           case 'html':
             codemirrorModes.push('codemirrorXMLMode');
@@ -3248,7 +3334,9 @@ define('utils', [
         }
       }
       
-      codemirrorModes = _.uniq(codemirrorModes);
+      if (codemirrorModes.length)
+        codemirrorModes = _.uniq(codemirrorModes);
+      
       return codemirrorModes;
     },
     
@@ -3339,7 +3427,7 @@ define('utils', [
       if (G.isJQM())
         $(dialog).trigger('create').popup().popup("open");
       else
-        dialog.style['z-index'] = 1000000;
+        dialog.style['zIndex'] = 1000000;
       if (options.onok)
         dialog.$('[data-cancel]').$on('click', options.oncancel);
       if (options.onok)
@@ -3397,7 +3485,7 @@ define('utils', [
         options: options
       });
 
-      var dialog = (G.activePage || doc.body).$append(dialogHtml).$('#' + id);
+      var dialog = (G.activePage || doc.body).$append(dialogHtml).$('#' + id)[0];
       _.each(options, function(option) {
         if (option.action) {
           dialog.$('#' + option.id).$on('click', option.action);
@@ -3654,7 +3742,7 @@ define('utils', [
 
     isMasonryModel: function(vocModel) {
       var type = vocModel.type;
-      return type.startsWith(G.defaultVocPath) && _.any(['Tournament', 'Theme', 'Goal', 'Coupon', 'VideoResource', 'Movie', 'App', 'ThirtyDayTrial', 'Tree', 'Urbien'], function(className) {
+      return type.startsWith(G.defaultVocPath) && _.any(['Tournament', 'Theme', 'Goal', 'Coupon', 'VideoResource', 'Movie', 'App', 'ThirtyDayTrial', 'TreeSpecies', 'Tree', 'Urbien'], function(className) {
         return type.endsWith('/' + className);
       });
     },
@@ -3757,7 +3845,12 @@ define('utils', [
         return G.getResolvedPromise();
       else {
         var dfd = $.Deferred();
-        return dfd.resolve.apply(dfd, concat.apply(ArrayProto, slice.call(arguments))).promise();
+        switch (arguments.length) { // small optimizations to avoid creating arrays
+          case 1: return dfd.resolve.call(dfd, arguments[0]);
+          case 2: return dfd.resolve.call(dfd, arguments[0], arguments[1]);
+          case 3: return dfd.resolve.call(dfd, arguments[0], arguments[1], arguments[2]);
+          default: return dfd.resolve.apply(dfd, concat.apply(ArrayProto, slice.call(arguments))).promise();
+        }
       }
     },
     
@@ -3851,21 +3944,12 @@ define('utils', [
       });
     },
     
-    toTimedFunction: function(obj, name, thresh) {
-      var fn = obj[name];
-      return function() {
-        var now = _.now(),
-            frame = window.fastdom.frameNum;
-        
-        try {
-          return fn.apply(this, arguments);
-        } finally {
-          var time = _.now() - now;
-          if (!thresh || time > thresh)
-            console.log("function", name, "took", time, "millis", window.fastdom.frameNum - frame, "frames");
-        }
-      };
-    },
+//    arrayFnProxy: function(arrayFn, fn, objOrArray) {
+//      if (objOrArray instanceof Array)
+//        return objOrArray[arrayFn](fn);
+//      else
+//        return fn(objOrArray);
+//    },
     
     dataURLToBlob: function(dataURL) {
       var BASE64_MARKER = ';base64,',
@@ -4161,3 +4245,92 @@ define('utils', [
 
   return (Lablz.U = U);
 });
+//      getNewBrightnessColor: function(rgbcode, brightness) {
+//        var r = parseInt(rgbcode.slice(1, 3), 16),
+//            g = parseInt(rgbcode.slice(3, 5), 16),
+//            b = parseInt(rgbcode.slice(5, 7), 16),
+//            HSL = this.rgbToHsl(r, g, b),
+//            RGB;
+//            
+//        RGB = this.hslToRgb(HSL[0], HSL[1], brightness / 100);
+//        rgbcode = '#'
+//            + this.convertToTwoDigitHexCodeFromDecimal(RGB[0])
+//            + this.convertToTwoDigitHexCodeFromDecimal(RGB[1])
+//            + this.convertToTwoDigitHexCodeFromDecimal(RGB[2]);
+//        
+//        return rgbcode;
+//    },
+//
+//    convertToTwoDigitHexCodeFromDecimal: function(decimal){
+//        var code = Math.round(decimal).toString(16);
+//        
+//        (code.length > 1) || (code = '0' + code);
+//        return code;
+//    },
+//    /**
+//     * Converts an RGB color value to HSL. Conversion formula
+//     * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
+//     * Assumes r, g, and b are contained in the set [0, 255] and
+//     * returns h, s, and l in the set [0, 1].
+//     *
+//     * @param   Number  r       The red color value
+//     * @param   Number  g       The green color value
+//     * @param   Number  b       The blue color value
+//     * @return  Array           The HSL representation
+//     */
+//    rgbToHsl: function(r, g, b){
+//        r /= 255, g /= 255, b /= 255;
+//        var max = Math.max(r, g, b), min = Math.min(r, g, b);
+//        var h, s, l = (max + min) / 2;
+//
+//        if(max == min){
+//            h = s = 0; // achromatic
+//        }else{
+//            var d = max - min;
+//            s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+//            switch(max){
+//                case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+//                case g: h = (b - r) / d + 2; break;
+//                case b: h = (r - g) / d + 4; break;
+//            }
+//            h /= 6;
+//        }
+//
+//        return [h, s, l];
+//    },
+//
+//    /**
+//     * Converts an HSL color value to RGB. Conversion formula
+//     * adapted from http://en.wikipedia.org/wiki/HSL_color_space.
+//     * Assumes h, s, and l are contained in the set [0, 1] and
+//     * returns r, g, and b in the set [0, 255].
+//     *
+//     * @param   Number  h       The hue
+//     * @param   Number  s       The saturation
+//     * @param   Number  l       The lightness
+//     * @return  Array           The RGB representation
+//     */
+//    hslToRgb: function(h, s, l){
+//        var r, g, b;
+//
+//        if(s == 0){
+//            r = g = b = l; // achromatic
+//        }else{
+//            function hue2rgb(p, q, t){
+//                if(t < 0) t += 1;
+//                if(t > 1) t -= 1;
+//                if(t < 1/6) return p + (q - p) * 6 * t;
+//                if(t < 1/2) return q;
+//                if(t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+//                return p;
+//            }
+//
+//            var q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+//            var p = 2 * l - q;
+//            r = hue2rgb(p, q, h + 1/3);
+//            g = hue2rgb(p, q, h);
+//            b = hue2rgb(p, q, h - 1/3);
+//        }
+//
+//        return [r * 255, g * 255, b * 255];
+//    }

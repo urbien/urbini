@@ -22,16 +22,15 @@ define('views/HorizontalListView', [
 //      keyboard: false
 //    },
 //    _flexigroup: true,
-    style: (function() {
-      var style = {
-        height: '155px' // 150 + 5 for scrollbar
+    style: {
+//      visibility: 'hidden',
+      opacity: 0,
+      height:'115px', // 150 + 5 for scrollbar
+      perspective: '300px'
 //          ,
 //        'padding-top': '3px'
-      };
+    },
       
-      style[DOM.prefix('perspective')] = '300px';
-      return style;
-    })(),
 //    _horizontal: true,
     _dragAxis: 'x',
     _scrollAxis: 'x',
@@ -43,9 +42,10 @@ define('views/HorizontalListView', [
       ResourceListView.prototype.initialize.apply(this, arguments);
       _.extend(this.options, {
         horizontal: true, 
-        gutterWidthHorizontal: 15,
+        gutterWidthHorizontal: 5,
         gutterWidthVertical: 0,
-        jiggle: true,
+        tilt: false,
+//        squeeze: true,
         scrollerType: 'horizontal',
         oneElementPerRow: false,
         oneElementPerCol: true,
@@ -89,50 +89,20 @@ define('views/HorizontalListView', [
       });
     },
     
-    renderItem: function(res, info) {
-      var source = this.parentView.resource,
-//          xUris = this._renderedIntersectionUris,
-          a,
-          b;
-
-      source = source && source.getUri();
-//      if (this._isIntersectingWithCollection) {
-//        a = res.get('Intersection.a');
-//        b = res.get('Intersection.b');
-//        if ((source == a && ~xUris.indexOf(b)) ||
-//            (source == b && ~xUris.indexOf(a))) {
-//          // if we're in a resource view and are showing intersections with this resource, there may be cases like Friend where there are two intersections to represent the relationship. In that case, only paint one (to avoid having two of the same image) 
-//          return false;
-//        }
-//      }
-      
-      var liView = new this._preinitializedItem({
-        resource: res
-      });
-      
-      liView.render(this._itemRenderOptions);
-//      if (rendered === false)
-//        debugger;
-//        return false;
-            
-//      if (this._isIntersectingWithCollection) {
-//        if (source !== a)
-//          xUris.push(a);
-//        if (source !== b)
-//          xUris.push(b);
-//      }
-      
-      this.addChild(liView);
-      return liView;
-    },
-    
     postRender: function() {
       if (!this._visible) {
+        this.setStyle({
+          opacity: this.getMaxOpacity(),
+          visibility: null
+        });
+        
         this._visible = true;
         this.el.dataset.viewid = this.cid;
 //        this.el.style.height = '150px';
         if (G.isJQM())
           this.$el.trigger("create");
+        
+        this.getPageView().invalidateSize();
       }
       
       return ResourceListView.prototype.postRender.apply(this, arguments);

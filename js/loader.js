@@ -42,35 +42,6 @@ $.extend({
       });
     }).promise();
   }
-//,
-//  
-//  LazyDeferred: (function() {
-//    var dfd = $.Deferred();
-//    
-//    function LazyDeferred(init) {
-//      if (!(this instanceof LazyDeferred))
-//        return new LazyDeferred(init);
-//      
-//      this._started = false;
-//      this.start = function() {
-//        this._started = true;
-//        init.call(dfd, dfd);
-//        return this.promise();
-//      };
-//      
-//      this.isRunning = function() {
-//        return this._started;
-//      };
-//    };
-//      
-//    for (var fn in dfd) {
-//      if (typeof dfd[fn] == 'function') {
-//        LazyDeferred.prototype[fn] = dfd[fn].bind(dfd);
-//      }
-//    }
-//    
-//    return LazyDeferred;
-//  })()
 });
 
 define('globals', function() {
@@ -317,15 +288,31 @@ define('globals', function() {
   
   function testCSS(prop) {
     return prop in doc.documentElement.style;
-  }
+  };
     
   function getSpinnerId(name) {
     return 'loading-spinner-holder-' + (name || '').replace(/[\.\ ]/g, '-');
-  }
+  };
+
+  function getFilePathInStorage(url) {
+    url = isFilePathKey(url) ? url : 'file:' + url;
+    if (G.minify && !/\.min$/.test(url))
+      url += ".min";
+    
+    return url;
+  };
+
+  function isFilePathKey(str) {
+    return /^file:/.test(str); 
+  };
+
+  function isFilePathMetadataKey(str) {
+    return /^file:metadata:/.test(str); 
+  };
 
   function getMetadataURL(url) {
-    return 'metadata:' + url;
-  }
+    return 'metadata:' + getFilePathInStorage(url);
+  };
 
   function putCached(keyToData, options) {
     options = options || {};
@@ -335,6 +322,9 @@ define('globals', function() {
         keyPath = storeInfo.options.keyPath;        
     
     if (storage === 'localStorage') {
+      if (!G.prunedLocalStorage)
+        G.pruneLocalStorage();
+      
       for (var key in keyToData) {
         var val = keyToData[key];
         if (typeof val == 'object')
@@ -349,6 +339,9 @@ define('globals', function() {
       if (G.dbType === 'none')
         return REJECTED_PROMISE;
             
+//      if (!G.prunedIndexedDB)
+//        G.pruneIndexedDB();
+      
       var stuff = [];
       for (var key in keyToData) {
         var stuffInfo = {
@@ -363,7 +356,7 @@ define('globals', function() {
     }
     else
       return REJECTED_PROMISE;
-  }
+  };
 
   function setMiscGlobals() {
     var path = window.location.pathname,
@@ -379,7 +372,7 @@ define('globals', function() {
       sqlUrl: G.serverNameHttp + '/' + G.sqlUri,
       modelsUrl: G.serverName + '/backboneModel',
       storeFilesInFileSystem: G.hasBlobs && G.hasFileSystem && G.browser.chrome,
-      useInlineWorkers: G.hasBlobs && G.hasWebWorkers && true,
+      useInlineWorkers: G.hasBlobs && G.hasWebWorkers,
       apiUrl: G.serverName + '/api/v1/',
       timeOffset: G.localTime - G.serverTime,
       firefoxManifestPath: G.serverName + '/wf/' + G.currentApp.attachmentsUrl + '/firefoxManifest.webapp',
@@ -526,14 +519,7 @@ define('globals', function() {
   
         value = Object.prototype.toString.call(value) === '[object String]' ? value : JSON.stringify(value);
         try {
-  //        G.localStorage.del(key);
-          if (window.fastdom) {
-            window.fastdom.nonDom(function() {              
-              localStorage.setItem(key, value);
-            });
-          }
-          else
-            localStorage.setItem(key, value);
+          localStorage.setItem(key, value);
         } catch(e) {
           debugger;
           if (['QuotaExceededError', 'QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
@@ -664,11 +650,15 @@ define('globals', function() {
   }
   
   function load() {
-    var spinner = 'app init',
+    var spinner = {
+          name: 'app init',
+          timeout: 10000,
+          blockClick: true
+        },
         priorityModules = [];
 
     G.startedTask("loading pre-bundle");
-    G.showSpinner({name: spinner, timeout: 10000});
+    G.showSpinner(spinner);
     APP_START_PROMISE.done(function() {
       G.hideSpinner(spinner);
       G.log(G.TAG, 'stats', "App start took: " + (new Date().getTime() - __started) + ' millis');
@@ -867,7 +857,7 @@ define('globals', function() {
             }
 
             if (!fetch) {
-              return G.getCached(url, source).then(function(text) {                
+              return G.getCached(getFilePathInStorage(url), source).then(function(text) {                
                 G.modules[url] = text;
               }).fail(function() {
                 pruned.push(url);
@@ -893,7 +883,7 @@ define('globals', function() {
       
       return prunePromise;
     },
-
+    
 //    _queuedToLoad: [],
 //    queueLoadBundle: function(/* module names */) {
 //      var self = this;
@@ -936,8 +926,8 @@ define('globals', function() {
           }
         }
         
-        var newModules = {};
         if (resp && !resp.error && resp.modules) {
+          var newModules = {};
           var modules = resp.modules;
           for (var i = 0; i < modules.length; i++) {
             var m = modules[i];
@@ -946,29 +936,19 @@ define('globals', function() {
             var minIdx = name.indexOf('.min.js');
             name = minIdx == -1 ? name : name.slice(0, minIdx) + '.js';
             G.modules[name] = m.body;
-            newModules[name] = m;
-//              break;
-//            }
-//            newModules.push(m);
-          }
-        }
-      
-        setTimeout(function() {
-          for (var name in newModules) {
-            var m = newModules[name];
+            newModules[getFilePathInStorage(name)] = m.body;
             newModules[getMetadataURL(name)] = {
               dateModified: m.dateModified,
               minified: G.isMinified(name, m.body)
             };
-            
-            newModules[name] = m.body; // yes, overwrite
           }
           
-          G.putCached(newModules, {
-            storage: source
-          });
-          
-        }, 100);
+          setTimeout(function() {
+            G.putCached(newModules, {
+              storage: source
+            });          
+          }, 100);
+        }
         
         bundleDfd.resolve();
       };
@@ -1208,7 +1188,7 @@ define('globals', function() {
   }, false);
 
   $.extend(G, {
-    _widgetLibrary: G.currentApp.widgetLibrary || 'JQuery Mobile',
+    _widgetLibrary: G.currentApp.widgetLibrary || 'topcoat',
     isJQM: function() {
       return G.getWidgetLibrary().toLowerCase() == 'jquery mobile';
     },
@@ -1248,11 +1228,12 @@ define('globals', function() {
     putCached: function(urlToData, options) {
       var args = arguments;
       return G.onAppStart(function() {
-        return G.whenNotRendering(function() {
+//        return G.whenNotRendering(function() {
           putCached.apply(null, args);
-        });
+//        });
       });
     },
+    
     getCached: function(url, source, storeName) {
       if (source === 'localStorage') {
         return $.Deferred(function(defer) {        
@@ -1273,6 +1254,78 @@ define('globals', function() {
         });
       }
     },
+    
+    pruneLocalStorage: function() {
+      G.prunedLocalStorage = true;
+      var except = [],
+          remove = [],
+          bundle,
+          url,
+          i,
+          key;
+      
+      for (var bName in bundles) {
+        bundle = bundles[bName];
+        if (bName == 'pre' || bName == 'post' || bName == 'widgetsFramework' || bName == 'appcache') { // TODO: this preference should be set in one spot, not all over the place
+          i = bundle.length;
+          while (i--) {
+            url = G.getCanonicalPath(require.toUrl(bundle[i].name));
+            except.push(getFilePathInStorage(url));
+            except.push(getMetadataURL(url));
+          }
+        }
+      }
+      
+      for (var key in localStorage) {
+        if ((isFilePathKey(key) || isFilePathMetadataKey(key)) && except.indexOf(key) == -1) {
+          remove.push(key); // just in case removing while looping affects the loop order
+        }
+      }
+      
+      i = remove.length;
+      while (i--) {
+        key = remove[i];
+        G.log("localStorage", "removing item: " + key);
+        localStorage.removeItem(key);
+      }
+    },
+
+    pruneIndexedDB: function(except) {
+      G.prunedIndexedDB = true;
+      var idb = G.IDB.getIDB(),
+          except = [],
+          remove = [],
+          key,
+          bundle,
+          url,
+          i;
+      
+      for (var bName in bundles) {
+        bundle = bundles[bName];
+        if (bName != 'pre' && bName != 'post') {
+          i = bundle.length;
+          while (i--) {
+            url = G.getCanonicalPath(require.toUrl(bundle[i].name));
+            except.push(getFilePathInStorage(url));
+            except.push(getMetadataURL(url));
+          }          
+        }
+      }
+
+      idb.getAllKeys('modules').then(function(keys) {
+        i = keys ? keys.length : 0;
+        while (i--) {
+          key = keys[i];
+          if ((isFilePathKey(key) || isFilePathMetadataKey(key)) && except.indexOf(key) == -1) {
+            remove.push(key); // just in case removing while looping affects the loop order
+          }
+        }
+        
+        if (remove.length)
+          idb['delete']('modules', remove);
+      });
+    },
+
     dbType: (function() {
 //      if (browser.chrome) // testing how things work without indexeddb
 //        return 'shim';
@@ -1338,13 +1391,17 @@ define('globals', function() {
 //      m && m.bind(navigator);
       return !!m;
     })(),
+    clickBlocker: function(e) {
+      e.preventDefault();
+      e.stopImmediatePropagation();
+    },
     showSpinner: function(options) {
       options = options || {};
       if (typeof options === 'string')
         options = {name: options};
       
       var id = getSpinnerId(options.name);
-      var cl = options.nonBlockingOverlay ? '' : 'spinner_bg';
+      var cl = 'vcenter' + (options.nonBlockingOverlay ? '' : ' spinner_bg');
       var color;
       if (G.tabs) {
         var t0 = G.tabs[0];
@@ -1353,28 +1410,32 @@ define('globals', function() {
       }
       
       var style = ' style="z-index:1000;' + (color ? color + ';' : '') + '"';
-      var innerHTML = '<div id="spinner_container"><div id="spinner"' + style + '>' + (options.content || '<i class="ui-icon-spinner icon-spin" style="font-size: 64px;"></i>') + '</div></div>';
+      var innerHTML = '<div><div ' + style + ' class="spinner">' + (options.content || '<i class="ui-icon-spinner icon-spin" style="font-size: 64px;"></i>') + '</div></div>';
       var spinner = doc.createElement('div');
       spinner.id = id;
-      if (cl)
-        spinner.classList.add(cl);
+      spinner.className = cl;
       
       spinner.innerHTML = innerHTML;
 //      var spinner = '<div id="' + id + '" class="' + cl + '">' + innerHTML + '</div>';
       body.appendChild(spinner);
       if (options.timeout) {
         setTimeout(function() {
-          G.hideSpinner(options.name);
+          G.hideSpinner(options);
         }, options.timeout);
       }
+      
+      if (options.blockClick)
+        document.addEventListener('click', this.clickBlocker, true);
     },
-    hideSpinner: function(name) {
-      var spinners = doc.querySelectorAll('#' + getSpinnerId(name));
+    hideSpinner: function(options) {
+      var spinners = doc.querySelectorAll('#' + getSpinnerId(options.name));
       var i = spinners.length;
       while (i--) {
         var spinner = spinners[i];
         spinner.parentNode.removeChild(spinner);
       }
+      
+      document.removeEventListener('click', this.clickBlocker, true);
     },
     getVersion: function(old) {
       if (!old && G.VERSION)
@@ -1645,6 +1706,7 @@ define('globals', function() {
 //      return space;
 //    },
     
+    _logArray: new Array(0),
     log: function(tag, type) {
       if (!G.DEBUG || !TRACE.ON || !console || !console.log || !type)
         return;
@@ -1668,7 +1730,8 @@ define('globals', function() {
 
         var txt = type + ' : ' + tag + ' : ' + msgStr + ' : ';
         var d = new Date(G.currentServerTime());
-        console.log((css ? '%c ' : '') + txt + new Array(Math.max(100 - txt.length, 0)).join(' ') + d.toUTCString().slice(17, 25) + ':' + d.getUTCMilliseconds(), css ? 'background: ' + (typeTrace.bg || '#FFF') + '; color: ' + (typeTrace.color || '#000') : '');        
+        G._logArray.length = Math.max(100 - txt.length, 0);
+        console.log((css ? '%c ' : '') + txt + G._logArray.join(' ') + d.toUTCString().slice(17, 25) + ':' + d.getUTCMilliseconds(), css ? 'background: ' + (typeTrace.bg || '#FFF') + '; color: ' + (typeTrace.color || '#000') : '');        
       }
     },
     
@@ -1690,44 +1753,6 @@ define('globals', function() {
       head.appendChild(style);
     },
     
-//    removeHoverStyles: function() {
-//      function hasHover(selector) {
-//        return /:hover|-hover-/.test(selector);
-//      };
-//      
-//      function addCSSRule(sheet, selector, rules, index) {
-//        if (sheet.insertRule) {
-//          sheet.insertRule(selector + "{" + rules + "}", index);
-//        }
-//        else {
-//          sheet.addRule(selector, rules, index);
-//        }
-//      };
-//      
-//      $.each(document.styleSheets, function(i, sheet) {
-//        $.each(sheet.rules, function(i, rule) {
-//          var selector = rule.selectorText,
-//              css = rule.cssText;
-//          
-//          if (hasHover(selector)) {
-//            while (/,/.test(selector) && hasHover(selector)) {
-//              selector = selector.replace(/(,?)[^,]+(:hover|-hover-)[^,]*(,?)/g, "$1$3").replace(/,+/g, ',');
-//            }
-//
-//            if (selector.startsWith(','))
-//              selector = selector.slice(1);
-//            if (selector.endsWith(','))
-//              selector = selector.slice(0, selector.length - 1);
-//
-//            sheet.deleteRule(i);
-//            if (selector && selector != rule.selectorText) {
-//              addCSSRule(sheet, selector, css, i);
-//            }
-//          } 
-//        });
-//      });
-//    },
-    
     getCanonicalPath: function(path, separator) {
       separator = separator || '/';
       var parts = path.split(separator);
@@ -1743,7 +1768,10 @@ define('globals', function() {
     },
 
 //    mainWorkerName: 'main',
+    maxXhrWorkers: 3,
+    numXhrWorkers: 0,
     workers: [],
+    workerDeferreds: [],
 //    isWorkerAvailable: function(worker) {
 //      return !worker.__lablzTaken;
 //    },
@@ -1795,8 +1823,16 @@ define('globals', function() {
         var worker;
         if (G.workers.length)
           worker = G.workers.shift();
-        else
-          worker = G.loadWorker('js/xhrWorker.js');
+        else {
+          if (G.numXhrWorkers == G.maxXhrWorkers) {
+            G.workerDeferreds.push(dfd);
+            return;
+          }
+          else {
+            G.numXhrWorkers++;
+            worker = G.loadWorker('js/xhrWorker.js');
+          }
+        }
         
         dfd.resolve(worker);
       }).promise();
@@ -1808,7 +1844,10 @@ define('globals', function() {
     recycleXhrWorker: function(worker) {
       worker.onerror = null;
       worker.onmessage = null;
-      G.workers.push(worker);
+      if (G.workerDeferreds.length)
+        G.workerDeferreds.pop().resolve(worker);
+      else
+        G.workers.push(worker);
 //      worker.__lablzTaken = false;
 //      var q = G.workerQueues[worker._taskType];
 //      if (q && q.length)

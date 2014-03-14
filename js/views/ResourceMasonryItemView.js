@@ -5,8 +5,9 @@ define('views/ResourceMasonryItemView', [
   'utils',
   'events',
   'views/BasicView',
-  'domUtils'
-], function(G, _, U, Events, BasicView, DOM) {
+  'domUtils',
+  'physicsBridge'
+], function(G, _, U, Events, BasicView, DOM, Physics) {
   var RMIV = BasicView.extend({
 //    className: 'nab nabBoard masonry-brick',
 //    className: 'pin',
@@ -15,6 +16,9 @@ define('views/ResourceMasonryItemView', [
     className: 'nab masonry-brick',
     tagName: 'div',
     TAG: "ResourceMasonryItemView",
+    style: {
+      'transform-origin': '50% 50%'
+    },
     initialize: function(options) {
       if (this._initialized) {
         this._initializedCounter++;
@@ -218,14 +222,34 @@ define('views/ResourceMasonryItemView', [
           imgSrc = obj.resourceMediumImage,
           cloned = this.clonedProperties,
           gridCols = this.el.querySelector('.gridCols');
-          blankImg = G.getBlankImgSrc();
-          
-//          comments = data.v_showCommentsFor && nabRLSocial.firstChild,
-//          votes = data.v_showVotesFor && nabRLSocial.firstChild
+          blankImg = G.getBlankImgSrc(),
+          prevStyle = this._prevGalleryItemStyle || "",
+          newStyle = "";
+              
+//              comments = data.v_showCommentsFor && nabRLSocial.firstChild,
+//              votes = data.v_showVotesFor && nabRLSocial.firstChild
       if (obj.imgWidth) {
-//        debugger;
-        gItem.$attr('style', _.template("{{= (obj.top ? '' : 'height:' + imgHeight + 'px;') + (obj.left ? '' : 'width:' + imgWidth + 'px;') }}")(obj));
+        if (!obj.top)
+          newStyle += "height:" + obj.imgHeight + "px;";
+
+        if (!obj.left)
+          newStyle += "width:" + obj.imgWidth + "px;";
+
+        if (newStyle != prevStyle)
+          gItem.$attr('style', newStyle);
       }
+      else {
+        if (obj.height)
+          newStyle += "height:" + obj.height + "px;";
+
+        if (obj.width)
+          newStyle += "width:" + obj.width + "px;";
+        
+        if (newStyle != prevStyle)
+          gItem.$attr('style', newStyle);
+      }
+      
+      this._prevGalleryItemStyle = newStyle;
       
       gItemA.href = obj.rUri || 'about:blank';
       gItemImg.dataset['for'] = U.getImageAttribute(this.resource, obj.imageProperty);
@@ -240,8 +264,12 @@ define('views/ResourceMasonryItemView', [
       
       if (obj.imgWidth)
         gItemImg.style.width = obj.imgWidth + 'px';
+      else
+        gItemImg.$attr('width', obj.width + 'px');
       if (obj.imgHeight)
         gItemImg.style.height = obj.imgHeight + 'px';
+      else
+        gItemImg.$attr('height', obj.height + 'px');
 
       if (!appBadge) {
         if (_.has(obj, 'friendMeCount')) {
@@ -324,9 +352,10 @@ define('views/ResourceMasonryItemView', [
       }
       */
       if (obj.gridCols) {
-        DOM.queueRender(gridCols, {          
-          innerHTML: obj.gridCols  
-        });
+        gridCols.innerHTML = obj.gridCols;  
+//        DOM.queueRender(gridCols, {          
+//          innerHTML: obj.gridCols  
+//        });
       }
       else {
         if (gridCols)
@@ -451,69 +480,88 @@ define('views/ResourceMasonryItemView', [
           img = img.slice(6);
         tmpl_data['resourceMediumImage'] = img;
   //      tmpl_data = _.extend(tmpl_data, {imgSrc: img});
-        var oWidth  = m.get('ImageResource.originalWidth'); //atts.originalWidth;
-        var oHeight = m.get('ImageResource.originalHeight');
-        if (typeof oWidth != 'undefined' && typeof oHeight != 'undefined') {
-          var ratio = 1;
-          if (oWidth > oHeight) {
-            if (oWidth > this.IMG_MAX_WIDTH) 
-              ratio = this.IMG_MAX_WIDTH / oWidth;
+
+        
+        var idx = img.lastIndexOf('.jpg_');
+        var idx1 = img.indexOf('_', idx + 5);
+        if (idx != -1  &&  idx1 != -1) {
+          var s = img.substring(idx + 5, idx1);
+          idx = s.indexOf("-");
+          if (idx != -1) {
+            var w = s.substring(0, idx);
+            if (w <= this.IMG_MAX_WIDTH) {
+              tmpl_data['width'] = s.substring(0, idx);
+              tmpl_data['height'] = s.substring(idx + 1);
+            }
           }
-          else {
-            if (imgWidth) {
-              if (oWidth > this.IMG_MAX_WIDTH)
+        }
+        if (tmpl_data['width'])
+          maxDim = imgWidth;
+        else {
+          var oWidth  = m.get('ImageResource.originalWidth'); //atts.originalWidth;
+          var oHeight = m.get('ImageResource.originalHeight');
+          if (typeof oWidth != 'undefined' && typeof oHeight != 'undefined') {
+            var ratio = 1;
+            if (oWidth > oHeight) {
+              if (oWidth > this.IMG_MAX_WIDTH) 
                 ratio = this.IMG_MAX_WIDTH / oWidth;
             }
-            else if (oHeight > this.IMG_MAX_WIDTH) 
-              ratio = this.IMG_MAX_WIDTH / oHeight;
-          }
-          var iW = Math.floor(oWidth * ratio);
-          var iH = Math.floor(oHeight * ratio);
-          tmpl_data['imgWidth'] = iW;
-          tmpl_data['imgHeight'] = iH;
-          var maxDim = this.maxImageDimension;
-          
-          if (imgWidth) {
-            var idx = img.lastIndexOf('.jpg_');
-            var idx1 = img.indexOf('_', idx + 5);
-            if (idx != -1  &&  idx1 != -1) {
-              var s = img.substring(idx + 5, idx1);
-              idx = s.indexOf("-");
-              if (idx != -1) {
-                var w = s.substring(0, idx);
-                if (w <= imgWidth) {
-                  tmpl_data['width'] = s.substring(0, idx);
-                  tmpl_data['height'] = s.substring(idx + 1);
+            else {
+              if (imgWidth) {
+                if (oWidth > this.IMG_MAX_WIDTH)
+                  ratio = this.IMG_MAX_WIDTH / oWidth;
+              }
+              else if (oHeight > this.IMG_MAX_WIDTH) 
+                ratio = this.IMG_MAX_WIDTH / oHeight;
+            }
+            var iW = Math.floor(oWidth * ratio);
+            var iH = Math.floor(oHeight * ratio);
+            tmpl_data['imgWidth'] = iW;
+            tmpl_data['imgHeight'] = iH;
+            var maxDim = this.maxImageDimension;
+            
+            if (imgWidth) {
+              var idx = img.lastIndexOf('.jpg_');
+              var idx1 = img.indexOf('_', idx + 5);
+              if (idx != -1  &&  idx1 != -1) {
+                var s = img.substring(idx + 5, idx1);
+                idx = s.indexOf("-");
+                if (idx != -1) {
+                  var w = s.substring(0, idx);
+                  if (w <= imgWidth) {
+                    tmpl_data['width'] = s.substring(0, idx);
+                    tmpl_data['height'] = s.substring(idx + 1);
+                  }
                 }
               }
+              if (tmpl_data['width'])
+                maxDim = imgWidth;
             }
-            if (tmpl_data['width'])
-              maxDim = imgWidth;
-          }
-          if (maxDim  &&  (maxDim > this.IMG_MAX_WIDTH)) {
-            var mdW, mdH;
-            if (oWidth >= oHeight) {
-              mdW = maxDim > oWidth ? oWidth : maxDim; 
-              var r = maxDim /oWidth;
-              mdH = Math.floor(oHeight * r); 
+          
+            if (maxDim  &&  (maxDim > this.IMG_MAX_WIDTH)) {
+              var mdW, mdH;
+              if (oWidth >= oHeight) {
+                mdW = maxDim > oWidth ? oWidth : maxDim; 
+                var r = maxDim /oWidth;
+                mdH = Math.floor(oHeight * r); 
+              }
+              else {
+                mdH = maxDim > oHeight ? oHeight : maxDim; 
+                var r = maxDim /oHeight;
+                mdW = Math.floor(oWidth * r); 
+              }
+              var dW = Math.floor((mdW - iW) / 2);
+              var dH = Math.floor((mdH - iH) / 2);    
+              tmpl_data['top'] = dH;
+              tmpl_data['right'] = iW + dW;
+              tmpl_data['bottom'] = iH + dH;
+              tmpl_data['left'] = dW;
+              tmpl_data['margin-top'] = 0;
+              tmpl_data['margin-left'] = 0 - dW;
             }
-            else {
-              mdH = maxDim > oHeight ? oHeight : maxDim; 
-              var r = maxDim /oHeight;
-              mdW = Math.floor(oWidth * r); 
-            }
-            var dW = Math.floor((mdW - iW) / 2);
-            var dH = Math.floor((mdH - iH) / 2);    
-            tmpl_data['top'] = dH;
-            tmpl_data['right'] = iW + dW;
-            tmpl_data['bottom'] = iH + dH;
-            tmpl_data['left'] = dW;
-            tmpl_data['margin-top'] = 0;
-            tmpl_data['margin-left'] = 0 - dW;
           }
         }
       }
-      
       var dn = atts.davDisplayName;
       var dnProps = this.displayNameProps;
       if (dn)
@@ -597,8 +645,14 @@ define('views/ResourceMasonryItemView', [
         var uri = _.encode(U.getLongUri1(rUri) + '?m_p=' + nabs + '&b_p=' + pMeta.backLink);
         tmpl_data.v_showRenabFor = uri;
       }
-      this.el.style.setProperty('width', (self.IMG_MAX_WIDTH + 17) + 'px', 'important'); // 17 is all paddings around the image
-      this.el.style.setProperty('height', tmpl_data['height']);
+      
+      this.style.width = (this.IMG_MAX_WIDTH + 17) + 'px';
+      if (tmpl_data['height'])
+        this.style.height = tmpl_data['height'];
+      
+      _.extend(this.el.style, this.style);
+//      this.el.style.setProperty('width', (self.IMG_MAX_WIDTH + 17) + 'px'); //, 'important'); // 17 is all paddings around the image
+//      this.el.style.setProperty('height', tmpl_data['height']);
 //      var h = tmpl_data['imgHeight'] ? tmpl_data['imgHeight'] : 0;
 //      var linesHeight = (linesCount * 15); // 15 is the font height of 12px with surrounding space;
 //      this.el.style.setProperty('height', h + linesHeight + 50 + 'px'); // + 50 to include comments and likes

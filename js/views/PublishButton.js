@@ -90,7 +90,7 @@ define('views/PublishButton', [
     doTry: function(e) {
       Events.stopEvent(e);
       var res = this.resource;
-      window.location.href = G.serverName + '/app/' + res.get('appPath');      
+      Events.trigger('navigate', G.serverName + '/app/' + res.get('appPath'));      
 //      this.router.navigate('app/' + res.get('appPath'), {trigger: true});
     },
     publish: function(e) {
@@ -187,7 +187,7 @@ define('views/PublishButton', [
     render: function(options) {
       var self = this;
       this.el.$empty();
-      if (options) {
+      if (_.size(options)) {
         var params = this.hashParams,
             btns = _.keys(_.pick(options, SPECIAL_BUTTONS)),
             html = '';
@@ -206,7 +206,7 @@ define('views/PublishButton', [
       
       // TODO: figure out why click on Try button doesn't arrive in handler without this hack
       SPECIAL_BUTTONS.forEach(function(bName) {
-        var btn = self.el.querySelector('#{0}'.format(bName));
+        var btn = self.el.$('#{0}'.format(bName))[0];
         if (btn)
           btn.addEventListener('click', self[bName]);
       });

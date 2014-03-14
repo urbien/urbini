@@ -1,4 +1,4 @@
-define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB', 'taskQueue', 'cache', 'lib/fastdom'], function(G, _, Events, U, idbq, TaskQueue, C, Q) {  
+define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB', 'taskQueue', 'cache'], function(G, _, Events, U, idbq, TaskQueue, C) {  
   var instance,
       FileSystem,
       fileSystemPromise,
@@ -7,7 +7,9 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       useFileSystem,
       RESOLVED_PROMISE = G.getResolvedPromise(),
       REJECTED_PROMISE = G.getRejectedPromise(),
-      fileMap = {};
+      fileMap = {},
+      READ_ONLY = 0,
+      READ_WRITE = 1;
 //      ,
 //      defaultStoreOptions = {keyPath: prepPropName('_uri'), autoIncrement: false},
 //      defaultIndexOptions = {unique: false, multiEntry: false};
@@ -23,13 +25,16 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       this.indices.push(new Index(prop, indices[prop]));
     }    
   }
-
+  
   function Index(property, options) {
     this.property = prepPropName(property);
     this.options = _.clone(options);
   }
 
   function isFileOrFilePath(item) {
+    if (item instanceof Array)
+      return _.any(item, isFileOrFilePath);
+    
     for (var prop in item) {
       var val = item[prop];
       if (val && (val instanceof Blob || val[filePropertyName]))
@@ -49,8 +54,8 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   }        
 
   function _getFileSystem(items) {
-    items = !items ? null : _.isArray(items) ? items : [items];
-    if (!items || (useFileSystem && !FileSystem && _.any(items, isFileOrFilePath))) { // HACK
+//    items = !items ? null : _.isArray(items) ? items : [items];
+    if (!items || (useFileSystem && !FileSystem && isFileOrFilePath(items))) { // HACK
       return (fileSystemPromise = U.require('fileSystem').done(function(fs) { 
         FileSystem = fs;
       }));
@@ -105,31 +110,30 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     });
   }
   
-  function _convertImage(item, _item, prop, val) {
-    return $.Deferred(function(defer) {
-      var img = new Image;
-      img.src = val;
-      img.onload = function() {
-        var dataUrl = U.imageToDataURL(img);
-        prop = prop + '.dataUrl';
-        _item[prepPropName(prop)] = dataUrl;
-        defer.resolve();
-        
-        var resource = C.getResource(item._uri);
-        if (resource)
-          resource.set(prop, dataUrl, {silent: true});
-      };
-      
-      img.onerror = defer.reject.bind(defer);
-    }).promise();
-  }
+//  function _convertImage(item, _item, prop, val) {
+//    return $.Deferred(function(defer) {
+//      var img = new Image;
+//      img.src = val;
+//      img.onload = function() {
+//        var dataUrl = U.imageToDataURL(img);
+//        prop = prop + '.dataUrl';
+//        _item[prepPropName(prop)] = dataUrl;
+//        defer.resolve();
+//        
+//        var resource = C.getResource(item._uri);
+//        if (resource)
+//          resource.set(prop, dataUrl, {silent: true});
+//      };
+//      
+//      img.onerror = defer.reject.bind(defer);
+//    }).promise();
+//  }
 
   function _prep(item) {
-    var defer = $.Deferred(),
-        promise = defer.promise(),
-        promises = [],
-        _item = {};
+    var promises = [],
+        _item = item; // for now we don't need a new object
     
+    delete item.__tasks__; // HACK
     for (var prop in item) {
       var val = item[prop];
       
@@ -137,18 +141,20 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
         promises.push(_saveFile(item, _item, prop, val));
 //      else if (/model/portal/Image\?/.test(val) && !item[prop + '.dataUrl'])
 //        promises.push(_convertImage(item, _item, prop, val));
-      else
-        _item[prepPropName(prop)] = val;
+//      else
+//        _item[prepPropName(prop)] = val;
     }
 
-    $.when.apply($, promises).then(function() {
-      defer.resolve(_item);
-    }, function() {
-      debugger;
-      defer.resolve(_item);          
-    });
-    
-    return promise;
+    if (promises.length) {
+      return $.when.apply($, promises).then(function() {
+        defer.resolve(_item);
+      }, function() {
+        debugger;
+        defer.resolve(_item);          
+      });
+    }
+    else 
+      return U.resolvedPromise(_item);
   }
   
   function prep(items) {
@@ -160,10 +166,21 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     });
   }
 
+  function setPropertyValue(obj, propName, propValue) {
+    obj[propName] = propValue;
+  };
+  
+  function queueParse() {
+    for (var i = 0; i < arguments.length; i++) {
+      arguments[i].__tasks__ = [parse];
+    }
+  };
+  
   function _parse(_items) {
     var promises,
         returnObj,
-        items;
+        parsed,
+        i;
         
     if (!_items)
       return U.resolvedPromise(_items);
@@ -173,43 +190,40 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     if (returnObj)
       _items = [_items];
 
-    items = _items.map(function(_item) {
-      var item = {};
-      _.each(_item, function(val, prop) {
-        var parsedPropName = parsePropName(prop),
-            val = _item[prop],
-            method = FileSystem && U.isCompositeProp(parsedPropName) ? 'readAsFile' : 'readAsBlob';
-            
+    i = _items.length;
+    while (i--) {
+      _item = _items[i];
+      for (var prop in _item) {
+        var val = _item[prop];
         if (val  &&  filePropertyName  &&  val[filePropertyName]) {
-          var promise = FileSystem[method](val[filePropertyName], val[fileTypePropertyName]).done(function(data) {
-            item[parsedPropName] = data;
-          });
-          
-          promises.push(promise);
+          var parsedPropName = parsePropName(prop);
+          var method = FileSystem && U.isCompositeProp(parsedPropName) ? 'readAsFile' : 'readAsBlob';
+          promises.push(FileSystem[method](val[filePropertyName], val[fileTypePropertyName]).done(setPropertyValue.bind(null, _item, parsedPropName)));
         }
-        else
-          item[parsedPropName] = val;
+//        else
+//          _item[parsedPropName] = val;
+      }
+    }
+    
+    parsed = returnObj ? _items[0] : _items;
+    if (promises.length) {
+      return $.whenAll.apply($, promises).then(function() {        
+        return parsed;
       });
-    
-      return item;
-    });
-    
-    return $.whenAll.apply($, promises).then(function() {        
-      return returnObj ? items[0] : items;
-    });
-  }
+    }
+    else
+      return U.resolvedPromise(parsed);
+  };
 
   function parse(_items) {
     if (!_items)
       return RESOLVED_PROMISE;
     
-    return getFileSystem(_items).then(function() {
+    var fsPromise = getFileSystem(_items);
+    if (fsPromise.state() == 'resolved')
       return _parse(_items);
-    });
-  }
-  
-  function alwaysTrue() {
-    return true;
+    else
+      return fsPromise.then(_parse(_items));
   }
   
   function log() {
@@ -219,11 +233,13 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   }
   
   function prepPropName(propName) {
-    return '_' + propName;
+//    return '_' + propName;
+    return propName;
   }
 
   function parsePropName(propName) {
-    return propName.startsWith('_') ? propName.slice(1) : propName;
+//    return propName.startsWith('_') ? propName.slice(1) : propName;
+    return propName;
   }
 
   function getIDB(name, options) {
@@ -243,11 +259,6 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     this.setDefaultIndexOptions(options.defaultIndexOptions || {});
     this.taskQueue = new TaskQueue("indexedDB");
 //    this.defaultStoreOptions = defaultStoreOptions
-    this._openDfd = $.Deferred();
-    this._openPromise = this._openDfd.promise().done(function() {
-      Events.trigger('dbOpen');
-    });
-    
     for (var fn in IDB.prototype) {
       this[fn] = this[fn].bind(this);
     }
@@ -256,7 +267,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   IDB.prototype.onOpen = function(cb) {
     return this._openPromise.then(cb);
   };
-
+  
   IDB.prototype._clearStoreMonitors = function() {
     this.storesToMake = [];
     this.storesToKill = [];
@@ -358,6 +369,8 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       if (this.defaultIndexOptions) {
         for (var prop in indices) {
           indices[prop] = _.defaults(indices[prop] || {}, this.defaultIndexOptions || {});
+//          if (prop == '_uri')
+//            indices[prop].unique = true;
         }
       }
       
@@ -404,7 +417,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   IDB.prototype.clearObjectStore = function(storeName, reason) {
     var self = this;
     this._queueTask('clearing object store {0}. {1}'.format(storeName, reason || ''), function() {
-      return self.$idb.objectStore(storeName, IDBTransaction.READ_WRITE).clear();
+      return self.$idb.objectStore(storeName, READ_WRITE).clear();
     }, true);
     
     return this;
@@ -425,7 +438,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   };
   
   IDB.prototype.getVersion = function() {
-    return this.db ? this.db.version : null;
+    return this.dbVersion; //this.db ? this.db.version : null;
   };
 
   IDB.prototype.start = function() {
@@ -447,7 +460,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   };
   
   function deleteAndReopen() {
-    this.db = null;
+//    this.db = null;
     return this.$idb.deleteDatabase().then(this.open);
   }
   
@@ -472,6 +485,12 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   };
   
   IDB.prototype.open = function(version) {
+    if (this._openDfd && this._openDfd.state() == 'pending') {
+//      debugger;
+//      this._openDfd.reject();
+      return this._openPromise;
+    }
+    
     var self = this,
         settings = {
           upgrade: doUpgrade
@@ -479,11 +498,15 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     
     if (version)
       settings.version = version;
-    
+
+    this._openDfd = $.Deferred();
+    this._openPromise = this._openDfd.promise();
     this.$idb = $.indexedDB(this.name, settings);
     this.$idb.done(function(db, event) {
       self.db = db;
+      self.dbVersion = db.version;
       self._openDfd.resolve();
+      Events.trigger('dbOpen');
     });
     
     return this.$idb;
@@ -491,7 +514,11 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   
   function restart(version) {
     version = version || this.getVersion();
-    this.db && this.db.close();
+    if (this.db) {
+      this.db.close();
+//      this.db = null;
+    }
+    
     return this.open(version);
   }
   
@@ -509,31 +536,56 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       
     var resultDfd = $.Deferred(),
         resultPromise = resultDfd.promise(),
-        transPromise = this.$idb.transaction([storeName], IDBTransaction.READ_ONLY).progress(function(trans) {
+        transPromise = this.$idb.transaction([storeName], READ_ONLY).progress(function(trans) {
           log('started transaction to get ' + primaryKey);
-          trans.objectStore(storeName).get(primaryKey).then(function(item) {
-            log('parsing result for ' + primaryKey);
-            return parse(item).then(resultDfd.resolve, resultDfd.reject);
-          });
+          trans.objectStore(storeName).get(primaryKey).done(function(item) {
+            resultDfd.resolve(item);
+          }).fail(resultDfd.reject);
+          
+//          trans.objectStore(storeName).get(primaryKey).then(function(_item) {
+//            log('parsing result for ' + primaryKey);
+//            item = _item;
+////            queueParse(item);
+//            return parse(item).then(resultDfd.resolve, resultDfd.reject);
+//          });
         });
     
     return $.when(resultPromise, transPromise).then(function(result) {
-      return Q.waitOne().then(function() {
-        log('returning result for ' + primaryKey);
-        if (result)
-          return result;
-        else
-          return G.getRejectedPromise();
-      });
+      log('returning result for ' + primaryKey);
+      if (result) {
+        queueParse(result);
+        return result;
+      }
+      else
+        return G.getRejectedPromise();
     });
-  }
-  
+  };
+
   IDB.prototype.get = function(storeName, uri) {
     return this._queueTask('get item {0} from store {1}'.format(uri, storeName), get.bind(this, storeName, uri));    
+  };
+  
+  function getAllKeys(storeName) {
+    if (!this.hasStore(storeName))
+      return REJECTED_PROMISE;
+
+    var resultDfd = $.Deferred(),
+        transPromise = this.$idb.transaction([storeName], READ_ONLY).progress(function(trans) {
+          trans.objectStore(storeName).getAllKeys().then(resultDfd.resolve, resultDfd.reject);
+        });
+    
+    return resultDfd.promise();
+  };
+
+  IDB.prototype.getAllKeys = function(storeName) {
+    return this._queueTask('get all keys from store {0}'.format(storeName), getAllKeys.bind(this, storeName));    
   };
 
   var queryRunMethods = ['getAll', 'getAllKeys'];
   function wrapQuery(query) {
+    if (!query.betweeq && !query._queryFunc)
+      return query;
+    
     for (var fn in query) {
       if (typeof query[fn] == 'function') {
         if (_.contains(queryRunMethods, fn))
@@ -575,13 +627,14 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
 
       var args = arguments;
       return instance._queueTask('querying object store {0} by indices'.format(storeName), function(defer) {
-        args[0] = instance.$idb.objectStore(args[0], IDBTransaction.READ_ONLY);
+        args[0] = instance.$idb.objectStore(args[0], READ_ONLY);
         return backup.apply(query, args).then(function(results) {
-          return parse(results || []).then(function(results) {
-            return Q.waitOne().then(function() {
-              return results;
-            });
-          });
+          if (results) {
+            queueParse.apply(null, results);
+            return results;
+          }
+          else 
+            return [];
         });
       });
       
@@ -590,7 +643,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
 //          storeName = args[0];
 //      
 //      return self._queueTask('querying object store {0} by indices'.format(storeName), function(defer) {
-//        var trans = self.$idb.transaction([storeName], IDBTransaction.READ_ONLY),
+//        var trans = self.$idb.transaction([storeName], READ_ONLY),
 //            parseDfd = $.Deferred(),
 //            parsePromise = parseDfd.promise();
 //        
@@ -615,11 +668,232 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     return query;
   };
 
+//  function search1(storeName, options) {
+//    if (!this.hasStore(storeName))
+//      return REJECTED_PROMISE;
+//
+////    var trans = this.$idb.transaction([storeName], READ_ONLY),
+//    var results = [],
+//        orderBy = options.orderBy,
+//        asc = options.asc,
+//        limit = options.limit,
+//        filter = options.filter,
+//        from = options.from,
+//        direction = asc == undefined || U.isTrue(asc) ? IDBCursor.NEXT : IDBCursor.PREV,
+//        promises = [],
+//        done = false,
+//        dfd = $.Deferred(),
+//        overallPromise = dfd.promise(),
+//        transPromise,
+//        start = _.now(),
+//        processingTime = 0,
+//        waitingTime = 0,
+//        now,
+//        tmp;
+//
+////    filter = filter || G.trueFn;    
+////    transPromise = trans.progress(function(trans) {
+////      var store = trans.objectStore(storeName);
+//    this.$idb.objectStore(storeName, READ_ONLY).each(
+//      function processItem(item) {
+////        var t = _.now();
+//        tmp = _.now();
+//        if (now)
+//          waitingTime += tmp - now;
+//        
+//        now = tmp;
+//        if (done)
+//          return false; // ends the cursor transaction
+//        
+//        var promise = parse(item.value).done(function(val) {
+//          if (!filter || filter && filter(val)) {
+//            results.push(val);
+//            if (results.length >= limit)
+//              done = true;
+//          }      
+//          
+////          processingTime += (_.now() - t);
+//        });
+//    
+//        if (promise.state() == 'pending')
+//          promises.push(promise);
+//        else {
+//          if (done)
+//            return false;
+//        }
+//      }, 
+//      from && IDBKeyRange.lowerBound(from, true), 
+//      direction
+//    ).fail(function() {
+//      debugger;
+//      dfd.reject();
+//    }).done(function() {
+//      log('Getting {0} items from DB objectStore {1} took {2}ms, processing time: {3}, waiting time: {4}'.format(results.length + promises.length, storeName, _.now() - start | 0, processingTime | 0, waitingTime | 0));
+//      if (promises.length) {
+//        $.when.apply($, promises).done(function() {
+//          dfd.resolve(results);
+//        }).fail(dfd.reject);
+//      }
+//      else
+//        dfd.resolve(results);
+//    });
+//    
+//    return overallPromise; 
+//  };
+
+//  function search(storeName, options) {
+//    if (!this.hasStore(storeName))
+//      return REJECTED_PROMISE;
+//
+////    var trans = this.$idb.transaction([storeName], READ_ONLY),
+//    var results = [],
+//        orderBy = options.orderBy,
+//        asc = options.asc,
+//        limit = options.limit,
+//        filter = options.filter,
+//        from = options.from,
+//        direction = asc == undefined || U.isTrue(asc) ? IDBCursor.NEXT : IDBCursor.PREV,
+//        promises = [],
+//        done = false,
+//        dfd = $.Deferred(),
+//        overallPromise = dfd.promise(),
+//        transPromise,
+//        start = _.now(),
+//        processingTime = 0,
+//        waitingTime = 0,
+//        now,
+//        tmp;
+//
+////    filter = filter || G.trueFn;    
+////    transPromise = trans.progress(function(trans) {
+////      var store = trans.objectStore(storeName);
+//    this.$idb.objectStore(storeName, READ_ONLY).each(
+//      function processItem(item) {
+////        var t = _.now();
+//        tmp = _.now();
+//        if (now)
+//          waitingTime += tmp - now;
+//        
+//        now = tmp;
+//        if (done)
+//          return false; // ends the cursor transaction
+//        
+//        var promise = parse(item.value).done(function(val) {
+//          if (!filter || filter && filter(val)) {
+//            results.push(val);
+//            if (results.length >= limit)
+//              done = true;
+//          }      
+//          
+////          processingTime += (_.now() - t);
+//        });
+//    
+//        if (promise.state() == 'pending')
+//          promises.push(promise);
+//        else {
+//          if (done)
+//            return false;
+//        }
+//      }, 
+//      from && IDBKeyRange.lowerBound(from, true), 
+//      direction
+//    ).fail(function() {
+//      debugger;
+//      dfd.reject();
+//    }).done(function() {
+//      log('Getting {0} items from DB objectStore {1} took {2}ms, waiting time: {3}'.format(results.length + promises.length, storeName, _.now() - start | 0, waitingTime | 0));
+//      if (promises.length) {
+//        $.when.apply($, promises).done(function() {
+//          dfd.resolve(results);
+//        }).fail(dfd.reject);
+//      }
+//      else
+//        dfd.resolve(results);
+//    });
+//    
+//    return overallPromise; 
+//  };
+
+//  function search(storeName, options) {
+//    if (!this.hasStore(storeName))
+//      return REJECTED_PROMISE;
+//
+//    var trans = this.$idb.transaction([storeName], READ_ONLY),
+//        results = [],
+//        orderBy = options.orderBy,
+//        asc = options.asc,
+//        limit = options.limit,
+//        filter = options.filter,
+//        from = options.from,
+//        direction = asc == undefined || U.isTrue(asc) ? IDBCursor.NEXT : IDBCursor.PREV,
+//        promises = [],
+//        done = false,
+//        dfd = $.Deferred(),
+//        overallPromise = dfd.promise(),
+//        transPromise,
+//        start = _.now(),
+//        processingTime = 0,
+//        waitingTime = 0,
+//        now,
+//        tmp,
+//        keys;
+//
+//    if (filter === G.trueFn)
+//      filter = null;
+//    
+//    transPromise = trans.progress(function(trans) {      
+//      now = _.now();
+//      function processItem(item) {
+////        var t = _.now();
+//        tmp = _.now();
+//        if (now)
+//          waitingTime += tmp - now;
+//        
+//        now = tmp;
+//        if (done)
+//          return false; // ends the cursor transaction
+//        
+//        var promise = parse(item.value).done(function(val) {
+//          if (!filter || filter && filter(val)) {
+//            results.push(val);
+//            if (results.length >= limit)
+//              done = true;
+//          }      
+//          
+////          processingTime += (_.now() - t);
+//        });
+//    
+//        if (promise.state() == 'pending')
+//          promises.push(promise);
+//        else {
+//          if (done)
+//            return false;
+//        }
+//      };
+//      
+//      trans.objectStore(storeName).each(processItem, from && IDBKeyRange.lowerBound(from, true), direction);
+//    }).fail(function() {
+//      debugger;
+//      dfd.reject();
+//    }).done(function() {
+//      log('Getting {0} items from DB objectStore {1} took {2}ms, waiting time: {3}'.format(results.length + promises.length, storeName, _.now() - start | 0, waitingTime | 0));
+//      if (promises.length) {
+//        $.when.apply($, promises).done(function() {
+//          dfd.resolve(results);
+//        }).fail(dfd.reject);
+//      }
+//      else
+//        dfd.resolve(results);
+//    });
+//    
+//    return overallPromise; 
+//  };
+
   function search(storeName, options) {
     if (!this.hasStore(storeName))
       return REJECTED_PROMISE;
 
-    var trans = this.$idb.transaction([storeName], IDBTransaction.READ_ONLY),
+    var trans = this.$idb.transaction([storeName], READ_ONLY),
         results = [],
         orderBy = options.orderBy,
         asc = options.asc,
@@ -629,53 +903,55 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
         direction = asc == undefined || U.isTrue(asc) ? IDBCursor.NEXT : IDBCursor.PREV,
         promises = [],
         done = false,
-        finish = function() {
-          return results;
-        },
-        overallPromise;
+        dfd = $.Deferred(),
+        overallPromise = dfd.promise(),
+        transPromise,
+        start = _.now(),
+        processingTime = 0,
+        waitingTime = 0,
+        now,
+        tmp,
+        keys,
+        val;
 
-//    filter = filter || alwaysTrue;    
-    overallPromise = trans.progress(function(trans) {
-      log("db", 'Starting getItems Transaction, query with valueTester');
-      var store = trans.objectStore(storeName);
-      function processItem(item) {
-        if (done)
-          return false; // ends the cursor transaction
+    if (filter === G.trueFn)
+      filter = null;
+    
+    transPromise = trans.progress(function(trans) {      
+      now = _.now();
+      trans.objectStore(storeName).each(function processItem(item) {
+  //      var t = _.now();
+        tmp = _.now();
+        if (now)
+          waitingTime += tmp - now;
         
-//        var dfd = $.Deferred(),
-//            promise = dfd.promise();
-//    
-//        Q.nonDom(function() {          
-        var promise = parse(item.value).done(function(val) {
-          if (!filter || filter && filter(val)) {
-            results.push(val);
-            if (results.length >= limit)
-              done = true;
-          }      
-    
-//          dfd.resolve();
-        }); //.fail(dfd.resolve); // resolve always to make sure we return results
-//        });
-    
-        if (promise.state() == 'pending')
-          promises.push(promise);
-        else {
-          if (done)
-            return false;
+        now = tmp;
+        val = item.value;
+        if (!filter || filter && filter(val)) {
+          queueParse(val);
+          results.push(val);
+          if (results.length >= limit)
+            return false; // stop cursor
         }
-      };
-          
-      store.each(processItem, from && IDBKeyRange.lowerBound(from, true), direction);
+      }, from && IDBKeyRange.lowerBound(from, true), direction);
     }).fail(function() {
       debugger;
-    }).then(function() {
-//      Events.trigger('garbage', promises);
-      log("db", 'Finished getItems Transaction, got {0} items'.format(results.length));
-      return $.when.apply($, promises).then(Q.waitOne);
-    }).then(finish, finish);
+      dfd.reject();
+    }).done(function() {
+      log('Getting {0} items from DB objectStore {1} took {2}ms, waiting time: {3}'.format(results.length + promises.length, storeName, _.now() - start | 0, waitingTime | 0));
+      dfd.resolve(results);
+//      if (promises.length) {
+//        $.when.apply($, promises).done(function() {
+//          dfd.resolve(results);
+//        }).fail(dfd.reject);
+//      }
+//      else
+//        dfd.resolve(results);
+    });
     
     return overallPromise; 
-  }
+  };
+
   
   /**
    * @storeName - name of the object store to query
@@ -706,12 +982,16 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     // do them consecutively instead of in parallel because we don't want the db transaction to timeout in case prep() needs time to store stuff to the fileSystem
     // if prep doesn't involve saving files to the fileSystem, it's synchronous and takes very little time
     return prep(items).then(function(items) {      
-      return instance.$idb.transaction(storeName, IDBTransaction.READ_WRITE).progress(function(trans) {
+      return instance.$idb.transaction(storeName, READ_WRITE).progress(function(trans) {
         var store = trans.objectStore(storeName);
         for (var i = 0, len = items.length; i < len; i++) {
           store.put(items[i]);
         }
-      });
+      }).fail(function() {
+        debugger;
+      })
+    }).fail(function() {
+      debugger;
     });
   }
   
@@ -725,9 +1005,9 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
 
   function del(storeName, primaryKeys) {
     log('db', 'deleting items', primaryKeys.join(', '));
-    return this.$idb.transaction([storeName], IDBTransaction.READ_WRITE).progress(function(trans) {
+    return this.$idb.transaction([storeName], READ_WRITE).progress(function(trans) {
       var store = trans.objectStore(storeName);
-      _.each(primaryKeys, function(primaryKey) {
+      primaryKeys.forEach(function(primaryKey) {
         store['delete'](primaryKey).done(function() {
           log('db', 'deleted', primaryKey);
         });
@@ -777,6 +1057,9 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     return this._queueTask('open object store {0}'.format(storeName), wrapper);
   };
   
+//  _.toTimedFunction(IDB.prototype, 'search');
+//  search = _.toTimedFunction(search);
+//  _parse = _.toTimedFunction(_parse);
   return (Lablz.IDB = {
     getIDB: getIDB
   });

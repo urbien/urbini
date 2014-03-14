@@ -48,7 +48,8 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
   };
 
   Synchronizer.prototype._fetchFromServer = function(delay) {
-    var options = this.options,
+    var self = this,
+        options = this.options,
         url = options.url,
         dfd, 
         promise,
@@ -105,15 +106,13 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
     var intermediatePromise;
     if (this._isSyncRequest() || !G.hasWebWorkers)
       intermediatePromise = this._defaultSync();
-    else {
-      intermediatePromise = U.ajax({url: options.url, type: 'GET', headers: options.headers}).always(function() {
-        this.data.lastFetchOrigin = 'server';
-      }.bind(this));
-    }
+    else
+      intermediatePromise = U.ajax({url: options.url, type: 'GET', headers: options.headers});
       
     intermediatePromise.done(function(data, status, xhr) {
-      dfd.resolveWith(this.data, [data, status, xhr]);
-    }.bind(this)).fail(function(xhr, status, msg) {
+      self.data.lastFetchOrigin = 'server';
+      dfd.resolveWith(self.data, [data, status, xhr]);
+    }).fail(function(xhr, status, msg) {
   //    if (xhr.status === 304)
   //      return;
       
@@ -135,7 +134,6 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
     this.options.success = function() {
       G.finishedTask(tName);
       self.data.lastFetchOrigin = 'server';
-      self._success.apply(self.data, arguments);
     }
     
     return Backbone.defaultSync(this.method, this.data, this.options);

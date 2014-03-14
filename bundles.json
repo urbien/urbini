@@ -7,23 +7,23 @@
  	  '../templates.jsp'
   ],
   post: [
- 		'views/MessageBar.js', 'tourGuide.js', 'views/ResourceView.js', 'views/ControlPanel.js', 'views/Header.js', 'views/BackButton.js', 'views/MapItButton.js', 'views/AddButton.js', 'views/RightMenuButton.js', 'views/LoginButton.js', 'views/ToggleButton.js', 'views/ResourceImageView.js', 
-	  'views/EditPage.js', 'views/EditView.js', 'views/ResourceListItemView.js', 'views/ResourceListView.js', 'views/CommentListView.js', 'views/ResourceMasonryItemView.js', 'views/CommentListItemView.js', 'views/ListPage.js', 'views/ViewPage.js', 'views/MenuPanel.js', 'views/ContextMenuPanel.js',
-	  'views/ContextMenuPanel.js', 'views/PublishButton.js', 'lib/mobiscroll-datetime-min.js', 'mobiscroll-duration.js', 'views/IntersectionListView.js', 'views/IntersectionListItemView.js', 'views/HorizontalListView.js', 'views/HorizontalListItemView.js', 'views/ChatPage.js', 'views/VideoButton.js', 
-	  'views/ToggleButton1.js', 'views/ChatButton.js', 'views/CallInProgressHeader.js', 'chrome.js', 'firefox.js', 
-	  '../styles/mobiscroll.datetime.min.css'
+ 		'views/ResourceView.js', 'views/ControlPanel.js', 'views/Header.js', 'views/BackButton.js', 'views/MapItButton.js', 'views/AddButton.js', 'views/RightMenuButton.js', 'views/LoginButton.js', 'views/ToggleButton.js', 'views/ResourceImageView.js', 
+	  'views/ResourceListItemView.js', 'views/ResourceListView.js', 'views/ResourceMasonryItemView.js', 'views/ListPage.js', 'views/ViewPage.js', 'views/SaveButton.js', 'views/CancelButton.js',
+	  'views/ToggleButton1.js', 'chrome.js', 'firefox.js' 
   ],
   extras: [
-		'views/MapView.js', 'lib/leaflet.js', 'lib/leaflet.markercluster.js', 'maps.js', 'lib/codemirror.js', 'lib/codemirrorXMLMode.js', 'lib/codemirrorHTMLMode.js', 'lib/codemirrorJSMode.js', 'lib/codemirrorCSSMode.js', 'views/CameraPopup.js', 'lib/whammy.js',
-		'lib/recorder.js', 'lib/recorderWorker.js', 'lib/socket.io.js', 'lib/simplewebrtc.js', 'fileSystem.js', 'lib/jquery.draggable.js', 'lib/d3.js', 'd3widgets.js', 'views/SocialNetworkPage.js', 'views/StaticPage.js',
-		'../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css', '../styles/leaflet/leaflet.ie.css', '../styles/leaflet/MarkerCluster.Default.ie.css', '../styles/mobiscroll.datetime.min.css', '../styles/codemirror.css'
+		'views/EditPage.js', 'views/EditView.js', 'views/ChatPage.js', 'views/HorizontalListView.js', 'views/HorizontalListItemView.js', 'views/VideoButton.js', 'views/CallInProgressHeader.js', 'lib/mobiscroll-datetime-min.js', 'mobiscroll-duration.js', 
+		'views/IntersectionListView.js', 'views/IntersectionListItemView.js', 'views/MapView.js', 'lib/leaflet.js', 'lib/leaflet.markercluster.js', 'maps.js', 'lib/codemirror.js', 'lib/codemirrorXMLMode.js', 'lib/codemirrorHTMLMode.js', 'lib/codemirrorJSMode.js', 'lib/codemirrorCSSMode.js', 
+		'views/CameraPopup.js', 'lib/whammy.js', 'lib/recorder.js', 'lib/recorderWorker.js', 'lib/socket.io.js', 'lib/simplewebrtc.js', 'fileSystem.js', 'lib/jquery.draggable.js', 'lib/d3.js', 'd3widgets.js', 'views/SocialNetworkPage.js', 'views/StaticPage.js',
+		'views/CommentListView.js', 'views/CommentListItemView.js', 'views/PublishButton.js', 'views/ChatButton.js', 'views/MessageBar.js', 'tourGuide.js', 'views/MenuPanel.js', 'views/MainMenuPanel.js', 'views/ContextMenuPanel.js', 'views/ModalDialog.js',
+		'../styles/mobiscroll.datetime.min.css', '../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css', '../styles/leaflet/leaflet.ie.css', '../styles/leaflet/MarkerCluster.Default.ie.css', '../styles/mobiscroll.datetime.min.css', '../styles/codemirror.css'
   ],
   appcache: [
   	'lib/physicsjs-custom.js', 'lib/jquery.masonry.js', 'loader.js', 'simpleRequirePlusJQuery.js', 'bootoffline.js'
   ],
   widgetsFramework: {
     bb: [
-    	'lib/bb/style/buttons.css', 'lib/bb/style/action_menu.css', 'lib/bb/style/headers.css', 'lib/bb/style_unstable/lists.css', 'lib/bb/style_unstable/drawer.css', 'lib/bb/style_unstable/seekbars.css', 'lib/bb/style/switches.css', '../styles/bb_styles.css',
+    	'lib/bb/style/buttons.css', 'lib/bb/style/action_menu.css', 'lib/bb/style/headers.css', 'lib/bb/style_unstable/lists.css', 'lib/bb/style_unstable/drawer.css', 'lib/bb/style/switches.css', '../styles/bb_styles.css',
     	'../templates_bb.jsp'
     ],
     topcoat: [

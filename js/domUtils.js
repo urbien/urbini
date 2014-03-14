@@ -2,20 +2,22 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
   var doc = document,
       LAZY_DATA_ATTR = G.lazyImgSrcAttr,
       LAZY_ATTR = LAZY_DATA_ATTR.slice(5),
+      MAX_OPACITY = 0.999999,
       isFF = G.browser.firefox,
       vendorPrefixes = ['-moz-', '-ms-', '-o-', '-webkit-'],
       ArrayProto = Array.prototype,
       resizeTimeout,
+      DOM,
       cssPrefix = {
-        read: {},
-        write: {}
+//        read: {},
+//        write: {}
       },
       renderQueue = [],
       tmpdiv = document.createElement("div"),
       OPAQUE_STYLE = {
         style: {
           add: {
-            opacity: 1
+            opacity: MAX_OPACITY
           }
         }
       },
@@ -39,7 +41,8 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
             visibility: 'hidden'
           }
         }
-      };
+      },
+      isMoz = G.browser.mozilla;
 
   window.addEventListener('resize', function(e) {
     clearTimeout(resizeTimeout);
@@ -194,13 +197,13 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
             return this.style[arg0];
           else {
             for (var prop in arg0) {
-              this.style[prop] = arg0[prop];
+              this.style[DOM.prefix(prop)] = arg0[prop];
             }
           }
           
           break;
         case 2:
-          this.style[arguments[0]] = arguments[1];
+          this.style[DOM.prefix(arguments[0])] = arguments[1];
           break;
         default:
           throw "invalid arguments to style method of Node";
@@ -294,28 +297,32 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       },
       
       $empty: function() {
-        this.innerHTML = "";
+        while (this.lastChild) {
+//        this.innerHTML = "";
+          this.removeChild(this.lastChild); // http://jsperf.com/removechild-vs-innerhtml-empty/5
+        }
+        
         return this;
       },
       
       $html: function(htmlOrFrag) {
-        if (typeof htmlOrFrag == 'string') {
-          this.innerHTML = htmlOrFrag;
-          return this;
-        }
+        if (typeof htmlOrFrag == 'string')
+          return this.$html(DOM.parseHTML(htmlOrFrag));
         
         return this.$empty().$append(htmlOrFrag);        
       }
-    },
-        
-    noOffset = {
-      top: 0,
-      left: 0
     };
-    
+        
     var NodeAug = {
       $: function(selector) {
-        return this.nodeType == 1 ? this.querySelectorAll(selector) : newNodeList();
+        switch (this.nodeType) {
+        case 1:
+        case 9:
+        case 11:
+          return this.querySelectorAll(selector);
+        default:
+          return newNodeList();
+        }
       },
     
       $offset: function() {
@@ -343,7 +350,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
             offsetParent = this.offsetParent, // maybe use jQuery's offsetParent?
             style = win.getComputedStyle(this),
             parentStyle = win.getComputedStyle(offsetParent),
-            parentOffset = offset.nodeName == 'HTML' ? noOffset : offsetParent.$offset(),
+            parentOffset = offset.nodeName == 'HTML' ? { top: 0, left: 0 } : offsetParent.$offset(),
             marginTop = 0,
             marginLeft = 0;
         
@@ -400,7 +407,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           }
           
           if (typeof htmlOrFrag == 'string')
-            htmlOrFrag = $.parseHTML(htmlOrFrag);
+            htmlOrFrag = DOM.parseHTML(htmlOrFrag);
           
           (htmlOrFrag instanceof Array) ? htmlOrFrag[0].$before(this.firstChild) : htmlOrFrag.$before(this.firstChild);
 //           htmlOrFrag.$before(this.firstChild);
@@ -412,14 +419,20 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       $append: function(/* htmlOrFrag, htmlOrFrag, ... */) {
         for (var i = 0; i < arguments.length; i++) {
           var htmlOrFrag = arguments[i];
-          if (typeof htmlOrFrag == 'string')
-            this.innerHTML += htmlOrFrag;
-//            this.$append($.parseHTML(htmlOrFrag));
+          if (typeof htmlOrFrag == 'string') {
+            this.$append(DOM.parseHTML(htmlOrFrag));
+            continue;
+          }
           else if (htmlOrFrag instanceof Node)
             this.appendChild(htmlOrFrag);
-          else if (htmlOrFrag instanceof Array || htmlOrFrag instanceof NodeList) {
-            for (var j = 0; j < htmlOrFrag.length; j++) {
+          else if (htmlOrFrag instanceof Array || htmlOrFrag instanceof NodeList || htmlOrFrag instanceof HTMLCollection) {
+            for (var j = 0, l = htmlOrFrag.length; j < l; j++) {
               this.appendChild(htmlOrFrag[j]);
+              if (htmlOrFrag.length < l) {
+                // we're appending a live collection, so with every element we append, the collection gets smaller
+                j--;
+                l--;
+              }
             }
           }
           else
@@ -475,7 +488,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           right: parseFloat(style.marginRight || 0)
         }
       },
-      
+
       $outerHeight: function(includeMargin) {
         if (!includeMargin)
           return this.offsetHeight;
@@ -573,7 +586,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     }
   })(window, document);
 
-  return {
+  DOM = {
     getBezierCoordinate: function(p1x, p1y, p2x, p2y, p3x, p3y, p4x, p4y, percentComplete) {
       percentComplete = Math.max(0, Math.min(percentComplete, 1));
       var percent = 1 - percentComplete;
@@ -619,17 +632,8 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       //return the y value.
       return bezier[1];
     },
-    getNewIdentityMatrix: function(n) {
-      n = n || 4;
-      var rows = new Array(n);
-      for (var i = 0; i < n; i++) {
-        rows[i] = new Array(n);
-        for (var j = 0; j < n; j++) {
-          rows[i][j] = +(i==j);
-        }
-      }
-      
-      return rows;
+    getNewIdentityTransform: function(n) {
+      return [1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1];
     },
 
     identityTransformString: function() {
@@ -638,29 +642,23 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     
     parseTransform: function(transformStr) {
       if (!transformStr || transformStr == 'none')
-        return this.getNewIdentityMatrix(4);
+        return this.getNewIdentityTransform();
       
       var split = transformStr.slice(transformStr.indexOf('(') + 1).split(', '),
           xIdx = split.length == 6 ? 4 : 12,
           yIdx = xIdx + 1; 
 
-      split = _.map(split, parseFloat.bind(window));
+      split = split.map(parseFloat.bind(window));
       if (split.length == 6) {
         return [
-          [split[0], split[2], 0, 0],
-          [split[2], split[3], 0, 0],
-          [0,        0,        1, 0],
-          [split[4], split[5], 0, 1]
+          split[0], split[2], 0, 0,
+          split[2], split[3], 0, 0,
+          0,        0,        1, 0,
+          split[4], split[5], 0, 1
         ];
       }
-      else {
-        return [
-          split.slice(0, 4),
-          split.slice(4, 8),
-          split.slice(8, 12),
-          split.slice(12)
-        ];
-      }
+      else
+        return split;
     },
 
     getTranslationString: function(position) {
@@ -697,8 +695,9 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       if (match) {
         var matrix = this.parseTransform(transformStr);
         return {
-          X: matrix[3][0],
-          Y: matrix[3][1]
+          X: matrix[12],
+          Y: matrix[13],
+          Z: matrix[14]
         }
       }
       
@@ -713,8 +712,15 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           Z: parseFloat(xyz[2] || 9, 10)
         }
       }
-      
-      throw "can't parse transform";
+      else {
+        return {
+          X: 0,
+          Y: 0,
+          Z: 0
+        }
+      }
+
+//      throw "can't parse transform";
     },
     
     getStylePropertyValue: function(computedStyle, prop) {
@@ -733,7 +739,14 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     },
     
     toMatrix3DString: function(transform) {
-      return 'matrix3d(' + transform[0].join(',') + ',' + transform[1].join(',') + ',' + transform[2].join(',') + ',' + transform[3].join(',') + ')';
+      var transformStr = 'matrix3d(';
+      for (var i = 0; i < 16; i++) {
+        transformStr += transform[i].toFixed(10);
+        if (i != 15)
+          transformStr += ", ";
+      }
+      
+      return transformStr + ")";
     },
 
     setStylePropertyValues: function(style, propMap) {
@@ -1046,51 +1059,58 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
         return parseInt(height);
     },
 
-    positionToMatrix3D: function(x, y, z) {
-      return [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [x || 0, y || 0, z || 0, 1]
-      ];
-    },
-    
-    positionToMatrix3DString: function(x, y, z) {
-      return 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, ' + (x || 0) + ', ' + (y || 0) + ', ' + (z || 0) + ', 1)';
-    },
+//    positionToMatrix3D: function(x, y, z) {
+//      return [
+//        [1, 0, 0, 0],
+//        [0, 1, 0, 0],
+//        [0, 0, 1, 0],
+//        [x || 0, y || 0, z || 0, 1]
+//      ];
+//    },
+//    
+//    positionToMatrix3DString: function(x, y, z) {
+//      return 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, ' + (x || 0) + ', ' + (y || 0) + ', ' + (z || 0) + ', 1)';
+//    },
    
-    /**
-     * From wellcaffeinated's PhysicsJS
-     */
-    prefix: function(prop, write) {
-      var val;
-      if (val = cssPrefix[write ? 'write' : 'read'][prop]) {
-        return val;
+    prefix: function(prop) {
+      if (cssPrefix[prop]){
+        return cssPrefix[prop];
       }
 
       var arrayOfPrefixes = ['Webkit', 'Moz', 'Ms', 'O'],
-          docElStyle = document.documentElement.style,
+          TitleCase = toTitleCase(prop),
+          titleCase = TitleCase.slice(0, 1).toLowerCase() + TitleCase.slice(1),
           name;
 
+      if (isMoz) {
+        switch (prop) {
+        case 'transform':
+        case 'perspective':
+        case 'transform-origin':
+        case 'transition':
+          return cssPrefix[prop] = prop;
+        default:
+          // handle as usual
+          break;
+        }
+      }
+      
       for (var i = 0, l = arrayOfPrefixes.length; i < l; ++i) {
-        name = arrayOfPrefixes[i] + toTitleCase(prop);
+        name = arrayOfPrefixes[i] + TitleCase;
 
-        if (name in docElStyle) {
-          cssPrefix.read[prop] = name;
-          cssPrefix.write[prop] = '-' + arrayOfPrefixes[i].toLowerCase() + '-' + prop.toLowerCase();
-          return this.prefix(prop, write);
+        if (name in tmpdiv.style){
+          return cssPrefix[prop] = name;
         }
       }
 
-      if (prop in docElStyle) {
-        cssPrefix.read[prop] = prop;
-        cssPrefix.write[prop] = prop;
-        return this.prefix(prop, write);
+      if (titleCase in tmpdiv.style){
+        return cssPrefix[prop] = titleCase;
       }
-      
-      throw "no such CSS prop: " + prop;
+
+      G.log("DOMUtils", "error", "no such css property: " + prop);
+      return false;
     },
-    
+
     /**
      * @param renderData - e.g. {
      *    innerHTML: <blah>...</blah>
@@ -1212,8 +1232,26 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       }
     },
 
+    maxOpacity: MAX_OPACITY,
+    
+    /**
+     * IMPORTANT: returns a live NodeList (meaning if you start taking its nodes and appending them somewhere, the collection length WILL change automatically)
+     */
     parseHTML: function(html) {
-      return $.parseHTML(html.trim());
+//      return $.parseHTML(html);
+//      var tmp = document.createDocumentFragment(),
+      var div = document.createElement('div');
+      
+//      tmp.appendChild(div);
+      div.innerHTML = html;
+      return div.childNodes; // live NodeList
+//      var tmp = document.implementation.createHTMLDocument();
+//      tmp.body.innerHTML = html;
+//      tmp.innerHTML = html;
+//      return tmp.body.children; // live NodeList
+//      var copy = tmp.body.childNodes.$slice();
+//      tmp.body.$empty(); //childNodes.$remove();
+//      return copy;
     },
     
     /**
@@ -1232,4 +1270,6 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
     hideStyle: HIDE_STYLE,
     showStyle: SHOW_STYLE
   };
+  
+  return DOM;
 });

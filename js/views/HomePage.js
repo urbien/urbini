@@ -4,13 +4,14 @@ define('views/HomePage', [
   'events',
   'utils',
   'views/BasicPageView',
-  'views/RightMenuButton'
-], function(G, Events, U, BasicPageView, MenuButton) {
+  'domUtils'
+], function(G, Events, U, BasicPageView, DOM) {
   return BasicPageView.extend({
     TAG: 'HomePage',
     first: true,
     viewId: 'viewHome',
     style: {
+      opacity: DOM.maxOpacity,
       display: 'block'
     },
     initialize: function(options) {
@@ -81,6 +82,14 @@ define('views/HomePage', [
     
     render: function(options) {
       var self = this;
+      return U.require('views/RightMenuButton').done(function(rmb) {
+        MenuButton = rmb;
+        self.renderHelper(options);
+      });
+    },
+    
+    renderHelper: function(options) {
+      var self = this;
       
       if (!this.rendered) {
         this.addToWorld(null, true);
@@ -91,7 +100,8 @@ define('views/HomePage', [
         this.menuBtn = new MenuButton({
           el: menuBtnEl,
           pageView: this,
-          viewId: this.viewId
+          viewId: this.viewId,
+          homePage: true
         });
         
         this.menuBtn.render();

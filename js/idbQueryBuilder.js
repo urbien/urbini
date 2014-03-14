@@ -231,7 +231,7 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'indexedDB'], funct
         }
       }
       else
-        query = Index(orderBy[0].shortName, asc ? IDBCursor.NEXT : IDBCursor.PREV).all();
+        query = Index(orderBy[0].shortName).all().setDirection(asc ? IDBCursor.NEXT : IDBCursor.PREV);
       
 //        }
 //        else

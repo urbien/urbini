@@ -1582,6 +1582,18 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
     };
 
     /**
+     * From Three.js
+     */
+    Vector.prototype.angle3d = function ( v ) {
+
+      var theta = this.dot( v ) / ( this.norm() * v.norm() );
+      theta = min( max( -1, theta ), 1 );
+      // clamp, to handle numerical problems
+
+      return acos( theta );
+    };
+    
+    /**
      * Get the norm (length)
      */
     Vector.prototype.norm = function() {
@@ -1908,70 +1920,70 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
         return this;
     };
   
-    /**
-     * HACK - Locks the axes of this vector to ranges
-   * @param {Object} Ex: { x: 10 } will lock the x axis of this vector to a range of size 10 around the current x value
-     */
-  var vFns = ['set', 'add', 'vadd', 'sub', 'vsub', 'mult', 'perp', 'clone', 'zero', 'negate', 'clamp'];
-  Vector.prototype.lock = function(lock) {
-    var self = this,
-      minVals = [],
-      maxVals = [];
-    
-    if (this._axisLock)
-      this.unlock();
-      
-    this._axisLock = lock;
-    ['x', 'y', 'z'].forEach(function(axis, index) {
-      if (lock.hasOwnProperty(axis)) {
-        if (typeof lock[axis] == 'number') {
-          // interpret as allowed range around current value
-          minVals[index] = self._[index] - lock[axis] / 2;
-          maxVals[index] = self._[index] + lock[axis] / 2;
-        }
-        else {
-          minVals[index] = lock[axis].min;
-          maxVals[index] = lock[axis].max;
-        }
-      }
-    });
-          
-    vFns.forEach(function(fn) {
-      var orig = self[fn];
-      self[fn] = function() {
-        try {
-          return orig.apply(this, arguments);
-        } finally {
-          for (var i = 0; i < 3; i++) {
-            if (typeof maxVals[i] == 'number')
-              this._[i] = min(this._[i], maxVals[i]);
-            if (typeof minVals[i] == 'number')
-              this._[i] = max(this._[i], minVals[i]);
-          }           
-          
-          this.recalc = true;
-        };
-      };
-    });
-  };
-  
-    /**
-     * HACK - Unlocks the axes of this vector
-     */
-  Vector.prototype.unlock = function() {
-    var self = this,
-      lock = this._axisLock;
-    
-    if (this._axisLock) {
-      vFns.forEach(function(fn) {
-        self[fn] = Vector.prototype[fn];
-      });
-      
-      this._axisLock = null;
-    }
-    
-    return lock;
-  };
+//    /**
+//     * HACK - Locks the axes of this vector to ranges
+//   * @param {Object} Ex: { x: 10 } will lock the x axis of this vector to a range of size 10 around the current x value
+//     */
+//  var vFns = ['set', 'add', 'vadd', 'sub', 'vsub', 'mult', 'perp', 'clone', 'zero', 'negate', 'clamp'];
+//  Vector.prototype.lock = function(lock) {
+//    var self = this,
+//      minVals = [],
+//      maxVals = [];
+//    
+//    if (this._axisLock)
+//      this.unlock();
+//      
+//    this._axisLock = lock;
+//    ['x', 'y', 'z'].forEach(function(axis, index) {
+//      if (lock.hasOwnProperty(axis)) {
+//        if (typeof lock[axis] == 'number') {
+//          // interpret as allowed range around current value
+//          minVals[index] = self._[index] - lock[axis] / 2;
+//          maxVals[index] = self._[index] + lock[axis] / 2;
+//        }
+//        else {
+//          minVals[index] = lock[axis].min;
+//          maxVals[index] = lock[axis].max;
+//        }
+//      }
+//    });
+//          
+//    vFns.forEach(function(fn) {
+//      var orig = self[fn];
+//      self[fn] = function() {
+//        try {
+//          return orig.apply(this, arguments);
+//        } finally {
+//          for (var i = 0; i < 3; i++) {
+//            if (typeof maxVals[i] == 'number')
+//              this._[i] = min(this._[i], maxVals[i]);
+//            if (typeof minVals[i] == 'number')
+//              this._[i] = max(this._[i], minVals[i]);
+//          }           
+//          
+//          this.recalc = true;
+//        };
+//      };
+//    });
+//  };
+//  
+//    /**
+//     * HACK - Unlocks the axes of this vector
+//     */
+//  Vector.prototype.unlock = function() {
+//    var self = this,
+//      lock = this._axisLock;
+//    
+//    if (this._axisLock) {
+//      vFns.forEach(function(fn) {
+//        self[fn] = Vector.prototype[fn];
+//      });
+//      
+//      this._axisLock = null;
+//    }
+//    
+//    return lock;
+//  };
 
     /**
      * Render string
@@ -2138,8 +2150,8 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
          * @return {void}
          */
         init: function( options ){
-
-            var vector = Physics.vector;
+            var body = this,
+                vector = Physics.vector;
 
             this.options = Physics.util.extend({}, defaults, options);
 
@@ -2188,10 +2200,28 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
                 }
             };
             
+            if (this.mass === 0){
+                throw "Error: Bodies must have non-zero mass";
+            }
+
+            // shape
+            this.geometry = Physics.geometry('point');
+            
+            if (this.options.renderTo) {
+              this.state.renderData = this.options.renderTo.state.renderData;
+              return;
+            }
+            
             Physics.util.extend(this.state.renderData, {
+              encoded: [],
               changed: [],
               json: {
-                opacity: 0
+                opacity: 0,
+                scale: [1, 1, 1],
+                rotate: [0, 0, 0],
+                skew: [0, 0, 0],
+                transform: [],
+                'transform-origin': '0% 0%'
               },
               isChanged: function(prop) {
                 if (prop)
@@ -2205,9 +2235,12 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
               get: function(prop) {
                 return this.json[prop];
               },
-              set: function(prop, val) {
-                if (!this.json.hasOwnProperty(prop)) {
-                  if (!this.isChanged(prop))
+              set: function(prop, val, unit, silent) {
+                if (unit)
+                  val = val + unit;
+                
+                if (this.json[prop] == null) {
+                  if (!silent && !this.isChanged(prop))
                     this.changed.push(prop);
                   this.json[prop] = typeof val == 'object' ? Physics.util.clone(val) : val;
                   return;
@@ -2229,27 +2262,43 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
                     
                     if (diff) {
                       Physics.util.extend(this.json[prop], val);
-                      this.changed.push(prop);
+                      if (!silent && !this.isChanged(prop))
+                        this.changed.push(prop);
                     }
                     
                     break;
                   default:
                     this.json[prop] = val;
-                    if (!this.isChanged(prop))
+                    if (!silent && !this.isChanged(prop))
                       this.changed.push(prop);
+                    
+                    break;
                 }
+              },
+              getChanges: function(clone) {
+//                if (!body.rendered())
+//                  return this.toJSON(clone);
+                
+                var i = this.changed.length,
+                    prop,
+                    val,
+                    changes = {};
+                
+                while (i--) {
+                  prop = this.changed[i];
+                  val = this.json[prop];
+                  if (clone && typeof val == 'object')
+                    changes[prop] = Physics.util.clone(val, true);
+                  else
+                    changes[prop] = val;
+                }
+                
+                return changes;
               },
               toJSON: function(clone) {
                 return clone ? Physics.util.clone(this.json, true) : this.json;
               }
             });
-
-            if (this.mass === 0){
-                throw "Error: Bodies must have non-zero mass";
-            }
-
-            // shape
-            this.geometry = Physics.geometry('point');
         },
 
         /**
@@ -2261,6 +2310,28 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
 
             this.state.acc.vadd( acc );
             return this;
+        },
+        
+        /**
+         * Stop the body
+         * @param {Mixed} atPos   (optional) position to stop body at - Vector or coordinate list
+         * @return {this}
+         */
+        stop: function(atPos) {
+          if (typeof atPos != 'undefined') {
+            if (atPos instanceof Physics.vector)
+              this.state.pos.clone(atPos);
+            else
+              this.state.pos.set.apply(this.state.pos, arguments);
+          }
+          
+          this.state.old.pos.clone(this.state.pos);
+          this.state.acc.zero();
+          this.state.old.acc.zero();
+          this.state.vel.zero();
+          this.state.old.vel.zero();
+
+          return this;
         },
 
         /**
@@ -2656,9 +2727,11 @@ Physics.geometry.getPolygonCentroid = function getPolygonCentroid( hull ){
  * @param  {Vectorish} pt The point
  * @param  {Vectorish} linePt1 The first endpoint of the line
  * @param  {Vectorish} linePt2 The second endpoint of the line
+ * @param  {Vectorish} linePt2 The second endpoint of the line
+ * @param  {Vector} out (optional) The vector to write the result to
  * @return {Vector} The closest point
  */
-Physics.geometry.nearestPointOnLine = function nearestPointOnLine( pt, linePt1, linePt2 ){
+Physics.geometry.nearestPointOnLine = function nearestPointOnLine( pt, linePt1, linePt2, out ){
 
     var scratch = Physics.scratchpad()
         ,p = scratch.vector().clone( pt )
@@ -2668,11 +2741,12 @@ Physics.geometry.nearestPointOnLine = function nearestPointOnLine( pt, linePt1, 
         ,lambdaA
         ;
 
+    out = out || Physics.vector();
     if ( L.equals(Physics.vector.zero) ){
         // oh.. it's a zero vector. So A and B are both the closest.
         // just use one of them
         scratch.done();
-        return Physics.vector( linePt1 );
+        return out.clone( linePt1 );
     }
 
     lambdaB = - L.dot( A ) / L.normSq();
@@ -2682,17 +2756,17 @@ Physics.geometry.nearestPointOnLine = function nearestPointOnLine( pt, linePt1, 
         // woops.. that means the closest simplex point
         // isn't on the line it's point B itself
         scratch.done();
-        return Physics.vector( linePt2 );
+        return out.clone( linePt2 );
     } else if ( lambdaB <= 0 ){
         // vice versa
         scratch.done();
-        return Physics.vector( linePt1 );
+        return out.clone( linePt1 );
     }
 
     // guess we'd better do the math now...
-    p = Physics.vector( linePt2 ).mult( lambdaB ).vadd( A.clone( linePt1 ).mult( lambdaA ) );
+    out.clone( linePt2 ).mult( lambdaB ).vadd( A.clone( linePt1 ).mult( lambdaA ) );
     scratch.done();
-    return p;
+    return out;
 };
 
 
@@ -2734,6 +2808,19 @@ Physics.geometry.nearestPointOnLine = function nearestPointOnLine( pt, linePt1, 
         integrate: function( bodies, dt ){
 
             var world = this._world;
+//            ,
+//                state,
+//                i = bodies.length;
+//            
+//            while (i--) {
+//              state = bodies[i].state;
+//              
+////              // store acceleration
+////              state.old.acc.clone( state.vel ).vsub( state.old.vel );
+//              
+//              // store calculated velocity
+//              state.old.vel.clone( state.vel );
+//            }
 
             this.integrateVelocities( bodies, dt );
             
@@ -3686,10 +3773,13 @@ Physics.integrator('verlet', function( parent ){
                     // normalize velocity 
                     state.vel.mult( 1/dt );
 
+                    // store acceleration
+                    state.old.acc.clone( state.vel ).vsub( state.old.vel );                    
+
                     // store calculated velocity
                     state.old.vel.clone( state.vel );
 
-                    // Reset accel
+                    // Reset acceleration
                     state.acc.zero();
 
                     //
@@ -4240,6 +4330,13 @@ Physics.behavior('verlet-constraints', function( parent ){
       this.breakOn(function() {
         return !aabb.contains(body);
       });
+    },
+    
+    breakOnStop: function(body, thresh) {
+      thresh = thresh || 0;
+      this.breakOn(function() {
+        return body.state.vel.norm() <= thresh;
+      });      
     }
   };
 
@@ -4372,6 +4469,7 @@ Physics.behavior('verlet-constraints', function( parent ){
           if (data.body == args[i]) {
             self._world.unsubscribe('remove:body', removeConstraint);
             self.remove(cst);
+            break;
           }
         }
       });
@@ -4676,6 +4774,232 @@ Physics.behavior('verlet-constraints', function( parent ){
             };
         }
     };
+});
+
+/**
+ * Rigid rails manager.
+ * Put a body on rails to constrain its motion to a direction or a path
+ * @module behaviors/rails
+ */
+Physics.behavior('rails', function( parent ){
+
+  var defaults = {
+  };
+
+  return {
+
+    /**
+     * Initialization
+     * @param  {Object} options Configuration object
+     * @return {void}
+     */
+    init: function( options ){
+  
+      parent.init.call(this, options);
+  
+      Physics.util.extend(this.options, defaults, options);
+  
+      this._rails = [];
+      this._onRemoveBody = this._onRemoveBody.bind(this);
+    },
+  
+    /**
+     * Connect to world. Automatically called when added to world by the setWorld method
+     * @param  {Object} world The world to connect to
+     * @return {void}
+     */
+    connect: function( world ){
+      world.subscribe('beforeRender', this.resolve, this);
+      world.subscribe('integrate:velocities', this.resolve, this);
+      world.subscribe('remove:body', this._onRemoveBody);
+    },
+  
+    /**
+     * Disconnect from world
+     * @param  {Object} world The world to disconnect from
+     * @return {void}
+     */
+    disconnect: function( world ){
+      world.unsubscribe('beforeRender', this.resolve);
+      world.unsubscribe('integrate:velocities', this.resolve);
+      world.unsubscribe('remove:body', this._onRemoveBody);
+    },
+  
+    /**
+     * Remove all rails
+     * @return {self}
+     */
+    clear: function(){
+  
+      // remove all current rails
+      var rails = this._rails,
+          rail,
+          i = rails.length;
+  
+      while (i--) {
+        rail = rails[i];
+        rails.length--;
+      }
+  
+      return this;
+    },
+  
+    _onRemoveBody: function(data) {
+      var body = data.body,
+          rails = this._rails,
+          rail,
+          idx,
+          i = rails.length;
+  
+      while (i--) {
+        rail = rails[i];
+        if (~(idx = rail.bodies.indexOf(body))) {
+          rail.bodies.splice(idx, 1);
+          if (!rail.bodies.length) {
+            world.removeBody(rail.railBody);
+            rails.splice(i, 1);
+          }
+          
+          break;
+        }
+      }
+    },
+  
+    addBodyToRail: function(rail, body) {
+      rail.bodies.push(body);
+    },
+    
+    /**
+     * Constrain two bodies to a target relative distance
+     * @param  {Object} body        First body
+     * @param  {Vector} from        Railroad track endpoint (or direction)
+     * @param  {Vector} to          (optional) Railroad track other endpoint
+     * @return {object}             The rails object, which holds .body and .railBody references to the bodies, .id the string ID of the rail, 
+                        .from and .to the endpoints of the rail, .length the length of the rail, and .direction the unit vector from from->to
+     */
+    rail: function( body, from, to ){
+  
+      var rail,
+          railBody;
+  
+      if (!body || !from) {
+        
+        return false;
+      }
+  
+      railBody = Physics.body('point', Physics.util.extend({
+        _id: 'rail-' + (body.options._id || Physics.util.uniqueId('rail-constraint')),
+        hidden: true,
+        renderTo: body
+      }, body.state.pos.values()));
+  
+      rail = {
+          id: railBody.options._id, // a body can't be on two rails simultaneously
+          finite: arguments.length == 3,
+          bodies: [body],
+          railBody: railBody
+      };
+      
+      if (to) {
+        rail.from = from;
+        rail.to = to;
+        rail.dir = Physics.vector().clone(to).vsub(from).normalize();
+        rail.length = from.dist(to);
+      }
+      else
+        rail.dir = from.normalize();
+      
+      rail.offset = Physics.vector(rail.railBody.state.pos);
+      world.addBody(railBody);
+      this._rails.push(rail);
+  
+      return rail;
+    },
+  
+    /**
+     * Remove a rail
+     * @param  {Mixed} indexRailOrId Either the rail object, the rail id, or the numeric index of the rail
+     * @return {self}
+     */
+    remove: function( indexRailOrId ){
+  
+      var rails = this._rails
+          ,isObj
+          ;
+  
+      if (typeof indexRailOrId === 'number'){
+  
+        rails.splice( indexRailOrId, 1 );
+        return this;   
+      }
+  
+      isObj = Physics.util.isObject( indexRailOrId );
+  
+      for ( var i = 0, l = rails.length; i < l; ++i ){
+  
+        if ( (isObj && rails[ i ] === indexRailOrId) ||
+            ( !isObj && rails[ i ].id === indexRailOrId) ){
+  
+          rails.splice( i, 1 );
+          return this;
+        }
+      }
+  
+      return this;
+    },
+  
+    /**
+     * Resolve rails
+     * @return {void}
+     */
+    resolve: function(){
+  
+      var rails = this._rails
+          ,rail
+          ,bodies
+          ,body
+          ,offset
+          ,scratch = Physics.scratchpad()
+          ,from = scratch.vector()
+          ,to = scratch.vector()
+          ;
+  
+      for ( var i = 0, l = rails.length; i < l; ++i ){
+  
+        rail = rails[ i ];
+        bodies = rail.bodies;
+        offset = rail.offset;
+        
+        // make sure bodies stay on their railroad tracks
+        // move the body to the closest position on the rail
+        for (var j = 0; j < bodies.length; j++) {
+          body = bodies[j];
+          if (rail.from) {
+            from.clone(rail.from).vsub(offset).vadd(rail.railBody.state.pos);
+            to.clone(rail.to).vsub(offset).vadd(rail.railBody.state.pos);
+            Physics.geometry.nearestPointOnLine(body.state.pos, from, to, body.state.pos);
+            Physics.geometry.nearestPointOnLine(body.state.old.pos, from, to, body.state.old.pos); // to avoid adding velocity
+          }
+          else {
+            body.state.old.pos.vsub(offset).vproj(rail.dir).vadd(rail.railBody.state.pos); // to avoid adding velocity
+            body.state.pos.vsub(offset).vproj(rail.dir).vadd(rail.railBody.state.pos);
+          }
+        }
+        
+        offset.clone(rail.railBody.state.pos);
+      }
+  
+      scratch.done();
+    },
+  
+    /**
+     * Get an array of all rails
+     * @return {Array} The array of rail objects
+     */
+    getRails: function(){
+      return [].concat(this._rails);
+    }
+  };
 });
 
 // ---

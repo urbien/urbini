@@ -168,6 +168,8 @@ define('views/RightMenuButton', [
     },
     
     findMenuBadge: function() {
+      if (!this.viewId  ||  this.viewId.indexOf('viewHome') == 0)
+        return;
       if (!this.menuBadge)
         this.menuBadge = (G.isBootstrap() ? this.$('.badge') : G.isTopcoat() ? this.$('.topcoat-notification') : this.$('.menuBadge'))[0];
     },
@@ -185,8 +187,8 @@ define('views/RightMenuButton', [
       if (!this.rendered) {
         var self = this;
         
-        this.leftMenuEl = this.pageView.$('#' + this.viewId)[0];
-        this.rightMenuEl = this.pageView.$('#' + this.viewId + 'r')[0];
+        this.leftMenuEl = this.pageView.$('.menuLeft')[0] || this.pageView.$('#' + this.viewId)[0];
+        this.rightMenuEl = this.pageView.$('.menuRight')[0] || this.pageView.$('#' + this.viewId + 'r')[0];
 
         // only allow tap and hold events, click muddies the waters
         this.el.addEventListener('click', function(e) {

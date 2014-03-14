@@ -15,18 +15,18 @@ define('views/ResourceListView', [
 ], function(G, U, DOM, Events, BasicView, /*Scrollable, */ ResourceMasonryItemView, ResourceListItemView, ResourceList, Q, Voc, Physics) {
   var $wnd = $(window),
       doc = document,
-      transformProp = DOM.prefix('transform'),
-      DO_GROUP = true;
-
-  var MASONRY_FN = 'masonry', // in case we decide to switch to Packery or some other plugin
+      MASONRY_FN = 'masonry', // in case we decide to switch to Packery or some other plugin
       ITEM_SELECTOR = '.masonry-brick';
 
   var defaultSlidingWindowOptions = {
     // <MASONRY INITIAL CONFIG>
     slidingWindow: true,
+    tilt: 'forward',
+//    gradient: true,
+//    squeeze: false,
     horizontal: false,
 //    fly: true,
-    pop: 'sequential', //other option is 'random'
+//    pop: 'sequential', //other option is 'random'
 //    fade: 'random', //other option is 'sequential'
     animateOpacity: true,
     minBricks: 10,
@@ -36,6 +36,7 @@ define('views/ResourceListView', [
     averageBrickNonScrollDim: 80,  
     minPagesInSlidingWindow: 3,
     maxPagesInSlidingWindow: 6,
+    defaultAddDelta: 1, // in terms of pages
     gutterWidth: 10,
     scrollerType: 'verticalMain'
     // </ MASONRY INITIAL CONFIG>      
@@ -43,6 +44,8 @@ define('views/ResourceListView', [
   
   return BasicView.extend({
     // CONFIG
+    _autoFetch: false,
+//    _flexigroup: true,
     _draggable: true,
     _dragAxis: 'y',
     _scrollbar: true,
@@ -57,6 +60,7 @@ define('views/ResourceListView', [
     _offsetLeft: 0, // updated after append to DOM
     _offsetTop: 0,  // updated after append to DOM
     _childEls: null,
+    _placeholders: null,
     _outOfData: false,
     _adjustmentQueued: false,
 //    _failedToRenderCount: 0,
@@ -64,18 +68,18 @@ define('views/ResourceListView', [
 //    _lastRangeEventSeq: -Infinity,
 //    _lastPrefetchEventSeq: -Infinity,
     className: 'scrollable',
-    style: (function() {
-      var style = {};
-      style[DOM.prefix('perspective')] = '50px';
-      return style;
-    })(),
+    style: { 
+      opacity: DOM.maxOpacity,
+//      position: 'absolute',
+      'transform-origin': '50% 50%'
+    },
     stashed: [],
-
     initialize: function(options) {
       _.bindAll(this, 'render', 'fetchResources', 'refresh', 'setMode', 'onResourceChanged', '_onPhysicsMessage');
       options = options || {};
       BasicView.prototype.initialize.call(this, options);
       this.displayMode = options.displayMode || 'vanillaList';
+      this._flexigroup = this._flexigroup && this.displayMode != 'vanillaList';
 //      this._masonryOptions = _.defaults({
 //        gutterWidth: GUTTER_WIDTH
 //      }, defaultMasonryOptions);
@@ -147,7 +151,7 @@ define('views/ResourceListView', [
 
       this.itemViewCache = [];
       this._childEls = [];
-//      this._spareEls = [];
+      this._placeholders = [];
       this._viewport = {
         head: 0,
         tail: G.viewport[this.options.horizontal ? 'width' : 'height']
@@ -242,6 +246,16 @@ define('views/ResourceListView', [
         this.mason.setLimit(this.collection.getTotal());
 
       switch (event.type) {
+        case 'range':
+          if (this._displayedRange.to > this._displayedRange.from)
+            this._removeBricks(this._displayedRange.from, this._displayedRange.to);
+          
+          if (event.from < this._displayedRange.from)
+            this._displayedRange.from = this._displayedRange.to = event.to;
+          else
+            this._displayedRange.from = this._displayedRange.to = event.from;
+          
+          return this._addBricks(event.from, event.to);
         case 'prefetch':
           if (this._isPaging)
             return;
@@ -313,15 +327,17 @@ define('views/ResourceListView', [
       }
 
       self = viewId && this.children[viewId]; // list item view
-      navOptions.via = self;
+      if (!self || self.mvProp) // ||  self.TAG == 'HorizontalListItemView') 
+        return;
+      
+      if (self.TAG !== 'HorizontalListItemView' && this.displayMode != 'vanillaList'  && !this._flexigroup)
+        navOptions.via = self;
+      
       if (link) {
         Events.stopEvent(e);
         Events.trigger('navigate', link.href, navOptions);
         return;
       }
-      
-      if (!self || self.mvProp) // ||  self.TAG == 'HorizontalListItemView') 
-        return;
       
       Events.stopEvent(e);
       parentView = this;
@@ -332,18 +348,18 @@ define('views/ResourceListView', [
       
       if (self.doesModelSubclass('model/workflow/Alert')) {
         Events.stopEvent(e);
+        var prms = {};
         var atype = self.resource.get('alertType');
         var action = atype  &&  atype == 'SyncFail' ? 'edit' : 'view';
         var uri = self.resource.get('forum') || self.resource.getUri();
-        navOptions['-info'] = self.resource.get('davDisplayName');
-        Events.trigger('navigate', U.makeMobileUrl(action, uri, navOptions));//, {trigger: true, forceFetch: true});
+        Events.trigger('navigate', U.makeMobileUrl(action, uri, {'-info': self.resource.get('davDisplayName')}), navOptions);//, {trigger: true, forceFetch: true});
         return;
       }
       if (self.doesModelSubclass('model/social/QuizQuestion')) {
         var title = _.getParamMap(window.location.hash).$title;
         if (!title)
           title = U.makeHeaderTitle(self.resource.get('davDisplayName'), pModel.displayName);
-        _.extend(navOptions, {
+        var prms = {
           '-info': 'Please choose the answer', 
           $forResource: self.resource.get('_uri'), 
           $propA: 'question',
@@ -353,9 +369,9 @@ define('views/ResourceListView', [
 //            user: G.currentUser._uri,
           $type: self.vocModel.properties['answers'].range,
           $title: self.resource.get('davDisplayName')
-        });
+        };
         
-        Events.trigger('navigate', U.makeMobileUrl('chooser', self.vocModel.properties['options'].range, navOptions)); //, {trigger: true, forceFetch: true});
+        Events.trigger('navigate', U.makeMobileUrl('chooser', self.vocModel.properties['options'].range, prms), navOptions); //, {trigger: true, forceFetch: true});
         return;
       }
 
@@ -576,6 +592,7 @@ define('views/ResourceListView', [
 //        Physics.here.addBody(this.scrollbar, scrollbarId);
 ////        Physics.there.addBody('point', containerOptions, scrollbarId);
 //        Physics.there.addBody('point', scrollbarOptions, scrollbarId);
+        
         this.addToWorld(this.options);
       }
       else 
@@ -595,13 +612,19 @@ define('views/ResourceListView', [
     * @return a promise
     */
     _addBricks: function(from, to, force) {
+      if (!this._currentAddBatch)
+        this._currentAddBatch = [];
+      
+      if (!this._requestMoreTimePlaced)
+        this._requestMoreTimePlaced = _.now();
+      
       if (this._outOfData)
         to = Math.min(to, this.collection.length);
       
       if (from >= to) {
         if (this._outOfData) {
           this.log("1. BRICK LIMIT");
-          this.setBrickLimit();
+          this.setBrickLimit(this.collection.length);
         }
         else {
           debugger;
@@ -624,7 +647,7 @@ define('views/ResourceListView', [
           if (form >= to) {
             // we're out of candy, no need to continue
             this.log("2. BRICK LIMIT");
-            this.setBrickLimit();
+            this.setBrickLimit(availableRange[1]);
             return;
           }
         }
@@ -643,7 +666,10 @@ define('views/ResourceListView', [
       }
       else if (from < availableRange[0])
         return this.fetchResources(from, availableRange[0]).then(this._addBricks.bind(this, from, to, force), this._addBricks.bind(this, from, to, true));        
-                  
+//      else if (availableRange[1] - availableRange[0] < (to - from) * 2)
+      else if (availableRange[1] < to + this.options.bricksPerPage * this.options.minPagesInSlidingWindow)
+        this.prefetch(this.options.bricksPerPage * this.options.minPagesInSlidingWindow);
+      
       preRenderPromise = this.preRender(from, to);
       if (_.isPromise(preRenderPromise))
         return preRenderPromise.then(this._doAddBricks.bind(this, from, to));
@@ -651,60 +677,54 @@ define('views/ResourceListView', [
         return this._doAddBricks(from, to);
     },
     
-    _doAddBricks: function(from, to) {
-      Q.write(function() {
-        this._doAddBricksFoReal(from, to);
-      }, this);
-    },
+//    _doAddBricks: function(from, to) {
+////      Q.write(function() {
+//        this._doAddBricksFoReal(from, to);
+////      }, this);
+//    },
       
-    _doAddBricksFoReal: function(from, to) {
+    getBrickTagName: function() {
+      return this._preinitializedItem.prototype.tagName || 'div';
+    },
+    
+    _doAddBricks: function(from, to) {
       var self = this,
           el = this.el,
-          childEls = this._childEls,
-          childTagName = this._preinitializedItem.prototype.tagName || 'div',
+          childTagName = this.getBrickTagName(),
           displayed = this._displayedRange,
           atTheHead = from < displayed.from,
           col = this.collection,
           failed = [],
-          added = [],
-          addedEls,
           childView;
       
       this.log("PAGER", "ADDING", to - from, "BRICKS AT THE", atTheHead ? "HEAD" : "TAIL", "FOR A TOTAL OF", this._displayedRange.to - this._displayedRange.from + to - from);
 
-      for (var i = from; i < to; i++) {
-        var res = col.models[i],
-            liView = this.renderItem(res, atTheHead);
+      for (var i = from; i < to - 1; i++) {
+//        var res = col.models[i],
+//            liView = this.renderItem(res, atTheHead);
+        Q.write(this.renderItem, this, [col.models[i], atTheHead]);
+      }
+      
+      Q.write(function() {
+        this.renderItem(col.models[to - 1], atTheHead);
+        this.postRender(from, to);
+      }, this);
 
-        this.listenTo(liView.resource, 'change', this.onResourceChanged);
-        this.listenTo(liView.resource, 'saved', this.onResourceChanged);
-        added.push(liView);
-      }        
-      
-      addedEls = added.map(function(c) { return c.el });
-      if (atTheHead)
-        Array.prepend(childEls, addedEls);
-      else
-        childEls.push.apply(childEls, addedEls);
-      
-      added.forEach(function(childView) {
-        if (childView.postRender)
-          childView.postRender();
-       
-        childView.el.style.opacity = 0;
-        if (!childView.el.parentNode) {
-          // need to append right away, otherwise we can't figure out its size
-          el.appendChild(childView.el); // we don't care about its position in the list, as it's absolutely positioned
-        }
-  
-//        DOM.queueRender(view.el, DOM.opaqueStyle);
-
-//          Physics.here.once('render', childView.getBodyId(), function(childEl) {
-//            childEl.style.opacity = 1;
-//          });
-      });
-      
-      return this.postRender(from, to, added);
+//      added.forEach(function(childView) {
+//        childView.el.style.opacity = 0;
+//        if (!childView.el.parentNode) {
+//          // need to append right away, otherwise we can't figure out its size
+//          el.appendChild(childView.el); // we don't care about its position in the list, as it's absolutely positioned
+//        }
+//  
+////        DOM.queueRender(view.el, DOM.opaqueStyle);
+//
+////          Physics.here.once('render', childView.getBodyId(), function(childEl) {
+////            childEl.style.opacity = 1;
+////          });
+//      });
+//      
+//      return this.postRender(from, to);
     },
     
     /**
@@ -719,12 +739,12 @@ define('views/ResourceListView', [
           fromTheHead = from == this._displayedRange.from,
           childNodes = this._childEls,
           displayed = this._displayedRange,
-          removedViews = [];
+          removedViews = [],
+          i = fromTheHead ? 0 : childNodes.length - numToRemove,
+          end = end = fromTheHead ? numToRemove : childNodes.length;
 
 //      this.log("PAGER", "REMOVING", to - from, "BRICKS FROM THE", fromTheHead ? "HEAD" : "TAIL", "FOR A TOTAL OF", this._displayedRange.to - this._displayedRange.from - (to - from));
-      for (var i = fromTheHead ? 0 : childNodes.length - numToRemove, 
-               end = fromTheHead ? numToRemove : childNodes.length; i < end; i++) {
-        
+      for (; i < end; i++) {
         var childEl = childNodes[i],
             childView;
 
@@ -752,10 +772,30 @@ define('views/ResourceListView', [
 //        displayed.to -= removedViews.length;
       }
 
+      if (fromTheHead && this.collection.getRange().to - this._displayedRange.to < this.options.bricksPerPage * this.options.minPagesInSlidingWindow)
+        this.prefetch(this.options.bricksPerPage * this.options.minPagesInSlidingWindow);
+      
 //      if (displayed.from > displayed.to) {
 //        debugger;
 //        displayed.from = displayed.to;
 //      }
+    },
+    
+    prefetch: function(num) {
+      if (true)
+        return;
+      
+      num = num || this.options.bricksPerPage * this.options.minPagesInSlidingWindow;
+      var total = this.collection.getTotal(),
+          availableRange = this.collection.getRange();
+      
+      if (total)
+        num = Math.min(num, total - availableRange[1]);
+      
+      if (num) {
+        this.log("Prophylactic prefetching: " + num + " bricks");
+        this.fetchResources(availableRange[1], availableRange[1] + num);
+      }
     },
 
     onResourceChanged: function(res) { // attach/detach when sliding window moves
@@ -821,7 +861,7 @@ define('views/ResourceListView', [
         }
         else {
           Physics.here.removeBody(view.getBodyId());
-          view.destroy();
+          Q.write(view.destroy, view);
         }
         
         ids.push(view.getBodyId());
@@ -838,10 +878,34 @@ define('views/ResourceListView', [
 //        });        
       }
       
-      this.pageView._bodies = _.difference(this.pageView._bodies, ids); // TODO: unyuck the yuck
+//      this.pageView._bodies = _.difference(this.pageView._bodies, ids); // TODO: unyuck the yuck
       this._numBricks -= removedViews.length;
     },
     
+//    fetchResources: function(from, to) {
+//      if (this._isPaging)
+//        return this._pagingPromise;
+//      
+//      if (!this.collection.length)
+//        return this.fetchResources1(0, 1).then(this.fetchResources.bind(this, from, to));
+//      
+//      var models = [],
+//          mock = this.collection.models[Math.random() * this.collection.length | 0],
+//          mockJSON = mock.toJSON(),
+//          uriBase = mock.getUri(),
+//          now = _.now();
+//          
+//      for (var i = 0; i < 100; i++) {
+//        models.push(new mock.vocModel(_.defaults({
+//          _uri: uriBase + G.nextId()
+//        }, mockJSON)));
+//      }
+//      
+//      console.log("MAKING 100 MODELS TOOK " + (_.now() - now | 0));
+//      this.collection.add(models);
+//      return G.getResolvedPromise();
+//    },
+
     fetchResources: function(from, to) {
       if (this._isPaging)
         return this._pagingPromise;
@@ -852,10 +916,12 @@ define('views/ResourceListView', [
           col = this.collection,
           before = col.length,
           defer = $.Deferred(),
+          firstFetchDfd = this.getPageView()._fetchDfd, // HACK
           nextPagePromise,
           nextPageUrl,
-          limit = Math.max(to - from || this.options.bricksPerPage, 10);
+          limit = Math.max(to - from, this.options.minPagesInSlidingWindow * this.options.bricksPerPage, 10);
       
+      this._pageRequestTimePlaced = _.now();
       nextPagePromise = col.getNextPage({
         params: {
           $offset: from,
@@ -866,6 +932,7 @@ define('views/ResourceListView', [
             defer.resolve();
           else {
             if (!nextPageUrl || !col.isFetching(nextPageUrl)) { // we've failed to fetch anything from the db, wait for the 2nd call to success/error after pinging the server
+              // TODO: maybe we got results, but we happen to have already had them, because we had this list stored in a diff order. Complex case, because this means that we don't actually have the resources prior to this $offset
               self.log("couldn't get the next page for collection...");
               defer.reject();
             }
@@ -891,12 +958,21 @@ define('views/ResourceListView', [
         nextPageUrl = nextPagePromise._url;
       
       this._isPaging = true;
+      if (firstFetchDfd.state() == 'pending')
+        defer.promise().done(firstFetchDfd.resolve).fail(firstFetchDfd.resolve); // HACK
       
       this._pagingPromise = defer.promise().always(function() {
         self._isPaging = false;
-        if (defer.state() == 'rejected') {
+        if (defer.state() == 'rejected')
           self._outOfData = true;
-        }        
+        else {
+          var time = _.now() - self._requestMoreTimePlaced | 0;
+          self.log((col.length - before) + " bricks took " + time + "ms to fetch");
+//          if (time > 500)
+//            debugger;
+          
+          delete self._pageRequestTimePlaced;
+        }
       }); 
       
       this._pagingPromise._range = 'from: ' + before + ', to: ' + (before + limit);
@@ -949,16 +1025,31 @@ define('views/ResourceListView', [
       return preinitializer.preinitialize(params);
     },
     
-    /**
-     * @return view for rendered list item
-     */
-    renderItem: function(res, prepend) {
-      var options = {
-            delegateEvents: false,
-            resource: res
-          },
+    renderItem: function(res, info) {
+      var liView = this.doRenderItem(res, info);
+      this.postRenderItem(liView);
+      return liView;
+    },
+    
+    doRenderItem: function(res, prepend) {
+      var options,
           liView = this.getCachedItemView(),
           preinitializedItem;
+      
+      if (!this._initializeItemOptions) {
+        this._initializeItemOptions = {
+          delegateEvents: false
+        };
+      }
+      
+      options = this._initializeItemOptions;
+      options.resource = res;
+      options.el = null;
+      
+      if (!this._renderItemOptions)
+        this._renderItemOptions = {};
+
+      this._renderItemOptions.unlazifyImages = !this._scrollable;
       
       if (this.isMultiValueChooser) {
         options.checked = _.contains(this.mvVals, res.get('davDisplayName'));
@@ -972,8 +1063,8 @@ define('views/ResourceListView', [
         liView.reset().initialize(options);
       }
       else {
-//        if (this._spareEls.length)
-//          options.el = this._spareEls.shift();
+        if (this._placeholders.length)
+          options.el = this._placeholders.pop();
         
         if (this._itemTemplateElement) {
           if (!options.el)
@@ -987,19 +1078,29 @@ define('views/ResourceListView', [
         }
         
         preinitializedItem = this._preinitializedItem;
+//        var now = _.now();
         liView = new preinitializedItem(options);
+//        this.log("Creating a list item view took " + (_.now() - now));
 //        this.log("CREATED NEW LIST ITEM: " + liView.getBodyId());
-        this.addChild(liView, prepend);      
       }
-      
-      liView.render({
-        unlazifyImages: !this._scrollable
-      });
+            
+      this.addChild(liView);
+      liView.render(this._renderItemOptions);
       
       if (!this._itemTemplateElement && this.displayMode == 'masonry') // remove this when we change ResourceListItemView to update DOM instead of replace it
         this._itemTemplateElement = liView.el;
-        
+      
       return liView;
+    },
+    
+    postRenderItem: function(liView) {
+      liView.el.style.opacity = 0;
+      if (!liView.el.parentNode) {
+        // need to append right away, otherwise we can't figure out its size
+        this.el.appendChild(liView.el); // we don't care about its position in the list, as it's absolutely positioned
+      }
+      
+      this._currentAddBatch.push(liView);
     },
     
     preRender: function(from, to) {
@@ -1015,6 +1116,7 @@ define('views/ResourceListView', [
       if (!this._preinitializedItem)
         this._preinitializedItem = this.preinitializeItem(first);
       
+      Q.write(this.addPlaceholders, this);
       if (U.isA(vocModel, 'Intersection')) {
         var ab = U.getCloneOf(vocModel, 'Intersection.a', 'Intersection.b'),
             a = ab['Intersection.a'],
@@ -1039,8 +1141,44 @@ define('views/ResourceListView', [
           });
         }
       }
-
+      
       this._prerendered = true;
+    },
+    
+    addPlaceholders: function() {
+      if (this._placeholders.length)
+        return;
+      
+      var numBricks = this.displayMode == 'vanillaList' ? 
+              (G.viewport.height / 50) * this.options.minPagesInSlidingWindow :
+              (G.viewport.width * G.viewport.height / 100 / 100) * this.options.minPagesInSlidingWindow,
+          tagName = this.getBrickTagName(),
+          placeholder;
+
+      numBricks = Math.max(10, numBricks) | 0;
+      while (numBricks--) {
+        placeholder = doc.createElement(tagName);
+        placeholder.style.position = 'absolute';
+        this.el.appendChild(placeholder);
+        this._placeholders.push(placeholder);
+      }
+    },
+    
+    _updateSize: function() {
+      var ot = this.el.offsetTop,
+          ol = this.el.offsetLeft,
+          w = this._width,
+          h = this._height,
+          viewport = G.viewport;
+      
+      this._offsetTop = ot;
+      this._offsetLeft = ol;
+      this._bounds[0] = this._bounds[1] = 0;
+      this._outerHeight = this._height = this._bounds[3] = viewport.height - ot;
+      this._outerWidth = this._width = this._bounds[2] = viewport.width - ol;
+      if (ot != this._offsetTop || ol != this._offsetLeft || this._height != h || this._width != w) {
+        return true;
+      }
     },
     
     toBricks: function(views, options) {
@@ -1053,7 +1191,6 @@ define('views/ResourceListView', [
         view = views[i];
         view._updateSize();
         brick = view.buildViewBrick();
-        brick.lock[lockAxis] = options.gutterWidth / 5;
         brick.fixed = !options.flexigroup;
         bricks.push(brick);
       };
@@ -1061,34 +1198,43 @@ define('views/ResourceListView', [
       return bricks;
     },
 
-    postRender: function(from, to, added) {
-      Q.read(function() {        
-        this._doPostRender(from, to, added); // need to get new brick sizes
-      }, this);
+    postRender: function(from, to) {
+      Q.read(this._doPostRender, this, [from, to]); // need to get new brick sizes
     },
     
-    _doPostRender: function(from, to, added) {
+    _doPostRender: function(from, to) {
 //      if (this.stashed.length) {
 //        Array.prepend(added, this.stashed);
 //        this.stashed.length = 0;
 //      }
       
       var atTheHead = from < this._displayedRange.from,
-          bricks = this.toBricks(added, this.options),
+          childEls = this._childEls,
+          addedEls = _.pluck(this._currentAddBatch, 'el'),
+          bricks = this.toBricks(this._currentAddBatch, this.options),
           i = bricks.length,
-          bodies = this.pageView._bodies,
+//          bodies = this.pageView._bodies,
           displayed = this._displayedRange,
           view,
           id;
       
       while (i--) {
-        view = added[i];
+        view = this._currentAddBatch[i];
+        this.listenTo(view.resource, 'change', this.onResourceChanged);
+        this.listenTo(view.resource, 'saved', this.onResourceChanged);
+
         id = view.getBodyId();
-        bodies.push(id);
+//        bodies.push(id);
         Physics.here.addBody(view.el, id);
       }
+      
+      if (atTheHead)
+        Array.prepend(childEls, addedEls);
+      else
+        childEls.push.apply(childEls, addedEls);
 
-      if (displayed.to - displayed.from == 0) {
+      this._currentAddBatch.length = 0;
+      if (displayed.from == displayed.to) {
         displayed.from = from;
         displayed.to = to;
       }
@@ -1097,11 +1243,18 @@ define('views/ResourceListView', [
         this._displayedRange.to = Math.max(this._displayedRange.to, to);
       }
       
-      if (this._outOfData && this.collection.length == to)
+      this.log("New range: " + this._displayedRange.from + "-" + this._displayedRange.to);
+      if (this._outOfData && this.collection.length == to) {
+        this.log("3. BRICK LIMIT");
         this.mason.setLimit(this.collection.length);
+      }
 
 //      this.log("ADDING BRICK RANGE " + from + "-" + to + ": " + bricks.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
       this.addBricksToWorld(bricks, atTheHead); // mason
+      if (this._requestMoreTimePlaced) {
+        this.log("Bricks took " + (_.now() - this._requestMoreTimePlaced) + " to retrieve");
+        delete this._requestMoreTimePlaced;
+      }
     },
     
     hasMasonry: function() {

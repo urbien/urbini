@@ -17,14 +17,17 @@ define('views/Header', [
 //  'views/PublishButton'
 ], function(G, Events, U, Voc, BasicView, Physics, DOM/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
   var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate', 'installApp'];
-  var REGULAR_BUTTONS = ['back', 'mapIt', 'add', 'video', 'chat', 'login', 'rightMenu'];
+  var REGULAR_BUTTONS = ['back', 'cancel', 'save', 'mapIt', 'add', 'video', 'chat', 'login', 'rightMenu'];
   var commonTypes = G.commonTypes;
   var friendlyTypes = [G.commonTypes.Urbien, 'http://urbien.com/voc/dev/ImpressBackup/Movie', 'http://urbien.com/voc/dev/ImpressBackup/Artist', 'model/social/App'];
+  var editablePhysicsConstants = ['drag', 'springStiffness', 'springDamping', 'tilt'];
   return BasicView.extend({
 //    viewType: 'any',
     style: {
-      'z-index': 10001
+      opacity: 0.75//, //DOM.maxOpacity
+//      zIndex: 10001
     },
+    _draggable: false,
     autoFinish: false,
     template: 'headerTemplate',
     initialize: function(options) {
@@ -63,6 +66,7 @@ define('views/Header', [
         this.originalParams = _.clone(this.collection.params);
       }
       
+      this.makeTemplate('physicsConstantsTemplate', 'physicsConstantsTemplate', this.vocModel && this.vocModel.type);
       return this;
     },
     
@@ -168,7 +172,7 @@ define('views/Header', [
     },
     events: {
       'change #fileUpload'                         : 'fileUpload',
-      'change .physics input'                      : 'changePhysics',
+      'change .physicsConstants input'             : 'changePhysics',
       'click #toggleFilter'                        : 'toggleFilter',
       'click #categories'                          : 'showCategories',
 //      'click #installApp'         : 'installApp',
@@ -183,10 +187,21 @@ define('views/Header', [
       var val = parseInt(e.target.value),
           type = 'verticalMain';
       
-      if (e.target.name == 'degree')
+      switch (e.target.name) {
+      case 'degree':
         val *= -1;
-      else
+        break;
+      case 'tilt':
+        val -= 1; // min at 0 instead of 1
+        // fall through;
+      default:
         val /= 100;
+        break;
+      }
+      
+//      if (this._hashInfo.route == 'view') {
+//        type = 'horizontal';
+//      }
       
       switch (this._hashInfo.route) {
         case 'view':
@@ -409,7 +424,7 @@ define('views/Header', [
         hideIndicator = this.hideLoadingIndicator.bind(this, indicatorId);
 
         col.reset(null, _.extend({
-          silent: true,
+          silent: true
         }, this.originalParams));
         
         col.fetch({
@@ -460,6 +475,32 @@ define('views/Header', [
     },
     
     render: function(options) {
+      var self = this,
+          args = arguments;
+
+      if (!this.rendered) {
+        this.onload(function() {
+          if (self.pageView.TAG == 'ListPage') {
+            self._updateSize();
+            self._rail = [self.getContainerBodyId(), 0, 0, 0, -self._outerHeight];
+            self.addToWorld(null, false);
+//            Physics.there.trackDrag(self.getContainerBodyId(), 'vel'); // 'pos' for exact tracking, 'vel' for parallax 
+            self.getPageView().listView.onload(function() {              
+//              Physics.there.trackDrag(self.getContainerBodyId(), 'vel', self.pageView.listView.getContainerBodyId()); // 'pos' for exact tracking, 'vel' for parallax
+              Physics.there.rpc(self.getPageView().listView.mason.id, 'attachHeader', [self.getContainerBodyId(), 0.02]);
+            });
+          }
+          
+//          if (self.pageView.TAG == 'ListPage') {
+//            self.pageView.listView.onload(function() {              
+//              Physics.there.track(self.getContainerBodyId(), self.pageView.listView.getContainerBodyId(), 'vel');
+//            });
+//          }
+//          else
+//            Physics.there.track(self.getContainerBodyId(), self.pageView.getContainerBodyId(), 'vel');
+        });
+      }
+      
       options = options || {};
       if (!this.buttons || options.buttons) {
         this.buttons = options.buttons;
@@ -467,14 +508,15 @@ define('views/Header', [
         this.getButtonViews();
       }
         
-      var self = this,
-          args = arguments;
-      
       function doRender() {
         self.renderHelper.apply(self, args);
         self.finish();
         if (G.isBootstrap())
           self.$('#headerUl div').$attr('class', 'navbar-header');
+        if (G.coverImage) 
+          self.$('#headerUl a').$forEach(function(elm) {
+            elm.style.color = G.coverImage.background;
+          });
       };
       
       if (this.btnsReq.state() !== 'pending') {
@@ -630,6 +672,45 @@ define('views/Header', [
         this.noButtons = true;      
     },
     
+    getPhysicsTemplateData: function() {
+      if (!this._physicsTemplateData) {
+        this._physicsTemplateData = {
+            constants: {}
+        };
+      }
+      
+      var constants = this._physicsTemplateData.constants,
+          i = editablePhysicsConstants.length,
+          cName;
+      
+      while (i--) {
+        cName = editablePhysicsConstants[i];
+        constants[cName] = Physics.constants[cName];
+      }
+        
+      if (this.pageView.TAG != 'ListPage') {
+        var i = friendlyTypes.length,
+            keepTilt = false;
+        
+        while (i--) {
+          if (U.isAssignableFrom(this.vocModel, friendlyTypes[i])) {
+            keepTilt = true;
+            break;
+          }
+        }
+
+        if (!keepTilt)
+          delete constants.tilt;
+      }
+        
+      return this._physicsTemplateData;
+    },
+    
+    renderPhysics: function() {
+      this.physicsConstantsEl = this.el.querySelector('.physicsConstants');
+      this.physicsConstantsEl.innerHTML = this.physicsConstantsTemplate(this.getPhysicsTemplateData());
+    },
+    
     restyleNavbar: function() {
       var navbar = this.$('[data-role="navbar"]')[0];
       $(navbar).navbar();
@@ -650,8 +731,16 @@ define('views/Header', [
       
       var isTemplates = window.location.hash && window.location.hash.indexOf('#templates/') != -1; 
       
-      if (!isTemplates  &&  !res && (U.isAssignableFrom(this.vocModel, G.commonTypes.App) || (U.isA(this.vocModel, 'Taggable')  &&  U.getCloneOf(this.vocModel, 'Taggable.tags').length/*  &&  U.isAssignableFrom(this.vocModel, 'Urbien')*/)))
-        this.categories = true;
+      if (!isTemplates  &&  !res)
+        if (U.isAssignableFrom(this.vocModel, G.commonTypes.App))
+          this.categories = true;
+        else if (U.isA(this.vocModel, 'Taggable')) {
+          var cOf = U.getCloneOf(this.vocModel, 'Taggable.tags');
+          if (cOf.length) {
+            if (!this.vocModel.properties[cOf[0]].avoidDisplaying)
+              this.categories = true; 
+          }
+        }
       else if (!res) {
         var hash = window.location.hash;
         var isChooser =  hash  &&  hash.indexOf('#chooser/') == 0;
@@ -675,7 +764,7 @@ define('views/Header', [
       }
 
       var templateSettings = this.getBaseTemplateData();
-      _.extend(templateSettings, Physics.constants); //Physics.scrollerConstants[this._scrollerType]);
+//      templateSettings.physics = this.getPhysicsConstants(); //Physics.scrollerConstants[this._scrollerType]);
       if (U.isChatPage()) {
 //        templateSettings.more = $.param({
 //          "data-position": "fixed"
@@ -694,12 +783,13 @@ define('views/Header', [
         this.filterContainer = this.$('#filter')[0];
       }
       
+      this.renderPhysics();
       this.refreshTitle();
 //      this.$el.prevObject.attr('data-title', this.pageTitle);
 //      this.$el.prevObject.attr('data-theme', G.theme.list);
       var pageData = this.pageView.el.dataset;
       pageData.title = this.pageTitle;
-      pageData.theme = G.theme.list;
+//      pageData.theme = G.theme.list;
       var frag = document.createDocumentFragment();
       var btns = this.buttonViews;
       var isMapItToggleable = !!this.collection;
@@ -782,7 +872,7 @@ define('views/Header', [
       // HACK
       // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view 
       var header = this.$('.ui-header')[0];
-      var barClass = 'ui-bar-{0}'.format(G.theme.header);
+      var barClass = 'ui-bar-c';//{0}'.format(G.theme.header);
       if (header && !header.classList.contains(barClass))
         header.classList.add(barClass);
       

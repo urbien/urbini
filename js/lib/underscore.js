@@ -1147,12 +1147,12 @@
       "print=function(){__p+=__j.call(arguments,'');};\n" +
       source + "return __p;\n";
 
-    try {
+//    try {
       var render = new Function(settings.variable || 'obj', '_', source);
-    } catch (e) {
-      e.source = source;
-      throw e;
-    }
+//    } catch (e) {
+//      e.source = source;
+//      throw e;
+//    }
 
     if (data) return render(data, _);
     var template = function(data) {

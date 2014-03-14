@@ -340,12 +340,12 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
             dfd = $.Deferred(),
             promise = dfd.promise();
         
-        G.whenNotRendering(function() {
+//        G.whenNotRendering(function() {
           if (_canceled || _done)
             return REJECTED_PROMISE;
           
-          fn.apply(context, args).then(dfd.resolve, dfd.reject);
-        });
+          fn.apply(context, args).done(dfd.resolve).fail(dfd.reject);
+//        });
         
         return promise;
       };

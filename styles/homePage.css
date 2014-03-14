@@ -1,23 +1,9 @@
-/*
 html {
-  font-size: 10px;
+ height: 100%;
 }
-#homePage.demo:after {
-  content: "";  
-  z-index: -1;
-  position: absolute;
-  top: 0; right: 0; bottom: 0; left: 0;
-  background: #000;
-  background: -webkit-radial-gradient(center center, circle cover, rgba(0,0,0,0.5), rgba(0,0,0,0.95));
-  background: -moz-radial-gradient(center center, circle cover, rgba(0,0,0,0.3), rgba(0,0,0,0.95));
-  background: -ms-radial-gradient(center center, circle cover, rgba(0,0,0,0.3), rgba(0,0,0,0.95));
-  background: -o-radial-gradient(center center, circle cover, rgba(0,0,0,0.3), rgba(0,0,0,0.95));
-  background: radial-gradient(center center, circle cover, rgba(0,0,0,0.3), rgba(0,0,0,0.95));
-}
-*/
-//#homePage {height: 99.9%;}
 
 #homePage {
+  height: 100%;
   background: none;
   background-image: none;
   text-shadow: 0 1px 0 #000;
@@ -82,17 +68,31 @@ body {
     background: -o-linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.95));
     background: linear-gradient(rgba(0,0,0,0), rgba(0,0,0,0.95));
 }
-    
-#spinner_container {
-  position:absolute;
-  width:100%;
-  bottom: 50%;
-  left:45%;
-  height:1px;
-  overflow:visible;
-  opacity: 1;
-  background: transparent;
+
+.vcenter {
+  top: 0;
+  left: 0;
+  position: absolute;
+  display: table; 
+  height: 100%; 
+  width: 100%;   
 }
+
+.vcenter > * {
+  position: static;
+  display: table-cell;
+  vertical-align: middle;   
+}
+
+.vcenter > * > * {  
+  position: relative;
+  top: -50%;
+}
+
+.spinner {
+  text-align: center;
+}
+
 .icon-spin {
    display: inline-block;
    -moz-animation: spin 2s infinite
@@ -139,7 +139,7 @@ body {
    }
 }
 
-///////////// ROUND BUTTONS
+/* ROUND BUTTONS */
 .nav {
   list-style: none;
   text-align: center;

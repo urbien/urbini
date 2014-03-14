@@ -59,6 +59,7 @@ define('templates', [
       "system/primitiveTypes/Duration": "durationPT",
       "date": "datePT",
       "dateTime": "datePT",
+      "system/primitiveTypes/Percent": "percentPT",
       "resource": "resourcePT",
       "model/company/Money": "moneyPT",
       "ComplexDate": "complexDatePT",
@@ -78,6 +79,7 @@ define('templates', [
       "date": "datePET",
       "ComplexDate": "datePET",
       "system/primitiveTypes/Duration": "datePET",
+      "system/primitiveTypes/Percent": "percentPET",
 //    "model/portal/Image": "fileUpload",
       "model/company/Money": "moneyPET"
 //       ,

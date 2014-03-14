@@ -13,13 +13,18 @@ define('views/MenuPanel', [
 //    role: 'data-panel',
 //    id: 'menuPanel',
 //    theme: 'd',
-    _flySpeed: 5,
+//    _flySpeed: 3.5,
+//    _acceleration: 0.05,
+    _drag: 0.2,
+    _stiffness: 0.1,
+    _damping: 0.3,
     style: {
       opacity: 0,
       display: 'table',
       width: '100%',
       background: 'none',
-      visibility: 'hidden'
+      visibility: 'visible',
+      'transform-origin': '100% 0%'
     },
     _hidden: true,
     _dragAxis: 'y',
@@ -46,6 +51,8 @@ define('views/MenuPanel', [
       
       this.onload(function() {
         self.addToWorld(null, true);
+//        Physics.there.rpc(null, 'squeezeAndStretch', [self.getContainerRailBodyId(), self.getContainerBodyId()]);
+//        Physics.there.rpc(null, 'skewWhenMoving', [self.getContainerRailBodyId(), self.getContainerBodyId(), 'x']);
         self.show();
       });
 
@@ -83,29 +90,80 @@ define('views/MenuPanel', [
     },
     
     show: function(e) {
+      var self = this;
       if (this._hidden) {
         if (e)
           Events.stopEvent(e);
         
-        var self = this;        
+//        if (this.ulWidth == G.viewport.width) {
+//          var self = this;
+//          // HACK!!
+//          setTimeout(function tryAgain() {
+//            if (self._updateSize())
+//              self.show();
+//            else
+//              setTimeout(tryAgain, 50);
+//          }, 50);
+//          
+//          return;
+//        }
+        
+        var accActionId = _.uniqueId('accAction');
         
         this._hidden = false;
         this._transitioning = true;
-        Physics.there.chain({
-          method: 'teleport', 
-          args: [this.getContainerBodyId(), this.ulWidth]
-        },
-        {
-          method: 'flyTo', 
-          args: [this.getContainerBodyId(), 0, null, null, this._flySpeed, Physics.constants.maxOpacity]
-        });
+        Physics.there.chain(
+          {
+            method: 'style',
+            args: [this.getContainerBodyId(), {
+              'z-index': 10002,
+              visibility: 'visible'
+            }]
+          },
+          {
+            method: 'teleport', 
+            args: [this.getContainerRailBodyId(), this.ulWidth]
+          },
+//          {
+//            method: 'accelerateTo', 
+//            args: [{
+//              actionId: accActionId,
+//              body: this.getContainerRailBodyId(), 
+//              x: 0, 
+//              a: this._acceleration,
+//              drag: this._drag
+//            }]
+//          },
+          {
+            method: 'snapTo', 
+            args: [{
+              actionId: accActionId,
+              body: this.getContainerRailBodyId(),
+              stiffness: this._stiffness,
+              damping: this._damping,
+              drag: this._drag,
+              x: 0 
+            }]
+          },
+          {
+            method: 'animateStyle',
+            args: [{
+              body: this.getContainerBodyId(),
+              property: 'opacity',
+              end: DOM.maxOpacity,
+              duration: 200
+//              trackAction: {
+//                body: this.getContainerRailBodyId(),
+//                action: accActionId
+//              }
+            }]
+          }
+        );
         
         Physics.here.once('render', this.getContainerBodyId(), function() {
           self._finishTransition();
           Q.write(function() {
             self.ul.style.visibility = 'visible';
-            self.el.style.visibility = 'visible';
-            self.el.style['z-index'] = 10002;
           });
         });
       }
@@ -116,21 +174,53 @@ define('views/MenuPanel', [
         if (e)
           Events.stopEvent(e);
         
-        var self = this;
+        var self = this,
+            accActionId = _.uniqueId('accAction');
+
         this._hidden = true;
         this._transitioning = true;
         if (G.isJQM())
           this.$el.closest('[data-role="panel"]').panel('close');
 
-
-        Physics.there.rpc(null, 'flyTo', [this.getContainerBodyId(), this.ulWidth, null, null, this._flySpeed, 0, function() {
-          self._finishTransition();
-          Q.write(function() {
-            self.ul.style.visibility = 'hidden';
-            self.el.style.visibility = 'hidden';
-            self.el.style['z-index'] = 0;
-          });
-        }]);
+        Physics.there.chain(
+          {
+//            method: 'accelerateTo',
+            method: 'snapTo',
+            args: [{
+//              actionId: accActionId,
+              body: this.getContainerRailBodyId(), 
+              x: this.ulWidth, 
+              stiffness: this._stiffness,
+              damping: this._damping,
+              drag: this._drag,
+//              a: this._acceleration,
+              oncomplete: function() {
+                self._finishTransition();
+                Physics.there.style(self.getContainerBodyId(), {
+                  'z-index': 0,
+                  visibility: 'hidden'
+                });
+                
+                Q.write(function() {
+                  self.ul.style.visibility = 'hidden';
+                });
+              }
+            }]
+          },
+          {
+            method: 'animateStyle',
+            args: [{
+              body: this.getContainerBodyId(),
+              property: 'opacity',
+              end: 0,
+              duration: 200
+//              trackAction: {
+//                body: this.getContainerRailBodyId(),
+//                action: accActionId
+//              }
+            }]
+          }
+        );
         
         return true;
       }
@@ -138,23 +228,26 @@ define('views/MenuPanel', [
     
     _updateSize: function() {
       var viewport = G.viewport,
-          outerHeight = this.ulHeight = this.ul.$outerHeight();
+          height = this.ulHeight = parseInt(this.ul.style.height || 0),
+          outerWidth = this.ul.$outerWidth(),
+          outerHeight = this.ul.$outerHeight();
+
+      if (outerWidth >= G.viewport.width) {
+        if (!resetTimeout(this._measureMenuTimeout))
+          this._measureMenuTimeout = setTimeout(this._updateSize.bind(this), 50); // HACK - ul is full screen width on first check
+      }
       
-      this.ulWidth = this.ul.$outerWidth();
-      try {
-        if (this._outerWidth != viewport.width || this._height != viewport.height || this._outerHeight != outerHeight) {
-          this._bounds[0] = this._bounds[1] = 0;
-          this._outerWidth = this._width = this._bounds[2] = G.viewport.width;
-          this._outerHeight = outerHeight;
-          this._height = this._bounds[3] = viewport.height;
-          return true;
-        }
-      } finally {
-        if (this.ulHeight != viewport.height) {
-          Q.write(function() {
-            this.ul.style.height = viewport.height + 'px';
-          }, this);
-        }
+      this.ulWidth = outerWidth;
+      if (this._outerWidth != viewport.width || this._outerHeight != outerHeight || height != viewport.height) {
+        this._bounds[0] = this._bounds[1] = 0;
+        this._outerWidth = this._width = this._bounds[2] = viewport.width;
+        this._outerHeight = outerHeight;
+        this._height = this._bounds[3] = viewport.height;
+        Q.write(function() {
+          this.ul.style.height = viewport.height + 'px'; // to keep the menu the same height as the screen
+        }, this);
+        
+        return true;
       }
     },
 

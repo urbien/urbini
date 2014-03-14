@@ -19,7 +19,7 @@ span.comment {
 }
 
 label.req::after {
-  content: "* ";
+  content: " *";
   font-weight: bold;
   color: #f66;  
 }

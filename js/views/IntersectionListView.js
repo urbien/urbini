@@ -14,7 +14,7 @@ define('views/IntersectionListView', [
       _.extend(this, options);
     },
     
-    renderItem: function(res, info) {
+    doRenderItem: function(res, info) {
       var source = this.parentView.resource,
 //          xUris = this._renderedIntersectionUris,
           html = '<div style="display:block">',

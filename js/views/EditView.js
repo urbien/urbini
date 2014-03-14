@@ -10,12 +10,14 @@ define('views/EditView', [
   '@widgets',
   'lib/fastdom'
 ], function(G, Events, Errors, U, C, Voc, BasicView, $m, Q) {
-  var spinner = 'loading edit view',
+  var spinner = {
+        name: 'loading edit view'
+      },
       scrollerClass = 'i-txt',
       switchClass = 'boolean',
       secs = [/* week seconds */604800, /* day seconds */ 86400, /* hour seconds */ 3600, /* minute seconds */ 60, /* second seconds */ 1];
       
-  function isHidden(prop, currentAtts, reqParams) {
+  function isHidden(prop, currentAtts, reqParams, isEdit) {
     var p = prop.shortName; 
     return prop.required  &&  currentAtts[p]  &&  prop.containerMember && (isEdit || reqParams[p]);
   };
@@ -70,8 +72,8 @@ define('views/EditView', [
       });
       */
       // maybe move this to router
-      var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
-      this.isCode = codemirrorModes.length;
+      var codemirrorModes = U.getRequiredCodemirrorModes(this.resource, 'edit');
+      this.isCode = !!codemirrorModes.length;
 
       var self = this;
       var codemirrorPromise;
@@ -101,8 +103,8 @@ define('views/EditView', [
       return this;
     },
     events: {
-      'click #cancel'                     :'cancel',
-      'submit form'                       :'submit',
+//      'click #cancel'                     :'cancel',
+//      'submit form'                       :'submit',
       'click .resourceProp'               :'chooser',
       'click input[data-duration]'        :'scrollDuration',
       'click input[data-date]'            :'scrollDate',
@@ -114,6 +116,11 @@ define('views/EditView', [
       'keydown input'                     :'onKeyDownInInput',
       'change select'                     :'onSelected',
       'change input[type="checkbox"]'     :'onSelected'
+    },
+    
+    globalEvents: {
+      'userSaved': 'submit',
+      'userCanceled': 'cancel'
     },
 
     /** 
@@ -263,7 +270,7 @@ define('views/EditView', [
         // trigger native file dialog or camera capture 
         Events.stopEvent(e);
         var input = $(target).parent().children().find('input[type="file"]');
-        input.trigger('click');
+        input.triggerHandler('click');
       }
       else if (e.type === 'change') {
         loadFile();
@@ -417,7 +424,7 @@ define('views/EditView', [
           }
         }
         
-//        Events.trigger('back');
+        Events.trigger('back');
 //        this.router.navigate(hash, {trigger: true, replace: true});
       }.bind(this);
 //      G.Router.changePage(self.parentView);
@@ -740,11 +747,8 @@ define('views/EditView', [
     },
     
     submit: function(e, options) {
-      e && Events.stopEvent(e);
-      if (this._submitted) {
-        if (!this.isActive())
-          return;
-      }
+      if (!this.isActive() || this._submitted)
+        return;
 
       if (G.currentUser.guest) {
         // TODO; save to db before making them login? To prevent losing data entry
@@ -816,6 +820,8 @@ define('views/EditView', [
         else if (input.dataset.code) {
           atts[name] = $(input).data('codemirror').getValue();
         }
+        else if (input.type.startsWith('select'))
+          atts[name] = val;
 //        else if (!_.has(unsaved, name) && val)
 //          atts[name] = val;
       }
@@ -842,7 +848,7 @@ define('views/EditView', [
         if (prevHash && !prevHash.startsWith('chooser/'))
           Events.trigger('back');
         else
-          Events.trigger('navigate', this.resource.getUri());
+          Events.trigger('navigate', U.makeMobileUrl('view', this.resource));
         
         return;
       }
@@ -857,7 +863,9 @@ define('views/EditView', [
         this.onerror(errors);
     },
     cancel: function(e) {
-      Events.stopEvent(e);
+      if (!this.isActive())
+        return;
+      
       if (this.action === 'edit') {
         this.resource.clear();
         this.resource.set(this.originalResource);
@@ -937,12 +945,14 @@ define('views/EditView', [
         return;
       }
             
-      var sync = !U.canAsync(this.vocModel);
+      var sync = !U.canAsync(this.vocModel),
+          spinner = {
+            content: 'Saving...',
+            name: 'saving-resource'
+          };
+    
       if (sync) {
-        G.showSpinner({
-          content: 'Saving...',
-          name: 'saving-resource'
-        });
+        G.showSpinner(spinner);
       }
         
       res.save(props, {
@@ -953,7 +963,7 @@ define('views/EditView', [
           self.disable('Changes submitted');
 //          self.redirect();
           if (sync)
-            G.hideSpinner('saving-resource');
+            G.hideSpinner(spinner);
         }, 
 //        skipRefresh: true,
         error: self.onSaveError
@@ -1077,7 +1087,7 @@ define('views/EditView', [
       var prop = info.prop,
           p = prop.shortName;
       
-      if (isHidden(prop, info.params, info.reqParams)) {
+      if (isHidden(prop, info.params, info.reqParams, info.isEdit)) {
         var rules = ' data-formEl="true"',
             longUri = U.getLongUri1(info.params[p]);
         
@@ -1285,7 +1295,7 @@ define('views/EditView', [
       
       if (!grouped.length || reqParams['$editCols']) {
         _.each(ungrouped, function(p) {          
-          _.extend(state, {name: p, prop: meta[p]});
+          _.extend(state, {name: p, prop: meta[p], isEdit: self.isEdit});
           self.addProp(state);
         });
       }        
@@ -1482,7 +1492,7 @@ define('views/EditView', [
         if (scrollers.length) {
           var scrollerWithValue = _.find(scrollers, function(s) { return !!s.value });
           if (scrollerWithValue) {
-            $(scrollerWithValue).trigger('click', [true]);
+            $(scrollerWithValue).triggerHandler('click', [true]);
             return true;
           }
         }
@@ -1522,6 +1532,7 @@ define('views/EditView', [
         }
         
         editor = CodeMirror.fromTextArea(textarea, {
+          dragDrop: false, // doesn't play nice with hammer
           mode: mode,
           tabMode: 'indent',
           lineNumbers: true,

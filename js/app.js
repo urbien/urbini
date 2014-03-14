@@ -281,11 +281,11 @@ define('app', [
       });
 
       Events.on('messageFromApp:home', function() {
-        window.location.href = window.location.href.split('#')[0];
+        Events.trigger('navigate', window.location.href.split('#')[0]);
       });
 
       Events.on('messageFromApp:navigate', function(url) {
-        window.location.href = url;
+        Events.trigger('navigate', url);
       });
 
 //      browserMod.onpush(function() {
@@ -294,44 +294,44 @@ define('app', [
     });
   }
 
-  function setupAvailibilityMonitor(dont) {
-    function run(fn, context) {
-      if (context)
-        fn.call(context);
-      else
-        fn();
-    }
-    
-    if (dont) {
-      // run everything right away
-      G.whenNotRendering = run;
-      return;
-    }
-    
-    var dfd, promise;
-    
-    function reset() {
-      var oldDfd = dfd,
-          oldPromise = promise;
-      
-      dfd = $.Deferred();
-      promise = dfd.promise();
-      
-      if (oldDfd)
-        Events.off('pageChange', oldDfd.resolve);
-      
-      Events.once('pageChange', dfd.resolve);
-      if (oldPromise && oldPromise.state() === 'pending')
-        promise.then(oldDfd.resolve);
-
-    }
-    
-    reset();
-    Events.on('changingPage', reset);
-    G.whenNotRendering = function(fn, context) {
-      return promise.then(run.bind(null, fn, context));
-    };
-  }
+//  function setupAvailibilityMonitor(dont) {
+//    function run(fn, context) {
+//      if (context)
+//        fn.call(context);
+//      else
+//        fn();
+//    }
+//    
+//    if (dont) {
+//      // run everything right away
+//      G.whenNotRendering = run;
+//      return;
+//    }
+//    
+//    var dfd, promise;
+//    
+//    function reset() {
+//      var oldDfd = dfd,
+//          oldPromise = promise;
+//      
+//      dfd = $.Deferred();
+//      promise = dfd.promise();
+//      
+//      if (oldDfd)
+//        Events.off('pageChange', oldDfd.resolve);
+//      
+//      Events.once('pageChange', dfd.resolve);
+//      if (oldPromise && oldPromise.state() === 'pending')
+//        promise.then(oldDfd.resolve);
+//
+//    }
+//    
+//    reset();
+//    Events.on('changingPage', reset);
+//    G.whenNotRendering = function(fn, context) {
+//      return promise.then(run.bind(null, fn, context));
+//    };
+//  }
   
   function hashToResourceOrList(hash) {
     var hashInfo = U.getUrlInfo(hash),
@@ -458,7 +458,7 @@ define('app', [
     }; 
     
     G.getBaseObjectStoresInfo = function() {
-      return _.clone(requiredStores);
+      return $.extend(true, {}, requiredStores);
     };
     
     for (var storeName in requiredStores) {
@@ -506,7 +506,8 @@ define('app', [
   
   function setupWidgetLibrary() {
     if (G.isJQM()) {
-      var jqmEvents = ['pagebeforecreate', 'pagecreate', 'pagebeforehide', 'pagehide', 'pagebeforeshow', 'pageshow', 'pagebeforechange', 'pagechange'],
+      var jqmEvents = ['pagebeforecreate', 'pagecreate', 'pagebeforechange', 'pagechange'],
+          jqmTransitionEvents = ['pagebeforehide', 'pagehide', 'pagebeforeshow', 'pageshow'],
           $doc = $(document);
       
       function fwdEvent(page_event) {
@@ -520,7 +521,14 @@ define('app', [
             page_event = 'page_' + pageevent.slice(4);
             
         $doc.on(pageevent, fwdEvent(page_event));        
-      }      
+      }
+      
+      for (var i = 0, len = jqmTransitionEvents.length; i < len; i++) {
+        var pageevent = jqmTransitionEvents[i],
+            page_event = 'page_' + pageevent.slice(4);
+            
+        $doc.on(page_event, fwdEvent(pageevent));        
+      }
     }
   }
   
@@ -541,7 +549,7 @@ define('app', [
     setupWidgetLibrary();
     setupPackagedApp();
     setupUser();
-    setupAvailibilityMonitor();
+//    setupAvailibilityMonitor();
     setupCleaner();
     prepDB();
     var localized = localize();
@@ -559,6 +567,28 @@ define('app', [
 //        getAppAccounts().always(loadModels);
     Voc.checkUser();
     G.checkVersion();
+    if (G.coverImage) {
+      G.coverImage.color = G.lightColor = U.colorLuminance("#" + G.coverImage.lightColor.toString(16), 0.2);
+      var num =  G.coverImage.darkColor;
+      var b = num & 0xFF,
+          g = (num & 0xFF00) >>> 8,
+          r = (num & 0xFF0000) >>> 16;
+      var rcolor = r.toString(16);
+      if (rcolor.length < 2)
+        rcolor = '0' + rcolor;
+      var bcolor = b.toString(16);
+      if (bcolor.length < 2)
+        bcolor = '0' + bcolor;
+      var gcolor = g.toString(16);
+      if (gcolor.length < 2)
+        gcolor = '0' + gcolor;
+      var color = '#' + rcolor + ('' + gcolor) + ('' + bcolor);
+      G.coverImage.background = G.darkColor = U.colorLuminance(color, -0.2);
+    }
+    else {
+      G.lightColor = '#eeeeee';
+      G.darkColor = '#757575';
+    }
     Templates.loadTemplates();
     extendMetadataKeys();
     setupNetworkEvents();
@@ -839,7 +869,7 @@ define('app', [
   
   function setupLoginLogout() {
     Events.on('req-login', function(options) {
-      options = _.extend({online: 'Login via a Social Net', offline: 'You are currently offline, please get online and try again'}, options);
+      options = _.extend({online: G.localize('login'), offline: G.localize('youreOfflinePleaseLogin')}, options);
       var onDismiss;
       if (!G.online) {
         Errors.offline();
@@ -862,17 +892,22 @@ define('app', [
         returnUri = G.pageRoot;
       }
       
-      var nets = _.map(G.socialNets, function(net) {
-        return {
-          name: net.socialNet,
-          url: U.buildSocialNetOAuthUrl({
-            net: net,
-            action: 'Login', 
-            returnUri: returnUri,
-            returnUriHash: returnUriHash
-          })
-        };
+      var nets = _.map(['Facebook', 'Twitter', 'LinkedIn', 'Google', 'Live'], function(name) {
+        net = _.find(G.socialNets, function(net) { return net.socialNet == name });
+        if (net) {
+          return {
+            name: name,
+            url: U.buildSocialNetOAuthUrl({
+              net: net,
+              action: 'Login', 
+              returnUri: returnUri,
+              returnUriHash: returnUriHash
+            })
+          };
+        }
       });
+      
+      nets = _.compact(nets);
       
       if (!options.dismissible) {
         onDismiss = options.onDismiss || function() { 
@@ -882,7 +917,8 @@ define('app', [
         
 //      existingPopup.remove();
       var popupHtml = U.template('loginPopupTemplate')({nets: nets, msg: options.online, dismissible: false});
-      $(document.body).append(popupHtml);
+      $('.modal-popup-holder').append(popupHtml);
+//      $(document.body).append(popupHtml);
       var $popup = $('#login_popup');
       if (onDismiss) {
         $popup.find('[data-cancel]').click(onDismiss);
@@ -894,8 +930,20 @@ define('app', [
         $popup.parent().css('z-index', 1000000);
       }  
       else {
-        $popup.css('left', (G.viewport.width - 255) / 2);
+//        $popup.css('left', (G.viewport.width - 255) / 2);
+        U.require('views/ModalDialog', function(MD) {
+          var popup = $popup[0];
+          MD.show(popup, onDismiss);
+          
+          nets.map(function(net) {
+            popup.$('.' + net.name.toLowerCase()).$on('click', function(e) {
+              MD.hide();
+              window.location.href = net.url;
+            });
+          });
+        });
       }
+      
       return false; // prevents login button highlighting
     });
     
@@ -917,7 +965,8 @@ define('app', [
     initialize: function() {            
       var self = this;
       doPreStartTasks().always(function() {
-        G.whenNotRendering(doPostStartTasks);
+//        G.whenNotRendering(doPostStartTasks);
+        doPostStartTasks();
         startApp().always(function() {
           Events.trigger('appStart');
         });

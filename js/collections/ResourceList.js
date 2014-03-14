@@ -29,7 +29,7 @@ define('collections/ResourceList', [
         offset: 0,
         firstPage: 0,
         params: {},
-        model: (models && models[0] && models[0].vocModel),
+        model: (models && models.length && models[0].vocModel),
         listId: G.nextId()
       });
       
@@ -71,13 +71,13 @@ define('collections/ResourceList', [
           }
         }
         
-        if (!valid) {
-          // TODO handle error
-        }
+//        if (!valid) {
+//          // TODO handle error
+//        }
       }
       
       try {
-        this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
+        this.belongsInCollection = U.buildValueTester(this.params, this.vocModel) || G.trueFn;
         this._unbreak();
       } catch (err) {
         this.belongsInCollection = G.falseFn; // for example, the where clause might assume a logged in user
@@ -417,7 +417,7 @@ define('collections/ResourceList', [
       this.params = params;
       this.modelParams = modelParams;
       this.modelParamsStrict = strict;
-      this.url = this.baseUrl + (this.params ? "?" + $.param(this.params) : ''); //this.getUrl();
+      this.url = this.baseUrl + (_.size(this.params) ? "?" + $.param(this.params) : ''); //this.getUrl();
       this.query = U.getQueryString(modelParams, true); // sort params in alphabetical order for easier lookup
     },
     isAll: function(interfaceNames) {
@@ -457,7 +457,12 @@ define('collections/ResourceList', [
     
     set: function(resources, options) {
       options = _.defaults(options || {}, {partOfUpdate: true});
-      return Backbone.Collection.prototype.set.call(this, resources, options);
+//      var start = _.now();
+//      try {
+        return Backbone.Collection.prototype.set.call(this, resources, options);
+//      } finally {
+//        log("Collection.set for {0} resources took {1}ms".format(resources.length, _.now() - start | 0));
+//      }
     },
 
     disablePaging: function() {
@@ -508,7 +513,7 @@ define('collections/ResourceList', [
       if (options.params) {
         _.extend(this.params, options.params);
         try {
-          this.belongsInCollection = U.buildValueTester(this.params, this.vocModel);
+          this.belongsInCollection = U.buildValueTester(this.params, this.vocModel) || G.trueFn;
           this._unbreak();
         } catch (err) {
           this.belongsInCollection = G.falseFn; // for example, the where clause might assume a logged in user  
@@ -532,10 +537,13 @@ define('collections/ResourceList', [
       
       var self = this,
           vocModel = this.vocModel,
+          success = options.success,
           error = options.error = options.error || Errors.getBackboneErrorHandler(),
           adapter = vocModel.adapter,
           params = this.params,
-          extraParams = options.params || {};
+          extraParams = options.params || {},
+          urlParams,
+          limit;
 
       if (this['final']) {
         error(this, {status: 204, details: "This list is locked"}, options);
@@ -556,8 +564,7 @@ define('collections/ResourceList', [
         params.$offset = this.offset;
       
       this.rUri = options.rUri;
-      var urlParams = this.rUri ? _.getParamMap(this.rUri) : {};
-      var limit;
+      urlParams = this.rUri ? _.getParamMap(this.rUri) : {};
       if (urlParams) {
         limit = urlParams.$limit;
         limit = limit && parseInt(limit);
@@ -568,7 +575,7 @@ define('collections/ResourceList', [
       if (limit > 50)
         options.timeout = 5000 + limit * 50;
       
-      params.$limit = limit;
+      options.limit = params.$limit = limit;
       try {
         options.url = this.getUrl(extraParams);
       } catch (err) {
@@ -586,8 +593,18 @@ define('collections/ResourceList', [
           error.call(self, self, resp, options);
       }
       
-      var success = options.success || function(resp, status, xhr) {
-        var pagination = xhr.getResponseHeader("X-Pagination"),
+      options.success = function(resp, status, xhr) {
+        if (self.lastFetchOrigin === 'db') {
+          if (success)
+            return success(resp, status, xhr);
+          
+          return;
+        }
+        
+        var now = G.currentServerTime(),
+            code = xhr.status,
+            select = extraParams && extraParams.$select,
+            pagination = xhr.getResponseHeader("X-Pagination"),
             total = xhr.getResponseHeader("X-Range-Total"),
             mojo = xhr.getResponseHeader("X-Mojo");
         
@@ -618,20 +635,6 @@ define('collections/ResourceList', [
           }
         }
         
-        self.update(resp, options);        
-      };
-      
-      options.success = function(resp, status, xhr) {
-        if (self.lastFetchOrigin === 'db') {
-          self.update(resp, options);
-          success(resp, status, xhr);
-          return;
-        }
-        
-        var now = G.currentServerTime(),
-            code = xhr.status,
-            select = extraParams && extraParams.$select;
-        
         function err() {
           debugger;
           log('error', code, options.url);
@@ -647,7 +650,9 @@ define('collections/ResourceList', [
             break;
           case 204:
             self.trigger('endOfList');
-            success([], status, xhr);
+            if (success)
+              success([], status, xhr);
+            
             return;
           case 304:
 //            var ms = self.models.slice(options.start, options.end);
@@ -667,15 +672,19 @@ define('collections/ResourceList', [
 //            });
 //            
 //            self.trigger('endOfList');
-            success([], status, xhr);
+            if (success)
+              success([], status, xhr);
+            
             return;
           default:
             err();
             return;
         }
         
-        self.update(resp, options);
-        success(resp, status, xhr);
+        self.update(resp, options);        
+        if (success)
+          success(resp, status, xhr);
+        
         if (!select || select == '$all')
           return;
         
@@ -700,7 +709,8 @@ define('collections/ResourceList', [
           })
         };
         
-        G.whenNotRendering(self.fetch.bind(self, newOptions));
+//        G.whenNotRendering(self.fetch.bind(self, newOptions));
+        self.fetch(newOptions);
       }; 
 
       if (this.offset && !this._outOfData) {
@@ -806,5 +816,6 @@ define('collections/ResourceList', [
     displayName: 'ResourceList'
   });
   
+//  _.toTimedFunction(Backbone.Collection.prototype, 'set');
   return ResourceList;
 });

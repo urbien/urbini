@@ -127,6 +127,8 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
 //          }
 //        };
 
+    // must merge results in first, otherwise we don't know if we received an update to already cached resources, or a batch of new resources
+    this.data.update(results, this.options);
     try {
       if (this._isForceFetch())
         return this._fetchFromServer();
@@ -145,7 +147,7 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
           if (p == 'X-Pagination')
             return JSON.stringify(pagination);
         }
-      }); // add to / update collection
+      });
     }
   };
 

@@ -1,31 +1,64 @@
 html {
   font-size: 10px;
 }
+#headerUl > li > a {
+  line-height: inherit;
+}
 
+#sidebar div.dateLI {
+  position:absolute;
+  top:0;
+  right: 1rem;
+  font-size: 1.2rem;
+}
+
+#name.resTitle {
+  padding-bottom: 4px;
+}
+#other li {
+  min-height: 3rem;
+}
 .menuItems {
   list-style: none;
   padding-left: 0;
 }
+#rightMenuItems header {
+  padding-left: 15px;
+}
+
 [data-type="list"] {
   padding: 0;
   background: #eee;
 }
-[data-type="list"] li, #sidebar li.image_fitted {
-  border-bottom: solid 0.1rem #e3e3e3;
-  height: 8rem;
-}
 
-#headerDiv {
-  margin-top:10px;
+[data-type="list"] li p:first-of-type {
+  font-size:1.6rem;
 }
+[data-type="list"] header {
+  padding: 0.5rem 0rem;
+}
+[data-type="list"] .editList header {
+  padding: 0.5rem 0rem 0.5rem 1rem;
+}
+[data-type="list"] li, #sidebar li.image_fitted {
+  border-bottom: solid 1px #e3e3e3;
+  height: 8rem;
+  color: #606060;
+}
+/*
+#headerDiv {
+  line-height: 32px; 
+}
+*/
 #name h4 {
   font-weight:normal;
-  margin: 15px 0 7px 0;
+/*  margin: 15px 0 7px 0; */
   font-size:2.3rem;
   color:#eee;
 }
 .hdr {
-  width:100%;height:40px
+  width:100%;
+  height:32px;
 }
 
 #categories, #toggleFilter {
@@ -38,26 +71,23 @@ html {
   display:block;
   max-width:100%;
   list-style:none;
-  position:relative;
-  overflow:visible;margin: -10px -1px 0 0;
   padding:0;
 }
 
 #headerUl s { color: #757575 }
 #headerUl li {
-/*  border-right: 1px solid #757575; */ 
-  font-size:32px;
+  font-size:28px;
   float:left;
   text-align:center;
-  margin:-1px -1px 0 0;
+  margin:auto;
   cursor: pointer;
   height:100%;
-  margin-top:0.5rem;
 }
+
 #headerUl li i {
-  font-size:3.2rem;
-  margin-top:1rem;
+  font-size:2.8rem; 
 }
+
 #headerUl li:last-child {
   border-right: none;
 }
@@ -68,13 +98,20 @@ html {
   min-height:3.2rem;
 }
 
-#resourceView li {
- border-bottom: 0.1rem solid #e3e3e3;
+#resourceView li, #cpView li {
+  border-bottom: 1px solid #e3e3e3;
+  padding: 0 10px;
 }
-
-
+#resourceView header, #cpView header {
+  padding: 10px;
+}
+/*
 #buttons {
-  margin-top: -5px;
+  margin-top: -15px;
+}
+*/
+#buttons h4 {
+  margin-top: 0px;
 }
 button {
   border-radius: 1rem;
@@ -83,14 +120,14 @@ button {
 }
 
 #headerDiv h4 {
-  padding-top: 10px;
+  padding-top: 5px; 
 }
 
 #headerButtons a[role="button"] {
   width: auto;
   height: 2.3rem;
   background: #fafafa url(buttons/images/ui/default.png) repeat-x left bottom / auto 100%;
-  border: 0.1rem solid #a6a6a6;
+  border: 1px solid #a6a6a6;
   font-size: 1rem;
   line-height: 2.3rem;
   border-radius: 0.5rem;
@@ -156,7 +193,7 @@ section[data-type="sidebar"] {
   text-shadow: none;
 }
 section[data-type="sidebar"] > ul > li {
-  border-bottom: 0.1rem solid #000000;
+  border-bottom: 1px solid #000000;
 }
 
 [data-type="list"] header:before {
@@ -176,7 +213,7 @@ section[data-type="sidebar"] >  ul > header {
   font-weight: normal;
   font-size: 18px; 
   line-height: 2rem;
-  border-bottom: 0.1rem solid #596068;
+  border-bottom: 1px solid #596068;
 }
 
 .acounter {
@@ -210,6 +247,9 @@ section[data-type="sidebar"]:after {
 #sidebar div {
   font-size: 1.6rem;
 }
+#sidebar div.masonry-brick {
+  cursor: pointer;
+}
 .home {
   float:right; 
   position:relative; 
@@ -220,6 +260,7 @@ section[data-type="sidebar"]:after {
 
 [data-type="list"] li > a {
   height: auto;
+  color: #606060;
 }
 
 li label.ui-input-text, li label.select {
@@ -263,8 +304,8 @@ fieldset {
   background: none;
 }
 
-#cpView > li > p, #resourceView > li > p, #other > ul > li > p {
-  margin: 0 1.5rem;
+#resourceView > li > p, #other > ul > li > p {
+  margin: 0 1rem;
 }
 
 [data-type="list"] #cpView > li, #resourceView > li {
@@ -281,7 +322,7 @@ fieldset {
 .editList a {
   cursor:pointer;
 }
-#_prim {
+._prim {
   padding: 0.5rem 1.5rem;
 }
 .resourceProp {
@@ -351,7 +392,7 @@ fieldset#submitBtns div:nth-child(2) button {
   background: #333;
 }
 a {
-  color: #333333;
+  color: #606060;
 }
 #login_popup .popup {
   background: #ccc;
@@ -374,7 +415,10 @@ a {
   margin: 0.8rem;
 }
 .cpA {
-  font-weight:normal;position:absolute;width:100%;height:100%;
+  font-weight:normal;
+  position:absolute;
+  width:100%;
+  height:100%;
 }
 .cp i {
   z-index:1001; 
@@ -443,17 +487,22 @@ section#login_popup {
   top:1.5rem;
   overflow:hidden;
 }
-
-.physics input[type="range"] {
-  width: 90%;
-}
-.physics td {
-  text-align: center;
-  width: 33%;
-}
+/*
 .commonLI {
   padding-left: 1rem;
 }
+*/
 #sidebar .ui-li-count {
   float: right;
+}
+.u-desc a {
+  text-decoration:underline;
+  color: #16A085;
+}
+#headerButtons button {
+  font-weight: normal;
+}
+
+.section .section-header:after {
+  height: auto;
 }

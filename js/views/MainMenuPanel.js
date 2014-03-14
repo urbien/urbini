@@ -32,6 +32,7 @@ define('views/MainMenuPanel', [
 //      'click #add': 'add',
 //      'click #delete': 'delete',
 //      'click #subscribe': 'subscribe',
+      'click #login'     : 'login',
       'click #logout'    : 'logout',
       'click #home123'   : 'home',
       'click #urbien123' : 'home',
@@ -44,10 +45,20 @@ define('views/MainMenuPanel', [
 //      this.router.navigate(U.makeMobileUrl('edit', this.resource.getUri()), {trigger: true, replace: true});
 //      return this;
 //    },
+    login: function(e) {
+      Events.stopEvent(e);
+      Events.trigger('req-login', {
+        dismissible: true
+      });
+      
+      this.hide();
+    },    
+
     logout: function(e) {
       Events.stopEvent(e);
 //      G.log(this.TAG, "Recording step for tour: selector: #logout");
       Events.trigger('logout');
+      this.hide();
       return;
     },
     home: function(e) {
@@ -59,10 +70,11 @@ define('views/MainMenuPanel', [
       
 //      G.log(this.TAG, "Recording step for tour: selector = 'id'; value = '" + t.id + "'");
       if (t.id == 'home123') 
-        window.location.href = here.slice(0, here.indexOf('#'));
+        Events.trigger('navigate', here.slice(0, here.indexOf('#')));
       else 
-        window.location.href = G.serverName + '/app/UrbienApp';
+        Events.trigger('navigate', G.serverName + '/app/UrbienApp');
       
+      this.hide();
       return this;
     },
     click: function(e) {
@@ -92,7 +104,7 @@ define('views/MainMenuPanel', [
 //    tap: Events.defaultTapHandler,
     render:function (eventName) {
       if (G.isJQM()) {
-        var mi = this.el.querySelector('#menuItems');
+        var mi = this.el.$('#menuItems')[0];
         if (mi) {
   //        $('#' + this.viewId).panel().panel("open");
           this.$el.panel("open");
@@ -110,12 +122,39 @@ define('views/MainMenuPanel', [
         this.html(this.template(json));      
 
       var ul = this.ul = this.$('#menuItems')[0];
-      var frag = document.createDocumentFragment();
-
-      if (!G.currentUser.guest) {
+      var html = "";
+      
+      if (G.currentUser.guest)
+        html += this.menuItemTemplate({title: this.loc('login'), icon: 'user', mobileUrl: 'view/profile', homePage: 'y', id: 'login'});
+      else {
         var mobileUrl = 'view/profile';
         if (!hash  ||  hash != mobileUrl) {
-          U.addToFrag(frag, this.menuItemTemplate({title: this.loc('profile'), mobileUrl: mobileUrl, image: G.currentUser.thumb, cssClass: 'menu_image_fitted' }));
+          var params = {
+            title: this.loc('profile'), 
+            mobileUrl: mobileUrl, 
+            image: G.currentUser.thumb, 
+            cssClass: 'menu_image_fitted'
+          };
+          
+          var w = G.currentUser.originalWidth, h = G.currentUser.originalHeight;
+          var maxDim = 100; // for profile
+          if (w < h) {
+            var r = 100 / w;
+            maxDim = Math.floor(h * r); 
+ 
+          }
+            
+          var clip = U.clipToFrame(47, 47, w, h, maxDim);
+          if (clip) {
+            params.top = clip.clip_top;
+            params.clip_right = clip.clip_right;
+            params.bottom = clip.clip_bottom;
+            params.clip_left = clip.clip_left;
+            params.right = ((100 - 42)/2); 
+          }
+
+          html += this.menuItemTemplate(params);
+//          U.addToFrag(frag, this.menuItemTemplate(params));
         } 
       }
       
@@ -124,7 +163,8 @@ define('views/MainMenuPanel', [
         for (var name in tabs) {
           var t = tabs[name];
           t.pageUrl = t.hash;
-          U.addToFrag(frag, this.menuItemTemplate(t))
+//          U.addToFrag(frag, this.menuItemTemplate(t));
+          html += this.menuItemTemplate(t);
         }
       }
       
@@ -156,7 +196,9 @@ define('views/MainMenuPanel', [
 */      
 
       if (!G.currentUser.guest) {
-        U.addToFrag(frag, self.groupHeaderTemplate({value: this.loc('account')}));
+        html += self.groupHeaderTemplate({value: this.loc('account')});
+//        U.addToFrag(frag, self.groupHeaderTemplate({value: this.loc('account')}));
+
 //        var mobileUrl = 'view/profile';
 //        if (!hash  ||  hash != mobileUrl) {
 //          var title = 'Profile';
@@ -189,14 +231,16 @@ define('views/MainMenuPanel', [
           var $in = '_uri,' + _.pluck(_.toArray(installed), 'application').join(',');
           
           // Apps I installed
-          U.addToFrag(frag, this.menuItemTemplate({title: this.loc("myApps"), mobileUrl: U.makeMobileUrl('list', "model/social/App", {$in: $in, $myApps: 'y'})}));
+//          U.addToFrag(frag, this.menuItemTemplate({title: this.loc("myApps"), mobileUrl: U.makeMobileUrl('list', "model/social/App", {$in: $in, $myApps: 'y'})}));
+          html += this.menuItemTemplate({title: this.loc("myApps"), mobileUrl: U.makeMobileUrl('list', "model/social/App", {$in: $in, $myApps: 'y'})})
         }
         
         // Apps I created
 //        U.addToFrag(frag, this.menuItemTemplate({title: "My Apps", mobileUrl: U.makeMobileUrl('list', "model/social/App", {creator: '_me'})}));
 
 //        if (user.newAlertsCount) {
-          U.addToFrag(frag, this.menuItemNewAlertsTemplate({title: this.loc('notifications'), newAlerts: user.newAlertsCount, pageUrl: U.makePageUrl('list', 'model/workflow/Alert', {to: '_me'/*, markedAsRead: false*/}) }));
+//          U.addToFrag(frag, this.menuItemNewAlertsTemplate({title: this.loc('notifications'), newAlerts: user.newAlertsCount, pageUrl: U.makePageUrl('list', 'model/workflow/Alert', {to: '_me'/*, markedAsRead: false*/}) }));
+          html += this.menuItemNewAlertsTemplate({title: this.loc('notifications'), newAlerts: user.newAlertsCount, pageUrl: U.makePageUrl('list', 'model/workflow/Alert', {to: '_me', '$orderBy': 'dateReceived', '$asc': 0 /*, markedAsRead: false*/}) });
 //        }
         /*
         if (user.alertsCount) {
@@ -206,19 +250,24 @@ define('views/MainMenuPanel', [
 //        U.addToFrag(frag, this.menuItemTemplate({title: 'Clear Notifications', pageUrl: U.makePageUrl('list', 'model/workflow/Alert', {sender: '_me', $clear: 'true', $returnUri: window.location.href}) }));
         }
         */
-        U.addToFrag(frag, this.menuItemTemplate({title: this.loc("logout"), id: 'logout', pageUrl: G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.pageRoot) }));
+//        U.addToFrag(frag, this.menuItemTemplate({title: this.loc("logout"), id: 'logout', pageUrl: G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.pageRoot) }));
+        html += this.menuItemTemplate({title: this.loc("logout"), id: 'logout', pageUrl: G.serverName + '/j_security_check?j_signout=true&returnUri=' + encodeURIComponent(G.pageRoot) });
       }
 
 //      U.addToFrag(frag, this.homeMenuItemTemplate({title: "App Home", icon: 'repeat', id: 'home123'}));
-      if (window.location.hash.length > 0)
-        U.addToFrag(frag, this.menuItemTemplate({title: this.loc("appHome"), icon: 'repeat', id: 'home123'}));
+      if (window.location.hash.length > 0) {
+//        U.addToFrag(frag, this.menuItemTemplate({title: this.loc("appHome"), icon: 'repeat', id: 'home123'}));
+        html += this.menuItemTemplate({title: this.loc("appHome"), icon: 'repeat', id: 'home123'});
+      }
       
       if (G.pageRoot != 'app/UrbienApp') {
 //        U.addToFrag(frag, this.homeMenuItemTemplate({title: "Urbien Home", icon: 'repeat', id: 'urbien123'}));
-        U.addToFrag(frag, this.menuItemTemplate({title: this.loc("urbienHome"), icon: 'repeat', id: 'urbien123', mobileUrl: '#home/'}));
+//        U.addToFrag(frag, this.menuItemTemplate({title: this.loc("urbienHome"), icon: 'repeat', id: 'urbien123', mobileUrl: '#home/'}));
+        html += this.menuItemTemplate({title: this.loc("Runs on Urbien"), id: 'urbien123', mobileUrl: '#home/'});
       }
       
-      ul.appendChild(frag);      
+      ul.innerHTML = html;
+//      ul.appendChild(frag);      
 //      var p = document.getElementById(this.viewId);
 //      p.appendChild(this.el);
 //      if (!G.isJQM()) 

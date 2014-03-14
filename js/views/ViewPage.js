@@ -13,6 +13,9 @@ define('views/ViewPage', [
   return BasicPageView.extend({
     clicked: false,
     className: 'scrollable',
+//    style: {
+//      overflow: 'visible' // because resourceViewHolder is absolutely positioned, so we can't use the size of the container (this view) as a natural boundary
+//    },
     initialize: function(options) {
       _.bindAll(this, 'render', 'home', 'edit', 'pageChange');
       BasicPageView.prototype.initialize.apply(this, arguments);
@@ -24,6 +27,9 @@ define('views/ViewPage', [
 //        setTimeout(self.pageChange, 1000);
 //      });
       
+      if (options.style)
+        _.extend(this.style, options.style);
+      
       this.makeTemplate('resource', 'template', this.vocModel.type);
       this.viewId = options.viewId;
       
@@ -31,9 +37,9 @@ define('views/ViewPage', [
       this.headerButtons = {
         back: true,
 //        menu: true,
-        rightMenu: true, //!G.currentUser.guest,
-        login: G.currentUser.guest,
-        chat: res.isA("ChatRoom")
+//        chat: res.isA("ChatRoom"),
+        rightMenu: true //!G.currentUser.guest,
+//        login: G.currentUser.guest,
       };
 
       var params = _.getParamMap(window.location.hash);
@@ -110,6 +116,7 @@ define('views/ViewPage', [
 //        this.buyGroup = new ResourceView(_.extend({isBuyGroup: true}, commonParams));
 //        this.addChild(this.buyGroup);
 //      }
+      this.isImageCover = U.isA(this.vocModel, 'ImageCover')  &&  U.getCloneOf(this.vocModel, 'ImageCover.coverPhoto');
         
       this.resourceView = new ResourceView(commonParams);
       this.addChild(this.resourceView);
@@ -125,7 +132,7 @@ define('views/ViewPage', [
       var isUrbien = U.isAssignableFrom(res, commonTypes.Urbien);
       var isArtist = U.isAssignableFrom(res, U.getTypeUri('classifieds/movies/Artist')) || res.type.endsWith("/Artist");
       var isMovie = U.isAssignableFrom(res, U.getTypeUri('classifieds/movies/Movie')) || res.type.endsWith("/Movie");
-      if (isApp || isUrbien || isArtist  ||  isMovie) {
+      if (!options.mock && (isApp || isUrbien || isArtist  ||  isMovie)) {
         var uri = res.getUri();
         var friendType, friendName, title = 'Friends', friendProp; //, friend1 = 'friend1', friend2 = 'friend2';
         if (isApp) {
@@ -198,6 +205,13 @@ define('views/ViewPage', [
       
       this.listenTo(Events, "mapReady", this.showMapButton);
     },
+//    _updateSize: function() {
+//      try {
+//        return this.resourceView._updateSize();
+//      } finally {
+//        _.extend(this, _.pick(this.resourceView, '_outerHeight', '_outerWidth', '_width', '_height', '_bounds'));
+//      }
+//    },
 //    doInlineBacklinks: function(bls) {
 //      var ranges = _.pluck(bls, "range");
 //      this.inlineXBacklinks = [];
@@ -265,7 +279,7 @@ define('views/ViewPage', [
     home: function() {
 //      this.router.navigate(G.homePage, {trigger: true, replace: false});
       var here = window.location.href;
-      window.location.href = here.slice(0, here.indexOf('#'));
+      Events.trigger('navigate', here.slice(0, here.indexOf('#')));
       return this;
     },
     edit: function(e) {
@@ -275,8 +289,9 @@ define('views/ViewPage', [
       return this;
     },
 
-    render: function() {
-      if (!this.rendered)
+    render: function(options) {
+      options = options || {};
+      if (!this.rendered && !options.mock)
         this.addToWorld(null, true); // auto-add view page brick
       
       var self = this,
@@ -285,20 +300,20 @@ define('views/ViewPage', [
           views = {};
       
       this.html(this.template(this.getBaseTemplateData()));
-      
-      this.photogridPromise.done(function() {        
+      this.photogridPromise.done(function() {
         self.assign({
           '#photogrid': self.photogrid
-        });
+        }, options);
         
-        self.photogrid.onload(function() {
+        self.photogrid.onload(Q.write.bind(Q, function() {
           var pHeader = self.$('.thumb-gal-header')[0];
           var h3 = pHeader.querySelector('h3');
           if (h3)
             h3.innerHTML = self.friends.title;
           
           pHeader.classList.remove('hidden');
-        });
+//          self.invalidateSize();
+        }));
       });
 
 //      this.chatPromise && this.chatPromise.done(function() {        
@@ -308,23 +323,25 @@ define('views/ViewPage', [
 //        });
 //      });
 
-      views[viewTag] = this.resourceView;
-      if (this.cp)
-        views['#cpView'] = this.cp;
-      if (this.cpMain)
-        views['#mainGroup'] = this.cpMain;
+      if (!options.mock) {
+        views[viewTag] = this.resourceView;
+        if (this.cp)
+          views['#cpView'] = this.cp;
+        if (this.cpMain)
+          views['#mainGroup'] = this.cpMain;
+      }
  
 //      var isGeo = this.isGeo();
 //      this.headerButtons.aroundMe = isGeo;
       
       
-      this.assign('#headerDiv', this.header, {buttons: this.headerButtons});
+      this.assign('#headerDiv', this.header, _.extend({buttons: this.headerButtons}, options));
       this.assign(views);
       this.imgReady.done(function() {
-        self.assign(self.imgDiv, self.imageView);
+        self.assign(self.imgDiv, self.imageView, options);
       });
 
-      if (this.isPurchasable && !this.buyGroup && this.el.querySelector('#buyGroup')) {
+      if (!options.mock && this.isPurchasable && !this.buyGroup && this.el.querySelector('#buyGroup')) {
         this.getFetchPromise().done(function() {
           if (res.get('price') == null)
             return;
@@ -355,9 +372,9 @@ define('views/ViewPage', [
         }
       }       
       
-      this.el.dataset.theme = G.theme.swatch;
-      if (G.theme.backgroundImage) 
-        this.$('#resourceViewHolder').$css('background-image', 'url(' + G.theme.backgroundImage +')');
+//      this.el.dataset.theme = G.theme.swatch;
+//      if (G.theme.backgroundImage) 
+//        this.$('#resourceViewHolder').$css('background-image', 'url(' + G.theme.backgroundImage +')');
 
       this.$('#chatbox').$hide();
             
@@ -371,7 +388,28 @@ define('views/ViewPage', [
 //        });
 //      });
       
+      if (!this.rendered && !options.mock) {
+        this.addToWorld(null, true); // auto-add view page brick
+//        $.when.apply($, this._getLoadingPromises()).done(function() {
+//          var holder = self.$('#resourceViewHolder')[0];
+//          self._updateSize(holder);
+//          self.updateMason();
+//        });
+      }
+
       return this;
+    },
+    
+//    _sizeProps: ['_outerHeight', '_outerWidth', '_width', '_height', '_bounds'],
+//    _updateSize: function() {
+//      if (!this.resourceView.rendered)
+//        return BasicPageView.prototype._updateSize.apply(this, arguments);
+//      else
+//        return BasicPageView.prototype._updateSize.call(this, this.$('#resourceViewHolder')[0]);
+//    },
+    
+    onLoadedImage: function(callback, context) {
+      return this.imageView ? this.imageView.onload(callback, context) : G.getRejectedPromise();
     }
   }, {
     displayName: 'ViewPage'

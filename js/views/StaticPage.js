@@ -9,7 +9,7 @@ define('views/StaticPage', [
   return BasicPageView.extend({
     initialize: function(options) {
       options = options || {};
-      BasicPageView.prototype.initialize.apply(this, arguments);
+      BasicPageView.prototype.initialize.call(this, options);
 
       if (options.header) {
         this.headerButtons = {
@@ -28,13 +28,35 @@ define('views/StaticPage', [
         this.addChild(this.header);
       }
 
-      this.makeTemplate(options.template || U.getCurrentUrlInfo().params.template, 'template');
+      if (this.el.dataset.role != 'page')
+        this.makeTemplate(options.template || this.hashParams.template, 'template');
     },
     
     render: function() {
-      this.$el.html(this.template());
-      if (!this.$el.parentNode) 
+      if (this.template)
+        this.el.$html(this.template());
+      
+      if (!this.rendered) {
+        var menuBtnEl = this.el.querySelector('#hpRightPanel');
+        if (menuBtnEl) {
+          this.menuBtn = new MenuButton({
+            el: menuBtnEl,
+            pageView: this,
+            viewId: this.viewId,
+            homePage: true
+          });
+          
+          this.menuBtn.render();
+        }
+        
+        this.addToWorld(null, true);
+      }
+      
+      if (!this.el.parentNode) 
         $('body').append(this.$el);
+      
+      if (!this.rendered)
+        this.addToWorld(null, true);
     }    
   }, {
     displayName: 'StaticPage'

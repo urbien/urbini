@@ -22,7 +22,7 @@
     </form>
    {{ } }}
    -->
-    <section  id="sidebar" data-type="list" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
+    <section  id="sidebar" data-type="list">
    </div>
     </section>
     <div id="nabs_grid" class="masonry">
@@ -42,7 +42,7 @@
     </form>  
     <form data-ajax="false" id="editRlForm" action="#">
       <input type="submit" id="editRlSubmit" value="Submit" />
-      <ul data-role="listview" data-theme="{{= G.theme.list }}" id="editRlList" class="action-list" data-inset="true">
+      <ul data-role="listview" id="editRlList" class="action-list" data-inset="true">
       </ul>
     </form>  
   </div>
@@ -56,44 +56,48 @@
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
   <div id="resourceViewHolder">
-    <div style="width: 100%;position:relative;padding-right:10px;overflow:hidden">
-      <div id="resourceImage" style="width:50%;float:left;margin:0; padding:0;"><!-- style="width:auto" --></div>
-      <div id="mainGroup"></div>
+    <div style="width: 100%;position:relative;min-height:40px;overflow:hidden">
+      {{ if (this.isImageCover) { }} 
+        <div id="resourceImage" style="position:absolute;z-index:1"></div>
+        <div data-role="footer" class="thumb-gal-header hidden" 
+          style="opacity:0.7;position:absolute;top:312px;width:100%;background:#eee;text-shadow:none;color:{{= G.coverImage ? G.coverImage.background : '#eeeeee;'}}"><h3></h3></div>    
+        <div id="mainGroup" style="top:120px;right:1.3rem;position:absolute;"></div>
+      {{ } }}
+      {{ if (!this.isImageCover) { }}
+        <div id="resourceImage" style="margin:0; padding:0;{{= U.getArrayOfPropertiesWith(this.vocModel.properties, "mainGroup") &&  U.isA(this.vocModel, 'ImageResource') ? 'min-height:110px;' : ''}}" ><!-- style="width:auto" --></div>
+        <div id="mainGroup" style="right:1.3rem;position:absolute;"></div>
+      {{ } }}
       <!--div id="buyGroup" class="ui-block-b" style="width:50%; min-width: 130px"></div-->
     </div>
-    <div id="resourceImageGrid" data-role="content" style="padding: 2px;" data-theme="{{= G.theme.photogrid }}" class="grid-listview hidden"></div>
+    <div id="resourceImageGrid" data-role="content" style="padding: 2px;" class="grid-listview hidden"></div>
     
     <div class="thumb-gal-header hidden"><h3></h3></div>
-    <!--div id="photogrid" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}" data-role="content" class="grid-listview hidden">
-      <div class="dummy head"></div>
-      <div class="dummy tail"></div>
+    <!--div id="photogrid" style="padding: 7px;" data-role="content" class="grid-listview hidden">
     </div-->
     
     <div id="photogrid" data-inset="true" data-filter="false" class="thumb-gal hidden">
-      <div class="dummy head"></div>
-      <div class="dummy tail"></div>
     </div>
     <br/>
     {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
-       <div style="padding:10px;"><a data-role="button" class="{{= 'ui-btn-hover-' + G.theme.swatch }}" data-icon="heart" data-theme="{{= G.theme.swatch }}" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></div>
+       <div style="padding:10px;"><a data-role="button" class="ui-btn-hover-c" data-icon="heart" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></div>
     {{ } }}
     
-    <section data-type="list" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
-      <ul data-theme="{{= G.theme.list }}" class="list-group" id="resourceView" style="padding:10px;">
+    <section data-type="list">
+      <ul class="list-group" id="resourceView" style="padding:10px;">
       </ul>
     </section>
-    <div id="about" class="hidden" style="padding: 7px;" data-theme="{{= G.theme.photogrid }}"></div>
+    <div id="about" class="hidden" style="padding: 7px;"></div>
     
     {{ if ($('#other')) { }}
       <!--br/>
       <br/-->
     {{ } }}
-    <section data-type="list" data-theme="{{= G.theme.list }}" data-filter-theme="{{= G.theme.list }}">
-      <ul data-theme="{{= G.theme.list }}" class="list-group" id="cpView" style="padding: 10px;">
+    <section data-type="list">
+      <ul class="list-group" id="cpView" style="padding: 10px;">
       </ul>
     </section>
   </div>
-  <!--div data-role="footer" class="ui-bar" data-theme="{{= G.theme.footer }}">
+  <!--div data-role="footer" class="ui-bar">
      <a data-role="button" data-shadow="false" data-icon="repeat" id="homeBtn" target="#">Home</a>
      <a data-role="button" data-shadow="false" data-icon="edit" id="edit" target="#" style="float:right;" id="edit">{{= loc('edit') }}</a>
   </div-->
@@ -132,9 +136,7 @@
 
 <script type="text/template" id="cpTemplate">
 <!-- readwrite backlink in resource view -->
-<li class="list-group-item" data-propName="{{= shortName }}"
-{{= obj.inline ? ' data-theme="{0}">'.format(G.theme.footer) : '' }}
->
+<li class="list-group-item" data-propName="{{= shortName }}">
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}<span class="badge pull-right" style="margin-right:2.5rem;">{{= value }}</span></a>
@@ -148,9 +150,7 @@
 
 <script type="text/template" id="cpTemplateNoAdd">
 <!-- readonly backlink in resource view -->
-<li class="list-group-item" data-propName="{{= shortName }}"
-  {{= obj.inline ? ' data-theme="{0}">'.format(G.theme.activeButton) : '' }}
->
+<li class="list-group-item" data-propName="{{= shortName }}">
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
@@ -202,7 +202,7 @@
   {{ var action = action ? action : 'view' }}
   <div style="margin:0" data-viewid="{{= viewId }}">
   {{ if (!obj.v_submitToTournament) { }}
-    <div style="padding:.7em 10px 10px 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
+    <div style="padding:.7em 10px 10px 90px; {{= obj.image ? 'min-height:59px;' : '' }}" data-uri="{{= U.makePageUrl(action, _uri) }}">
   {{ } }}
   {{ if (obj.v_submitToTournament) { }}
     <div style="padding:.7em 10px 0 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
@@ -231,7 +231,7 @@
       style="padding: .7em 10px 10px 0px;"
     {{ } }}
     {{ if (!obj.isJst  &&  (obj._hasSubmittedBy || !obj.v_submitToTournament)) { }}
-      style="padding-left: 1rem;min-height:59px"
+      {{= obj.image ? 'style="min-height:59px;"' : '' }}
     {{ } }}
   {{ } }}
   {{ if (obj.v_submitToTournament) { }}
@@ -262,7 +262,7 @@
 
 <script type="text/template" id="propGroupsDividerTemplate">
   <!-- row divider / property group header in resource view -->
-  <li class="list-group-item active">{{= value }}</li>
+  <li class="list-group-item active" {{= G.coverImage ? 'style="background:' + G.coverImage.background + ';color:' + G.coverImage.color + ';"' : '' }}>{{= value }}</li>
 </script>
 
 <script type="text/template" id="mapItButtonTemplate">
@@ -289,7 +289,8 @@
 
 <script type="text/template" id="addButtonTemplate">
   <!-- button used for creating new resources -->
-  <a target="#" {{= obj.empty ? 'class="hint--bottom hint--always" data-hint="Add item"' : '' }}><i class="ui-icon-plus-sign"></i></a>
+  <!--a target="#" {{= obj.empty ? 'class="hint--bottom hint--always" data-hint="Add item"' : '' }}><i class="ui-icon-plus-sign"></i></a-->
+  <a target="#"><i class="ui-icon-plus-sign"></i></a>
 </script>
 
 <script type="text/template" id="menuButtonTemplate">
@@ -309,39 +310,6 @@
 <script type="text/template" id="loginButtonTemplate">
   <!-- button that summons the login popup -->
   <a target="#"><i class="ui-icon-signin"></i></a>
-</script>
-
-<script type="text/template" id="loginPopupTemplate">
-  <!-- login popup with various social network based logins -->
-  {{ var canDismiss = typeof dismissible === 'undefined' || dismissible == true; }}
-  <section id="login_popup" role="region" class="loginPopup">
-  <ul class="list-group">
-    <h4 style="margin:10px 0;color:#757575;" id="loginMsg">{{= msg }}</h4>
-    {{ _.forEach(nets, function(net) { }} 
-<li class="list-group-item">
-    <a role="button" href="{{= net.url }}" class="lpButton" {{= net.name == 'Facebook' ? ' target="_top"' : '' }}>
-      <i class="big_symbol 
-      {{ if(net.name == "Facebook") { }} ui-icon-facebook-sign {{ } }}
-      {{ if(net.name == "Google") { }} ui-icon-google-plus-sign {{ } }}
-      {{ if(net.name == "Twitter") { }} ui-icon-twitter-sign {{ } }}
-      {{ if(net.name == "LinkedIn") { }} ui-icon-linkedin-sign {{ } }}
-      {{ if(net.name == "Live") { }} ui-icon-live-sign {{ } }}
-        ">
-       </i>
-     <span>{{= net.name }}</span>
-    </a>
-</li>
-    {{ }); }}
-</ul>
-    <!--h5>Login by Email</h5>
-    <form id="loginForm" action="j_security_check" method="POST" onsubmit="return hash(this, 'j_security_check')" autocomplete="off">
-      <table>
-        <tr><td>Email: </td><td><input name="j_username" /></td></tr>
-        <tr><td>Password: </td><td><input type="password" name="j_password" /></td></tr>
-        <tr><td colspan="2"><input type="submit" value="Submit" /></td></tr>
-      </table>
-    </form-->
-  </section>
 </script>
 
 <script type="text/template" id="logoutButtonTemplate">
@@ -377,7 +345,7 @@
 
 <script type="text/template" id="enterTournamentBtnTemplate">
   <!-- button that will enter the user into a tournament -->
-  <a target="#" data-icon="star" id="enterTournament" data-theme="e" data-role="button" data-position="notext">{{= loc('enterData') + ': ' + name }}</a>
+  <a target="#" data-icon="star" id="enterTournament" data-role="button" data-position="notext">{{= loc('enterData') + ': ' + name }}</a>
 </script>
 
 <script type="text/template" id="testPlugBtnTemplate">
@@ -393,9 +361,12 @@
     </nav>      
   </div>
   <div id="buttons">  
-    {{= this.categories ? '<div style="margin:10px 0 0 10px; float:left"><a id="categories" href="#"><i class="ui-icon-tags"></i></a></div>' : '' }} 
+    {{ if (this.categories) { }}
+       <div style="margin:10px 0 0 10px; float:left"><a id="categories" href="#" {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';background:' + G.coverImage.color +';"' : '' }}>
+       <i class="ui-icon-tags"></i></a></div> 
+    {{ } }} 
     {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
-    <div id="name" class="resTitle" {{= this.categories ? 'style="width: 100%;background:#757575;"' : 'style="min-height: 20px;background:#757575;"' }} align="center">
+    <div id="name" class="resTitle" style="background:{{= G.coverImage ? G.coverImage.background : '#757575' }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
       <h4 id="pageTitle" style="font-weight:normal;">{{= this.title }}</h4>
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
         <button style="max-width:200px; display: inline-block;" class="btn" id="doTryBtn">
@@ -435,27 +406,7 @@
         </button>
       </div>
     </div>
-    <table class="physics" cellspacing="0" celladding="2" width="100%" style="background-color:#606060;display:none; ">
-      <tr>
-      <td>
-        <label for="drag">Air drag</label><br/>
-        <input type="range" id="drag" name="drag" value={{= drag * 100 }} min="1" max="99">
-      </td>  
-      <td>
-        <label for="springDamping">Spring damping</label><br/>
-        <input type="range" id="springDamping" name="springDamping" value={{= springDamping * 100 }} min="1" max="99">
-      </td>  
-      <td>
-        <label for="springStiffness">Spring stiffness</label><br/>
-        <input type="range" id="springStiffness" name="springStiffness" value={{= springStiffness * 100 }} min="1" max="99">
-      </td>
-      <!--td>
-        <label for="degree">Sensitivity</label><br/>
-        <input type="range" id="degree" name="degree" value={{= degree }} min="-10" max="10">
-      </td-->
-      </tr>
-    </table>
-    
+    <div class="physicsConstants" style="background-color:#606060; display:none; color: #ffffff;"></div>    
   </div>
 </script>
 
@@ -563,22 +514,16 @@
     </ul>
   </section>
     <div name="errors" style="float:left"></div>
-    {{ if (this.resource.isAssignableFrom("InterfaceImplementor")) }}
+    {{ if (this.resource.isAssignableFrom("InterfaceImplementor")) { }}
     <div data-role="fieldcontain" id="ip">
       <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true" data-theme="{{= G.theme.activeButton }}">{{= loc('checkAll') }}</a></div>
-        <div class="ui-block-b"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true" data-theme="{{= G.theme.footer }}">{{= loc('uncheckAll') }}</a></div>
+        <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true">{{= loc('checkAll') }}</a></div>
+        <div class="ui-block-b"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true">{{= loc('uncheckAll') }}</a></div>
       </fieldset>
       <fieldset id="interfaceProps">
       </fieldset>
     </div>
-    {{                                                             }}
-    
-    <fieldset id= "submitBtns">
-      <div><button type="cancel" class="btn btn-primary" id="cancel">{{= obj.cancel || loc('cancel') }}</button></div>
-      <div><button type="submit" class="btn btn-default" id="submit">{{= obj.submit || loc('submit') }}</button></div>
-    </fieldset>
-
+    {{ }                                                             }}    
   </form>
   <br/>
   {{ if (U.isAssignableFrom(this.vocModel, U.getLongUri1("model/portal/Comment"))) { }}
@@ -605,7 +550,7 @@
 </script>
 
 <script type="text/template" id="stringPET">
-<div id="_prim">
+<div class="_prim">
   {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 100; }}
   {{ if (name) { }}
     <label for="{{= id }}" class="ui-input-text" {{= isInput ? '' : 'style="vertical-align:top"' }}>{{= name }}</label>
@@ -620,7 +565,7 @@
 </script>
 
 <script type="text/template" id="booleanPET">
-<div id="_prim">
+<div class="_prim">
    <input type="checkbox" name="{{= shortName }}" id="{{= id }}" style="border:none;" class="formElement boolean form-control effeckt-ckbox-ios7 pull-right" {{= obj.value ? 'checked' : '' }}/>
   {{ if (name && name.length > 0) { }}
     <label for="{{= id }}">{{= name }}</label>
@@ -666,14 +611,14 @@
   <!-- {{= typeof multiValue === 'undefined' ? '' : value }} -->
 </script>
 <script type="text/template" id="telPET">
-<div id="_prim">
+<div class="_prim">
   <label for="{{= id }}" class="ui-input-text">{{= name }}</label>
   <input type="tel" name="{{= shortName }}" id="{{= id }}" class="ui-input-text" value="{{= typeof value === 'undefined' ? '' : value }}" />
 </div>
 </script>
 
 <script type="text/template" id="emailPET">
-<div id="_prim">
+<div class="_prim">
   <label for="{{= id }}" class="ui-input-text">{{= name }}</label>
   <input type="email" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="form-control ui-input-text{{= ' formElement' }}" {{= rules }} />
 </div>

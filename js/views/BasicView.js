@@ -34,6 +34,7 @@ define('views/BasicView', [
   
   var BasicView = Backbone.View.extend({
 //    viewType: 'resource',
+    myBrick: null,
     _scrollerType: 'verticalMain',
     _numBricks: 0,
     _initializedCounter: 0,
@@ -42,9 +43,10 @@ define('views/BasicView', [
     _scrollbar: false,
     _scrollbarThickness: 5,
     _dragAxis: null, // 'x' or 'y' if you want to limit it to one axis
+    _rail: true,
     _scrollAxis: 'y',
     initialize: function(options) {
-      _.bindAll(this, 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_render',  '_refresh', 'finish', '_onViewportDimensionsChanged', '_recheckDimensions', '_onMutation');
+      _.bindAll(this, 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_render',  '_refresh', 'finish', '_onViewportDimensionsChanged', '_recheckDimensions', '_onMutation', '_updateSize', 'invalidateSize');
       this._initializedCounter++;
       this.TAG = this.TAG || this.constructor.displayName;
 //      this.log('newView', ++this.constructor._instanceCounter);
@@ -122,7 +124,8 @@ define('views/BasicView', [
       this.loc = G.localize;
       if (this.model)
         this.listenTo(Events, 'preparingModelForDestruction.' + this.model.cid, this._preventModelDeletion);
-      
+    
+      this.children = {};
       this._dimensions = {};
       this._bounds = new Array(4);
 //      if (this.resource)
@@ -356,16 +359,13 @@ define('views/BasicView', [
               tmpl_data = {
                 axis: this._scrollAxis,
                 id: scrollbarId
-              },
-              frag = document.createDocumentFragment();
+              };
           
           if (!this.scrollbarTemplate)
             this.makeTemplate('scrollbarTemplate', 'scrollbarTemplate', this.vocModel && this.vocModel.type);
 
           tmpl_data[this._scrollAxis == 'x' ? 'height' : 'width'] = this._scrollbarThickness;
-          U.addToFrag(frag, this.scrollbarTemplate(tmpl_data));
-          
-          this.scrollbar = frag.childNodes[0];
+          this.scrollbar = DOM.parseHTML(this.scrollbarTemplate(tmpl_data))[0];
           this.el.$prepend(this.scrollbar);
           Physics.here.addBody(this.scrollbar, scrollbarId);
 //          Q.read(function() {
@@ -391,6 +391,7 @@ define('views/BasicView', [
           disableHover(this.el);
 
         this._checkScrollbar();
+//        this.invalidateSize();
         return result;
       }
       else {
@@ -486,8 +487,8 @@ define('views/BasicView', [
 //      });
 //    },
 
-    onload: function(callback) {
-      return this._loadPromise.done(callback);
+    onload: function(callback, context) {
+      return this._loadPromise.done(context ? callback.bind(context) : callback);
 //      return $.whenAll.apply($, this._getLoadingPromises()).then(callback);
     },
 
@@ -505,6 +506,8 @@ define('views/BasicView', [
       this._loadingDfd.resolve();
       if (!options || options.delegateEvents !== false)
         this.redelegateEvents();
+
+      this.getPageView().invalidateSize();
     },
     
     _queueTask: function(fn, scope, args) {
@@ -615,10 +618,6 @@ define('views/BasicView', [
 //    },
     
     addChild: function(view) {
-      var self = this;
-      if (!this.children)
-        this.children = {};
-      
       this.children[view.cid] = view;
       view.parentView = view.parentView || this;
       view.pageView = this.getPageView() || view.pageView;      
@@ -699,11 +698,16 @@ define('views/BasicView', [
     },
     
     _onViewportDimensionsChanged: function() {
+      this.invalidateSize();
+    },
+    
+    invalidateSize: function() {
       Q.read(this._recheckDimensions, this);
     },
     
     _recheckDimensions: function() {
-      if (this.mason && this._updateSize()) {
+      if (this.el && this.mason && this._updateSize()) {
+        this.trigger('resized');
         if (this._viewBrick)
           this.buildViewBrick();
         
@@ -763,7 +767,7 @@ define('views/BasicView', [
     },
     
     turnOffPhysics: function() {
-      if (this.mason)
+      if (this.mason && !this.isActive())
         this.mason.sleep();
       
       var children = this.children;
@@ -1048,6 +1052,7 @@ define('views/BasicView', [
           attributes: true,
           childList: true,
           characterData: true,
+          attributeOldValue: true,
           subtree: true
         }));
       } else {
@@ -1069,43 +1074,75 @@ define('views/BasicView', [
     },
     
     getScrollbarId: function() {
-      return this.getBodyId() + '-scrollbar';
+      return 'scrollbar-' + this.getBodyId();
     },
-    
+
+    getBoxBodyId: function() {
+      return Physics.getBoxId(this.getBodyId());
+    },
+
+    getRailBodyId: function() {
+      return Physics.getRailId(this.getBodyId());
+    },
+
+    getContainerRailBodyId: function() {
+      return Physics.getRailId(this.getContainerBodyId());
+    },
+
+    getContainerBoxBodyId: function() {
+      return Physics.getBoxId(this.getContainerBodyId());
+    },
+
     getBodyId: function() {
-//      return this.cid + '.' + this._initializedCounter;
       return this.cid;
     },
 
     getContainerBodyId: function() {
-//      return this.TAG + '.' + this.cid + '.' + this._initializedCounter;
       return this.TAG + '.' + this.cid;
     },
 
-    addDraggable: function() {
-      Physics.addDraggable(this.hammer(), this.getContainerBodyId(), this._dragAxis);
+    getFlexigroupId: function() {
+      return 'flexigroup.' + this.cid;
     },
 
-    _updateSize: function() {
+    addDraggable: function() {
+      Physics.addDraggable(this.hammer(), this._flexigroup ? this.getFlexigroupId() : this.getContainerBodyId(), this._dragAxis);
+    },
+
+    _updateSize: function(el) {
       // TODO - move this to domUtils - it's per DOM element, not per view
+      el = el || this.el;
       var viewport = G.viewport,
           doUpdate = false,
           oldOuterWidth = this._outerWidth,
           oldOuterHeight = this._outerHeight,
           oldWidth = this._width,
-          oldHeight = this._height;
+          oldHeight = this._height,
+          margin;
 
-      this._offsetLeft = this.el.offsetLeft;
-      this._offsetTop = this.el.offsetTop;
+      this._offsetLeft = el.offsetLeft;
+      this._offsetTop = el.offsetTop;
 
       // TODO: fix this nonsense
-      this._outerWidth = this.el.$outerWidth();
+//      if (el.scrollHeight > el.offsetHeight) {
+//        margin = el.$margin();
+//        this._outerHeight = el.scrollHeight + margin.top + margin.bottom;
+//      }
+//      else
+        this._outerHeight = el.$outerHeight();
+        
+//      if (el.scrollWidth > el.offsetWidth) {
+//        margin = margin || el.$margin();
+//        this._outerWidth = el.scrollWidth + margin.left + margin.right;
+//      }
+//      else
+        this._outerWidth = el.$outerWidth();
+      
       if (this._outerWidth)
         this._width = Math.min(this._outerWidth, viewport.width);
       else
         this._width = viewport.width > this._offsetLeft ? viewport.width - this._offsetLeft : viewport.width;
       
-      this._outerHeight = this.el.$outerHeight();
       if (this._outerHeight)
         this._height = Math.min(this._outerHeight, viewport.height);
       else
@@ -1150,6 +1187,17 @@ define('views/BasicView', [
       // override me
     },
     
+//    addBrick: function(el, id) {
+//      var brick = this.buildBrick({
+//        id: id,
+//        el: el
+//      });
+//      
+//      Physics.here.addBody(el, id);
+//      this.addBricksToWorld([brick]);
+//      return brick;
+//    },
+    
     addToWorld: function(options, addViewBrick) {      
 //      var viewport = G.viewport;
       if (this.mason)
@@ -1157,7 +1205,6 @@ define('views/BasicView', [
       
       this._updateSize();
       var self = this,
-          thisTransform = DOM.getTransform(this.el),
           containerId = this.getContainerBodyId(),
           topEdgeId = _.uniqueId('topEdge'),
           scrollbarId,
@@ -1168,7 +1215,7 @@ define('views/BasicView', [
         scrollbarOptions = _.defaults({
           _id: scrollbarId,
           vertices: Physics.getRectVertices(this._scrollbarThickness, this._scrollbarThickness)
-        }, this.getContainerBodyOptions());
+        }, _.omit(this.getContainerBodyOptions(), 'style'));
         
         Physics.there.addBody('convex-polygon', scrollbarOptions, scrollbarId);
       }
@@ -1180,7 +1227,7 @@ define('views/BasicView', [
         container: containerId,
         scrollbar: scrollbarId, 
         bounds: this._bounds,
-        flexigroup: this._flexigroup ? containerId : false,
+        flexigroup: this._flexigroup ? this.getFlexigroupId() : false,
         scrollerType: this._scrollerType
       });
 
@@ -1195,10 +1242,25 @@ define('views/BasicView', [
       if (addViewBrick)
         this.addViewBrick();
       
-      this.observeMutations(null, this._onMutation);
+//      this.observeMutations(null, this._onMutation);
     },
     
     _onMutation: function(mutations) {
+      var i = mutations.length,
+          recheck = false,
+          m;
+      
+      while (i--) {
+        m = mutations[i];
+        if (!m.target.classList.contains("scrollbar")) {
+          recheck = true;
+          break;
+        }
+      }
+      
+      if (!recheck)
+        return;
+      
       if (this._mutationTimeout) {
         if (resetTimeout(this._mutationTimeout))
           return;
@@ -1206,7 +1268,7 @@ define('views/BasicView', [
           clearTimeout(this._mutationTimeout);
       }
       
-      this._mutationTimeout = setTimeout(this._onViewportDimensionsChanged, 20);
+      this._mutationTimeout = setTimeout(this.invalidateSize, 20);
 //      if (this.mason && this._updateSize()) {
 //        this.updateMason();
 //      }
@@ -1220,46 +1282,63 @@ define('views/BasicView', [
     },
     
     getContainerBodyOptions: function() {
-      var containerId = this.getContainerBodyId(),
-          options,
-          lock = {};
+      var options = this._containerBodyOptions = this._containerBodyOptions || {};
+      options._id = this.getContainerBodyId();
+      options.container = this.parentView && this.parentView.getContainerBodyId();
+      options.x = 0;
+      options.y = 0;
+      if (!options.style)
+        options.style = {};
       
-      if (this._dragAxis)
-        lock[_.oppositeAxis(this._dragAxis)] = 0;
-      
-      if (this._flexigroup) {
-        if (!this.hasOwnProperty('_offsetWidth'))
-          this._updateSize();
-        
-        options = {
-          _id: containerId,
-          x: 0,
-          y: 0,
-//          x: this._horizontal ? -G.viewport.width * 5 : this._offsetLeft + this._width / 2,
-//          y: this._horizontal ? this._offsetTop + this._height / 2 : -G.viewport.height * 5,
-          lock: lock, 
-          mass: 10
-        };
-      }
-      else {
-        options = {
-          _id: containerId,
-          render: true,
-          x: 0,
-          y: 0,
-          lock: lock
-        };
-      }
-      
+      _.extend(options.style, this.style);
       return options;
     },
     
+    setStyle: function(style) {
+      Physics.there.style(this.getContainerBodyId(), style);
+    },
+    
+    getMaxOpacity: function() {
+      return DOM.maxOpacity;
+    },
+    
     addContainerBodyToWorld: function() {
-      var id = this.getContainerBodyId();
-      if (!this._flexigroup)
-        Physics.here.addBody(this.el, id);
+      if (this._addedContainerBodyToWorld)
+        return;
       
-      Physics.there.addBody('point', this.getContainerBodyOptions(), id);
+      this._addedContainerBodyToWorld = true;
+      var id = this.getContainerBodyId(),
+          railArgs,
+          chain = [{
+            method: 'addBody',
+            args: ['point', this.getContainerBodyOptions()]
+          }],
+          x1, x2, y1, y2;
+      
+      if (this._rail) {
+        if (this._rail instanceof Array)
+          railArgs = this._rail;
+        else if (this._dragAxis == 'x')
+          railArgs = [id, 1, 0];
+        else
+          railArgs = [id, 0, 1];
+        
+        chain.push({
+          method: 'addRail',
+          args: railArgs
+        });
+      }
+      
+      if (this._flexigroup) {
+         Physics.there.addBody('point', _.defaults({
+           _id: this.getFlexigroupId()
+         }, this.getContainerBodyOptions()));
+      }
+      
+      Physics.here.addBody(this.el, id);      
+      Physics.there.chain(chain);
+      
+//      Physics.there.addBody('point', this.getContainerBodyOptions(), id);
       if (this._draggable)
         this.addDraggable();
     },
@@ -1271,14 +1350,17 @@ define('views/BasicView', [
     buildViewBrick: function() {
       if (!this._viewBrick) {
         this._viewBrick = {
-          _id: this.getBodyId()
+          _id: this.getBodyId(),
+          style: {}
         };
       }
       
       if (this.resource)
         this._viewBrick.resource = this.resource;
       
-      this._viewBrick.render = true;
+      if (this.style)
+        _.extend(this._viewBrick.style, this.style);
+      
       return this.buildBrick(this._viewBrick, true);
     },
     
@@ -1288,7 +1370,7 @@ define('views/BasicView', [
           width, 
           height;
       
-      brick.fixed = !this._flexigroup;
+//      brick.fixed = !this._flexigroup;
       brick.mass = _.has(brick, 'mass') ? brick.mass : 0.1;
       brick.restitution = _.has(brick, 'restitution') ? brick.restitution : 0.3;
       brick.lock = brick.lock || {};      
@@ -1335,6 +1417,7 @@ define('views/BasicView', [
     },
     
     addViewBrick: function() {
+//      Physics.here.addBody(this.el, this.getBodyId());
       this.addBricksToWorld([this.buildViewBrick()]);
       
       // TODO: get rid of this when we make everything into bricks 
@@ -1391,7 +1474,8 @@ define('views/BasicView', [
                 var cOf = U.getCloneOf(vocModel, iface + '.' + prop);
                 var len = cOf.length;
                 if (len)
-                  cloned[prop] = len == 1 ? cOf[0] : cOf;
+                  cloned[prop] = cOf; //cOf[0];
+//                  cloned[prop] = len == 1 ? cOf[0] : cOf;
               }
             }
           }

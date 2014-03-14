@@ -65,7 +65,7 @@ define('views/ChatPage', [
       this.headerButtons = {
         back: true,
         rightMenu: true,
-        login: G.currentUser.guest,
+//        login: G.currentUser.guest,
 //        rightMenu: true,
         video: this.isPrivate
       };

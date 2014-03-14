@@ -338,6 +338,7 @@ define('views/ControlPanel', [
         return this;
       
       var json = this.getBaseTemplateData(); //res.toJSON();
+      var atts = res.attributes;
       var frag = document.createDocumentFragment();
   
       var mainGroup = U.getArrayOfPropertiesWith(meta, "mainGroup");
@@ -558,7 +559,8 @@ define('views/ControlPanel', [
               }
             }
 
-            var action = iRes.vocModel.adapter || U.isAssignableFrom(iRes.vocModel, 'Intersection') ? 'view' : 'edit';
+//            var action = iRes.vocModel.adapter || U.isAssignableFrom(iRes.vocModel, 'Intersection') ? 'view' : 'edit';
+            var action = (U.isAssignableFrom(iRes.vocModel, 'WebProperty')) ? 'edit' : 'view';
             params._uri = U.makePageUrl(action, iRes.getUri(), {title: params.name});
             params.resource = iRes;
             U.addToFrag(frag, this.inlineListItemTemplate(params));
@@ -590,11 +592,8 @@ define('views/ControlPanel', [
               continue;
             if (prop['app']  &&  (!currentAppProps  || $.inArray(p, currentAppProps) == -1))
               continue;
-            if (!prop  ||  prop.mainBackLink  ||  (!_.has(json, p)  &&  typeof prop.readOnly != 'undefined')) {
-//              delete json[p];
+            if (!prop  ||  prop.mainBackLink  ||  (!_.has(atts, p)  &&  typeof prop.readOnly != 'undefined'))
               continue;
-            }
-                  
             if (!U.isPropVisible(res, prop))
               continue;
   
@@ -608,7 +607,7 @@ define('views/ControlPanel', [
             var doShow = false;
             var cnt;
             var pValue = this.resource.get(p); //json[p];
-            if (!_.has(json, p)) { 
+            if (!_.has(atts, p)) { 
               var count = pValue ? pValue.count : 0;
               cnt = count > 0 ? count : 0;
               
@@ -686,8 +685,9 @@ define('views/ControlPanel', [
       if (!this.isMainGroup) {
         groupNameDisplayed = false;
         var tmpl_data = {};
-        
+        var cnt = 0;        
         for (var p in meta) {
+          cnt++;
           if (!/^[a-zA-Z]/.test(p))
             continue;
           
@@ -703,19 +703,34 @@ define('views/ControlPanel', [
             var idx;
             if (p.length <= 5  ||  p.indexOf('Count') != p.length - 5) 
               continue;
+            
             var pp = p.substring(0, p.length - 5);
+            if (_.has(displayedProps, pp))  
+              continue;
+            
             var pMeta = meta[pp];
-            if (!pMeta  ||  !pMeta.backLink || json[pp]) 
+            if (!pMeta  ||  !pMeta.backLink || atts[pp]) 
               continue;
-            count = json[p];
-            p = pp;
+            count = atts[p];
+//            p = pp;
             prop = pMeta;
-            json[p] = {count: count};
+            json[pp] = {count: count};
+            p = pp;
           }
+          
+          hasValue = _.has(atts, p);
           if (count == -1) {
-            if (!prop  ||  (!_.has(json, p)  &&  typeof prop.readOnly != 'undefined')) {
-  //            delete json[p];
+            if (!prop)
               continue;
+            if (!_.has(atts, p)) {
+              if (typeof prop.readOnly != 'undefined') {
+    //            delete json[p];
+                continue;
+              }
+            }
+            else {
+              if (prop.range.indexOf('/voc/dev/') == -1)
+                continue;
             }
           }
                 
@@ -726,8 +741,8 @@ define('views/ControlPanel', [
           var doShow = false;
           var n = U.getPropDisplayName(prop);
           var cnt;
-          var pValue = json[p];
-          if (!_.has(json,p)) {
+          var pValue = atts[p];
+          if (!hasValue) {
             cnt = count > 0 ? count : 0;
             if (cnt != 0 || isPropEditable)
               doShow = true;
@@ -741,6 +756,7 @@ define('views/ControlPanel', [
               doShow = true;
           }
           if (doShow) {
+            displayedProps[p] = true;
   //          if (isPropEditable)
   //            U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: res.getUri()}));
   //          else

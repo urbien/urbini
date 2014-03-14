@@ -13,7 +13,8 @@ define('views/ResourceListItemView', [
     className: 'masonry-brick ' + (G.isTopcoat() ? "topcoat-list__item" : (G.isBootstrap() ? "list-group-item" : "")),
     style: {
       'min-width': '100%',
-      'position': 'absolute'
+      'position': 'absolute',
+      'transform-origin': '50% 50%'
     },
 //    tagName: "div",
 //    className: "ui-li ui-li-static ui-btn-up-c ui-first-child",
@@ -670,7 +671,7 @@ define('views/ResourceListItemView', [
             var s = range.indexOf('/') != -1 ? atts[p + '.displayName'] || val.value : val.value;
             var isDate = prop1.range == 'date';
             if (!prop1.skipLabelInGrid) 
-              viewCols += '<div style="display:inline"><span class="label">' + U.getPropDisplayName(prop1) + '&#160;</span><span style="font-weight:normal">' + s + '</span></div>';
+              viewCols += '<div style="display:inline"><span class="label" style="color:' + G.darkColor + '">' + U.getPropDisplayName(prop1) + '&#160;</span><span style="font-weight:normal">' + s + '</span></div>';
             else
               viewCols += '<span style="font-weight:normal">' + s + '</span>';
             viewCols += '&#160;';
@@ -695,7 +696,7 @@ define('views/ResourceListItemView', [
 //            if (isDate)
 //              viewCols += '<div style="float:right;clear: both;"><span class="label">' + row + ':</span><span style="font-weight:normal">' + s + '</span></div>';
 //            else
-          viewCols += '<div style="display:inline"><span class="label">' + row + '&#160;</span><span style="font-weight:normal">' + s + '</span></div>';
+          viewCols += '<div style="display:inline"><span class="label" style="color:' + G.darkColor + '">' + row + '&#160;</span><span style="font-weight:normal">' + s + '</span></div>';
         }
         else {
           if (firstProp)

@@ -10,7 +10,7 @@ define('views/ResourceView', [
     var p = prop.shortName;
     var doShow = p.charAt(0) != '_' && p != 'davDisplayName'  &&  !prop.avoidDisplayingInView  &&  U.isPropVisible(res, prop, role);
     // if property marked as Display name element show only on case it is of resource range.
-    return doShow ? (!prop.displayNameElm  ||  prop.range.indexOf("/") != -1) : doShow;
+    return doShow ? (!prop.displayNameElm  ||  prop.setLinkTo  ||  prop.range.indexOf("/") != -1) : doShow;
       
   };
 
@@ -19,7 +19,7 @@ define('views/ResourceView', [
     initialize: function(options) {
       _.bindAll(this, 'render', 'refresh'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);
-      _.each(['propRowTemplate', 'propRowTemplate2', 'propGroupsDividerTemplate', 'priceTemplate', 'buyTemplate', 'sellTemplate'], function(t) {
+      _.each(['propRowTemplate', 'propRowTemplate2', 'propRowTemplate3', 'propGroupsDividerTemplate', 'priceTemplate', 'buyTemplate', 'sellTemplate'], function(t) {
         this.makeTemplate(t, t, this.vocModel.type);
       }.bind(this));
       
@@ -35,8 +35,8 @@ define('views/ResourceView', [
 //        });
 //      }
 
-      var codemirrorModes = U.getRequiredCodemirrorModes(this.vocModel);
-      this.isCode = codemirrorModes.length; // we don't need to use the actual modes, just need to know whether we need codemirror stuff
+      var codemirrorModes = U.getRequiredCodemirrorModes(this.resource, 'view');
+      this.isCode = !!codemirrorModes.length; // we don't need to use the actual modes, just need to know whether we need codemirror stuff
       var promises = [this.getFetchPromise()];
       if (this.isCode)
         promises.push(U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes)));
@@ -88,7 +88,7 @@ define('views/ResourceView', [
       
       var href = t.href;
       if (href && !G.domainRegExp.test(href)) {
-        window.location.href = href;
+        Events.trigger('navigate', href);
         return;
       }
       
@@ -106,7 +106,7 @@ define('views/ResourceView', [
 //      var wl = G.currentApp.widgetLibrary
 //      if (wl  &&  wl != 'Jquery Mobile') {
         Events.stopEvent(e);
-        t.parentNode.$('ul').$toggleClass('hidden');        
+        t.parentNode.$('ul').$toggleClass('hidden');
         return;
 //      }
     },
@@ -163,6 +163,9 @@ define('views/ResourceView', [
     renderHelper: function(options) {
       var res = this.resource;
       var vocModel = this.vocModel;
+      var frag = document.createDocumentFragment();
+//      if (res.isA("CollaborationPoint"))
+//        this.renderCollaborationPoint(frag);
 
       var params = _.getParamMap(window.location.hash);
       var isApp = U.isAssignableFrom(res, G.commonTypes.App);
@@ -180,7 +183,6 @@ define('views/ResourceView', [
 //      var json = res.toJSON();
 //      this.pruneProps(json);
 
-      var frag = document.createDocumentFragment();
 
       var currentAppProps = U.getCurrentAppProps(meta);
       var propGroups;
@@ -254,6 +256,7 @@ define('views/ResourceView', [
       var idx = 0;
       var groupNameDisplayed;
       var maxChars = 30;
+      var maxCharsBeforeSkippingLabel = 100;
 
       if (propGroups.length) {
         for (var i = 0; i < propGroups.length; i++) {
@@ -289,7 +292,11 @@ define('views/ResourceView', [
             if (prop.code) {
               val.value = this.__prependNumbersDiv(prop, val.value);          
             }
-            if (val.name.length + v.length > maxChars)
+            
+            var valLength = val.name.length + v.length;
+            if (valLength > maxCharsBeforeSkippingLabel)
+              U.addToFrag(frag, this.propRowTemplate3(val));
+            else if (valLength > maxChars)
               U.addToFrag(frag, this.propRowTemplate2(val));
             else
               U.addToFrag(frag, this.propRowTemplate(val));
@@ -339,9 +346,9 @@ define('views/ResourceView', [
           if (isJQM)
             otherLi = '<li id="other" style="border:0px;' + (G.theme.backgroundImage ? 'background-image: url(' + G.theme.backgroundImage + ')' : '') + '" data-content-theme="' + G.theme.list + '"  data-theme="' + G.theme.list + '"><h3 style="margin:0px;"><i class="ui-icon-plus-sign"></i>&#160;Other</h3><ul class="hidden"">';
           else if (isBB)
-            otherLi = '<section id="other"><header style="margin:0px;cursor:pointer;"><i class="ui-icon-plus-sign"></i>&#160;Other</header><ul class="other hidden">';
+            otherLi = '<section id="other"><header style="margin:0px;cursor:pointer;' + (G.coverImage ? 'color:' + G.coverImage.background + ';border-bottom:0.1rem solid ' + G.coverImage.background + ';"' : '') + '"><i class="ui-icon-plus-sign"></i>&#160;Other</header><ul class="other hidden">';
           else if (G.isTopcoat())
-            otherLi = '<li id="other" class="topcoat-list__item"><h3><i class="ui-icon-plus-sign"></i>&#160;Other</h3><ul class="topcoat-list__container hidden">';
+            otherLi = '<li id="other" class="topcoat-list__item" ' +  (G.coverImage ? 'style="text-shadow:none;background:' + G.coverImage.color + ';color: ' + G.coverImage.background + ';"' : '') + '><h3><i class="ui-icon-plus-sign"></i>&#160;Other</h3><ul class="topcoat-list__container hidden">';
           else if (G.isBootstrap())
             otherLi = '<li id="other"><h3 style="font-size:18px;"><i class="ui-icon-plus-sign"></i>&#160;Other</h3><ul class="list-group-container hidden">';
   //        this.$el.append('<li data-role="collapsible" data-content-theme="c" id="other"><h2>Other</h2><ul data-role="listview">'); 
@@ -446,6 +453,7 @@ define('views/ResourceView', [
           }
           
           editor = CodeMirror.fromTextArea(textarea, {
+            dragDrop: false,
             mode: mode,
             tabMode: 'indent',
             lineNumbers: true,
@@ -463,6 +471,33 @@ define('views/ResourceView', [
 
       return this;
     },
+    
+//    renderCollaborationPoint: function(frag) {
+//      if (!this.authorTemplate)
+//        this.authorTemplate = this.makeTemplate('authorTemplate', 'authorTemplate', model.type);
+//      
+//      var res = this.resource,
+//          model = this.vocModel,
+//          desc = res.get("Submission.description"),
+//          authorPropName = U.getCloneOf(vocModel, "Submission.submittedBy")[0],
+//          authorName = res.get(authorPropName + ".displayName"),
+//          authorThumb = res.get(authorPropName + ".thumb"),
+//          authorHtml = this.authorTemplate({
+//            img: authorThumb && U.getExternalFileUrl(authorThumb),
+//            name: authorName
+//          }),
+//          dateSubmitted = res.get("Submission.dateSubmitted"),
+//          dateDiv = document.createElement('div'),
+//      
+//      dateDiv.classList.add('dateSubmitted');
+//      dateDiv.textContent = dateSubmitted;
+//      U.addToFrag(frag, authorHtml);
+//      frag.appendChild(dateDiv);
+//
+//      <li class="collaborationPoint"></li>
+//      this.el.classList.add("collaborationPoint");
+//      
+//    },
     
     __prependNumbersDiv: function(prop, html) {
 //      return '<div id="{0}_numbers" style="float: left; width: 2em; margin-right: .5em; text-align: right; font-family: monospace; color: #CCC;"></div>'.format(prop.shortName) + html;

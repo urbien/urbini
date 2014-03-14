@@ -2,13 +2,20 @@ html {
   font-size: 10px;
 }
 
+
+.name h2 {
+  margin-top: 5px;
+}
+
 li {
   position: relative;
 }
 
-#categories {font-size:20px;}
 .masonry-brick div[data-viewid] {
   border: none;
+}
+#sidebar .masonry-brick {
+  cursor: pointer;
 }
 #headerUl div {
   text-align:center;
@@ -373,43 +380,8 @@ div.nabBtn {
   padding: 10px 15px;
 }
 
-/*
-@media all and (min-width:420px) {
-  .editList select {
-    width: 76%;
-    border: 1px solid #bbb;
-    padding: 0.5rem;
-    font-size: 1.6rem;
-  }
-  li label.ui-input-text, li label.select {
-    display: inline-block;
-    width: 18%;
-  }
-  div.ui-input-text, input.ui-input-text, textarea {
-    display: inline-block;
-    width: 75%;
-  }
+#resourceImage div, #resourceImage div::before, #resourceImage div::after {
+  box-sizing:content-box;
+  -moz-box-sizing:content-box;
+  -webkit-box-sizing:content-box;
 }
-
-.editList select {
-  border: 1px solid #bbb;
-  padding: 0.5rem;
-  font-size: 1.6rem;
-  width: 100%;
-}
-
-fieldset div {
-  margin: 1rem -.5px 0 -.5rem;
-} 
-
-fieldset#submitBtns {
-  border: none;
-}
-.editList a {
-  display:block;
-  cursor: pointer;
-}
-#mvSubmit {
-  font-size: 2.4rem;
-}
-*/

@@ -3,6 +3,7 @@ define('underscoreMixins', ['_underscore'], function(_) {
       concat = ArrayProto.concat,
       slice = ArrayProto.slice,
       indexOf = ArrayProto.indexOf,
+      promiseFunctions = ['done', 'fail', 'always', 'state', 'then'],
       __htmlCommentRegex = /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/,
       __htmlCommentRegexGM = /\<![ \r\n\t]*--(([^\-]|[\r\n]|-[^\-])*)--[ \r\n\t]*\>/gm,
       __jsCommentRegex = /(?:\/\*(?:[\s\S]*?)\*\/)|(?:\/\/(?:.*)$)/,
@@ -425,6 +426,16 @@ define('underscoreMixins', ['_underscore'], function(_) {
       }
     },
     
+    proxyPromise: function(proxy, promise) {
+      var i = promiseFunctions.length,
+          fn;
+      
+      while (i--) {
+        fn = promiseFunctions[i];
+        proxy[fn] = promise[fn].bind(promise);
+      }
+    },
+    
     oppositeAxis: function(axis) {
       switch (axis) {
       case 'x':
@@ -440,6 +451,48 @@ define('underscoreMixins', ['_underscore'], function(_) {
       }
     },
   
+//    size: function(obj) {
+//      var size = 0, key;
+//      for (key in obj) {
+//        if (obj.hasOwnProperty(key)) size++;
+//      }
+//      
+//      return size;
+//    },
+
+    isArguments: function(obj) {
+      return _.getObjectType(obj) == '[object Arguments]';
+    },
+    
+    toTimedFunction: function(obj, name, thresh) {
+      var fn = name ? obj[name] : obj;
+      function timed() {
+        var now = _.now(),
+            frame = window.fastdom.frameNum,
+            result,
+            time;
+        
+        function measure() {
+          time = _.now() - now;
+          if (!thresh || time > thresh)
+            console.log("function", name, "took", time, "millis", window.fastdom.frameNum - frame, "frames");          
+        };
+        
+        result = fn.apply(this, arguments);
+        if (_.isPromise(result))
+          result.always(measure);
+        else
+          measure();
+        
+        return result;
+      };
+      
+      if (name)
+        obj[name] = timed;
+      
+      return timed;
+    },
+    
     now: window.performance ? window.performance.now.bind(window.performance) : Date.now.bind(Date)
   });
   

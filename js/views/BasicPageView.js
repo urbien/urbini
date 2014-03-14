@@ -27,7 +27,7 @@ define('views/BasicPageView', [
   function isInsideDraggableElement(element) {
     return !!$(element).parents('[draggable=true]').length;
   };
-
+  
   function getTooltipPos(el) {
     var position = el.$offset();
     var t = position.top + el.offsetHeight / 2 - 20;
@@ -43,6 +43,7 @@ define('views/BasicPageView', [
   
   var PageView = BasicView.extend({
 //    mixins: [Scrollable],
+    _autoFetch: true,
     _fetchPromise: null,
     _draggable: true,
     _scrollbar: true,
@@ -50,8 +51,14 @@ define('views/BasicPageView', [
     _scrollbar: true,
     _flexigroup: false,
     viaHammer: true,
+    attributes: {
+      'data-role': 'page'
+    },
     style: {
-      'min-height': '100%'
+      opacity: 0,
+      'min-height': '100%',
+      'transform-origin': '50% 50%',
+      perspective: '1000px'
     },
     mixins: mixins,
 //    constructor: function(options) {
@@ -73,6 +80,8 @@ define('views/BasicPageView', [
     initialize: function(options) {
       var self = this;
       BasicView.prototype.initialize.apply(this, arguments);
+      if (!options.mock)
+        this.addContainerBodyToWorld();
       _.bindAll(this, 'onpageevent', 'swiperight', 'swipeleft'/*, 'scroll', '_onScroll'*/, '_onViewportDimensionsChanged'); //, 'onpage_show', 'onpage_hide');            
       
 //      this._subscribeToImageEvents();
@@ -128,17 +137,17 @@ define('views/BasicPageView', [
           }
         }
         
-        var fetchDfd = $.Deferred();
-        this._fetchPromise = fetchDfd.promise();
-        this.model.fetch(_.extend({
-          sync: true,
-          success: fetchDfd.resolve,
-          error: function() {
-            fetchDfd.reject();
-            return Errors.getBackboneErrorHandler().apply(null, arguments);
-          }
-        }, options.fetchOptions));
-      }
+        this._fetchDfd = $.Deferred();
+        this._fetchPromise = this._fetchDfd.promise();
+        this._fetchPromise.fail(Errors.getBackboneErrorHandler());
+        if (this._autoFetch) {
+          this.model.fetch(_.extend({
+            sync: true,
+            success: self._fetchDfd.resolve,
+            error: self._fetchDfd.reject
+          }, options.fetchOptions));
+        }
+      }      
     },
     
     events: {
@@ -592,8 +601,9 @@ define('views/BasicPageView', [
         Events.trigger('messageBar', event, events[event]);
       }
 
-      if (hash != this.hash)
-        Events.trigger('navigate', hash, {trigger: false, replace: true});
+      // commented out for now as it currently causes a page refresh 
+//      if (hash != this.hash)
+//        Events.trigger('navigate', hash, {trigger: false, replace: true});
     },
     
     isActivePage: function() {
@@ -620,6 +630,10 @@ define('views/BasicPageView', [
     
     getFetchPromise: function() {
       return this._fetchPromise;
+    },
+    
+    isListPage: function() {
+      return this.model == this.collection;
     }
   }, {
     displayName: 'BasicPageView'

@@ -37,6 +37,7 @@ define('resourceManager', [
       MAX_DATA_AGE = G.MAX_DATA_AGE,
       IDB = IndexedDBModule.getIDB(G.serverName, {
         defaultStoreOptions: {keyPath: '_uri', autoIncrement: false},
+//        defaultStoreOptions: {keyPath: '_defaultIndex', autoIncrement: true},
         defaultIndexOptions: {unique: false, multiEntry: false},
         filePropertyName: G.storeFilesInFileSystem ? '_filePath' : null,
         fileTypePropertyName: G.storeFilesInFileSystem ? '_contentType' : null
@@ -316,9 +317,9 @@ define('resourceManager', [
   
   Events.on('updatedResources', function(resources) {
     if (resources.length) {
-      G.whenNotRendering(function() {
+//      G.whenNotRendering(function() {
         Q.nonDom(RM.addItems.bind(RM, resources));
-      });
+//      });
     }
   });
 
@@ -381,11 +382,14 @@ define('resourceManager', [
     RM.cleanDatabaseAndReopen();
   });
   
-  Events.on('VERSION', function(init) {
+  function onVersionChange(init) {
     RM.deleteDatabase().then(function() {
       Voc.storeModels();
     })
-  });
+  };
+  
+  Events.on('VERSION', onVersionChange);
+  Events.on('VERSION:DB', onVersionChange);
   
   Events.on('delete', function(res) {
     RM.deleteItem(res);
