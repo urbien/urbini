@@ -132,7 +132,7 @@
 <script type="text/template" id="inlineListItemTemplate">
 <!-- one row of an inline backlink in view mode -->
 <li data-viewid="{{= viewId }}">
-  <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }}>
+  <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="padding:1rem 0 1rem 0;">
     {{ if (obj.img) { }}
       <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
       {{ if (obj.top) { }}  
@@ -146,7 +146,7 @@
       data-for="{{= U.getImageAttribute(resource, imageProperty) }}"
       class="lazyImage" />
     {{ } }}
-    <span style="position:absolute;padding:1rem 0 1rem 0;font-size:1.6rem;font-weight:bold;">{{= name }}{{= obj.gridCols ? '<br/>' + gridCols : '' }}</span>
+    <span style="font-size:1.6rem;font-weight:bold;">{{= name }}{{= obj.gridCols ? '<br/>' + gridCols : '' }}</span>
   </a>
   {{ if (typeof comment != 'undefined') { }}
     <p>{{= comment }}</p>
@@ -441,7 +441,7 @@
   </div>
   <div id="buttons">  
     {{ if (this.categories) { }}
-       <div style="margin:-5px 0 0 10px; float:left"><a id="categories" href="#" {{= G.coverImage ? 'style="background:' + G.lightColor + ';color:' + G.darkColor +';"' : '' }}>
+       <div style="line-height:37px;float:left;padding-left:10px;"><a id="categories" href="#" {{= G.coverImage ? 'style="background:' + G.lightColor + ';color:' + G.darkColor +';"' : '' }}>
        <i class="ui-icon-tags"></i></a></div> 
     {{ } }} 
     {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
@@ -555,12 +555,18 @@
 
 <script type="text/template" id="propRowTemplate">
   <!-- wrapper for one row on a list page (short) -->
-  <li class="section group" data-shortname="{{= shortName }}" {{= obj.rules || '' }}><div class="col span_1_of_2" {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';"' : '' }}>{{= name }}</div><div class="col span_1_of_2" style="font-weight: normal;">{{= value }}</div></li>
+  <li class="section group" data-shortname="{{= shortName }}" {{= obj.rules || '' }}>
+    <div class="col span_1_of_2" {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';"' : '' }}>{{= name }}</div>
+    <div {{= value.length < 500 ? 'class="col span_1_of_2"' : '' }} style="font-weight: normal;">{{= value }}</div>
+  </li>
 </script>
 
 <script type="text/template" id="propRowTemplate2">
   <!-- wrapper for one row on a list page (long) -->
-  <li class="section group" data-shortname="{{= shortName }}" {{= obj.rules || '' }}><div class="col span_1_of_2" {{= G.coverImage ? ' style="color:' + G.coverImage.background + ';"' : '' }}>{{= name }}</div><div class="col span_1_of_2" style="font-weight: normal;">{{= value }}</div></li>
+  <li class="section group" data-shortname="{{= shortName }}" {{= obj.rules || '' }}>
+    <div class="col span_1_of_2" {{= G.coverImage ? ' style="color:' + G.coverImage.background + ';"' : '' }}>{{= name }}</div>
+    <div {{= value.length < 500 ? 'class="col span_1_of_2"' : '' }} style="font-weight: normal;">{{= value }}</div>
+  </li>
 </script>
 
 <script type="text/template" id="propRowTemplate3">
@@ -654,7 +660,7 @@
   {{ } }}
   <section>
   <label class="pack-switch" style="right: 2rem;top:0rem;left:auto;position:absolute;color:{{= G.darkColor }};">
-    <input type="checkbox" name="{{= shortName }}" id="{{= id }}" class="formElement boolean" />
+    <input type="checkbox" name="{{= shortName }}" id="{{= id }}" class="formElement boolean" {{= obj.value ? 'checked="checked"' : '' }} />
     <span style="top:2rem"></span>
   </label>
   </section>
@@ -736,6 +742,12 @@
 </script>
 
 
+<script type="text/template" id="moneyPET">
+<div id="_prim">
+  <label for="{{= id }}" class="ui-input-text"">{{= name }} <b>{{= typeof value.currency === 'undefined' ? '$' : value.currency }}</b></label>
+  <input type="text" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '' }}" {{= rules }} class="ui-input-text"></input>
+</div>
+</script>
 
 </div>
 

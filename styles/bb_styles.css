@@ -1,6 +1,17 @@
 html {
   font-size: 10px;
 }
+#headerUl > li > a {
+  line-height: inherit;
+}
+
+#sidebar div.dateLI {
+  position:absolute;
+  top:0;
+  right: 1rem;
+  font-size: 1.2rem;
+}
+
 #name.resTitle {
   padding-bottom: 4px;
 }
@@ -34,10 +45,11 @@ html {
   height: 8rem;
   color: #606060;
 }
-
+/*
 #headerDiv {
-  line-height: 40px; 
+  line-height: 32px; 
 }
+*/
 #name h4 {
   font-weight:normal;
 /*  margin: 15px 0 7px 0; */
@@ -46,7 +58,7 @@ html {
 }
 .hdr {
   width:100%;
-  height:37px;
+  height:32px;
 }
 
 #headerUl  {
@@ -54,28 +66,22 @@ html {
   max-width:100%;
   list-style:none;
   padding:0;
-  /*
-  position:relative;
-  overflow:visible;
-  margin: -10px -1px 0 0;
-  */
 }
 
 #headerUl s { color: #757575 }
 #headerUl li {
-/*  border-right: 1px solid #757575; */ 
   font-size:28px;
   float:left;
   text-align:center;
-  margin:-1px -1px 0 0;
+  margin:auto;
   cursor: pointer;
   height:100%;
-/*  margin-top:1rem; */
 }
+
 #headerUl li i {
-  font-size:2.8rem;
-  margin-top:1rem;
+  font-size:2.8rem; 
 }
+
 #headerUl li:last-child {
   border-right: none;
 }
@@ -93,9 +99,13 @@ html {
 #resourceView header, #cpView header {
   padding: 10px;
 }
-
+/*
 #buttons {
   margin-top: -15px;
+}
+*/
+#buttons h4 {
+  margin-top: 0px;
 }
 button {
   border-radius: 1rem;
@@ -485,4 +495,8 @@ section#login_popup {
 }
 #headerButtons button {
   font-weight: normal;
+}
+
+.section .section-header:after {
+  height: auto;
 }
