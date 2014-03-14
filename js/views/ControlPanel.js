@@ -657,6 +657,11 @@ define('views/ControlPanel', [
               tmpl_data.borderColor = borderColor[colorIdx];
               tmpl_data.color = color[colorIdx];
               tmpl_data.chat = isChat;
+              var bl = prop.backLinkSortDescending;
+              if (bl) {
+                tmpl_data['$order'] = bl;
+                tmpl_data['$asc'] = 0;
+              }
 //              var common = {range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, borderColor: borderColor[colorIdx], color: color[colorIdx], chat: isChat};
               colorIdx++;
               if (this.isMainGroup) {
@@ -774,6 +779,11 @@ define('views/ControlPanel', [
             tmpl_data.title = t;
             tmpl_data.comment = prop.comment;
             tmpl_data.name = n;
+            var bl = prop.backLinkSortDescending;
+            if (bl) {
+              tmpl_data['$order'] = bl;
+              tmpl_data['$asc'] = 0;
+            }
 //            var common = {range: range, shortName: p, backlink: prop.backLink, value: cnt, _uri: uri, title: t, comment: comment, name: n};
             if (isPropEditable)
               U.addToFrag(frag, this.cpTemplate(tmpl_data));
