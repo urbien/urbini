@@ -9,6 +9,7 @@ define('FrameWatch', ['underscore'], function() {
       lastFrameDuration,
 //      frameNumber = 0,
 //      lastFrameNumber,
+      frameNum,
       frameId;
   
   function invoke(listener) {
@@ -68,13 +69,17 @@ define('FrameWatch', ['underscore'], function() {
     if (frameId === undefined)
       return;
     
-//    frameNumber++;
     var now = _.now(),
         id,
         i = tickListeners.length;
 //        ,
 //        listenerIds = Object.keys(listeners),
 //        numListeners = listenerIds.length;
+
+    if (isNaN(frameNum))
+      frameNum = 0;
+    else
+      frameNum++;
     
     lastFrameDuration = now - lastFrameStart;
     lastFrameStart = now;
@@ -115,6 +120,9 @@ define('FrameWatch', ['underscore'], function() {
     listenToTick: listenToTick,
     stopListeningToTick: stopListeningToTick,
     hasTickListener: hasTickListener,
+    getFrameNumber: function() {
+      return frameNum;
+    },
     lastFrameDuration: function() {
       return lastFrameDuration;
     },

@@ -212,7 +212,6 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
   };
 
   FastDom.prototype.startFrame = function() {
-    this.frameNum++;
     this.pending = false;
     this.frameStart = this.time();
   }
@@ -553,12 +552,16 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
       ms = ms || 0;
       var args = arguments[2],
           task = arguments,
-          id = timerId++;
+          id = timerId++,
+          frameNum = FrameWatch.getFrameNumber();
       
 //      console.log("TIMEOUT SET - " + id);
       task._taskId = id;
       task._timeout = task._timeLeft = ms;
       task._fn = function wrapped() {
+        if (frameNum == FrameWatch.getFrameNumber())
+          return;
+        
         task._timeLeft -= FrameWatch.lastFrameDuration();
         if (task._timeLeft < TIMER_RESOLUTION) {
           delete TIMEOUTS[id];
