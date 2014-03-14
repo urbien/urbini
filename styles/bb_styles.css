@@ -491,7 +491,7 @@ section#login_popup {
 }
 .u-desc a {
   text-decoration:underline;
-  color: red;
+  color: #16A085;
 }
 #headerButtons button {
   font-weight: normal;

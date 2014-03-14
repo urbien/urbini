@@ -564,7 +564,7 @@
 <script type="text/template" id="propRowTemplate2">
   <!-- wrapper for one row on a list page (long) -->
   <li class="section group" data-shortname="{{= shortName }}" {{= obj.rules || '' }}>
-    <div class="col span_1_of_2" {{= G.coverImage ? ' style="color:' + G.coverImage.background + ';"' : '' }}>{{= name }}</div>
+    <div {{= value.length < 500 ? 'class="col span_1_of_2"' : '' }} {{= G.coverImage ? ' style="color:' + G.coverImage.background + ';"' : '' }}>{{= name }}</div>
     <div {{= value.length < 500 ? 'class="col span_1_of_2"' : '' }} style="font-weight: normal;">{{= value }}</div>
   </li>
 </script>

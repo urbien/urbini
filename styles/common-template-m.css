@@ -1085,12 +1085,23 @@ div {
 .span_1_of_2 {
 	width: 49.2%;
 }
+
+#resourceView a {
+  color: #16A085; 
+}
+
+
 #resourceView .col:nth-child(2) span, #resourceView .col:nth-child(2) div, #resourceView .col:nth-child(2) a {
   float: right; 
 }
 #resourceView p {
   white-space: normal;
 }
+
+#resourceView .col:nth-child(2) a {
+  color: #16A085; 
+}
+
 /*  GO FULL WIDTH AT LESS THAN 480 PIXELS */
 
 @media only screen and (max-width: 480px) {
