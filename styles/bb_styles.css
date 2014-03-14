@@ -316,7 +316,7 @@ fieldset {
 .editList a {
   cursor:pointer;
 }
-#_prim {
+._prim {
   padding: 0.5rem 1.5rem;
 }
 .resourceProp {

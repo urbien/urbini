@@ -632,7 +632,7 @@
 </script>
 
 <script type="text/template" id="stringPET">
-<div id="_prim">
+<div class="_prim">
   {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 250; }}
   {{ if (name) { }}
     <label for="{{= id }}" class="ui-input-text" style="{{= isInput ? '' : 'vertical-align:top;' }}color:{{= G.darkColor }};">{{= name }}</label>
@@ -646,14 +646,14 @@
 </div>   
 </script>
 <script type="text/template" id="percentPET">
-<div id="_prim">
+<div class="_prim">
   <label for="{{= id }}"  class="ui-input-text" >{{= name }}</label>
   <input type="range" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '0' }}" {{= rules }} data-mini="true" max="100" min="0" style="width:75%" />
 </div>
 </script>
 
 <script type="text/template" id="booleanPET">
-<div id="_prim">
+<div class="_prim">
   {{ if (name && name.length > 0) { }}
     <label for="{{= id }}" style="color:{{= G.darkColor }}">{{= name }}</label>
     {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }} 
@@ -707,14 +707,14 @@
   <!-- {{= typeof multiValue === 'undefined' ? '' : value }} -->
 </script>
 <script type="text/template" id="telPET">
-<div id="_prim">
+<div class="_prim">
   <label for="{{= id }}" class="ui-input-text" style="color:{{= G.darkColor }};">{{= name }}</label>
   <input type="tel" name="{{= shortName }}" id="{{= id }}" class="ui-input-text" value="{{= typeof value === 'undefined' ? '' : value }}" />
 </div>
 </script>
 
 <script type="text/template" id="emailPET">
-<div id="_prim">
+<div class="_prim">
   <label for="{{= id }}" class="ui-input-text" style="color:{{= G.darkColor }};">{{= name }}</label>
   <input type="email" name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : value }}" class="{{= 'formElement ' }}ui-input-text" {{= rules }} />
 </div>
@@ -725,7 +725,7 @@
 </script>
 
 <script type="text/template" id="longEnumPET">
-<div id="_prim">
+<div class="_prim">
   {{ if (name && name.length > 0) { }}
   <label for="{{= id }}" class="select" style="color:{{= G.darkColor }};">{{= name }}</label>
   {{ } }}
