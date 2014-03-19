@@ -603,34 +603,6 @@ define('app', [
   
   
   function setupCleaner() {
-    G.checkVersion = function(data) {
-      var init = data === true,
-          newV = data ? data.VERSION : G.getVersion(),
-          oldV = G.getVersion(!data) || newV; // get old
-      
-      if (oldV.All && newV.All > oldV.All) {
-        G.setVersion(newV);
-//        for (var key in newV) {
-//          Events.trigger('VERSION:' + key, init);
-//        }
-        
-        Events.trigger('VERSION', init);
-        return;
-      }
-      
-      for (var key in newV) {
-        var setVersion = false;
-        if (oldV[key] && newV[key] > oldV[key]) {
-          if (!setVersion) {
-            G.setVersion(newV);
-            setVersion = true;
-          }
-          
-          Events.trigger('VERSION:' + key, init);              
-        }
-      }
-    };
-
     var fileTypes = ['js', 'css', 'jsp'];
     _.each(fileTypes, function(ext) {
       Events.on("VERSION:" + ext.toUpperCase(), function() {
@@ -644,16 +616,16 @@ define('app', [
       });
     });
     
-    Events.on("VERSION", function() {
-      G.log(App.TAG, 'info', 'nuking all cached files from LS');
-      var keys = _.keys(localStorage);
-      for (var i = 0; i < keys.length; i++) {
-        var key = keys[i];
-        if (/\.[a-zA-Z]+$/.test(key))
-          G.localStorage.del(key);
-      }        
-    });
-    
+//    Events.on("VERSION", function() {
+//      G.log(App.TAG, 'info', 'nuking all cached files from LS');
+//      var keys = _.keys(localStorage);
+//      for (var i = 0; i < keys.length; i++) {
+//        var key = keys[i];
+//        if (/\.[a-zA-Z]+$/.test(key))
+//          G.localStorage.del(key);
+//      }        
+//    });
+//    
 //    Events.on('viewDestroyed', function(view) {
 //      setTimeout(function() {
 //        _.wipe(view);

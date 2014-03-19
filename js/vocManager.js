@@ -195,11 +195,11 @@ define('vocManager', [
     }
   });
   
-  Events.on('VERSION', function() {
-    G.localStorage.clean();
-  });
+//  Events.on('VERSION', function(version) {
+//    G.localStorage.clean();
+//  });
   
-  Events.on('VERSION:Models', function(init) {
+  Events.on('VERSION:Models', function(version, init) {
     G.log(Voc.TAG, 'info', 'nuking models from LS');
     G.localStorage.clean(function(key) {
       return key.startsWith(ModelLoader.getModelStoragePrefix());

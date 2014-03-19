@@ -1374,13 +1374,15 @@ define('globals', function() {
     nukeAll: function(reload) {
       hasLocalStorage && localStorage.clear();
       if (G.ResourceManager) {
-        G.ResourceManager.deleteDatabase().done(function() {          
-          if (reload === false)
-            G.ResourceManager.openDB();
-          else
+        return G.ResourceManager.deleteDatabase().done(function() {          
+          if (reload)
             window.location.reload();
+          else
+            G.ResourceManager.openDB();
         });
       }
+      else
+        return G.getResolvedPromise();
     },
     canWebcam: (function() {
       var m = (navigator.getMedia = (navigator.getUserMedia ||
@@ -1437,6 +1439,7 @@ define('globals', function() {
       
       document.removeEventListener('click', this.clickBlocker, true);
     },
+    
     getVersion: function(old) {
       if (!old && G.VERSION)
         return G.VERSION;
@@ -1455,13 +1458,38 @@ define('globals', function() {
       };
     },
     
-    setVersion: function(version) {
+    setVersion: function(key, version) {
       var oldV = G.VERSION;
-      var newV = G.VERSION = version;
+      var newV = _.clone(G.VERSION);
+      newV[key] = version;
       G.localStorage.put("OLD_VERSION", JSON.stringify(oldV));
       G.localStorage.put("VERSION", JSON.stringify(newV));
     },
     
+    checkVersion: function(data) {
+      var init = data === true,
+          newV = data ? data.VERSION : G.getVersion(),
+          oldV = G.getVersion(!data) || newV; // get old
+
+      if (newV.All > oldV.All) {
+        G.nukeAll().done(function() {          
+          G.setVersion(newV);
+          window.location.reload();
+        });
+        
+        return;
+      }
+
+      for (var key in newV) {
+        if (oldV[key] && newV[key] > oldV[key]) {
+          Events.trigger('VERSION:' + key, newV[key], init);
+          // DB and Models version update is async, it needs to complete before we can safely up the version number in storage
+          if (key != 'DB' && key != 'Models')
+            G.setVersion(key, newV[key]);
+        }
+      }
+    },
+
     DEV_PACKAGE_PATH: 'http://urbien.com/voc/dev/',
     localTime: new Date().getTime(),
     online: !!navigator.onLine,    

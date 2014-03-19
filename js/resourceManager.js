@@ -378,18 +378,19 @@ define('resourceManager', [
     }).always(notify);
   });
 
-  Events.on('VERSION:Models', function() {
-    RM.cleanDatabaseAndReopen();
+  Events.on('VERSION:Models', function(version) {
+    RM.cleanDatabaseAndReopen().done(function() {      
+      G.setVersion('Models', version);
+    });
   });
   
-  function onVersionChange(init) {
-    RM.deleteDatabase().then(function() {
+//  Events.on('VERSION', onVersionChange);
+  Events.on('VERSION:DB', function(version, init) {
+    RM.deleteDatabase().done(function() {
       Voc.storeModels();
-    })
-  };
-  
-  Events.on('VERSION', onVersionChange);
-  Events.on('VERSION:DB', onVersionChange);
+      G.setVersion('DB', version);
+    });
+  });
   
   Events.on('delete', function(res) {
     RM.deleteItem(res);
