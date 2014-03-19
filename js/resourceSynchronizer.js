@@ -119,7 +119,7 @@ define('resourceSynchronizer', [
     }
     
     return IDB.queryByIndex('_uri').eq(uri).getAll(REF_STORE.name).then(function(results) {
-      if (results.length)
+      if (results && results.length)
         return found(results);
       else
         return notFound();
@@ -259,7 +259,7 @@ define('resourceSynchronizer', [
 
     var retry = setTimeout.bind(window, syncWithServer, 2000);
     IDB.queryByIndex('_problematic').eq(0).and(IDB.queryByIndex('_dirty').eq(1)).getAll(REF_STORE.name).done(function(results) {
-      if (!results.length)
+      if (!results || !results.length)
         return;
       
       for (var i = 0; i < results.length; i++) {
@@ -320,6 +320,9 @@ define('resourceSynchronizer', [
     var promise;
     if (_.size(tempUriRefs)) {
       promise = IDB.queryByIndex('_tempUri').oneof(_.values(tempUriRefs)).getAll(REF_STORE.name).then(function(results) {
+        if (!results)
+          return;
+        
         _.each(results, function(result) {
           var tempUri = result._tempUri;
           for (var prop in tempUriRefs) {

@@ -538,16 +538,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
         resultPromise = resultDfd.promise(),
         transPromise = this.$idb.transaction([storeName], READ_ONLY).progress(function(trans) {
           log('started transaction to get ' + primaryKey);
-          trans.objectStore(storeName).get(primaryKey).done(function(item) {
-            resultDfd.resolve(item);
-          }).fail(resultDfd.reject);
-          
-//          trans.objectStore(storeName).get(primaryKey).then(function(_item) {
-//            log('parsing result for ' + primaryKey);
-//            item = _item;
-////            queueParse(item);
-//            return parse(item).then(resultDfd.resolve, resultDfd.reject);
-//          });
+          trans.objectStore(storeName).get(primaryKey).done(resultDfd.resolve).fail(resultDfd.reject);          
         });
     
     return $.when(resultPromise, transPromise).then(function(result) {

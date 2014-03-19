@@ -381,6 +381,7 @@ define('resourceManager', [
   Events.on('VERSION:Models', function(version) {
     RM.cleanDatabaseAndReopen().done(function() {      
       G.setVersion('Models', version);
+      window.location.reload(); // otherwise pending reqs to database may fail and cause trouble, expecting object stores we just deleted
     });
   });
   
@@ -389,6 +390,7 @@ define('resourceManager', [
     RM.deleteDatabase().done(function() {
       Voc.storeModels();
       G.setVersion('DB', version);
+      window.location.reload(); // otherwise pending reqs to database may fail and cause trouble, expecting object stores we just deleted
     });
   });
   

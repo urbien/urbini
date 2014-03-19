@@ -842,6 +842,11 @@ define('globals', function() {
         }
         
         return G.getCached(getMetadataURL(url), source).then(function(metadata) {
+          if (!metadata) {
+            pruned.push(url);
+            return;
+          }
+          
           metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
           var dateSaved = metadata.dateModified;
           var minified = metadata.minified;
@@ -1372,13 +1377,12 @@ define('globals', function() {
                     "seeking", "seeked", "ended", "durationchange", "timeupdate", "play", "pause", "ratechange", "volumechange"],
                     
     nukeAll: function(reload) {
+      this.Events.trigger('clearTaskQueues');
       hasLocalStorage && localStorage.clear();
       if (G.ResourceManager) {
         return G.ResourceManager.deleteDatabase().done(function() {          
           if (reload)
             window.location.reload();
-          else
-            G.ResourceManager.openDB();
         });
       }
       else
@@ -1460,21 +1464,39 @@ define('globals', function() {
     
     setVersion: function(key, version) {
       var oldV = G.VERSION;
-      var newV = _.clone(G.VERSION);
-      newV[key] = version;
+      var newV;
+      if (typeof key == 'object')
+        newV = key;
+      else {
+        newV = _.clone(G.VERSION);
+        newV[key] = version;
+      }
+      
       G.localStorage.put("OLD_VERSION", JSON.stringify(oldV));
       G.localStorage.put("VERSION", JSON.stringify(newV));
     },
     
     checkVersion: function(data) {
-      var init = data === true,
+      if (this._nuking)
+        return;
+      
+      var self = this,
+          init = data === true,
           newV = data ? data.VERSION : G.getVersion(),
           oldV = G.getVersion(!data) || newV; // get old
 
       if (newV.All > oldV.All) {
-        G.nukeAll().done(function() {          
-          G.setVersion(newV);
-          window.location.reload();
+        if (this._nuking)
+          return;
+        
+        this._nuking = true;
+        this.nukeAll().done(function() {          
+          self.setVersion(newV);
+          window.location.reload(); // otherwise pending reqs to database may fail and cause trouble, expecting object stores we just deleted
+        }).fail(function() {
+          debugger;
+        }).always(function() {
+          self._nuking = false;
         });
         
         return;
@@ -1482,7 +1504,7 @@ define('globals', function() {
 
       for (var key in newV) {
         if (oldV[key] && newV[key] > oldV[key]) {
-          Events.trigger('VERSION:' + key, newV[key], init);
+          this.Events.trigger('VERSION:' + key, newV[key], init);
           // DB and Models version update is async, it needs to complete before we can safely up the version number in storage
           if (key != 'DB' && key != 'Models')
             G.setVersion(key, newV[key]);

@@ -1,12 +1,16 @@
-define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
+define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) {
   
   var STATE_BLOCKED = 'blocked',
       STATE_PAUSED = 'paused',
-      STATE_OPEN = 'open';
+      STATE_OPEN = 'open',
+      taskQueues = [];
   
   function PriorityQueue() {
     var queue = [];
     return {
+      clear: function() {
+        queue.length = 0;
+      },
       /**
        * @task Task object
        */
@@ -56,6 +60,7 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
     if (!(this instanceof TaskQueue))
       return new TaskQueue(name);
     
+    taskQueues.push(this);
 //    window.taskQueue = this;
     
     var tq = this,
@@ -64,6 +69,14 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
     
     // state machine methods
     _.extend(tq, {
+      destroy: function() {
+        Array.remove(taskQueues, this);
+      },
+      reset: function() {
+        queue.clear();
+        running.length = 0;
+        this.open();
+      },
       pause: function() {
         if (tq.state !== STATE_OPEN)
           debugger;
@@ -260,6 +273,12 @@ define('taskQueue', ['globals', 'underscore'], function(G, _, $idb) {
       return started && promise.state() == 'resolved';
     };
   }
+  
+  Events.on('clearTaskQueues', function() {
+    for (var i = 0; i < taskQueues.length; i++) {
+      taskQueues[i].reset();
+    }
+  });
   
   return TaskQueue;
 });
