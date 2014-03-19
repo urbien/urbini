@@ -63,7 +63,6 @@ define('views/Header', [
         this.makeTemplate('filterTemplate', 'filterTemplate', type);
         this.makeTemplate('filterConditionTemplate', 'filterConditionTemplate', type);
         this.makeTemplate('filterConditionInputTemplate', 'filterConditionInputTemplate', type);
-        this.originalParams = _.clone(this.collection.params);
       }
       
       this.makeTemplate('physicsConstantsTemplate', 'physicsConstantsTemplate', this.vocModel && this.vocModel.type);
@@ -409,55 +408,9 @@ define('views/Header', [
       }
     },
 
-    search: function(e) {
-      var col = this.collection,
-          input = e.target,
-          value = input.value,
-          valueLowerCase,
-          resourceMatches,
-          numResults,
-          indicatorId,
-          hideIndicator;
-      
-      if (!value) {
-        indicatorId = this.showLoadingIndicator(3000); // 3 second timeout
-        hideIndicator = this.hideLoadingIndicator.bind(this, indicatorId);
-
-        col.reset(null, _.extend({
-          silent: true
-        }, this.originalParams));
-        
-        col.fetch({
-          forceFetch: true,
-          success: hideIndicator,
-          error: hideIndicator
-        });
-        
-        return;
-      }
-      
-      valueLowerCase = value.toLowerCase();
-      resourceMatches = col.models.filter(function(res) {
-        var dn = U.getDisplayName(res);
-        return dn && ~dn.toLowerCase().indexOf(valueLowerCase);
-      });
-  
-      col.reset(resourceMatches, {
-        params: _.defaults({
-          '$like': 'davDisplayName,' + value
-        }, this.originalParams)
-      });
-      
-//      numResults = col.size();
-//      indicatorId = this.showLoadingIndicator(3000); // 3 second timeout
-//      hideIndicator = this.hideLoadingIndicator.bind(this, indicatorId);
-//        
-//      filtered.fetch({
-//        forceFetch: true,
-//        success: hideIndicator,
-//        error: hideIndicator
-//      });
-    },
+    search: _.debounce(function(e) {
+      Events.trigger('searchList', this.getPageView(), e.target.value);
+    }, 20),
 
     refresh: function() {
 //      this.refreshCallInProgressHeader();
