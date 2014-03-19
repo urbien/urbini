@@ -50,7 +50,7 @@ define('views/ListPage', [
       
       var self = this;
       var rl = this.collection;
-      var filtered = this.filteredCollection = this.collection; //rl.clone();
+      var filtered = this.filteredCollection = rl.clone();
       var readyDfd = $.Deferred();
       
       var commonParams = {
@@ -277,7 +277,7 @@ define('views/ListPage', [
           error: hideIndicator
         });
       }            
-    }, 50),
+    }, 100),
 
 //    orientationchange: function(e) {
 ////      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
@@ -443,7 +443,7 @@ define('views/ListPage', [
 
       this.filter = this.$('#filter')[0];
       if (this.filter) {
-        this.filter.on('keydown', function(e) {
+        this.filter.$on('keydown', function(e) {
           self.filter.dispatchEvent(new Event('change', {
             view: self.filter,
             bubbles: false,
