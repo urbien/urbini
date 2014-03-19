@@ -26,23 +26,23 @@ define('@widgets', ['globals'].concat(Lablz._widgetsLib), function(G) {
   else {
     $w = {
       scrollTo: function() {
-        debugger;
+//        debugger;
       },
       
       silentScroll: function() {
-        debugger;
+//        debugger;
       },
       
       loading: function() {
-        debugger;
+//        debugger;
       },
       
       showPageLoadingMsg: function() {
-        debugger;
+//        debugger;
       },
       
       hidePageLoadingMsg: function() {
-        debugger;
+//        debugger;
       }
     }
   }
