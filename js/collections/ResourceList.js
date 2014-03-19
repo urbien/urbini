@@ -484,7 +484,7 @@ define('collections/ResourceList', [
         throw "This list is locked, it cannot be changed";
       
       this.enablePaging();
-      var needsToBeStored = !U.isModel(models[0]);
+      var needsToBeStored = models && models.length && !U.isModel(models[0]);
       
       this.resetting = true;
       try {
