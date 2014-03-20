@@ -1148,9 +1148,10 @@
     </div>
     {{= this.categories ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-iconpos="notext" data-icon="tags" id="categories" href="#"></a></div>' : '' }} 
     {{= this.moreRanges ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-icon="tags" id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '</a></div>' : '' }}
-    {{= this.filter ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-iconpos="notext" data-icon="filter" id="toggleFilter" href="#"></a></div>' : '' }} 
+    {{= this.filter ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-iconpos="notext" data-icon="filter" class="filterToggle" href="#"></a></div>' : '' }} 
     <div id="name" class="resTitle" {{= this.categories ? 'style="width: 95%;"' : 'style="min-height: 20px"' }} align="center">
       <h4 id="pageTitle" style="font-weight:normal;">{{= this.title }}</h4>
+      {{= this.filter ? "<div class='filter'></div>" : "" }}
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} style="margin-top: -7px;" id="headerButtons">
         <div style="max-width:200px; display: inline-block;" id="doTryBtn"  class="{{= obj.className ? 'ui-block-a' : '' }}">
           {{ if (obj.tryApp) { }}
@@ -1193,6 +1194,75 @@
     <!--div id="headerErrorBar">
     </div-->
   </div>
+</script>
+
+<script type="text/template" id="searchTemplate">
+  <!-- Filter conditions for complex queries -->
+  <div class="searchBar">
+    <input type="text" class="searchInput" style="font-family: FontAwesome" placeholder="&#xf002; Search" />
+  </div>
+</script>  
+
+<script type="text/template" id="filterTemplate">
+  <!-- Filter conditions for complex queries -->
+  <ul class="filterConditions" id="filterConditions">
+  </ul>
+</script>  
+
+<script type="text/template" id="filterConditionTemplate">
+<!--li class="filterCondition {{= obj.cancelable == false ? '' : 'cancelable' }}"-->
+  <li class="filterCondition" id="filterCondition{{= G.nextId() }}">
+  {{ if (obj.cancelable !== false) { }}
+    <i class="ui-icon-remove"></i>
+  {{ }                 }}
+    <i class="ui-icon-plus-sign"></i>
+    <select class="propertySelector">
+      <option value="_NO_PROP_">--Select property--</option>
+      {{ for (var i = 0; i < props.length; i++) { }}
+          <option value="{{= props[i].shortName }}">{{= U.getPropDisplayName(props[i]) }}</option>
+      {{ }                                        }}
+    </select>
+    <div class="filterConditionInput">
+    </div>
+  </li>
+</script>
+
+<!--script type="text/template" id="filterConditionInputTemplate">
+{{ switch (prop.range || prop.facet) { }}
+{{ case 'boolean':                     }}
+  <select>
+    <option value="true" {{= obj.value == true ? 'selected' : '' }}>True</option>
+    <option value="false" {{= obj.value == false ? 'selected' : '' }}>False</option>
+  </select>
+{{ break;                              }}
+{{ case 'int':                         }}
+{{ case 'long':                        }}
+{{ case 'float':                       }}
+{{ case 'double':                      }}
+  <input type="number" value="{{= value }}" />
+{{ break;                              }}
+{{ case 'string':                      }}
+{{ default:                            }}
+  <input type="text" value="{{= value }}" />
+{{ break;                              }}
+{{ }                                   }}
+</script-->
+
+<script type="text/template" id="filterConditionInputTemplate">
+{{ if (prop.range == 'boolean') { }}
+  <select>
+    <option value="true" {{= value == true ? 'selected' : '' }}>True</option>
+    <option value="false" {{= value == true ? '' : 'selected' }}>False</option>
+  </select>
+{{ }                            }}
+
+{{ if (~U.primitiveTypes.ints.indexOf(prop.range) || ~U.primitiveTypes.floats.indexOf(prop.range)) { }}
+  <input type="number" value="{{= value }}" />
+{{ }                            }}
+
+{{ if (prop.range == 'string') { }}
+  <input type="text" value="{{= value }}" />
+{{ }                            }}
 </script>
 
 <!--script type="text/template" id="messageBarTemplate">

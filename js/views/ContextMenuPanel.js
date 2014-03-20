@@ -319,7 +319,7 @@ define('views/ContextMenuPanel', [
             likeVerb = this.loc('likeVerb');
         
 //        this.html(this.template({}));      
-        uri = U.makePageUrl('make', 'aspects/tags/Vote', {votable: G.currentApp._uri, '-makeId': G.nextId, $title: U.makeHeaderTitle(likeVerb, G.currentApp.davDisplayName)});
+        uri = U.makePageUrl('make', 'aspects/tags/Vote', {votable: G.currentApp._uri, '-makeId': G.nextId(), $title: U.makeHeaderTitle(likeVerb, G.currentApp.davDisplayName)});
         html += this.menuItemTemplate({title: likeVerb, pageUrl: uri, icon: 'heart', homePage: 'y'});
 
         if (!G.currentUser.guest) {
@@ -327,7 +327,7 @@ define('views/ContextMenuPanel', [
           html += this.menuItemTemplate({title: icons, mobileUrl: U.makePageUrl('social', '', {}), homePage: 'y', social: true});
         }
 
-        uri = U.makePageUrl('make', 'model/portal/Comment', {$editCols: 'description', forum: G.currentApp._uri, '-makeId': G.nextId, $title: U.makeHeaderTitle(commentVerb, G.currentApp.davDisplayName)});
+        uri = U.makePageUrl('make', 'model/portal/Comment', {$editCols: 'description', forum: G.currentApp._uri, '-makeId': G.nextId(), $title: U.makeHeaderTitle(commentVerb, G.currentApp.davDisplayName)});
         html += this.menuItemTemplate({title: commentVerb, pageUrl: uri, icon: 'comments', homePage: 'y'})
         var isAllowedToEdit = G.currentUser != 'guest'  &&  (G.currentUser._uri == G.currentApp.creator  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'));
         if (isAllowedToEdit) {

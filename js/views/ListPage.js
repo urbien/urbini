@@ -42,7 +42,7 @@ define('views/ListPage', [
 //      'background-position': '0 50%'
     },
     initialize: function(options) {
-      _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'setMode', /*'orientationchange',*/ 'onFilter', '_buildMockViewPage', '_getViewPageImageInfo');
+      _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'setMode', /*'orientationchange',*/ '_buildMockViewPage', '_getViewPageImageInfo');
       BasicPageView.prototype.initialize.apply(this, arguments);
       this.mode = options.mode || G.LISTMODES.DEFAULT;
 //      this.options = _.pick(options, 'checked', 'props');
@@ -227,9 +227,7 @@ define('views/ListPage', [
       'click'            : 'click',
 //      'click #nextPage'  : 'getNextPage',
       'click #homeBtn'   : 'home',
-      'submit'            : 'submit',
-      'click #filter'    : 'focusFilter',
-      'change #filter'    : 'onFilter'
+      'submit'            : 'submit'
     },
     
 //    windowEvents: {
@@ -237,48 +235,6 @@ define('views/ListPage', [
 //      'resize'            : 'orientationchange'
 //    },
     
-    focusFilter: function(e) {
-      // HACK - JQM does sth weird to prevent focus when we're not using their listfilter widget
-      this.filter.focus();
-    },
-    
-    onFilter: Q.debounce(function(e, data) {
-      var filtered = this.filteredCollection,
-          collection = this.collection,
-          value = e.target.value,
-          resourceMatches,
-          numResults;
-      
-      if (!value) {
-        filtered.reset(collection.models, {params: collection.params});
-        return;
-      }
-      
-      resourceMatches = _.filter(collection.models, function(res) {
-        var dn = U.getDisplayName(res);
-        return dn && dn.toLowerCase().indexOf(value.toLowerCase()) != -1;
-      });
-
-      filtered.reset(resourceMatches, {
-        params: _.extend({
-          '$like': 'davDisplayName,' + value
-        }, collection.params)
-      });
-      
-      numResults = filtered.size();
-      if (numResults < this.displayPerPage) {
-        var numOriginally = collection.size(),
-            indicatorId = this.showLoadingIndicator(3000), // 3 second timeout
-            hideIndicator = this.hideLoadingIndicator.bind(this, indicatorId);
-        
-        filtered.fetch({
-          forceFetch: true,
-          success: hideIndicator,
-          error: hideIndicator
-        });
-      }            
-    }, 100),
-
 //    orientationchange: function(e) {
 ////      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
 ////      var isMasonry = this.isMasonry = !isChooser  &&  U.isMasonryModel(this.vocModel); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
@@ -441,7 +397,7 @@ define('views/ListPage', [
       if (!this.isMasonry)
         this.$('#sidebarDiv').$css('overflow-x', 'visible');
 
-      this.filter = this.$('#filter')[0];
+      this.filter = this.$('.filter')[0];
       if (this.filter) {
         this.filter.$on('keydown', function(e) {
           self.filter.dispatchEvent(new Event('change', {

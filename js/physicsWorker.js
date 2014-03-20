@@ -2019,6 +2019,7 @@ function getRectVertices(width, height) {
       if (this.tilt) // TODO: make sure only one thing is rotating the container
         API.rotateWhenMoving(this.offsetBody, getContainer(this.offsetBody), this.axisIdx, this.orthoAxisIdx, this.tilt, this.gradient);
       
+      this._initialized = true;
       this['continue']();
     },
     
@@ -2677,6 +2678,10 @@ function getRectVertices(width, height) {
       return Physics.util.pick(this, 'minBricks', 'maxBricks', 'minSlidingPagesInWindow', 'maxSlidingPagesInWindow', 'bricksPerPage');
     },
     
+//    requestMore: function(n, atTheHead) {
+//      setTimeout(this._requestMore.bind(this, n, atTheHead), 100);
+//    },
+    
     requestMore: function(n, atTheHead) {
       this._requestMoreTimePlaced = Physics.util.now();
       if (this._waiting)
@@ -2700,6 +2705,10 @@ function getRectVertices(width, height) {
       });
     },
 
+//    requestLess: function(head, tail) {
+//      setTimeout(this._requestLess.bind(this, head, tail), 100);
+//    },
+    
     requestLess: function(head, tail) {
       if (this._waiting)
         return;
@@ -3008,6 +3017,8 @@ function getRectVertices(width, height) {
     unsetLimit: function() {
       this.brickLimit = Infinity;
       if (this.tailEdge) {
+        this._unsubscribe('drag', this.breakTailEdgeConstraint);          
+        this._unsubscribe('dragend', this.breakTailEdgeConstraint);          
         API.removeConstraint(this.tailEdgeConstraint);
         world.removeBody(this.tailEdge);
         delete this.tailEdgeConstraint;
@@ -3018,10 +3029,11 @@ function getRectVertices(width, height) {
     },
 
     reset: function() {
-      if (this.mason)
-        this.removeBricks(this.numBricks());
+      this.unsetLimit();
+      var numBricks = this.numBricks();
+      if (numBricks)
+        this.removeBricks(numBricks);
       
-      this.brickLimit = Infinity;
       this.lastBrickSeen = 0;
       if (!this.range)
         this.range = {};
@@ -3032,7 +3044,14 @@ function getRectVertices(width, height) {
         this.slidingWindowBounds = {};
       
       this.slidingWindowBounds.min = this.slidingWindowBounds.max = 0;
-      if (this.mason && !this._sleeping && !this._waiting)
+//      if (this.mason && !this._sleeping && !this._waiting)
+//        this._adjustSlidingWindow();
+      if (numBricks) {
+        this.offsetBody.stop(this._initialOffsetBodyPos);
+//        return this.requestLess(0, numBricks);
+      }
+      
+      if (this._initialized)
         this._adjustSlidingWindow();
     },
     
@@ -3159,7 +3178,7 @@ function getRectVertices(width, height) {
     },
     
     numBricks: function() {
-      return this.mason.bricks.length;
+      return this.mason ? this.mason.bricks.length : 0;
     },
 
     constrainToFlexigroup: function(bricks, prepend) {
@@ -3416,7 +3435,11 @@ function getRectVertices(width, height) {
         return;
       }
       
-      world.remove(bricks);
+      this._subscribe('postRender', function doRemove() {
+        this._unsubscribe('postRender', doRemove); // so we can render them invisible
+        world.remove(bricks);
+      }, this);
+      
       while (i--) {
         brick = bricks[i];
         API.completePendingActions(brick);
@@ -3463,8 +3486,12 @@ function getRectVertices(width, height) {
     },
 
     'continue': function() {
-      this._sleeping = this._waiting = false;
-      this._adjustSlidingWindow();
+//      if (this._sleeping || this._waiting) {
+        this._sleeping = this._waiting = false;
+        this._adjustSlidingWindow();
+//      }
+//      else
+//        debugger;
     },
     
     saveState: function(brick) {

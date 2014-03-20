@@ -6,7 +6,8 @@ define('views/Header', [
   'vocManager',
   'views/BasicView',
   'physicsBridge',
-  'domUtils'
+  'domUtils',
+  'lib/fastdom'
 //  ,
 //  'views/BackButton',
 //  'views/LoginButton',
@@ -15,7 +16,7 @@ define('views/Header', [
 //  'views/AroundMeButton',
 //  'views/MenuButton',
 //  'views/PublishButton'
-], function(G, Events, U, Voc, BasicView, Physics, DOM/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
+], function(G, Events, U, Voc, BasicView, Physics, DOM, Q/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
   var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate', 'installApp'];
   var REGULAR_BUTTONS = ['back', 'cancel', 'save', 'mapIt', 'add', 'video', 'chat', 'login', 'rightMenu'];
   var commonTypes = G.commonTypes;
@@ -31,7 +32,7 @@ define('views/Header', [
     autoFinish: false,
     template: 'headerTemplate',
     initialize: function(options) {
-      _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload', 'refresh'); //, '_updateInfoErrorBar', 'checkErrorList', 'sendToCall');
+      _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload', 'refresh', 'onFilter'); //, '_updateInfoErrorBar', 'checkErrorList', 'sendToCall');
       BasicView.prototype.initialize.apply(this, arguments);
       options = options || {};
       _.extend(this, options);
@@ -172,14 +173,16 @@ define('views/Header', [
     events: {
       'change #fileUpload'                         : 'fileUpload',
       'change .physicsConstants input'             : 'changePhysics',
-      'click #toggleFilter'                        : 'toggleFilter',
+      'click .filterToggle'                        : 'toggleFilter',
       'click #categories'                          : 'showCategories',
 //      'click #installApp'         : 'installApp',
       'click #moreRanges'                          : 'showMoreRanges',
-      'keyup input#search'                         : 'search',
       'click .filterCondition i.ui-icon-remove'    : 'removeFilterCondition',
       'click .filterCondition i.ui-icon-plus-sign' : 'addFilterCondition',
-      'change .propertySelector'                   : 'changeFilterConditionProperty'
+      'change .propertySelector'                   : 'changeFilterConditionProperty',
+      'click .filter'                              : 'focusFilter',
+      'keyup .searchInput'                         : 'search',
+      'change .filterConditions input'             : 'onFilter'
     },
     
     changePhysics: function(e) {
@@ -293,12 +296,14 @@ define('views/Header', [
       case undefined:
         this.filterType = 'simple';
         this.showSearch();
+        this.redelegateEvents();
         break;
       case 'simple':        
-        this.filterType = 'complex';
-        this.showFilter();
-        break;
-      case 'complex':
+//        this.filterType = 'complex';
+//        this.showFilter();
+//        this.redelegateEvents();
+//        break;
+//      case 'complex':
         this.filterType = null;
         this.hideFilter();
         break;
@@ -306,17 +311,25 @@ define('views/Header', [
     },
     
     hideFilter: function() {
+      this.titleContainer.classList.remove('hidden');
+      
       this.filterIcon.className = this.searchIconClass;
+      this.filterContainer.classList.add('hidden');
       this.redelegateEvents();
     },
 
     showSearch: function() {
+      this.titleContainer.classList.add('hidden');
+      
       this.filterIcon.className = 'ui-icon-filter';
       this.filterContainer.$html(this.searchTemplate(this.getBaseTemplateData()));
+      this.filterContainer.classList.remove('hidden');
       this.redelegateEvents();
     },
     
     showFilter: function() {      
+      this.titleContainer.classList.add('hidden');
+      
       if (!this.filterProps) {
         this.filterProps = [];
         var meta = this.vocModel.properties,
@@ -337,6 +350,7 @@ define('views/Header', [
       tmpl_data.cancelable = false;
       this.filterIcon.className = 'ui-icon-remove';
       this.filterContainer.$html(this.filterTemplate());
+      this.filterContainer.classList.remove('hidden');
       this.filterContainer.$('ul')[0].$html(this.filterConditionTemplate(tmpl_data));
       this.redelegateEvents();
     },
@@ -408,8 +422,18 @@ define('views/Header', [
       }
     },
 
+    focusFilter: function(e) {
+      // HACK - JQM does sth weird to prevent focus when we're not using their listfilter widget
+      this.filterContainer.focus();
+    },
+    
     search: _.debounce(function(e) {
       Events.trigger('searchList', this.getPageView(), e.target.value);
+    }, 20),
+
+    onFilter: Q.debounce(function(e, data) {
+      debugger;
+      Events.trigger('filterList', this.getPageView(), e.target.value);
     }, 20),
 
     refresh: function() {
@@ -489,7 +513,7 @@ define('views/Header', [
 
     refreshTitle: function() {
       this.recalcTitle();
-      this.$('#pageTitle')[0].innerHTML = this.title;
+      this.titleContainer.innerHTML = this.title;
 //      $('title').text(this.title);
       this.pageView.trigger('titleChanged', this._title);
     },
@@ -729,11 +753,12 @@ define('views/Header', [
       }      
       
       this.html(this.template(templateSettings));
+      this.titleContainer = this.$('#pageTitle')[0];
       if (this.filter) {
-        this.filter = this.$('#toggleFilter')[0];
+        this.filter = this.$('.filterToggle')[0];
         this.filterIcon = this.filter.$('i')[0];
         this.searchIconClass = this.filterIcon.className;
-        this.filterContainer = this.$('#filter')[0];
+        this.filterContainer = this.$('.filter')[0];
       }
       
       this.renderPhysics();
@@ -791,7 +816,7 @@ define('views/Header', [
         if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges) {
           this.$('#name').$removeClass('resTitle');
           if (this.resource  &&  !this.isEdit) {
-            var pt = this.$('#pageTitle');
+            var pt = this.titleContainer;
             if (pt.length) {
               pt.$css({
                 'padding-bottom': '4px',

@@ -45,6 +45,7 @@ define('views/ResourceListView', [
   return BasicView.extend({
     // CONFIG
     _autoFetch: false,
+    autoFinish: false,
 //    _flexigroup: true,
     _draggable: true,
     _dragAxis: 'y',
@@ -75,7 +76,7 @@ define('views/ResourceListView', [
     },
     stashed: [],
     initialize: function(options) {
-      _.bindAll(this, 'render', 'fetchResources', 'refresh', 'setMode', 'onResourceChanged', '_onPhysicsMessage');
+      _.bindAll(this, 'render', 'fetchResources', 'refresh', 'setMode', 'onResourceChanged', '_onPhysicsMessage', 'doSearch', 'doFilter');
       options = options || {};
       BasicView.prototype.initialize.call(this, options);
       this.displayMode = options.displayMode || 'vanillaList';
@@ -121,7 +122,7 @@ define('views/ResourceListView', [
       var self = this,
           col = this.collection;
       
-      _.each(['updated', 'added', 'reset'], function(event) {
+      _.each(['reset'], function(event) {
         self.stopListening(col, event);
         self.listenTo(col, event, function(resources) {
           resources = U.isCollection(resources) ? resources.models : U.isModel(resources) ? [resources] : resources;
@@ -133,11 +134,14 @@ define('views/ResourceListView', [
           if (event == 'reset') {
             self._outOfData = false;
             self._isPaging = false;
+            if (self._pagingPromise.state() == 'pending')
+              self._pagingPromise._canceled = true;
+//            self.mason.unsetLimit();
+            self._removeBricks(self._displayedRange.from, self._displayedRange.to);
             self._displayedRange.from = self._displayedRange.to = 0;
-            self.mason.unsetLimit();
             self.mason.reset();
-            if (self.mason.isLocked())
-              self.mason['continue']();
+//            if (self.mason.isLocked())
+//              self.mason['continue']();
           }
           
 //          self.refresh(options);
@@ -156,6 +160,8 @@ define('views/ResourceListView', [
         head: 0,
         tail: G.viewport[this.options.horizontal ? 'width' : 'height']
       };
+      
+      this.originalParams = _.clone(this.collection.params);
       
 //      Physics.here.on('translate.' + this.axis.toLowerCase(), this.getBodyId(), this.onScroll);
 //      
@@ -188,6 +194,96 @@ define('views/ResourceListView', [
     events: {
       'click': 'click'
     },
+    
+    globalEvents: {
+      'searchList': 'doSearch',
+      'filterList': 'doFilter'
+    },
+    
+//    _searchDebounce: 100,
+//    search: function(page, value) {
+//      console.log("SEARCH", value);
+//      if (this.getPageView() != page)
+//        return;
+//
+//      var self = this,
+//          now = _.now(),
+//          lastSearchTime = this._lastSearchTime || now; // debounce first too
+//      
+//      this._lastSearchTime = now;
+//      if (now - lastSearchTime < this._searchDebounce || this.mason.isLocked()) {
+//        clearTimeout(this._searchTimeout);
+//        this._searchTimeout = setTimeout(function() {
+//          self.doSearch(value);
+//        }, this._searchDebounce);
+//        
+//        return;
+//      }
+//      else
+//        this.doSearch(value);
+//    },
+    
+    doSearch: _.debounce(function(page, value) {
+      console.log("DO SEARCH", value);
+      if (this.getPageView() != page || this._searchValue == value) {
+        console.log("ALREADY SEARCHED", value);
+        return;
+      }
+      
+      if (this.mason.isLocked()) {
+        console.log("SEARCH LOCKED", value);
+        return this.doSearch(this.getPageView(), value);
+      }
+        
+      console.log("SEARCHING", value);
+      this._searchValue = value;
+      var pageView = this.getPageView(),
+          col = pageView.collection,
+          filtered = pageView.filteredCollection,
+          value = this._searchValue,
+          valueLowerCase,
+          resourceMatches,
+          numResults,
+          indicatorId,
+          hideIndicator;
+      
+      if (!value) {
+        indicatorId = this.showLoadingIndicator(3000); // 3 second timeout
+        hideIndicator = this.hideLoadingIndicator.bind(this, indicatorId);
+
+        filtered.reset(col.models, {
+          params: this.originalParams
+        });
+        
+        return;
+      }
+      
+      valueLowerCase = value.toLowerCase();
+      resourceMatches = col.models.filter(function(res) {
+        var dn = U.getDisplayName(res);
+        return dn && ~dn.toLowerCase().indexOf(valueLowerCase);
+      });
+  
+      filtered.reset(resourceMatches, {
+        params: _.defaults({
+          '$like': 'davDisplayName,' + value
+        }, this.originalParams)
+      });
+      
+//      numResults = col.size();
+//      indicatorId = this.showLoadingIndicator(3000); // 3 second timeout
+//      hideIndicator = this.hideLoadingIndicator.bind(this, indicatorId);
+//        
+//      filtered.fetch({
+//        forceFetch: true,
+//        success: hideIndicator,
+//        error: hideIndicator
+//      });
+    }, 100),
+    
+    doFilter: _.debounce(function(page, param, value) {
+      // TODO: filter similar to search, except per property instead of for displayName, maybe generalize it so it works for search too
+    }, 100),
     
 //    myEvents: {
 //      'active': '_onActive'
@@ -594,11 +690,19 @@ define('views/ResourceListView', [
 //        Physics.there.addBody('point', scrollbarOptions, scrollbarId);
         
         this.addToWorld(this.options);
+//        Q.read(this.checkOffsetTop, this);
       }
       else 
         this.refresh();
     },
   
+    checkOffsetTop: function() {
+      if (this.el.offsetTop)
+        this.invalidateSize();
+      else
+        Q.defer(1, 'read', this.checkOffsetTop, this);
+    },
+    
     /**
      * re-render the elements in the sliding window
      */
@@ -846,7 +950,7 @@ define('views/ResourceListView', [
           numMax = this.options.maxBricks,
           numToRecycle = Math.min(numMax * 2 - numLeft, i),
           numYetToRecycle = numToRecycle,
-          ids = [],
+//          ids = [],
           recycled = [],
           view;
       
@@ -864,7 +968,7 @@ define('views/ResourceListView', [
           Q.write(view.destroy, view);
         }
         
-        ids.push(view.getBodyId());
+//        ids.push(view.getBodyId());
       }
 
       if (recycled.length) {
@@ -919,7 +1023,8 @@ define('views/ResourceListView', [
           firstFetchDfd = this.getPageView()._fetchDfd, // HACK
           nextPagePromise,
           nextPageUrl,
-          limit = Math.max(to - from, this.options.minPagesInSlidingWindow * this.options.bricksPerPage, 10);
+          limit = Math.max(to - from, this.options.minPagesInSlidingWindow * this.options.bricksPerPage, 10),
+          pagingPromise;
       
       this._pageRequestTimePlaced = _.now();
       nextPagePromise = col.getNextPage({
@@ -961,7 +1066,15 @@ define('views/ResourceListView', [
       if (firstFetchDfd.state() == 'pending')
         defer.promise().done(firstFetchDfd.resolve).fail(firstFetchDfd.resolve); // HACK
       
-      this._pagingPromise = defer.promise().always(function() {
+      pagingPromise = this._pagingPromise = defer.promise().always(function() {
+        if (pagingPromise._canceled)
+          return;
+        
+        if (!self._loadedFirstPage && !self.isStillLoading()) {
+          self._loadedFirstPage = true;
+          self.finish();
+        }
+        
         self._isPaging = false;
         if (defer.state() == 'rejected')
           self._outOfData = true;

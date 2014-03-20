@@ -1302,3 +1302,11 @@ div, span, p {
   font-family: Calibri, Arial, Helvetica;
   line-height: 29px;
 }
+
+.searchBar input {
+  width: 80%;
+  border: none;
+  border-radius: 20px;
+  padding: 5px 5px;
+  line-height: 2rem;
+}

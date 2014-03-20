@@ -481,6 +481,14 @@ define('views/BasicView', [
       return [this._loadPromise].concat(this._getChildrenLoadingPromises());
     },
     
+    isLoaded: function() {
+      return this._loadPromise.state() == 'resolved';
+    },
+
+    isStillLoading: function() {
+      return this._loadPromise.state() != 'pending';
+    },
+
 //    isDoneLoading: function() {
 //      return _.all(this._getLoadingDeferreds(), function(c) {
 //        return c.state() !== 'pending';
