@@ -336,7 +336,6 @@ define('utils', [
 
     isAnAppClass: function(type) {
       var idx = G.currentApp.name.indexOf('/');
-      
       return type.indexOf(G.currentApp.name.substring(idx)) != -1;
     },
     
@@ -1953,7 +1952,7 @@ define('utils', [
               val += "<a href='" + G.serverName + '/' + G.pageRoot + '#' + uri + "'>" + t + "</a>";
             }
           }
-          else if (prop.facet != 'emailAddress')
+          else if (prop.facet != 'emailAddress'  &&  val.indexOf('<') == -1)
             val = "<span>" + val + "</span>";
         }
         else if (prop.range == 'enum') {
