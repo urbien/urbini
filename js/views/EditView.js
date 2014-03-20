@@ -619,8 +619,8 @@ define('views/EditView', [
       if (this.loadedScrollers) {
         var meta = this.vocModel.properties;
         var self = this;
-        this.getScrollers().$forEach(function() {
-          $(this).mobiscroll('destroy');
+        this.getScrollers().$forEach(function(scroller) {
+          $(scroller).mobiscroll('destroy');
           var prop = meta[this.name];
           self.getScroller(prop, this);
         });
@@ -718,8 +718,12 @@ define('views/EditView', [
       var val;
       
       var p = this.vocModel.properties[input.name];
-      if (_.contains(input.classList, switchClass))
-        val = input.value === 'Yes' ? true : false;
+      if (_.contains(input.classList, switchClass)) {
+        if (input.type == 'checkbox')
+          val = !!input.checked;
+        else
+          val = input.value === 'Yes' ? true : false;
+      }
       else if (p && p.multiValue)
         val = this.getResourceInputValue(input); //input.innerHTML;
       else
@@ -988,10 +992,12 @@ define('views/EditView', [
         if (collection != this.resource.collection || !_.contains(modified, this.resource.getUri()))
           return this;
       }
-      
-      this.getScrollers().$forEach(function() {
-        $(this).mobiscroll('destroy');        
-      });
+
+      if (this.loadedScrollers) {
+        this.getScrollers().$forEach(function(scroller) {
+          $(scroller).mobiscroll('destroy');        
+        });
+      }
       
       this.render();
       this.refreshScrollers();
