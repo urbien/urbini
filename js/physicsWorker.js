@@ -407,7 +407,16 @@ this.onmessage = function(e){
 
 function _onmessage(e) {
 	if (!world) {
-	  importScripts(e.data.physicsJSUrl, e.data.masonryUrl);
+	  if (!e.data.physicsJSUrl)
+	    throw new "Missing required imports: Physics";
+
+    if (!e.data.masonryUrl)
+      throw new "Missing required imports: Masonry";
+
+	  console.log("IMPORTING: " + e.data.physicsJSUrl);
+	  importScripts(e.data.physicsJSUrl);
+    console.log("IMPORTING: " + e.data.masonryUrl);
+	  importScripts(e.data.masonryUrl);
 	  DEBUG = e.data.debug;
 //	  with (e.data.styleInfo) {
 	    // Transfer protocol props
@@ -4359,7 +4368,7 @@ var API = {
         anchor = Physics.body('point', Physics.util.extend(destination.values(), {
           fixed: true
         })),
-        distThresh = options.distanceThreshold || 1,
+        distThresh = options.distanceThreshold || 3,
         velThresh = options.velocityThreshold || 0.1,
         accThresh = options.accelerationThreshold || 0.1,
         constraint, // only snap along one axis
@@ -4937,10 +4946,11 @@ var API = {
 
 	addRail: function(body, x1, y1, x2, y2) {
 	  body = getBody(body);
+	  z = body.state.pos.get(2);
 	  if (typeof x2 != 'undefined')
-	    return railroad.rail(body, Physics.vector(x1, y1), Physics.vector(x2, y2));
+	    return railroad.rail(body, Physics.vector(x1, y1, z), Physics.vector(x2, y2, z));
 	  else
-	    return railroad.rail(body, Physics.vector(x1, y1));
+	    return railroad.rail(body, Physics.vector(x1, y1, z));
 	},
 	
 //	box: function(body, width, height, x, y) {
