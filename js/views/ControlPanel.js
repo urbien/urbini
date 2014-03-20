@@ -386,31 +386,43 @@ define('views/ControlPanel', [
               var type = U.getTypeUri(prop.range);
               var listModel = U.getModel(type);
               var inlineList = C.getResourceList(listModel, U.getQueryString(params, true));
-              if (!inlineList) {
-                inlineList = new ResourceList(null, {model: listModel, params: params});
-                inlineList.fetch({
-                  success: function() {
-                    var currentlyInlined =  res.inlineLists || {};
-                    if (inlineList.size() && !res._settingInlineList && !currentlyInlined[name]) {
-                      res.setInlineList(name, inlineList);
-                    }
-                    
-                    _.each(['updated', 'added', 'reset'], function(event) {
-                      self.stopListening(inlineList, event);
-                      self.listenTo(inlineList, event, function(resources) {
-                        resources = U.isCollection(resources) ? resources.models : U.isModel(resources) ? [resources] : resources;
-                        var options = {};
-                        options[event] = true;
-                        self.refresh(resources, options);
-                      });
-                    });
+              var firstTime = true;
+              if (inlineList)
+                return;
+              
+              function onsuccess() {
+                if (firstTime) {
+                  firstTime = false;
+                  var currentlyInlined =  res.inlineLists || {};
+                  if (inlineList.size() && !res._settingInlineList && !currentlyInlined[name]) {
+                    res.setInlineList(name, inlineList);
                   }
-                });
+                  
+                  _.each(['updated', 'added', 'reset'], function(event) {
+                    self.stopListening(inlineList, event);
+                    self.listenTo(inlineList, event, function(resources) {
+                      resources = U.isCollection(resources) ? resources.models : U.isModel(resources) ? [resources] : resources;
+                      var options = {};
+                      options[event] = true;
+                      self.refresh(resources, options);
+                    });
+                  });
+                }
                 
-                self.listenTo(Events, 'preparingModelForDestruction.' + inlineList.cid, function() {
-                  Events.trigger('saveModelFromUntimelyDeath.' + inlineList.cid);
-                });
-              }
+                if (!inlineList.isFetching() && !inlineList.isOutOfResources()) // get them all!
+                  inlineList.getNextPage(fetchOptions);
+              };
+              
+              var fetchOptions = {
+                success: onsuccess
+              };
+              
+              inlineList = new ResourceList(null, {model: listModel, params: params});
+              inlineList.fetch(fetchOptions);
+              
+              self.listenTo(Events, 'preparingModelForDestruction.' + inlineList.cid, function() {
+                Events.trigger('saveModelFromUntimelyDeath.' + inlineList.cid);
+              });
             });
           });
         }
