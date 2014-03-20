@@ -1410,7 +1410,7 @@ define('globals', function() {
       }
       
       var style = ' style="z-index:1000;' + (color ? color + ';' : '') + '"';
-      var innerHTML = '<div><div ' + style + ' class="spinner">' + (options.content || '<i class="ui-icon-spinner icon-spin" style="font-size: 64px;"></i>') + '</div></div>';
+      var innerHTML = '<div clasc="spinner-container"><div ' + style + ' class="spinner">' + (options.content || '<i class="ui-icon-spinner icon-spin" style="font-size: 64px;"></i>') + '</div></div>';
       var spinner = doc.createElement('div');
       spinner.id = id;
       spinner.className = cl;
@@ -1427,11 +1427,9 @@ define('globals', function() {
       if (options.blockClick)
         document.addEventListener('click', this.clickBlocker, true);
     },
-    hideSpinner: function(options) {
-      var spinners = doc.querySelectorAll('#' + getSpinnerId(options.name));
-      var i = spinners.length;
-      while (i--) {
-        var spinner = spinners[i];
+    hideSpinner: function(spinner) {
+      var id = getSpinnerId(spinner.name);
+      while (spinner = doc.getElementById(id)) {
         spinner.parentNode.removeChild(spinner);
       }
       
