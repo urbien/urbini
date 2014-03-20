@@ -344,7 +344,22 @@ define('views/Header', [
 
     refreshTitle: function() {
       this.recalcTitle();
-      this.$('#pageTitle')[0].innerHTML = this.title;
+      var title = this.$('#pageTitle')[0],
+          length = this.title.length,
+          fontSize;
+      
+      title.innerHTML = this.title;
+      if (length < 20) {
+        
+      }
+      else if (length < 80)
+        fontSize = '20px';
+      else if (length < 150)
+        fontSize = '16px';
+      
+      if (fontSize)
+        title.style['font-size'] = fontSize;
+      
 //      $('title').text(this.title);
       this.pageView.trigger('titleChanged', this._title);
     },
@@ -686,6 +701,11 @@ define('views/Header', [
       
       this.finish();      
       return this;
+    },
+    getContainerBodyOptions: function() {
+      var options = BasicView.prototype.getContainerBodyOptions.apply(this, arguments);
+      options.z = 1;
+      return options;
     }
   },
   {
