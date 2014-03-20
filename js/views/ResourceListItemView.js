@@ -514,8 +514,10 @@ define('views/ResourceListItemView', [
         if (isSubmission) {
           var d = cloned['Submission']  &&  cloned['Submission'].dateSubmitted;
           var dateSubmitted = d  &&  d.length ? atts[d[0]] : null;
-          if (dateSubmitted  &&  this.commonBlockProps.indexOf(d[0]) != -1)
-            vCols += '<div class="dateLI">' + U.getFormattedDate(dateSubmitted) + '</div>';
+          if (dateSubmitted  &&  this.commonBlockProps.indexOf(d[0]) != -1) {
+            var df = this.vocModel.properties[d[0]].dateFormat;
+            vCols += '<div class="dateLI">' + (df ? U.getFormattedDate2(dateSubmitted, df) : U.getFormattedDate(dateSubmitted)) + '</div>';
+          }  
         }
         if (viewCols.length)
           vCols += viewCols;
@@ -673,7 +675,7 @@ define('views/ResourceListItemView', [
             if (!prop1.skipLabelInGrid) 
               viewCols += '<div style="display:inline"><span class="label" style="color:' + G.darkColor + '">' + U.getPropDisplayName(prop1) + '&#160;</span><span style="font-weight:normal">' + s + '</span></div>';
             else
-              viewCols += '<span style="font-weight:normal">' + s + '</span>';
+              viewCols += s.indexOf('<') == -1 ? '<span style="font-weight:normal">' + s + '</span>' : s;
             viewCols += '&#160;';
           }
           firstProp = false;
@@ -690,19 +692,22 @@ define('views/ResourceListItemView', [
         var s = range.indexOf('/') != -1 && range != 'model/company/Money' ? atts[pName + '.displayName']  ||  atts[pName] : grid[row].value;
 //        var s = grid[row].value;
         var isDate = meta[pName].range == 'date'; 
-        if (!firstProp)
+        if (!firstProp  &&  s.indexOf('<div') == -1  &&  viewCols.trim().substring(viewCols.trim().length - 6) != '</div>')
           viewCols += "<br/>";
         if (!meta[pName].skipLabelInGrid) {
 //            if (isDate)
 //              viewCols += '<div style="float:right;clear: both;"><span class="label">' + row + ':</span><span style="font-weight:normal">' + s + '</span></div>';
 //            else
-          viewCols += '<div style="display:inline"><span class="label" style="color:' + G.darkColor + '">' + row + '&#160;</span><span style="font-weight:normal">' + s + '</span></div>';
+          viewCols += '<div style="display:inline"><span class="label" style="color:' + G.darkColor + '">' + row + '&#160;</span>';
+          viewCols += s.indexOf('<') == -1 ? '<span style="font-weight:normal">' + s + '</span>' : s;
+          viewCols += '</div>';
         }
         else {
           if (firstProp)
             viewCols += '<span>' + s + '</span>';
           else
-            viewCols += '<span style="font-weight:normal">' + s + '</span>';
+            viewCols += s.indexOf('<') == -1 ? '<span style="font-weight:normal">' + s + '</span>' : s;
+//            viewCols += '<span style="font-weight:normal">' + s + '</span>';
         }
         firstProp = false;
       }
@@ -956,7 +961,7 @@ define('views/ResourceListItemView', [
       if (gridCols) {
         var dateSubmitted = cloned['Submission']  &&  cloned['Submission'].dateSubmitted;
         if (dateSubmitted)
-          commonBlockProps.push(dateSubmitted);   
+          commonBlockProps.push(dateSubmitted[0]);   
           
         var submittedBy = preinit['Submission.submittedBy'];
         if (submittedBy)
