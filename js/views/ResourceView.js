@@ -105,9 +105,13 @@ define('views/ResourceView', [
       var tagName = t.tagName.toLowerCase();
 //      var wl = G.currentApp.widgetLibrary
 //      if (wl  &&  wl != 'Jquery Mobile') {
-        Events.stopEvent(e);
-        t.parentNode.$('ul').$toggleClass('hidden');
-        return;
+      Events.stopEvent(e);
+      
+      while (t.parentNode  &&  t.parentNode.tagName.toLowerCase() != 'ul')
+        t = t.parentNode; 
+      t.parentNode.$('ul').$toggleClass('hidden');
+      this.getPageView().invalidateSize();        
+      return;
 //      }
     },
     refresh: function(resource, options) {
@@ -255,8 +259,6 @@ define('views/ResourceView', [
       var displayedProps = {};
       var idx = 0;
       var groupNameDisplayed;
-      var maxChars = 30;
-      var maxCharsBeforeSkippingLabel = 100;
 
       if (propGroups.length) {
         for (var i = 0; i < propGroups.length; i++) {
@@ -293,14 +295,7 @@ define('views/ResourceView', [
               val.value = this.__prependNumbersDiv(prop, val.value);          
             }
             
-            var valLength = val.name.length + v.length;
-            if (valLength > maxCharsBeforeSkippingLabel)
-              U.addToFrag(frag, this.propRowTemplate3(val));
-            else if (valLength > maxChars)
-              U.addToFrag(frag, this.propRowTemplate2(val));
-            else
-              U.addToFrag(frag, this.propRowTemplate(val));
-            
+            U.addToFrag(frag, this.getPropRow(val, v));
 //            json[p] = val;
           }
         }
@@ -362,18 +357,10 @@ define('views/ResourceView', [
         }
         
         var v = U.removeHTML(val.value).trim();
-        if (otherLi) {
-          if (val.name.length + v.length > maxChars)
-            otherLi += this.propRowTemplate2(val);
-          else
-            otherLi += this.propRowTemplate(val);
-        }
-        else {
-          if (val.name.length + v.length > maxChars)
-            U.addToFrag(frag, this.propRowTemplate2(val));
-          else
-            U.addToFrag(frag, this.propRowTemplate(val));
-        }
+        if (otherLi)
+          otherLi += this.getPropRow(val, v);
+        else 
+          U.addToFrag(frag, this.getPropRow(val, v));
       }
       
       if (otherLi) {
@@ -470,6 +457,18 @@ define('views/ResourceView', [
       }
 
       return this;
+    },
+
+    _maxChars: 30,
+    _maxCharsBeforeSkippingLabel: 100,
+    getPropRow: function (val, v) {
+      var valLength = val.name.length + v.length;
+      if (valLength > this._maxCharsBeforeSkippingLabel)
+        return this.propRowTemplate3(val);
+      else if (valLength > this._maxChars)
+        return this.propRowTemplate2(val);
+      else
+        return this.propRowTemplate(val);
     },
     
 //    renderCollaborationPoint: function(frag) {
