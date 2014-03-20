@@ -181,7 +181,7 @@
 <p>
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
-     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
+     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title, '$orderBy': obj.$order, '$asc': obj.$asc})) }}" class="cpA">{{= name }}
      
      <!--span class="ui-li-count">{{= value }}</span></a><a target="#" data-icon="chevron-right" data-iconshadow="false" class="cp" -->
      </a>
@@ -313,7 +313,7 @@
 
 <script type="text/template" id="backButtonTemplate">
   <!-- The UI back button (not the built-in browser one) -->
-  <a target="#" class="back"><i class="ui-icon-chevron-left"></i></a>
+  <a target="#" class="back" style="color: {{= G.darkColor }};"><i class="ui-icon-chevron-left"></i></a>
 </script>
 
 <script type="text/template" id="chatButtonTemplate">
@@ -330,12 +330,12 @@
 
 <script type="text/template" id="addButtonTemplate">
   <!-- button used for creating new resources -->
-  <a target="#"><i class="ui-icon-plus-sign"></i></a>
+  <a target="#"><i class="ui-icon-plus-sign" style="color: {{= G.darkColor }};"></i></a>
 </script>
 
 <script type="text/template" id="menuButtonTemplate">
   <!-- button that toggles the menu panel -->
-  <a target="#" href="#{{= viewId }}"><i class="ui-icon-reorder"></i>
+  <a target="#" href="#{{= viewId }}" style="color: {{= G.darkColor }};"><i class="ui-icon-reorder"></i>
     {{= !this.viewId  ||  this.viewId.indexOf('viewHome') != -1 ? '' :  '<span class="menuBadge">{0}</span>'.format(obj.newAlerts || '') }}
   </a>
 </script>
@@ -343,7 +343,7 @@
 
 <script type="text/template" id="rightMenuButtonTemplate">
   <!-- button that toggles the object properties panel -->
-  <a target="#" href="#{{= viewId }}"><i class="{{= obj.icon || 'ui-icon-reorder' }}"></i></a><!-- {{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }} -->
+  <a target="#" href="#{{= viewId }}" style="color: {{= G.darkColor }};"><i class="{{= obj.icon || 'ui-icon-reorder' }}"></i></a><!-- {{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }} -->
     {{= !this.viewId  ||  this.viewId.indexOf('viewHome') != -1 ? '' : '<span class="menuBadge">{0}</span>'.format(obj.newAlerts || '') }}
   </a>
 </script>
@@ -429,7 +429,7 @@
 <script type="text/template" id="headerTemplate">
   <!-- the page header, including buttons and the page title, used for all pages except the home page -->
   <div id="callInProgress"></div>
-  <div id="header" {{= obj.style ? style : '' }} {{= obj.more || '' }} >
+  <div id="header" {{= obj.style ? style : 'style="background:' + G.lightColor + ';color:' + G.darkColor + '"' }} {{= obj.more || '' }} >
     <div class="hdr">
     <section role="region">
       <header style="background: none;height:inherit;">
@@ -439,9 +439,9 @@
     </section>
     </div>
   </div>
-  <div id="buttons">  
+  <div id="buttons" style="position:relative">  
     {{ if (this.categories) { }}
-       <div style="line-height:37px;float:left;padding-left:10px;"><a id="categories" href="#" {{= G.coverImage ? 'style="background:' + G.lightColor + ';color:' + G.darkColor +';"' : '' }}>
+       <div style="position:absolute;top:14px;padding-left:10px;"><a id="categories" href="#" {{= G.coverImage ? 'style="background:' + G.lightColor + ';color:' + G.darkColor +';"' : '' }}>
        <i class="ui-icon-tags"></i></a></div> 
     {{ } }} 
     {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
@@ -571,7 +571,7 @@
 
 <script type="text/template" id="propRowTemplate3">
   <!-- wrapper for one row on a list page (longest) -->
-  <li class="section group" data-shortname="{{= shortName }}" {{= obj.rules || '' }}><div class="col" style="font-weight: normal;">{{= value }}</div></li>
+  <li class="section group" data-shortname="{{= shortName }}" {{= obj.rules || '' }}><div class="col" style="font-weight: normal;font-family:Trebuchet MS;">{{= value }}</div></li>
 </script>
 
 <script type="text/template" id="menuHeaderTemplate">
