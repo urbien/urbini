@@ -96,8 +96,14 @@ define('resourceSynchronizer', [
     }
 
     itemJson = tempUri ? item.toJSON() : item.getUnsavedChanges();
-    itemRef = _.extend({_id: tempId, _uri: uri || tempUri}, itemJson); 
+    itemRef = _.extend({
+      _id: tempId, 
+      _uri: uri || tempUri
+    }, itemJson); 
     
+    if (!item.isNew() && item.get('davGetLastModified'))
+      itemRef.davGetLastModified = item.get('davGetLastModified');
+          
     if (tempUri) {
       itemRef._uri = tempUri;
       return this._saveItemHelper(itemRef, item);
@@ -281,8 +287,12 @@ define('resourceSynchronizer', [
         props = vocModel.properties;
 
     if (!IDB.hasStore(type)) {
-      debugger;
-      return REJECTED_PROMISE;
+//      Events.trigger('modelsChanged', type);
+//      if (vocModel.superClasses.length)
+//        type = vocModel.superClasses[0];
+//      
+//      if (!IDB.hasStore(type))
+        return REJECTED_PROMISE;
     }
     
     if (!U.isTempUri(uri) && !_.size(_.omit(ref, REF_STORE_PROPS))) {
@@ -467,7 +477,7 @@ define('resourceSynchronizer', [
       error: function(model, xhr, options) {
         var code = xhr.status || xhr.code;
         if (code == 0) { // timeout
-          RM.sync();
+          ResourceSynchronizer.sync();
           return;
         }
 //          else if (code == 304)
