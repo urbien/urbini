@@ -56,8 +56,10 @@ define('views/ModalDialog', ['domUtils'], function(DOM) {
     document.removeEventListener( 'click', onDocumentClick, false );
     document.removeEventListener( 'touchstart', onDocumentClick, false );
 
-    container.$removeClass('modal-active');
-    popup.$removeClass('modal-popup-animate');
+    if (container)
+      container.$removeClass('modal-active');
+    if (popup)
+      popup.$removeClass('modal-popup-animate');
   }
 
 //  function addClass( element, name ) {

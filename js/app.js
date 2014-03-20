@@ -451,6 +451,8 @@ define('app', [
           _dirty: {unique: false, multiEntry: false},
           _tempUri: {unique: false, multiEntry: false}, // unique false because it might not be set at all
           _problematic: {unique: false, multiEntry: false}
+//          ,
+//          davGetLastModified: {unique: false, multiEntry: false}
           //      ,
           //      _alert: {unique: false, multiEntry: false}      
         }
@@ -868,14 +870,24 @@ define('app', [
 //  },
   
   function setupLoginLogout() {
-    Events.on('req-login', function(options) {
-      options = _.extend({online: G.localize('login'), offline: G.localize('youreOfflinePleaseLogin')}, options);
-      var onDismiss;
+    var ModalDialog;
+    Events.on('req-login', function loginOrLogout(options) {
       if (!G.online) {
         Errors.offline();
         return;
       }
 
+      if (!ModalDialog) {
+        U.require('views/ModalDialog').done(function(MD) {
+          ModalDialog = MD;
+          loginOrLogout(options);
+        });
+        
+        return;
+      }
+      
+      options = _.extend({online: G.localize('login'), offline: G.localize('youreOfflinePleaseLogin')}, options);
+      var onDismiss;
       var existingPopup = $('#login_popup');
       if (existingPopup.length) {
 //        existingPopup.popup().popup('open').parent().css({'z-index': 10000000});
@@ -931,15 +943,13 @@ define('app', [
       }  
       else {
 //        $popup.css('left', (G.viewport.width - 255) / 2);
-        U.require('views/ModalDialog', function(MD) {
-          var popup = $popup[0];
-          MD.show(popup, onDismiss);
-          
-          nets.map(function(net) {
-            popup.$('.' + net.name.toLowerCase()).$on('click', function(e) {
-              MD.hide();
-              window.location.href = net.url;
-            });
+        var popup = $popup[0];
+        ModalDialog.show(popup, onDismiss);
+        
+        nets.map(function(net) {
+          popup.$('.' + net.name.toLowerCase()).$on('click', function(e) {
+            ModalDialog.hide();
+            window.location.href = net.url;
           });
         });
       }
