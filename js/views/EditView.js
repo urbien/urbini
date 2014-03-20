@@ -407,7 +407,7 @@ define('views/EditView', [
         if (!dn)
           dn = prop.charAt(0).toUpperCase() + prop.slice(1);
         var name = chosenRes.get('davDisplayName');
-        link.innerHTML ='<span style="font-weight:bold">' + dn + '</span> ' + chosenRes.get('davDisplayName');
+        link.innerHTML ='<span style="font-weight:bold">' + dn + '</span> <span style="float:right">' + chosenRes.get('davDisplayName') + "</span>";
         this.setResourceInputValue(link, uri);
         if (U.isAssignableFrom(vocModel, commonTypes.App)  &&  U.isAssignableFrom(chosenRes.vocModel, commonTypes.Theme)) {
           if (G.currentApp) {

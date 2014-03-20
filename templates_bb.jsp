@@ -647,6 +647,7 @@
   {{ } }}
 </div>   
 </script>
+
 <script type="text/template" id="percentPET">
 <div class="_prim">
   <label for="{{= id }}"  class="ui-input-text" >{{= name }}</label>
@@ -670,6 +671,13 @@
 </div>
 </script>
 
+<script type="text/template" id="datePET">
+<div id="_prim">
+  <label for="{{= id }}">{{= name }}</label>
+  <input id="{{= id }}" name="{{= shortName }}" {{= rules }} value="{{= value }}" />
+</div>
+</script>
+
 <script type="text/template" id="resourcePET">
   {{ if (prop.range && ((isImage && prop.camera) || isVideo || isAudio)) { }}
     <a href="#cameraPopup" class="cameraCapture" target="#" data-prop="video">
@@ -681,7 +689,7 @@
   {{ }                                                                                                                                                                                        }}
 
   <!-- a target="#"  name="{{= shortName }}" {{= !obj.img ? 'style="padding-top:0.5rem;"' : ''}} class="resourceProp" id="{{= id }}" {{= rules }} --> 
-  <a target="#"  name="{{= shortName }}" style="{{= !obj.img ? 'padding-top:0.5rem;' : 'padding: 0 1.5rem;'}}" class="resourceProp" id="{{= id }}" {{= rules }}> 
+  <a target="#"  name="{{= shortName }}" style="{{= !obj.img ? '' : 'padding: 0 1.5rem;'}}" class="resourceProp" id="{{= id }}" {{= rules }}> 
     {{ if (obj.img) { }}    
       <img name="{{= shortName }}" src="{{= img }}" style="
       

@@ -1298,11 +1298,6 @@ div {
           box-sizing: initial;
 }
 
-div, span, p {    
-  font-family: Calibri, Arial, Helvetica;
-  line-height: 29px;
-}
-
 .searchBar input {
   width: 80%;
   border: none;
