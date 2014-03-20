@@ -515,7 +515,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     var self = this;  
     redirected = _.any(_.keys(this._chooserForType), function(type) {
       if (U.isAssignableFrom(vocModel, type))
-        return self._chooserForType[type](res, options) !== false;
+        return self._chooserForType[type](res, prop, e, options) !== false;
     });
 
     if (redirected)
