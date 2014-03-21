@@ -268,21 +268,61 @@ define('views/ResourceListView', [
         params: _.defaults({
           '$like': 'davDisplayName,' + value
         }, this.originalParams)
-      });
-      
-//      numResults = col.size();
-//      indicatorId = this.showLoadingIndicator(3000); // 3 second timeout
-//      hideIndicator = this.hideLoadingIndicator.bind(this, indicatorId);
-//        
-//      filtered.fetch({
-//        forceFetch: true,
-//        success: hideIndicator,
-//        error: hideIndicator
-//      });
+      });      
     }, 100),
     
-    doFilter: _.debounce(function(page, param, value) {
+    doFilter: _.debounce(function(page, filterParams) {
       // TODO: filter similar to search, except per property instead of for displayName, maybe generalize it so it works for search too
+      console.log("DO FILTER", value);
+      if (!this._filterParams)
+        this._filterParams = _.clone(this.originalParams);
+      
+      if (this.getPageView() != page || _.isEqual(this._filterParams, filterParams)) {
+        console.log("ALREADY FILTERED " + JSON.stringify(filterParams));
+        return;
+      }
+      
+      if (this.mason.isLocked()) {
+        console.log("FILTER LOCKED", value);
+        return this.doFilter(this.getPageView(), filterParams);
+      }
+        
+      console.log("FILTERING", filterParams);
+      this._filterParams = filterParams;
+      var pageView = this.getPageView(),
+          col = pageView.collection,
+          filtered = pageView.filteredCollection,
+          value = this._searchValue,
+          valueLowerCase,
+          resourceMatches,
+          numResults,
+          indicatorId,
+          hideIndicator;
+      
+      if (!_.size(filterParams)) {
+        indicatorId = this.showLoadingIndicator(3000); // 3 second timeout
+        hideIndicator = this.hideLoadingIndicator.bind(this, indicatorId);
+
+        filtered.reset(col.models, {
+          params: this.originalParams
+        });
+        
+        return;
+      }
+      
+      if (typeof value == 'string')
+        valueLowerCase = value.toLowerCase();
+
+//      resourceMatches = col.models.filter(function(res) {
+//        var dn = U.getDisplayName(res);
+//        return dn && ~dn.toLowerCase().indexOf(valueLowerCase);
+//      });
+
+      filtered.belongsInCollection = U.buildValueTester(this._filterParams, this.vocModel);
+      resourceMatches = col.models.filter(filtered.belongsInCollection.bind(filtered));
+      filtered.reset(resourceMatches, {
+        params: _.defaults(this._filterParams, this.originalParams)
+      });      
     }, 100),
     
 //    myEvents: {

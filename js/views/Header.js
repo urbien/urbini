@@ -182,7 +182,9 @@ define('views/Header', [
       'change .propertySelector'                   : 'changeFilterConditionProperty',
       'click .filter'                              : 'focusFilter',
       'keyup .searchInput'                         : 'search',
-      'change .filterConditions input'             : 'onFilter'
+      'keyup .filterConditionInput input'          : 'onFilter',
+      'change .filterConditionInput select'        : 'onFilter',
+      'change .filterConditionInput input'         : 'onFilter'
     },
     
     changePhysics: function(e) {
@@ -432,8 +434,22 @@ define('views/Header', [
     }, 20),
 
     onFilter: Q.debounce(function(e, data) {
-      debugger;
-      Events.trigger('filterList', this.getPageView(), e.target.value);
+      var filters = this.$('.filterCondition'),
+          filter,
+          propName,
+          value,
+          filterParams = {},
+          i = filters.length;
+      
+      while (i--) {
+        filter = filters[i];
+        propName = filter.$('select')[0].value;
+        value = e.target.value;
+        if (value != "")
+          filterParams[propName] = value;
+      }
+      
+      Events.trigger('filterList', this.getPageView(), filterParams);
     }, 20),
 
     refresh: function() {

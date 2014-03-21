@@ -445,7 +445,7 @@
        <i class="ui-icon-tags"></i></a></div> 
     {{ } }} 
     {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
-    {{= this.filter ? '<div style="margin:10px 0 0 10px; position:absolute;"><a class="filterToggle hidden" href="#"><i class="ui-icon-filter"></i></a></div>' : '' }} 
+    {{= this.filter ? '<div style="margin:10px 0 0 10px; position:absolute;"><a class="filterToggle" href="#"><i class="ui-icon-filter"></i></a></div>' : '' }} 
     <div id="name" class="resTitle" style="background:{{= G.darkColor }};color:{{= G.lightColor }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
       <h4 id="pageTitle" style="font-weight:normal;color:{{= G.lightColor }};">{{= this.title }}</h4>
       {{= this.filter ? "<div class='filter'></div>" : "" }}

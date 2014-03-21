@@ -1257,7 +1257,7 @@
 {{ }                            }}
 
 {{ if (~U.primitiveTypes.ints.indexOf(prop.range) || ~U.primitiveTypes.floats.indexOf(prop.range)) { }}
-  <input type="number" value="{{= value }}" />
+  <input type="number" value="{{= typeof value == 'undefined' ? '' : value }}" />
 {{ }                            }}
 
 {{ if (prop.range == 'string') { }}
