@@ -626,64 +626,65 @@ define('views/ControlPanel', [
 //              else
             }
             
-            if (doShow) {
-              if (!this.isMainGroup  &&  !groupNameDisplayed) {
-                U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
-                groupNameDisplayed = true;
-              }
-              
+            if (!doShow) 
+              continue;
+            
+            if (!this.isMainGroup  &&  !groupNameDisplayed) {
+              U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
+              groupNameDisplayed = true;
+            }
+            
 //              var uri = U.getShortUri(res.getUri(), vocModel); 
-              var uri = res.getUri();
-              var t = U.makeHeaderTitle(title, n);
-              if (colorIdx == color.length) 
-                colorIdx = 0;
-              var icon;
-              if (prop.displayInline) {
-                cnt = 0;
-                icon = "ui-icon-plus-sign";
-              }
-              else
-                icon = prop['icon'];
-              
-              tmpl_data.icon = null;
-              tmpl_data.range = range;
-              tmpl_data.backlink = prop.backLink;
-              tmpl_data.shortName = p;
-              tmpl_data.name = n;
-              tmpl_data.value = cnt;
-              tmpl_data._uri = uri;
-              tmpl_data.title = t;
-              tmpl_data.comment = prop.comment;
-              tmpl_data.borderColor = borderColor[colorIdx];
-              tmpl_data.color = color[colorIdx];
-              tmpl_data.chat = isChat;
-              var bl = prop.backLinkSortDescending;
-              if (bl) {
-                tmpl_data['$order'] = bl;
-                tmpl_data['$asc'] = 0;
-              }
+            var uri = res.getUri();
+            var t = U.makeHeaderTitle(title, n);
+            if (colorIdx == color.length) 
+              colorIdx = 0;
+            var icon;
+            if (prop.displayInline) {
+              cnt = 0;
+              icon = "ui-icon-plus-sign";
+            }
+            else
+              icon = prop['icon'];
+            
+            tmpl_data.icon = null;
+            tmpl_data.range = range;
+            tmpl_data.backlink = prop.backLink;
+            tmpl_data.shortName = p;
+            tmpl_data.name = n;
+            tmpl_data.value = cnt;
+            tmpl_data._uri = uri;
+            tmpl_data.title = t;
+            tmpl_data.comment = prop.comment;
+            tmpl_data.borderColor = borderColor[colorIdx];
+            tmpl_data.color = color[colorIdx];
+            tmpl_data.chat = isChat;
+            var bl = prop.backLinkSortDescending;
+            if (bl) {
+              tmpl_data['$order'] = bl;
+              tmpl_data['$asc'] = 0;
+            }
 //              var common = {range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, borderColor: borderColor[colorIdx], color: color[colorIdx], chat: isChat};
-              colorIdx++;
-              if (this.isMainGroup) {
+            colorIdx++;
+            if (this.isMainGroup) {
 //                if (!icon)
 //                  icon = 'ui-icon-star-empty';
-                tmpl_data.icon = icon;
-                if (isHorizontal)
-                  U.addToFrag(frag, this.cpMainGroupTemplateH(tmpl_data));
-                else
-                  U.addToFrag(frag, this.cpMainGroupTemplate(tmpl_data));
-              }
-              else {
-                if (isPropEditable)
-                  U.addToFrag(frag, this.cpTemplate(tmpl_data));
-                else
-                  U.addToFrag(frag, this.cpTemplateNoAdd(tmpl_data));                
-              }
+              tmpl_data.icon = icon;
+              if (isHorizontal)
+                U.addToFrag(frag, this.cpMainGroupTemplateH(tmpl_data));
+              else
+                U.addToFrag(frag, this.cpMainGroupTemplate(tmpl_data));
+            }
+            else {
+              if (isPropEditable)
+                U.addToFrag(frag, this.cpTemplate(tmpl_data));
+              else
+                U.addToFrag(frag, this.cpTemplateNoAdd(tmpl_data));                
+            }
 //              if (isPropEditable)
 //                U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: res.getUri()}));
 //              else
 //                U.addToFrag(frag, this.cpTemplateNoAdd({propName: p, name: n, value: cnt, _uri: res.getUri()}));
-            }
           }
         }
       }

@@ -477,7 +477,7 @@ define('views/ResourceImageView', [
           coverImage = res.originalImage;
         if (coverImage.indexOf('http://') == -1)
           coverImage = G.serverName + '/' + coverImage;
-        coverDiv = '<div id="coverImage" style="background-repeat:no-repeat;background-image:url(' + coverImage + ');background-size:cover;height:';
+        coverDiv = '<div id="coverImage" style="background-repeat:no-repeat;background-image:url(' + coverImage + ');background-position:center;background-size:cover;height:';
       }
       else
         coverDiv = '<div id="coverImage" style="height:';

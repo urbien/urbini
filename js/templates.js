@@ -80,6 +80,7 @@ define('templates', [
       "ComplexDate": "datePET",
       "system/primitiveTypes/Duration": "datePET",
       "system/primitiveTypes/Percent": "percentPET",
+      "Percent": "percentPET",
 //    "model/portal/Image": "fileUpload",
       "model/company/Money": "moneyPET"
 //       ,
