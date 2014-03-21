@@ -319,6 +319,20 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
         case 1:
         case 9:
         case 11:
+          if (G.browser.safari && /^#/.test(selector)) {
+//            var nodeList = newNodeList(),
+//                match = this.querySelector('[id="' + selector.slice(1) + '"]');
+//            
+//            if (match)
+//              nodeList.push(match);
+//            
+//            return nodeList;
+//            selector = '[id="' + selector.slice(1) + '"]';
+//            selector = selector.replace(/#([a-zA-Z0-9\-_]*)/g, '[id="$1"]');
+            // replace all id selectors with selection by attribute
+            selector = selector.replace(/#([_a-zA-Z]+[_a-zA-Z0-9-]*)/g, '[id="$1"]'); // http://stackoverflow.com/questions/448981/what-characters-are-valid-in-css-class-selectors
+          }
+          
           return this.querySelectorAll(selector);
         default:
           return newNodeList();

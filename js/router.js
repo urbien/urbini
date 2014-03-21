@@ -392,7 +392,7 @@ define('router', [
           delete G.homePage;
         }
         
-        homePage = new HomePage({el: doc.querySelector('#homePage') });
+        homePage = new HomePage({el: doc.$('#homePage')[0] });
       }
       
       this.changePage(homePage);
@@ -1606,7 +1606,8 @@ define('router', [
         activated = true;
 //        view.render();
         this.getChangePageOptions().render = true;
-        document.body.appendChild(view.el);
+        if (!view.el.parentNode)
+          document.body.appendChild(view.el);
 //        renderPromise = view.render();
 //        view.onload(function() {          
 //          view.$el.attr({
@@ -1641,7 +1642,7 @@ define('router', [
       
       var activePage = document.querySelector('div.ui-page-active');
       if (activePage) {
-        var headerUl = activePage.querySelector('#headerUl');
+        var headerUl = activePage.$('#headerUl')[0];
         if (headerUl) {
           headerUl.$('.ui-btn-active').$removeClass('ui-btn-active');
         }

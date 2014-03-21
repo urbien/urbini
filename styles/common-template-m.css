@@ -973,7 +973,7 @@ section[id^="view"] {
 }
 
 div {
-  font-family: Helvetica, Ariel, sans-serif;
+  font-family: Trebuchet MS, Helvetica, Ariel, sans-serif;
 }
 
 .triangle {
@@ -1298,6 +1298,7 @@ div {
           box-sizing: initial;
 }
 
+<<<<<<< HEAD
 .searchBar input {
   width: 80%;
   border: none;
@@ -1305,3 +1306,7 @@ div {
   padding: 5px 5px;
   line-height: 2rem;
 }
+=======
+h1, h2, h3, h4, h5, h6 {
+}
+>>>>>>> 779c1a923e33414b2ec328ce12b80a4a0a763c1d

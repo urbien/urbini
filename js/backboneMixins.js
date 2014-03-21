@@ -113,18 +113,20 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
 //          return this.el ? this.el.querySelector(selector) : null; // for #id based selectors, return the first match
 //          return this.el ? this.el.querySelectorAll(selector) : []; // for #id based selectors, return the first match
 //        }
-        if (/^\.[^\.\s\#,]+$/.test(selector)) {
-          // class selector
-          return this.el ? this.el.getElementsByClassName(selector.slice(1)) : []; // for class based selectors, use getElementsByClassName, which is faster
-        }
-        else if (/^[a-zA-Z0-9]+$/.test(selector)) {
-          // tag selector
-          return this.el ? this.el.getElementsByTagName(selector) : []; // for tag selectors, use getElementsByTagName, which is faster
-        }
-        else {
-          // generic selector
-          return this.el ? this.el.querySelectorAll(selector) : [];
-        }
+        
+//        if (/^\.[^\.\s\#,]+$/.test(selector)) {
+//          // class selector
+//          return this.el ? this.el.getElementsByClassName(selector.slice(1)) : []; // for class based selectors, use getElementsByClassName, which is faster
+//        }
+//        else if (/^[a-zA-Z0-9]+$/.test(selector)) {
+//          // tag selector
+//          return this.el ? this.el.getElementsByTagName(selector) : []; // for tag selectors, use getElementsByTagName, which is faster
+//        }
+//        else {
+//          // generic selector
+//          return this.el ? this.el.querySelectorAll(selector) : [];
+//        }
+        return this.el ? this.el.$(selector) : [];
       },
       
       setElement: function(element, delegate) {

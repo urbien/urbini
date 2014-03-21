@@ -96,7 +96,7 @@ define('views/HomePage', [
 //      this.$el.trigger('page_beforeshow');
         
         // only allow tap and hold events, click muddies the waters
-        var menuBtnEl = this.el.querySelector('#hpRightPanel');
+        var menuBtnEl = this.el.$('#hpRightPanel')[0];
         this.menuBtn = new MenuButton({
           el: menuBtnEl,
           pageView: this,

@@ -128,7 +128,7 @@
 
 <script type="text/template" id="cpTemplate">
 <!-- readwrite backlink in resource view -->
-<li class="topcoat-list__item" data-propName="{{= shortName }}" {{= obj.comment ? 'style="min-height: 6rem;"' : '' }}>
+<li class="topcoat-list__item" data-propName="{{= shortName }}" {{= obj.comment ? 'style="min-height: 4rem;"' : '' }}>
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
      
@@ -141,7 +141,7 @@
      <div style="color:{{= G.lightColor }};font-weight:bold;background:{{= G.darkColor }};display:inline;position:absolute;right:1rem;font-size: 11px;top:1.5rem;border-radius:1rem;border: 1px solid {{= G.darkColor }};padding: 0.1rem 0.3rem;">{{= value }}</div>
      
      {{ if (typeof comment != 'undefined') { }}
-       <p style="padding-left:1.25rem; font-size:1.3rem;color:#808080; position:absolute;top:2rem;">{{= comment }}</p>
+       <p style="font-size:1.3rem;color:#808080; position:absolute;top:2rem;">{{= comment }}</p>
      {{ } }}
    </li>
 </script>
@@ -545,15 +545,41 @@
   </li>
 </script>
 
-<script type="text/template" id="propRowTemplate">
-  <!-- wrapper for one row on a list page (short) -->
+<!--script type="text/template" id="propRowTemplate">
   <li data-shortname="{{= shortName }}" class="topcoat-list__item" {{= obj.rules || '' }} {{= G.coverImage ? ' style="color:' + G.coverImage.background + ';"' : '' }}>{{= name }}<div style="float:right;font-weight: normal;">{{= value }}</div></li>
 </script>
 
 <script type="text/template" id="propRowTemplate2">
-  <!-- wrapper for one row on a list page (long) -->
   <li data-shortname="{{= shortName }}" class="topcoat-list__item" {{= obj.rules || '' }} {{= G.coverImage ? ' style="color:' + G.coverImage.background + ';"' : '' }}>{{= name }}<div style="display:inline-block;margin-left:1.5rem;font-weight: normal;">{{= value }}</div></li>
+</script-->
+
+
+
+
+<script type="text/template" id="propRowTemplate">
+  <!-- wrapper for one row on a list page (short) -->
+  <li class="section group topcoat-list__item" data-shortname="{{= shortName }}" {{= obj.rules || '' }}>
+    <div class="col span_1_of_2" {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';"' : '' }}>{{= name }}</div>
+    <div {{= value.length < 500 ? 'class="col span_1_of_2"' : '' }} style="font-weight: normal;">{{= value }}</div>
+  </li>
 </script>
+
+<script type="text/template" id="propRowTemplate2">
+  <!-- wrapper for one row on a list page (long) -->
+  <li class="section group topcoat-list__item" data-shortname="{{= shortName }}" {{= obj.rules || '' }}>
+    <div {{= value.length < 500 ? 'class="col span_1_of_2"' : '' }} {{= G.coverImage ? ' style="color:' + G.coverImage.background + ';"' : '' }}>{{= name }}</div>
+    <div {{= value.length < 500 ? 'class="col span_1_of_2"' : '' }} style="font-weight: normal;">{{= value }}</div>
+  </li>
+</script>
+
+<script type="text/template" id="propRowTemplate3">
+  <!-- wrapper for one row on a list page (longest) -->
+  <li class="section group topcoat-list__item" data-shortname="{{= shortName }}" {{= obj.rules || '' }}><div class="col" style="font-weight: normal;font-family:Trebuchet MS;">{{= value }}</div></li>
+</script>
+
+
+
+
 
 <script type="text/template" id="menuHeaderTemplate">
   <!-- menu header -->

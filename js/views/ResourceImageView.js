@@ -211,8 +211,10 @@ define('views/ResourceImageView', [
           imageProp = imagePropName && meta[imagePropName],
           image = imagePropName && res.get(imagePropName);
       
-      if (typeof image == 'undefined') 
+      if (typeof image == 'undefined') {
+        this.el.style.display = 'none';
         return this;
+      }
       
       var viewport = G.viewport;
       var winW = viewport.width; // - 3;
@@ -481,7 +483,17 @@ define('views/ResourceImageView', [
         coverDiv = '<div id="coverImage" style="height:';
       coverDiv += '290px;'; //!G.isBB() ? '350px;' : '290px;';
       coverDiv += 'z-index:100;"></div>';
-      pe.$append(coverDiv);  
+      var pe = this.el.parentElement;
+      if (!pe)
+        return;
+      
+      var existing = pe.$('#coverImage')[0],
+          coverImageEl = DOM.parseHTML(coverDiv)[0];
+      
+      if (existing)
+        pe.replaceChild(coverImageEl, existing);
+      else
+        pe.appendChild(coverImageEl);
 /*
       while (!pe.id  ||  pe.id != 'resourceViewHolder')
         pe = pe.parentElement;

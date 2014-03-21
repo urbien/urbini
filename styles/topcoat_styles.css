@@ -70,9 +70,10 @@ li {
 }
 #other {
   padding: 4px 0px;
+  cursor: pointer;
 }
 #other h3 {
-  margin:0.3rem 0.7rem;
+  margin:0.3rem 1.25rem;
 }
 #cpView {
   font-size:1.6rem;
@@ -96,7 +97,7 @@ h4#pageTitle  {
   padding: 0;
 }
 #resourceView .topcoat-list__header h3, #menuItems .topcoat-list__header h3, #rightMenuItems .topcoat-list__header h3, #cpView .topcoat-list__header h3 {
-  margin: 0.7rem 1.5rem;
+  margin: 0.7rem 1.25rem;
 }
 .editList .topcoat-list__header h3 {
   margin: 0;
@@ -341,6 +342,9 @@ fieldset .listPage .topcoat-list__container, #sidebar.topcoat-list__container {
 .masonry-brick div[data-viewid] {
   border: none;
 }
+#sidebar .topcoat-list__item {
+  cursor: pointer;
+}
 .topcoat-list__item {
   position: relative;  
 }
@@ -382,4 +386,7 @@ fieldset .listPage .topcoat-list__container, #sidebar.topcoat-list__container {
 }
 #mainGroup .hmg:first-child {
   margin-left:10px;
+}
+.section.group.topcoat-list__item div {
+  margin: 0;
 }

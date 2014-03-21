@@ -413,9 +413,16 @@ define('views/ResourceListView', [
           isWebCl,
           isImplementor,
           cloned,
-          viewId;
+          viewId,
+          dataUri;
 
       while (top && top != this.el && !(viewId = top.dataset.viewid)) {
+        dataUri = top.dataset.uri;
+        if (dataUri) {
+          Events.trigger('navigate', dataUri);
+          return;
+        }
+        
         if (top.tagName == 'A')
           link = top;
         
@@ -1063,7 +1070,7 @@ define('views/ResourceListView', [
         nextPageUrl = nextPagePromise._url;
       
       this._isPaging = true;
-      if (firstFetchDfd.state() == 'pending')
+      if (firstFetchDfd && firstFetchDfd.state() == 'pending')
         defer.promise().done(firstFetchDfd.resolve).fail(firstFetchDfd.resolve); // HACK
       
       pagingPromise = this._pagingPromise = defer.promise().always(function() {
@@ -1340,7 +1347,7 @@ define('views/ResourceListView', [
 //        bodies.push(id);
         Physics.here.addBody(view.el, id);
       }
-      
+
       if (atTheHead)
         Array.prepend(childEls, addedEls);
       else
