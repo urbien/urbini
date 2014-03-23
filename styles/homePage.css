@@ -7,7 +7,14 @@ html {
   background: none;
   background-image: none;
   text-shadow: 0 1px 0 #000;
+  overflow: visible;
 }
+
+#homePage .section {
+  position: relative;
+  height: 100%;
+}
+
 #homePage span {color: #ddd; }
 #homePage span.ui-li-count {color: #353535; }
 

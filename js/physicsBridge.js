@@ -302,7 +302,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       case 'TEXTAREA':
         return false;
       case 'INPUT':
-        return el.getAttribute('type') != 'range';
+        return el.getAttribute('type') == 'text';
       default:
         return true;
     }

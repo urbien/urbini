@@ -1213,7 +1213,7 @@
 <!--li class="filterCondition {{= obj.cancelable == false ? '' : 'cancelable' }}"-->
   <li class="filterCondition" id="filterCondition{{= G.nextId() }}">
   {{ if (obj.cancelable !== false) { }}
-    <i class="ui-icon-remove"></i>
+    <i class="ui-icon-remove-sign"></i>
   {{ }                 }}
     <i class="ui-icon-plus-sign"></i>
     <select class="propertySelector">

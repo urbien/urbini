@@ -2785,8 +2785,8 @@ function getRectVertices(width, height) {
       return Math.abs(tail - head) + this.pageScrollDim;
     },
     
-    _updateScrollbar: function() {
-      if (this.scrollbar && this.scrollable) {
+    _updateScrollbar: function(force) {
+//      if (this.scrollbar && this.scrollable) {
         var viewport = this.getViewport(),
             viewportDim = viewport.max - viewport.min,
             slidingWindow = this.slidingWindowBounds,
@@ -2835,8 +2835,7 @@ function getRectVertices(width, height) {
 //          log("Velocity: " + vel + ", Opacity: " + opacity);
           this.scrollbar.state.renderData.set('opacity', opacity);
         }
-        
-      }
+//      }
     },
 
 //    _onIntegrateVelocities: function(data) {
@@ -3060,8 +3059,10 @@ function getRectVertices(width, height) {
 //        return this.requestLess(0, numBricks);
       }
       
-      if (this._initialized)
+      if (this._initialized) {
+        this._updateScrollbar(true);
         this._adjustSlidingWindow();
+      }
     },
     
     resize: function(bounds, updatedBricks, callback) {

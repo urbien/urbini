@@ -22,6 +22,7 @@ define('views/Header', [
   var commonTypes = G.commonTypes;
   var friendlyTypes = [G.commonTypes.Urbien, 'http://urbien.com/voc/dev/ImpressBackup/Movie', 'http://urbien.com/voc/dev/ImpressBackup/Artist', 'model/social/App'];
   var editablePhysicsConstants = ['drag', 'springStiffness', 'springDamping', 'tilt'];
+  var NO_PROP = '_NO_PROP_';
   return BasicView.extend({
 //    viewType: 'any',
     style: {
@@ -177,8 +178,8 @@ define('views/Header', [
       'click #categories'                          : 'showCategories',
 //      'click #installApp'         : 'installApp',
       'click #moreRanges'                          : 'showMoreRanges',
-      'click .filterCondition i.ui-icon-remove'    : 'removeFilterCondition',
-      'click .filterCondition i.ui-icon-plus-sign' : 'addFilterCondition',
+      'click .filterCondition i.ui-icon-remove-sign, .filterCondition i.ui-icon-remove': 'removeFilterCondition',
+      'click .filterCondition i.ui-icon-plus-sign, .filterCondition i.ui-icon-plus' : 'addFilterCondition',
       'change .propertySelector'                   : 'changeFilterConditionProperty',
       'click .filter'                              : 'focusFilter',
       'keyup .searchInput'                         : 'search',
@@ -300,13 +301,20 @@ define('views/Header', [
         this.showSearch();
         this.redelegateEvents();
         break;
-      case 'simple':        
-//        this.filterType = 'complex';
-//        this.showFilter();
-//        this.redelegateEvents();
-//        break;
-//      case 'complex':
+      case 'simple':
+        var userRole = U.getUserRole();
+        if (U.isUserInRole(userRole, 'siteOwner')) {
+          this.filterType = 'complex';
+          this.showFilter();
+          this.redelegateEvents();
+          break;
+        }
+        else {
+          // fall through, don't show complex filter
+        }
+      case 'complex':
         this.filterType = null;
+        this.filter.style.display = '';
         this.hideFilter();
         break;
       }
@@ -323,7 +331,7 @@ define('views/Header', [
     showSearch: function() {
       this.titleContainer.classList.add('hidden');
       
-      this.filterIcon.className = 'ui-icon-filter';
+      this.filterIcon.className = 'ui-icon-beaker';
       this.filterContainer.$html(this.searchTemplate(this.getBaseTemplateData()));
       this.filterContainer.classList.remove('hidden');
       this.redelegateEvents();
@@ -342,15 +350,20 @@ define('views/Header', [
         for (var p in meta) {
           prop = meta[p];
           if (!U.isSystemProp(p) && U.isPrimitiveTypeProp(prop) && U.isPropVisible(first, prop, userRole)) {
-            this.filterProps.push(prop);
+            if (prop.range.toLowerCase().indexOf('date') == -1 && 
+                !prop.notSearchable &&
+                (!prop.cloneOf || prop.cloneOf.indexOf('Distance') == -1))
+              this.filterProps.push(prop);
           }
         }
       }
       
       var tmpl_data = _.clone(this.getBaseTemplateData());
       tmpl_data.props = this.filterProps;
-      tmpl_data.cancelable = false;
-      this.filterIcon.className = 'ui-icon-remove';
+//      tmpl_data.cancelable = false;
+      
+      this.filter.style.display = 'none';
+//      this.filterIcon.className = 'ui-icon-remove';
       this.filterContainer.$html(this.filterTemplate());
       this.filterContainer.classList.remove('hidden');
       this.filterContainer.$('ul')[0].$html(this.filterConditionTemplate(tmpl_data));
@@ -371,10 +384,15 @@ define('views/Header', [
           }
           
           parent.$remove();
-          this.redelegateEvents();
           break;
         }
       }
+      
+      if (!this.$('.filterCondition').length)
+        this.toggleFilter(e);
+        
+      this.onFilter();
+      this.redelegateEvents();
     },
     
     addFilterCondition: function(e) {
@@ -382,18 +400,19 @@ define('views/Header', [
           childNodes = ul.childNodes,
           i = childNodes.length,
           select,
-          condition;
+          condition,
+          current = this.$('.propertySelector').$map(function(s) { return s.value });
       
       while (i--) {
         select = childNodes[i].$('.propertySelector')[0];
-        if (select.value == '_NO_PROP_') {
+        if (select.value == NO_PROP) {
           select.focus();
           return;
         }
       }
       
       ul.$append(this.filterConditionTemplate(_.extend({
-        props: this.filterProps
+        props: _.filter(this.filterProps, function(p) {return current.indexOf(p.shortName) == -1})
       }, this.getBaseTemplateData())));
       
       condition = ul.lastChild;
@@ -413,7 +432,7 @@ define('views/Header', [
       var value = select.value,
           prop;
       
-      if (value == '_NO_PROP_')
+      if (value == NO_PROP)
         input.$empty();
       else {
         prop = this.vocModel.properties[select.value];
@@ -422,6 +441,11 @@ define('views/Header', [
           value: U.getDefaultPropValue(prop)
         }, this.getBaseTemplateData())));
       }
+      
+//      var evt = document.createEvent("HTMLEvents");
+//      evt.initEvent('change', true, true ); // event type, bubbling, cancelable
+//      input.$('input,select')[0].dispatchEvent(evt);
+      this.onFilter();
     },
 
     focusFilter: function(e) {
@@ -433,7 +457,7 @@ define('views/Header', [
       Events.trigger('searchList', this.getPageView(), e.target.value);
     }, 20),
 
-    onFilter: Q.debounce(function(e, data) {
+    onFilter: Q.debounce(function(e) {
       var filters = this.$('.filterCondition'),
           filter,
           propName,
@@ -444,9 +468,10 @@ define('views/Header', [
       while (i--) {
         filter = filters[i];
         propName = filter.$('select')[0].value;
-        value = e.target.value;
-        if (value != "")
-          filterParams[propName] = value;
+        if (propName != NO_PROP) {
+          value = filter.$('.filterConditionInput select, .filterConditionInput input')[0].value;
+          filterParams[propName] = value; // U.getFlatValue(this.vocModel.properties[propName], value);
+        }
       }
       
       Events.trigger('filterList', this.getPageView(), filterParams);

@@ -318,7 +318,7 @@ define('views/ResourceListView', [
 //        return dn && ~dn.toLowerCase().indexOf(valueLowerCase);
 //      });
 
-      filtered.belongsInCollection = U.buildValueTester(this._filterParams, this.vocModel);
+      filtered.belongsInCollection = U.buildValueTester(this._filterParams, this.vocModel) || G.trueFn;
       resourceMatches = col.models.filter(filtered.belongsInCollection.bind(filtered));
       filtered.reset(resourceMatches, {
         params: _.defaults(this._filterParams, this.originalParams)

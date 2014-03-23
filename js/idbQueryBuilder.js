@@ -238,6 +238,9 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'indexedDB'], funct
 //          query = query ? query.sort(orderBy, !asc) : Index(orderBy, asc ? IDBCursor.NEXT : IDBCursor.PREV).all();
     }
     
+    if (!query)
+      return false;
+    
     if (!_.isUndefined(params.$offset)) {
       query.setOffset(parseInt(params.$offset));
     }

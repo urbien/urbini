@@ -141,6 +141,25 @@ define('views/HomePage', [
     
     removeInstallBtn: function() {
       this.$('#installApp').$remove();
+    },
+    
+    _updateSize: function() {
+      var outerWidth = this.el.$outerWidth(),
+          height = this.el.$outerHeight(),
+          outerHeight = this.el.scrollHeight;
+
+      if (outerWidth != this._outerWidth || outerHeight != this._outerHeight || this._width == outerWidth || this._height != height) {
+        this._outerWidth = outerWidth;
+        this._outerHeight = outerHeight;
+        this._width = outerWidth;
+        this._height = height;
+        this._bounds[0] = this._bounds[1] = 0;
+        this._bounds[2] = this._width;
+        this._bounds[3] = this._height;
+        return true;
+      }
+      
+      return doUpdate;
     }
   }, {
     displayName: 'HomePage'
