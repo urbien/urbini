@@ -765,7 +765,7 @@ define('views/Header', [
       
       var isTemplates = window.location.hash && window.location.hash.indexOf('#templates/') != -1; 
       
-      if (!isTemplates  &&  !res)
+      if (!isTemplates  &&  !res) {
         if (U.isAssignableFrom(this.vocModel, G.commonTypes.App))
           this.categories = true;
         else if (U.isA(this.vocModel, 'Taggable')) {
@@ -775,6 +775,7 @@ define('views/Header', [
               this.categories = true; 
           }
         }
+      }
       else if (!res) {
         var hash = window.location.hash;
         var isChooser =  hash  &&  hash.indexOf('#chooser/') == 0;
@@ -812,6 +813,7 @@ define('views/Header', [
       this.html(this.template(templateSettings));
       this.titleContainer = this.$('#pageTitle')[0];
       if (this.filter) {
+        this.categories = false; // HACK for now, search is more important at the moment        
         this.filter = this.$('.filterToggle')[0];
         this.filterIcon = this.filter.$('i')[0];
         this.searchIconClass = this.filterIcon.className;
