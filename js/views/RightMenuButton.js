@@ -175,13 +175,15 @@ define('views/RightMenuButton', [
     },
     
     render: function(options) {
-      if (this.el.childElementCount && !this.icon) {
-        this.icon = this.el.querySelector('i').className;
+      if (this.el.childElementCount) {
+        if (!this.icon)
+          this.icon = this.el.querySelector('i').className;
       }
-      
-      this.html(this.template({
-        viewId: this.viewId, icon: this.icon
-      }));
+      else {
+        this.html(this.template({
+          viewId: this.viewId, icon: this.icon
+        }));
+      }
       
       this.findMenuBadge();
       if (!this.rendered) {

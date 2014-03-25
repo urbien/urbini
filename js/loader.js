@@ -390,7 +390,7 @@ define('globals', function() {
   };
   
   function adjustForVendor() {
-    // requestAnimationFrame polyfill by Erik M�ller & Paul Irish et. al., adjusted by David DeSandro https://gist.github.com/desandro/1866474
+    // requestAnimationFrame polyfill by Erik Miller & Paul Irish et. al., adjusted by David DeSandro https://gist.github.com/desandro/1866474
     window.AudioContext = window.AudioContext || window.webkitAudioContext; // keep in mind, firefox doesn't have AudioContext.createMediaStreamSource
     window.MediaStream = window.webkitMediaStream || window.MediaStream;
     window.MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.webkitMutationObserver || window.mozMutationObserver;
