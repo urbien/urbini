@@ -11,21 +11,24 @@ define('views/ModalDialog', ['domUtils'], function(DOM) {
       popup = document.querySelector( '.modal-popup-animate' ),
       cover = document.querySelector( '.modal-cover' ),
       currentState = null,
+      dismissible = true,
       hideCallbacks = [];
 
   container.className = container.className.replace( /\s+$/gi, '' ) + ' modal-ready';
 
   // Deactivate on ESC
   function onDocumentKeyUp( event ) {
-    if( event.keyCode === 27 ) {
+    if (dismisible && event.keyCode === 27 ) {
       hide();
     }
   }
 
   // Deactivate on click outside
   function onDocumentClick( event ) {
-    if ( !cover || event.target === cover || event.target.contains(cover) ) {
-      hide();
+    if (dismissible) {
+      if (!cover || event.target === cover || event.target.contains(cover) ) {
+        hide();
+      }
     }
   }
 
@@ -70,7 +73,8 @@ define('views/ModalDialog', ['domUtils'], function(DOM) {
 //    element.className = element.className.replace( name, '' );
 //  }
 
-  function show(selector, onhide) {
+  function show(selector, onhide, indismissible) {
+    dismissible = !indismissible;
     if (typeof selector == 'string')
       popup = document.querySelector( selector );
     else
@@ -88,6 +92,7 @@ define('views/ModalDialog', ['domUtils'], function(DOM) {
   }
   
   function hide() {
+    disimissible = true;
     deactivate();
     for (var i = 0; i < hideCallbacks.length; i++) {
       hideCallbacks[i]();
