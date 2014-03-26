@@ -513,6 +513,9 @@
         right:-{{= right }}px; top:-{{= top }}px;
         clip:rect({{= top }}px, {{= clip_right }}px, {{= bottom }}px, {{= clip_left }}px);"
     {{ } }}
+    {{ if (!obj.clip_right) { }}
+      style="right: 0;"  
+    {{ } }}
     /> 
     <!-- {{ } }} -->
     <div class="gradientEllipsis mi1" style="min-height:38px;max-width:100%;font-size:18px;margin-left:15px;{{= obj.image ? 'padding-top:10px;' : '' }}" 
