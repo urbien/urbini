@@ -81,6 +81,7 @@ define('views/ListPage', [
       var isGeo = this.isGeo = this.isGeo(); // && _.any(rl.models, function(m) {return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'))});
       var params = hash ? _.getParamMap(hash) : null;
       var isMV = this.isMV = params  &&  params['$multiValue'] != null;
+      var meta = vocModel.properties;
 
       var showAddButton;
       if (!this.vocModel.adapter  &&  !isChooser  &&  !isMV) {
@@ -117,6 +118,19 @@ define('views/ListPage', [
               showAddButton = false;
             else if (U.isA(this.vocModel, "Reference")  &&  this.vocModel.type.toLowerCase().indexOf("/voc/dev/" + G.currentApp.appPath.toLowerCase()) == -1)  
               showAddButton = false;
+            else if (U.isA(this.vocModel, "Intersection")) {
+              showAddButton = false;
+              // Check if there are other then cloneOf properties
+              for (var p in meta) {
+                var prop = meta[p];
+                if (prop.autoincrement  ||  p.charAt(0) == '_'  ||  p == 'davDisplayName'  ||  p == 'davGetLastModified')
+                  continue;
+                if (prop.cloneOf  &&  prop.cloneOf.indexOf('Intersection.') == 0)
+                  continue;
+                showAddButton = true;
+                break;
+              }
+            }
           }
           else if (isOwner  &&  !isChooser) {
             Voc.getModels("model/social/App").done(function() {
@@ -178,7 +192,6 @@ define('views/ListPage', [
       this.addChild(this.header);
       
       var isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
-      var meta = vocModel.properties;
       var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, U.getLongUri1('model/portal/Comment'));
 
       this.isEdit = (params  &&  params['$editList'] != null); // || U.isAssignableFrom(vocModel, G.commonTypes.CloneOfProperty);
