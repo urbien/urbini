@@ -1007,9 +1007,11 @@ define('router', [
       this._requestLogin({
         returnUri: params && params.$returnUri || G.appUrl,
         returnUriHash: params && params.$returnUriHash,
-        onDismiss: function() {
-          self.goHome();
-        }
+        force: true
+//        ,
+//        onDismiss: function() {
+//          self.goHome();
+//        }
       });
     },
     

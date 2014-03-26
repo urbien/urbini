@@ -852,8 +852,12 @@ define('utils', [
             socialNet: net.socialNet,
             appPath: G.currentApp.appPath
           },
-          state;
-
+          state,
+          regCode = G.currentHashInfo.params['-reg'] || options.regCode;
+      
+      if (regCode)
+        params.regCode = regCode;
+      
       if (returnUriHash)
         params.returnUriHash = returnUriHash;
       else if (returnUri) {

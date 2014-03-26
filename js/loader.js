@@ -1377,7 +1377,7 @@ define('globals', function() {
                     "seeking", "seeked", "ended", "durationchange", "timeupdate", "play", "pause", "ratechange", "volumechange"],
                     
     nukeAll: function(reload) {
-      this.Events.trigger('clearTaskQueues');
+      G.Events.trigger('clearTaskQueues');
       hasLocalStorage && localStorage.clear();
       if (G.ResourceManager) {
         return G.ResourceManager.deleteDatabase().done(function() {          
@@ -1475,34 +1475,35 @@ define('globals', function() {
     },
     
     checkVersion: function(data) {
-      if (this._nuking)
+      if (G._nuking)
         return;
       
-      var self = this,
-          init = data === true,
+      var init = data === true,
           newV = data ? data.VERSION : G.getVersion(),
           oldV = G.getVersion(!data) || newV; // get old
 
       if (newV.All > oldV.All) {
-        if (this._nuking)
+        if (G._nuking)
           return;
         
         this._nuking = true;
-        this.nukeAll().done(function() {          
-          self.setVersion(newV);
-          window.location.reload(); // otherwise pending reqs to database may fail and cause trouble, expecting object stores we just deleted
-        }).fail(function() {
-          debugger;
-        }).always(function() {
-          self._nuking = false;
-        });
+//        APP_START_PROMISE.done(function() {
+          G.nukeAll().done(function() {          
+            G.setVersion(newV);
+            window.location.reload(); // otherwise pending reqs to database may fail and cause trouble, expecting object stores we just deleted
+          }).fail(function() {
+            debugger;
+          }).always(function() {
+            G._nuking = false;
+          });
+//        });
         
         return;
       }
 
       for (var key in newV) {
         if (oldV[key] && newV[key] > oldV[key]) {
-          this.Events.trigger('VERSION:' + key, newV[key], init);
+          G.Events.trigger('VERSION:' + key, newV[key], init);
           // DB and Models version update is async, it needs to complete before we can safely up the version number in storage
           if (key != 'DB' && key != 'Models')
             G.setVersion(key, newV[key]);

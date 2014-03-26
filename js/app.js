@@ -883,7 +883,7 @@ define('app', [
             name: name,
             url: U.buildSocialNetOAuthUrl({
               net: net,
-              action: 'Login', 
+              action: 'Login',
               returnUri: returnUri,
               returnUriHash: returnUriHash
             })
@@ -916,7 +916,7 @@ define('app', [
       else {
 //        $popup.css('left', (G.viewport.width - 255) / 2);
         var popup = $popup[0];
-        ModalDialog.show(popup, onDismiss);
+        ModalDialog.show(popup, onDismiss, options.force);
         
         nets.map(function(net) {
           popup.$('.' + net.name.toLowerCase()).$on('click', function(e) {
