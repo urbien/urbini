@@ -131,28 +131,31 @@ define('views/MainMenuPanel', [
         if (!hash  ||  hash != mobileUrl) {
           var params = {
             title: this.loc('profile'), 
-            mobileUrl: mobileUrl, 
-            image: G.currentUser.thumb, 
-            cssClass: 'menu_image_fitted'
+            mobileUrl: mobileUrl
           };
           
           var w = G.currentUser.originalWidth, h = G.currentUser.originalHeight;
           var maxDim = 100; // for profile
-          if (w < h) {
-            var r = 100 / w;
-            maxDim = Math.floor(h * r); 
- 
+          if (G.currentUser.thumb) {
+            params.image = G.currentUser.thumb;
+            params.cssClass = 'menu_image_fitted';
           }
-            
-          var clip = U.clipToFrame(47, 47, w, h, maxDim);
-          if (clip) {
-            params.top = clip.clip_top;
-            params.clip_right = clip.clip_right;
-            params.bottom = clip.clip_bottom;
-            params.clip_left = clip.clip_left;
-            params.right = ((100 - 42)/2); 
+          if (w  &&  h) {
+            if (w < h) {
+              var r = 100 / w;
+              maxDim = Math.floor(h * r); 
+   
+            }
+              
+            var clip = U.clipToFrame(47, 47, w, h, maxDim);
+            if (clip) {
+              params.top = clip.clip_top;
+              params.clip_right = clip.clip_right;
+              params.bottom = clip.clip_bottom;
+              params.clip_left = clip.clip_left;
+              params.right = ((100 - 42)/2); 
+            }
           }
-
           html += this.menuItemTemplate(params);
 //          U.addToFrag(frag, this.menuItemTemplate(params));
         } 
