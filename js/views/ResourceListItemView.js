@@ -694,7 +694,7 @@ define('views/ResourceListItemView', [
         var isDate = meta[pName].range == 'date'; 
         if (!firstProp  &&  s.indexOf('<div') == -1  &&  viewCols.trim().substring(viewCols.trim().length - 6) != '</div>')
           viewCols += "<br/>";
-        if (!meta[pName].skipLabelInGrid) {
+        if (pName != 'davDisplayName'  &&  !meta[pName].skipLabelInGrid) {
 //            if (isDate)
 //              viewCols += '<div style="float:right;clear: both;"><span class="label">' + row + ':</span><span style="font-weight:normal">' + s + '</span></div>';
 //            else

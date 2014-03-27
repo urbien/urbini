@@ -325,10 +325,10 @@ fieldset {
   cursor:pointer;
 }
 ._prim {
-  padding: 0.5rem 1.5rem;
+  padding: 0.5rem 1rem;
 }
 .resourceProp {
-  padding: 1.5rem;
+  padding: 1.5rem 1rem;
 }
 .editList li {
 /*
