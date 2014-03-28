@@ -355,10 +355,13 @@
       }
 
       // Trigger all relevant attribute changes.
-      if (!silent && perPropertyEvents) {
+      if (!silent) {
         if (changes.length) this._pending = true;
-        for (var i = 0, l = changes.length; i < l; i++) {
-          this.trigger('change:' + changes[i], this, current[changes[i]], options);
+        
+        if (perPropertyEvents) {
+          for (var i = 0, l = changes.length; i < l; i++) {
+            this.trigger('change:' + changes[i], this, current[changes[i]], options);
+          }
         }
       }
 

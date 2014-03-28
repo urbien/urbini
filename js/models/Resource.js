@@ -1259,8 +1259,20 @@ define('models/Resource', [
         }  
       }
 
-      if (editProps || !propGroups.length)
+      if (!propGroups.length)
         propGroups = result.groups = null;
+      else if (editProps) {
+        var i = propGroups.length;
+        while (i--) {
+          var pGroup = propGroups[i];
+          if (!_.intersection(pGroup.propertyGroupList.splitAndTrim(','), editProps).length) {
+            propGroups.splice(i, 1);
+          }
+        }
+        
+        if (!propGroups.length)
+          propGroups = result.groups = null;
+      }
       else {
         propGroups.sort(function(a, b) {
           return a.shortName === 'general' ? -1 : a.index - b.index;

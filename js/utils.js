@@ -2592,8 +2592,12 @@ define('utils', [
         if (range.indexOf('/') != -1 && /^[a-z]+\/.*\?/.test(val)) // don't bother extending short uris like ShoppingList/32004, but do extend stuff like commerce/urbien/ShoppingList?id=32004
           return U.getLongUri1(val);
 
-//        if (range == 'boolean')
-//          return U.isFalsy(val, range) ? false : true;
+        if (range == 'boolean')
+          return U.isFalsy(val, range) ? false : true;
+        else if (range.endsWith('Money'))
+          return parseFloat(val);
+        else if (range.endsWith('ComplexDate'))
+          return parseInt(val);
         
         return val;
       }      

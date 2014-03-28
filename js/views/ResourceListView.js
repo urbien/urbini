@@ -248,9 +248,6 @@ define('views/ResourceListView', [
           hideIndicator;
       
       if (!value) {
-        indicatorId = this.showLoadingIndicator(3000); // 3 second timeout
-        hideIndicator = this.hideLoadingIndicator.bind(this, indicatorId);
-
         filtered.reset(col.models, {
           params: this.originalParams
         });
@@ -1071,8 +1068,16 @@ define('views/ResourceListView', [
           nextPagePromise,
           nextPageUrl,
           limit = Math.max(to - from, this.options.minPagesInSlidingWindow * this.options.bricksPerPage, 10),
-          pagingPromise;
+          pagingPromise = this._pagingPromise = defer.promise(),
+          spinner = this.spinner || {
+            name: 'listLoading' + G.nextId(),
+            timeout: 5000,
+            blockClick: true
+          };
       
+      G.hideSpinner(spinner);
+      G.showSpinner(spinner);
+          
       this._pageRequestTimePlaced = _.now();
       nextPagePromise = col.getNextPage({
         params: {
@@ -1111,9 +1116,10 @@ define('views/ResourceListView', [
       
       this._isPaging = true;
       if (firstFetchDfd && firstFetchDfd.state() == 'pending')
-        defer.promise().done(firstFetchDfd.resolve).fail(firstFetchDfd.resolve); // HACK
+        pagingPromise.done(firstFetchDfd.resolve).fail(firstFetchDfd.resolve); // HACK
       
-      pagingPromise = this._pagingPromise = defer.promise().always(function() {
+      pagingPromise.always(function() {
+        G.hideSpinner(spinner);
         if (pagingPromise._canceled)
           return;
         

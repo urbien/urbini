@@ -66,19 +66,22 @@ define('views/ResourceView', [
       'click #other': 'showOther'  
     },
     click: function(e) {
-      if (!this.isBuyGroup)
-        return;
-      
       var t = e.target;
       var tagName = t.tagName.toLowerCase();
-        
       while (tagName  &&  tagName != 'a') {
         t = t.parentElement;
         tagName = t.tagName.toLowerCase();
       }
+      
       if (tagName != 'a'  ||  !t.id)
         return;
+
+      if (t.href == window.location.href)
+        return;
       
+      if (!this.isBuyGroup)
+        return;      
+        
       if (t.id != 'buy') {
         if (t.id == 'sell')
           Events.stopEvent(e);
