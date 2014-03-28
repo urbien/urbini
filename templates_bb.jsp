@@ -513,6 +513,9 @@
         right:-{{= right }}px; top:-{{= top }}px;
         clip:rect({{= top }}px, {{= clip_right }}px, {{= bottom }}px, {{= clip_left }}px);"
     {{ } }}
+    {{ if (!obj.clip_right) { }}
+      style="right: 0;"  
+    {{ } }}
     /> 
     <!-- {{ } }} -->
     <div class="gradientEllipsis mi1" style="min-height:38px;max-width:100%;font-size:18px;margin-left:15px;{{= obj.image ? 'padding-top:10px;' : '' }}" 
@@ -753,8 +756,8 @@
 
 
 <script type="text/template" id="moneyPET">
-<div id="_prim">
-  <label for="{{= id }}" class="ui-input-text"">{{= name }} <b>{{= typeof value.currency === 'undefined' ? '$' : value.currency }}</b></label>
+<div class="_prim">
+  <label for="{{= id }}" class="ui-input-text" style="white-space:nowrap;">{{= name }} <b>{{= typeof value.currency === 'undefined' ? '$' : value.currency }}</b></label>
   <input type="text" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '' }}" {{= rules }} class="ui-input-text"></input>
 </div>
 </script>
