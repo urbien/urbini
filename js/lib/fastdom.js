@@ -527,23 +527,25 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
       };
     };
   
-    /**
-     * Starts the timeout over, less expensive than setting a new timeout (when debouncing for instance)
-     * @return true if the timer was successfully reset, false otherwise
-     */
-    FastDom.prototype.resetTimeout = function(id) {
-//      console.log("TIMEOUT RESET - " + id);
-      if (typeof id == 'undefined')
-        return false;
-      
-      var task = TIMEOUTS[id];
-      if (task) {
-        task._timeLeft = task._timeout;
-        return true;
-      }
-      else
-        return false;
-    };
+//    /**
+//     * Starts the timeout over, less expensive than setting a new timeout (when debouncing for instance)
+//     * @return true if the timer was successfully reset, false otherwise
+//     */
+//    FastDom.prototype.resetTimeout = function(id) {
+////      console.log("TIMEOUT RESET - " + id);
+//      if (typeof id == 'undefined')
+//        return false;
+//      
+//      var task = TIMEOUTS[id];
+//      if (task) {
+//        task._timeLeft = task._timeout;
+//        return true;
+//      }
+//      else
+//        return false;
+//    };
+    
+    FastDom.prototype.resetTimeout = G.falseFn; // for now
   
     /**
      * @return promise object that gets resolved after "frames" frames
@@ -590,8 +592,8 @@ define('lib/fastdom', ['globals', 'underscore', 'FrameWatch'], function(G, _, Fr
       }
     };
     
-    window.setTimeout = fastdom.setTimeout;
-    window.clearTimeout = fastdom.clearTimeout;
+//    window.setTimeout = fastdom.setTimeout;
+//    window.clearTimeout = fastdom.clearTimeout;
     window.resetTimeout = fastdom.resetTimeout;
   }
   else {

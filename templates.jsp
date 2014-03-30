@@ -68,6 +68,7 @@
     {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
           <div style="padding:10px;"><a data-role="button" class="ui-btn-hover-c" data-icon="heart" data-theme="c" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></div>
     {{ } }}
+    <div class="stockCharts hidden"></div>
     <ul data-theme="c" id="resourceView">
     </ul>
     <div id="about" class="hidden" style="padding: 7px;" data-theme="d"></div>
@@ -1148,7 +1149,7 @@
     </div>
     {{= this.categories ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-iconpos="notext" data-icon="tags" id="categories" href="#"></a></div>' : '' }} 
     {{= this.moreRanges ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-icon="tags" id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '</a></div>' : '' }}
-    {{= this.filter ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-iconpos="notext" data-icon="filter" class="filterToggle" href="#"></a></div>' : '' }} 
+    {{= this.filter ? '<div style="margin:0px 0 0 3px; float:left"><a data-role="button" data-iconpos="notext" data-icon="fasearch" class="filterToggle" href="#"></a></div>' : '' }} 
     <div id="name" class="resTitle" {{= this.categories ? 'style="width: 95%;"' : 'style="min-height: 20px"' }} align="center">
       <h4 id="pageTitle" style="font-weight:normal;">{{= this.title }}</h4>
       {{= this.filter ? "<div class='filter'></div>" : "" }}
@@ -1554,6 +1555,59 @@
     <label for="degree">Sensitivity</label><br/>
     <input type="range" id="degree" name="degree" value={{= degree }} min="-10" max="10">
   </div-->
+</script>
+
+<script type="text/template" id="stockChartsTemplate">
+<!--div class="row">
+    <div class="yearly-bubble-chart dc-chart">
+        <p class="chartHeading">Yearly Performance</p> (radius: fluctuation/quote ratio, color: gain/loss)
+        <a class="reset" style="display: none;">(reset)</a>
+        <div class="clearfix"></div>
+    </div>
+</div-->
+
+<div class="row">
+    <div class="gain-loss-chart">
+        <p class="chartHeading">Days by Gain/Loss</p>
+        <a class="reset" style="display: none;">(reset)</a>
+        <div class="clearfix"></div>
+    </div>
+
+    <div class="quarter-chart">
+        <p class="chartHeading">Quarters</p>
+        <a class="reset" style="display: none;">(reset)</a>
+        <div class="clearfix"></div>
+    </div>
+
+    <div class="day-of-week-chart">
+        <p class="chartHeading">Day of Week</p>
+        <a class="reset" style="display: none;">(reset)</a>
+        <div class="clearfix"></div>
+    </div>
+
+    <div class="fluctuation-chart">
+        <p class="chartHeading">Days by Fluctuation (%)</p>
+        <span class="reset" style="display: none;">range: <span class="filter"></span></span>
+        <a class="reset" style="display: none;">(reset)</a>
+        <div class="clearfix"></div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="monthly-move-chart">
+        <p class="chartHeading">Monthly Quote Abs Move & Volume/500,000 Chart</p>
+        <span class="reset" style="display: none;">range: <span class="filter"></span></span>
+        <a class="reset" style="display: none;">(reset)</a>
+        <div class="clearfix"></div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="monthly-volume-chart">
+    </div>
+    <p class="muted pull-right" style="margin-right: 15px;">select a time range to zoom in</p>
+</div>
+
 </script>
 
 <!-- EDIT TEMPLATES -->

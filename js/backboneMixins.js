@@ -243,7 +243,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
           delegated[key] = method;
 
           if (eventInfo.selector) {
-            var els = this.$(eventInfo.selector),
+            var els = el.$(eventInfo.selector),
                 i = els.length;
             
             while (i--) {

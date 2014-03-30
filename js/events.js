@@ -35,10 +35,6 @@ define('events', [
     }
   }, Backbone.Events);
 
-  // <debug>
-  if (G.DEBUG)
-    G.Events = Events;
-  // </debug>
-  
+  G.Events = Events;
   return Events;
 });

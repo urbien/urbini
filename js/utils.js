@@ -347,7 +347,17 @@ define('utils', [
     getUserRole: function() {
       return G.currentUser.role;
     },
-    
+    /*
+    isSameUser: function(uri1, uri2) {
+      if (uri1 == uri2)
+        return true;
+      
+      if (uri1.slice(uri1.indexOf('id=')) == uri2.slice(uri2.indexOf('id='))) // HACK! to detect Urbien1 as Urbien
+        return true;
+      
+      return false
+    },
+    */
     isUserInRole: function(userRole, ar, res) {
       if (userRole == 'guest')
         return false;
@@ -363,7 +373,8 @@ define('utils', [
           resUri = res.getUri();
       }
       
-      var iAmRes = me === resUri;
+      var iAmRes = me == resUri; 
+//      iAmRes = iAmRes ||U.isSameUser(me, resUri); // HACK to detect Urbien1 as Urbien
       var roles = typeof ar === 'array' ? ar : ar.split(",");
       for (var i = 0; i < roles.length; i++) {
         var r = roles[i].trim();
@@ -2592,8 +2603,12 @@ define('utils', [
         if (range.indexOf('/') != -1 && /^[a-z]+\/.*\?/.test(val)) // don't bother extending short uris like ShoppingList/32004, but do extend stuff like commerce/urbien/ShoppingList?id=32004
           return U.getLongUri1(val);
 
-//        if (range == 'boolean')
-//          return U.isFalsy(val, range) ? false : true;
+        if (range == 'boolean')
+          return U.isFalsy(val, range) ? false : true;
+        else if (range.endsWith('Money'))
+          return parseFloat(val);
+        else if (range.endsWith('ComplexDate'))
+          return parseInt(val);
         
         return val;
       }      
@@ -2820,8 +2835,13 @@ define('utils', [
           return null;
       }
       
-      return U.makeUri(model.type, keyVals);
+      return U.makeUri(U.getActualModelType(model), keyVals);
     },
+    
+    getActualModelType: function(vocModel) {
+      return U.isA(vocModel, 'DeploymentPoint') ? vocModel.superClasses[0] : vocModel.type;
+    },
+    
     makeTempUri: function(type, id) {
       return U.makeUri(type, {
         __tempId__: typeof id === 'undefined' ? G.currentServerTime : id
@@ -4161,7 +4181,7 @@ define('utils', [
     // id=32001
     regex: /^[^\/\\\?]+\=/,
     onMatch: function(uri, matches, vocModel) {
-      return U.makeUri(vocModel.type, matches.input);
+      return U.makeUri(U.getActualModelType(vocModel), matches.input);
     }
   }, 
   {
@@ -4172,7 +4192,7 @@ define('utils', [
         throw new Error("Not enough information to create long uri");
       
       var parts = uri.split('/');
-      var type = vocModel.type;
+      var type = U.getActualModelType(vocModel);
       var primaryKeys = U.getPrimaryKeys(vocModel);
       if (primaryKeys.length !== parts.length - 1)
         throw new Error("Incorrect number of primary keys in short uri: " + uri);
@@ -4192,7 +4212,7 @@ define('utils', [
       if (!vocModel)
         throw new Error("Not enough information to create long uri");
       
-      return U.makeUri(type, uri.slice(uri.indexOf("?") + 1));
+      return U.makeUri(U.getActualModelType(vocModel), uri.slice(uri.indexOf("?") + 1));
     }
   }, 
   {

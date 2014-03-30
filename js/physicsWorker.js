@@ -3060,6 +3060,8 @@ function getRectVertices(width, height) {
       }
       
       if (this._initialized) {
+        if (this.headEdge)
+          this.headEdge.state.pos.clone(this._initialOffsetBodyPos);
         this._updateScrollbar(true);
         this._adjustSlidingWindow();
       }

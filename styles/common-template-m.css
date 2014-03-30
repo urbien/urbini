@@ -310,6 +310,7 @@ div.nabBtn {
   padding:10px 0 10px 0;
   text-align:center;
   text-shadow:none;
+  font-size: 2rem;
   border: 1px solid black;
   color:#000;
 }
@@ -1117,7 +1118,7 @@ div {
 }
 
 #resourceView a {
-  color: #16A085; 
+  color: #3777a1; 
 }
 
 
@@ -1129,7 +1130,7 @@ div {
 }
 
 #resourceView .col:nth-child(2) a {
-  color: #16A085; 
+  color: #3777a1; 
 }
 
 /*  GO FULL WIDTH AT LESS THAN 480 PIXELS */
@@ -1330,5 +1331,17 @@ div {
   line-height: 2rem;
 }
 
-h1, h2, h3, h4, h5, h6 {
+.stockCharts {
+  text-align: center;
+}
+
+.stockCharts h3, .stockCharts p {
+  font-family: Lato, Trebuchet MS;
+  font-weight: 400;
+  font-size: 1.5rem;
+}
+
+.stockCharts .reset {
+  color: #3182bd;
+  cursor: pointer;
 }

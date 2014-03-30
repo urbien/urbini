@@ -146,6 +146,7 @@ define('views/HorizontalListItemView', [
 //      if (options.bothSides)
 //        return renderIntersectionSides(options);
       
+      options = options || {};
       var source = options.source || this.source,
           cloneOf = options.cloneOf,
           vocModel = this.vocModel,

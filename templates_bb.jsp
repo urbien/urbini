@@ -87,6 +87,7 @@
        <div style="padding:10px;"><a data-role="button" class="ui-btn-hover-c" data-icon="heart" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></div>
     {{ } }}
     
+    <div class="stockCharts hidden"></div>
     <section data-type="list">
       <ul id="resourceView">
       </ul>
@@ -167,7 +168,7 @@
 <p>
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
      </a>
-     <div style="color:{{= G.lightColor }};font-weight:bold;background:{{= G.darkColor }};display:inline;position:absolute;right:1rem;font-size: 1.5px;border-radius:1rem;border: 1px solid {{= G.darkColor }};padding: 0.1rem 0.3rem;">{{= value }}</div>
+     <div style="color:{{= G.lightColor }};font-weight:bold;background:{{= G.darkColor }};display:inline;position:absolute;right:1rem;font-size: 1.5rem;border-radius:1rem;border: 1px solid {{= G.darkColor }};padding: 0.1rem 0.3rem;">{{= value }}</div>
 </p>     
      {{ if (typeof comment != 'undefined') { }}
        <br/><p style="padding: 0.7rem 0;font-size:1.3rem;color:#808080; line-height:1.5rem;">{{= comment }}</p>
@@ -445,7 +446,9 @@
        <i class="ui-icon-tags"></i></a></div> 
     {{ } }} 
     {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
-    {{= this.filter ? '<div style="margin:10px 0 0 10px; position:absolute;"><a class="filterToggle" href="#"><i class="ui-icon-filter"></i></a></div>' : '' }} 
+    {{ if (this.filter) { }}
+      <div style="margin:10px 0 0 10px; position:absolute;"><a class="filterToggle" href="#" style="color:{{= G.lightColor }}"><i class="ui-icon-fasearch"></i></a></div> 
+    {{ }                  }}
     <div id="name" class="resTitle" style="background:{{= G.darkColor }};color:{{= G.lightColor }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
       <h4 id="pageTitle" style="font-weight:normal;color:{{= G.lightColor }};">{{= this.title }}</h4>
       {{= this.filter ? "<div class='filter'></div>" : "" }}
@@ -493,12 +496,12 @@
 
 <script type="text/template" id="menuP">
   <!-- Left-side slide-out menu panel -->
-  <ul class="menuItems" id="menuItems"></ul>
+  <ul class="menuItems" id="menuItems" style="background:{{= G.darkColor }};"></ul>
 </script>  
 
 <script type="text/template" id="rightMenuP">
   <!-- Right-side slide-out menu panel -->
-  <ul id="rightMenuItems" class="menuItems"></ul>
+  <ul id="rightMenuItems" class="menuItems" style="background:{{= G.darkColor }};"></ul>
 </script>  
 
 <script type="text/template" id="menuItemTemplate">
@@ -675,9 +678,9 @@
 </script>
 
 <script type="text/template" id="datePET">
-<div id="_prim">
-  <label for="{{= id }}">{{= name }}</label>
-  <input id="{{= id }}" name="{{= shortName }}" {{= rules }} value="{{= value }}" />
+<div class="_prim">
+  <label for="{{= id }}" class="ui-input-text">{{= name }}</label>
+  <input id="{{= id }}" name="{{= shortName }}" {{= rules }} class="ui-input-text" value="{{= value }}" />
 </div>
 </script>
 
