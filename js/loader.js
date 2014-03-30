@@ -521,7 +521,7 @@ define('globals', function() {
         try {
           localStorage.setItem(key, value);
         } catch(e) {
-          debugger;
+//          debugger;
           if (['QuotaExceededError', 'QUOTA_EXCEEDED_ERR', 'NS_ERROR_DOM_QUOTA_REACHED'].indexOf(e.name) != -1) {
             // clean to make space
             var appModelRegexp = G.appModelRegExp,
@@ -1116,6 +1116,11 @@ define('globals', function() {
       codemirrorXMLMode: 'lib/codemirrorXMLMode',
       codemirrorHTMLMode: 'lib/codemirrorHTMLMode',
       codemirrorCSSMode: 'lib/codemirrorCSSMode',
+      stockCharts: 'lib/stockCharts',
+      colorbrewer: 'lib/colorbrewer',
+      dcCss: 'lib/dc/dc.css',
+      dc: 'lib/dc/dc',
+      crossfilter: 'lib/crossfilter/crossfilter',
       leaflet: 'lib/leaflet',
       leafletMarkerCluster: 'lib/leaflet.markercluster',
 //      jqueryImagesLoaded: 'lib/jquery.imagesloaded',
@@ -1131,6 +1136,7 @@ define('globals', function() {
       '../styles/topcoat_styles.css': ['../styles/styles.css', '../styles/common-template-m.css'],
       '../styles/jqm_styles.css': ['../styles/styles.css', '../styles/common-template-m.css'],
       leafletMarkerCluster: ['leaflet'],
+      dc: ['lib/d3'],
       mobiscroll: ['../styles/mobiscroll.datetime.min.css'],
       codemirrorJSMode: ['codemirror', 'codemirrorCss'],
       codemirrorCSSMode: ['codemirror', 'codemirrorCss'],
@@ -1452,12 +1458,13 @@ define('globals', function() {
       } catch (err) {
       }
       
-      return v || {
-        All: 0, 
-        Models: 0, 
-        JS: 0, 
-        CSS: 0
-      };
+      return v;
+//          || {
+//        All: 0, 
+//        Models: 0, 
+//        JS: 0, 
+//        CSS: 0
+//      };
     },
     
     setVersion: function(key, version) {

@@ -6,6 +6,8 @@ define('views/ResourceView', [
   'utils',
   'views/BasicView'
 ], function(G, _, Events, U, BasicView) {
+//  var D3, DC, Crossfilter, 
+  var StockCharts;
   var willShow = function(res, prop, role) {
     var p = prop.shortName;
     var doShow = p.charAt(0) != '_' && p != 'davDisplayName'  &&  !prop.avoidDisplayingInView  &&  U.isPropVisible(res, prop, role);
@@ -61,16 +63,61 @@ define('views/ResourceView', [
       this.toggleVisibility(true); // set to invisible until it's rendered
       return this;
     },
+    
     events: {
       'click': 'click',
-      'click #other': 'showOther'  
+      'click #other': 'showOther'
     },
+    
+    pageEvents: {
+      'click .dc-chart .reset': 'resetStockChart'
+    },
+    
+    resetStockChart: function(e) {
+      var parent = e.target.parentElement,
+          cls = parent.classList,
+          chartCl;
+      
+      for (var i = 0; i < cls.length; i++) {
+        var cl = cls[i];
+        if (cl != 'dc-chart' && cl.endsWith('-chart')) {
+          chartCl = cl;
+          break;
+        }
+      }
+      
+      switch (chartCl) {
+      case 'monthly-move-chart':
+        this.stockCharts.moveChart.filterAll();
+        this.stockCharts.volumeChart.filterAll();
+        break;
+      case 'yearly-bubble-chart':
+        this.stockCharts.yearlyBubbleChart.filterAll();
+        break;
+      case 'gain-loss-chart':
+        this.stockCharts.gainOrLossChart.filterAll();
+        break;
+      case 'quarter-chart':
+        this.stockCharts.quarterChart.filterAll();
+        break;
+      case 'day-of-week-chart':
+        this.stockCharts.dayOfWeekChart.filterAll();
+        break;
+      case 'fluctuation-chart':
+        this.stockCharts.fluctuationChart.filterAll();
+        break; 
+      default:
+        return;
+      }
+      
+      window.dc.redrawAll();
+    },
+    
     click: function(e) {
       var t = e.target;
-      var tagName = t.tagName.toLowerCase();
-      while (tagName  &&  tagName != 'a') {
+      var tagName;
+      while (t  &&  (tagName = t.tagName.toLowerCase())  &&  tagName != 'a') {
         t = t.parentElement;
-        tagName = t.tagName.toLowerCase();
       }
       
       if (tagName != 'a'  ||  !t.id)
@@ -106,6 +153,9 @@ define('views/ResourceView', [
     showOther: function(e) {
       var t = e.target;
       var tagName = t.tagName.toLowerCase();
+      if (tagName == 'a')
+        return;
+      
 //      var wl = G.currentApp.widgetLibrary
 //      if (wl  &&  wl != 'Jquery Mobile') {
       Events.stopEvent(e);
@@ -168,6 +218,7 @@ define('views/ResourceView', [
     },
     
     renderHelper: function(options) {
+      var self = this;
       var res = this.resource;
       var vocModel = this.vocModel;
       var frag = document.createDocumentFragment();
@@ -175,7 +226,7 @@ define('views/ResourceView', [
 //        this.renderCollaborationPoint(frag);
 
       var params = _.getParamMap(window.location.hash);
-      var isApp = U.isAssignableFrom(res, G.commonTypes.App);
+      var isApp = U.isAssignableFrom(vocModel, G.commonTypes.App);
       var isAbout = (isApp  &&  !!params['$about']  &&  !!res.get('description')) || !!params['$fs'];
 //      var isAbout = isApp  &&  !!params['$about']  &&  !!res.get('description');
       if (isAbout  &&  isApp) {
@@ -458,8 +509,133 @@ define('views/ResourceView', [
 //          var $this = $(this);
         }
       }
+      else if (U.isAssignableFrom(vocModel, "Stock")) {
+        this.chartHolder = this.getPageView().el.$('.stockCharts')[0];
+        if (!this.chartHolder)
+          return;
+
+        var cb = '_urbienJSONPCallback' + G.nextId();
+        window[cb] = function(data) {
+          delete window[cb];
+          var q = data && data.query,
+              results = q && q.results,
+              rows = results && results.row;
+          
+          if (rows && rows.length)
+            self.drawStockChart(data.query.results.row);
+        };
+        
+//        this.chartLibsPromise = U.require(['dc', 'crossfilter', 'lib/d3']).done(function(_DC, _Crossfilter, _D3) {
+        this.chartLibsPromise = U.require(['dc', 'crossfilter', 'colorbrewer', 'lib/d3', 'stockCharts']).done(function(_DC, _Crossfilter, _Colorbrewer, _D3, _StockCharts) {
+//          DC = _DC;
+//          Crossfilter = _Crossfilter;
+//          D3 = _D3;
+          StockCharts = _StockCharts;
+        });
+        
+        // get chart for the last year
+//        var now = new Date(),
+//            month = now.getMonth(),
+//            day = now.getDate(),
+//            year = now.getFullYear();
+//        
+//        var yahooIChartUrl = "http://ichart.yahoo.com/table.csv?" + $.param({
+//          s: res.get('symbol'),
+//          // from date
+//          a: month,
+//          b: day,
+//          c: year - 1,
+//          // to date
+//          d: month,
+//          e: day,
+//          f: year
+//        });
+        var now = new Date(new Date().getTime() - 365 * 24 * 3600 * 1000),
+            month = now.getMonth(),
+            day = now.getDate(),
+            year = now.getFullYear();
+        
+        var yahooIChartUrl = "http://ichart.yahoo.com/table.csv?" + $.param({
+          s: res.get('symbol'),
+          // from date
+          a: month,
+          b: day,
+          c: year,
+          g: 'd' // daily interval
+        });
+        
+        var script = document.createElement('script');
+        script.type = "text/javascript";
+        script.async = true;
+        script.src = "//query.yahooapis.com/v1/public/yql?" + $.param({
+          q: "select * from csv where url = '" + yahooIChartUrl + "'",
+          format: 'json',
+//          diagnostics: true,
+          callback: cb
+        });
+        
+        document.head.appendChild(script);
+      }
 
       return this;
+    },
+    
+    drawStockChart: function(data) {
+      var self = this;
+      this.chartLibsPromise.done(function() {
+        self._drawStockChart(data);
+      });
+    },
+    
+    _drawStockChart: function(data) {
+      var self = this,
+          colNames = data[0],
+          n = data.length,
+          row,
+          numberFormat = d3.format(".2f"),
+          dateFormat = d3.time.format("%Y-%m-%d"),
+          dateCol,
+          openCol,
+          closeCol,
+          volumeCol,
+          colName;
+      
+      for (var p in colNames) {
+        colName = colNames[p];
+        switch (colName.toLowerCase()) {
+        case 'date':
+          dateCol = p;
+          break;
+        case 'open':
+          openCol = p;
+          break;
+        case 'close':
+          closeCol = p;
+          break;
+        case 'volume':
+          volumeCol = p;
+          break;
+        }
+      }
+      
+      for (var i = 1; i < n; i++) {
+        row = data[i];
+        row.dd = dateFormat.parse(row[dateCol]);
+        row.month = d3.time.month(row.dd); // pre-calculate month for better performance
+        row.close = +row[closeCol]; // coerce to number
+        row.open = +row[openCol]; // coerce to number
+        row.volume = +row[volumeCol]; // coerce to number
+      }
+      
+      Array.removeFromTo(data, 0, 1);
+      if (!this.stockChartsTemplate)
+        this.makeTemplate('stockChartsTemplate', 'stockChartsTemplate', this.vocModel.type);
+      
+      this.chartHolder.$html(this.stockChartsTemplate());
+      this.stockCharts = StockCharts(data, this.chartHolder);
+      this.chartHolder.classList.remove('hidden');
+      this.getPageView().invalidateSize();
+      this.redelegateEvents();
     },
 
     _maxChars: 30,
