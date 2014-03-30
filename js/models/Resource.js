@@ -127,7 +127,8 @@ define('models/Resource', [
       this.constructor = this.vocModel = vocModel;
       this.properties = vocModel.properties;
       var uri = this.getUri();
-      this.type = (uri && U.getTypeUri(uri)) || vocModel.type;
+      this.type = U.getActualModelType(vocModel);
+//      this.type = (uri && U.getTypeUri(uri)) || vocModel.type;
       if (!options || !options.silent)
         this.trigger('modelChanged');
       
@@ -313,7 +314,7 @@ define('models/Resource', [
         return adapter.getUrl.call(this);
       
       var uri = this.getUri();
-      var type = this.vocModel.type;
+      var type = U.getActualModelType(this.vocModel);
       var retUri = G.apiUrl + encodeURIComponent(type) + "?$blCounts=y&$minify=y&$mobile=y";
       if (uri)
 //      type = type.startsWith(G.defaultVocPath) ? type.slice(G.defaultVocPath.length) : type;
@@ -1265,7 +1266,12 @@ define('models/Resource', [
         var i = propGroups.length;
         while (i--) {
           var pGroup = propGroups[i];
-          if (!_.intersection(pGroup.propertyGroupList.splitAndTrim(','), editProps).length) {
+          var keepFromGroup = _.intersection(pGroup.propertyGroupList.splitAndTrim(','), editProps);
+          if (keepFromGroup.length) {
+            propGroups[i] = _.clone(propGroups[i]); // don't want to overwrite property on model
+            propGroups[i].propertyGroupList = keepFromGroup.join(',');
+          }
+          else {
             propGroups.splice(i, 1);
           }
         }
