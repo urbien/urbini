@@ -297,7 +297,14 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     G.disableClick();
   };
 
+  function isSVG(el) {
+    return el.nearestViewportElement || el.tagName.toUpperCase() == 'SVG';
+  };
+
   function isScrollable(el) {
+//    if (isSVG(el))
+//      return false;
+    
     switch (el.tagName) {
       case 'TEXTAREA':
         return false;
@@ -955,8 +962,16 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     },
 
     _canHandle: function(e) {
-      if (DRAG_ENABLED && (!DRAG_LOCK || DRAG_LOCK == this.id) && isScrollable(e.target))
+      if (DRAG_ENABLED && (!DRAG_LOCK || DRAG_LOCK == this.id) && isScrollable(e.target)) {
+        if (isSVG(e.target) && this.axis == 'y' && Math.abs(e.gesture.deltaX) - Math.abs(e.gesture.deltaY) > 0) {
+          e.preventDefault();
+          e.stopPropagation();
+          e.stopImmediatePropagation();
+          return false;
+        }
+        
         return true;
+      }
     },
     
     _ondrag: function(e) {
@@ -1003,7 +1018,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     },
 
     _ondragend: function(e) {
-      if (!this._canHandle(e))
+      if (!this._canHandle(e) || !this.drag)
         return false;
 
       stopDragEvent(e);
