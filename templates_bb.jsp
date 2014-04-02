@@ -760,7 +760,7 @@
 
 <script type="text/template" id="moneyPET">
 <div class="_prim">
-  <label for="{{= id }}" class="ui-input-text" style="white-space:nowrap;">{{= name }} <b>{{= typeof value.currency === 'undefined' ? '$' : value.currency }}</b></label>
+  <label for="{{= id }}" class="ui-input-text" style="white-space:nowrap;">{{= name }} <b style="float:right;">{{= typeof value.currency === 'undefined' ? '$' : value.currency }}</b></label>
   <input type="text" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '' }}" {{= rules }} class="ui-input-text"></input>
 </div>
 </script>
