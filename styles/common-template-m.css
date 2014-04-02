@@ -1027,6 +1027,7 @@ div {
 
 .filterCondition > * {
   vertical-align: top;
+  padding: 0px 4px;
 }
 
 .filterCondition {
