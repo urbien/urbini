@@ -698,15 +698,17 @@ define('views/ResourceListItemView', [
 //            if (isDate)
 //              viewCols += '<div style="float:right;clear: both;"><span class="label">' + row + ':</span><span style="font-weight:normal">' + s + '</span></div>';
 //            else
-          viewCols += '<div style="display:inline"><span class="label" style="color:' + G.darkColor + '">' + row + '&#160;</span>';
-          viewCols += s.indexOf('<') == -1 ? '<span style="font-weight:normal">' + s + '</span>' : s;
+          viewCols += '<div style="display:block;"><span class="label" style="color:' + G.darkColor + '">' + row + '&#160;</span>';
+          viewCols += s.indexOf('<') == -1 ? '<span style="font-weight:normal">' + s + '</span>' :  s;
           viewCols += '</div>';
         }
         else {
           if (firstProp)
             viewCols += '<span>' + s + '</span>';
-          else
-            viewCols += s.indexOf('<') == -1 ? '<span style="font-weight:normal">' + s + '</span>' : s;
+          else {
+            var s = s.trim();
+            viewCols += s.charAt('0') != '<' ? '<span style="font-weight:normal">' + s + '</span>' : s;
+          }
 //            viewCols += '<span style="font-weight:normal">' + s + '</span>';
         }
         firstProp = false;
