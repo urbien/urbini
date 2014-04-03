@@ -12,7 +12,7 @@ html {
 
 #homePage .section {
   position: relative;
-  height: 100%;
+  min-height: 100%;
 }
 
 #homePage span {color: #ddd; }
@@ -323,7 +323,7 @@ body {
   position: relative;
 }
 
-svg {height: 0px; width: 0px}
+/*svg {height: 0px; width: 0px}*/
 #section {
   width:90%; margin-left:5%;
 }
@@ -380,11 +380,18 @@ body > .section:not([data-role="page"]) {
 }
 
 #getStarted {
+  cursor: pointer;
 	background: #2892c6; 
 	border: none; 
 	line-height: 50px; 
 	height: 50px; 
 	font-family: Lato; 
-	padding: 15px 50px;
+	padding: 30px 50px 20px 50px;
 	border-radius: 0.2rem;
+}
+
+#homePage .menuItems {
+  -webkit-filter: brightness(0.8);
+     -moz-filter: brightness(0.8);
+          filter: brightness(0.8);
 }
