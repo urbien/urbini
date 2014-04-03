@@ -263,12 +263,6 @@ define('views/MainMenuPanel', [
         html += this.menuItemTemplate({title: this.loc("appHome"), icon: 'repeat', id: 'home123'});
       }
       
-      if (G.pageRoot != 'app/UrbienApp') {
-//        U.addToFrag(frag, this.homeMenuItemTemplate({title: "Urbien Home", icon: 'repeat', id: 'urbien123'}));
-//        U.addToFrag(frag, this.menuItemTemplate({title: this.loc("urbienHome"), icon: 'repeat', id: 'urbien123', mobileUrl: '#home/'}));
-        html += this.menuItemTemplate({title: this.loc("Runs on Urbien"), id: 'urbien123', mobileUrl: '#home/'});
-      }
-      
       ul.innerHTML = html;
 //      ul.appendChild(frag);      
 //      var p = document.getElementById(this.viewId);
