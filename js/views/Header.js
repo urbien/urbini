@@ -809,11 +809,13 @@ define('views/Header', [
         if (!this.publish  &&  this.doTry  &&  this.forkMe)
           templateSettings.className = 'ui-grid-b';
       }      
-      
+
+      if (this.filter)
+        this.categories = false; // HACK for now, search is more important at the moment        
+
       this.html(this.template(templateSettings));
       this.titleContainer = this.$('#pageTitle')[0];
       if (this.filter) {
-        this.categories = false; // HACK for now, search is more important at the moment        
         this.filter = this.$('.filterToggle')[0];
         this.filterIcon = this.filter.$('i')[0];
         this.searchIconClass = this.filterIcon.className;
@@ -886,8 +888,8 @@ define('views/Header', [
           // this.$el.find('#pageTitle').css('margin-bottom', '0px'); 
         }
       }      
-      if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges  &&  !this.isEdit  &&  !G.isBB()) {
-        this.$('#name.resTitle').$css('padding-bottom', '0px');
+      if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges  &&  !this.isEdit /* &&  !G.isBB()*/) {
+        this.$('#name.resTitle').$css('padding', '0px');
       }
 //      var wl = G.currentApp.widgetLibrary;
       if (isJQM) {
@@ -923,12 +925,13 @@ define('views/Header', [
       
       this.finish();      
       return this;
-    },
-    getContainerBodyOptions: function() {
-      var options = BasicView.prototype.getContainerBodyOptions.apply(this, arguments);
-      options.z = 1;
-      return options;
     }
+//    ,
+//    getContainerBodyOptions: function() {
+//      var options = BasicView.prototype.getContainerBodyOptions.apply(this, arguments);
+//      options.z = 1;
+//      return options;
+//    }
   },
   {
     displayName: 'Header'
