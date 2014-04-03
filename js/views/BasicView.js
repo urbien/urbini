@@ -515,7 +515,10 @@ define('views/BasicView', [
       if (!options || options.delegateEvents !== false)
         this.redelegateEvents();
 
-      this.getPageView().invalidateSize();
+      var self = this;
+      setTimeout(function() {
+        self.getPageView().invalidateSize();
+      }, 100);
     },
     
     _queueTask: function(fn, scope, args) {
