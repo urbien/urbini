@@ -18,8 +18,14 @@ DOMReady.add( function () {
   d.body.appendChild(mp);
   
   if (localStorage  &&  localStorage.getItem) {
-    localStorage.setItem('homePage', l.homePage);
-    localStorage.setItem('homePageCss', l.globalCss);
+    try {
+      localStorage.setItem('homePage', l.homePage);
+      localStorage.setItem('homePageCss', l.globalCss);
+    } catch (err) {
+      localStorage.clear();
+      localStorage.setItem('homePage', l.homePage);
+      localStorage.setItem('homePageCss', l.globalCss);
+    }
   }
   
   var hash = window.location.hash;
