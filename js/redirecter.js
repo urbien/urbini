@@ -67,10 +67,18 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
         })
       );
     }
-    else {
-      Events.trigger('back',  function ifNoHistory() {
-        Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()));
-      });
+    else {      
+      var hashInfo = U.getCurrentUrlInfo(),
+          params = hashInfo.params;
+      
+      if (params && params.$returnUri) {
+        Events.trigger('navigate', params.$returnUri, {replace: true});
+      }
+      else {
+        Events.trigger('back',  function ifNoHistory() {
+          Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()));
+        });
+      }
     }
   };
 

@@ -7,7 +7,7 @@ html {
 
 #sidebar div.dateLI {
   position:absolute;
-  top:1.25rem;
+  top:.25rem;
   right: 1rem;
   font-size: 1.2rem;
 }
@@ -31,7 +31,6 @@ html {
   padding: 0;
   background: #eee;
 }
-
 [data-type="list"] li p:first-of-type {
   font-size:1.6rem;
 }
@@ -65,10 +64,11 @@ html {
 
 #categories, .filterToggle {
   font-size:20px;
-  background: #eee;
-  border-radius: 1.5rem;
+/*  background: #eee;
+  border-radius: 1.5rem; */
   padding: .2rem;
 }
+
 #headerUl  {
   display:block;
   max-width:100%;
@@ -361,6 +361,10 @@ fieldset {
     display: inline-block;
     width: 75%;
   }
+  input[data-date="true"] {
+    width: auto;
+  }
+  
 }
 
 fieldset div {
@@ -499,7 +503,7 @@ section#login_popup {
 }
 .u-desc a {
   text-decoration:underline;
-  color: #16A085;
+  color: #7aaac3;
 }
 #headerButtons button {
   font-weight: normal;

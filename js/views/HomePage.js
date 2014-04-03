@@ -8,6 +8,7 @@ define('views/HomePage', [
 ], function(G, Events, U, BasicPageView, DOM) {
   return BasicPageView.extend({
     TAG: 'HomePage',
+    autoFinish: false,
     first: true,
     viewId: 'viewHome',
     style: {
@@ -20,11 +21,26 @@ define('views/HomePage', [
       return this;
     },
 
-//    events: {
+    events: {
 //      'tap #hpRightPanel'   : 'leftMenu',
 //      'hold #hpRightPanel'  : 'rightMenu',
 //      'tap #installApp'    : 'installApp'
-//    },
+      'click #getStarted': 'getStarted'
+    },
+    
+    getStarted: function(e) {
+      Events.stopEvent(e);
+      if (G.currentUser.guest) {
+        Events.trigger('req-login', { onDismiss: G.emptyFn });
+        return;
+      }
+      else {
+        if (this.menuBtnEl)
+          this.menuBtnEl.$trigger('tap');
+        else
+          Events.trigger('navigate', U.makeMobileUrl('view', 'profile'));
+      }
+    },
     
     installApp: function(e) {
       Events.stopEvent(e);
@@ -85,6 +101,7 @@ define('views/HomePage', [
       return U.require('views/RightMenuButton').done(function(rmb) {
         MenuButton = rmb;
         self.renderHelper(options);
+        self.finish();
       });
     },
     
@@ -96,9 +113,9 @@ define('views/HomePage', [
 //      this.$el.trigger('page_beforeshow');
         
         // only allow tap and hold events, click muddies the waters
-        var menuBtnEl = this.el.$('#hpRightPanel')[0];
+        this.menuBtnEl = this.el.$('#hpRightPanel')[0];
         this.menuBtn = new MenuButton({
-          el: menuBtnEl,
+          el: this.menuBtnEl,
           pageView: this,
           viewId: this.viewId,
           homePage: true

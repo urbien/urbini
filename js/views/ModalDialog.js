@@ -18,7 +18,7 @@ define('views/ModalDialog', ['domUtils'], function(DOM) {
 
   // Deactivate on ESC
   function onDocumentKeyUp( event ) {
-    if (dismisible && event.keyCode === 27 ) {
+    if (dismissible && event.keyCode === 27 ) {
       hide();
     }
   }

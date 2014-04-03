@@ -530,7 +530,8 @@
 </script>
 
 <script type="text/template" id="datePT">
-  <span>{{= G.U.getFormattedDate(value) }}</span>
+  <!--span>{{= G.U.getFormattedDate(value) }}</span-->
+  <span>{{= typeof displayName != 'undefined' ? displayName : (prop.dateFormat ?  U.getFormattedDate2(value, prop.dateFormat) : (U.isCloneOf(prop, 'ScheduledItem.start')  || U.isCloneOf(prop, 'ScheduledItem.end') ? G.U.getFormattedDate1(value) :  G.U.getFormattedDate(value))) }}</span>
 </script>
 
 <script type="text/template" id="durationPT">

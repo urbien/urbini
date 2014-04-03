@@ -312,6 +312,7 @@ define('views/ViewPage', [
             h3.innerHTML = self.friends.title;
           
           pHeader.classList.remove('hidden');
+          self.getPageView().invalidateSize();
 //          self.invalidateSize();
         }));
       });

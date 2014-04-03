@@ -6,7 +6,8 @@
   "dependencies": {
     "jquery-mobile": "~1.3.2",
     "TemplateBinding": "Polymer/TemplateBinding",
-    "PhysicsJS": "urbien/PhysicsJS#master"
+    "PhysicsJS": "urbien/PhysicsJS#master",
+    "dc": "dc-js/dc.js"
    },
   "homepage": "https://github.com/urbien/urbini",
   "authors": [

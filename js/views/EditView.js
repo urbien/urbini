@@ -19,7 +19,7 @@ define('views/EditView', [
       
   function isHidden(prop, currentAtts, reqParams, isEdit) {
     var p = prop.shortName; 
-    return prop.required  &&  currentAtts[p]  &&  prop.containerMember && (isEdit || reqParams[p]);
+    return prop.required  &&  currentAtts[p]  &&  prop.containerMember && (isEdit || (reqParams  &&  reqParams[p]));
   };
   
   function getRemoveErrorLabelsFunction(el) {
@@ -844,7 +844,7 @@ define('views/EditView', [
       });
       
       atts = _.extend({}, res.getUnsavedChanges(), atts);
-      if (!_.size(atts)) {
+      if (!res.isNew() && !_.size(atts)) {
         if (options && options.fromPageChange)
           return;
         
@@ -1215,6 +1215,7 @@ define('views/EditView', [
       
       var type = res.type,
           reqParams = this.hashParams,
+          editCols = reqParams['$editCols'],
           frag = document.createDocumentFragment(),
           displayedProps = [],//    
           params = U.filterObj(this.action === 'make' ? res.attributes : res.changed, U.isModelParameter),
@@ -1279,7 +1280,7 @@ define('views/EditView', [
       
       for (var p in reqParams) {
         var prop = meta[p];
-        if (prop  &&  !_.contains(displayedProps, p)) {
+        if (prop  &&  !_.contains(displayedProps, p)) {//  &&  (!editCols && !editCols[p])) {
 //          _.extend(state, {
 //            name: p, 
 //            prop: meta[p], 
@@ -1299,7 +1300,7 @@ define('views/EditView', [
         U.addToFrag(state.frag, h);
       }
       
-      if (!grouped.length || reqParams['$editCols']) {
+      if (!grouped.length || editCols) {
         _.each(ungrouped, function(p) {          
           _.extend(state, {name: p, prop: meta[p], isEdit: self.isEdit});
           self.addProp(state);
