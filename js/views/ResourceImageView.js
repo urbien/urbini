@@ -244,30 +244,32 @@ define('views/ResourceImageView', [
         metaW = imageProp['imageWidth'];
         metaH = imageProp['imageHeight'];
         metaDim = imageProp['maxImageDimension'];
-        if (metaW)
-          metaDim = metaW;
-        if (oWidth < metaW)
-          metaDim = oWidth;
-        if (this.isImageCover) { 
-//          if (metaDim < 140) 
-//            metaDim = metaW ? metaW : 140;
-//          if (oHeight > oWidth) {
-//            var ratio = metaDim / oWidth;
-//            metaDim = oHeight * ratio;
-//          }
-          if (metaW) {
-            var ratio = metaDim / oWidth;
-            hIfImgWidth = oHeight * ratio;
+        if (oWidth  &&  oHeight) {
+          if (metaW)
+            metaDim = metaW;
+          if (oWidth < metaW)
+            metaDim = oWidth;
+          if (this.isImageCover) { 
+  //          if (metaDim < 140) 
+  //            metaDim = metaW ? metaW : 140;
+  //          if (oHeight > oWidth) {
+  //            var ratio = metaDim / oWidth;
+  //            metaDim = oHeight * ratio;
+  //          }
+            if (metaW) {
+              var ratio = metaDim / oWidth;
+              hIfImgWidth = oHeight * ratio;
+            }
+              
           }
-            
-        }
-        if (!metaDim) {
-          if (metaW) {
-            if (oWidth > oHeight) 
-              metaDim = metaW;
-            else {
-              var ratio = metaW / oWidth;
-              metaDim = oHeight * ratio;
+          if (!metaDim) {
+            if (metaW) {
+              if (oWidth > oHeight) 
+                metaDim = metaW;
+              else {
+                var ratio = metaW / oWidth;
+                metaDim = oHeight * ratio;
+              }
             }
           }
         }
@@ -301,31 +303,38 @@ define('views/ResourceImageView', [
         image = decodeURIComponent(image.slice(6));
   
       var clip;
-      if (this.isImageCover)
-        clip = U.clipToFrame(140, 140, oWidth, oHeight, metaDim);
-      else
-        clip = U.clipToFrame(winW, winH, oWidth, oHeight, metaDim);
-
+      if (oWidth) {
+        if (this.isImageCover)
+          clip = U.clipToFrame(140, 140, oWidth, oHeight, metaDim);
+        else
+          clip = U.clipToFrame(winW, winH, oWidth, oHeight, metaDim);
+      }
 
 
       var w, h, t, r, b, l, left, top, maxW;
 
       
       if (metaDim) {
-        if (winW >= metaDim) {
-          if (oWidth >= oHeight)
-            maxW = metaDim;
-          else 
-            maxW = Math.floor((oWidth / oHeight) * metaDim);
-        }
+        if (!oWidth)
+          maxW = metaDim;
         else {
-          maxW = winW;
-          clip = U.clipToFrame(winW, winH, oWidth, oHeight, metaDim);
+          if (winW >= metaDim) {
+            if (oWidth >= oHeight)
+              maxW = metaDim;
+            else 
+              maxW = Math.floor((oWidth / oHeight) * metaDim);
+          }
+          else {
+            maxW = winW;
+            clip = U.clipToFrame(winW, winH, oWidth, oHeight, metaDim);
+          }
         }
       }
       var w;
       var h;
-      if (!isIntersection) {
+      if (!oWidth)
+        w = 140;
+      else if (!isIntersection) {
         if (oWidth > maxW) {
           var ratio;
           ratio = maxW / oWidth;
@@ -397,7 +406,7 @@ define('views/ResourceImageView', [
           li = '<div style="border: solid #ccc;width:140px;left:15px;position:absolute">{0}</div>'.format(iTemplate);
         }
         else
-          li = '<div style="height:' + h + 'px">{0}</div>'.format(iTemplate);
+          li = '<div style="left:15px;position:absolute;' + (h ? 'height:' + h  + 'px;' : 'max-height:140px;') +'">{0}</div>'.format(iTemplate);
       }
       U.addToFrag(frag, li);
 //      this.$el[this.isAudio ? 'append' : 'html'](frag);
