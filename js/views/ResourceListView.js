@@ -1072,11 +1072,13 @@ define('views/ResourceListView', [
           spinner = this.spinner || {
             name: 'listLoading' + G.nextId(),
             timeout: 5000,
-            blockClick: true
+            blockClick: false
           };
       
-      G.hideSpinner(spinner);
-      G.showSpinner(spinner);
+      if (this.isActive()) {
+        G.hideSpinner(spinner); // in case
+        G.showSpinner(spinner);
+      }
           
       this._pageRequestTimePlaced = _.now();
       nextPagePromise = col.getNextPage({
@@ -1118,6 +1120,7 @@ define('views/ResourceListView', [
       if (firstFetchDfd && firstFetchDfd.state() == 'pending')
         pagingPromise.done(firstFetchDfd.resolve).fail(firstFetchDfd.resolve); // HACK
       
+      pagingPromise = this._pagingPromise = defer.promise();
       pagingPromise.always(function() {
         G.hideSpinner(spinner);
         if (pagingPromise._canceled)
