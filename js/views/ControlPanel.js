@@ -747,7 +747,9 @@ define('views/ControlPanel', [
               }
             }
             else {
-              if (prop.range.indexOf('/voc/dev/') == -1)
+              if (atts[p].count)
+                count = atts[p].count;
+              else if (prop.range.indexOf('/voc/dev/') == -1)
                 continue;
             }
           }
