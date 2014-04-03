@@ -1286,7 +1286,7 @@ define('models/Resource', [
       }
       
       function alreadyHave(p) {
-        return _.contains(collected, p) || (reqParams[p] && (!editProps || !_.has(editProps, p)));
+        return _.contains(collected, p) || (reqParams[p] && (!editProps || !_.contains(editProps, p)));
       }
       
       if (propGroups) {
