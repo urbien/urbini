@@ -712,7 +712,7 @@ define('models/Resource', [
         }
       }
       else {
-        val = U.getTypedValue(this, name, value);
+        var val = U.getTypedValue(this, name, value);
         if (val == null || val !== val) { // test for NaN
           return isNully ? 'Please fill out this field' : U.invalid[prop.range] || 'Invalid value';
         }
@@ -1159,7 +1159,7 @@ define('models/Resource', [
         if (/\./.test(key)) // if it has a '.' in it, it's not writeable
           return false;        
         
-        if (val._filePath) // placeholder for local filesystem file, meaningless to the server
+        if (val && val._filePath) // placeholder for local filesystem file, meaningless to the server
           return false;
         
         var prop = props[key];

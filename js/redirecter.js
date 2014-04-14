@@ -249,6 +249,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     Events.trigger('messageBar', 'info', {
       message: '{0} "{1}" was created successfully'.format(res.vocModel.displayName, U.getDisplayName(res))
     });
+//    Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()), {replace: true});
   };
 
   Redirecter.prototype._mkresource = function(res, options, redirectInfo) {
@@ -472,6 +473,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     var rParams,
         uri = res.get('_uri'),
         vocModel = res.vocModel,
+        isIntersection = res.isA('Intersection'),
         redirected;
 
     this.currentChooser = {
@@ -564,9 +566,18 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     }
     
     rParams = {
-      $prop: prop.shortName,
+//      $prop: prop.shortName,
       $type: vocModel.type
     };
+    
+    if (isIntersection) {
+      rParams.$propA = U.getCloneOf(vocModel, 'Intersection.a')[0];
+      rParams.$propB = U.getCloneOf(vocModel, 'Intersection.b')[0];
+      rParams.$forResource = prop.shortName == rParams.$propA ? res.get('Intersection.b') : res.get('Intersection.a');
+    }
+    else {
+      rParams.$prop = prop.shortName;
+    }
     
     var reqParams = U.getCurrentUrlInfo().params;
     if (reqParams) {
