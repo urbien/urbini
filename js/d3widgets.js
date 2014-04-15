@@ -1,4 +1,4 @@
-define('d3widgets', ['lib/d3'], function() {
+define('d3widgets', ['d3'], function() {
   function interpolateHsl(a, b) {
     var i = d3.interpolateString(a, b);
     return function(t) {

@@ -525,8 +525,8 @@ define('views/ResourceView', [
             self.drawStockChart(data.query.results.row);
         };
         
-//        this.chartLibsPromise = U.require(['dc', 'crossfilter', 'lib/d3']).done(function(_DC, _Crossfilter, _D3) {
-        this.chartLibsPromise = U.require(['dc', 'crossfilter', 'colorbrewer', 'lib/d3', 'stockCharts']).done(function(_DC, _Crossfilter, _Colorbrewer, _D3, _StockCharts) {
+//        this.chartLibsPromise = U.require(['dc', 'crossfilter', 'd3']).done(function(_DC, _Crossfilter, _D3) {
+        this.chartLibsPromise = U.require(['dc', 'crossfilter', 'colorbrewer', 'd3', 'stockCharts']).done(function(_DC, _Crossfilter, _Colorbrewer, _D3, _StockCharts) {
 //          DC = _DC;
 //          Crossfilter = _Crossfilter;
 //          D3 = _D3;

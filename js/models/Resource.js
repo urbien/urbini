@@ -177,6 +177,9 @@ define('models/Resource', [
     
     setDefaults: function() {
       var vocModel = this.vocModel,
+          action = G.currentHashInfo.action,
+          isEdit = action == 'make' || action == 'edit',
+          query,
           defaults = {};
 //          ,
 //          query = U.getQueryParams(query), // will default to current url's query if query is undefined
@@ -265,6 +268,9 @@ define('models/Resource', [
           }
         }
       }
+      
+      if (isEdit)
+        _.extend(defaults, U.getQueryParams(G.currentHashInfo.params, vocModel));
       
       this.set(defaults, {silent: true});
     },

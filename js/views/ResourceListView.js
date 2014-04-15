@@ -454,11 +454,11 @@ define('views/ResourceListView', [
           dataUri;
 
       while (top && top != this.el && !(viewId = top.dataset.viewid)) {
-        dataUri = top.dataset.uri;
-        if (dataUri) {
-          Events.trigger('navigate', dataUri);
-          return;
-        }
+//        dataUri = top.dataset.uri;
+//        if (dataUri) {
+//          Events.trigger('navigate', dataUri);
+//          return;
+//        }
         
         if (top.tagName == 'A')
           link = top;
@@ -476,6 +476,24 @@ define('views/ResourceListView', [
       if (link) {
         Events.stopEvent(e);
         Events.trigger('navigate', link.href, navOptions);
+        return;
+      }
+      
+      if (params.$template) {
+        debugger;
+        var resParams = _.extend(U.getQueryParams(params.$template), self.resource.attributes),
+            res;
+        
+        resParams[U.getClonedOf(self.vocModel, 'Templatable.basedOnTemplate')[0]] = resParams._uri;
+        delete resParams._uri;
+        res = new self.vocModel(resParams);
+        res.save(null, {
+          sync: true,
+          success: function() {
+            Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()), navOptions); //, {trigger: true, forceFetch: true});        
+          }
+        });
+        
         return;
       }
       

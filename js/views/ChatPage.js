@@ -705,7 +705,7 @@ define('views/ChatPage', [
 
     paintConcentricStats: function(divId, options) {
       var self = this, args = arguments;
-      U.require(['lib/d3', 'd3widgets', 'jqueryDraggable'], function(_d3_, widgets) {
+      U.require(['d3', 'd3widgets', 'jqueryDraggable'], function(_d3_, widgets) {
         D3Widgets = widgets;
         self._paintConcentricStats(divId, options);
       });      

@@ -1118,6 +1118,7 @@ define('globals', function() {
       codemirrorCSSMode: 'lib/codemirrorCSSMode',
       stockCharts: 'lib/stockCharts',
       colorbrewer: 'lib/colorbrewer',
+      d3: 'lib/d3',
       dcCss: 'lib/dc/dc.css',
       dc: 'lib/dc/dc',
       crossfilter: 'lib/crossfilter/crossfilter',
@@ -1136,7 +1137,7 @@ define('globals', function() {
       '../styles/topcoat_styles.css': ['../styles/styles.css', '../styles/common-template-m.css'],
       '../styles/jqm_styles.css': ['../styles/styles.css', '../styles/common-template-m.css'],
       leafletMarkerCluster: ['leaflet'],
-      dc: ['lib/d3'],
+      dc: ['d3'],
       mobiscroll: ['../styles/mobiscroll.datetime.min.css'],
       codemirrorJSMode: ['codemirror', 'codemirrorCss'],
       codemirrorCSSMode: ['codemirror', 'codemirrorCss'],
@@ -1933,6 +1934,7 @@ define('globals', function() {
     inject: function(text) {// , context) {
       var script = doc.createElement("script");
       script.type = "text/javascript";
+      script.charset = "utf-8";
       script.async = true;
 
       // Make sure that the execution of code works by injecting a script
