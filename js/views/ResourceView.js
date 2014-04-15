@@ -550,20 +550,39 @@ define('views/ResourceView', [
 //          e: day,
 //          f: year
 //        });
-        var now = new Date(new Date().getTime() - 365 * 24 * 3600 * 1000),
-            month = now.getMonth(),
-            day = now.getDate(),
-            year = now.getFullYear();
+
+        var yahooIChartUrl,
+            chartParams = {
+              s: res.get('symbol'),
+              g: 'd' // daily interval
+            },
+            fromDate,
+            rangeCenter = this.hashParams.$date,
+            rangeSize = this.hashParams.$dateRange;
         
-        var yahooIChartUrl = "http://ichart.yahoo.com/table.csv?" + $.param({
-          s: res.get('symbol'),
-          // from date
-          a: month,
-          b: day,
-          c: year,
-          g: 'd' // daily interval
-        });
+        if (rangeCenter) {
+          rangeCenter = parseInt(rangeCenter);
+          fromDate = new Date(rangeCenter - rangeSize / 2);
+        }
+        else
+          fromDate = new Date(new Date().getTime() - 365 * 24 * 3600 * 1000);
+
+        fromMonth = fromDate.getMonth(),
+        fromDay = fromDate.getDate(),
+        fromYear = fromDate.getFullYear();
         
+        chartParams.a = fromMonth;
+        chartParams.b = fromDay;
+        chartParams.c = fromYear;
+
+        if (rangeCenter) {
+          var toDate = new Date(rangeCenter + rangeSize / 2);
+          chartParams.d = toDate.getMonth();
+          chartParams.e = toDate.getDate();
+          chartParams.f = toDate.getFullYear();
+        }
+        
+        var yahooIChartUrl = "http://ichart.yahoo.com/table.csv?" + $.param(chartParams);
         var script = document.createElement('script');
         script.type = "text/javascript";
         script.async = true;
