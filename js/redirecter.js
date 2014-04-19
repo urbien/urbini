@@ -237,6 +237,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
             var bl = baseModel.properties[lookupFrom[1]];
             var params = U.filterObj(info.params, U.isModelParameter);
             info.params = U.filterObj(info.params, U.isMetaParameter);
+            info.params[U.getCloneOf(blModel, 'Templatable.isTemplate')[0]] = true;
             info.params[bl.backLink] = baseVal;
             info.params.$template = $.param(params);
           }
@@ -249,13 +250,14 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     return U.resolvedPromise(info);
   }
 
-  Redirecter.prototype._default = function(res, options) {
+  Redirecter.prototype._default = function(res, options, redirectInfo) {
     Events.trigger('back', function ifNoHistory() {
       Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()));
     });
     
+    var msg = redirectInfo.msg || '{0} "{1}" was created successfully'.format(res.vocModel.displayName, U.getDisplayName(res));
     Events.trigger('messageBar', 'info', {
-      message: '{0} "{1}" was created successfully'.format(res.vocModel.displayName, U.getDisplayName(res))
+      message: msg
     });
 //    Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()), {replace: true});
   };

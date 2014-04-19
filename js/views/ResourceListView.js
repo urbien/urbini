@@ -480,15 +480,20 @@ define('views/ResourceListView', [
       }
       
       if (params.$template) {
-        debugger;
-        var resParams = _.extend(U.getQueryParams(params.$template), self.resource.attributes),
+        var meta = self.vocModel.properties,
+//            resParams = _.extend(U.getQueryParams(params.$template), self.resource.attributes),
+            resParams = U.getQueryParams(params.$template),
             res;
         
-        resParams[U.getClonedOf(self.vocModel, 'Templatable.basedOnTemplate')[0]] = resParams._uri;
-        delete resParams._uri;
+        resParams[U.getCloneOf(self.vocModel, 'Templatable.basedOnTemplate')[0]] = self.resource.get('_uri');
+        resParams[U.getCloneOf(self.vocModel, 'Templatable.isTemplate')[0]] = false;
+        for (var p in resParams) {
+          if (!U.isNativeModelParameter(p) || meta[p].autoincrement)
+            delete resParams[p];
+        }
+        
         res = new self.vocModel(resParams);
         res.save(null, {
-          sync: true,
           success: function() {
             Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()), navOptions); //, {trigger: true, forceFetch: true});        
           }
