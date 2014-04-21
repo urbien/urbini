@@ -232,8 +232,10 @@ define('collections/ResourceList', [
       if (!this.params || !_.size(this.params))
         return;
       
-      var meta = this.vocModel.properties;
-      var params = this.params;
+      var self = this,
+          meta = this.vocModel.properties,
+          params = this.params;
+      
       _.each(params, function(uri, param) {
         var prop = meta[param];
         if (!prop || !U.isResourceProp(prop))
@@ -242,11 +244,11 @@ define('collections/ResourceList', [
         if (!U.isTempUri(uri))
           return;
         
-        Events.once('synced:' + uri, function(data) {
-          this.params[param] = data._uri;
-          this.trigger('queryChanged');
-        }.bind(this));
-      }.bind(this));
+        Events.once('synced:' + uri, function(res) {
+          self.params[param] = res.get('_uri');
+          self.trigger('queryChanged');
+        });
+      });
     },
     
     clone: function() {

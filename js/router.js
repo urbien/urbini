@@ -750,10 +750,8 @@ define('router', [
     monitorCollection: function(collection) {
       var self = this;
       collection.on('queryChanged', function() {
-        debugger;
         var updateHash = function() {
-          debugger;
-          self.navigate(U.makeMobileUrl('list', collection.vocModel.type, list.params), {trigger: false, replace: true}); // maybe trigger should be true? Otherwise it can't fetch resources from the server
+          self.navigate(U.makeMobileUrl(U.getCurrentUrlInfo().route, collection.vocModel.type, collection.params), {trigger: false, replace: true}); // maybe trigger should be true? Otherwise it can't fetch resources from the server
         }
         
         var currentView = self.currentView;
@@ -799,17 +797,18 @@ define('router', [
     make: function(path) {
       if (!this.routePrereqsFulfilled('make', arguments))
         return;
-      
+
       var hashInfo = G.currentHashInfo,
           EditPage = Modules.EditPage, 
-          type = hashInfo.type;
-      
-//      if (!this.isModelLoaded(type, 'make', arguments))
-//        return;
-
-      var vocModel = U.getModel(type),
+          type = hashInfo.type,
+          vocModel = U.getModel(type),
           params = U.getHashParams(),
           makeId = params['-makeId'];
+      
+      if (params.$template) {
+        Events.trigger('navigate', U.makeMobileUrl('chooser', type, params), {replace: true});
+        return;
+      }
       
       makeId = makeId ? parseInt(makeId) : G.nextId();
       var mPage = C.getCachedView(); //this.MkResourceViews[makeId];
@@ -820,7 +819,7 @@ define('router', [
         var model = U.getModel(type),
             modelParams = U.getQueryParams(hashInfo.params, model),
             resource = new model(U.filterInequalities(modelParams));
-         
+        
         if (!resource.getUri() && Redirecter.fastForwardMake(resource))
           return;
         

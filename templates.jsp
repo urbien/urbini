@@ -575,7 +575,7 @@
 </script>
 
 <script type="text/template" id="resourcePT">
-  <span><a style="text-decoration:none" href="{{= U.makePageUrl('view', value) }}">{{= typeof displayName == 'undefined' ? value : displayName }}</a></span>
+  <span><a style="text-decoration:none" href="{{= U.makePageUrl('view', value, obj.params) }}">{{= typeof displayName == 'undefined' ? value : displayName }}</a></span>
 </script>
 
 <!--script type="text/template" id="mapItemTemplate">
@@ -807,6 +807,7 @@
 >
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
+     {{ if (obj.prop && prop.where) _.extend(params, U.getQueryParams(prop.where)); }}
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}
        <span class="ui-li-count">{{= value }}</span>
      </a>

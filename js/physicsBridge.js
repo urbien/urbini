@@ -963,12 +963,12 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 
     _canHandle: function(e) {
       if (DRAG_ENABLED && (!DRAG_LOCK || DRAG_LOCK == this.id) && isScrollable(e.target)) {
-        if (isSVG(e.target) && this.axis == 'y' && Math.abs(e.gesture.deltaX) - Math.abs(e.gesture.deltaY) > 0) {
-          e.preventDefault();
-          e.stopPropagation();
-          e.stopImmediatePropagation();
-          return false;
-        }
+//        if (isSVG(e.target) && this.axis == 'y' && Math.abs(e.gesture.deltaX) - Math.abs(e.gesture.deltaY) > 0) {
+//          e.preventDefault();
+//          e.stopPropagation();
+//          e.stopImmediatePropagation();
+//          return false;
+//        }
         
         return true;
       }
@@ -1013,7 +1013,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       sub(this.tmp, this.touchPosOld);
       add(this.dragVector, this.tmp);
       Array.copy(this.dragVector, this.lastDragVector);
-//      return false;
+      return false;
 //      add(this.dragVector, mult(this.tmp, 0.5)); // do we need this?
     },
 
@@ -1024,6 +1024,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       stopDragEvent(e);
       DRAG_LOCK = null;
       endAllDrags(this);      
+      return false;
     },
 
 //    //  add(this.dragVector, mult(this.tmp, 0.5)); // do we need this? And if so, why??

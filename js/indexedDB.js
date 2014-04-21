@@ -543,6 +543,9 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     
     return $.when(resultPromise, transPromise).then(function(result) {
       log('returning result for ' + primaryKey);
+      if (result instanceof Array)
+        result = result[0];
+      
       if (result) {
         queueParse(result);
         return result;

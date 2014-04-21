@@ -177,6 +177,9 @@ define('models/Resource', [
     
     setDefaults: function() {
       var vocModel = this.vocModel,
+          action = G.currentHashInfo.action,
+          isEdit = action == 'make' || action == 'edit',
+          query,
           defaults = {};
 //          ,
 //          query = U.getQueryParams(query), // will default to current url's query if query is undefined
@@ -265,6 +268,9 @@ define('models/Resource', [
           }
         }
       }
+      
+      if (isEdit)
+        _.extend(defaults, U.getQueryParams(G.currentHashInfo.params, vocModel));
       
       this.set(defaults, {silent: true});
     },
@@ -712,7 +718,7 @@ define('models/Resource', [
         }
       }
       else {
-        val = U.getTypedValue(this, name, value);
+        var val = U.getTypedValue(this, name, value);
         if (val == null || val !== val) { // test for NaN
           return isNully ? 'Please fill out this field' : U.invalid[prop.range] || 'Invalid value';
         }
@@ -1159,7 +1165,7 @@ define('models/Resource', [
         if (/\./.test(key)) // if it has a '.' in it, it's not writeable
           return false;        
         
-        if (val._filePath) // placeholder for local filesystem file, meaningless to the server
+        if (val && val._filePath) // placeholder for local filesystem file, meaningless to the server
           return false;
         
         var prop = props[key];

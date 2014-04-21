@@ -125,11 +125,14 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       }
     }
     
-    var redirectInfo = getRedirectInfo(res),
-        action = redirectInfo.action || 'default';
-        redirecter = this['_' + action] || this._default;
+    var self = this,
+        redirectInfoPromise = getRedirectInfo(res);
         
-    redirecter.call(this, res, options, redirectInfo);
+    redirectInfoPromise.done(function(redirectInfo) {      
+      var action = redirectInfo.action || 'default';
+      redirecter = self['_' + action] || self._default;
+      redirecter.call(self, res, options, redirectInfo);
+    });
     
 //      if (vocModel.onCreateRedirectToMessage) {
 //        if (redirectTo.indexOf('?') == -1)
@@ -195,8 +198,10 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     _.wipe(info);
     
     var model = res.vocModel,
+        meta = model.properties,
         hashInfo = G.currentHashInfo,
-        params = hashInfo.params || {};
+        params = hashInfo.params || {},
+        toProp;
     
     _.extend(info, {
       action: model.onCreateRedirectToAction,
@@ -208,27 +213,9 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     if (!info.to && params.$backLink) 
       info.to = U.getContainerProperty(model);
     
-    if (info.action) {
+    if (info.action)
       info.action = info.action.toLowerCase();
-//      switch (info.action) {
-//      case 'mkresource'
-//        info.route = 'make';
-//        break;
-//      case 'propfind'
-//        info.route = 'view';
-//        break;
-//      case 'proppatch'
-//        info.route = 'edit';
-//        break;
-//      case 'list'
-//        info.route = 'list';
-//        break;
-//      default:
-//        info.route = 'view';
-//        break;
-//      }
-    }
-    
+      
     var prop = info.to && model.properties[info.to];
     if (prop) {
       info.prop = prop;
@@ -237,18 +224,42 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       if (info.msg)
         info.params['-info'] = info.msg;
     }
+
+    if (info.to) {
+      toProp = meta[info.to];
+      if (toProp.backLink && toProp.lookupFrom) { // HACK (assume Templatable for now)
+        var lookupFrom = toProp.lookupFrom.split('.'),
+            base = meta[lookupFrom[0]],
+            baseVal = res.get(base.shortName);
+        
+        return Voc.getModels([base.range, toProp.range]).then(function(baseModel, blModel) {
+          if (U.isA(blModel, 'Templatable')) {
+            var bl = baseModel.properties[lookupFrom[1]];
+            var params = U.filterObj(info.params, U.isModelParameter);
+            info.params = U.filterObj(info.params, U.isMetaParameter);
+            info.params[U.getCloneOf(blModel, 'Templatable.isTemplate')[0]] = true;
+            info.params[bl.backLink] = baseVal;
+            info.params.$template = $.param(params);
+          }
+          
+          return info;
+        });
+      }
+    }
     
-    return info;
+    return U.resolvedPromise(info);
   }
 
-  Redirecter.prototype._default = function(res, options) {
+  Redirecter.prototype._default = function(res, options, redirectInfo) {
     Events.trigger('back', function ifNoHistory() {
       Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()));
     });
     
+    var msg = redirectInfo.msg || '{0} "{1}" was created successfully'.format(res.vocModel.displayName, U.getDisplayName(res));
     Events.trigger('messageBar', 'info', {
-      message: '{0} "{1}" was created successfully'.format(res.vocModel.displayName, U.getDisplayName(res))
+      message: msg
     });
+//    Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()), {replace: true});
   };
 
   Redirecter.prototype._mkresource = function(res, options, redirectInfo) {
@@ -472,6 +483,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     var rParams,
         uri = res.get('_uri'),
         vocModel = res.vocModel,
+        isIntersection = res.isA('Intersection'),
         redirected;
 
     this.currentChooser = {
@@ -564,9 +576,18 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     }
     
     rParams = {
-      $prop: prop.shortName,
+//      $prop: prop.shortName,
       $type: vocModel.type
     };
+    
+    if (isIntersection) {
+      rParams.$propA = U.getCloneOf(vocModel, 'Intersection.a')[0];
+      rParams.$propB = U.getCloneOf(vocModel, 'Intersection.b')[0];
+      rParams.$forResource = prop.shortName == rParams.$propA ? res.get('Intersection.b') : res.get('Intersection.a');
+    }
+    else {
+      rParams.$prop = prop.shortName;
+    }
     
     var reqParams = U.getCurrentUrlInfo().params;
     if (reqParams) {

@@ -1,4 +1,4 @@
-define('lib/stockCharts', ['lib/d3', 'dc', 'dcCss', 'crossfilter', 'colorbrewer', 'lib/hammer'], function(d3, dc, dcCss, crossfilter, colorbrewer, Hammer) {  
+define('lib/stockCharts', ['d3', 'dc', 'dcCss', 'crossfilter', 'colorbrewer', 'lib/hammer'], function(d3, dc, dcCss, crossfilter, colorbrewer, Hammer) {  
   
   //# dc.js Getting Started and How-To Guide
   'use strict';
@@ -577,7 +577,7 @@ define('lib/stockCharts', ['lib/d3', 'dc', 'dcCss', 'crossfilter', 'colorbrewer'
         // dynamic columns creation using an array of closures
         .columns([
             function (d) {
-                return d.Date;
+                return d.date;
             },
             function (d) {
                 return numberFormat(d.open);

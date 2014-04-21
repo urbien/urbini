@@ -96,7 +96,7 @@ define('views/ListPage', [
             if (!showAddButton) {
               var p = U.getContainerProperty(vocModel);
               if (!p) 
-                showButton = U.isUserInRole(U.getUserRole(), 'siteOwner');
+                showAddButton = U.isUserInRole(U.getUserRole(), 'siteOwner');
               else if (params[p]) {
                 var self = this;
                 Voc.getModels(this.vocModel.properties[p].range).done(function(m) {
@@ -104,7 +104,7 @@ define('views/ListPage', [
                   for (var cp in bp) {
                     var prop = bp[cp];
                     if (prop.range == self.vocModel.type  &&  !prop.readOnly) {
-                      showAddProperty = true;
+                      showAddButton = true;
                       break;
                     }
                   }

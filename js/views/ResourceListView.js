@@ -454,11 +454,11 @@ define('views/ResourceListView', [
           dataUri;
 
       while (top && top != this.el && !(viewId = top.dataset.viewid)) {
-        dataUri = top.dataset.uri;
-        if (dataUri) {
-          Events.trigger('navigate', dataUri);
-          return;
-        }
+//        dataUri = top.dataset.uri;
+//        if (dataUri) {
+//          Events.trigger('navigate', dataUri);
+//          return;
+//        }
         
         if (top.tagName == 'A')
           link = top;
@@ -476,6 +476,29 @@ define('views/ResourceListView', [
       if (link) {
         Events.stopEvent(e);
         Events.trigger('navigate', link.href, navOptions);
+        return;
+      }
+      
+      if (params.$template) {
+        var meta = self.vocModel.properties,
+//            resParams = _.extend(U.getQueryParams(params.$template), self.resource.attributes),
+            resParams = U.getQueryParams(params.$template),
+            res;
+        
+        resParams[U.getCloneOf(self.vocModel, 'Templatable.basedOnTemplate')[0]] = self.resource.get('_uri');
+        resParams[U.getCloneOf(self.vocModel, 'Templatable.isTemplate')[0]] = false;
+        for (var p in resParams) {
+          if (!U.isNativeModelParameter(p) || meta[p].autoincrement)
+            delete resParams[p];
+        }
+        
+        res = new self.vocModel(resParams);
+        res.save(null, {
+          success: function() {
+            Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()), navOptions); //, {trigger: true, forceFetch: true});        
+          }
+        });
+        
         return;
       }
       
