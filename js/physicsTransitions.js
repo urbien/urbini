@@ -331,24 +331,13 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
   };
   
   Slide.prototype.interrupt = function() {
-    // maybe doing nothing is ok too
-    var chain = [];
-    
-    cancelPendingActions(this.from, chain);
-    cancelPendingActions(this.to, chain);
-    Physics.there.chain(chain);
-    this.dfd.reject();
-
-//    Physics.there.chain(
-//      {
-//        method: 'cancelPendingActions',
-//        args: [this.from.getContainerRailBodyId()]
-//      },
-//      {
-//        method: 'cancelPendingActions',
-//        args: [this.to.getContainerRailBodyId()]
-//      }
-//    );
+//    // maybe doing nothing is ok too
+//    var chain = [];
+//    
+//    cancelPendingActions(this.from, chain);
+//    cancelPendingActions(this.to, chain);
+//    Physics.there.chain(chain);
+//    this.dfd.reject();
   };
 
 //Slide.prototype.reverse = function() {
@@ -481,12 +470,12 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
   
   Snap.prototype.interrupt = function() {
 //    // maybe doing nothing is ok too
-    var chain = [];
-    
-    cancelPendingActions(this.from, chain);
-    cancelPendingActions(this.to, chain);
-    Physics.there.chain(chain);
-    this.dfd.reject();
+//    var chain = [];
+//    
+//    cancelPendingActions(this.from, chain);
+//    cancelPendingActions(this.to, chain);
+//    Physics.there.chain(chain);
+//    this.dfd.reject();
   };
   
 //  function Via(options) {
