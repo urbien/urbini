@@ -232,7 +232,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
             base = meta[lookupFrom[0]],
             baseVal = res.get(base.shortName);
         
-        return Voc.getModels([base.range, toProp.range]).then(function(baseModel, blModel) {
+        return Voc.getModels([base.range, toProp.range]).then(function(baseModel, blModel) {          
           if (U.isA(blModel, 'Templatable')) {
             var bl = baseModel.properties[lookupFrom[1]];
             var params = U.filterObj(info.params, U.isModelParameter);
@@ -242,6 +242,21 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
             info.params.$template = $.param(params);
           }
           
+          if (U.isA(model, 'Folder') && U.isA(blModel, 'FolderItem')) {
+            var rootFolder = U.getCloneOf(blModel, 'FolderItem.rootFolder')[0],
+                parentFolder = U.getCloneOf(model, 'Folder.parentFolder')[0];
+            
+            if (rootFolder && parentFolder) {
+              rootFolder = blModel.properties[rootFolder];
+              parentFolder = model.properties[parentFolder];
+              if (rootFolder.range == parentFolder.range) {
+                var val = res.get('Folder.parentFolder');
+                info.params.$rootFolder = val;
+                info.params.$rootFolderProp = rootFolder.shortName;
+              }
+            }
+          }
+
           return info;
         });
       }
@@ -791,7 +806,6 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   });
 
   Events.on('chose', function(propName, valueRes) {
-    debugger;
     var res = redirecter.getCurrentChooserBaseResource(),
         ffwd = redirecter.isChooserFastForwarded(),
         editableProps = res.getEditableProps(U.getCurrentUrlInfo()),

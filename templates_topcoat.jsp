@@ -129,14 +129,7 @@
 <script type="text/template" id="cpTemplate">
 <!-- readwrite backlink in resource view -->
 <li class="topcoat-list__item" data-propName="{{= shortName }}" {{= obj.comment ? 'style="min-height: 4rem;"' : '' }}>
-     {{ var params = {}; }}
-     {{ params[backlink] = _uri; }}
-     
-   <!--a target="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp">
-     <i class="ui-icon-plus-sign"></i>
-   </a-->
-
-     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
+     <a href="{{= U.makePageUrl(action, range, params) }}" class="cpA">{{= name }}
      </a>
      <div style="color:{{= G.lightColor }};font-weight:bold;background:{{= G.darkColor }};display:inline;position:absolute;right:1rem;font-size: 11px;top:1.5rem;border-radius:1rem;border: 1px solid {{= G.darkColor }};padding: 0.1rem 0.3rem;">{{= value }}</div>
      

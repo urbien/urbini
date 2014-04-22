@@ -59,7 +59,8 @@ define('views/MessageBar', [
           msgLength = 3000;
         
         setTimeout(function() {
-          self.$el.fadeOut(2000, self.destroy);
+          if (self.$el)
+            self.$el.fadeOut(2000, self.destroy);
         }, msgLength);        
       }
       

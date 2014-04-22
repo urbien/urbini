@@ -21,7 +21,7 @@ define('views/ControlPanel', [
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
       this.makeTemplate('inlineListItemTemplate', 'inlineListItemTemplate', type);
 //      this.makeTemplate('comment-item', 'commentItemTemplate', type);
-      this.makeTemplate('cpTemplate', 'cpTemplate', type);
+      this.makeTemplate('cpTemplate', '_cpTemplate', type);
       this.makeTemplate('cpMainGroupTemplate', 'cpMainGroupTemplate', type);
       this.makeTemplate('cpMainGroupTemplateH', 'cpMainGroupTemplateH', type);
       this.makeTemplate('cpTemplateNoAdd', 'cpTemplateNoAdd', type);
@@ -34,7 +34,8 @@ define('views/ControlPanel', [
       return this;
     },
     events: {
-      'click a[data-shortName]': 'add',
+//      'click a[data-shortName]': 'click',
+      'click #mainGroup a[data-shortName]': 'add',
 //      'pinchout li[data-propname]': 'insertInlineScroller',
 //      'pinchin li[data-propname]': 'removeInlineScroller',
       'hold li[data-propname]': 'toggleInlineScroller'
@@ -53,6 +54,24 @@ define('views/ControlPanel', [
 //      if (prop)
 //        G.log(this.TAG, "Recording step for tour: selector = 'propName'; " + " value = '" + t.dataset.propname + "'");
 //    },
+    
+    cpTemplate: function(data) {
+      var action = 'list',
+          params = { 
+            $title: data.title 
+          };
+      
+      params[data.backlink] = data._uri;
+      if (!U.getBacklinkCount(this.resource, data.shortName)) {
+        params.$backLink = data.backlink;
+        action = 'make';
+      }
+      
+      data.params = params;
+      data.action = action;
+      return this._cpTemplate(data);
+    },
+    
     _addNoIntersection: function(target, prop) {
       var params = {
         '$backLink': prop.backLink,
@@ -62,7 +81,7 @@ define('views/ControlPanel', [
 
       params[prop.backLink] = this.resource.getUri();
       
-      this.router.navigate(U.makeMobileUrl('make', prop.range, params), {trigger: true});
+      Events.trigger('navigate', U.makeMobileUrl('make', prop.range, params));
       this.log('add', 'user wants to add to backlink');
     },
     
@@ -87,8 +106,14 @@ define('views/ControlPanel', [
       var self = this,       
           shortName = t.dataset.shortname,
           prop = this.vocModel.properties[shortName],
-          setLinkTo = prop.setLinkTo;
+          setLinkTo = prop.setLinkTo,
+          count = U.getBacklinkCount(resource, shortName);
 
+      if (count > 0) {
+        Events.trigger('navigate', t.href);
+        return;
+      }
+      
 //      this.log("Recording step for tour: selector = 'data-shortname'; value = '" + shortName + "'");
       if (setLinkTo) {
         shortName = setLinkTo;
@@ -99,22 +124,6 @@ define('views/ControlPanel', [
 
       Voc.getModels(prop.range).done(function() {
         var pModel = U.getModel(prop.range);
-        function noIntersection(prop) {
-          var params = {
-            '$backLink': prop.backLink,
-            '$title': t.dataset.title
-          };
-    
-          params[prop.backLink] = self.resource.getUri();
-          if (setLinkTo)  
-            Events.trigger('navigate', U.makeMobileUrl('list', prop.range, params), {trigger: true});
-          else {
-            params['-makeId'] = G.nextId();
-            Events.trigger('navigate', U.makeMobileUrl('make', prop.range, params), {trigger: true});
-          }
-          self.log('add', 'user wants to add to backlink');
-        };
-
         if (!U.isAssignableFrom(pModel, 'Intersection')) { 
           self._addNoIntersection(t, prop);
           return;
@@ -573,7 +582,7 @@ define('views/ControlPanel', [
 
 //            var action = iRes.vocModel.adapter || U.isAssignableFrom(iRes.vocModel, 'Intersection') ? 'view' : 'edit';
             var action = (U.isAssignableFrom(iRes.vocModel, 'WebProperty')) ? 'edit' : 'view';
-            params._uri = U.makePageUrl(action, iRes.getUri(), {title: params.name});
+            params._uri = U.makePageUrl(action, iRes.getUri(), {$title: params.name});
             params.resource = iRes;
             U.addToFrag(frag, this.inlineListItemTemplate(params));
             displayedProps[name] = true;

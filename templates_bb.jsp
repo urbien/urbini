@@ -159,14 +159,11 @@
 <script type="text/template" id="cpTemplate">
 <!-- readwrite backlink in resource view -->
 <li data-propName="{{= shortName }}">
-     {{ var params = {}; }}
-     {{ params[backlink] = _uri; }}
-     
    <!--a target="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp">
      <i class="ui-icon-plus-sign"></i>
    </a-->
 <p>
-     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
+     <a data-shortName="{{= shortName }}" href="{{= U.makePageUrl(action, range, params) }}" class="cpA">{{= name }}
      </a>
      <div style="color:{{= G.lightColor }};font-weight:bold;background:{{= G.darkColor }};display:inline;position:absolute;right:1rem;font-size: 1.5rem;border-radius:1rem;border: 1px solid {{= G.darkColor }};padding: 0.1rem 0.3rem;">{{= value }}</div>
 </p>     
@@ -449,6 +446,11 @@
     {{ if (this.filter) { }}
       <div style="margin:10px 0 0 10px; position:absolute;"><a class="filterToggle" href="#" style="color:{{= G.lightColor }}"><i class="ui-icon-fasearch"></i></a></div> 
     {{ }                  }}
+    {{ if (obj.rootFolder) { }}
+      <div class="rootFolder" style="float: right; background:{{= G.lightColor }}; color: {{= G.darkColor }}; padding: 5px 5px; margin: 10px 10px 0 10px;">
+        <a href="{{= U.makePageUrl(rootFolder.action || 'view', rootFolder._uri, rootFolder.params) }}">{{= rootFolder.linkText }}</a>
+      </div>
+    {{ }                     }}
     <div id="name" class="resTitle" style="background:{{= G.darkColor }};color:{{= G.lightColor }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
       <h4 id="pageTitle" style="font-weight:normal;color:{{= G.lightColor }};">{{= this.title }}</h4>
       {{= this.filter ? "<div class='filter'></div>" : "" }}

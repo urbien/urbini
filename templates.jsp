@@ -805,10 +805,8 @@
 <li data-propName="{{= shortName }}"
 {{= obj.inline ? ' data-theme="d"' : '' }}
 >
-     {{ var params = {}; }}
-     {{ params[backlink] = _uri; }}
      {{ if (obj.prop && prop.where) _.extend(params, U.getQueryParams(prop.where)); }}
-     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}
+     <a href="{{= U.makePageUrl(action, range, params) }}">{{= name }}
        <span class="ui-li-count">{{= value }}</span>
      </a>
      <a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp" data-theme="c">
@@ -1155,6 +1153,9 @@
     <div id="name" class="resTitle" {{= this.categories ? 'style="width: 95%;"' : 'style="min-height: 20px"' }} align="center">
       <h4 id="pageTitle" style="font-weight:normal;">{{= this.title }}</h4>
       {{= this.filter ? "<div class='filter'></div>" : "" }}
+      {{ if (obj.rootFolder) { }}
+        <div class='rootFolder'><a href="{{= U.makePageUrl(rootFolder.action || 'view', rootFolder._uri, rootFolder.params) }}">{{= rootFolder.linkText }}</a></div>
+      {{ }                     }}
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} style="margin-top: -7px;" id="headerButtons">
         <div style="max-width:200px; display: inline-block;" id="doTryBtn"  class="{{= obj.className ? 'ui-block-a' : '' }}">
           {{ if (obj.tryApp) { }}

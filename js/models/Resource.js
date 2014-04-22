@@ -272,7 +272,7 @@ define('models/Resource', [
       if (isEdit)
         _.extend(defaults, U.getQueryParams(G.currentHashInfo.params, vocModel));
       
-      this.set(defaults, {silent: true});
+      this.set(defaults, {silent: true, defaults: true});
     },
     
     subscribeToUpdates: function() {
@@ -347,13 +347,13 @@ define('models/Resource', [
       return G.apiUrl + (isNew ? 'm/' : 'e/') + encodeURIComponent(type);
     },
     
-    updateUri: function(uri, options) {
-      this.set('_uri', uri, {
-        silent: options.silent
-      });
-      
-      this.checkIfLoaded();
-    },
+//    updateUri: function(uri, options) {
+//      this.set('_uri', uri, {
+//        silent: options.silent
+//      });
+//      
+//      this.checkIfLoaded();
+//    },
     
     getUri: function() {
       if (!_.size(this.attributes))
@@ -652,7 +652,9 @@ define('models/Resource', [
         if (props._error)
           this.trigger('error' + this.getUri(), props._error);
         
-        this.checkIfLoaded();        
+        if (!options.defaults)
+          this.checkIfLoaded();
+        
         return result;
       }
     },
@@ -1229,6 +1231,7 @@ define('models/Resource', [
           model = this.vocModel,
           meta = model.properties,
           isMake = !isEdit,
+          unsavedChanges = this.getUnsavedChanges() || {},
           propGroups = U.getArrayOfPropertiesWith(meta, "propertyGroupList"),
           backlinks = this.vocModel._backlinks = U.getPropertiesWith(meta, "backLink"),
           reqParams = urlInfo.getParams(),
@@ -1292,7 +1295,8 @@ define('models/Resource', [
       }
       
       function alreadyHave(p) {
-        return _.contains(collected, p) || (reqParams[p] && (!editProps || !_.contains(editProps, p)));
+//        return !_.has(unsavedChanges, p) && (  // if it was set by the user, we want to keep it editable
+        return  _.contains(collected, p) || (reqParams[p] && (!editProps || !_.contains(editProps, p)));
       }
       
       if (propGroups) {

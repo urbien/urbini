@@ -539,7 +539,7 @@ define('utils', [
       
       var isEdit = !!res.get('_uri');
       
-      if (prop.avoidDisplayingInEdit  &&  isEdit || (res.get(prop.shortName) && prop.immutable))
+      if (prop.avoidDisplayingInEdit  &&  isEdit) // || (res.get(prop.shortName) && prop.immutable))
         return false;
       if (prop.avoidDisplayingOnCreate  &&  !isEdit)
         return false;
@@ -1260,7 +1260,7 @@ define('utils', [
       return U.getPropertiesWith(props, {name: annotations}, true);
     },
     
-   getCurrentAppProps: function(meta) {
+    getCurrentAppProps: function(meta) {
       var app = U.getArrayOfPropertiesWith(meta, "app"); // last param specifies to return array
       if (!app  ||  !app.length) 
         return null;
@@ -1319,6 +1319,18 @@ define('utils', [
     
     getBacklinks: function(meta, returnArray) {
       return U.getPropertiesWith(meta, "backLink", returnArray);
+    },
+    
+    getBacklinkCount: function(res, pName) {
+      var count = res.get(pName),
+          countPName = pName + 'Count';
+          
+      if (count)
+        count = count.count;
+      else
+        count = res.vocModel.properties[countPName] && res.get(countPName);
+      
+      return count || 0;
     },
     
     areQueriesEqual: function(q1, q2) {
@@ -3836,10 +3848,6 @@ define('utils', [
 //        
 //      return false;
 //    },
-    
-    getBacklinkCount: function(res, name) {
-      return res.get(name + 'Count') || res.get(name).count;
-    },
     
     createDataUrl: function(type, content) {
       return "data:{0};base64,{1}".format(type, window.btoa(content));

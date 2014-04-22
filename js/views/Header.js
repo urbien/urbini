@@ -798,22 +798,36 @@ define('views/Header', [
         }
       }
 
-      var templateSettings = this.getBaseTemplateData();
-//      templateSettings.physics = this.getPhysicsConstants(); //Physics.scrollerConstants[this._scrollerType]);
+      var tmpl_data = this.getBaseTemplateData(),
+          isFolderItem = U.isA(this.vocModel, 'FolderItem');
+      
+//      tmpl_data.physics = this.getPhysicsConstants(); //Physics.scrollerConstants[this._scrollerType]);
       if (U.isChatPage()) {
-//        templateSettings.more = $.param({
+//        tmpl_data.more = $.param({
 //          "data-position": "fixed"
 //        });
       }
       if (isJQM) {
         if (!this.publish  &&  this.doTry  &&  this.forkMe)
-          templateSettings.className = 'ui-grid-b';
+          tmpl_data.className = 'ui-grid-b';
       }      
+
+      if (isFolderItem) {
+        var pName = this.hashParams.$rootFolderProp || U.getCloneOf(this.vocModel, 'FolderItem.rootFolder')[0] || U.getCloneOf(this.vocModel, 'FolderItem.folder')[0],
+            rootFolder = this.resource ? this.resource.get(pName) : this.hashParams[pName] || this.hashParams.$rootFolder;
+        
+        if (rootFolder) {
+          tmpl_data.rootFolder = {
+            _uri: rootFolder,
+            linkText: "Back to " + U.getPropDisplayName(this.vocModel.properties[pName])
+          };
+        }
+      }
 
       if (this.filter)
         this.categories = false; // HACK for now, search is more important at the moment        
 
-      this.html(this.template(templateSettings));
+      this.html(this.template(tmpl_data));
       this.titleContainer = this.$('#pageTitle')[0];
       if (this.filter) {
         this.filter = this.$('.filterToggle')[0];

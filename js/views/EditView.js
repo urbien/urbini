@@ -750,8 +750,12 @@ define('views/EditView', [
         this.getInputs().$attr('disabled', null);
     },
     
+    isSubmitted: function() {
+      return this._submitted;
+    },
+    
     submit: function(e, options) {
-      if (!this.isActive() || this._submitted)
+      if (!this.isActive() || this.isSubmitted())
         return;
 
       if (G.currentUser.guest) {
@@ -946,6 +950,7 @@ define('views/EditView', [
       if (this.isEdit && !_.size(props)) {
 //        debugger; // user didn't modify anything?
 //        this.redirect();
+        Events.trigger('back');
         return;
       }
             
