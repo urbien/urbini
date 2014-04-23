@@ -36,6 +36,7 @@ define('views/ControlPanel', [
     events: {
 //      'click a[data-shortName]': 'click',
       'click #mainGroup a[data-shortName]': 'add',
+//      'click a[data-shortName]': 'lookupFrom',
 //      'pinchout li[data-propname]': 'insertInlineScroller',
 //      'pinchin li[data-propname]': 'removeInlineScroller',
       'hold li[data-propname]': 'toggleInlineScroller'
@@ -62,7 +63,7 @@ define('views/ControlPanel', [
           };
       
       params[data.backlink] = data._uri;
-      if (!U.getBacklinkCount(this.resource, data.shortName)) {
+      if (!data.prop.lookupFrom && !U.getBacklinkCount(this.resource, data.shortName)) {
         params.$backLink = data.backlink;
         action = 'make';
       }
@@ -85,6 +86,50 @@ define('views/ControlPanel', [
       this.log('add', 'user wants to add to backlink');
     },
     
+//    lookupFrom: function(e) {
+//      var data = e.currentTarget.dataset,
+//          res = this.resource,
+//          meta = this.vocModel.properties,
+//          lookupFrom = data.lookupfrom.split('.'),
+//          base = meta[lookupFrom[0]],
+//          baseVal = res.get(base.shortName),
+//          toProp = meta[data.shortname],
+//          info = {
+//            params: {
+//              $backLink: toProp.shortName,
+//            },
+//            action: 'make'
+//          };
+//      
+//      return Voc.getModels([base.range, toProp.range]).then(function(baseModel, blModel) {          
+//        if (U.isA(blModel, 'Templatable')) {
+//          var bl = baseModel.properties[lookupFrom[1]];
+//          var params = U.filterObj(info.params, U.isModelParameter);
+//          info.params = U.filterObj(info.params, U.isMetaParameter);
+//          info.params[U.getCloneOf(blModel, 'Templatable.isTemplate')[0]] = true;
+//          info.params[bl.backLink] = baseVal;
+//          info.params.$template = $.param(params);
+//        }
+//        
+//        if (U.isA(model, 'Folder') && U.isA(blModel, 'FolderItem')) {
+//          var rootFolder = U.getCloneOf(blModel, 'FolderItem.rootFolder')[0],
+//              parentFolder = U.getCloneOf(model, 'Folder.parentFolder')[0];
+//          
+//          if (rootFolder && parentFolder) {
+//            rootFolder = blModel.properties[rootFolder];
+//            parentFolder = model.properties[parentFolder];
+//            if (rootFolder.range == parentFolder.range) {
+//              var val = res.get('Folder.parentFolder');
+//              info.params.$rootFolder = val;
+//              info.params.$rootFolderProp = rootFolder.shortName;
+//            }
+//          }
+//        }
+//
+//        return info;
+//      });
+//    },
+    
     add: function(e) {
 //      var t = e.target;
 //      while (t && t.tagName != 'A') {
@@ -106,13 +151,14 @@ define('views/ControlPanel', [
       var self = this,       
           shortName = t.dataset.shortname,
           prop = this.vocModel.properties[shortName],
-          setLinkTo = prop.setLinkTo,
-          count = U.getBacklinkCount(resource, shortName);
-
-      if (count > 0) {
-        Events.trigger('navigate', t.href);
-        return;
-      }
+          setLinkTo = prop.setLinkTo;
+//      ,
+//          count = U.getBacklinkCount(this.resource, shortName);
+//
+//      if (count > 0) {
+//        Events.trigger('navigate', t.href);
+//        return;
+//      }
       
 //      this.log("Recording step for tour: selector = 'data-shortname'; value = '" + shortName + "'");
       if (setLinkTo) {
@@ -671,6 +717,7 @@ define('views/ControlPanel', [
             else
               icon = prop['icon'];
             
+            tmpl_data.prop = prop;
             tmpl_data.icon = null;
             tmpl_data.range = range;
             tmpl_data.backlink = prop.backLink;
@@ -798,6 +845,7 @@ define('views/ControlPanel', [
   //          var uri = U.getShortUri(res.getUri(), vocModel); 
             var uri = res.getUri();
             var t = title + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + n;
+            tmpl_data.prop = prop;
             tmpl_data.range = range;
             tmpl_data.shortName = p;
             tmpl_data.backlink = prop.backLink;
