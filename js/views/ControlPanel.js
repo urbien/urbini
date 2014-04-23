@@ -157,6 +157,9 @@ define('views/ControlPanel', [
           $title: title
         };
 
+        var where = aUri == null ? propA.where : propB.where;
+        if (where)
+          _.extend(params, U.getQueryParams(where));
         Events.trigger('navigate', U.makeMobileUrl('chooser', rtype, params), {trigger: true});
         G.log(self.TAG, 'add', 'user wants to add to backlink');
 //        var params = {
@@ -794,6 +797,8 @@ define('views/ControlPanel', [
             tmpl_data.title = t;
             tmpl_data.comment = prop.comment;
             tmpl_data.name = n;
+            tmpl_data.prop = prop;
+              
             var bl = prop.backLinkSortDescending;
             if (bl) {
               tmpl_data['$order'] = bl;
