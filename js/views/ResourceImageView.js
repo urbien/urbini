@@ -406,7 +406,7 @@ define('views/ResourceImageView', [
           li = '<div style="border: solid #ccc;width:140px;left:15px;position:absolute">{0}</div>'.format(iTemplate);
         }
         else
-          li = '<div style="left:15px;position:absolute;' + (h ? 'height:' + h  + 'px;' : 'max-height:140px;') +'">{0}</div>'.format(iTemplate);
+          li = '<div style="left:15px;position:absolute;' + (this.isImageCover ? '' : 'top:95px;') + (h ? 'height:' + h  + 'px;' : 'max-height:140px;') +'">{0}</div>'.format(iTemplate);
       }
       U.addToFrag(frag, li);
 //      this.$el[this.isAudio ? 'append' : 'html'](frag);
