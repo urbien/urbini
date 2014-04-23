@@ -249,6 +249,10 @@ section[data-type="sidebar"]:after, #header section[role="region"] > header:firs
 #sidebar div {
   font-size: 1.6rem;
 }
+.masonry-brick div[data-viewid] {
+  border-bottom: 1px solid #eee;
+
+}
 #sidebar div.masonry-brick {
   cursor: pointer;
 }
