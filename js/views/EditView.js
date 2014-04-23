@@ -1216,7 +1216,7 @@ define('views/EditView', [
       
       var res = this.resource;
       if (!this.originalResource)
-        this.originalResource = res.toJSON();
+        this.originalResource = U.filterObj(res.attributes, U.isModelParameter);
       
       var type = res.type,
           reqParams = this.hashParams,

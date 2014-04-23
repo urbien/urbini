@@ -14,7 +14,8 @@ define('resourceSynchronizer', [
       RESOLVED_PROMISE = G.getResolvedPromise(),
       REJECTED_PROMISE = G.getRejectedPromise(),
       REF_STORE,
-      REF_STORE_PROPS;
+      REF_STORE_PROPS,
+      serverSyncTimeout;
   
   var backboneDefaultSync = Backbone.defaultSync || Backbone.sync;
 //  function isSyncPostponable(vocModel) {
@@ -240,10 +241,15 @@ define('resourceSynchronizer', [
   
   function syncWithServer(delay) {
     if (delay) {
-      setTimeout(syncWithServer, delay);
+      if (!serverSyncTimeout)
+        serverSyncTimeout = setTimeout(syncWithServer, delay);
+      
       return;
     }
       
+    clearTimeout(serverSyncTimeout);
+    serverSyncTimeout = null;
+    
     if (NO_DB || G.currentUser.guest)
       return;
 
@@ -471,12 +477,14 @@ define('resourceSynchronizer', [
           }
         }
 
-        $.whenAll(IDB.put(type, data), IDB.put(REF_STORE.name, ref)).then(function() {          
-          if (newUri !== oldUri) {
-            data._oldUri = oldUri;
-            return IDB['delete'](type, oldUri);
-          }
-        }).then(function() {
+        $.whenAll(IDB.put(type, data), IDB.put(REF_STORE.name, ref))
+//        .then(function() {          
+//          if (newUri !== oldUri) {
+//            data._oldUri = oldUri;
+//            return IDB['delete'](type, oldUri);
+//          }
+//        })
+        .then(function() {
           dfd.resolve(ref);
         }, dfd.reject);
       },

@@ -829,8 +829,10 @@ define('views/Header', [
 
       this.html(this.template(tmpl_data));
       this.titleContainer = this.$('#pageTitle')[0];
-      if (this.filter) {
+      if (this.filter)
         this.filter = this.$('.filterToggle')[0];
+      
+      if (this.filter) {
         this.filterIcon = this.filter.$('i')[0];
         this.searchIconClass = this.filterIcon.className;
         this.filterContainer = this.$('.filter')[0];
