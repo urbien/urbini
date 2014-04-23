@@ -160,6 +160,7 @@
 <!-- readwrite backlink in resource view -->
 <li data-propName="{{= shortName }}">
      {{ var params = {}; }}
+     {{ if (obj.prop && prop.where) _.extend(params, U.getQueryParams(prop.where)); }}
      {{ params[backlink] = _uri; }}
      
    <!--a target="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp">
@@ -233,10 +234,10 @@
   {{ var action = action ? action : 'view' }}
   <div style="margin:0" data-viewid="{{= viewId }}">
   {{ if (!obj.v_submitToTournament) { }}
-    <div style="padding:1.25rem 0 1.25rem 90px;{{= obj.image ? 'min-height:59px;' : '' }}" data-uri="{{= U.makePageUrl(action, _uri) }}">
+    <div style="padding:1.25rem 0 1rem 90px;min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
   {{ } }}
   {{ if (obj.v_submitToTournament) { }}
-    <div style="padding:.7em 10px 0 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
+    <div style="padding:.7em 10px 0 90px; min-height:59px;position:relative;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
   {{ } }}
     <img data-lazysrc="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : G.getBlankImgSrc() }}"  
     {{ if (obj.right) { }}  
