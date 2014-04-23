@@ -371,6 +371,9 @@ define('resourceSynchronizer', [
       
       return saveToServer(info).then(function(updatedRef) {
         if (updatedRef && !_.isEqual(ref, updatedRef)) {
+          if (updatedRef._tempUri)
+            Events.trigger('uriChanged', updatedRef._tempUri, updatedRef._uri);
+          
           var idx = refs.indexOf(ref);
           refs[idx] = updatedRef;
         }

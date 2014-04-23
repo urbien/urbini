@@ -137,9 +137,7 @@
 <script type="text/template" id="cpTemplate">
 <!-- readwrite backlink in resource view -->
 <li class="list-group-item" data-propName="{{= shortName }}">
-     {{ var params = {}; }}
-     {{ params[backlink] = _uri; }}
-     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}<span class="badge pull-right" style="margin-right:2.5rem;">{{= value }}</span></a>
+     <a href="{{= U.makePageUrl(action, range, params)) }}">{{= name }}<span class="badge pull-right" style="margin-right:2.5rem;">{{= value }}</span></a>
      <a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp"><i class="ui-icon-plus-sign"></i>
      {{ if (typeof comment != 'undefined') { }}
        <p>{{= comment }}</p>

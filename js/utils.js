@@ -539,7 +539,7 @@ define('utils', [
       
       var isEdit = !!res.get('_uri');
       
-      if (prop.avoidDisplayingInEdit  &&  isEdit || (res.get(prop.shortName) && prop.immutable))
+      if (prop.avoidDisplayingInEdit  &&  isEdit) // || (res.get(prop.shortName) && prop.immutable))
         return false;
       if (prop.avoidDisplayingOnCreate  &&  !isEdit)
         return false;
@@ -1260,7 +1260,7 @@ define('utils', [
       return U.getPropertiesWith(props, {name: annotations}, true);
     },
     
-   getCurrentAppProps: function(meta) {
+    getCurrentAppProps: function(meta) {
       var app = U.getArrayOfPropertiesWith(meta, "app"); // last param specifies to return array
       if (!app  ||  !app.length) 
         return null;
@@ -1319,6 +1319,18 @@ define('utils', [
     
     getBacklinks: function(meta, returnArray) {
       return U.getPropertiesWith(meta, "backLink", returnArray);
+    },
+    
+    getBacklinkCount: function(res, pName) {
+      var count = res.get(pName),
+          countPName = pName + 'Count';
+          
+      if (count)
+        count = count.count;
+      else
+        count = res.vocModel.properties[countPName] && res.get(countPName);
+      
+      return count || 0;
     },
     
     areQueriesEqual: function(q1, q2) {
@@ -1936,7 +1948,7 @@ define('utils', [
             if (prop.setLinkTo)
               val = "<a href='" + res.get(prop.setLinkTo) + "'><span>" + val + "</span></a>";
             else
-              val = "<span>" + val + "</span>";
+              val = val.charAt(0) == '<' ? val : "<span>" + val + "</span>";
           }
 //            val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
           else if (!isView  &&  prop.maxSize > 1000) {
@@ -2015,6 +2027,21 @@ define('utils', [
         rules['data-code'] = prop.code;
       
       rules = U.reduceObj(rules, function(memo, name, val) {return memo + ' {0}="{1}"'.format(name, val)}, '');
+      if (vocModel.type.endsWith('FDATracker/FDADrugApproval') && prop.range.endsWith('FDATracker/Stock1')) {
+        val.params = {
+          $date: res.get('dateApproved'),
+          '-info': 'Stock history around: ' + new Date(res.get('dateApproved')),
+          $dateRange: 30 * 24 * 3600 * 1000
+        };
+      }
+      else if (vocModel.type.endsWith('LitigationAlpha/Document') && prop.range.endsWith('LitigationAlpha/Stock1')) {
+        val.params = {
+          $date: res.get('dateFiled'),
+          '-info': 'Stock history around: ' + new Date(res.get('dateFiled')),
+          $dateRange: 30 * 24 * 3600 * 1000
+        };
+      }
+      
       return {name: U.getPropDisplayName(prop), value: U.template(propTemplate)(val), shortName: prop.shortName, rules: rules};
     },
     
@@ -3700,7 +3727,7 @@ define('utils', [
     },
 
     isNativeModelParameter: function(param) {
-      return !U.isMetaParameter(param) && !/\./.test(param);
+      return !U.isMetaParameter(param) && !/\./.test(param) && !U.isSystemProp(param);
     },
 
     isModelParameter: function(param) {
@@ -3836,10 +3863,6 @@ define('utils', [
 //        
 //      return false;
 //    },
-    
-    getBacklinkCount: function(res, name) {
-      return res.get(name + 'Count') || res.get(name).count;
-    },
     
     createDataUrl: function(type, content) {
       return "data:{0};base64,{1}".format(type, window.btoa(content));

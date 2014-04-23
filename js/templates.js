@@ -185,7 +185,7 @@ define('templates', [
         template = t[prop.range];
       }
       
-      return template ? template : (prop.range.indexOf('/') == -1 && prop.range != 'Class' ? t.string : t.resource);
+      return template ? template : (prop.range.indexOf('/') == -1 && prop.range != 'Class' && prop.range != 'Resource' ? t.string : t.resource);
     },
     __DEFAULT_TEMPLATE: '<!-- put your template code here -->',
     prepNewTemplate: function(t) {
