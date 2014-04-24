@@ -133,7 +133,7 @@
 <script type="text/template" id="inlineListItemTemplate">
 <!-- one row of an inline backlink in view mode -->
 <li data-viewid="{{= viewId }}">
-  <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="padding:1rem 0 1rem 0;">
+  <a href="{{= href }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="padding:1rem 0 1rem 0;">
     {{ if (obj.img) { }}
       <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
       {{ if (obj.top) { }}  
@@ -451,6 +451,14 @@
       <div class="rootFolder" style="float: right; background:{{= G.lightColor }}; color: {{= G.darkColor }}; padding: 5px 5px; margin: 10px 10px 0 10px;">
         <a href="{{= U.makePageUrl(rootFolder.action || 'view', rootFolder._uri, rootFolder.params) }}">{{= rootFolder.linkText }}</a>
       </div>
+    {{ }                     }}
+    {{ if (obj.Activatable) { }}
+      <section class="activatable" style="float: right">
+        <label class="pack-switch" style="right: 2rem;top:0rem;left:auto;position:absolute;color:{{= G.darkColor }};">
+          <input type="checkbox" name="{{= Activatable.prop.shortName }}" class="formElement boolean" {{= Activatable.activated ? 'checked="checked"' : '' }} />
+          <span style="top:2rem"></span>
+        </label>
+      </section>
     {{ }                     }}
     <div id="name" class="resTitle" style="background:{{= G.darkColor }};color:{{= G.lightColor }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
       <h4 id="pageTitle" style="font-weight:normal;color:{{= G.lightColor }};">{{= this.title }}</h4>

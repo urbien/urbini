@@ -1102,7 +1102,11 @@ define('models/Resource', [
     
     save: function(attrs, options) {
       options = _.defaults(options || {}, {patch: true, silent: false});
-      attrs = attrs || {};
+      if (attrs)
+        this.set(attrs, {silent: true, userEdit: true});
+      else
+        attrs = {};
+      
       var isNew = this.isNew(),
           data,
           saved;

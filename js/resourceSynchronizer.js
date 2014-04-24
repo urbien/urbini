@@ -477,14 +477,12 @@ define('resourceSynchronizer', [
           }
         }
 
-        $.whenAll(IDB.put(type, data), IDB.put(REF_STORE.name, ref))
-//        .then(function() {          
-//          if (newUri !== oldUri) {
-//            data._oldUri = oldUri;
-//            return IDB['delete'](type, oldUri);
-//          }
-//        })
-        .then(function() {
+        $.whenAll(IDB.put(type, data), IDB.put(REF_STORE.name, ref)).then(function() {          
+          if (newUri !== oldUri) {
+            data._oldUri = oldUri;
+            return IDB['delete'](type, oldUri);
+          }
+        }).then(function() {
           dfd.resolve(ref);
         }, dfd.reject);
       },

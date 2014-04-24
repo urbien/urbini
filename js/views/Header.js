@@ -172,6 +172,7 @@ define('views/Header', [
       return this;
     },
     events: {
+      'change .activatable input'                  : 'activate',
       'change #fileUpload'                         : 'fileUpload',
       'change .physicsConstants input'             : 'changePhysics',
       'click .filterToggle'                        : 'toggleFilter',
@@ -186,6 +187,15 @@ define('views/Header', [
       'keyup .filterConditionInput input'          : 'onFilter',
       'change .filterConditionInput select'        : 'onFilter',
       'change .filterConditionInput input'         : 'onFilter'
+    },
+    
+    activate: function(e) {
+      e.preventDefault();
+      var params = {};
+      params[this.activatedProp.shortName] = !this.resource.get(this.activatedProp.shortName);
+      this.resource.save(params, {
+        redirect: false
+      });
     },
     
     changePhysics: function(e) {
@@ -820,6 +830,16 @@ define('views/Header', [
           tmpl_data.rootFolder = {
             _uri: rootFolder,
             linkText: "Back to " + U.getPropDisplayName(this.vocModel.properties[pName])
+          };
+        }
+      }
+
+      if (/^view/.test(this.hash) &&  res.isA('Activatable')) {
+        this.activatedProp = res.vocModel.properties[U.getCloneOf(res.vocModel, 'Activatable.activated')[0]];
+        if (this.activatedProp && U.isPropEditable(res, this.activatedProp)) {
+          tmpl_data.Activatable = {
+            prop: this.activatedProp,
+            activated: res.get(this.activatedProp.shortName)
           };
         }
       }

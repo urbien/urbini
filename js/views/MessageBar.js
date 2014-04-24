@@ -101,7 +101,8 @@ define('views/MessageBar', [
     
     destroy: function() {
       this.$('.headerMessageBar').$forEach(function(bar) {
-        bar.$remove();
+        if (bar)
+          bar.$remove();
       });
       
       BasicView.prototype.destroy.apply(this, arguments);
