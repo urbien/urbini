@@ -373,6 +373,21 @@ define('app', [
     });
   }
   
+  function fixTabs() {
+    var tabs = G.tabs;
+    if (tabs && G.support.pushState) {
+      var i = tabs.length,
+          tab;
+      
+      while (i--) {
+        tab = tabs[i];
+        var qIdx = tab.hash.indexOf('?');
+        if (~qIdx)
+          tab.hash = decodeURIComponent(tab.hash.slice(0, qIdx)) + '?' + tab.hash.slice(qIdx + 1);
+      }
+    }
+  }
+  
   function prefetchResources() {
     var tabs = G.tabs,
         promises;
@@ -547,6 +562,7 @@ define('app', [
   function doPreStartTasks() {
 //    setupHashMonitor();
 //    setupScrollMonitor();
+    fixTabs();
     ModelLoader.loadEnums();
     setupWidgetLibrary();
     setupPackagedApp();
@@ -706,13 +722,13 @@ define('app', [
       }
 
       App.router = new Router();
-//      if (G.support.pushState) {
-//        Backbone.history.start({
-//          pushState: true, 
-//          root: G.appUrl.slice(G.appUrl.indexOf('/', 8))
-//        });
-//      }
-//      else
+      if (G.support.pushState) {
+        Backbone.history.start({
+          pushState: true, 
+          root: G.appUrl.slice(G.appUrl.indexOf('/', 8))
+        });
+      }
+      else
         Backbone.history.start();
       
       dfd.resolve();

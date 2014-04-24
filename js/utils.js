@@ -24,7 +24,8 @@ define('utils', [
       RECYCLED_ARRAYS = [],
       FRAGMENT_SEPARATOR = HAS_PUSH_STATE ? '/' : '#',
       LAZY_DATA_ATTR = G.lazyImgSrcAttr,
-      $w;
+      $w,
+      tempIdParam = '__tempId__';
 
   window._setInterval(function() { // TODO: make this less stupid
     for (var templateName in compiledTemplates) {
@@ -2097,8 +2098,14 @@ define('utils', [
       
 //      var encOptions = {delimiter: '&amp;'};
       url = action + '/' + (HAS_PUSH_STATE ? typeOrUri : encodeURIComponent(typeOrUri));
-      if (_.size(params))
-        url += '?' + U.getQueryString(params); //, encOptions);
+      if (_.size(params)) {
+        if (HAS_PUSH_STATE) {
+          url += ~url.indexOf('?') ? '&' : '?';
+          url += U.getQueryString(params);
+        }
+        else
+          url += '?' + U.getQueryString(params); //, encOptions);
+      }
       
       return url;
     },
@@ -2843,7 +2850,7 @@ define('utils', [
       return U.isTempUri(res.getUri());
     },
     isTempUri: function(uri) {
-      return uri && uri.indexOf("?__tempId__=") != -1;
+      return uri && uri.indexOf("?" + tempIdParam + "=") != -1;
     },
     buildUri: function(atts, model) {
       if (U.isModel(atts)) {
@@ -2870,9 +2877,9 @@ define('utils', [
     },
     
     makeTempUri: function(type, id) {
-      return U.makeUri(type, {
-        __tempId__: typeof id === 'undefined' ? G.currentServerTime : id
-      })
+      var params = {};
+      params[tempIdParam] = typeof id === 'undefined' ? G.currentServerTime : id;
+      return U.makeUri(type, params);
     },
     makeUri: function(type, params) {
       return G.sqlUrl + '/' + type.slice(7) + '?' + (typeof params == 'string' ? params : $.param(params));
@@ -3723,7 +3730,7 @@ define('utils', [
     })(),
     
     isMetaParameter: function(param) {
-      return /^[$-_]+/.test(param);
+      return param != tempIdParam && /^[$-_]+/.test(param);
     },
 
     isNativeModelParameter: function(param) {
@@ -4157,16 +4164,21 @@ define('utils', [
         info,
         subInfo;
 
-    if (HAS_PUSH_STATE && window.router.isResourceRoute(route)) {
+    if (HAS_PUSH_STATE && G.router.isResourceRoute(route)) {
       var uriParams = {};
       for (var param in params) {
-        if (U.isMetaParameter(param)) {
+        if (U.isModelParameter(param)) {
           uriParams[param] = params[param];
-          delete params[param];
+//          delete params[param];
         }
       }
       
-      uri = hashParts[0].slice(route.length + 1) + '?' + $.param(uriParams);
+      uri = hashParts[0];
+      if (route.length)
+        uri = uri.slice(route.length + 1);
+      
+      if (_.size(uriParams))
+        uri += '?' + $.param(uriParams);
     }
     else {
       uri = decodeURIComponent(route.length ? hashParts[0].slice(route.length + 1) : hashParts[0]);        

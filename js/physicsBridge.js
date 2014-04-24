@@ -173,8 +173,21 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       G.enableClick();
       return false;
     }
-    else
+    else {
+      if (G.support.pushState) {
+        var t = e.target;
+        while (t && t.tagName != 'A') {
+          t = t.parentElement;
+        }
+        
+        if (t && t.tagName == 'A') {
+          e.preventDefault();
+          Events.trigger('navigate', t.href);
+        }
+      }
+      
       log('events', 'ALLOWING CLICK', _.now());
+    }
   }, true);
 
 //  // re-enable click on bubble phase
