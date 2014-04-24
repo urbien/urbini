@@ -239,13 +239,14 @@ div.nabBtn {
 
 .commentList {
   background-color: &[PrimaryColor_4];; 
-  border-bottom: #ccc; 
+  border-bottom: #ddd; 
   border-bottom-style: solid; 
   border-bottom-width: 1px; 
   padding-top: 12px; 
   padding-bottom: 12px;
   font-size: 12px;
   text-align: left;
+  width: 100%;
 }
 .table-stroke tbody td {
   border-bottom: 1px solid rgba(0, 0, 0, .05);

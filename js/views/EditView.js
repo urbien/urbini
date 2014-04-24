@@ -750,8 +750,12 @@ define('views/EditView', [
         this.getInputs().$attr('disabled', null);
     },
     
+    isSubmitted: function() {
+      return this._submitted;
+    },
+    
     submit: function(e, options) {
-      if (!this.isActive() || this._submitted)
+      if (!this.isActive() || this.isSubmitted())
         return;
 
       if (G.currentUser.guest) {
@@ -941,11 +945,12 @@ define('views/EditView', [
     
     onsuccess: function() {
       var self = this, res = this.resource;
-      var props = U.filterObj(res.getUnsavedChanges(), function(name, val) {return /^[a-zA-Z]+/.test(name)}); // starts with a letter
+      var props = _.extend({}, this.originalResource, U.filterObj(res.getUnsavedChanges(), function(name, val) {return /^[a-zA-Z]+/.test(name)})); // starts with a letter
 //      var props = atts;
       if (this.isEdit && !_.size(props)) {
 //        debugger; // user didn't modify anything?
 //        this.redirect();
+        Events.trigger('back');
         return;
       }
             
@@ -1211,7 +1216,7 @@ define('views/EditView', [
       
       var res = this.resource;
       if (!this.originalResource)
-        this.originalResource = res.toJSON();
+        this.originalResource = U.filterObj(res.attributes, U.isModelParameter);
       
       var type = res.type,
           reqParams = this.hashParams,

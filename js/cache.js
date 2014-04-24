@@ -265,6 +265,19 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       setTimeout(clean, 0);
     }
     
+    function uncacheView(viewOrUrl, destroy) {
+      for (var i = 0; i < cache.length; i++) {
+        var entry = cache[i];
+        if (entry.getUrl() == viewOrUrl || entry.getView() == viewOrUrl) {
+          if (destroy)
+            entry.getView().destroy();
+          
+          cache.splice(i, 1);
+          return;
+        }
+      }
+    }
+    
     function overCapacity() {
       return cache.length > MAX_VIEWS_TO_CACHE; 
     }
@@ -364,6 +377,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
     });
     
     return {
+      uncacheView: uncacheView,
       getCachedView: getCachedView,
       getViews: getViews,
       getResources: getResources,
@@ -495,6 +509,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
 //    }
   };
 
+  Events.on('uncacheView', viewCache.uncacheView);
   Events.on('cacheList', resourceCache.cacheList);
   Events.on('cacheResource', resourceCache.cacheResource);
   Events.on('uncacheList', resourceCache.uncacheList);

@@ -386,7 +386,7 @@ body > .section:not([data-role="page"]) {
 	line-height: 50px; 
 	height: 50px; 
 	font-family: Lato; 
-	padding: 30px 50px 20px 50px;
+	padding: 20px 50px 15px 50px;
 	border-radius: 0.2rem;
 }
 

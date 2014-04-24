@@ -29,7 +29,7 @@ DOMReady.add( function () {
   }
   
   var hash = window.location.hash;
-  if (!hash || /\#home/.test(hash)) {
+  if ((!hash && /app\/[a-zA-Z]+$/.test(window.location.href)) || /\#home/.test(hash)) {
     d.body.innerHTML = d.body.innerHTML + l.homePage;
     delete l.homePage;
     var style = d.createElement('style');

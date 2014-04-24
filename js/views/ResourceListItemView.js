@@ -703,12 +703,12 @@ define('views/ResourceListItemView', [
           viewCols += '</div>';
         }
         else {
+          var s = s.trim();
           if (firstProp)
-            viewCols += '<span>' + s + '</span>';
-          else {
-            var s = s.trim();
+            viewCols += s.charAt('0') != '<' ?'<span>' + s + '</span>' : s;
+          else 
             viewCols += s.charAt('0') != '<' ? '<span style="font-weight:normal">' + s + '</span>' : s;
-          }
+          
 //            viewCols += '<span style="font-weight:normal">' + s + '</span>';
         }
         firstProp = false;

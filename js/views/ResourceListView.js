@@ -551,7 +551,6 @@ define('views/ResourceListView', [
 
         if (!isImplementor && parentView && parentView.mode == G.LISTMODES.CHOOSER) {
           if (!isIntersection  &&  (!p1  &&  !p2)) {
-            debugger;
             Events.stopEvent(e);
             Events.trigger('chose', self.hashParams.$prop, self.model);
             return;

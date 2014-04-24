@@ -185,6 +185,10 @@ define('views/EditPage', [
       });
       
       return this;
+    },
+    
+    isSubmitted: function() {
+      return this.editView.isSubmitted();
     }
   }, {
     displayName: 'EditPage'

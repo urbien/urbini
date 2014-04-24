@@ -14,7 +14,8 @@ define('resourceSynchronizer', [
       RESOLVED_PROMISE = G.getResolvedPromise(),
       REJECTED_PROMISE = G.getRejectedPromise(),
       REF_STORE,
-      REF_STORE_PROPS;
+      REF_STORE_PROPS,
+      serverSyncTimeout;
   
   var backboneDefaultSync = Backbone.defaultSync || Backbone.sync;
 //  function isSyncPostponable(vocModel) {
@@ -240,10 +241,15 @@ define('resourceSynchronizer', [
   
   function syncWithServer(delay) {
     if (delay) {
-      setTimeout(syncWithServer, delay);
+      if (!serverSyncTimeout)
+        serverSyncTimeout = setTimeout(syncWithServer, delay);
+      
       return;
     }
       
+    clearTimeout(serverSyncTimeout);
+    serverSyncTimeout = null;
+    
     if (NO_DB || G.currentUser.guest)
       return;
 
@@ -371,6 +377,9 @@ define('resourceSynchronizer', [
       
       return saveToServer(info).then(function(updatedRef) {
         if (updatedRef && !_.isEqual(ref, updatedRef)) {
+          if (updatedRef._tempUri)
+            Events.trigger('uriChanged', updatedRef._tempUri, updatedRef._uri);
+          
           var idx = refs.indexOf(ref);
           refs[idx] = updatedRef;
         }

@@ -1950,10 +1950,10 @@ define('globals', function() {
       head.removeChild(script);
     },
     support: {
-      pushState: false //!!(window.history && history.pushState)
+      pushState: G.preferPushState //!!(window.history && history.pushState && !browser.chrome)
     },
     language: params['-lang'] || navigator.language.split('-')[0],
-    tourGuideEnabled: true,
+    tourGuideEnabled: false,
     Errors: {      
       Login: {
         code: 401,

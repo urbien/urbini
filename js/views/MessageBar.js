@@ -59,7 +59,8 @@ define('views/MessageBar', [
           msgLength = 3000;
         
         setTimeout(function() {
-          self.$el.fadeOut(2000, self.destroy);
+          if (self.$el)
+            self.$el.fadeOut(2000, self.destroy);
         }, msgLength);        
       }
       
@@ -100,7 +101,8 @@ define('views/MessageBar', [
     
     destroy: function() {
       this.$('.headerMessageBar').$forEach(function(bar) {
-        bar.$remove();
+        if (bar)
+          bar.$remove();
       });
       
       BasicView.prototype.destroy.apply(this, arguments);

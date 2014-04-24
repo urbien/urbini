@@ -126,6 +126,7 @@ define('router', [
     initialize: function () {
 //      G._routes = _.clone(this.routes);
 //      window.router = this;
+      G.router = this;
       this.firstPage = true;
       this.updateHashInfo();
 //      this.homePage = new HomePage({el: $('#homePage')});
@@ -1375,6 +1376,11 @@ define('router', [
       transOptions.transition = transOptions.via ? 'zoomInTo' : 'snap';//'slide';
 //      transOptions.transition = transOptions.via ? 'rotateAndZoomInTo' : 'snap';
       Transitioner.transition(transOptions).done(function() {
+//        if (changePageOptions.replace || (fromView && /^make|edit/.test(fromView.hash) && fromView.isSubmitted()))
+        if (fromView && /^make|edit/.test(fromView.hash) && fromView.isSubmitted())
+          fromView.destroy();
+//          Events.trigger('uncacheView', fromView); // destroy
+
         G.$activePage = $m.activePage = toView.$el;
         G.activePage = toView.el;
       });
@@ -1879,7 +1885,8 @@ define('router', [
       return _.contains(['list', 'chooser', 'templates'], route);
     },
     isResourceRoute: function(route) {
-      return !this.isListRoute(route);
+//      return !this.isListRoute(route);
+      return !this.isListRoute(route) && route != 'make';
     },
 //    isProxyRoute: function(route) {
 //      return _.contains(['templates'/*, 'tour'*/], route);
@@ -1888,7 +1895,7 @@ define('router', [
       return _.contains(['make', 'edit'], route);
     }
   });
-            
+
   return Router;
 });
   

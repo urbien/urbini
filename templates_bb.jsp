@@ -133,7 +133,7 @@
 <script type="text/template" id="inlineListItemTemplate">
 <!-- one row of an inline backlink in view mode -->
 <li data-viewid="{{= viewId }}">
-  <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="padding:1rem 0 1rem 0;">
+  <a href="{{= href }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="padding:1rem 0 1rem 0;">
     {{ if (obj.img) { }}
       <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
       {{ if (obj.top) { }}  
@@ -159,14 +159,12 @@
 <script type="text/template" id="cpTemplate">
 <!-- readwrite backlink in resource view -->
 <li data-propName="{{= shortName }}">
-     {{ var params = {}; }}
-     {{ params[backlink] = _uri; }}
-     
+     {{ if (obj.prop && prop.where) _.extend(params, U.getQueryParams(prop.where)); }}
    <!--a target="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp">
      <i class="ui-icon-plus-sign"></i>
    </a-->
 <p>
-     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
+     <a {{= prop.lookupFrom ? 'data-lookupFrom=' + prop.lookupFrom : '' }} data-shortName="{{= shortName }}" href="{{= U.makePageUrl(action, range, params) }}" class="cpA">{{= name }}
      </a>
      <div style="color:{{= G.lightColor }};font-weight:bold;background:{{= G.darkColor }};display:inline;position:absolute;right:1rem;font-size: 1.5rem;border-radius:1rem;border: 1px solid {{= G.darkColor }};padding: 0.1rem 0.3rem;">{{= value }}</div>
 </p>     
@@ -233,10 +231,10 @@
   {{ var action = action ? action : 'view' }}
   <div style="margin:0" data-viewid="{{= viewId }}">
   {{ if (!obj.v_submitToTournament) { }}
-    <div style="padding:1.25rem 0 1.25rem 90px;{{= obj.image ? 'min-height:59px;' : '' }}" data-uri="{{= U.makePageUrl(action, _uri) }}">
+    <div style="padding:1.25rem 0 1rem 90px;min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri) }}">
   {{ } }}
   {{ if (obj.v_submitToTournament) { }}
-    <div style="padding:.7em 10px 0 90px; min-height:59px;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
+    <div style="padding:.7em 10px 0 90px; min-height:59px;position:relative;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
   {{ } }}
     <img data-lazysrc="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : G.getBlankImgSrc() }}"  
     {{ if (obj.right) { }}  
@@ -449,6 +447,19 @@
     {{ if (this.filter) { }}
       <div style="margin:10px 0 0 10px; position:absolute;"><a class="filterToggle" href="#" style="color:{{= G.lightColor }}"><i class="ui-icon-fasearch"></i></a></div> 
     {{ }                  }}
+    {{ if (obj.rootFolder) { }}
+      <div class="rootFolder" style="float: right; background:{{= G.lightColor }}; color: {{= G.darkColor }}; padding: 5px 5px; margin: 10px 10px 0 10px;">
+        <a href="{{= U.makePageUrl(rootFolder.action || 'view', rootFolder._uri, rootFolder.params) }}">{{= rootFolder.linkText }}</a>
+      </div>
+    {{ }                     }}
+    {{ if (obj.Activatable) { }}
+      <section class="activatable" style="float: right">
+        <label class="pack-switch" style="right: 2rem;top:0rem;left:auto;position:absolute;color:{{= G.darkColor }};">
+          <input type="checkbox" name="{{= Activatable.prop.shortName }}" class="formElement boolean" {{= Activatable.activated ? 'checked="checked"' : '' }} />
+          <span style="top:2rem"></span>
+        </label>
+      </section>
+    {{ }                     }}
     <div id="name" class="resTitle" style="background:{{= G.darkColor }};color:{{= G.lightColor }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
       <h4 id="pageTitle" style="font-weight:normal;color:{{= G.lightColor }};">{{= this.title }}</h4>
       {{= this.filter ? "<div class='filter'></div>" : "" }}

@@ -24,7 +24,8 @@ define('utils', [
       RECYCLED_ARRAYS = [],
       FRAGMENT_SEPARATOR = HAS_PUSH_STATE ? '/' : '#',
       LAZY_DATA_ATTR = G.lazyImgSrcAttr,
-      $w;
+      $w,
+      tempIdParam = '__tempId__';
 
   window._setInterval(function() { // TODO: make this less stupid
     for (var templateName in compiledTemplates) {
@@ -539,7 +540,7 @@ define('utils', [
       
       var isEdit = !!res.get('_uri');
       
-      if (prop.avoidDisplayingInEdit  &&  isEdit || (res.get(prop.shortName) && prop.immutable))
+      if (prop.avoidDisplayingInEdit  &&  isEdit) // || (res.get(prop.shortName) && prop.immutable))
         return false;
       if (prop.avoidDisplayingOnCreate  &&  !isEdit)
         return false;
@@ -1260,7 +1261,7 @@ define('utils', [
       return U.getPropertiesWith(props, {name: annotations}, true);
     },
     
-   getCurrentAppProps: function(meta) {
+    getCurrentAppProps: function(meta) {
       var app = U.getArrayOfPropertiesWith(meta, "app"); // last param specifies to return array
       if (!app  ||  !app.length) 
         return null;
@@ -1319,6 +1320,18 @@ define('utils', [
     
     getBacklinks: function(meta, returnArray) {
       return U.getPropertiesWith(meta, "backLink", returnArray);
+    },
+    
+    getBacklinkCount: function(res, pName) {
+      var count = res.get(pName),
+          countPName = pName + 'Count';
+          
+      if (count)
+        count = count.count;
+      else
+        count = res.vocModel.properties[countPName] && res.get(countPName);
+      
+      return count || 0;
     },
     
     areQueriesEqual: function(q1, q2) {
@@ -1936,7 +1949,7 @@ define('utils', [
             if (prop.setLinkTo)
               val = "<a href='" + res.get(prop.setLinkTo) + "'><span>" + val + "</span></a>";
             else
-              val = "<span>" + val + "</span>";
+              val = val.charAt(0) == '<' ? val : "<span>" + val + "</span>";
           }
 //            val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
           else if (!isView  &&  prop.maxSize > 1000) {
@@ -2015,6 +2028,21 @@ define('utils', [
         rules['data-code'] = prop.code;
       
       rules = U.reduceObj(rules, function(memo, name, val) {return memo + ' {0}="{1}"'.format(name, val)}, '');
+      if (vocModel.type.endsWith('FDATracker/FDADrugApproval') && prop.range.endsWith('FDATracker/Stock1')) {
+        val.params = {
+          $date: res.get('dateApproved'),
+          '-info': 'Stock history around: ' + new Date(res.get('dateApproved')),
+          $dateRange: 30 * 24 * 3600 * 1000
+        };
+      }
+      else if (vocModel.type.endsWith('LitigationAlpha/Document') && prop.range.endsWith('LitigationAlpha/Stock1')) {
+        val.params = {
+          $date: res.get('dateFiled'),
+          '-info': 'Stock history around: ' + new Date(res.get('dateFiled')),
+          $dateRange: 30 * 24 * 3600 * 1000
+        };
+      }
+      
       return {name: U.getPropDisplayName(prop), value: U.template(propTemplate)(val), shortName: prop.shortName, rules: rules};
     },
     
@@ -2070,8 +2098,14 @@ define('utils', [
       
 //      var encOptions = {delimiter: '&amp;'};
       url = action + '/' + (HAS_PUSH_STATE ? typeOrUri : encodeURIComponent(typeOrUri));
-      if (_.size(params))
-        url += '?' + U.getQueryString(params); //, encOptions);
+      if (_.size(params)) {
+        if (HAS_PUSH_STATE) {
+          url += ~url.indexOf('?') ? '&' : '?';
+          url += U.getQueryString(params);
+        }
+        else
+          url += '?' + U.getQueryString(params); //, encOptions);
+      }
       
       return url;
     },
@@ -2816,7 +2850,7 @@ define('utils', [
       return U.isTempUri(res.getUri());
     },
     isTempUri: function(uri) {
-      return uri && uri.indexOf("?__tempId__=") != -1;
+      return uri && uri.indexOf("?" + tempIdParam + "=") != -1;
     },
     buildUri: function(atts, model) {
       if (U.isModel(atts)) {
@@ -2843,9 +2877,9 @@ define('utils', [
     },
     
     makeTempUri: function(type, id) {
-      return U.makeUri(type, {
-        __tempId__: typeof id === 'undefined' ? G.currentServerTime : id
-      })
+      var params = {};
+      params[tempIdParam] = typeof id === 'undefined' ? G.currentServerTime : id;
+      return U.makeUri(type, params);
     },
     makeUri: function(type, params) {
       return G.sqlUrl + '/' + type.slice(7) + '?' + (typeof params == 'string' ? params : $.param(params));
@@ -3696,11 +3730,11 @@ define('utils', [
     })(),
     
     isMetaParameter: function(param) {
-      return /^[$-_]+/.test(param);
+      return param != tempIdParam && /^[$-_]+/.test(param);
     },
 
     isNativeModelParameter: function(param) {
-      return !U.isMetaParameter(param) && !/\./.test(param);
+      return !U.isMetaParameter(param) && !/\./.test(param) && !U.isSystemProp(param);
     },
 
     isModelParameter: function(param) {
@@ -3836,10 +3870,6 @@ define('utils', [
 //        
 //      return false;
 //    },
-    
-    getBacklinkCount: function(res, name) {
-      return res.get(name + 'Count') || res.get(name).count;
-    },
     
     createDataUrl: function(type, content) {
       return "data:{0};base64,{1}".format(type, window.btoa(content));
@@ -4134,16 +4164,21 @@ define('utils', [
         info,
         subInfo;
 
-    if (HAS_PUSH_STATE && window.router.isResourceRoute(route)) {
+    if (HAS_PUSH_STATE && G.router.isResourceRoute(route)) {
       var uriParams = {};
       for (var param in params) {
-        if (U.isMetaParameter(param)) {
+        if (U.isModelParameter(param)) {
           uriParams[param] = params[param];
-          delete params[param];
+//          delete params[param];
         }
       }
       
-      uri = hashParts[0].slice(route.length + 1) + '?' + $.param(uriParams);
+      uri = hashParts[0];
+      if (route.length)
+        uri = uri.slice(route.length + 1);
+      
+      if (_.size(uriParams))
+        uri += '?' + $.param(uriParams);
     }
     else {
       uri = decodeURIComponent(route.length ? hashParts[0].slice(route.length + 1) : hashParts[0]);        

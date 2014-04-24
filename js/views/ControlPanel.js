@@ -21,7 +21,7 @@ define('views/ControlPanel', [
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
       this.makeTemplate('inlineListItemTemplate', 'inlineListItemTemplate', type);
 //      this.makeTemplate('comment-item', 'commentItemTemplate', type);
-      this.makeTemplate('cpTemplate', 'cpTemplate', type);
+      this.makeTemplate('cpTemplate', '_cpTemplate', type);
       this.makeTemplate('cpMainGroupTemplate', 'cpMainGroupTemplate', type);
       this.makeTemplate('cpMainGroupTemplateH', 'cpMainGroupTemplateH', type);
       this.makeTemplate('cpTemplateNoAdd', 'cpTemplateNoAdd', type);
@@ -34,7 +34,9 @@ define('views/ControlPanel', [
       return this;
     },
     events: {
-      'click a[data-shortName]': 'add',
+//      'click a[data-shortName]': 'click',
+      'click #mainGroup a[data-shortName]': 'add',
+//      'click a[data-shortName]': 'lookupFrom',
 //      'pinchout li[data-propname]': 'insertInlineScroller',
 //      'pinchin li[data-propname]': 'removeInlineScroller',
       'hold li[data-propname]': 'toggleInlineScroller'
@@ -53,6 +55,24 @@ define('views/ControlPanel', [
 //      if (prop)
 //        G.log(this.TAG, "Recording step for tour: selector = 'propName'; " + " value = '" + t.dataset.propname + "'");
 //    },
+    
+    cpTemplate: function(data) {
+      var action = 'list',
+          params = { 
+            $title: data.title 
+          };
+      
+      params[data.backlink] = data._uri;
+      if (!data.prop.lookupFrom && !U.getBacklinkCount(this.resource, data.shortName)) {
+        params.$backLink = data.backlink;
+        action = 'make';
+      }
+      
+      data.params = params;
+      data.action = action;
+      return this._cpTemplate(data);
+    },
+    
     _addNoIntersection: function(target, prop) {
       var params = {
         '$backLink': prop.backLink,
@@ -62,9 +82,53 @@ define('views/ControlPanel', [
 
       params[prop.backLink] = this.resource.getUri();
       
-      this.router.navigate(U.makeMobileUrl('make', prop.range, params), {trigger: true});
+      Events.trigger('navigate', U.makeMobileUrl('make', prop.range, params));
       this.log('add', 'user wants to add to backlink');
     },
+    
+//    lookupFrom: function(e) {
+//      var data = e.currentTarget.dataset,
+//          res = this.resource,
+//          meta = this.vocModel.properties,
+//          lookupFrom = data.lookupfrom.split('.'),
+//          base = meta[lookupFrom[0]],
+//          baseVal = res.get(base.shortName),
+//          toProp = meta[data.shortname],
+//          info = {
+//            params: {
+//              $backLink: toProp.shortName,
+//            },
+//            action: 'make'
+//          };
+//      
+//      return Voc.getModels([base.range, toProp.range]).then(function(baseModel, blModel) {          
+//        if (U.isA(blModel, 'Templatable')) {
+//          var bl = baseModel.properties[lookupFrom[1]];
+//          var params = U.filterObj(info.params, U.isModelParameter);
+//          info.params = U.filterObj(info.params, U.isMetaParameter);
+//          info.params[U.getCloneOf(blModel, 'Templatable.isTemplate')[0]] = true;
+//          info.params[bl.backLink] = baseVal;
+//          info.params.$template = $.param(params);
+//        }
+//        
+//        if (U.isA(model, 'Folder') && U.isA(blModel, 'FolderItem')) {
+//          var rootFolder = U.getCloneOf(blModel, 'FolderItem.rootFolder')[0],
+//              parentFolder = U.getCloneOf(model, 'Folder.parentFolder')[0];
+//          
+//          if (rootFolder && parentFolder) {
+//            rootFolder = blModel.properties[rootFolder];
+//            parentFolder = model.properties[parentFolder];
+//            if (rootFolder.range == parentFolder.range) {
+//              var val = res.get('Folder.parentFolder');
+//              info.params.$rootFolder = val;
+//              info.params.$rootFolderProp = rootFolder.shortName;
+//            }
+//          }
+//        }
+//
+//        return info;
+//      });
+//    },
     
     add: function(e) {
 //      var t = e.target;
@@ -88,7 +152,14 @@ define('views/ControlPanel', [
           shortName = t.dataset.shortname,
           prop = this.vocModel.properties[shortName],
           setLinkTo = prop.setLinkTo;
-
+//      ,
+//          count = U.getBacklinkCount(this.resource, shortName);
+//
+//      if (count > 0) {
+//        Events.trigger('navigate', t.href);
+//        return;
+//      }
+      
 //      this.log("Recording step for tour: selector = 'data-shortname'; value = '" + shortName + "'");
       if (setLinkTo) {
         shortName = setLinkTo;
@@ -99,22 +170,6 @@ define('views/ControlPanel', [
 
       Voc.getModels(prop.range).done(function() {
         var pModel = U.getModel(prop.range);
-        function noIntersection(prop) {
-          var params = {
-            '$backLink': prop.backLink,
-            '$title': t.dataset.title
-          };
-    
-          params[prop.backLink] = self.resource.getUri();
-          if (setLinkTo)  
-            Events.trigger('navigate', U.makeMobileUrl('list', prop.range, params), {trigger: true});
-          else {
-            params['-makeId'] = G.nextId();
-            Events.trigger('navigate', U.makeMobileUrl('make', prop.range, params), {trigger: true});
-          }
-          self.log('add', 'user wants to add to backlink');
-        };
-
         if (!U.isAssignableFrom(pModel, 'Intersection')) { 
           self._addNoIntersection(t, prop);
           return;
@@ -157,6 +212,9 @@ define('views/ControlPanel', [
           $title: title
         };
 
+        var where = aUri == null ? propA.where : propB.where;
+        if (where)
+          _.extend(params, U.getQueryParams(where));
         Events.trigger('navigate', U.makeMobileUrl('chooser', rtype, params), {trigger: true});
         G.log(self.TAG, 'add', 'user wants to add to backlink');
 //        var params = {
@@ -573,7 +631,7 @@ define('views/ControlPanel', [
 
 //            var action = iRes.vocModel.adapter || U.isAssignableFrom(iRes.vocModel, 'Intersection') ? 'view' : 'edit';
             var action = (U.isAssignableFrom(iRes.vocModel, 'WebProperty')) ? 'edit' : 'view';
-            params._uri = U.makePageUrl(action, iRes.getUri(), {title: params.name});
+            params.href = U.makePageUrl(action, iRes.getUri(), {$title: params.name});
             params.resource = iRes;
             U.addToFrag(frag, this.inlineListItemTemplate(params));
             displayedProps[name] = true;
@@ -659,6 +717,7 @@ define('views/ControlPanel', [
             else
               icon = prop['icon'];
             
+            tmpl_data.prop = prop;
             tmpl_data.icon = null;
             tmpl_data.range = range;
             tmpl_data.backlink = prop.backLink;
@@ -786,6 +845,7 @@ define('views/ControlPanel', [
   //          var uri = U.getShortUri(res.getUri(), vocModel); 
             var uri = res.getUri();
             var t = title + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + n;
+            tmpl_data.prop = prop;
             tmpl_data.range = range;
             tmpl_data.shortName = p;
             tmpl_data.backlink = prop.backLink;
@@ -794,6 +854,8 @@ define('views/ControlPanel', [
             tmpl_data.title = t;
             tmpl_data.comment = prop.comment;
             tmpl_data.name = n;
+            tmpl_data.prop = prop;
+              
             var bl = prop.backLinkSortDescending;
             if (bl) {
               tmpl_data['$order'] = bl;

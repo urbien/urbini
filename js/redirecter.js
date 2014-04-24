@@ -232,7 +232,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
             base = meta[lookupFrom[0]],
             baseVal = res.get(base.shortName);
         
-        return Voc.getModels([base.range, toProp.range]).then(function(baseModel, blModel) {
+        return Voc.getModels([base.range, toProp.range]).then(function(baseModel, blModel) {          
           if (U.isA(blModel, 'Templatable')) {
             var bl = baseModel.properties[lookupFrom[1]];
             var params = U.filterObj(info.params, U.isModelParameter);
@@ -242,6 +242,21 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
             info.params.$template = $.param(params);
           }
           
+          if (U.isA(model, 'Folder') && U.isA(blModel, 'FolderItem')) {
+            var rootFolder = U.getCloneOf(blModel, 'FolderItem.rootFolder')[0],
+                parentFolder = U.getCloneOf(model, 'Folder.parentFolder')[0];
+            
+            if (rootFolder && parentFolder) {
+              rootFolder = blModel.properties[rootFolder];
+              parentFolder = model.properties[parentFolder];
+              if (rootFolder.range == parentFolder.range) {
+                var val = res.get('Folder.parentFolder');
+                info.params.$rootFolder = val;
+                info.params.$rootFolderProp = rootFolder.shortName;
+              }
+            }
+          }
+
           return info;
         });
       }
@@ -491,8 +506,9 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       fast: options.replace
     };      
 
+    var params;
     if (prop.where) {
-      var params = U.getQueryParams(prop.where);
+      params = U.getQueryParams(prop.where);
       for (var p in params) {
         var val = params[p];
         var valPrefix = '';
@@ -518,7 +534,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
           params[p] = valPrefix + val;
       }
       
-      if (!prop.multiValue  &&  !U.isAssignableFrom(vocModel, G.commonTypes.WebProperty)) {
+      if (!isIntersection  &&  !prop.multiValue  &&  !U.isAssignableFrom(vocModel, G.commonTypes.WebProperty)) {
         params.$prop = p;
         if (uri)
           params.$forResource = uri;
@@ -581,6 +597,9 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     };
     
     if (isIntersection) {
+      // HACK for @where on one of the intersection props (this logic should be moved to server or params for intersection type and the intersection prop chooser type mixed in one URL)
+      if (params)
+        _.extend(rParams, params);
       rParams.$propA = U.getCloneOf(vocModel, 'Intersection.a')[0];
       rParams.$propB = U.getCloneOf(vocModel, 'Intersection.b')[0];
       rParams.$forResource = prop.shortName == rParams.$propA ? res.get('Intersection.b') : res.get('Intersection.a');
@@ -791,7 +810,6 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   });
 
   Events.on('chose', function(propName, valueRes) {
-    debugger;
     var res = redirecter.getCurrentChooserBaseResource(),
         ffwd = redirecter.isChooserFastForwarded(),
         editableProps = res.getEditableProps(U.getCurrentUrlInfo()),
