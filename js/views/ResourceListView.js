@@ -266,7 +266,7 @@ define('views/ResourceListView', [
           '$like': 'davDisplayName,' + value
         }, this.originalParams)
       });      
-    }, 100),
+    }, 300),
     
     doFilter: _.debounce(function(page, filterParams) {
       // TODO: filter similar to search, except per property instead of for displayName, maybe generalize it so it works for search too
@@ -876,8 +876,10 @@ define('views/ResourceListView', [
       }
       
       Q.write(function() {
-        this.renderItem(col.models[to - 1], atTheHead);
-        this.postRender(from, to);
+        if (!this.isDestroyed()) {
+          this.renderItem(col.models[to - 1], atTheHead);
+          this.postRender(from, to);
+        }
       }, this);
 
 //      added.forEach(function(childView) {
@@ -1124,7 +1126,9 @@ define('views/ResourceListView', [
         error: function(col, resp, options) {
           switch (resp.code) {
             case 401:
-              Events.trigger('req-login');
+              Events.trigger('req-login', {
+                dismissible: false
+              });
               return;
             default:
               if (!nextPageUrl || !col.isFetching(nextPageUrl))
