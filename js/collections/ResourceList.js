@@ -444,7 +444,8 @@ define('collections/ResourceList', [
       var vocModel = this.vocModel;
       for (var i = 0, len = response.length; i < len; i++) {
         var res = response[i];
-        res._uri = U.getLongUri1(res._uri, vocModel);
+        if (!U.isModel(res))
+          res._uri = U.getLongUri1(res._uri, vocModel);
       }
       
       var adapter = this.vocModel.adapter;
@@ -525,6 +526,15 @@ define('collections/ResourceList', [
         
         this._lastFetchedOn = null;
       }
+    },
+    
+    remove: function() {
+      var l = this.models.length;
+      var result = Backbone.Collection.prototype.remove.apply(this, arguments);
+      if (this.models.length < l)
+        this.trigger('removed');
+      
+      return result;
     },
     
     fetch: function(options) {
