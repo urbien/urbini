@@ -69,7 +69,7 @@ define('l20n/html', function(require, exports, module) {
 
   var documentLocalized = false;
 
-  bootstrap();
+  //bootstrap();
 
   function bootstrap() {
     var headNode = document.head;
