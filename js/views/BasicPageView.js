@@ -601,9 +601,8 @@ define('views/BasicPageView', [
         Events.trigger('messageBar', event, events[event]);
       }
 
-      // commented out for now as it currently causes a page refresh 
-//      if (hash != this.hash)
-//        Events.trigger('navigate', hash, {trigger: false, replace: true});
+      if (hash != this.hash)
+        Events.trigger('navigate', hash, {trigger: false, replace: true});
     },
     
     isActivePage: function() {
