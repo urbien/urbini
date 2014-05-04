@@ -16,9 +16,10 @@ define('error', [
       //Events.trigger('back');
       log('error', 'requesting user-login');
       if (options.sync) {
-        Events.trigger('req-login', {onDismiss: function() {
-          Events.trigger('back');
-        }});
+        Events.trigger('req-login', {
+          online: 'You are not authorized to view this resource. Login to a different account?',
+          dismissible: false
+        });
         
         return false;
       }

@@ -159,7 +159,7 @@ define('models/Resource', [
         return val;
       
       var prop = vocModel.properties[propName];
-      if (prop && !prop.backLink && U.isResourceProp(prop)) {
+      if (prop && !prop.backLink && U.isResourceProp(prop) && U.isNativeModelParameter(propName)) {
         if (val) {
           if (prop.range.endsWith('model/portal/Video'))
             return val;
@@ -300,10 +300,13 @@ define('models/Resource', [
       var success = options.success;
       options.success = function(resource, response, options) {
         if (!response || !response.error)          
-          this.trigger('cancel');
+          self.trigger('cancel');
         
-        success && success.apply(this, arguments);
-      }.bind(this);
+        if (self.collection && !self.belongsInCollection(self)) // move to ResourceList.onResourceChange when ready to generalize
+          self.collection.remove(self);
+          
+        success && success.apply(self, arguments);
+      };
 
       this.save(null, options);
     },
@@ -610,7 +613,7 @@ define('models/Resource', [
           if (props[sndName])
             continue;
           
-          if (isResourceProp) {
+          if (isResourceProp && U.isNativeModelParameter(shortName)) {
             var res = C.getResource(val);
             if (res) {
               props[sndName] = U.getDisplayName(res);
@@ -618,9 +621,12 @@ define('models/Resource', [
             
             if (U.isTempUri(val)) {
               Events.once('synced:' + val, function(data) {
-                self.set(shortName, data._uri);
-                if (self.getUri())
-                  self.save();
+                var newVal = U.getValue(data, '_uri');
+                if (newVal != self.get(shortName)) {
+                  self.set(shortName, newVal);
+                  if (self.getUri())
+                    self.save();
+                }
               });
             }
           }
@@ -844,7 +850,7 @@ define('models/Resource', [
       var props = this.attributes;
       for (var p in props) {
         var prop = meta[p];
-        if (prop && U.isResourceProp(prop)) {
+        if (prop && U.isResourceProp(prop) && U.isNativeModelParameter(p)) {
 //        if (prop && (prop.containerMember || prop.notifyContainer)) { // let's just notify all, it's cheap
           var val = props[p];
           if (!val) // might have gotten unset
@@ -1084,12 +1090,19 @@ define('models/Resource', [
             });
           }
           else {
-//            Events.trigger('navigate', new this.vocModel(conflict));
-            Events.trigger('cacheResource', new this.vocModel(conflict));
-            Events.trigger('messageBar', 'error', {
-              message: errorObj.details || "Uh oh. Seems whatever you're making <a href='{0}'>already exists</a>.".format(U.makePageUrl('view', conflict._uri)),
-              persist: false
-            });
+            if (this.isA('Intersection')) {
+              this.lastFetchOrigin = 'server';
+              this.set(this.parse(conflict, {overwriteUserChanges: true}));
+              return options.success(this, this.toJSON(), options);
+            }
+            else {
+  //            Events.trigger('navigate', new this.vocModel(conflict));
+              Events.trigger('cacheResource', new this.vocModel(conflict));
+              Events.trigger('messageBar', 'error', {
+                message: errorObj.details || "Uh oh. Seems whatever you're making <a href='{0}'>already exists</a>.".format(U.makePageUrl('view', conflict._uri)),
+                persist: false
+              });
+            }
           }
         }
         
