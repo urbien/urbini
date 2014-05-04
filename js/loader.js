@@ -1950,7 +1950,7 @@ define('globals', function() {
       head.removeChild(script);
     },
     support: {
-      pushState: G.preferPushState //!!(window.history && history.pushState && !browser.chrome)
+      pushState: G.preferPushState && window.history && history.pushState// && !browser.chrome
     },
     language: params['-lang'] || navigator.language.split('-')[0],
     tourGuideEnabled: false,

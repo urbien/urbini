@@ -1007,7 +1007,7 @@ define('router', [
       this._requestLogin({
         returnUri: params && params.$returnUri || G.appUrl,
         returnUriHash: params && params.$returnUriHash,
-        force: true
+        dismissible: false
 //        ,
 //        onDismiss: function() {
 //          self.goHome();
