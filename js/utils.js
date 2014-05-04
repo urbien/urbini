@@ -565,7 +565,8 @@ define('utils', [
     },   
     
     isResourceProp: function(prop) {
-      return prop && !prop.backLink && prop.range &&  !prop.range.endsWith('/Percent')  &&  prop.range.indexOf('/') != -1 && !U.isInlined(prop);
+      return prop && !prop.backLink && prop.range && (prop.range == 'Resource' || 
+                                                     (!prop.range.endsWith('/Percent')  &&  prop.range.indexOf('/') != -1 && !U.isInlined(prop)));
     },
 //    getSortProps: function(model) {
 //      var meta = this.model.__proto__.constructor.properties;
@@ -2594,8 +2595,12 @@ define('utils', [
     },
     
     getHash: function(decode) {
-      if (HAS_PUSH_STATE)
-        return window.location.href.slice(G.appUrl.length + 1);
+      if (HAS_PUSH_STATE) {
+        var path = window.location.href.slice(G.appUrl.length + 1),
+            hIdx = path.indexOf('#');
+        
+        return ~hIdx ? path.slice(0, hIdx) : path;
+      }
       else {
         var match = (window || this).location.href.match(/#(.*)$/),
             hash = match ? match[1] : '';
