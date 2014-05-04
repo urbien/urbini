@@ -509,7 +509,7 @@ define('views/ResourceView', [
 //          var $this = $(this);
         }
       }
-      else if (U.isAssignableFrom(vocModel, "Stock")) {
+      else if (U.isAssignableFrom(vocModel, "Stock") || U.isAssignableFrom(vocModel, "Index")) {
         this.chartHolder = this.getPageView().el.$('.stockCharts')[0];
         if (!this.chartHolder)
           return;
