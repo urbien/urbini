@@ -31,7 +31,10 @@ define('views/HomePage', [
     getStarted: function(e) {
       Events.stopEvent(e);
       if (G.currentUser.guest) {
-        Events.trigger('req-login', { onDismiss: G.emptyFn });
+        Events.trigger('req-login', { 
+          dismissible: true
+        });
+        
         return;
       }
       else {

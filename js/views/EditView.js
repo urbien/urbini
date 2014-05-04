@@ -761,7 +761,8 @@ define('views/EditView', [
       if (G.currentUser.guest) {
         // TODO; save to db before making them login? To prevent losing data entry
         Events.trigger('req-login', {
-          returnUri: U.getPageUrl(this.action, this.vocModel.type, res.attributes)
+          returnUri: U.getPageUrl(this.action, this.vocModel.type, res.attributes),
+          dismissible: false
         });
         
         return;
@@ -922,7 +923,8 @@ define('views/EditView', [
       switch (code) {
         case 401:
           Events.trigger('req-login', {
-            msg: 'You are not unauthorized to make these changes'
+            msg: 'You are not unauthorized to make these changes',
+            dismissible: false
           });
 //          Errors.errDialog({msg: msg || 'You are not authorized to make these changes', delay: 100});
 //          this.listenTo(Events, 401, msg || 'You are not unauthorized to make these changes');
