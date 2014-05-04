@@ -983,6 +983,11 @@
 </script>
 
 <script type="text/template" id="loginPopupTemplate">
+{{ if (obj.msg) { }}
+<div class="headerMessageBar" style="z-index: 100000; background: yellow; margin: 4%;">
+  {{= msg }}
+</div>
+{{ }              }}
 <table id="login_popup" class="social-login modal-popup">
   <!--h2>LOGIN</h2-->
   <tr>
