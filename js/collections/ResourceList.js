@@ -304,10 +304,10 @@ define('collections/ResourceList', [
             uri = resource.getUri();
           
         if (U.isTempUri(uri)) {
-          resource.once('uriChanged', function(oldUri) {
+          resource.once('syncedWithServer', function() {
             var newUri = resource.getUri();
-            self._byId[newUri] = self._byId[oldUri]; // HACK? we need to replace the internal models cache mapping to use the new uri
-            delete self._byId[oldUri];
+            self._byId[newUri] = self._byId[uri]; // HACK? we need to replace the internal models cache mapping to use the new uri
+            delete self._byId[uri];
           });
         }
         
