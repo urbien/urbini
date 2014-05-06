@@ -199,7 +199,6 @@ define('resourceManager', [
     },    
 
     deleteItem: function(item) {
-      debugger;
       var type = item.vocModel.type,
           uri = item.get('_uri'),
           REF_STORE = G.getRefStoreInfo();
@@ -316,10 +315,23 @@ define('resourceManager', [
   };
   
   Events.on('updatedResources', function(resources) {
-    if (resources.length) {
-//      G.whenNotRendering(function() {
-        Q.nonDom(RM.addItems.bind(RM, resources));
-//      });
+    var i = resources.length;
+    if (i) {
+      var atts,
+          val;
+      
+      //// HACK
+      while (i--) {
+        atts = resources[i].attributes;
+        for (var p in atts) {
+          val = atts[p];
+          if (val && val._list)
+            delete val._list;
+        }
+      }
+      //// HACK (remove when you figure out why _list is not parsed and removed earlier
+      
+      Q.nonDom(RM.addItems.bind(RM, resources));
     }
   });
 
@@ -452,39 +464,41 @@ define('resourceManager', [
     });
   }));
 
-  Events.on('inlineBacklinks', Q.defer.bind(Q, 5, 'nonDom', function(baseResource, backlinkInfos) {
-    var typeToBLInfos = getTypeToInfoMap(backlinkInfos);
-    Voc.getModels(_.keys(typeToBLInfos)).done(function() {
-      for (var type in typeToBLInfos) {
-        var blInfos = typeToBLInfos[type],
-            model = U.getModel(type);
-
-        _.each(blInfos, function(info) {
-          var prop = info.prop,
-              propName = prop.shortName,
-              inline = prop.displayInline,
-              setting = inline ? '_settingInlineList' : '_settingBackLink';
-          
-          var currentlySetting = baseResource[setting] || [];
-          if (_.contains(currentlySetting, propName))
-            return;
-          else
-            currentlySetting.push(propName);
-          
-          var rl = new ResourceList(info.list, {
-            model: model, 
-            params: U.getListParams(baseResource, prop), 
-            parse: true
-          }); // get this cached
-          
-          if (inline)
-            baseResource.setInlineList(prop.shortName, rl);
-          
-          currentlySetting = U.copyArray(currentlySetting, propName);
-        });
-      }
-    });    
-  }));
+//  Events.on('inlineBacklinks', function(baseResource, backlinkInfos) {
+//    Q.wait(1).done(function() {
+//      var typeToBLInfos = getTypeToInfoMap(backlinkInfos);
+//      Voc.getModels(_.keys(typeToBLInfos)).done(function() {
+//        for (var type in typeToBLInfos) {
+//          var blInfos = typeToBLInfos[type],
+//              model = U.getModel(type);
+//  
+//          _.each(blInfos, function(info) {
+//            var prop = info.prop,
+//                propName = prop.shortName,
+//                inline = prop.displayInline,
+//                setting = inline ? '_settingInlineList' : '_settingBackLink';
+//            
+//            var currentlySetting = baseResource[setting] || [];
+//            if (_.contains(currentlySetting, propName))
+//              return;
+//            else
+//              currentlySetting.push(propName);
+//            
+//            var rl = new ResourceList(info.list, {
+//              model: model, 
+//              params: U.getListParams(baseResource, prop), 
+//              parse: true
+//            }); // get this cached
+//            
+//            if (inline)
+//              baseResource.setInlineList(prop.shortName, rl);
+//            
+//            currentlySetting = U.copyArray(currentlySetting, propName);
+//          });
+//        }
+//      });    
+//    });
+//  });
 
   Events.on('createObjectStores', function(stores, cb) {
     RM.upgrade(stores).then(cb);

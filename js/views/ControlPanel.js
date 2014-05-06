@@ -556,6 +556,9 @@ define('views/ControlPanel', [
 
       if (!this.isMainGroup && _.size(res.inlineLists)) {
         _.each(res.inlineLists, function(list, name) {
+          if (!list.size())
+            return;
+          
           var listVocModel = list.vocModel;
           var listMeta = listVocModel.properties;
           var isCancelable = U.isA(listVocModel, 'Cancellable');

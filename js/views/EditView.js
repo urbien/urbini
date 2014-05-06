@@ -30,6 +30,7 @@ define('views/EditView', [
   };
 
   var scrollerTypes = ['date', 'duration'];
+//  var scrollerModules = ['mobiscroll', 'mobiscroll-datetime', 'mobiscroll-duration'];
   return BasicView.extend({
     autoFinish: false,
     initialize: function(options) {
@@ -285,7 +286,7 @@ define('views/EditView', [
     
     getScroller: function(prop, input) {
       var settings = {
-        theme: 'jqm',
+        theme: 'ios',
         display: 'modal',
         mode:'scroller',
         durationWheels: ['years', 'days', 'hours', 'minutes', 'seconds'],
@@ -331,12 +332,12 @@ define('views/EditView', [
       var self = this;
       var thisName = e.target.name;
       var meta = this.vocModel.properties;
-      var modules = ['mobiscroll'];
+//      var scrollerModules = ['mobiscroll', 'mobiscroll-datetime', 'mobiscroll-duration'];
       var scrollers = self.getScrollers();
-      if (_.any(scrollers, function(s) { return s.dataset.duration }))
-        modules.push('mobiscroll-duration');
+//      if (_.any(scrollers, function(s) { return s.dataset.duration }))
+//        modules.push('mobiscroll-duration');
       
-      U.require(modules, function() {
+      U.require('mobiscroll', function() {
         self.loadedScrollers = true;
         self.refreshScrollers();
         if (!dontClick) {
@@ -621,8 +622,8 @@ define('views/EditView', [
         var self = this;
         this.getScrollers().$forEach(function(scroller) {
           $(scroller).mobiscroll('destroy');
-          var prop = meta[this.name];
-          self.getScroller(prop, this);
+          var prop = meta[scroller.name];
+          self.getScroller(prop, scroller);
         });
       }
     },
@@ -869,7 +870,7 @@ define('views/EditView', [
         self.getInputs().$attr('disabled', false);
       }
       else
-        this.onerror(errors);
+        this.onerror(res, errors);
     },
     cancel: function(e) {
       if (!this.isActive())
@@ -981,10 +982,10 @@ define('views/EditView', [
       });
     },
     
-    onerror: function(errors) {
-      res.off('change', onsuccess, this);
+    onerror: function(res, errors) {
+      this._submitted = false;
       this.fieldError.apply(this, arguments);
-      inputs.attr('disabled', false);
+      this.getInputs().$attr('disabled', null);
 //      alert('There are errors in the form, please review');
     },
 
@@ -1011,7 +1012,13 @@ define('views/EditView', [
     },
     
     onSelected: function(e) {
-      var atts = {}, res = this.resource, input = e.target;
+      var atts = {}, 
+          res = this.resource, 
+          input;
+      
+//      if (arguments.length > 1)
+//        e = arguments[1];
+      
       if (this.isForInterfaceImplementor && input.type === 'checkbox') {
         var checked = input.checked;
 //        var val = res.get('interfaceClass.properties');

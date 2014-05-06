@@ -255,8 +255,14 @@ define('collections/ResourceList', [
       return new ResourceList(this.models.slice(), _.extend(_.pick(this, ['model', 'rUri', 'title', 'total'].concat(listParams)), {cache: false, params: _.clone(this.params)}));
     },
     onResourceChange: function(resource, options) {
+      var removed;
+      if (!this.belongsInCollection(resource)) {
+        this.remove(resource);
+        removed = true;
+      }
+      
       options = options || {};
-      if (!options.partOfUpdate)
+      if (!removed && !options.partOfUpdate)
         this.trigger('updated', [resource]);
     },
     
@@ -770,6 +776,7 @@ define('collections/ResourceList', [
         
         if ((forceMerge && newModelProps && _.size(newModelProps)) || !newLastModified || newLastModified > ts) {
           if (saved) {
+            saved.loadInlined(newData);
             saved.set(newData, {
               partOfUpdate: true  // to avoid updating collection (and thus views) 20 times
             }); 

@@ -453,13 +453,13 @@
     {{ if (this.filter) { }}
       <div style="margin:10px 0 0 10px; position:absolute;"><a class="filterToggle lightText" href="#"><i class="ui-icon-fasearch"></i></a></div> 
     {{ }                  }}
-    {{ if (obj.rootFolder) { }}
-      <div class="rootFolder actionBtn" style="position: absolute; padding: 4px 10px; margin: 10px 10px 0 10px; font-size: 1.5rem;">
+    {{ if (isFolderItem) { }}
+      <a class="rootFolder actionBtn" style="display: none; position: absolute; padding: 4px 10px; margin: 10px 10px 0 10px; font-size: 1.5rem;" href="{{= U.makePageUrl('view', this.rootFolder) }}">
         <i class="ui-icon-chevron-left" style="padding: 0px 3px 0px 0px"></i>
-        <a class="actionBtnText" href="{{= U.makePageUrl(rootFolder.action || 'view', rootFolder._uri, rootFolder.params) }}">{{= rootFolder.linkText }}</a>
-      </div>
+        <span>{{= U.getPropDisplayName(this.folderProp) }}</span>
+      </a>
     {{ }                     }}
-    {{ if (activatable) { }}
+    {{ if (isActivatable) { }}
       <section class="activatable" style="float: right; display: none;">
         <label class="pack-switch" style="right: 2rem;top:0rem;left:auto;position:absolute;color:{{= G.darkColor }};">
           <input type="checkbox" name="{{= activatedProp.shortName }}" class="formElement boolean" {{= this.resource.get(activatedProp.shortName) ? 'checked="checked"' : '' }} />
@@ -698,7 +698,7 @@
 <script type="text/template" id="datePET">
 <div class="_prim">
   <label for="{{= id }}" class="ui-input-text">{{= name }}</label>
-  <input id="{{= id }}" name="{{= shortName }}" {{= rules }} class="ui-input-text" value="{{= value }}" />
+  <input id="{{= id }}" name="{{= shortName }}" {{= rules }} class="i-txt ui-input-text" value="{{= value }}" />
 </div>
 </script>
 

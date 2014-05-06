@@ -124,6 +124,27 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       }
     }
     
+//    if (U.isAssignableFrom(vocModel, 'commerce/trading/Rule')) {
+//      var tradleFeed = C.getResource(res.get('tradleFeed'));
+//      if (tradleFeed) {
+//        var rules = tradleFeed.getInlineList('rules');
+//        if (!rules) {
+//          var tfModel = U.getModel('commerce/trading/TradleFeed');
+//          var where = tfModel.properties.rules.where;
+//          where = where ? U.getQueryParams(where) : {};
+//          where.tradleFeed = tradleFeed.getUri();
+//          rules = new ResourceList(null, {
+//            model: tfModel,
+//            params: where
+//          });
+//          
+//          tradleFeed.setInlineList('rules', rules);
+//        }
+//        
+//        rules.add(res);
+//      }
+//    }
+    
     var self = this,
         redirectInfoPromise = getRedirectInfo(res);
         
@@ -529,6 +550,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     var params;
     if (prop.where) {
       params = U.getQueryParams(prop.where);
+//      params = U.getListParams(res, prop);
       for (var p in params) {
         var val = params[p];
         var valPrefix = '';
@@ -664,14 +686,18 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
             userRole = U.getUserRole();
         
         for (var shortName in props) {
-          if (U.isNativeModelParameter(shortName) && U.isPropVisible(null, props[shortName], userRole)) {
+          var prop = props[shortName];
+          if (U.isNativeModelParameter(shortName) && U.isPropVisible(null, prop, userRole)) {
+            if (prop.range && (prop.range.endsWith('commerce/trading/Feed') || prop.range.endsWith('commerce/trading/TradleFeed'))) // HACK!
+              continue;
+            
             $in += ',' + shortName;
           }
         }
         
         rParams.$in = $in;
         rParams.domain = res.get('eventClass');
-        rParams.$title = 'Make a rule for ' + res.get('feed.displayName') + ' property...';
+        rParams.$title = 'Choose a rule for ' + res.get('feed.displayName') + ' property...';
         Events.trigger('navigate', U.makeMobileUrl('chooser', U.getTypeUri(range), rParams), options);
       });
       
@@ -897,7 +923,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       params = params ? U.getQueryParams(params) : {};
       params.$title = urlInfo.params.$title + ' ' + valueRes.get('label');
       
-      Events.trigger('navigate', U.makeMobileUrl('make', valueRes.get('davClassUri'), params), { replace: true });
+      Events.trigger('navigate', U.makeMobileUrl('make', valueRes.get('davClassUri'), params));
       return;
     }
     
@@ -960,9 +986,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
         $createInstance: 'y',
         $props: $.param(_.extend(U.filterObj(res.attributes, U.isNativeModelParameter), props)),
         $title: (prevTitle || res.get('feed.displayName')) + ' ' + valueRes.get('davDisplayName')
-      }), {
-        replace: true
-      });
+      }));
       
       return;
     }

@@ -509,6 +509,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       Events.trigger('dbOpen');
     });
     
+    console.log("opening indexedDB");
     return this.$idb;
   };
   

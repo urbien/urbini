@@ -48,7 +48,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
         resourcesByUri[uri] = resource;
       
 //      resourcesByCid[resource.cid] = resource;
-    }
+    };
     
     function uncacheResource(/* resource, cid or uri */) {
       var uri, 
@@ -536,15 +536,18 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
   Events.on('uncacheView', viewCache.uncacheView);
   Events.on('cacheList', resourceCache.cacheList);
   Events.on('cacheResource', resourceCache.cacheResource);
+//  Events.on('savedMake', resourceCache.updateResource);
   Events.on('uncacheList', resourceCache.uncacheList);
   Events.on('uncacheResource', resourceCache.uncacheResource);
+  Events.on('delete', resourceCache.uncacheResource);
   Events.on('newModel', cacheModel);
   
   Events.on('savedMake', function(resource) {
     resourceCache.cacheResource(resource);
     var tempUri = resource.getUri();
     resource.on('syncedWithServer', function() {
-      resourceCache.uncacheResource(tempUri);
+//      resourceCache.uncacheResource(tempUri);
+      resourceCache.cacheResource(resource);
     });
   });
 //  Events.on('newPlugs', C.cachePlugs);
