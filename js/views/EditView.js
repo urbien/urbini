@@ -1039,11 +1039,12 @@ define('views/EditView', [
       }
       
       if (arguments.length > 1) {
-        var val = arguments[0];
-        var scroller = arguments[1];
-        var settings = scroller.settings;
-        var name = settings.shortName,
-            input = settings.input;
+        var val = arguments[0],
+            scroller = arguments[1],
+            settings = scroller.settings,
+            name = settings.shortName;
+        
+        input = settings.input;
         
         switch (settings.__type) {
           case 'date': {
@@ -1065,8 +1066,8 @@ define('views/EditView', [
         }
       }
       else {
-        var t = e.target;
-        atts[t.name] = this.getValue(t);
+        input = e.target;
+        atts[input.name] = this.getValue(input);
       }
 
       this.setValues(atts, {onValidationError: this.fieldError, onValidated: getRemoveErrorLabelsFunction(input)});
@@ -1639,7 +1640,7 @@ define('views/EditView', [
         
         var didSet = this.setValues(name, value, {onValidated: getRemoveErrorLabelsFunction(input), onValidationError: this.fieldError});
         if (didSet)
-          this.form.$trigger('submit');
+          this.submit();
         
         return false;
       } else  {

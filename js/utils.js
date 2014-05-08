@@ -209,8 +209,8 @@ define('utils', [
         if (opts.success) defer.done(opts.success);
         if (opts.error) defer.fail(opts.error);
         
-        if (opts.url == null || opts.url.slice(opts.url.length - 'null'.length) == 'null')
-            debugger;
+//        if (opts.url == null || opts.url.slice(opts.url.length - 'null'.length) == 'null')
+//            debugger;
 
         if (useWorker) {
           log('xhr', 'webworker', opts.url);
@@ -1043,7 +1043,7 @@ define('utils', [
         if (col == '')
           continue;
         var prop = vocModel.properties[col];
-        if (!prop)
+        if (!prop || prop.backLink)
           return;
         
         var val = res.get(col);
@@ -3773,7 +3773,7 @@ define('utils', [
     },
     
     getUrlInfo: function(hash) {
-      return new UrlInfo(hash);
+      return new UrlInfo(hash || U.getHash());
     },
 
     getPropFn: function(obj, prop, clone) {
@@ -4082,6 +4082,16 @@ define('utils', [
       }
       else
         throw "Cloning unsupported";
+    },
+    isListRoute: function(route) {
+      return _.contains(['list', 'chooser', 'templates'], route);
+    },
+    isResourceRoute: function(route) {
+//      return !this.isListRoute(route);
+      return !U.isListRoute(route) && route != 'make';
+    },
+    isWriteRoute: function(route) {
+      return _.contains(['make', 'edit'], route);
     }
   };
   
@@ -4169,7 +4179,7 @@ define('utils', [
         info,
         subInfo;
 
-    if (HAS_PUSH_STATE && G.router.isResourceRoute(route)) {
+    if (HAS_PUSH_STATE && U.isResourceRoute(route)) {
       var uriParams = {};
       for (var param in params) {
         if (U.isModelParameter(param)) {

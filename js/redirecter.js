@@ -10,7 +10,8 @@
 define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocManager', 'collections/ResourceList', '@widgets'], function(G, _, U, C, Events, Voc, ResourceList, $m) {
   var redirecter,
       interfaceImplementorType = 'system/designer/InterfaceImplementor',
-      connectionType = G.commonTypes.Connection;
+      connectionType = G.commonTypes.Connection,
+      CHOOSE_RULE_FOR = 'Choose a rule for ';
   
   function Redirecter() {
   }
@@ -680,24 +681,33 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
 //      rParams['-info'] = 'Choose a feed for your Tradle';
     
     if (isRule && !isLinkRule) {
-      var $in = 'name';
-      Voc.getModels(U.getTypeUri(res.get('eventClassRangeUri'))).done(function(eventCl) {
+      var $in = 'name',
+          eventClassRangeUri = res.get('eventClassRangeUri');
+      
+      if (!eventClassRangeUri) {
+        Events.trigger('back')
+        return;
+      }
+      
+      Voc.getModels(U.getTypeUri(eventClassRangeUri)).done(function(eventCl) {
         var props = eventCl.properties,
-            userRole = U.getUserRole();
+            userRole = U.getUserRole(),
+            isIndexEvent = U.isAssignableFrom(eventCl, 'commerce/trading/IndexEvent');
         
         for (var shortName in props) {
           var prop = props[shortName];
-          if (U.isNativeModelParameter(shortName) && U.isPropVisible(null, prop, userRole)) {
-            if (prop.range && (prop.range.endsWith('commerce/trading/Feed') || prop.range.endsWith('commerce/trading/TradleFeed'))) // HACK!
-              continue;
-            
+          if (!prop.backLink && 
+              (!prop.subPropertyOf || !prop.subPropertyOf.endsWith('/feed')) && 
+              (!isIndexEvent || shortName != 'index') && 
+              U.isNativeModelParameter(shortName) && 
+              U.isPropVisible(null, prop, userRole)) {
             $in += ',' + shortName;
           }
         }
         
         rParams.$in = $in;
         rParams.domain = res.get('eventClass');
-        rParams.$title = 'Choose a rule for ' + res.get('feed.displayName') + ' property...';
+        rParams.$title = CHOOSE_RULE_FOR + res.get('feed.displayName') + ' property...';
         Events.trigger('navigate', U.makeMobileUrl('chooser', U.getTypeUri(range), rParams), options);
       });
       
@@ -921,7 +931,11 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     if (urlInfo.params.$createInstance == 'y') {
       var params = urlInfo.params.$props;
       params = params ? U.getQueryParams(params) : {};
-      params.$title = urlInfo.params.$title + ' ' + valueRes.get('label');
+      var prevTitle = urlInfo.params.$title;
+      if (prevTitle.startsWith(CHOOSE_RULE_FOR))
+        prevTitle = prevTitle.slice(CHOOSE_RULE_FOR.length);
+      
+      params.$title = prevTitle + ' ' + valueRes.get('label');
       
       Events.trigger('navigate', U.makeMobileUrl('make', valueRes.get('davClassUri'), params));
       return;
@@ -978,8 +992,8 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       }
 
       var prevTitle = urlInfo.params.$title;
-      if (prevTitle && prevTitle.endsWith('...'))
-        prevTitle = prevTitle.slice(0, prevTitle.length - 3);
+      if (prevTitle && prevTitle.endsWith('property...'))
+        prevTitle = prevTitle.slice(0, prevTitle.length - 11) + ' - ';
 
       Events.trigger('navigate', U.makeMobileUrl('chooser', 'system/designer/WebClass', {
         subClassOfUri: G.defaultVocPath + subClassOf,

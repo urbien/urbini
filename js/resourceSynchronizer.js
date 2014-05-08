@@ -385,7 +385,7 @@ define('resourceSynchronizer', [
         }
       });
     }, function() {
-      debugger;
+//      debugger;
       syncWithServer(2000); // queue up another sync      
     });
   }

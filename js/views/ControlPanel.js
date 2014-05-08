@@ -561,7 +561,7 @@ define('views/ControlPanel', [
           
           var listVocModel = list.vocModel;
           var listMeta = listVocModel.properties;
-          var isCancelable = U.isA(listVocModel, 'Cancellable');
+          var isCancelable = false; //U.isA(listVocModel, 'Cancellable');
           var canceledProp;
           if (isCancelable) {
             canceledProp = listMeta[U.getCloneOf(listVocModel, 'Cancellable.cancelled')[0]];

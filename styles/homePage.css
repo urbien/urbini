@@ -6,7 +6,7 @@ html {
   height: 100%;
   background: none;
   background-image: none;
-  text-shadow: 0 1px 0 #000;
+/*  text-shadow: 0 1px 0 #000;*/
   overflow: visible;
 }
 
@@ -386,7 +386,7 @@ body > .section:not([data-role="page"]) {
 	line-height: 50px; 
 	height: 50px; 
 	font-family: Lato; 
-	padding: 20px 50px 15px 50px;
+	padding: 22px 50px 13px 50px;
 	border-radius: 0.2rem;
 }
 

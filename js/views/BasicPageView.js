@@ -306,7 +306,15 @@ define('views/BasicPageView', [
         this.onpage_show(this.runTourStep.bind(this, step));
     },
     
-    runTourStep: function(step) {      
+    runTourStep: function(step) {
+      if (!this.rendered) {
+        this.onload(function() {
+          if (this.isActive())
+            this.runTourStep(step);
+        }, this);
+        return;
+      }
+      
       var element,
           info = step.get('infoMessage');
       
