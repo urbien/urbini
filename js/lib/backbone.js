@@ -363,6 +363,11 @@
             this.trigger('change:' + changes[i], this, current[changes[i]], options);
           }
         }
+        else {
+          var idIdx = changes.indexOf(this.idAttribute);
+          if (~idIdx)
+            this.trigger('change:' + changes[idIdx], this, current[changes[idIdx]], options);
+        }
       }
 
       // You might be wondering why there's a `while` loop here. Changes can

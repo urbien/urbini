@@ -498,7 +498,10 @@ define('views/ControlPanel', [
                     self.stopListening(inlineList, event);
                     self.listenTo(inlineList, event, function(resources) {
                       resources = U.isCollection(resources) ? resources.models : U.isModel(resources) ? [resources] : resources;
-                      var options = {};
+                      var options = {
+                        force: true
+                      };
+                      
                       options[event] = true;
                       self.refresh(resources, options);
                     });
@@ -508,7 +511,7 @@ define('views/ControlPanel', [
                 if (!inlineList.isFetching() && !inlineList.isOutOfResources()) // get them all!
                   inlineList.getNextPage(fetchOptions);
 
-                if (inlineList.size() && !res._settingInlineList && !currentlyInlined[name])
+                if (!res._settingInlineList && !currentlyInlined[name])
                   res.setInlineList(name, inlineList);
               };
               
