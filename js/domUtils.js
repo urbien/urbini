@@ -139,11 +139,15 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
 //  window.addEventListener('orientationchange', saveViewportSize); 
 //  window.addEventListener('debouncedresize', saveViewportSize); 
 
-  function getElementArray(els) {
+  function isElementCollection(els) {
     return els instanceof Array ||
            els instanceof NodeList || 
-           els instanceof HTMLCollection ? els : els && [els];
-  }
+           els instanceof HTMLCollection;
+  };
+  
+  function getElementArray(els) {
+    return isElementCollection(els) ? els : els && [els];
+  };
 
   function newNodeList() {
     var frag = document.createDocumentFragment();
@@ -423,7 +427,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           if (typeof htmlOrFrag == 'string')
             htmlOrFrag = DOM.parseHTML(htmlOrFrag);
           
-          (htmlOrFrag instanceof Array) ? htmlOrFrag[0].$before(this.firstChild) : htmlOrFrag.$before(this.firstChild);
+          isElementCollection(htmlOrFrag) ? htmlOrFrag[0].$before(this.firstChild) : htmlOrFrag.$before(this.firstChild);
 //           htmlOrFrag.$before(this.firstChild);
         }
         
@@ -439,7 +443,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           }
           else if (htmlOrFrag instanceof Node)
             this.appendChild(htmlOrFrag);
-          else if (htmlOrFrag instanceof Array || htmlOrFrag instanceof NodeList || htmlOrFrag instanceof HTMLCollection) {
+          else if (isElementCollection(htmlOrFrag)) {
             for (var j = 0, l = htmlOrFrag.length; j < l; j++) {
               this.appendChild(htmlOrFrag[j]);
               if (htmlOrFrag.length < l) {

@@ -174,11 +174,11 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
         Physics.enableDrag();
         if (self.promise.state() == 'resolved' && self.from) {
           self.from.turnOffPhysics();
-          self.from.$el.trigger('page_hide');
+//          self.from.$el.trigger('page_hide');
           Physics.there.style(self.from.getContainerBodyId(), {
             opacity: 0
           });
-        }
+        }        
       });
     },
     transition: function() {

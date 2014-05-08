@@ -717,7 +717,12 @@ define('app', [
       App.started = true;
       if (window.location.hash == '#_=_' && !G.support.pushState) {
         G.log(App.TAG, "info", "hash stripped");
-        window.location.hash = '';
+        if (G.support.pushState) {
+//          window.location.replace(window.location.href.slice(0, window.location.href.indexOf('#')));
+//          return;
+        }
+        else
+          window.location.hash = '';
       }
 
       App.router = new Router();

@@ -542,8 +542,11 @@ define('views/Header', [
     
     refreshActivated: function() {
       if (this._activatable) {
-        this.$('.activatable')[0].$show()
+        var activatables = this.$('.activatable');
+        if (activatables.length > 0) {
+          activatables[0].$show()
             .$('input')[0].checked = this.resource.get(this.activatedProp.shortName) ? 'checked' : '';
+        }
       }
     },
     
