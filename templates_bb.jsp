@@ -98,7 +98,7 @@
       <!--br/>
       <br/-->
     {{ } }}
-    <section data-type="list" style="background:{{= G.lightColor }}">
+    <section data-type="list">
       <ul id="cpView">
       </ul>
     </section>
@@ -133,7 +133,7 @@
 <script type="text/template" id="inlineListItemTemplate">
 <!-- one row of an inline backlink in view mode -->
 <li data-viewid="{{= viewId }}" data-backlink="{{= backlink }}">
-  <a href="{{= href }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="padding:1rem 0 1rem 0;">
+  <a href="{{= href }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="padding:1rem 0;">
     {{ if (obj.img) { }}
       <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
       {{ if (obj.top) { }}  
@@ -147,7 +147,7 @@
       data-for="{{= U.getImageAttribute(resource, imageProperty) }}"
       class="lazyImage" />
     {{ } }}
-    <span style="font-size:1.6rem;font-weight:bold;">{{= name }}{{= obj.gridCols ? '<br/>' + gridCols : '' }}</span>
+    <span style="font-size:1.6rem;font-weight:bold;">{{= obj.gridCols  ? (obj.gridCols.indexOf(name) == -1 ? name + '<br/>' + gridCols : gridCols) : name }}</span>
   </a>
   {{ if (typeof comment != 'undefined') { }}
     <p>{{= comment }}</p>
@@ -298,7 +298,7 @@
 
 <script type="text/template" id="propGroupsDividerTemplate">
   <!-- row divider / property group header in resource view -->
-  <header {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';border-bottom:1px solid ' + G.coverImage.background + ';"' : '' }}>{{= value }}</header>
+  <header {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';"' : '' }}>{{= value }}</header>
 </script>
 
 <script type="text/template" id="saveButtonTemplate">
