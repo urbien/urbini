@@ -101,7 +101,7 @@
 <script type="text/template" id="inlineListItemTemplate">
 <!-- one row of an inline backlink in view mode -->
 <li data-viewid="{{= viewId }}" class="topcoat-list__item" {{= obj.img ? 'style="padding:0;"' : ''}}>
-  <a href="{{= _uri }}" {{= obj._problematic ? 'class="problematic"' : '' }}>
+  <a href="{{= href }}" {{= obj._problematic ? 'class="problematic"' : '' }}>
     {{ if (obj.img) { }}
       <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
       {{ if (obj.top) { }}  
