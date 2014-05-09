@@ -30,6 +30,7 @@ define('views/EditView', [
   };
 
   var scrollerTypes = ['date', 'duration'];
+//  var scrollerModules = ['mobiscroll', 'mobiscroll-datetime', 'mobiscroll-duration'];
   return BasicView.extend({
     autoFinish: false,
     initialize: function(options) {
@@ -285,7 +286,7 @@ define('views/EditView', [
     
     getScroller: function(prop, input) {
       var settings = {
-        theme: 'jqm',
+        theme: 'ios',
         display: 'modal',
         mode:'scroller',
         durationWheels: ['years', 'days', 'hours', 'minutes', 'seconds'],
@@ -331,12 +332,12 @@ define('views/EditView', [
       var self = this;
       var thisName = e.target.name;
       var meta = this.vocModel.properties;
-      var modules = ['mobiscroll'];
+//      var scrollerModules = ['mobiscroll', 'mobiscroll-datetime', 'mobiscroll-duration'];
       var scrollers = self.getScrollers();
-      if (_.any(scrollers, function(s) { return s.dataset.duration }))
-        modules.push('mobiscroll-duration');
+//      if (_.any(scrollers, function(s) { return s.dataset.duration }))
+//        modules.push('mobiscroll-duration');
       
-      U.require(modules, function() {
+      U.require('mobiscroll', function() {
         self.loadedScrollers = true;
         self.refreshScrollers();
         if (!dontClick) {
@@ -621,8 +622,8 @@ define('views/EditView', [
         var self = this;
         this.getScrollers().$forEach(function(scroller) {
           $(scroller).mobiscroll('destroy');
-          var prop = meta[this.name];
-          self.getScroller(prop, this);
+          var prop = meta[scroller.name];
+          self.getScroller(prop, scroller);
         });
       }
     },
@@ -761,7 +762,8 @@ define('views/EditView', [
       if (G.currentUser.guest) {
         // TODO; save to db before making them login? To prevent losing data entry
         Events.trigger('req-login', {
-          returnUri: U.getPageUrl(this.action, this.vocModel.type, res.attributes)
+          returnUri: U.getPageUrl(this.action, this.vocModel.type, res.attributes),
+          dismissible: false
         });
         
         return;
@@ -868,7 +870,7 @@ define('views/EditView', [
         self.getInputs().$attr('disabled', false);
       }
       else
-        this.onerror(errors);
+        this.onerror(res, errors);
     },
     cancel: function(e) {
       if (!this.isActive())
@@ -922,7 +924,8 @@ define('views/EditView', [
       switch (code) {
         case 401:
           Events.trigger('req-login', {
-            msg: 'You are not unauthorized to make these changes'
+            msg: 'You are not unauthorized to make these changes',
+            dismissible: false
           });
 //          Errors.errDialog({msg: msg || 'You are not authorized to make these changes', delay: 100});
 //          this.listenTo(Events, 401, msg || 'You are not unauthorized to make these changes');
@@ -979,10 +982,10 @@ define('views/EditView', [
       });
     },
     
-    onerror: function(errors) {
-      res.off('change', onsuccess, this);
+    onerror: function(res, errors) {
+      this._submitted = false;
       this.fieldError.apply(this, arguments);
-      inputs.attr('disabled', false);
+      this.getInputs().$attr('disabled', null);
 //      alert('There are errors in the form, please review');
     },
 
@@ -1009,7 +1012,13 @@ define('views/EditView', [
     },
     
     onSelected: function(e) {
-      var atts = {}, res = this.resource, input = e.target;
+      var atts = {}, 
+          res = this.resource, 
+          input;
+      
+//      if (arguments.length > 1)
+//        e = arguments[1];
+      
       if (this.isForInterfaceImplementor && input.type === 'checkbox') {
         var checked = input.checked;
 //        var val = res.get('interfaceClass.properties');
@@ -1030,11 +1039,12 @@ define('views/EditView', [
       }
       
       if (arguments.length > 1) {
-        var val = arguments[0];
-        var scroller = arguments[1];
-        var settings = scroller.settings;
-        var name = settings.shortName,
-            input = settings.input;
+        var val = arguments[0],
+            scroller = arguments[1],
+            settings = scroller.settings,
+            name = settings.shortName;
+        
+        input = settings.input;
         
         switch (settings.__type) {
           case 'date': {
@@ -1056,8 +1066,8 @@ define('views/EditView', [
         }
       }
       else {
-        var t = e.target;
-        atts[t.name] = this.getValue(t);
+        input = e.target;
+        atts[input.name] = this.getValue(input);
       }
 
       this.setValues(atts, {onValidationError: this.fieldError, onValidated: getRemoveErrorLabelsFunction(input)});
@@ -1630,7 +1640,7 @@ define('views/EditView', [
         
         var didSet = this.setValues(name, value, {onValidated: getRemoveErrorLabelsFunction(input), onValidationError: this.fieldError});
         if (didSet)
-          this.form.$trigger('submit');
+          this.submit();
         
         return false;
       } else  {

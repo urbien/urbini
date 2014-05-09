@@ -82,7 +82,7 @@
 <delete "Delete">
 <actions "Actions">
 <wouldYouLikeToChatInPrivate "Would you like to chat in private?">
-<login "Login">
+<login "Please login">
 <youreOfflinePleaseLogin "You are currently offline, please get online and try again">
 <allow "Allow">
 <deny "Deny">

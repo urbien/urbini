@@ -228,11 +228,11 @@ define('resourceSynchronizer', [
   };
 
   ResourceSynchronizer.prototype._getKey = function() {
-    var hash = window.location.hash;
+    var urlInfo = U.getCurrentUrlInfo();
     if (this.info && !_.isUndefined(this.info.key))
       return this.info.key;
     else
-      return hash && hash.startsWith('#make') ? null : U.getLongUri1(this.data.getUri());
+      return urlInfo.route == 'make' ? null : U.getLongUri1(this.data.getUri(), this.data.vocModel);
   };
   
   ResourceSynchronizer.sync = function() {
@@ -385,7 +385,7 @@ define('resourceSynchronizer', [
         }
       });
     }, function() {
-      debugger;
+//      debugger;
       syncWithServer(2000); // queue up another sync      
     });
   }
@@ -423,7 +423,7 @@ define('resourceSynchronizer', [
     resource.save(atts, { // ref has only the changes the user made
       sync: true, 
       fromDB: true,
-      success: function(model, data, options) {
+      success: function success(model, data, options) {
         if (!data) { // probably it was canceled and deleted
           checkDelete(model);
           dfd.resolve();
@@ -488,10 +488,26 @@ define('resourceSynchronizer', [
       },
       error: function(model, xhr, options) {
         var code = xhr.status || xhr.code;
-        if (code == 0) { // timeout
-          ResourceSynchronizer.sync();
-          return;
+        switch (code) { // timeout
+          case 0:
+            return ResourceSynchronizer.sync();
+//          case 409:
+//            if (isNew) {
+//              ref._tempUri = ref._uri;
+//              ref._uri = model.getUri();
+//              var i = refs.length,
+//                  r;
+//              
+//              while (i--) {
+//                r = refs[i];
+//                if (r != ref)
+//                  updateReferences(r);
+//              }
+//  //            success(model, model.toJSON(), options);
+//              return;
+//            }
         }
+        
 //          else if (code == 304)
 //            return;
         
@@ -541,7 +557,6 @@ define('resourceSynchronizer', [
   }
   
   function deleteItem(item) {
-    debugger;
     var IDB = IndexedDBModule.getIDB(),
         type = item.vocModel.type,
         uri = item.get('_uri');

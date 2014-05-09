@@ -306,7 +306,15 @@ define('views/BasicPageView', [
         this.onpage_show(this.runTourStep.bind(this, step));
     },
     
-    runTourStep: function(step) {      
+    runTourStep: function(step) {
+      if (!this.rendered) {
+        this.onload(function() {
+          if (this.isActive())
+            this.runTourStep(step);
+        }, this);
+        return;
+      }
+      
       var element,
           info = step.get('infoMessage');
       
@@ -601,9 +609,8 @@ define('views/BasicPageView', [
         Events.trigger('messageBar', event, events[event]);
       }
 
-      // commented out for now as it currently causes a page refresh 
-//      if (hash != this.hash)
-//        Events.trigger('navigate', hash, {trigger: false, replace: true});
+      if (hash != this.hash)
+        Events.trigger('navigate', hash, {trigger: false, replace: true});
     },
     
     isActivePage: function() {

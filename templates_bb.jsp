@@ -98,7 +98,7 @@
       <!--br/>
       <br/-->
     {{ } }}
-    <section data-type="list" style="background:{{= G.lightColor }}">
+    <section data-type="list">
       <ul id="cpView">
       </ul>
     </section>
@@ -132,8 +132,8 @@
 
 <script type="text/template" id="inlineListItemTemplate">
 <!-- one row of an inline backlink in view mode -->
-<li data-viewid="{{= viewId }}">
-  <a href="{{= href }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="padding:1rem 0 1rem 0;">
+<li data-viewid="{{= viewId }}" data-backlink="{{= backlink }}">
+  <a href="{{= href }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="padding:1rem 0;">
     {{ if (obj.img) { }}
       <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
       {{ if (obj.top) { }}  
@@ -147,10 +147,16 @@
       data-for="{{= U.getImageAttribute(resource, imageProperty) }}"
       class="lazyImage" />
     {{ } }}
-    <span style="font-size:1.6rem;font-weight:bold;">{{= name }}{{= obj.gridCols ? '<br/>' + gridCols : '' }}</span>
+    <span style="font-size:1.6rem;font-weight:bold;">{{= obj.gridCols  ? (obj.gridCols.indexOf(name) == -1 ? name + '<br/>' + gridCols : gridCols) : name }}</span>
   </a>
   {{ if (typeof comment != 'undefined') { }}
     <p>{{= comment }}</p>
+  {{ } }}
+
+  {{ if (obj.Cancelable && !Cancelable.canceled) { }}
+    <a style="width: auto; height: auto; float: right; padding: 1rem; position: absolute; top: 0; right: 0;" href="#" data-uri="{{= resource.getUri() }}" data-cancel="true">
+      <i class="ui-icon-remove"></i>
+    </a>
   {{ } }}
   </a>
 </li>
@@ -292,7 +298,7 @@
 
 <script type="text/template" id="propGroupsDividerTemplate">
   <!-- row divider / property group header in resource view -->
-  <header {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';border-bottom:1px solid ' + G.coverImage.background + ';"' : '' }}>{{= value }}</header>
+  <header {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';"' : '' }}>{{= value }}</header>
 </script>
 
 <script type="text/template" id="saveButtonTemplate">
@@ -440,22 +446,23 @@
   </div>
   <div id="buttons" style="position:relative">  
     {{ if (this.categories) { }}
-       <div style="position:absolute;top:14px;padding-left:10px;"><a id="categories" href="#" {{= G.coverImage ? 'style="background:' + G.lightColor + ';color:' + G.darkColor +';"' : '' }}>
+       <div style="position:absolute;top:14px;padding-left:10px;"><a id="categories" class="lightDark" href="#">
        <i class="ui-icon-tags"></i></a></div> 
     {{ } }} 
     {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
     {{ if (this.filter) { }}
-      <div style="margin:10px 0 0 10px; position:absolute;"><a class="filterToggle" href="#" style="color:{{= G.lightColor }}"><i class="ui-icon-fasearch"></i></a></div> 
+      <div style="margin:10px 0 0 10px; position:absolute;"><a class="filterToggle lightText" href="#"><i class="ui-icon-fasearch"></i></a></div> 
     {{ }                  }}
-    {{ if (obj.rootFolder) { }}
-      <div class="rootFolder" style="float: right; background:{{= G.lightColor }}; color: {{= G.darkColor }}; padding: 5px 5px; margin: 10px 10px 0 10px;">
-        <a href="{{= U.makePageUrl(rootFolder.action || 'view', rootFolder._uri, rootFolder.params) }}">{{= rootFolder.linkText }}</a>
-      </div>
+    {{ if (isFolderItem) { }}
+      <a class="rootFolder actionBtn" style="display: none; position: absolute; padding: 4px 10px; margin: 10px 10px 0 10px; font-size: 1.5rem;" href="{{= U.makePageUrl('view', this.rootFolder) }}">
+        <i class="ui-icon-chevron-left" style="padding: 0px 3px 0px 0px"></i>
+        <span>{{= U.getPropDisplayName(this.folderProp) }}</span>
+      </a>
     {{ }                     }}
-    {{ if (obj.Activatable) { }}
-      <section class="activatable" style="float: right">
+    {{ if (isActivatable) { }}
+      <section class="activatable" style="float: right; display: none;">
         <label class="pack-switch" style="right: 2rem;top:0rem;left:auto;position:absolute;color:{{= G.darkColor }};">
-          <input type="checkbox" name="{{= Activatable.prop.shortName }}" class="formElement boolean" {{= Activatable.activated ? 'checked="checked"' : '' }} />
+          <input type="checkbox" name="{{= activatedProp.shortName }}" class="formElement boolean" {{= this.resource.get(activatedProp.shortName) ? 'checked="checked"' : '' }} />
           <span style="top:2rem"></span>
         </label>
       </section>
@@ -691,7 +698,7 @@
 <script type="text/template" id="datePET">
 <div class="_prim">
   <label for="{{= id }}" class="ui-input-text">{{= name }}</label>
-  <input id="{{= id }}" name="{{= shortName }}" {{= rules }} class="ui-input-text" value="{{= value }}" />
+  <input id="{{= id }}" name="{{= shortName }}" {{= rules }} class="i-txt ui-input-text" value="{{= value }}" />
 </div>
 </script>
 

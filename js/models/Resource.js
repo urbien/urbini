@@ -83,10 +83,10 @@ define('models/Resource', [
         Events.trigger('inlineResources', self, resources);
       });
       
-      this.on('inlineBacklinks', function(backlinks) {        
-        Events.trigger('inlineBacklinks', self, backLinks);
-      });
-
+//      this.on('inlineBacklinks', function(backLinks) {        
+//        Events.trigger('inlineBacklinks', self, backLinks);
+//      });
+//
 //      this.checkIfLoaded();
     },
     
@@ -159,7 +159,7 @@ define('models/Resource', [
         return val;
       
       var prop = vocModel.properties[propName];
-      if (prop && !prop.backLink && U.isResourceProp(prop)) {
+      if (prop && !prop.backLink && U.isResourceProp(prop) && U.isNativeModelParameter(propName)) {
         if (val) {
           if (prop.range.endsWith('model/portal/Video'))
             return val;
@@ -300,10 +300,16 @@ define('models/Resource', [
       var success = options.success;
       options.success = function(resource, response, options) {
         if (!response || !response.error)          
-          this.trigger('cancel');
+          self.trigger('cancel');
         
-        success && success.apply(this, arguments);
-      }.bind(this);
+//        if (self.collection && !self.collection.belongsInCollection(self)) // move to ResourceList.onResourceChange when ready to generalize
+//          self.collection.remove(self);
+          
+        success && success.apply(self, arguments);
+//        if (self.vocModel.deleteOnCancel) {
+        Events.trigger('delete', self);
+//        }
+      };
 
       this.save(null, options);
     },
@@ -435,9 +441,7 @@ define('models/Resource', [
       if (lf)
         resp._lastFetchedOn = lf;
       
-      if (!this.loaded)
-        this.loadInlined(resp);
-      
+      this.loadInlined(resp);      
       return resp;
     },
     
@@ -610,7 +614,7 @@ define('models/Resource', [
           if (props[sndName])
             continue;
           
-          if (isResourceProp) {
+          if (isResourceProp && U.isNativeModelParameter(shortName)) {
             var res = C.getResource(val);
             if (res) {
               props[sndName] = U.getDisplayName(res);
@@ -618,9 +622,12 @@ define('models/Resource', [
             
             if (U.isTempUri(val)) {
               Events.once('synced:' + val, function(data) {
-                self.set(shortName, data._uri);
-                if (self.getUri())
-                  self.save();
+                var newVal = U.getValue(data, '_uri');
+                if (newVal != self.get(shortName)) {
+                  self.set(shortName, newVal);
+                  if (self.getUri())
+                    self.save();
+                }
               });
             }
           }
@@ -642,7 +649,7 @@ define('models/Resource', [
 //        var prop = meta[p];
 //        props[p] = U.getFlatValue(prop, props[p]);
 //      }
-      
+
       var result = Backbone.Model.prototype.set.call(this, props, options);
       if (result) {
 //        this._resetEditableProps();
@@ -664,12 +671,30 @@ define('models/Resource', [
     },
     
     validate: function(attrs, options) {
-      if (this.lastFetchOrigin !== 'edit')
+      options = options || {};
+      if (options.skipValidation)
         return;
       
-      options = options || {};
+      if (this.lastFetchOrigin !== 'edit' && !options.validateAll)
+        return;
+      
       var errors = {};
-      var props = options.validateAll ? _.extend({}, this.attributes, attrs) : attrs;
+      var props;
+      var meta = this.vocModel.properties;
+      if (options.validateAll) {
+        props = {};
+        var role = U.getUserRole();
+        for (var p in meta) {
+          var prop = meta[p];
+          if (prop && U.isNativeModelParameter(p) && U.isPropEditable(this, prop, role))
+            props[p] = this.get(p);
+        }
+        
+        _.extend(props, attrs);
+      }
+      else
+        props = attrs;
+      
       for (var name in props) {
         var error = this.validateProperty(props, name, options);
         if (error !== true)
@@ -844,14 +869,40 @@ define('models/Resource', [
       var props = this.attributes;
       for (var p in props) {
         var prop = meta[p];
-        if (prop && U.isResourceProp(prop)) {
+        if (!prop || !U.isResourceProp(prop) || !U.isNativeModelParameter(p))
+          continue;
+        
 //        if (prop && (prop.containerMember || prop.notifyContainer)) { // let's just notify all, it's cheap
-          var val = props[p];
-          if (!val) // might have gotten unset
-            continue;
-          
-          Events.trigger('updateBacklinkCounts:' + U.getLongUri1(val), this, isNew);
-        }
+        var val = props[p];
+        if (!val) // might have gotten unset
+          continue;
+        
+        val = U.getLongUri1(val);
+        Events.trigger('updateBacklinkCounts:' + val, this, isNew);
+//        if (U.isTempUri(val))
+//          continue;
+//        
+//        var container = C.getResource(val),
+//            containerProps = container.vocModel.properties,
+//            containerBLProps = {},
+//            types = U.getTypes(this.vocModel);
+//        
+//        for (var cp in containerProps) {
+//          var cProp = containerProps[cp];
+//          if (cProp.backLink && cProp.displayInline && _.contains(types, U.getTypeUri(cProp.range))) {
+//            var list = res.getInlineList(prop.backLink),
+//                where = containerBLProp.where ? U.getQueryParams(containerBLProp.where) : {};
+//            
+//            if (list)
+//              continue;
+//            
+//            where[prop.backLink] = this.getUri();
+//            list = new ResourceList(this, {
+//              model: this.vocModel,
+//              params: where
+//            });
+//          }
+//        }
       }
     },
     
@@ -1012,7 +1063,7 @@ define('models/Resource', [
           error = options.error;
 
       data = this.prepForSync(data);
-      if (_.size(data) == 0) {
+      if (!_.size(data)) {
         if (!isNew) {
           if (options.success)
             options.success(this, {code: 304, details: "unmodified"}, options);
@@ -1084,12 +1135,19 @@ define('models/Resource', [
             });
           }
           else {
-//            Events.trigger('navigate', new this.vocModel(conflict));
-            Events.trigger('cacheResource', new this.vocModel(conflict));
-            Events.trigger('messageBar', 'error', {
-              message: errorObj.details || "Uh oh. Seems whatever you're making <a href='{0}'>already exists</a>.".format(U.makePageUrl('view', conflict._uri)),
-              persist: false
-            });
+            if (this.isA('Intersection')) {
+              this.lastFetchOrigin = 'server';
+              this.set(this.parse(conflict, {overwriteUserChanges: true}));
+              return options.success(this, this.toJSON(), options);
+            }
+            else {
+  //            Events.trigger('navigate', new this.vocModel(conflict));
+              Events.trigger('cacheResource', new this.vocModel(conflict));
+              Events.trigger('messageBar', 'error', {
+                message: errorObj.details || "Uh oh. Seems whatever you're making <a href='{0}'>already exists</a>.".format(U.makePageUrl('view', conflict._uri)),
+                persist: false
+              });
+            }
           }
         }
         
@@ -1130,8 +1188,10 @@ define('models/Resource', [
         this.trigger('change', this, options);
       }
       
-      if (saved)
+      if (saved) {
         this.detached = false;
+        Events.trigger('cacheResource', this);
+      }
       
       return saved;
       
@@ -1393,6 +1453,7 @@ define('models/Resource', [
     isFetching: function() {
       return !this._fetchDeferred || this._fetchDeferred.state() !== 'pending';
     }
+    
 //    ,
 //    getMiniVersion: function() {
 //      var res = this,

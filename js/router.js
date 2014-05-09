@@ -909,7 +909,7 @@ define('router', [
       }
       
       // the user is attempting to install the app, or at least pretending well
-      isWriteRoute = this.isWriteRoute(route);
+      isWriteRoute = U.isWriteRoute(route);
       if (!type || !type.endsWith(G.commonTypes.AppInstall)) {
         if (G.currentApp.forceInstall || isWriteRoute) {
           installationState = AppAuth.getAppInstallationState(); //hashInfo.type);
@@ -1007,7 +1007,7 @@ define('router', [
       this._requestLogin({
         returnUri: params && params.$returnUri || G.appUrl,
         returnUriHash: params && params.$returnUriHash,
-        force: true
+        dismissible: false
 //        ,
 //        onDismiss: function() {
 //          self.goHome();
@@ -1377,10 +1377,14 @@ define('router', [
 //      transOptions.transition = transOptions.via ? 'rotateAndZoomInTo' : 'snap';
       Transitioner.transition(transOptions).done(function() {
 //        if (changePageOptions.replace || (fromView && /^make|edit/.test(fromView.hash) && fromView.isSubmitted()))
-        if (fromView && /^make|edit/.test(fromView.hash) && fromView.isSubmitted())
+        if (fromView && Modules.EditPage && fromView instanceof Modules.EditPage && fromView.isSubmitted())
           fromView.destroy();
 //          Events.trigger('uncacheView', fromView); // destroy
 
+        if (fromView && fromView.el)
+          fromView.el.$trigger('page_hide');
+        
+        toView.el.$trigger('page_show');
         G.$activePage = $m.activePage = toView.$el;
         G.activePage = toView.el;
       });
@@ -1880,20 +1884,17 @@ define('router', [
 //      Events.trigger('pageChange', prev, view);
 //      return view;
 //    }
-    ,
-    isListRoute: function(route) {
-      return _.contains(['list', 'chooser', 'templates'], route);
-    },
-    isResourceRoute: function(route) {
-//      return !this.isListRoute(route);
-      return !this.isListRoute(route) && route != 'make';
-    },
+//    ,
+//    isListRoute: function(route) {
+//      return _.contains(['list', 'chooser', 'templates'], route);
+//    },
+//    isResourceRoute: function(route) {
+////      return !this.isListRoute(route);
+//      return !this.isListRoute(route) && route != 'make';
+//    },
 //    isProxyRoute: function(route) {
 //      return _.contains(['templates'/*, 'tour'*/], route);
 //    },
-    isWriteRoute: function(route) {
-      return _.contains(['make', 'edit'], route);
-    }
   });
 
   return Router;

@@ -373,18 +373,16 @@ define('app', [
     });
   }
   
-  function fixTabs() {
-    var tabs = G.tabs;
-    if (tabs && G.support.pushState) {
-      var i = tabs.length,
-          tab;
-      
-      while (i--) {
-        tab = tabs[i];
-        var qIdx = tab.hash.indexOf('?');
-        if (~qIdx)
-          tab.hash = decodeURIComponent(tab.hash.slice(0, qIdx)) + '?' + tab.hash.slice(qIdx + 1);
-      }
+  function adaptToPushState() {
+    var tabs = G.tabs,
+        i = tabs.length,
+        tab;
+    
+    while (i--) {
+      tab = tabs[i];
+      var qIdx = tab.hash.indexOf('?');
+      if (~qIdx)
+        tab.hash = decodeURIComponent(tab.hash.slice(0, qIdx)) + '?' + tab.hash.slice(qIdx + 1);
     }
   }
   
@@ -462,7 +460,7 @@ define('app', [
           keyPath: '_id'
         },
         indices: {
-          _uri: {unique: true, multiEntry: false},
+          _uri: {unique: false, multiEntry: false}, // hack to make 409s easier to manage
           _dirty: {unique: false, multiEntry: false},
           _tempUri: {unique: false, multiEntry: false}, // unique false because it might not be set at all
           _problematic: {unique: false, multiEntry: false}
@@ -562,7 +560,9 @@ define('app', [
   function doPreStartTasks() {
 //    setupHashMonitor();
 //    setupScrollMonitor();
-    fixTabs();
+    if (G.support.pushState && G.tabs)
+      adaptToPushState();
+    
     ModelLoader.loadEnums();
     setupWidgetLibrary();
     setupPackagedApp();
@@ -715,10 +715,14 @@ define('app', [
       
       G.app = App;
       App.started = true;
-      if (window.location.hash == '#_=_') {
-//        debugger;
+      if (window.location.hash == '#_=_' && !G.support.pushState) {
         G.log(App.TAG, "info", "hash stripped");
-        window.location.hash = '';
+        if (G.support.pushState) {
+//          window.location.replace(window.location.href.slice(0, window.location.href.indexOf('#')));
+//          return;
+        }
+        else
+          window.location.hash = '';
       }
 
       App.router = new Router();
@@ -874,15 +878,12 @@ define('app', [
         return;
       }
       
-      options = _.extend({online: G.localize('login'), offline: G.localize('youreOfflinePleaseLogin')}, options);
-      var onDismiss;
-      var existingPopup = $('#login_popup');
-      if (existingPopup.length) {
-//        existingPopup.popup().popup('open').parent().css({'z-index': 10000000});
-//        return;
-        existingPopup.remove();
-      }
+      options = _.extend({
+        online: G.localize('login'), 
+        offline: G.localize('youreOfflinePleaseLogin')
+      }, options);
       
+      var onDismiss;
       var returnUri = options.returnUri || window.location.href,
           returnUriHash = options.returnUriHash;
       
@@ -909,15 +910,22 @@ define('app', [
       
       nets = _.compact(nets);
       
-      if (!options.dismissible) {
+      if (options.dismissible == false) {
         onDismiss = options.onDismiss || function() { 
-          Events.trigger('back'); 
+//          Events.trigger('back');
         };
       }
+      
+      var _onDismiss = onDismiss;
+      onDismiss = function() {
+        $('.modal-popup-holder .headerMessageBar').remove();
+        if (_onDismiss)
+          _onDismiss.apply(this, arguments);
+      };
         
 //      existingPopup.remove();
       var popupHtml = U.template('loginPopupTemplate')({nets: nets, msg: options.online, dismissible: false});
-      $('.modal-popup-holder').append(popupHtml);
+      $('.modal-popup-holder').html(popupHtml);
 //      $(document.body).append(popupHtml);
       var $popup = $('#login_popup');
       if (onDismiss) {
@@ -932,7 +940,7 @@ define('app', [
       else {
 //        $popup.css('left', (G.viewport.width - 255) / 2);
         var popup = $popup[0];
-        ModalDialog.show(popup, onDismiss, options.force);
+        ModalDialog.show(popup, onDismiss, !options.dismissible);
         
         nets.map(function(net) {
           popup.$('.' + net.name.toLowerCase()).$on('click', function(e) {

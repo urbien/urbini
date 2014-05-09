@@ -1347,3 +1347,7 @@ div {
   color: #3182bd;
   cursor: pointer;
 }
+
+.actionBtn {
+  border-radius: 0.2rem;
+}

@@ -48,7 +48,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
         resourcesByUri[uri] = resource;
       
 //      resourcesByCid[resource.cid] = resource;
-    }
+    };
     
     function uncacheResource(/* resource, cid or uri */) {
       var uri, 
@@ -231,21 +231,45 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
     };
   }
 
+  function simplifyUrl(url) {
+    var qIdx = url.indexOf('?');
+    if (qIdx == -1)
+      return url;
+    
+    var base = url.slice(0, qIdx),
+        qs = url.slice(qIdx + 1),
+        match = qs.match(/&?-\w+=[^&]+&?/ig);
+    
+    if (!match)
+      return url;
+    
+    qs = qs.replace(/&?-\w+=[^&]+&?/ig, '&').replace(/&+/ig, '&');
+    if (/^&/.test(qs))
+      qs = qs.slice(1);
+    
+    if (/&$/.test(qs))
+      qs = qs.slice(0, qs.length - 1);
+    
+    return base + '?' + qs;
+  };
+  
   function ViewCache() {
     var cache = [];
     function getCachedView(url) {
-      var cached = getCached(url || window.location.href);
+      url = simplifyUrl(url || window.location.href);
+      var cached = getCached(url);
       return cached ? cached.getView() : null;
     }
 
     function getCached(url) {
+      url = simplifyUrl(url);
       return _.find(cache, function(entry) {
         return entry.getUrl() == url;
       });
     }
     
     function put(view, url) {
-      url = url || window.location.href;
+      url = simplifyUrl(url || window.location.href);
       var cached = getCached(url),
           entry;
       
@@ -512,17 +536,20 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
   Events.on('uncacheView', viewCache.uncacheView);
   Events.on('cacheList', resourceCache.cacheList);
   Events.on('cacheResource', resourceCache.cacheResource);
+//  Events.on('savedMake', resourceCache.updateResource);
   Events.on('uncacheList', resourceCache.uncacheList);
   Events.on('uncacheResource', resourceCache.uncacheResource);
+  Events.on('delete', resourceCache.uncacheResource);
   Events.on('newModel', cacheModel);
   
   Events.on('savedMake', function(resource) {
     resourceCache.cacheResource(resource);
     var tempUri = resource.getUri();
     resource.on('syncedWithServer', function() {
-      resourceCache.uncacheResource(tempUri);
+//      resourceCache.uncacheResource(tempUri);
+      resourceCache.cacheResource(resource);
     });
   });
 //  Events.on('newPlugs', C.cachePlugs);
-  return Cache;
+  return G.Cache = Cache;
 });

@@ -255,8 +255,14 @@ define('collections/ResourceList', [
       return new ResourceList(this.models.slice(), _.extend(_.pick(this, ['model', 'rUri', 'title', 'total'].concat(listParams)), {cache: false, params: _.clone(this.params)}));
     },
     onResourceChange: function(resource, options) {
+      var removed;
+      if (!this.belongsInCollection(resource)) {
+        this.remove(resource);
+        removed = true;
+      }
+      
       options = options || {};
-      if (!options.partOfUpdate)
+      if (!removed && !options.partOfUpdate)
         this.trigger('updated', [resource]);
     },
     
@@ -298,10 +304,10 @@ define('collections/ResourceList', [
             uri = resource.getUri();
           
         if (U.isTempUri(uri)) {
-          resource.once('uriChanged', function(oldUri) {
+          resource.once('syncedWithServer', function() {
             var newUri = resource.getUri();
-            self._byId[newUri] = self._byId[oldUri]; // HACK? we need to replace the internal models cache mapping to use the new uri
-            delete self._byId[oldUri];
+            self._byId[newUri] = self._byId[uri]; // HACK? we need to replace the internal models cache mapping to use the new uri
+            delete self._byId[uri];
           });
         }
         
@@ -444,7 +450,8 @@ define('collections/ResourceList', [
       var vocModel = this.vocModel;
       for (var i = 0, len = response.length; i < len; i++) {
         var res = response[i];
-        res._uri = U.getLongUri1(res._uri, vocModel);
+        if (!U.isModel(res))
+          res._uri = U.getLongUri1(res._uri, vocModel);
       }
       
       var adapter = this.vocModel.adapter;
@@ -525,6 +532,15 @@ define('collections/ResourceList', [
         
         this._lastFetchedOn = null;
       }
+    },
+    
+    remove: function() {
+      var l = this.models.length;
+      var result = Backbone.Collection.prototype.remove.apply(this, arguments);
+      if (this.models.length < l)
+        this.trigger('removed');
+      
+      return result;
     },
     
     fetch: function(options) {
@@ -760,6 +776,7 @@ define('collections/ResourceList', [
         
         if ((forceMerge && newModelProps && _.size(newModelProps)) || !newLastModified || newLastModified > ts) {
           if (saved) {
+            saved.loadInlined(newData);
             saved.set(newData, {
               partOfUpdate: true  // to avoid updating collection (and thus views) 20 times
             }); 

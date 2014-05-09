@@ -421,7 +421,12 @@ define('views/ResourceListItemView', [
       }
 
       var viewCols = this.getViewCols(json);
-      var dn = U.getDisplayName(m);
+      var dn;
+      if (this.hashParams.$createInstance == 'y')
+        dn = m.get('label');
+      else
+        dn = U.getDisplayName(m);
+      
       json.davDisplayName = dn;
 
       json.width = json.height = json.top = json.right = json.bottom = json.left = ""; 
@@ -618,6 +623,9 @@ define('views/ResourceListItemView', [
     },
     
     getViewCols: function(json) {
+      if (this.hashParams.$createInstance == 'y')
+        return null;      
+
       var res = this.resource,
           atts = res.attributes,
           vocModel = res.vocModel,
@@ -946,14 +954,15 @@ define('views/ResourceListItemView', [
           imageProperty = U.getImageProperty(vocModel),
           gridCols = U.getColsMeta(vocModel, 'grid').slice(),
           commonBlockProps = [],
-          params = G.currentHashInfo.hashParams,
+          params = U.getCurrentUrlInfo().params,
           additional = {        
             gridCols: gridCols,
             commonBlockProps: commonBlockProps,
             containerProp: U.getContainerProperty(vocModel)
           };
+//      ,
+//          collection = options.parentView.collection;
       
-
       if (imageProperty) {
         additional.imageProperty = imageProperty;
         if (additional.imageProperty)
@@ -981,8 +990,8 @@ define('views/ResourceListItemView', [
           }
         }
       }
-      
-      additional.isEdit = (params  &&  params['$edit'])  ||  preinit.prototype.doesModelSubclass(G.commonTypes.WebProperty);
+            
+      additional.isEdit = params['$edit']  ||  (preinit.prototype.doesModelSubclass(G.commonTypes.WebProperty) && params['$type'] != "http://www.hudsonfog.com/voc/commerce/trading/Rule");
       return preinit.extend(additional);
     }
   });  

@@ -70,7 +70,7 @@ define('views/MainMenuPanel', [
       
 //      G.log(this.TAG, "Recording step for tour: selector = 'id'; value = '" + t.id + "'");
       if (t.id == 'home123') 
-        Events.trigger('navigate', here.slice(0, here.indexOf('#')));
+        Events.trigger('navigate', G.serverName + '/' + G.pageRoot);
       else 
         Events.trigger('navigate', G.serverName + '/app/UrbienApp');
       
@@ -258,7 +258,7 @@ define('views/MainMenuPanel', [
       }
 
 //      U.addToFrag(frag, this.homeMenuItemTemplate({title: "App Home", icon: 'repeat', id: 'home123'}));
-      if (G.currentHashInfo.route == 'home') {
+      if (G.currentHashInfo.route != 'home') {
 //        U.addToFrag(frag, this.menuItemTemplate({title: this.loc("appHome"), icon: 'repeat', id: 'home123'}));
         html += this.menuItemTemplate({title: this.loc("appHome"), icon: 'repeat', id: 'home123'});
       }

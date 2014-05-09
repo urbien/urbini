@@ -600,7 +600,12 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
   }
   
   function getTourId(tour) {
-    return tour.get('id');
+    var id = tour.get('id');
+    if (id)
+      return id;
+    
+    var uri = tour.get('_uri');
+    return _.decode(uri.slice(uri.lastIndexOf('=') + 1));
   }
   
   function getStepNum(hashInfo) {

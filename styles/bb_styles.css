@@ -36,6 +36,8 @@ html {
 }
 [data-type="list"] header {
   padding: 0.5rem 0rem;
+  border-bottom: solid 1px #aaa;
+  background: #ddd;
 }
 [data-type="list"] .editList header {
   padding: 0.5rem 0rem 0.5rem 1rem;
@@ -101,11 +103,15 @@ html {
 }
 
 #resourceView li, #cpView li {
-  border-bottom: 1px solid #e3e3e3;
+  border-bottom: 1px solid #d3d3d3;
   padding: 0 10px;
 }
 #resourceView header, #cpView header {
   padding: 10px;
+}
+#cpView header {
+  background: #ddd;
+  border-bottom: 1px solid #aaa;
 }
 /*
 #buttons {

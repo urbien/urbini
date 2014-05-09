@@ -412,11 +412,15 @@ define('views/BasicView', [
     },
     
     destroy: function(keepEl) {
-      if (this._destroyed)
+      if (this.isDestroyed())
         return;
       
       this._destroyed = true;
       this.trigger('destroyed', keepEl);
+    },
+    
+    isDestroyed: function() {
+      return this._destroyed;
     },
     
     _onDestroyed: function(keepEl) {
@@ -517,7 +521,9 @@ define('views/BasicView', [
 
       var self = this;
       setTimeout(function() {
-        self.getPageView().invalidateSize();
+        var pageView = self.getPageView();
+        if (pageView)
+          pageView.invalidateSize();
       }, 100);
     },
     

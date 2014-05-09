@@ -35,6 +35,7 @@ define('views/ControlPanel', [
     },
     events: {
 //      'click a[data-shortName]': 'click',
+      'click [data-cancel]': 'cancel',
       'click #mainGroup a[data-shortName]': 'add',
 //      'click a[data-shortName]': 'lookupFrom',
 //      'pinchout li[data-propname]': 'insertInlineScroller',
@@ -43,6 +44,39 @@ define('views/ControlPanel', [
 //        ,
 //      'click': 'click'
     },
+    
+    cancel: function(e) {
+      Events.stopEvent(e);
+      var el = e.currentTarget;
+      var data = el.dataset;
+      var uri = data.uri;
+      var getRes;
+      var res = C.getResource(uri);
+      if (res)
+        getRes = G.getResolvedPromise();
+      else {
+        var li = el;
+        while (li && li.tagName != 'LI') {
+          li = li.parentElement;
+        }
+        
+        if (!li)
+          return;
+        
+        getRes = Voc.getModels(this.vocModel.properties[li.dataset.backlink].range).done(function(listModel) {
+          res = new listModel({
+            _uri: uri
+          });
+        });
+      }
+      
+      getRes.done(function() {
+        res.cancel({
+          redirect: false
+        });
+      });
+    },
+    
 //    click: function(e) {
 //      var t = e.target;
 //      while (t && t.tagName != 'A') {
@@ -81,6 +115,14 @@ define('views/ControlPanel', [
       };
 
       params[prop.backLink] = this.resource.getUri();
+      
+      if (U.isAssignableFrom(this.vocModel, 'commerce/trading/TradleFeed') && prop.range.endsWith('commerce/trading/Rule')) {
+        params.eventClass = this.resource.get('eventClass');
+        params.eventClass = this.resource.get('eventClass');
+        params.eventClassRangeUri = this.resource.get('eventClassRangeUri');
+        params.feed = this.resource.getUri();
+        params['feed.displayName'] = U.getDisplayName(this.resource);
+      }
       
       Events.trigger('navigate', U.makeMobileUrl('make', prop.range, params));
       this.log('add', 'user wants to add to backlink');
@@ -449,14 +491,10 @@ define('views/ControlPanel', [
                 return;
               
               function onsuccess() {
+                var currentlyInlined =  res.inlineLists || {};
                 if (firstTime) {
                   firstTime = false;
-                  var currentlyInlined =  res.inlineLists || {};
-                  if (inlineList.size() && !res._settingInlineList && !currentlyInlined[name]) {
-                    res.setInlineList(name, inlineList);
-                  }
-                  
-                  _.each(['updated', 'added', 'reset'], function(event) {
+                  _.each(['updated', 'added', 'reset', 'removed'], function(event) {
                     self.stopListening(inlineList, event);
                     self.listenTo(inlineList, event, function(resources) {
                       resources = U.isCollection(resources) ? resources.models : U.isModel(resources) ? [resources] : resources;
@@ -469,6 +507,9 @@ define('views/ControlPanel', [
                 
                 if (!inlineList.isFetching() && !inlineList.isOutOfResources()) // get them all!
                   inlineList.getNextPage(fetchOptions);
+
+                if (inlineList.size() && !res._settingInlineList && !currentlyInlined[name])
+                  res.setInlineList(name, inlineList);
               };
               
               var fetchOptions = {
@@ -515,6 +556,18 @@ define('views/ControlPanel', [
 
       if (!this.isMainGroup && _.size(res.inlineLists)) {
         _.each(res.inlineLists, function(list, name) {
+          if (!list.size())
+            return;
+          
+          var listVocModel = list.vocModel;
+          var listMeta = listVocModel.properties;
+          var isCancelable = false; //U.isA(listVocModel, 'Cancellable');
+          var canceledProp;
+          if (isCancelable) {
+            canceledProp = listMeta[U.getCloneOf(listVocModel, 'Cancellable.cancelled')[0]];
+            isCancelable = canceledProp && U.isPropEditable(list.models[0], canceledProp, role);
+          }
+
           var prop = meta[name];
           var propDisplayName = U.getPropDisplayName(prop);
           U.addToFrag(frag, this.propGroupsDividerTemplate({value: propDisplayName}));
@@ -523,14 +576,15 @@ define('views/ControlPanel', [
               viewId: this.cid,
               comment: iRes.comment, 
               _problematic: iRes.get('_error'),
-              name: U.getDisplayName(iRes)
+              name: U.getDisplayName(iRes),
+              backlink: name
             };
             
             var grid = U.getCols(iRes, 'grid', true);
-            if (U.isA(iRes.vocModel, 'Intersection')) {
+            if (U.isA(listVocModel, 'Intersection')) {
               var oH, oW, ab;
-              var a = U.getCloneOf(iRes.vocModel, 'Intersection.a')[0];
-              var b = U.getCloneOf(iRes.vocModel, 'Intersection.b')[0];
+              var a = U.getCloneOf(listVocModel, 'Intersection.a')[0];
+              var b = U.getCloneOf(listVocModel, 'Intersection.b')[0];
               if (a == meta[name].backLink) {
                 var n = iRes.get(b + '.displayName');
                 if (n)
@@ -553,8 +607,8 @@ define('views/ControlPanel', [
               }
               if (grid) {
                 var gridCols = '';
-                var aLabel = iRes.vocModel.properties[a].displayName;
-                var bLabel = iRes.vocModel.properties[b].displayName;
+                var aLabel = listMeta[a].displayName;
+                var bLabel = listMeta[b].displayName;
                 for (var row in grid) {
                   if (row != aLabel  &&  row != bLabel)
                     gridCols += grid[row].value;
@@ -565,7 +619,7 @@ define('views/ControlPanel', [
               var w = iRes.get(oW),
                   h = iRes.get(oH);
               if (w  &&  h) {
-                var range = iRes.vocModel.properties[ab].range;
+                var range = listMeta[ab].range;
                 var rm = U.getModel(U.getLongUri1(range));
                 if (U.isA(rm, 'ImageResource')) {
                   var rmeta = rm.properties;
@@ -600,17 +654,17 @@ define('views/ControlPanel', [
                 
                 params.gridCols = gridCols;
               }
-              if (U.isA(iRes.vocModel, 'ImageResource')) {
+              if (U.isA(listVocModel, 'ImageResource')) {
                 var imgProp = U.getImageProperty(iRes);
                 if (imgProp) {
                   var img = iRes.get(imgProp);
                   if (img) {
                     params.imageProperty = imgProp;
                     params.img = img;
-                    var oW = U.getCloneOf(iRes.vocModel, 'ImageResource.originalWidth');
+                    var oW = U.getCloneOf(listVocModel, 'ImageResource.originalWidth');
                     var oH;
                     if (oW)
-                      oH = U.getCloneOf(iRes.vocModel, 'ImageResource.originalHeight');
+                      oH = U.getCloneOf(listVocModel, 'ImageResource.originalHeight');
                     
                     if (oW  &&  oH  &&  (typeof iRes.get(oW) != 'undefined' &&  typeof  iRes.get(oH) != 'undefined')) {
                       
@@ -629,8 +683,14 @@ define('views/ControlPanel', [
               }
             }
 
-//            var action = iRes.vocModel.adapter || U.isAssignableFrom(iRes.vocModel, 'Intersection') ? 'view' : 'edit';
-            var action = (U.isAssignableFrom(iRes.vocModel, 'WebProperty')) ? 'edit' : 'view';
+            if (isCancelable) {
+              params.Cancelable = {
+                canceled: iRes.get(canceledProp.shortName)
+              }
+            }
+            
+//            var action = listVocModel.adapter || U.isAssignableFrom(listVocModel, 'Intersection') ? 'view' : 'edit';
+            var action = (U.isAssignableFrom(listVocModel, 'WebProperty')) ? 'edit' : 'view';
             params.href = U.makePageUrl(action, iRes.getUri(), {$title: params.name});
             params.resource = iRes;
             U.addToFrag(frag, this.inlineListItemTemplate(params));

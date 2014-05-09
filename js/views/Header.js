@@ -53,14 +53,13 @@ define('views/Header', [
         this.getButtonViews();
       
       var self = this;
+      var vocModel = this.vocModel;
       this.on('destroyed', function() {
         self.buttonViews = {};
       });
       
       if (this.filter) {
-        var vocModel = this.vocModel,
-            type = vocModel && vocModel.type;
-        
+        var type = vocModel && vocModel.type;
         this.makeTemplate('searchTemplate', 'searchTemplate', type);
         this.makeTemplate('filterTemplate', 'filterTemplate', type);
         this.makeTemplate('filterConditionTemplate', 'filterConditionTemplate', type);
@@ -68,6 +67,31 @@ define('views/Header', [
       }
       
       this.makeTemplate('physicsConstantsTemplate', 'physicsConstantsTemplate', this.vocModel && this.vocModel.type);
+      
+      if (/^view/.test(this.hash)) {
+        if (this.resource.isA('Activatable')) {
+          this.activatedProp = vocModel.properties[U.getCloneOf(vocModel, 'Activatable.activated')[0]];
+          if (this.activatedProp && U.isPropEditable(this.resource, this.activatedProp)) {
+            this._activatable = true;
+          }
+        }
+        
+        if (this.resource.isA('FolderItem')) {
+          var pName = this.hashParams.$rootFolderProp || U.getCloneOf(vocModel, 'FolderItem.rootFolder')[0] || U.getCloneOf(vocModel, 'FolderItem.folder')[0],
+              rootFolder = this.resource ? this.resource.get(pName) : this.hashParams[pName] || this.hashParams.$rootFolder;
+          
+          if (pName) {
+            this._isFolderItem = true;
+            this.folderProp = vocModel.properties[pName];
+            
+            if (rootFolder)
+              this.rootFolder = rootFolder;
+            else
+              this.rootFolder = this.resource.get(pName);
+          }
+        }
+      }
+
       return this;
     },
     
@@ -490,12 +514,40 @@ define('views/Header', [
     refresh: function() {
 //      this.refreshCallInProgressHeader();
       this.refreshTitle();
+      this.refreshActivated();
+      this.refreshFolder();
       this.calcSpecialButtons();
       this.renderSpecialButtons();
 //      this.error = null;
 //      this.renderError();
 //      this.restyleNavbar();
       return this;
+    },
+    
+    refreshFolder: function() {
+      if (this._isFolderItem && this.folderProp) {
+        this.rootFolder = this.rootFolder || this.resource.get(this.folderProp.shortName);
+        if (this.rootFolder) {
+          var rootFolderEl = this.$('.rootFolder')[0];
+          rootFolderEl.$show();
+          rootFolderEl.href = U.makePageUrl('view', this.rootFolder);
+          rootFolderEl.$('span')[0].textContent = U.getPropDisplayName(this.folderProp);
+        }
+      }
+    },
+    
+//    _getRootFolderHref: function() {
+//      return U.makePageUrl('view', this.rootFolder, rootFolder.params);
+//    },
+    
+    refreshActivated: function() {
+      if (this._activatable) {
+        var activatables = this.$('.activatable');
+        if (activatables.length > 0) {
+          activatables[0].$show()
+            .$('input')[0].checked = this.resource.get(this.activatedProp.shortName) ? 'checked' : '';
+        }
+      }
     },
     
     _isGeo: function() {
@@ -808,9 +860,18 @@ define('views/Header', [
         }
       }
 
-      var tmpl_data = this.getBaseTemplateData(),
-          isFolderItem = U.isA(this.vocModel, 'FolderItem');
+      var tmpl_data = this.getBaseTemplateData();
+
+      tmpl_data.isActivatable = this._activatable;
+      if (this._activatable)
+        tmpl_data.activatedProp = this.activatedProp;
+
+      tmpl_data.isFolderItem = this._isFolderItem;
+      if (this._isFolderItem) {
+        tmpl_data.folderProp = this.folderProp;
+      }
       
+
 //      tmpl_data.physics = this.getPhysicsConstants(); //Physics.scrollerConstants[this._scrollerType]);
       if (U.isChatPage()) {
 //        tmpl_data.more = $.param({
@@ -821,28 +882,6 @@ define('views/Header', [
         if (!this.publish  &&  this.doTry  &&  this.forkMe)
           tmpl_data.className = 'ui-grid-b';
       }      
-
-      if (isFolderItem) {
-        var pName = this.hashParams.$rootFolderProp || U.getCloneOf(this.vocModel, 'FolderItem.rootFolder')[0] || U.getCloneOf(this.vocModel, 'FolderItem.folder')[0],
-            rootFolder = this.resource ? this.resource.get(pName) : this.hashParams[pName] || this.hashParams.$rootFolder;
-        
-        if (rootFolder) {
-          tmpl_data.rootFolder = {
-            _uri: rootFolder,
-            linkText: "Back to " + U.getPropDisplayName(this.vocModel.properties[pName])
-          };
-        }
-      }
-
-      if (/^view/.test(this.hash) &&  res.isA('Activatable')) {
-        this.activatedProp = res.vocModel.properties[U.getCloneOf(res.vocModel, 'Activatable.activated')[0]];
-        if (this.activatedProp && U.isPropEditable(res, this.activatedProp)) {
-          tmpl_data.Activatable = {
-            prop: this.activatedProp,
-            activated: res.get(this.activatedProp.shortName)
-          };
-        }
-      }
 
       if (this.filter)
         this.categories = false; // HACK for now, search is more important at the moment        
@@ -860,6 +899,8 @@ define('views/Header', [
       
       this.renderPhysics();
       this.refreshTitle();
+      this.refreshActivated();
+      this.refreshFolder();
 //      this.$el.prevObject.attr('data-title', this.pageTitle);
 //      this.$el.prevObject.attr('data-theme', G.theme.list);
       var pageData = this.pageView.el.dataset;

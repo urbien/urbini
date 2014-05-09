@@ -1,4 +1,4 @@
-define('views/ModalDialog', ['domUtils'], function(DOM) {
+define('views/ModalDialog', ['domUtils', 'events'], function(DOM, Events) {
   
 /*!
  * modal 0.1
@@ -92,13 +92,17 @@ define('views/ModalDialog', ['domUtils'], function(DOM) {
   }
   
   function hide() {
-    disimissible = true;
+    dismissible = true;
     deactivate();
     for (var i = 0; i < hideCallbacks.length; i++) {
       hideCallbacks[i]();
     }
+    
+    hideCallbacks.length = 0;
   }
 
+  Events.on('pageChange', hide);
+  
   return {
     activate: activate,
     deactivate: deactivate,
