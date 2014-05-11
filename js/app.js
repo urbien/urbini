@@ -380,9 +380,9 @@ define('app', [
     
     while (i--) {
       tab = tabs[i];
-      var qIdx = tab.hash.indexOf('?');
-      if (~qIdx)
-        tab.hash = decodeURIComponent(tab.hash.slice(0, qIdx)) + '?' + tab.hash.slice(qIdx + 1);
+      tab.hash = _.decode(tab.hash);
+//      if (~qIdx)
+//        tab.hash = decodeURIComponent(tab.hash.slice(0, qIdx)) + '?' + tab.hash.slice(qIdx + 1);
     }
   }
   

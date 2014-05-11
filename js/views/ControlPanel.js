@@ -97,7 +97,7 @@ define('views/ControlPanel', [
           };
       
       params[data.backlink] = data._uri;
-      if (!data.prop.lookupFrom && !U.getBacklinkCount(this.resource, data.shortName)) {
+      if (U.isPropEditable(this.resource, data.prop, U.getUserRole()) && !data.prop.lookupFrom && !U.getBacklinkCount(this.resource, data.shortName)) {
         params.$backLink = data.backlink;
         action = 'make';
       }
@@ -121,6 +121,7 @@ define('views/ControlPanel', [
         params.eventClass = this.resource.get('eventClass');
         params.eventClassRangeUri = this.resource.get('eventClassRangeUri');
         params.feed = this.resource.getUri();
+        params.tradle = this.resource.get('tradle');
         params['feed.displayName'] = U.getDisplayName(this.resource);
       }
       
@@ -564,7 +565,7 @@ define('views/ControlPanel', [
           
           var listVocModel = list.vocModel;
           var listMeta = listVocModel.properties;
-          var isCancelable = false; //U.isA(listVocModel, 'Cancellable');
+          var isCancelable = U.isA(listVocModel, 'Cancellable');
           var canceledProp;
           if (isCancelable) {
             canceledProp = listMeta[U.getCloneOf(listVocModel, 'Cancellable.cancelled')[0]];

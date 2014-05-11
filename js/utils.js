@@ -1661,6 +1661,39 @@ define('utils', [
     getResource: function(uri) {
       return C.getResource(uri);
     },
+    
+    getModels: function() {
+      var args = arguments;
+      return U.require('vocManager').then(function(Voc) {
+        return Voc.getModels.apply(Voc, args);
+      });
+    },
+    
+    getResourcePromise: function(uri, sync) {
+      var res = U.getResource(uri);
+      if (res && sync)
+        return U.resolvedPromise(res);
+
+      var dfd = $.Deferred();
+      U.getModels(U.getTypeUri(uri)).done(function(model) {
+        res = res || new model({
+          _uri: uri
+        });
+        
+        res.fetch({
+          forceFetch: sync,
+          success: function() {
+            dfd.resolve(res);
+          },
+          error: function() {
+            debugger;
+            dfd.reject();
+          }
+        });
+      });
+      
+      return dfd.promise();
+    },
 
     getResourceList: function(model, query) {
       return C.getResourceList(model, query);
@@ -1808,7 +1841,21 @@ define('utils', [
     
     getValueDisplayName: function(res, propName) {
       var prop = res.vocModel.properties[propName];
-      return prop && ((U.isResourceProp(prop) || prop.multiValue) ? res.get(propName + '.displayName') : res.get(propName));
+      if (prop && (U.isResourceProp(prop) || prop.multiValue))
+        return res.get(propName + '.displayName');
+      
+      var val = res.get(propName);
+      if (val == undefined)
+        return val;
+      
+      if (U.isDateProp(prop))
+        return U.getFormattedDate(val);
+      if (U.isTimeProp(prop))
+        return U.getFormattedDuration(val);
+      if (prop.range.endsWith('model/company/Money'))
+        return typeof val == 'object' ? val.value + ' ' + val.currency : val;
+      
+      return val;
     },
     
     makeOrGroup: function() {
@@ -2275,6 +2322,15 @@ define('utils', [
     
     getPageUrl: function(mobileUrl) {
       return G.pageRoot + '#' + mobileUrl;
+    },
+    
+    _apiMetaParams: [    
+      "$select", "$omit", "$orderBy", "$groupBy", "$limit", "$backlinks", "$callback", "$asc", "$page", "$offset", "$strict", "$map", "$and", "$or", "$like", "$in", "$blCounts", 
+      "$minify", "$mobile", "$where",  "$prettyPrint",  "$returnMade", "$grab", "$multiValue", "$request", "$oauth1", "$oauth2", "$prop", "$type", "$forResource", "$filter", "$interfaceClass", 
+      "$returnUri", "$apiKeyName", "$url", "$chooser", "$action"
+    ],
+    isApiMetaParameter: function(param) {
+      return U._apiMetaParams.indexOf(param) != -1;
     },
     
 //    /**

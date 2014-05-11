@@ -1100,7 +1100,10 @@ define('globals', function() {
       '@widgets': 'widgetsLibAdapter',
       physics: 'physicsBridge',
       hammer: 'lib/hammer',
-      mobiscroll: 'lib/mobiscroll-datetime-min',
+      mobiscroll: 'lib/mobiscroll',
+//      mobiscroll: 'lib/mobiscroll-datetime-min',
+//      mobiscrollDate: 'lib/mobiscroll-datetime',
+//      mobiscrollDuration: 'lib/mobiscroll-duration',
       simplewebrtc: 'lib/simplewebrtc',
       jqmConfig: 'jqm-config',
       jqueryMobile: 'lib/jquery.mobile-1.3.2',
@@ -1138,7 +1141,8 @@ define('globals', function() {
       '../styles/jqm_styles.css': ['../styles/styles.css', '../styles/common-template-m.css'],
       leafletMarkerCluster: ['leaflet'],
       dc: ['d3'],
-      mobiscroll: ['../styles/mobiscroll.datetime.min.css'],
+//      mobiscroll: ['../styles/mobiscroll.datetime.min.css'],
+      mobiscroll: ['../styles/mobiscroll-scroller.css'],
       codemirrorJSMode: ['codemirror', 'codemirrorCss'],
       codemirrorCSSMode: ['codemirror', 'codemirrorCss'],
       codemirrorHTMLMode: ['codemirror', 'codemirrorCss', 'codemirrorXMLMode']
@@ -1157,7 +1161,7 @@ define('globals', function() {
       
       // DOM stuff
 //      ALL_IN_APPCACHE,
-      hash = window.location.href.split('#')[1] || '',
+      hash = window.location.hash ? window.location.hash.slice(1) : window.location.href.slice(window.location.href.indexOf(Lablz.pageRoot) + Lablz.pageRoot.length + 1),
       query = hash.split('?')[1],
       decode = decodeURIComponent,
       params = query ? (function() {
