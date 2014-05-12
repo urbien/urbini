@@ -751,7 +751,7 @@ define('utils', [
       var nameAndId = uri.match(regex);
       return nameAndId && nameAndId.length == 3 ? nameAndId[1] + '/' + nameAndId[2] : uri;
     },
-   
+
     isAll: function(model, interfaceNames) {
       return U.isA(model, interfaceNames, "AND");
     },
@@ -1699,7 +1699,8 @@ define('utils', [
 //      var isIntersection = !hasImgs  &&  this.isA(vocModel, 'Intersection'); 
       var isIntersection = this.isA(vocModel, 'Intersection');
       var isImageCover = this.isA(vocModel, 'ImageCover');
-      var isResourceView = window.location.hash  &&  (window.location.hash.indexOf('#view/') == 0  ||  window.location.hash.indexOf('#edit/') == 0);
+      var urlInfo = U.getCurrentUrlInfo();
+      var isResourceView = urlInfo.action == 'view'  ||  urlInfo.action == 'edit';
       if (isIntersection) {
         if (isResourceView) {
           aCloneOf = U.getCloneOf(vocModel, 'Intersection.aFeatured')[0]  ||  U.getCloneOf(vocModel, 'Intersection.aThumb')[0];
@@ -1932,6 +1933,7 @@ define('utils', [
       var isDisplayName = prop.displayNameElm;
       
       var cc = prop.colorCoding;
+      var noName = false;
       if (!prop.code) {
         if (cc) {
           cc = U.getColorCoding(cc, val);
@@ -1941,6 +1943,15 @@ define('utils', [
             else
               val = "<span style='color:" + cc + "'>" + val + "</span>";
           }
+        }
+        else if (prop.facet  &&  prop.facet == 'src') {
+          var s = val.split(';');
+          var v = '';
+          for (var i=0; i<s.length; i++) 
+            v += '<img src="' + s[i] + '"/>&#160;';
+          
+          noName = true;
+          val = v;
         }
         else if (val && prop.range == 'string') {
           var href = window.location.hash;
