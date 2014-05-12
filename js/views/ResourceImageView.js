@@ -309,6 +309,7 @@ define('views/ResourceImageView', [
   
       var clip;
       if (oWidth) {
+        metaDim = Math.min(oWidth, metaDim);
 //        if (this.isImageCover)
           clip = U.clipToFrame(140, 140, oWidth, oHeight, metaDim);
 //        else
