@@ -453,9 +453,23 @@ define('views/ResourceListItemView', [
       }
       
       if (oW  &&  oH  &&  (typeof atts[oW] != 'undefined' &&  typeof  atts[oH] != 'undefined')) {
+        var imgUri = atts[this.imageProperty];
+        var iW = m.get(oW), iH = m.get(oH);
+//        if (imgUri) {
+//          var idx = imgUri.lastIndexOf('.jpg_');
+//          if (idx != -1) {
+//            idx += 5;
+//            var idx1 = imgUri.indexOf('_', idx);
+//            var wh = imgUri.substring(idx, idx1);
+//            var dash = wh.indexOf('-');
+//            iW = wh.substring(0, dash);
+//            iH = wh.substring(dash + 1);
+//            maxDim = 80;
+//          }
+//        }
 //        this.el.classList.add("image_fitted");
         
-        var clip = U.clipToFrame(80, 80, m.get(oW), m.get(oH), maxDim, minDim);
+        var clip = U.clipToFrame(80, 80, iW, iH, maxDim, minDim);
         if (clip) {
           json.top = clip.clip_top;
           json.right = clip.clip_right;
