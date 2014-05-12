@@ -133,7 +133,7 @@
 <script type="text/template" id="inlineListItemTemplate">
 <!-- one row of an inline backlink in view mode -->
 <li data-viewid="{{= viewId }}" data-backlink="{{= backlink }}">
-  <a href="{{= href }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="padding:1rem 0;">
+  <a href="{{= href }}" {{= obj._problematic ? 'class="problematic"' : '' }} {{= obj.img ? '' : 'style="padding:1rem 0;"'}}>
     {{ if (obj.img) { }}
       <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
       {{ if (obj.top) { }}  
@@ -147,7 +147,7 @@
       data-for="{{= U.getImageAttribute(resource, imageProperty) }}"
       class="lazyImage" />
     {{ } }}
-    <span style="font-size:1.6rem;font-weight:bold;">{{= obj.gridCols  ? (obj.gridCols.indexOf(name) == -1 ? name + '<br/>' + gridCols : gridCols) : name }}</span>
+    <span style="{{= obj.img ? 'position:absolute;padding:30px 10px;' : ''}}font-size:1.6rem;font-weight:bold;">{{= obj.gridCols  ? (obj.gridCols.indexOf(name) == -1 ? name + '<br/>' + gridCols : gridCols) : name }}</span>
   </a>
   {{ if (typeof comment != 'undefined') { }}
     <p>{{= comment }}</p>
@@ -744,6 +744,12 @@
 <div class="_prim">
   <label for="{{= id }}" class="ui-input-text" style="color:{{= G.darkColor }};">{{= name }}</label>
   <input type="tel" name="{{= shortName }}" id="{{= id }}" class="ui-input-text" value="{{= typeof value === 'undefined' ? '' : value }}" />
+</div>
+</script>
+
+<script type="text/template" id="srcPT">
+<div class="_prim">
+  {{= value }}
 </div>
 </script>
 
