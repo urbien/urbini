@@ -288,12 +288,17 @@ define('views/ResourceImageView', [
           range = meta[U.getCloneOf(this.vocModel, 'Intersection.b')].range;
           iProp = meta[U.getCloneOf(this.vocModel, 'Intersection.bFeatured')];
         }
+        var img = res.get(iProp.shortName);
+        if (img)
+          image = img;
         var im = U.getModel(U.getLongUri1(range));
         if (im) {
           var imeta = im.properties;
           var imgP = iProp  &&  imeta[U.getCloneOf(im, 'ImageResource.mediumImage')]; 
           metaDim = imgP && imgP.maxImageDimension;
         }
+        else
+          metaDim = 205;
       }
       
       var frag = document.createDocumentFragment();
@@ -304,10 +309,11 @@ define('views/ResourceImageView', [
   
       var clip;
       if (oWidth) {
-        if (this.isImageCover)
+        metaDim = Math.min(oWidth, metaDim);
+//        if (this.isImageCover)
           clip = U.clipToFrame(140, 140, oWidth, oHeight, metaDim);
-        else
-          clip = U.clipToFrame(winW, winH, oWidth, oHeight, metaDim);
+//        else
+//          clip = U.clipToFrame(winW, winH, oWidth, oHeight, metaDim);
       }
 
 
@@ -399,7 +405,9 @@ define('views/ResourceImageView', [
             else 
               li = '<div style="border: solid #ccc;width:140px;height:' + Math.floor(hIfImgWidth) + 'px;left:15px;position:absolute">{0}</div>'.format(iTemplate);
           }
-          else
+          else if (oWidth)
+            li = '<div style="left:15px;position:absolute;max-height:140px;top:60px;' +'">{0}</div>'.format(iTemplate);            
+          else  
             li = '<div style="position:relative;height:' + (clip.clip_bottom - clip.clip_top) + 'px">{0}</div>'.format(iTemplate);
         }
         else if (this.isImageCover  &&  metaDim == 140  &&  oWidth) {

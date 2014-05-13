@@ -63,7 +63,8 @@ define('templates', [
       "resource": "resourcePT",
       "model/company/Money": "moneyPT",
       "ComplexDate": "complexDatePT",
-      "Image": "imagePT"
+      "Image": "imagePT",
+      "src": "srcPT"
     },
 
     propEditTemplates: {

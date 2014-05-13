@@ -694,7 +694,7 @@ define('views/ControlPanel', [
             }
             
 //            var action = listVocModel.adapter || U.isAssignableFrom(listVocModel, 'Intersection') ? 'view' : 'edit';
-            var action = (U.isAssignableFrom(listVocModel, 'WebProperty')) ? 'edit' : 'view';
+            var action = (U.isAssignableFrom(listVocModel, 'WebProperty')  ||  U.isAssignableFrom(listVocModel, 'commerce/trading/Notification')  ||  U.isAssignableFrom(listVocModel, 'commerce/trading/Rule')) ? 'edit' : 'view';
             params.href = U.makePageUrl(action, iRes.getUri(), {$title: params.name});
             params.resource = iRes;
             U.addToFrag(frag, this.inlineListItemTemplate(params));
