@@ -86,7 +86,7 @@ define('views/ListPage', [
       if (!this.vocModel.adapter  &&  !isChooser  &&  !isMV  &&  !U.isA(this.vocModel, 'GenericMessage')) {
         if (this.vocModel['skipAccessControl']) {
           showAddButton = type.endsWith('/App')                      || 
-                          U.isAnAppClass(type)                       ||
+                          U.isAnAppClass(vocModel)                       ||
                           vocModel.properties['autocreated'];
 //                            U.isUserInRole(U.getUserRole(), 'siteOwner');
           if (!showAddButton) {
