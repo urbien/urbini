@@ -335,9 +335,12 @@ define('utils', [
       return ar ? U.isUserInRole(userRole, ar, res) : true;
     },
 
-    isAnAppClass: function(type) {
+    isAnAppClass: function(vocModel) {
+      var app = vocModel.app;
       var idx = G.currentApp.name.indexOf('/');
-      return type.indexOf(G.currentApp.name.substring(idx)) != -1;
+      var appPath = G.currentApp.name.substring(idx);
+      return app ? appPath.indexOf("/" + app) == appPath.lastIndexOf('/') 
+                 : vocModel.type.indexOf(G.currentApp.name.lastIndexOf('/')) != -1;
     },
     
     getTypes: function(vocModel) {
@@ -539,8 +542,7 @@ define('utils', [
         return false;
       
       var isEdit = !!res.get('_uri');
-      
-      if (prop.avoidDisplayingInEdit  &&  isEdit) // || (res.get(prop.shortName) && prop.immutable))
+      if (prop.avoidDisplayingInEdit  &&  isEdit || (!res.isNew() && res.get(prop.shortName) && prop.immutable))
         return false;
       if (prop.avoidDisplayingOnCreate  &&  !isEdit)
         return false;
