@@ -730,6 +730,7 @@ define('views/ControlPanel', [
             displayedProps[p] = true;
             if (avoidDisplaying)
               continue;
+
             var n = U.getPropDisplayName(prop);
             var range = prop.range; 
             var isPropEditable = U.isPropEditable(res, prop, role);
@@ -758,7 +759,11 @@ define('views/ControlPanel', [
             
             if (!doShow) 
               continue;
-            
+
+            if (cnt == 1 || (prop.displayInline  &&  prop.maxCardinality  == cnt)) {
+              colorIdx++;
+              continue;
+            }
             if (!this.isMainGroup  &&  !groupNameDisplayed) {
               U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
               groupNameDisplayed = true;
