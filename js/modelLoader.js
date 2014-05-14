@@ -516,7 +516,7 @@ define('modelLoader', [
     }
     
     var type = m.type = U.getTypeUri(m.type),
-        isCustomModel = U.isAnAppClass(type);
+        isCustomModel = U.isAnAppClass(m);
     
     if (isCustomModel && !m.enumeration && !m.alwaysInlined) {
       var meta = m.properties;
