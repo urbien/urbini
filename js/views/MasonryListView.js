@@ -175,7 +175,7 @@ define('views/MasonryListView', [
 //          removedFromBottom = info.removedFromBottom.length && info.removedFromBottom.slice(),      // need this while using imagesLoaded (async)    
       var prepended = info.prepended.length && info.prepended.slice(),// need this while using imagesLoaded (async)
           appended = info.appended.length && info.appended.slice(),   // need this while using imagesLoaded (async)
-          hasUpdated = !!_.size(info.updated),
+          hasUpdated = !_.isEmpty(info.updated),
           dfd = $.Deferred();
       
       if (hasUpdated || prepended || appended) {

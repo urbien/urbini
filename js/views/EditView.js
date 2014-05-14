@@ -850,7 +850,7 @@ define('views/EditView', [
       });
       
       atts = _.extend({}, res.getUnsavedChanges(), atts);
-      if (!res.isNew() && !_.size(atts)) {
+      if (!res.isNew() && _.isEmpty(atts)) {
         if (options && options.fromPageChange)
           return;
         
@@ -877,7 +877,10 @@ define('views/EditView', [
         return;
       
       if (this.action === 'edit') {
-        this.resource.clear();
+        this.resource.clear({
+          silent: true
+        });
+        
         this.resource.set(this.originalResource);
       }
        
@@ -950,7 +953,7 @@ define('views/EditView', [
       var self = this, res = this.resource;
       var props = _.extend({}, this.originalResource, U.filterObj(res.getUnsavedChanges(), function(name, val) {return /^[a-zA-Z]+/.test(name)})); // starts with a letter
 //      var props = atts;
-      if (this.isEdit && !_.size(props)) {
+      if (this.isEdit && _.isEmpty(props)) {
 //        debugger; // user didn't modify anything?
 //        this.redirect();
         Events.trigger('back');
@@ -969,9 +972,10 @@ define('views/EditView', [
         
       res.save(props, {
         sync: sync,
+        userEdit: true,
         success: function(resource, response, options) {
           self.getInputs().$attr('disabled', false);
-          res.lastFetchOrigin = null;
+          res._setLastFetchOrigin(null);
           self.disable('Changes submitted');
 //          self.redirect();
           if (sync)

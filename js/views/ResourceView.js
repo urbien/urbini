@@ -74,6 +74,7 @@ define('views/ResourceView', [
     },
     
     resetStockChart: function(e) {
+      e.preventDefault();
       var parent = e.target.parentElement,
           cls = parent.classList,
           chartCl;
@@ -440,7 +441,7 @@ define('views/ResourceView', [
           this.$el.trigger('create');
       }
       */
-      if (!_.size(displayedProps))
+      if (_.isEmpty(displayedProps))
         this.el.$hide();
 
       if (this.isCode && CodeMirror) {

@@ -204,6 +204,7 @@ define('views/ViewPage', [
       }
       
       this.listenTo(Events, "mapReady", this.showMapButton);
+      this.getFetchPromise().done(this.resource.fetchInlinedLists);
     },
 //    _updateSize: function() {
 //      try {

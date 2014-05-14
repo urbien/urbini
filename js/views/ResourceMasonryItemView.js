@@ -101,6 +101,7 @@ define('views/ResourceMasonryItemView', [
       props.vote = 'Like';
       props.votable = this.resource.getUri();
       r.save(props, {
+        userEdit: true,
         success: function(resource, response, options) {
           self.router.navigate(window.location.hash, options);
         }, 

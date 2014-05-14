@@ -41,7 +41,7 @@ define('views/LoginButton', [
 //      this.makeTemplate('loginTemplate', 'template', this.vocModel.type); // = G.currentUser.guest ? this.loginTemplate : this.logoutTemplate;
       var method = options && options.append ? 'append' : 'html';
       var loginBtn = this.template();
-//      if (!_.size(G.socialNets)) {
+//      if (_.isEmpty(G.socialNets)) {
 //        this.$el[method](this.makeTemplate('logoutButtonTemplate')());
 //        return this;
 //      }

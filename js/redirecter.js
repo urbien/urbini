@@ -509,23 +509,30 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   
   Redirecter.prototype._forType['commerce/trading/TradleFeed'] = function(res, options) {
     options = _.defaults(options, {forceFetch: true});
-    var feedUri = res.get('feed'),
-        feed = C.getResource(feedUri),
-        eventClassUri = feed.get('eventClass'),
-        eventClassRangeUri = feed.get('eventClassRangeUri'),
-        tradleUri = res.get('tradle');
+    var feedUri = res.get('feed');
     
-    if (eventClassUri) {
-      Events.trigger('navigate', U.makeMobileUrl('make', 'commerce/trading/Rule', {
-        eventClass: eventClassUri,
-        eventClassRangeUri: eventClassRangeUri,
-        feed: feedUri,
-        tradle: tradleUri,
-        tradleFeed: res.get('_uri')
-      }), options);
+    U.getResourcePromise(feedUri).done(function(feed) {
+      var eventClassUri = feed.get('eventClass'),
+          eventClassRangeUri = feed.get('eventClassRangeUri'),
+          tradleUri = res.get('tradle');
     
-      return true;
-    }
+      if (eventClassUri) {
+        Events.trigger('navigate', U.makeMobileUrl('make', 'commerce/trading/Rule', {
+          eventClass: eventClassUri,
+          eventClassRangeUri: eventClassRangeUri,
+          feed: feedUri,
+          tradle: tradleUri,
+          tradleFeed: res.get('_uri')
+        }), options);
+      }
+      else {
+        U.getResourcePromise(feedUri, true).done(function() {
+          Redirecter.prototype._forType['commerce/trading/TradleFeed'](res, options);
+        });
+      }
+    });
+    
+    return true;
   };
 
   
@@ -682,33 +689,47 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     
     if (isRule && !isLinkRule) {
       var $in = 'name',
+          feedUri = res.get('feed'),
+          getFeed = U.getResourcePromise(feedUri),
           eventClassRangeUri = res.get('eventClassRangeUri');
-      
+
       if (!eventClassRangeUri) {
         Events.trigger('back')
         return;
       }
-      
-      Voc.getModels(U.getTypeUri(eventClassRangeUri)).done(function(eventCl) {
-        var props = eventCl.properties,
+
+      eventClassRangeUri = U.getTypeUri(eventClassRangeUri);
+//      $.when(getFeed, Voc.getModels(eventClassRangeUri)).done(function(feed, eventModel) {
+      Voc.getModels(U.getTypeUri(eventClassRangeUri)).done(function(eventModel) {
+        var props = eventModel.properties,
             userRole = U.getUserRole(),
-            isIndexEvent = U.isAssignableFrom(eventCl, 'commerce/trading/IndexEvent');
+//            lastEventUri = feed.get('lastEvent'),
+            isIndexEvent = eventClassRangeUri.endsWith('commerce/trading/IndexEvent');
+//            ,
+//            getLastEvent = lastEventUri ? U.getResourcePromise(lastEventUri) : G.getResolvedPromise();
         
         for (var shortName in props) {
           var prop = props[shortName];
           if (!prop.backLink && 
               (!prop.subPropertyOf || !prop.subPropertyOf.endsWith('/feed')) && 
               (!isIndexEvent || shortName != 'index') && 
-              U.isNativeModelParameter(shortName) && 
+              U.isNativeModelParameter(shortName) &&
+              !U.isDateProp(prop) &&
               U.isPropVisible(null, prop, userRole)) {
             $in += ',' + shortName;
           }
         }
-        
-        rParams.$in = $in;
-        rParams.domain = res.get('eventClass');
-        rParams.$title = CHOOSE_RULE_FOR + res.get('feed.displayName') + ' property...';
-        Events.trigger('navigate', U.makeMobileUrl('chooser', U.getTypeUri(range), rParams), options);
+
+//        getLastEvent.done(function(lastEvent) {          
+          rParams.$in = $in;
+          rParams.domain = res.get('eventClass');
+          rParams.$select = 'name,label,propertyType,range,rangeUri';
+          rParams.$title = CHOOSE_RULE_FOR + res.get('feed.displayName') + ' property...';
+//          if (lastEvent)
+//            rParams.$lastEvent = lastEvent.getUri();
+            
+          Events.trigger('navigate', U.makeMobileUrl('chooser', U.getTypeUri(range), rParams), options);
+//        });
       });
       
       return;
@@ -901,11 +922,8 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   };
 
   Events.on('choseMulti', function(propName, list, checked) {
-    var res = redirecter.getCurrentChooserBaseResource();
-//    if (!res)
-//      res = new 
-    
-    var ffwd = redirecter.isChooserFastForwarded(),
+    var res = redirecter.getCurrentChooserBaseResource(),
+        ffwd = redirecter.isChooserFastForwarded(),
         editableProps = res.getEditableProps(U.getCurrentUrlInfo()),
         merged = getEditableProps(editableProps),
         props = {};
@@ -913,7 +931,9 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     props[propName] = _.pluck(checked, 'value').join(',');
     props[propName + '.displayName'] = _.pluck(checked, 'name').join(',');
     if (merged && merged.length == 1) {
-      res.save(props); // let redirect after save handle it
+      res.save(props, {
+        userEdit: true
+      }); // let redirect after save handle it
     }
     else {
       if (ffwd) {
@@ -976,7 +996,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       }
       
       this.currentChooser = null; 
-      if (propType == 'Link' || propType == 'Boolean') { // no subclasses
+      if (propType == 'Link' || propType == 'YesNo') { // no subclasses
         var params = _.extend(U.filterObj(res.attributes, U.isNativeModelParameter), props);
         params.$title = res.get('feed.displayName') + ' ' + valueRes.get('davDisplayName') + ' IS...';
         if (propType == 'Link') {
@@ -1006,7 +1026,9 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     }
     
     if (merged && merged.length == 1) {
-      res.save(props); // let redirect after save handle it
+      res.save(props, {
+        userEdit: true
+      }); // let redirect after save handle it
     }
     else {
       if (ffwd) {

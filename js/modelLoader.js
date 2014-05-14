@@ -141,8 +141,8 @@ define('modelLoader', [
     
     if (existing && existing.promise.state() == 'pending') {
       // whichever one finishes first
-      existing.promise.then(dfd.resolve, dfd.reject);
-      promise.then(existing.deferred.resolve, existing.deferred.reject);
+      existing.promise.done(dfd.resolve).fail(dfd.reject);
+      promise.done(existing.deferred.resolve).fail(existing.deferred.reject);
     }
     
     return promise;
@@ -201,6 +201,7 @@ define('modelLoader', [
       
       // check if we have any timestamp info on this model      
       promise = getMetadata().then(function(storedInfo) {
+        var getDataPromise;
         if (info.lastModified) {
           var lm = Math.max(info.lastModified, G.lastModified);
           if (lm > storedInfo.lastModified)
@@ -209,15 +210,16 @@ define('modelLoader', [
             if (isIDB)
               return willLoad.push(storedInfo); //intermediateDfd.resolve(storedInfo);
             else {
-              getData().then(function(jModel) {
+              getDataPromise = getData();
+              getDataPromise.done(function(jModel) {
                 willLoad.push(jModel);
-              }, requireType);
+              }).fail(requireType);
             }
           }
         }
         
         // can't do this right away because we need to know that we actually have it in localStorage
-        return getData().then(function(jModel) {            
+        return (getDataPromise || getData()).then(function(jModel) {            
           if (jModel) {
             mightBeStale.infos[type] = {
               lastModified: storedInfo.lastModified
@@ -249,7 +251,7 @@ define('modelLoader', [
   
   function fetchModels(models, options) {
     var promise = $.Deferred(function(defer) {
-      if (!_.size(models))
+      if (_.isEmpty(models))
         return defer.resolve();
 
       if (!G.online)
@@ -439,14 +441,14 @@ define('modelLoader', [
     return makeModelsPromise(_.pluck(models, 'type'));
   }
 
-  function loadModel(m, sync) {
-//    if (sync)
-      _loadModel(m);
-//    else
-//      Q.whenIdle('nonDom', _loadModel, null, [m]);
-  }
+//  function loadModel(m, sync) {
+////    if (sync)
+//      _loadModel(m);
+////    else
+////      Q.whenIdle('nonDom', _loadModel, null, [m]);
+//  }
   
-  function _loadModel(m) {
+  function loadModel(m) {
     if (m.enumeration)
       m = loadEnumModel(m);
     else

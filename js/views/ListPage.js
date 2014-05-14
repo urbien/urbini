@@ -343,8 +343,9 @@ define('views/ListPage', [
       var props = {};
       props[p[0]] = uri;
       newRes.save(props, {
+        userEdit: true,
         success: function(resource, response, options) {
-          res.lastFetchOrigin = null;
+          res._setLastFetchOrigin(null);
           self.redirect(res, {trigger: true, replace: true, forceFetch: true});
         }
       });

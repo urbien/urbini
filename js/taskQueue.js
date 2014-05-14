@@ -230,7 +230,7 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
     }
   }
   
-  function Task(name, taskFn, blocking, priority) {
+  function Task(name, taskFn, blocking, priority/*, noTimeout*/) {
     if (!(this instanceof Task))
       return new Task(name, taskFn, blocking, priority);
     
@@ -242,6 +242,7 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
     this.name = name;
     this.priority = priority || 0;
     this.blocking = blocking || false;
+//    this.canTimeout = !noTimeout;
     this.run = function() {
       log('taskQueue', 'Running task:', this.name);
       started = true;
@@ -253,9 +254,12 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
         if (defer.state() === 'pending') {
 //          debugger;
           log('taskQueue', 'Task timed out: ' + self.name);
+          if (self.name.startsWith('starting IndexedDB'))
+            return;
+            
           defer.reject();
         }
-      }, 7000); // + Math.random() * 5000);
+      }, 10000); // + Math.random() * 5000);
     };
     
     // allow task consumers to treat the task as a promise

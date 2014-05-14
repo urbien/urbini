@@ -426,7 +426,7 @@ define('app', [
   
   function doPostStartTasks() {
     Voc.getModels();
-    initGrabs();
+//    initGrabs();
     setupPushNotifications();
     ResourceManager.sync();
     if (U.getUrlInfo().route == 'home')

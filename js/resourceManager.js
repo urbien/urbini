@@ -261,7 +261,7 @@ define('resourceManager', [
         }
       }
       
-      if (!_.size(temps)) {
+      if (_.isEmpty(temps)) {
         function search() {
           options = _.clone(options);
           options.filter = data.belongsInCollection;

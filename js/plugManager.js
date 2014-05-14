@@ -205,7 +205,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
       }));
     }
     
-    if (!_.size(models))
+    if (_.isEmpty(models))
       return;
     
     var viaInstall = !!models.appInstall;
@@ -270,7 +270,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
       if (goAhead === false)
         return;
               
-//      if (!_.size(effect))
+//      if (_.isEmpty(effect))
 //        return;
       
       // copy image props, if both are imageResources. Add more crap like this here (and then make them all separate methods
@@ -325,7 +325,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
   }
 
   function savePlugsToStorage(plugs) {
-    if (!localStorage || !_.size(plugs))
+    if (!localStorage || _.isEmpty(plugs))
       return;
   
     var ls = G.localStorage;

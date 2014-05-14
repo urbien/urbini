@@ -217,6 +217,9 @@ define('utils', [
           G.getXhrWorker().done(function() {
             worker = arguments[0];
             worker.onmessage = function(event) {
+              if (opts['for'])
+                opts['for']._setLastFetchOrigin('server');
+              
               var xhr = event.data,
                   resp = xhr.data,
                   code = xhr.status,
@@ -514,7 +517,7 @@ define('utils', [
       userRole = userRole || U.getUserRole();
       var urbienModel = U.getModel(G.commonTypes.Urbien);
       var backlinks = U.getPropertiesWith(urbienModel.properties, [{name: "backLink"}, {name: 'range', values: [type, type.slice(type.indexOf('/voc/') + 5)]}]);
-      if (!_.size(backlinks))
+      if (_.isEmpty(backlinks))
         return false;
       
       for (var blName in backlinks) {
@@ -1162,7 +1165,7 @@ define('utils', [
       else
         delete q[name];
       
-      if (!_.size(q))
+      if (_.isEmpty(q))
         return url[0];
       
       q = sort ? U.getQueryString(q, {sort: sort}) : $.param(q);
@@ -1222,7 +1225,7 @@ define('utils', [
     },
     
     filterInequalities: function(params, vocModel) {
-      if (!_.size(params))
+      if (_.isEmpty(params))
         return params;
       
       var query = $.param(params);
@@ -1683,7 +1686,7 @@ define('utils', [
         });
         
         res.fetch({
-          forceFetch: sync,
+          forceFetch: sync && !U.isTempUri(uri),
           success: function() {
             dfd.resolve(res);
           },
@@ -2925,6 +2928,9 @@ define('utils', [
     },
     isTempUri: function(uri) {
       return uri && uri.indexOf("?" + tempIdParam + "=") != -1;
+    },
+    getTempIdParameterName: function() {
+      return tempIdParam;
     },
     buildUri: function(atts, model) {
       if (U.isModel(atts)) {

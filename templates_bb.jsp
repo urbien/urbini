@@ -292,6 +292,9 @@
   {{ if (obj.comment) { }}
     <p style="padding:0.5rem 0 0 1.5rem;">{{= comment }}</p>
   {{ } }}
+  {{ if (obj.defaultValue) { }}
+    <div style="margin-left: 2rem;">({{= defaultValue.name }}: {{= defaultValue.value }})</div>
+  {{ }                       }}
   </div>
   </div>
 </script>

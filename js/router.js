@@ -231,7 +231,11 @@ define('router', [
             }
         });
       });
-      
+
+      Events.on('uriChanged', function(tempUri, data) {
+        self.checkUpdateHash(tempUri, U.getValue(data, '_uri'));
+      });
+
 //      var popped = ('state' in window.history);
 //      var initialURL = window.location.href;
 //      $(window).bind('popstate', function(e) {
@@ -436,6 +440,16 @@ define('router', [
     },
 
     choose: function(path) { //, checked, props) {
+//      if (!Redirecter.getCurrentChooserBaseResource()) {
+//        var forResource = U.getCurrentUrlInfo().params.$forResource;
+//        if (forResource)
+//          Events.trigger('navigate', U.makeMobileUrl('view', forResource), { replace: true });
+//        else
+//          Events.trigger('back');
+//        
+//        return;
+//      }
+        
       if (this.routePrereqsFulfilled('choose', arguments))
         this.list(path, G.LISTMODES.CHOOSER); //, {checked: checked !== 'n', props: props ? props.slice(',') : []});
     },
@@ -824,7 +838,7 @@ define('router', [
         if (!resource.getUri() && Redirecter.fastForwardMake(resource))
           return;
         
-//        if (!_.size(U.getPropertiesForEdit(resource))) {
+//        if (_.isEmpty(U.getPropertiesForEdit(resource))) {
 //          resource.save();
 //          return;
 //        }
@@ -901,7 +915,8 @@ define('router', [
           installationState,
           isWriteRoute,
           hashInfo = G.currentHashInfo,
-          type = hashInfo.type;
+          type = hashInfo.type,
+          params = hashInfo.params;
       
       if (G.currentUser.guest && /^(chat|edit|make|social)/.test(route)) {
         this._requestLogin();
@@ -969,7 +984,14 @@ define('router', [
           prereqs.push(viewsPromise);
         }
       }
- 
+
+      for (var p in params) {
+        var val = params[p];
+        if (U.isTempUri(val)) {
+          U.getResourcePromise(val);
+        }
+      }
+      
       missingTypes = [];    
       var sub = hashInfo;
       while (sub) {
@@ -992,10 +1014,45 @@ define('router', [
         
         return false;
       }
-      
+
       return true;
     },
     
+    checkUpdateHash: function(tempUri, uri) {
+      var replaceHash = false,
+          hashInfo = U.getCurrentUrlInfo(),
+          params = hashInfo.params,
+          redirectOptions = {
+            trigger: false,
+            replace: true
+          };
+
+      if (U.isResourceRoute()) {
+        if (hashInfo.uri == tempUri) {
+          delete params[U.getTempIdParameterName()];
+          Events.trigger('navigate', U.makeMobileUrl(hashInfo.route, uri, params), redirectOptions);
+          this.updateHashInfo();
+        }
+        
+        return;
+      }      
+
+      for (var p in params) {
+        var val = params[p];
+        if (val == tempUri) {
+          params[p] = uri;
+          replaceHash = true;
+        }
+      }
+      
+      if (replaceHash)
+        Events.trigger('navigate', U.makeMobileUrl(hashInfo.route, hashInfo.type, hashInfo.params), redirectOptions);
+    },
+    
+    updateHash: function(hashInfo) {
+      debugger;
+    },
+        
     login: function(path) {
       if (!this.routePrereqsFulfilled('login', arguments))
         return;
@@ -1074,25 +1131,25 @@ define('router', [
       var newUri = res && res.getUri();
       var wasTemp = U.isTempUri(uri);
       var isTemp = newUri && U.isTempUri(newUri);
-      if (wasTemp) {
-        function updateHash(resource) {
-          self.navigate(U.makeMobileUrl(action, resource.getUri()), {trigger: false, replace: true});
-        }
-        
-        if (isTemp || !newUri) {
-          Events.once('synced:' + uri, function() {            
-            var currentView = self.currentView;    
-            if (currentView && currentView.resource === res) {
-              updateHash(res);
-            }
-            else
-              Events.once('navigateToResource:' + res.resourceId, updateHash);
-          });
-        }
-        else {
-          updateHash(res);
-        }
-      }
+//      if (wasTemp) {
+//        function updateHash(resource) {
+//          self.navigate(U.makeMobileUrl(action, resource.getUri()), {trigger: false, replace: true});
+//        }
+//        
+//        if (isTemp || !newUri) {
+//          Events.once('synced:' + uri, function() {            
+//            var currentView = self.currentView;    
+//            if (currentView && currentView.resource === res) {
+//              updateHash(res);
+//            }
+//            else
+//              Events.once('navigateToResource:' + res.cid, updateHash);
+//          });
+//        }
+//        else {
+//          updateHash(res);
+//        }
+//      }
 
       var options = this.getChangePageOptions();
       var forceFetch = options.forceFetch;
@@ -1101,7 +1158,7 @@ define('router', [
         view = cachedView || new viewPageCl({model: res, source: this.previousHash });
         
         this.changePage(view);
-        Events.trigger('navigateToResource:' + res.resourceId, res);
+//        Events.trigger('navigateToResource:' + res.cid, res);
 //        G.whenNotRendering(function() {
           res.fetch({forceFetch: forceFetch});
 //        });
@@ -1128,7 +1185,7 @@ define('router', [
 //          self._checkUri(res, uri, action);
 //        
 //        self.changePage(view);
-//        Events.trigger('navigateToResource:' + res.resourceId, res);
+//        Events.trigger('navigateToResource:' + res.cid, res);
 //      };
 //      
 //      if (chat) {

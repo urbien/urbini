@@ -34,11 +34,15 @@ define('models/Resource', [
       return /^[a-zA-Z]/.test(key)
     });
   };
+ 
+  Events.on('uriChanged', function(tempUri, data) {
+    Events.trigger('synced:' + tempUri, data);
+  });
   
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(atts, options) {
-      _.bindAll(this, 'get', 'parse', 'getUrl', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'cancel', 'updateCounts'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'get', 'parse', 'getUrl', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'cancel', 'updateCounts', 'fetchInlinedLists'); // fixes loss of context for 'this' within methods
 //      if (options && options._query)
 //        this.urlRoot += "?" + options._query;
       
@@ -306,8 +310,16 @@ define('models/Resource', [
 //          self.collection.remove(self);
           
         success && success.apply(self, arguments);
+        if (self.inlineLists) {
+          for (var pName in self.inlineLists) {
+            var list = self.inlineLists[pName];
+            list.models.length = list.length = 0;
+            list.trigger('removed');
+          }
+        }
+        
 //        if (self.vocModel.deleteOnCancel) {
-        Events.trigger('delete', self);
+        self['delete']();
 //        }
       };
 
@@ -318,6 +330,7 @@ define('models/Resource', [
     },
     'delete': function() {
       this.trigger('delete', this);
+      Events.trigger('delete', this);
       this.remove();
     },
     getUrl: function() {
@@ -328,14 +341,16 @@ define('models/Resource', [
       var uri = this.getUri();
       var type = U.getActualModelType(this.vocModel);
       var retUri = G.apiUrl + encodeURIComponent(type) + "?$blCounts=y&$minify=y&$mobile=y";
-      if (uri)
 //      type = type.startsWith(G.defaultVocPath) ? type.slice(G.defaultVocPath.length) : type;
+      if (uri)
         return retUri + "&_uri=" + _.encode(uri);
       var action = this.get('action');
-      if (action != 'make') 
+      if (action != 'make')
         return retUri;
+      
       var params = this.get('params');
       if (params) {
+        debugger;
         params.$action = 'make';
         retUri += '&' + U.getQueryString(params);
 //        retUri += '&$action=make';
@@ -362,13 +377,14 @@ define('models/Resource', [
 //    },
     
     getUri: function() {
-      if (!_.size(this.attributes))
+      if (_.isEmpty(this.attributes))
         return null;
       
       var uri = this.get('_uri');
       if (!uri && this.vocModel) {
         uri = U.buildUri(this);
         if (uri) {
+          debugger;
           this.trigger('uriChanged', uri);
 //          this.attributes['_uri'] = uri; // HACK?
 //          this.checkIfLoaded();
@@ -378,8 +394,51 @@ define('models/Resource', [
       return uri;
     },
     
+    _setLastFetchOrigin: function(lfo) {
+      this.lastFetchOrigin = lfo;
+    },
+    
     _getLastFetchOrigin: function() {
       return this.lastFetchOrigin || (this.collection && this.collection.lastFetchOrigin);
+    },
+    
+    fetchInlinedLists: function() {
+      var self = this,
+          types = [],
+          il = {},
+          meta = this.vocModel.properties;
+      
+      this.inlineLists = this.inlineLists || {};
+      for (var p in meta) {
+        var prop = meta[p];
+        if (prop && prop.backLink && prop.displayInline && !this.inlineLists[p]) {
+          il[p] = prop;
+          _.pushUniq(types, prop.range);
+        }
+      }
+      
+      if (!types.length)
+        return;
+      
+      var RL, Voc;
+      U.require(['collections/ResourceList', 'vocManager']).then(function(_RL, _Voc) {
+        RL = _RL;
+        Voc = _Voc;
+        return Voc.getModels(types);
+      }).then(function() {
+        var bl,
+            list;
+        
+        for (var p in il) {
+          bl = il[p];
+          list = new RL(null, {
+            params: U.getListParams(self, bl),
+            model: U.getModel(bl.range)
+          });
+          
+          self.setInlineList(p, list);
+        }
+      });
     },
     
     parse: function(resp, options) {
@@ -505,7 +564,21 @@ define('models/Resource', [
     setInlineList: function(propName, list) {
       this.inlineLists = this.inlineLists || {};
       this.inlineLists[propName] = list;
-      this.trigger('inlineList', propName);
+      
+      function onChange() {
+        self.trigger('inlineList', propName, list);
+      };
+      
+      var self = this;
+      list.fetch({
+        success: onChange
+      });
+      
+//      list.on("all", onChange);
+      _.each(['updated', 'added', 'reset', 'removed'], function(event) {
+        self.stopListening(list, event);
+        self.listenTo(list, event, onChange);
+      });
     },
 
     getInlineList: function(propName) {
@@ -526,6 +599,18 @@ define('models/Resource', [
                                   // for some reason we wanted to keep all the props that haven't been propagated to the server, not just props unsaved (to db) 
     },
     
+    _watchTemp: function(shortName, tempUri) {
+      var self = this;
+      Events.once('synced:' + tempUri, function updateUri(data) {
+        var newVal = U.getValue(data, '_uri');
+        if (newVal != self.get(shortName)) {
+          self.set(shortName, newVal);
+          if (self.getUri())
+            self.save();
+        }
+      });
+    },
+    
     clear: function() {
       this._resetUnsavedChanges();
       Backbone.Model.prototype.clear.apply(this, arguments);
@@ -534,6 +619,7 @@ define('models/Resource', [
     set: function(key, val, options) {
       var self = this,
           uri = this.getUri(),
+          uriChanged,
           props,
           vocModel,
           meta,
@@ -554,7 +640,7 @@ define('models/Resource', [
         (props = {})[key] = val;
       }
       
-      if (!_.size(props))
+      if (_.isEmpty(props))
         return true;
       
       vocModel = this.getModel();
@@ -569,11 +655,10 @@ define('models/Resource', [
           return willSave(self, meta, name, val);
         })
         
-        if (!_.size(props))
+        if (_.isEmpty(props))
           return true;
       }
       
-//      var uriChanged;
       
       displayNameChanged = false;
       imageType = G.commonTypes.Image;
@@ -584,8 +669,8 @@ define('models/Resource', [
         if (!val)
           continue;
         
-//        if (shortName == '_uri' && val !== uri)
-//          uriChanged = true;
+        if (shortName == '_uri' && uri && val !== uri)
+          uriChanged = true;
         
         var prop = meta[shortName];
         if (!prop)
@@ -600,7 +685,18 @@ define('models/Resource', [
             delete self.attributes[shortName + '.blob'];
             delete self.attributes[shortName + '.uri'];
           }
+          
+          if (U.isNativeModelParameter(shortName) && U.isTempUri(val)) {
+            var link = C.getResource(val),
+                latestUri = (link && link.getUri()) || val;
+            
+            if (latestUri && !U.isTempUri(latestUri))
+              props[shortName] = latestUri;
+            else
+              this._watchTemp(shortName, latestUri);
+          }
         }
+        
         
         if (!options.sync) {
           if (/\./.test(shortName))
@@ -618,20 +714,10 @@ define('models/Resource', [
             var res = C.getResource(val);
             if (res) {
               props[sndName] = U.getDisplayName(res);
-            }
-            
-            if (U.isTempUri(val)) {
-              Events.once('synced:' + val, function(data) {
-                var newVal = U.getValue(data, '_uri');
-                if (newVal != self.get(shortName)) {
-                  self.set(shortName, newVal);
-                  if (self.getUri())
-                    self.save();
-                }
-              });
-            }
+            }            
           }
         }
+        
       }
       
       if (this.loaded && displayNameChanged) {
@@ -643,7 +729,7 @@ define('models/Resource', [
       }
       
       if (options.userEdit)
-        this.lastFetchOrigin = 'edit';
+        this._setLastFetchOrigin('edit');
 
 //      for (var p in props) {
 //        var prop = meta[p];
@@ -651,6 +737,9 @@ define('models/Resource', [
 //      }
 
       var result = Backbone.Model.prototype.set.call(this, props, options);
+      if (uriChanged)
+        Events.trigger('uriChanged', uri, this);
+
       if (result) {
 //        this._resetEditableProps();
         if (options.userEdit)
@@ -769,8 +858,8 @@ define('models/Resource', [
     isA: function(interfaceName) {
       return U.isA(this.vocModel, interfaceName);
     },
-    isAssignableFrom: function(interfaceName) {
-      return U.isAssignableFrom(this, interfaceName);
+    isAssignableFrom: function(classNameOrType) {
+      return U.isAssignableFrom(this, classNameOrType);
     },
     _updateLastFetched: function() {
       this.set('_lastFetchedOn', G.currentServerTime(), {silent: true});
@@ -780,7 +869,8 @@ define('models/Resource', [
       var self = this,
           adapter = this.vocModel.adapter,
           error = options.error || Errors.getBackboneErrorHandler(),
-          success = options.success || function() {};
+          success = options.success || function() {},
+          uri = this.get('_uri');
       
 //      if (adapter) {
 //        auth = adapter.requiredAuthorization && adapter.requiredAuthorization() || 'simple';
@@ -795,7 +885,7 @@ define('models/Resource', [
         error.apply(this, arguments);
       };
       
-      options.success = function(resp, status, xhr) {
+      options.success = function(resp, status, xhr) {          
         if (self.lastFetchOrigin != 'server')
           return update();
         
@@ -806,7 +896,7 @@ define('models/Resource', [
           error(self, resp || {code: xhr.status}, options);            
         };
         
-        function update() {
+        function update() {          
           if (self.set(self.parse(resp, options), options)) { 
             if (success) 
               success(resp, status, xhr);
@@ -826,6 +916,9 @@ define('models/Resource', [
             break;
           case 304:
             self._updateLastFetched();
+            if (success)
+              success(resp, status, xhr);
+            
             return;
           default:
             err();
@@ -909,7 +1002,8 @@ define('models/Resource', [
     updateCounts: function(res, isNew) {
       if (!isNew)
         return; // for now
-      
+
+      var self = this;
       var resUri = res.getUri();
       var resJSON;
       var blVocModel = res.vocModel;
@@ -917,6 +1011,7 @@ define('models/Resource', [
       var props = this.attributes;
       var blRanges = U.getTypes(blVocModel);
       var atts = {};
+      var doSet = false;
       for (var bl in meta) {
         var blProp = meta[bl];
         if (!blProp)
@@ -950,34 +1045,46 @@ define('models/Resource', [
             continue;
         }
         
+        if (blProp.displayInline) {
+          var list = this.getInlineList(bl);
+          if (list) {
+            list.filterAndAddResources([res]);
+          }
+          else {
+            U.require('collections/ResourceList').done(function(ResourceList) {
+              list = new ResourceList(null, {
+                model: res.vocModel, 
+                params: U.getListParams(self, blProp)
+              });
+              
+              list.filterAndAddResources([res]);              
+              self.setInlineList(bl, list);
+            });
+            
+//            if (blVal._list)
+//              Events.trigger('inlineResourceList', this, blProp, blVal._list);
+          }
+          
+          return;
+//          if (!list.get(resUri)) {
+//            list.add(res);
+//            blVal._list = blVal._list || [];
+//            blVal._list.push(res);
+//          }
+        }
+
         var blVal = _.clone(props[bl]) || {};
         if (_.has(blVal, 'count'))
           blVal.count++;
         else
-          blVal.count = 1;
-        
-        if (blProp.displayInline) {
-          this.inlineLists = this.inlineLists || {};
-          var list;
-          if (!(list = this.inlineLists[bl])) {
-//            list = new ResourceList([res], {model: res.vocModel, params: U.getListParams(res, blProp)});
-            if (blVal._list)
-              Events.trigger('inlineResourceList', this, blProp, blVal._list);
-            
-            return;
-          }
-          
-          if (!list.get(resUri)) {
-            list.add(res);
-            blVal._list = blVal._list || [];
-            blVal._list.push(res);
-          }
-        }
-          
+          blVal.count = 1;        
+
         atts[bl] = blVal;
+        doSet = true;
       }
       
-      this.set(atts, {skipValidation: true});
+      if (doSet)
+        this.set(atts, {skipValidation: true});
     },
     
     checkIfLoaded: function() {
@@ -1052,6 +1159,7 @@ define('models/Resource', [
     },
     
     _sync: function(data, options) {
+//      this._setLastFetchOrigin('server');
       var self = this,
           vocModel = this.vocModel,
           isAppInstall = U.isAssignableFrom(vocModel, commonTypes.AppInstall),
@@ -1063,7 +1171,7 @@ define('models/Resource', [
           error = options.error;
 
       data = this.prepForSync(data);
-      if (!_.size(data)) {
+      if (_.isEmpty(data)) {
         if (!isNew) {
           if (options.success)
             options.success(this, {code: 304, details: "unmodified"}, options);
@@ -1081,79 +1189,92 @@ define('models/Resource', [
         url: this.saveUrl(data), 
         silent: false, 
         patch: true, 
-        resource: this
+        'for': this
       }, options, {
         data: data
       });
       
       options.success = function(resource, response, opts) {
+//        Events.trigger('synced:' + (tempUri || self.getUri()), self);
         if (!opts.fromDB)
-          this._resetUnsavedChanges(); // if we're performing a synchronized save (for example for a money transaction), without going through the database. Otherwise we want to keep accumulating unsavedChanges
+          self._resetUnsavedChanges(); // if we're performing a synchronized save (for example for a money transaction), without going through the database. Otherwise we want to keep accumulating unsavedChanges
 
         if (isAppInstall)
-          Events.trigger('appInstall', this);
+          Events.trigger('appInstall', self);
         else if (isTemplate)
-          Events.trigger('templateUpdate:' + this.get('templateName'), this);
+          Events.trigger('templateUpdate:' + self.get('templateName'), self);
         
         if (!opts.fromDB) { // was a direct sync, didn't go through _save first 
           if (isNew)
-            Events.trigger('savedMake', this, opts);
+            Events.trigger('savedMake', self, opts);
           else
-            Events.trigger('savedEdit', this, opts);
+            Events.trigger('savedEdit', self, opts);
         }
 
-        success && success.apply(this, arguments);
-        // trigger this first because "success" may want to redirect to mkresource for some app-related model
+        success && success.apply(self, arguments);
+        // trigger self first because "success" may want to redirect to mkresource for some app-related model
         
-        Events.trigger('updatedResources', [this]);
-        if (this.isNew()) // was a synchronous mkresource operation
-          this.checkIfLoaded();
+        Events.trigger('updatedResources', [self]);
+        if (self.isNew()) // was a synchronous mkresource operation
+          self.checkIfLoaded();
 //        else if (isNew) { 
 //          // completed sync with db
 //        }
         
-        this.triggerPlugs(options);
+        self.triggerPlugs(options);
         if (!opts.fromDB)
-          this.notifyContainers();
+          self.notifyContainers();
         
-        this.trigger('syncedWithServer');
-        Events.trigger('synced:' + (tempUri || this.getUri()), this);
-      }.bind(this);
+        self.trigger('syncedWithServer');
+        if (tempUri) {
+          self.subscribedToUpdates = false;
+          self.subscribeToUpdates();
+        }
+        
+      };
       
       options.error = function(originalModel, xhr, opts) {
         var code = xhr.code || xhr.status,
             errorObj = xhr.responseJson;
         
-        if (code === 409) {
+        switch (code) {
+        case 409: 
+          if (self._getLastFetchOrigin() != 'server')
+            debugger;
+            
           var conflict = errorObj.conflict;
           if (!isNew) {
-            this.lastFetchOrigin = 'server';
-            this.set(this.parse(conflict, {overwriteUserChanges: true}));
+//            self._setLastFetchOrigin('server');
+            self.set(self.parse(conflict, {overwriteUserChanges: true}));
             Events.trigger('messageBar', 'error', {
               message: errorObj.details || "Uh oh. Seems someone (maybe you) has made edits that trump yours. We've loaded theirs so you're good to go. Please re-edit and re-submit.",
               persist: false
             });
           }
           else {
-            if (this.isA('Intersection')) {
-              this.lastFetchOrigin = 'server';
-              this.set(this.parse(conflict, {overwriteUserChanges: true}));
-              return options.success(this, this.toJSON(), options);
+            if (self.isA('Intersection')) {
+//              self._setLastFetchOrigin('server');
+              self.set(self.parse(conflict, {overwriteUserChanges: true}));
+              return options.success(self, self.toJSON(), options);
             }
             else {
-  //            Events.trigger('navigate', new this.vocModel(conflict));
-              Events.trigger('cacheResource', new this.vocModel(conflict));
+  //            Events.trigger('navigate', new self.vocModel(conflict));
+              Events.trigger('cacheResource', new self.vocModel(conflict));
               Events.trigger('messageBar', 'error', {
                 message: errorObj.details || "Uh oh. Seems whatever you're making <a href='{0}'>already exists</a>.".format(U.makePageUrl('view', conflict._uri)),
                 persist: false
               });
             }
           }
+          break;
+        case 404:
+          self['delete']();
+          break;
         }
         
         if (error)
-          error.apply(this, arguments);
-      }.bind(this);
+          error.apply(self, arguments);
+      };
 
       return Backbone.Model.prototype.save.call(this, data, options);
     },
@@ -1161,7 +1282,7 @@ define('models/Resource', [
     save: function(attrs, options) {
       options = _.defaults(options || {}, {patch: true, silent: false});
       if (attrs)
-        this.set(attrs, {silent: true, userEdit: true});
+        this.set(attrs, {silent: true});
       else
         attrs = {};
       

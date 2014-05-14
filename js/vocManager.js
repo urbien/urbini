@@ -266,7 +266,7 @@ define('vocManager', [
       }        
     }
     
-    if (!_.size(actualTypes))
+    if (_.isEmpty(actualTypes))
       return;
     
     Voc.getModels(_.keys(actualTypes)).done(function() {

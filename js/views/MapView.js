@@ -96,7 +96,7 @@ define('views/MapView', [
       
       var metadata = {};
       var gj = this.collectionToGeoJSON(res, metadata);
-      if (!gj || !_.size(gj))
+      if (!gj || _.isEmpty(gj))
         return;
       
       var bbox = metadata.bbox;

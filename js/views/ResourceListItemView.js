@@ -292,6 +292,9 @@ define('views/ResourceListItemView', [
 //    },
     
     doRender: function(options, data) {
+      if (this.resource.has('_defaultValue'))
+        data.defaultValue = this.resource.get('_defaultValue');
+      
       var html = this.template(data, options.unlazifyImages);
       if (options && options.renderToHtml)
         this._html = this.renderHtml(html);
@@ -348,8 +351,10 @@ define('views/ResourceListItemView', [
         G.log(RLIV.TAG, 'error', 'uri undefined 2', JSON.stringify(json));
 
 //      json.shortUri = U.getShortUri(json._uri, this.vocModel);
-      var urbienType = G.commonTypes.Urbien;
-      if (!this.mvProp && this.doesModelImplement('Intersection')) { // if it's a multivalue, we want the intersection resource values themselves
+      var urbienType = G.commonTypes.Urbien,
+          isIntersection = this.doesModelImplement('Intersection') && !U.isAssignableFrom(vocModel, 'commerce/trading/TradleFeed');
+      
+      if (!this.mvProp && isIntersection) { // if it's a multivalue, we want the intersection resource values themselves
         var href = window.location.href;
         var qidx = href.indexOf('?');
         var clonedI = cloned.Intersection;

@@ -29,10 +29,14 @@ define('views/ControlPanel', [
       this.isMainGroup = options.isMainGroup;
       this.dontStyle = this.isMainGroup && options.dontStyle;
       this._backlinkInfo = {};
-//      this.resource.on('inlineList', this.setInlineList, this);
-  //    Globals.Events.on('refresh', this.refresh);
       return this;
     },
+    
+    modelEvents: {
+      'inlineList': 'update',
+      'change': 'refresh'
+    },
+    
     events: {
 //      'click a[data-shortName]': 'click',
       'click [data-cancel]': 'cancel',
@@ -117,12 +121,7 @@ define('views/ControlPanel', [
       params[prop.backLink] = this.resource.getUri();
       
       if (U.isAssignableFrom(this.vocModel, 'commerce/trading/TradleFeed') && prop.range.endsWith('commerce/trading/Rule')) {
-        params.eventClass = this.resource.get('eventClass');
-        params.eventClass = this.resource.get('eventClass');
-        params.eventClassRangeUri = this.resource.get('eventClassRangeUri');
-        params.feed = this.resource.getUri();
-        params.tradle = this.resource.get('tradle');
-        params['feed.displayName'] = U.getDisplayName(this.resource);
+        _.extend(params, this.resource.pick('eventClass', 'eventClassRangeUri', 'feed', 'tradle', 'feed.displayName'));
       }
       
       Events.trigger('navigate', U.makeMobileUrl('make', prop.range, params));
@@ -273,6 +272,175 @@ define('views/ControlPanel', [
       });
     },
 
+    renderInlineList: function(name, list, frag, displayedProps) {
+      if (!list.length)
+        return;
+      
+      var vocModel = this.vocModel,
+          meta = this.vocModel.properties,
+          resources = list.models,
+          listVocModel = list.vocModel,
+          listMeta = listVocModel.properties,
+          isCancelable = U.isA(listVocModel, 'Cancellable'),
+          prop = meta[name],
+          propDisplayName = U.getPropDisplayName(prop),
+          canceledProp;
+      
+      if (isCancelable) {
+        canceledProp = listMeta[U.getCloneOf(listVocModel, 'Cancellable.cancelled')[0]];
+        isCancelable = canceledProp && U.isPropEditable(list.models[0], canceledProp);
+      }
+
+      U.addToFrag(frag, this.propGroupsDividerTemplate({value: propDisplayName}));
+      for (var i = 0, l = resources.length; i < l; i++) {
+        var iRes = resources[i];
+            params = {
+              viewId: this.cid,
+              comment: iRes.comment, 
+              _problematic: iRes.get('_error'),
+              name: U.getDisplayName(iRes),
+              backlink: name
+            },
+            grid = U.getCols(iRes, 'grid', true);
+            
+        if (U.isA(listVocModel, 'Intersection')) {
+          var oH, oW, ab;
+          var a = U.getCloneOf(listVocModel, 'Intersection.a')[0];
+          var b = U.getCloneOf(listVocModel, 'Intersection.b')[0];
+          if (a == meta[name].backLink) {
+            var n = iRes.get(b + '.displayName');
+            if (n)
+              params.name = n;
+            params.img = iRes.get('bThumb');
+            params.imageProperty = 'bThumb';
+            oW = 'bOriginalWidth';
+            oH = 'bOriginalHeight';
+            ab = b;
+          }
+          else {
+            var n = iRes.get(a + '.displayName');
+            if (n)
+              params.name = n;
+            params.img = iRes.get('aThumb');
+            params.imageProperty = 'aThumb';
+            oW = 'aOriginalWidth';
+            oH = 'aOriginalHeight';
+            ab = a;
+          }
+          if (grid) {
+            var gridCols = '';
+            var aLabel = listMeta[a].displayName;
+            var bLabel = listMeta[b].displayName;
+            for (var row in grid) {
+              if (row != aLabel  &&  row != bLabel)
+                gridCols += grid[row].value;
+            }
+            if (gridCols)
+              params.gridCols = gridCols;
+          }
+          var w = iRes.get(oW),
+              h = iRes.get(oH);
+          if (w  &&  h) {
+            var range = listMeta[ab].range;
+            var rm = U.getModel(U.getLongUri1(range));
+            if (U.isA(rm, 'ImageResource')) {
+              var rmeta = rm.properties;
+              var imgP = imageP  &&  imageP.indexOf('Featured') == -1 ? U.getCloneOf(rm, 'ImageResource.smallImage') : U.getCloneOf(rm, 'ImageResource.mediumImage'); 
+              maxDim = imgP  &&  rmeta[imgP].maxImageDimension;
+              var clip = U.clipToFrame(80, 80, w, h, maxDim);
+              if (clip) {
+                params.top = clip.clip_top;
+                params.right = clip.clip_right;
+                params.bottom = clip.clip_bottom;
+                params.left = clip.clip_left;
+                params.height = json.top + json.bottom;
+              }
+              else {
+                var dim = U.fitToFrame(80, 80, w / h);
+                params.width = dim.w;
+                params.height = dim.h;
+                params.top = dim.y; //w > h ? dim.y : dim.y + (atts[oH] - atts[oW]) / 2;
+                params.right = dim.w - dim.x;
+                params.bottom = dim.h - dim.y; ////w > h ? dim.h - dim.y : dim.h - dim.y + (atts[oH] - atts[oW]) / 2;
+                params.left = dim.x;
+              }
+            }
+          }
+
+        }
+        else {
+          if (grid) {
+            var gridCols = '';
+            for (var row in grid) 
+              gridCols += grid[row].value;
+            
+            params.gridCols = gridCols;
+          }
+          if (U.isA(listVocModel, 'ImageResource')) {
+            var imgProp = U.getImageProperty(iRes);
+            if (imgProp) {
+              var img = iRes.get(imgProp);
+              if (img) {
+                params.imageProperty = imgProp;
+                params.img = img;
+                var oW = U.getCloneOf(listVocModel, 'ImageResource.originalWidth');
+                var oH;
+                if (oW)
+                  oH = U.getCloneOf(listVocModel, 'ImageResource.originalHeight');
+                
+                if (oW  &&  oH  &&  (typeof iRes.get(oW) != 'undefined' &&  typeof  iRes.get(oH) != 'undefined')) {
+                  
+//                  this.$el.addClass("image_fitted");
+//                  
+                  var dim = U.fitToFrame(80, 80, iRes.get(oW) / iRes.get(oH));
+                  params.width = dim.w;
+                  params.height = dim.h;
+                  params.top = oW > oH ? dim.y : dim.y + (iRes.get(oH) - iRes.get(oW)) / 2;
+                  params.right = dim.w - dim.x;
+                  params.bottom = oW > oH ? dim.h - dim.y : dim.h - dim.y + (iRes.get(oH) - iRes.get(oW)) / 2;
+                  params.left = dim.x;
+                }
+              }
+            }
+          }
+        }
+
+//        if (isCancelable) {
+//          params.Cancelable = {
+//            canceled: iRes.get(canceledProp.shortName)
+//          }
+//        }
+        
+        var action = (U.isAssignableFrom(listVocModel, 'WebProperty')  ||  U.isAssignableFrom(listVocModel, 'commerce/trading/Notification')  ||  U.isAssignableFrom(listVocModel, 'commerce/trading/Rule')) ? 'edit' : 'view';
+        params.href = U.makePageUrl(action, iRes.getUri(), {$title: params.name});
+        params.resource = iRes;
+        U.addToFrag(frag, this.inlineListItemTemplate(params));
+        displayedProps[name] = true;
+        this.stopListening(iRes, 'change', this.update);
+        this.listenTo(iRes, 'change', this.update);
+      }
+    },
+    
+//    addInlineList: function(list) {
+//      this.inlined = this.inlined || [];
+//      if (~this.inlined.indexOf(list))
+//        return;
+//      
+//      var self = this;
+//      _.each(['updated', 'added', 'reset', 'removed'], function(event) {
+//        self.stopListening(list, event);
+//        self.listenTo(list, event, function(resources) {
+//          resources = U.isCollection(resources) ? resources.models : U.isModel(resources) ? [resources] : resources;
+//          var options = {
+//            force: true
+//          };
+//          
+//          options[event] = true;
+//          self.refresh(resources, options);
+//        });
+//      });
+//    },
+    
     toggleInlineScroller: function(e) {
       var pName = e.currentTarget.dataset.propname;
       var li = e.currentTarget,
@@ -465,71 +633,67 @@ define('views/ControlPanel', [
       
       propGroups = propGroups.sort(function(a, b) {return a.index < b.index});
       var backlinks = U.getBacklinks(meta);
-      var displayInline = !this.isMainGroup && U.getPropertiesWith(this.vocModel.properties, [{name: "displayInline", value: true}, {name: "backLink"}]);
-      if (displayInline && _.size(displayInline)) {
-        this.stopListening(res, 'inlineList', this.update);
-        this.listenTo(res, 'inlineList', this.update);
-        if (_.size(res.inlineLists)) {
-          // either all the lists will be on the resource (if it's being loaded from the server), in which case we either paint them in this render call or wait for the 'inlineList' event...
-        }
-        else {
-          // ...or we have to fetch them separately, and once again, wait for the 'inlineList' event
-          var self = this;
-          var ranges = [];
-          var inlineLists = {};
-          _.each(displayInline, function(prop, name) {
-            _.pushUniq(ranges, U.getTypeUri(prop.range));
-          });
-          
-          Voc.getModels(ranges).done(function() {
-            _.each(displayInline, function(prop, name) {
-              var params = U.getListParams(res, prop);
-              var type = U.getTypeUri(prop.range);
-              var listModel = U.getModel(type);
-              var inlineList = C.getResourceList(listModel, U.getQueryString(params, true));
-              var firstTime = true;
-              if (inlineList)
-                return;
-              
-              function onsuccess() {
-                var currentlyInlined =  res.inlineLists || {};
-                if (firstTime) {
-                  firstTime = false;
-                  _.each(['updated', 'added', 'reset', 'removed'], function(event) {
-                    self.stopListening(inlineList, event);
-                    self.listenTo(inlineList, event, function(resources) {
-                      resources = U.isCollection(resources) ? resources.models : U.isModel(resources) ? [resources] : resources;
-                      var options = {
-                        force: true
-                      };
-                      
-                      options[event] = true;
-                      self.refresh(resources, options);
-                    });
-                  });
-                }
-                
-                if (!inlineList.isFetching() && !inlineList.isOutOfResources()) // get them all!
-                  inlineList.getNextPage(fetchOptions);
-
-                if (!res._settingInlineList && !currentlyInlined[name])
-                  res.setInlineList(name, inlineList);
-              };
-              
-              var fetchOptions = {
-                success: onsuccess
-              };
-              
-              inlineList = new ResourceList(null, {model: listModel, params: params});
-              inlineList.fetch(fetchOptions);
-              
-              self.listenTo(Events, 'preparingModelForDestruction.' + inlineList.cid, function() {
-                Events.trigger('saveModelFromUntimelyDeath.' + inlineList.cid);
-              });
-            });
-          });
-        }
-      }
+//      var displayInline = !this.isMainGroup && U.getPropertiesWith(this.vocModel.properties, [{name: "displayInline", value: true}, {name: "backLink"}]);
+//      if (displayInline && _.size(displayInline)) {
+////        this.stopListening(res, 'inlineList', this.update);
+////        this.listenTo(res, 'inlineList', this.update);
+//        if (_.size(res.inlineLists)) {
+//          // either all the lists will be on the resource (if it's being loaded from the server), in which case we either paint them in this render call or wait for the 'inlineList' event...
+//        }
+//        else {
+//          // ...or we have to fetch them separately, and once again, wait for the 'inlineList' event
+//          var self = this;
+//          var ranges = [];
+//          var inlineLists = {};
+//          _.each(displayInline, function(prop, name) {
+//            _.pushUniq(ranges, U.getTypeUri(prop.range));
+//          });
+//          
+//          Voc.getModels(ranges).done(function() {
+//            _.each(displayInline, function(prop, name) {
+//              var params = U.getListParams(res, prop);
+//              var type = U.getTypeUri(prop.range);
+//              var listModel = U.getModel(type);
+//              var inlineList = C.getResourceList(listModel, U.getQueryString(params, true));
+////              var firstTime = true;
+//              if (inlineList) {
+//                self.addInlineList(inlineList);
+//                return;
+//              }
+//              
+//              function onsuccess() {
+////                if (firstTime) {
+////                  firstTime = false;
+////                }
+//                
+//                if (!inlineList.isFetching() && !inlineList.isOutOfResources()) // get them all!
+//                  inlineList.getNextPage(fetchOptions);
+//                else
+//                  self.refresh();
+//              };
+//              
+//              var fetchOptions = {
+//                  success: onsuccess,
+//                  error: function() {
+//                    debugger;
+//                  }
+//                },
+//                currentlyInlined = res.inlineLists || {};
+//              
+//              inlineList = new ResourceList(null, {model: listModel, params: params});
+//              if (!res._settingInlineList && !currentlyInlined[name])
+//                res.setInlineList(name, inlineList);
+//              
+//              self.addInlineList(inlineList);
+//              inlineList.fetch(fetchOptions);
+//              
+//              self.listenTo(Events, 'preparingModelForDestruction.' + inlineList.cid, function() {
+//                Events.trigger('saveModelFromUntimelyDeath.' + inlineList.cid);
+//              });
+//            });
+//          });
+//        }
+//      }
       
       var backlinksWithCount = backlinks ? U.getPropertiesWith(backlinks, "count") : null;
       
@@ -558,151 +722,10 @@ define('views/ControlPanel', [
         }.bind(this));
       });
 
-      if (!this.isMainGroup && _.size(res.inlineLists)) {
-        _.each(res.inlineLists, function(list, name) {
-          if (!list.size())
-            return;
-          
-          var listVocModel = list.vocModel;
-          var listMeta = listVocModel.properties;
-          var isCancelable = U.isA(listVocModel, 'Cancellable');
-          var canceledProp;
-          if (isCancelable) {
-            canceledProp = listMeta[U.getCloneOf(listVocModel, 'Cancellable.cancelled')[0]];
-            isCancelable = canceledProp && U.isPropEditable(list.models[0], canceledProp, role);
-          }
-
-          var prop = meta[name];
-          var propDisplayName = U.getPropDisplayName(prop);
-          U.addToFrag(frag, this.propGroupsDividerTemplate({value: propDisplayName}));
-          list.each(function(iRes) {
-            var params = {
-              viewId: this.cid,
-              comment: iRes.comment, 
-              _problematic: iRes.get('_error'),
-              name: U.getDisplayName(iRes),
-              backlink: name
-            };
-            
-            var grid = U.getCols(iRes, 'grid', true);
-            if (U.isA(listVocModel, 'Intersection')) {
-              var oH, oW, ab;
-              var a = U.getCloneOf(listVocModel, 'Intersection.a')[0];
-              var b = U.getCloneOf(listVocModel, 'Intersection.b')[0];
-              if (a == meta[name].backLink) {
-                var n = iRes.get(b + '.displayName');
-                if (n)
-                  params.name = n;
-                params.img = iRes.get('bThumb');
-                params.imageProperty = 'bThumb';
-                oW = 'bOriginalWidth';
-                oH = 'bOriginalHeight';
-                ab = b;
-              }
-              else {
-                var n = iRes.get(a + '.displayName');
-                if (n)
-                  params.name = n;
-                params.img = iRes.get('aThumb');
-                params.imageProperty = 'aThumb';
-                oW = 'aOriginalWidth';
-                oH = 'aOriginalHeight';
-                ab = a;
-              }
-              if (grid) {
-                var gridCols = '';
-                var aLabel = listMeta[a].displayName;
-                var bLabel = listMeta[b].displayName;
-                for (var row in grid) {
-                  if (row != aLabel  &&  row != bLabel)
-                    gridCols += grid[row].value;
-                }
-                if (gridCols)
-                  params.gridCols = gridCols;
-              }
-              var w = iRes.get(oW),
-                  h = iRes.get(oH);
-              if (w  &&  h) {
-                var range = listMeta[ab].range;
-                var rm = U.getModel(U.getLongUri1(range));
-                if (U.isA(rm, 'ImageResource')) {
-                  var rmeta = rm.properties;
-                  var imgP = imageP  &&  imageP.indexOf('Featured') == -1 ? U.getCloneOf(rm, 'ImageResource.smallImage') : U.getCloneOf(rm, 'ImageResource.mediumImage'); 
-                  maxDim = imgP  &&  rmeta[imgP].maxImageDimension;
-                  var clip = U.clipToFrame(80, 80, w, h, maxDim);
-                  if (clip) {
-                    params.top = clip.clip_top;
-                    params.right = clip.clip_right;
-                    params.bottom = clip.clip_bottom;
-                    params.left = clip.clip_left;
-                    params.height = json.top + json.bottom;
-                  }
-                  else {
-                    var dim = U.fitToFrame(80, 80, w / h);
-                    params.width = dim.w;
-                    params.height = dim.h;
-                    params.top = dim.y; //w > h ? dim.y : dim.y + (atts[oH] - atts[oW]) / 2;
-                    params.right = dim.w - dim.x;
-                    params.bottom = dim.h - dim.y; ////w > h ? dim.h - dim.y : dim.h - dim.y + (atts[oH] - atts[oW]) / 2;
-                    params.left = dim.x;
-                  }
-                }
-              }
-
-            }
-            else {
-              if (grid) {
-                var gridCols = '';
-                for (var row in grid) 
-                  gridCols += grid[row].value;
-                
-                params.gridCols = gridCols;
-              }
-              if (U.isA(listVocModel, 'ImageResource')) {
-                var imgProp = U.getImageProperty(iRes);
-                if (imgProp) {
-                  var img = iRes.get(imgProp);
-                  if (img) {
-                    params.imageProperty = imgProp;
-                    params.img = img;
-                    var oW = U.getCloneOf(listVocModel, 'ImageResource.originalWidth');
-                    var oH;
-                    if (oW)
-                      oH = U.getCloneOf(listVocModel, 'ImageResource.originalHeight');
-                    
-                    if (oW  &&  oH  &&  (typeof iRes.get(oW) != 'undefined' &&  typeof  iRes.get(oH) != 'undefined')) {
-                      
-//                      this.$el.addClass("image_fitted");
-//                      
-                      var dim = U.fitToFrame(80, 80, iRes.get(oW) / iRes.get(oH));
-                      params.width = dim.w;
-                      params.height = dim.h;
-                      params.top = oW > oH ? dim.y : dim.y + (iRes.get(oH) - iRes.get(oW)) / 2;
-                      params.right = dim.w - dim.x;
-                      params.bottom = oW > oH ? dim.h - dim.y : dim.h - dim.y + (iRes.get(oH) - iRes.get(oW)) / 2;
-                      params.left = dim.x;
-                    }
-                  }
-                }
-              }
-            }
-
-            if (isCancelable) {
-              params.Cancelable = {
-                canceled: iRes.get(canceledProp.shortName)
-              }
-            }
-            
-//            var action = listVocModel.adapter || U.isAssignableFrom(listVocModel, 'Intersection') ? 'view' : 'edit';
-            var action = (U.isAssignableFrom(listVocModel, 'WebProperty')  ||  U.isAssignableFrom(listVocModel, 'commerce/trading/Notification')  ||  U.isAssignableFrom(listVocModel, 'commerce/trading/Rule')) ? 'edit' : 'view';
-            params.href = U.makePageUrl(action, iRes.getUri(), {$title: params.name});
-            params.resource = iRes;
-            U.addToFrag(frag, this.inlineListItemTemplate(params));
-            displayedProps[name] = true;
-            this.stopListening(iRes, 'change', this.update);
-            this.listenTo(iRes, 'change', this.update);
-          }.bind(this));
-        }.bind(this));
+      if (!this.isMainGroup && !_.isEmpty(res.inlineLists)) {
+        for (var name in res.inlineLists) {
+          this.renderInlineList(name, res.inlineLists[name], frag, displayedProps);
+        }        
       }
       
       if (propGroups.length) {
@@ -838,10 +861,12 @@ define('views/ControlPanel', [
             continue;
           
           var prop = meta[p];
-          if (_.has(displayedProps, p))  
+          if (_.has(displayedProps, p) || prop.displayInline)  
             continue;
+          
           if (prop['app']  &&  (!currentAppProps  || $.inArray(p, currentAppProps) == -1))
             continue;
+          
           if (mainGroup  &&  $.inArray(p, mainGroupArr) != -1)
             continue;
           var count = -1;

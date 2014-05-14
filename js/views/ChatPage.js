@@ -871,7 +871,7 @@ define('views/ChatPage', [
       });
 
       this.chatInput.value = '';
-      if (!this.chat || !_.size(this.chat.pcs))
+      if (!this.chat || _.isEmpty(this.chat.pcs))
         return;      
       
       this.sendMessage({

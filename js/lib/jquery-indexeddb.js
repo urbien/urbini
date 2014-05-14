@@ -417,13 +417,22 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 			  return wrap.request(function(){
 				//console.log("Trying to open DB with", version);
 //				return version ? openReqShim(dbName, version) : openReqShim(dbName);
-        return version ? indexedDB.open(dbName, parseInt(version)) : indexedDB.open(dbName);
-      });
+			    if (version) {
+			      console.log("2. opening indexedDB with version " + version);
+			      return indexedDB.open(dbName, parseInt(version));
+			    }
+			    else { 
+            console.log("2. opening indexedDB without version");
+			      return indexedDB.open(dbName);
+			    }
+        });
 			});
       dbPromise.then(function(db, e) {
         
+        console.log("3. opening indexedDB");
         db.onversionchange = function() {
           // Try to automatically close the database if there is a version change request
+          console.log("4. opening indexedDB: onversionchange");
           if (!(config && config.onversionchange && config.onversionchange() !== false)) {
             db.close();
           }
@@ -432,7 +441,9 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
         debugger;
         // Nothing much to do if an error occurs
       }, function(db, e) {
+        console.log("5. opening indexedDB");
         if (e && e.type === "upgradeneeded") {
+          console.log("6. opening indexedDB: upgradeneeded");
           if (config && config.schema) {
             // Assuming that version is always an integer 
 						console.log("Upgrading DB to ", db.version);
@@ -441,6 +452,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
             }
           }
           if (config && typeof config.upgrade === "function") {
+            console.log("7. opening indexedDB: upgrading");
             config.upgrade.call(this, wrap.transaction(this.transaction));
           }
         }

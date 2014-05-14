@@ -316,10 +316,11 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       }
     }
     
-    if (doDelete && _.intersection(instance.storesToKill, _.pluck(instance.storesToMake, 'name')).length) {
+    if (doDelete && _.intersects(instance.storesToKill, _.pluck(instance.storesToMake, 'name'))) {
       // run delete and create separately to make sure stores are deleted before they are recreated 
       // this hack is for the benefit of WebSQL
       // obviously this crap shouldn't be this high in the abstraction level, as this module shouldn't need to care about WebSQL, so better move it to IndexedDBShim
+      console.log("restarting indexedDB to delete stores");
       instance.storesToKill = [];
       instance.restart(instance.getVersion() + 2); 
       return;
@@ -501,15 +502,17 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
 
     this._openDfd = $.Deferred();
     this._openPromise = this._openDfd.promise();
+    
+    console.log("1. opening indexedDB");
     this.$idb = $.indexedDB(this.name, settings);
     this.$idb.done(function(db, event) {
+      console.log("opened indexedDB");
       self.db = db;
       self.dbVersion = db.version;
       self._openDfd.resolve();
       Events.trigger('dbOpen');
     });
     
-    console.log("opening indexedDB");
     return this.$idb;
   };
   

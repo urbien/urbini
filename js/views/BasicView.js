@@ -401,7 +401,7 @@ define('views/BasicView', [
     },
 
     isChildless: function() {
-      return !_.size(this.children);
+      return _.isEmpty(this.children);
     },
     
     update: function() {

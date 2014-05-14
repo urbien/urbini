@@ -218,6 +218,7 @@ define('views/Header', [
       var params = {};
       params[this.activatedProp.shortName] = !this.resource.get(this.activatedProp.shortName);
       this.resource.save(params, {
+        userEdit: true,
         redirect: false
       });
     },
@@ -368,6 +369,7 @@ define('views/Header', [
       this.filterIcon.className = 'ui-icon-beaker';
       this.filterContainer.$html(this.searchTemplate(this.getBaseTemplateData()));
       this.filterContainer.classList.remove('hidden');
+      this.filterContainer.$('.searchBar input')[0].focus();
       this.redelegateEvents();
     },
     
@@ -551,7 +553,7 @@ define('views/Header', [
     },
     
     _isGeo: function() {
-      return !!_.size(_.pick(this.buttons, 'mapIt', 'aroundMe'));
+      return !_.isEmpty(_.pick(this.buttons, 'mapIt', 'aroundMe'));
     },
     
     render: function(options) {

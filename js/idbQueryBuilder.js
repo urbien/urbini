@@ -156,7 +156,7 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'indexedDB'], funct
       }
     }
     
-    if (!orderBy && !_.size(filter) && !orClause)
+    if (!orderBy && _.isEmpty(filter) && !orClause)
       return false;
 
     var neededIndices = _.filter(_.union(_.keys(filter), _.pluck(orderBy, 'shortName')), function(p) {return /^[a-zA-Z]+/.test(p)});

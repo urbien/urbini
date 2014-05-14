@@ -19,9 +19,9 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
   //////////////////// SYNCHRONIZER /////////////////
    
   function Synchronizer(method, data, options) {
-    this.data = data;
     this.method = method;
     this.options = options;
+    this.data = this.options['for'] = data;
   };
 
   Synchronizer.prototype.sync = function() {
@@ -106,11 +106,19 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
     var intermediatePromise;
     if (this._isSyncRequest() || !G.hasWebWorkers)
       intermediatePromise = this._defaultSync();
-    else
-      intermediatePromise = U.ajax({url: options.url, type: 'GET', headers: options.headers});
+    else {
+      intermediatePromise = U.ajax({
+        url: options.url, 
+        type: 'GET', 
+        headers: options.headers,
+        'for': this.data
+      });
+    }
       
     intermediatePromise.done(function(data, status, xhr) {
-      self.data.lastFetchOrigin = 'server';
+      if (self.data._getLastFetchOrigin() != 'server')
+        debugger;
+//      self.data._setLastFetchOrigin('server');
       dfd.resolveWith(self.data, [data, status, xhr]);
     }).fail(function(xhr, status, msg) {
   //    if (xhr.status === 304)
@@ -133,7 +141,10 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
     G.startedTask(tName);
     this.options.success = function() {
       G.finishedTask(tName);
-      self.data.lastFetchOrigin = 'server';
+      if (self.data._getLastFetchOrigin() != 'server')
+        debugger;
+      
+//      self.data._setLastFetchOrigin('server');
     }
     
     return Backbone.defaultSync(this.method, this.data, this.options);
@@ -201,7 +212,7 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
     
     promise = this._queryDB().then(function(results) {
       self.options.sync = false;
-      self.data.lastFetchOrigin = 'db';
+      self.data._setLastFetchOrigin('db');
       log('db', "got resources from db: " + self.info.vocModel.type);
       self._onDBSuccess(results);
     }, this._onDBError.bind(this));

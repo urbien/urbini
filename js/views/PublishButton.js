@@ -104,6 +104,7 @@ define('views/PublishButton', [
         Events.trigger('publishingApp', res);        
         res.save(props, {
           sync: true,
+          userEdit: true,
           success: function(resource, response, options) {
             res.set({'lastPublished': +new Date()});
             Events.trigger('publishedApp', res);
@@ -168,6 +169,7 @@ define('views/PublishButton', [
       var self = this;
       resource.save(props, {
         sync: true,
+        userEdit: true,
         success: function(resource, response, options) {
           var uri = window.location.hash;
           var idx = uri.indexOf('?');

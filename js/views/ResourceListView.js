@@ -81,6 +81,7 @@ define('views/ResourceListView', [
       BasicView.prototype.initialize.call(this, options);
       this.displayMode = options.displayMode || 'vanillaList';
       this._flexigroup = this._flexigroup && this.displayMode != 'vanillaList';
+      this._isWebProperty = U.isAssignableFrom(this.vocModel, G.commonTypes.WebProperty);
 //      this._masonryOptions = _.defaults({
 //        gutterWidth: GUTTER_WIDTH
 //      }, defaultMasonryOptions);
@@ -296,7 +297,7 @@ define('views/ResourceListView', [
           indicatorId,
           hideIndicator;
       
-      if (!_.size(filterParams)) {
+      if (_.isEmpty(filterParams)) {
         indicatorId = this.showLoadingIndicator(3000); // 3 second timeout
         hideIndicator = this.hideLoadingIndicator.bind(this, indicatorId);
 
@@ -579,6 +580,7 @@ define('views/ResourceListView', [
                 var uri = self.resource.get('_uri');
                 var props = {interfaceClass: uri, implementor: self.forResource};
                 m.save(props, {
+                  userEdit: true,
                   success: function() {
                     Events.trigger('navigate', U.makeMobileUrl('view', self.forResource), navOptions); //, {trigger: true, forceFetch: true});        
                   }
@@ -591,6 +593,7 @@ define('views/ResourceListView', [
           else if (U.isAssignableFrom(pModel, 'model/study/QuizAnswer')) {
             var m = new pModel();
             m.save(rParams, {
+              userEdit: true,
               success: function() {
                 Events.trigger('navigate', U.makeMobileUrl('view', self.forResource), navOptions); //, {trigger: true, forceFetch: true});        
               }
@@ -1077,6 +1080,40 @@ define('views/ResourceListView', [
 //      this.collection.add(models);
 //      return G.getResolvedPromise();
 //    },
+    
+    getTemplateResource: function() {
+      if (this._templateResourcePromise)
+        return this._templateResourcePromise;
+      
+      var self = this,
+          params = this.hashParams,
+          $forResource = params.$forResource,
+          $type = params.$type || '';
+      
+//      http://mark.urbien.com/urbien/app/Tradle/chooser/http://www.hudsonfog.com/voc/system/designer/WebProperty?
+//        %24type=http%3A%2F%2Fwww.hudsonfog.com%2Fvoc%2Fcommerce%2Ftrading%2FRule&%24prop=eventProperty&
+//        %24forResource=http%3A%2F%2Fmark.urbien.com%2Furbien%2Fsql%2Fwww.hudsonfog.com%2Fvoc%2Fcommerce%2Ftrading%2FIndexFeed%3Fid%3D32019&
+//        %24in=name%2CpreviousClose%2Cindex%2CopenMinusPreviousClose%2CdateSubmitted%2Cchange%2CyearLow%2CyearHigh%2Copen%2ClastTradeDate%2CchangeInPercent%2ClastTradePrice%2CdayLow%2Cname%2Cvolume%2Cfeed%2Cattachments%2CdayHigh&
+//        domain=http%3A%2F%2Fmark.urbien.com%2Fhudsonfog%2Fsql%2Fwww.hudsonfog.com%2Fvoc%2Fsystem%2Fdesigner%2FWebClass%3Fid%3D63485&
+//        %24title=Choose+a+rule+for+Russell+2000+property...
+      if (!U.isAssignableFrom(this.vocModel, G.commonTypes.WebProperty) || !$type.endsWith('commerce/trading/Rule') || !$forResource || !params.domain)
+        return this._templateResourcePromise = G.getResolvedPromise();
+      
+      var dfd = $.Deferred();
+      U.getResourcePromise($forResource).done(function(feed) {
+        var lastEventUri = feed.get('lastEvent');
+        if (lastEventUri) {
+          U.getResourcePromise(lastEventUri).always(function(lastEvent) {
+            self.templateResource = lastEvent; // null if failed, which is fine
+            dfd.resolve();
+          });
+        }
+        else
+          dfd.resolve();
+      }).fail(dfd.resolve);
+      
+      return this._templateResourcePromise = dfd.promise();
+    },
 
     fetchResources: function(from, to) {
       if (this._isPaging)
@@ -1146,7 +1183,13 @@ define('views/ResourceListView', [
       if (firstFetchDfd && firstFetchDfd.state() == 'pending')
         pagingPromise.done(firstFetchDfd.resolve).fail(firstFetchDfd.resolve); // HACK
       
-      pagingPromise = this._pagingPromise = defer.promise();
+      this.getTemplateResource();
+      if (this._templateResourcePromise.state() == 'done')
+        pagingPromise = defer.promise();
+      else
+        pagingPromise = $.when(defer.promise(), this._templateResourcePromise);
+        
+      this._pagingPromise = pagingPromise;
       pagingPromise.always(function() {
         G.hideSpinner(spinner);
         if (pagingPromise._canceled)
@@ -1221,6 +1264,23 @@ define('views/ResourceListView', [
     },
     
     renderItem: function(res, info) {
+      if (this.templateResource && this._isWebProperty) {
+        var p = res.get('name'),
+            val = U.getValueDisplayName(this.templateResource, p);
+//            val = U.getTypedValue(this.templateResource, p, this.templateResource.get(p)); 
+        
+        if (val != undefined) {
+          res.set({
+            _defaultValue: {
+              name: 'Previous value',
+              value: val
+            }
+          }, {
+            silent: true
+          });
+        }
+      }
+        
       var liView = this.doRenderItem(res, info);
       this.postRenderItem(liView);
       return liView;
@@ -1446,6 +1506,7 @@ define('views/ResourceListView', [
 
 //      this.log("ADDING BRICK RANGE " + from + "-" + to + ": " + bricks.map(function(b) { return parseInt(b._id.match(/\d+/)[0])}).sort(function(a, b) {return a - b}).join(","));
       this.addBricksToWorld(bricks, atTheHead); // mason
+      this.invalidateSize();
       if (this._requestMoreTimePlaced) {
         this.log("Bricks took " + (_.now() - this._requestMoreTimePlaced) + " to retrieve");
         delete this._requestMoreTimePlaced;

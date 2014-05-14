@@ -198,6 +198,22 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
       }
     });
 
+    Events.on('newResourceList', function(list) {
+      // Checks the individually cached resources to see if they can be added to this list;
+      // Maybe this should be in Resource.js, but having it for every resource and not just the "important" seems like a waste for now
+      var added = [],
+          listType = list.vocModel.type;
+      
+      for (var uri in resourcesByUri) {
+        var res = resourcesByUri[uri];
+        if (res.isAssignableFrom(listType))
+          _.pushUniq(added, res);
+      }
+      
+      if (added.length)
+        list.filterAndAddResources([res]);
+    });
+
     return {
       cacheResource: cacheResource,
       uncacheResource: uncacheResource,
@@ -551,5 +567,6 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
     });
   });
 //  Events.on('newPlugs', C.cachePlugs);
+  
   return G.Cache = Cache;
 });

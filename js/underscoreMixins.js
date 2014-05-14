@@ -326,6 +326,16 @@ define('underscoreMixins', ['_underscore'], function(_) {
       }
     },
    
+    intersects: function(arr1, arr2) {
+      var i = arr1.length;
+      while (i--) {
+        if (~arr2.indexOf(arr1[i]))
+          return true;
+      }
+      
+      return false;
+    },
+    
     getFirstProperty: function(obj) {
       for (var name in obj) {
         return name;
@@ -491,6 +501,22 @@ define('underscoreMixins', ['_underscore'], function(_) {
         obj[name] = timed;
       
       return timed;
+    },
+    
+    // from lodash
+    isEmpty: function(value) {
+      if (!value) {
+        return true;
+      }
+      if (_.isArray(value) || typeof value == 'string') {
+        return !value.length;
+      }
+      for (var key in value) {
+        if (hasOwnProperty.call(value, key)) {
+          return false;
+        }
+      }
+      return true;
     },
     
     now: window.performance ? window.performance.now.bind(window.performance) : Date.now.bind(Date)

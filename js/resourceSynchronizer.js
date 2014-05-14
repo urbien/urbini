@@ -56,9 +56,7 @@ define('resourceSynchronizer', [
 
     if (!this.info.tempUri && this._isUpdate() && !this.options.dbOnly) { // dbOnly means we want to fetch from db even if we've already fetched it before
       if (this._isForceFetch() || this._isStale())
-        this._delayedFetch();
-      
-      return;
+        return this._delayedFetch();
     }
 
     return Synchronizer.prototype._read.apply(this, arguments);
@@ -301,7 +299,7 @@ define('resourceSynchronizer', [
         return REJECTED_PROMISE;
     }
     
-    if (!U.isTempUri(uri) && !_.size(_.omit(ref, REF_STORE_PROPS))) {
+    if (!U.isTempUri(uri) && _.isEmpty(_.omit(ref, REF_STORE_PROPS))) {
       ref._dirty = 0;
       return put(REF_STORE.name, ref);
     }
@@ -334,7 +332,7 @@ define('resourceSynchronizer', [
     }
     
     var promise;
-    if (_.size(tempUriRefs)) {
+    if (!_.isEmpty(tempUriRefs)) {
       promise = IDB.queryByIndex('_tempUri').oneof(_.values(tempUriRefs)).getAll(REF_STORE.name).then(function(results) {
         if (!results)
           return;
@@ -355,7 +353,7 @@ define('resourceSynchronizer', [
       promise = RESOLVED_PROMISE;
       
     return promise.then(function() {
-      var after = _.size(tempUriRefs) ? REJECTED_PROMISE : RESOLVED_PROMISE;
+      var after = !_.isEmpty(tempUriRefs) ? REJECTED_PROMISE : RESOLVED_PROMISE;
       if (updated) {
         return put(REF_STORE.name, ref).then(function() {
           return IDB.get(type, uri);
@@ -377,8 +375,8 @@ define('resourceSynchronizer', [
       
       return saveToServer(info).then(function(updatedRef) {
         if (updatedRef && !_.isEqual(ref, updatedRef)) {
-          if (updatedRef._tempUri)
-            Events.trigger('uriChanged', updatedRef._tempUri, updatedRef._uri);
+//          if (updatedRef._tempUri)
+//            Events.trigger('uriChanged', updatedRef._tempUri, updatedRef._uri);
           
           var idx = refs.indexOf(ref);
           refs[idx] = updatedRef;
@@ -419,7 +417,6 @@ define('resourceSynchronizer', [
         isNew = resource.isNew();
     
     atts.$returnMade = true;
-    resource.lastFetchOrigin = 'server';
     resource.save(atts, { // ref has only the changes the user made
       sync: true, 
       fromDB: true,
@@ -467,7 +464,7 @@ define('resourceSynchronizer', [
         
         if (G.storeFilesInFileSystem) {
           var uploadProps = U.filterObj(atts, function(key, val) {return !!val._filePath});
-          if (_.size(uploadProps)) {
+          if (!_.isEmpty(uploadProps)) {
             var filesToDel = _.pluck(_.values(uploadProps), '_filePath');
             getFileSystem().done(function() {
               _.each(filesToDel, function(path) {
@@ -488,9 +485,10 @@ define('resourceSynchronizer', [
       },
       error: function(model, xhr, options) {
         var code = xhr.status || xhr.code;
-        switch (code) { // timeout
-          case 0:
-            return ResourceSynchronizer.sync();
+        if (code < 200) // timeout probably
+          return ResourceSynchronizer.sync();
+        
+        switch (code) {
 //          case 409:
 //            if (isNew) {
 //              ref._tempUri = ref._uri;
