@@ -703,10 +703,9 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       Voc.getModels(U.getTypeUri(eventClassRangeUri)).done(function(eventModel) {
         var props = eventModel.properties,
             userRole = U.getUserRole(),
-//            lastEventUri = feed.get('lastEvent'),
-            isIndexEvent = eventClassRangeUri.endsWith('commerce/trading/IndexEvent');
-//            ,
-//            getLastEvent = lastEventUri ? U.getResourcePromise(lastEventUri) : G.getResolvedPromise();
+            isIndexEvent = U.isAssignableFrom(eventModel, 'commerce/trading/IndexEvent'),
+            isSECEvent = U.isAssignableFrom(eventModel, 'commerce/trading/SECForm4'),
+            secIgnore = ['title', 'xmlUrl'];
         
         for (var shortName in props) {
           var prop = props[shortName];
@@ -715,6 +714,8 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
               (!isIndexEvent || shortName != 'index') && 
               U.isNativeModelParameter(shortName) &&
               !U.isDateProp(prop) &&
+              (!isSECEvent || !_.contains(secIgnore, shortName)) && 
+              U.isNativeModelParameter(shortName) && 
               U.isPropVisible(null, prop, userRole)) {
             $in += ',' + shortName;
           }
