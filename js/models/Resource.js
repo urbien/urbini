@@ -87,6 +87,10 @@ define('models/Resource', [
         Events.trigger('inlineResources', self, resources);
       });
       
+      this.on('change:' + this.idAttribute, function() {
+        debugger;
+      });
+      
 //      this.on('inlineBacklinks', function(backLinks) {        
 //        Events.trigger('inlineBacklinks', self, backLinks);
 //      });
@@ -468,7 +472,7 @@ define('models/Resource', [
         var meta = this.vocModel.properties;
         var unsaved = this.getUnsavedChanges();
         // don't overwrite changes the user has made but hasn't saved yet
-        if (_.size(unsaved) && this.lastFetchOrigin !== 'edit') {
+        if (!_.isEmpty(unsaved) && this.lastFetchOrigin !== 'edit') {
           for (var key in resp) {
             if (_.has(unsaved, key)) {
               if (/^_/.test(key))
@@ -554,10 +558,10 @@ define('models/Resource', [
         }
       }
       
-      if (_.size(resources))
+      if (!_.isEmpty(resources))
         this.trigger('inlineResources', resources);
       
-      if (_.size(backLinks))
+      if (!_.isEmpty(backLinks))
         this.trigger('inlineBacklinks', backLinks);
     },
     
@@ -618,7 +622,7 @@ define('models/Resource', [
     
     set: function(key, val, options) {
       var self = this,
-          uri = this.getUri(),
+          uri = this.get('_uri'),
           uriChanged,
           props,
           vocModel,
@@ -736,6 +740,8 @@ define('models/Resource', [
 //        props[p] = U.getFlatValue(prop, props[p]);
 //      }
 
+      if (uriChanged)
+        props._uri = uri;
       var result = Backbone.Model.prototype.set.call(this, props, options);
       if (uriChanged)
         Events.trigger('uriChanged', uri, this);
@@ -790,7 +796,7 @@ define('models/Resource', [
           errors[name] = typeof error === 'string' ? error : "Please enter a valid " + U.getPropDisplayName(props[name]);
       }
       
-      if (_.size(errors))
+      if (!_.isEmpty(errors))
         return errors;
     },
     
