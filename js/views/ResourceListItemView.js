@@ -460,15 +460,12 @@ define('views/ResourceListItemView', [
       if (oW  &&  oH  &&  (typeof atts[oW] != 'undefined' &&  typeof  atts[oH] != 'undefined')) {
         var imgUri = atts[this.imageProperty];
         var iW = m.get(oW), iH = m.get(oH);
+
         if (imgUri) {
-          var idx = imgUri.lastIndexOf('.jpg_');
-          if (idx != -1) {
-            idx += 5;
-            var idx1 = imgUri.indexOf('_', idx);
-            var wh = imgUri.substring(idx, idx1);
-            var dash = wh.indexOf('-');
-            iW = wh.substring(0, dash);
-            iH = wh.substring(dash + 1);
+          var dim = U.getImageDimensions(imgUri);
+          if (dim) {
+            iW = dim.w;
+            iH = dim.h;
             maxDim = 80;
           }
         }
