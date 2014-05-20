@@ -1728,7 +1728,7 @@ define('utils', [
       }
     },
     
-    getModelImageProperty: function(vocModel) {
+    getModelImageProperty: function(vocModel, isCol) {
       var meta = vocModel.properties;
       var cloneOf;
       var aCloneOf;
@@ -1759,7 +1759,7 @@ define('utils', [
         var cloneOfTmp;
         if (isMasonry)
           cloneOfTmp = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0]  ||  U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
-        else if (isResourceView) {
+        else if (isResourceView  &&  !isCol) {
           if (isImageCover)
             cloneOfTmp = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0]  ||  U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
 //            cloneOfTmp = U.getCloneOf(vocModel, 'ImageResource.smallImage')[0] || U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
@@ -1816,13 +1816,22 @@ define('utils', [
       if (U.isA(vocModel, 'Reference'))
         return U.getCloneOf(vocModel, 'Reference.resourceImage')[0];
     },
+    intersectionHasOwnProperties: function(pModel) {
+      var pmeta = pModel.properties;
+      for (var p in pmeta) {
+        var pr = pmeta[p];
+        if (!pr.cloneOf  &&  (!pr.primary  ||  !pr.autoincrement)) 
+          return true;
+      }
+      return false;
+    },
     
-    getImageProperty: function(resOrCol) {
+    getImageProperty: function(resOrCol, isInlineRL) {
       var isCol = U.isCollection(resOrCol),
           isModel = U.isModel(resOrCol),
           vocModel = isModel || isCol ? U.getModel(resOrCol) : resOrCol;
           
-      return this.getModelImageProperty(vocModel);
+      return this.getModelImageProperty(vocModel, isInlineRL);
 //          modelImageProp = this.getModelImageProperty(vocModel),
 //          models; 
 //          
@@ -1839,6 +1848,20 @@ define('utils', [
 //      }
 //      
 //      return modelImageProp;
+    },
+    getImageDimensions: function(image) {
+      var idx = image.lastIndexOf('.jpg_');
+      if (idx == -1)
+        idx = image.lastIndexOf('.png_');
+      if (idx == -1)
+        idx = image.lastIndexOf('.gif_');
+      if (idx == -1) 
+        return;
+      idx += 5;
+      var idx1 = image.indexOf('_', idx);
+      var wh = image.substring(idx, idx1);
+      var dash = wh.indexOf('-');
+      return {w: wh.substring(0, dash), h: wh.substring(dash + 1)};
     },
     
     getPropDisplayName: function(prop) {
