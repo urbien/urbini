@@ -377,7 +377,7 @@ define('views/ControlPanel', [
             params.gridCols = gridCols;
           }
           if (U.isA(listVocModel, 'ImageResource')) {
-            var imgProp = U.getImageProperty(iRes);
+            var imgProp = U.getImageProperty(iRes, true);
             if (imgProp) {
               var img = iRes.get(imgProp);
               if (img) {
@@ -616,9 +616,12 @@ define('views/ControlPanel', [
       
       var isHorizontal;      
       if (this.isMainGroup && !this.dontStyle) {
-        if (!U.isA(this.vocModel, 'ImageResource')  &&  !U.isA(this.vocModel, 'Intersection')) {
-          this.el.$css("float", "left");
-          this.el.$css("width", "100%");
+        var isTradle = U.isAssignableFrom(this.vocModel, 'Tradle');
+        if ((!U.isA(this.vocModel, 'ImageResource')  &&  !U.isA(this.vocModel, 'Intersection')) ||  isTradle) {
+          if (!isTradle) {
+            this.el.$css("float", "left");
+            this.el.$css("width", "100%");
+          }
           isHorizontal = true;
         }
         else {
@@ -723,7 +726,16 @@ define('views/ControlPanel', [
       });
 
       if (!this.isMainGroup && !_.isEmpty(res.inlineLists)) {
+        var list = [];
         for (var name in res.inlineLists) {
+          list.push(this.vocModel.properties[name]);
+        }
+        var props = _.sortBy(list, function(prop) {
+          return prop.dataSourceProviderIndex;
+        });
+
+        for (var i=props.length - 1; i>=0; i--) {
+          var name = props[i].shortName;
           this.renderInlineList(name, res.inlineLists[name], frag, displayedProps);
         }        
       }
@@ -787,7 +799,7 @@ define('views/ControlPanel', [
             if (!doShow) 
               continue;
 
-            if (cnt == 1 || (prop.displayInline  &&  prop.maxCardinality  == cnt)) {
+            if (cnt == 1  && prop.displayInline  &&  prop.maxCardinality  == cnt) {
               colorIdx++;
               continue;
             }

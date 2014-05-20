@@ -288,6 +288,16 @@ define('views/ResourceImageView', [
           range = meta[U.getCloneOf(this.vocModel, 'Intersection.b')].range;
           iProp = meta[U.getCloneOf(this.vocModel, 'Intersection.bFeatured')];
         }
+        if (!oWidth) {
+          if (image) {
+            var dim = U.getImageDimensions(image);
+            if (dim) {
+              oWidth = dim.w;
+              oHeight = dim.h;
+            }
+          }
+
+        }
         var img = res.get(iProp.shortName);
         if (img)
           image = img;
@@ -425,12 +435,15 @@ define('views/ResourceImageView', [
         this.el.innerHTML = "";
         this.el.appendChild(frag);
       }
-        
+      var isTradle = U.isAssignableFrom(this.vocModel, 'Tradle');
+
       if (this.isImageCover) {
         if (U.isAssignableFrom(this.vocModel, 'model/company/ContactBySocial')) {
           var friends = this.resource.get('friendsCount') || (this.resource.get('friends') && this.resource.get('friends').count);
           this.el.style.top = '95px'; //!G.isBB() ? (friends ? '155px' : '190px') : '95px';
         }
+        else if (isTradle)
+          this.el.style.top = '7px'; //'155px'; //!G.isBB() ? '195px' : '155px';
         else
           this.el.style.top = '95px'; //'155px'; //!G.isBB() ? '195px' : '155px';
       }  
@@ -498,7 +511,8 @@ define('views/ResourceImageView', [
       }
       else
         coverDiv = '<div id="coverImage" style="height:';
-      coverDiv += '290px;'; //!G.isBB() ? '350px;' : '290px;';
+      var isTradle = U.isAssignableFrom(this.vocModel, 'Tradle');
+      coverDiv += isTradle ? '160px;' : '290px;'; //!G.isBB() ? '350px;' : '290px;';
       coverDiv += 'z-index:100;"></div>';
       var pe = this.el.parentElement;
       if (!pe)
