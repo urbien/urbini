@@ -53,15 +53,15 @@
   <!-- div id="headerMessageBar"></div -->
   <div id="headerDiv"></div>
   <div id="resourceViewHolder">
-    <div style="width: 100%;position:relative;padding-right:10px;overflow:hidden">
+    <div style="width: 100%;position:relative;padding-right:10px;overflow:hidden;margin-left:0;" class="container_16">
 
       {{ if (this.isImageCover) { }} 
-        <div id="resourceImage" style="position:absolute;z-index:1"></div>
+        <div id="resourceImage" style="margin:0;position:absolute;z-index:1" class="grid_3"></div>
         <div data-role="footer" class="thumb-gal-header hidden" 
           style="opacity:0.7;position:absolute;top:251px;width:100%;background:#eee;text-shadow:none;color:{{= G.darkColor }};">
           <h3></h3>
         </div>    
-        <div id="mainGroup" style="padding-right:5px;"></div>
+        <div id="mainGroup" style="padding-right:5px;" {{= U.isAssignableFrom(this.vocModel, 'Tradle') ? 'class="grid_10"' : ''}}></div>
       {{ } }}
       {{ if (!this.isImageCover) { }}
         <div id="resourceImage" style="width:50%;float:left;margin:0; padding:0;{{= U.getArrayOfPropertiesWith(this.vocModel.properties, "mainGroup") &&  U.isA(this.vocModel, 'ImageResource') ? 'min-height:210px;' : ''}}" ><!-- style="width:auto" --></div>
@@ -219,14 +219,14 @@
  {{ var params = {}; }}
  {{ params[backlink] = _uri; }}
  {{ if (!obj.value) { }}  
-   <a role="button" data-shortName="{{= shortName }}" style="width:auto;margin:5px;text-align:left; border: 1px solid #ccc; min-width:115px; float:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="#" data-title="{{= title }}">
-      <span>{{= obj.icon ? '<i class="' + icon + '" style="margin-left:-5px;"></i>' : '' }} {{= name }}</span> 
+   <a role="button" data-shortName="{{= shortName }}" style="width:auto;margin:5px;text-align:left; border: 1px solid #ccc; {{= U.isAssignableFrom(this.vocModel, 'Tradle') ? 'min-width:80px;float:right;' : 'min-width:115px;float:left;'}}  background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="#" data-title="{{= title }}">
+      <span><i class="{{= icon }}" style="margin-left:-5px;"></i>&#160;{{= name }}</span> 
    </a>
  {{ } }}
  {{ if (obj.value) { }}  
-   <a role="button" data-propName="{{= shortName }}" style="width:auto;margin:5px;text-align:left; border: 1px solid #ccc; min-width:115px;float:left; background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
+   <a role="button" data-propName="{{= shortName }}"  style="width:auto;margin:5px;text-align:left; border: 1px solid #ccc; {{= U.isAssignableFrom(this.vocModel, 'Tradle') ? 'min-width:80px;float:right;' : 'min-width:115px;float:left;'}} background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
      <!-- {{= obj.icon ? '<i class="' + icon + '" style="font-size:20px;top:35%"></i>' : '' }} -->
-     <span>{{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="float: right;position:relative;margin:-17px -10px 0 0;" class="ui-li-count ui-btn-up-c ui-btn-corner-all">' + value + '</span>' : ''  }}</span>
+     <span>{{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="float: right;position:relative;margin:-17px -10px 0 0;" class="counter">' + value + '</span>' : ''  }}</span>
    </a>
  {{ } }}
 </script>
@@ -751,7 +751,7 @@
 </script>
 
 <script type="text/template" id="srcPT">
-<div class="_prim">
+<div class="_prim" data-type="src">
   {{= value }}
 </div>
 </script>
