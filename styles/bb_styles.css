@@ -27,6 +27,10 @@ html {
   padding-left: 15px;
 }
 
+[data-type="src"] img {
+  width: 50px;
+  height: 50px;
+}
 [data-type="list"] {
   padding: 0;
   background: #eee;
