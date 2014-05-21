@@ -608,7 +608,7 @@ define('views/ResourceListView', [
         if (isImplementor  &&  self.resource.get('implementor.davClassUri').toLowerCase().indexOf('/' + G.currentApp.appPath.toLowerCase() + '/') != -1) {
           return G.getRejectedPromise();
         }
-        if (isIntersection  &&  type.indexOf('/dev/') == -1) {
+        if (isIntersection  &&  !U.intersectionHasOwnProperties(pModel)) {
           var clonedI = cloned.Intersection;
           var a = clonedI.a;
           var b = clonedI.b;
