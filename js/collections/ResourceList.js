@@ -326,6 +326,7 @@ define('collections/ResourceList', [
             uri = resource.getUri();
           
         if (U.isTempUri(uri)) {
+//          Events.once('synced:' + uri, this.onSyncedResource.bind(this, resource));
           resource.once('syncedWithServer', this.onSyncedResource.bind(this, resource));
         }
         

@@ -292,8 +292,9 @@ define('views/ControlPanel', [
       }
 
       U.addToFrag(frag, this.propGroupsDividerTemplate({value: propDisplayName}));
+      var hasImages;
       for (var i = 0, l = resources.length; i < l; i++) {
-        var iRes = resources[i];
+        var iRes = resources[i],
             params = {
               viewId: this.cid,
               comment: iRes.comment, 
@@ -414,6 +415,11 @@ define('views/ControlPanel', [
         var action = (U.isAssignableFrom(listVocModel, 'WebProperty')  ||  U.isAssignableFrom(listVocModel, 'commerce/trading/Notification')  ||  U.isAssignableFrom(listVocModel, 'commerce/trading/Rule')) ? 'edit' : 'view';
         params.href = U.makePageUrl(action, iRes.getUri(), {$title: params.name});
         params.resource = iRes;
+        if (params.img)
+          hasImages = true;
+        else if (hasImages)
+          params.needsAlignment = true;
+          
         U.addToFrag(frag, this.inlineListItemTemplate(params));
         displayedProps[name] = true;
         this.stopListening(iRes, 'change', this.update);

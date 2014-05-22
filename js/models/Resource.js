@@ -450,6 +450,9 @@ define('models/Resource', [
       if (!this.vocModel)
         this.setModel();
       
+//      if (!this.get('_uri') && resp._uri)
+//        this.set('_uri', U.getLongUri1(resp._uri));
+              
       if (this._getLastFetchOrigin() === 'db' || !hasNonMetaProps(resp))
         return resp;
       
@@ -673,7 +676,7 @@ define('models/Resource', [
         if (!val)
           continue;
         
-        if (shortName == '_uri' && uri && val !== uri)
+        if (shortName == '_uri' && uri && val && val !== uri)
           uriChanged = true;
         
         var prop = meta[shortName];
@@ -740,8 +743,8 @@ define('models/Resource', [
 //        props[p] = U.getFlatValue(prop, props[p]);
 //      }
 
-      if (uriChanged)
-        props._uri = uri;
+//      if (uriChanged)
+//        props._uri = uri;
       var result = Backbone.Model.prototype.set.call(this, props, options);
       if (uriChanged)
         Events.trigger('uriChanged', uri, this);
