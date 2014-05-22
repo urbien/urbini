@@ -79,7 +79,7 @@ define('models/Resource', [
         Events.trigger.apply(Events, ['saved', this].concat(_.toArray(arguments)));
       });
       
-      this._resetUnsavedChanges();
+      this.resetUnsavedChanges();
       this.on('cancel', this.remove);
       this.on('change', this.onchange);
       this.on('load', this.announceNewResource);      
@@ -596,7 +596,7 @@ define('models/Resource', [
       return _.values(this.inlineLists || {});
     },
 
-    _resetUnsavedChanges: function() {
+    resetUnsavedChanges: function() {
 //      this.unsavedChanges = this.isNew() ? this.toJSON() : 
 //                        this.unsavedChanges ? _.wipe(this.unsavedChanges) : {};
       if (this.unsavedChanges)
@@ -619,7 +619,7 @@ define('models/Resource', [
     },
     
     clear: function() {
-      this._resetUnsavedChanges();
+      this.resetUnsavedChanges();
       Backbone.Model.prototype.clear.apply(this, arguments);
     },
     
@@ -1163,7 +1163,7 @@ define('models/Resource', [
       };
       
       var result = Backbone.Model.prototype.save.call(this, data, options);
-      this._resetUnsavedChanges();
+      this.resetUnsavedChanges();
       return result;
     },
     
@@ -1206,7 +1206,7 @@ define('models/Resource', [
       options.success = function(resource, response, opts) {
 //        Events.trigger('synced:' + (tempUri || self.getUri()), self);
         if (!opts.fromDB)
-          self._resetUnsavedChanges(); // if we're performing a synchronized save (for example for a money transaction), without going through the database. Otherwise we want to keep accumulating unsavedChanges
+          self.resetUnsavedChanges(); // if we're performing a synchronized save (for example for a money transaction), without going through the database. Otherwise we want to keep accumulating unsavedChanges
 
         if (isAppInstall)
           Events.trigger('appInstall', self);
