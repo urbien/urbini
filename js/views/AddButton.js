@@ -23,7 +23,9 @@ define('views/AddButton', [
       Events.stopEvent(e);
 //      Events.trigger('back');
 //      window.history.back();
-      var colParams = U.getQueryParams(this.collection);
+      var colParams = U.getQueryParams(this.collection),
+          meta = this.vocModel.properties;
+      
       colParams = colParams ? _.clone(colParams) : {};
       colParams['-makeId'] = G.nextId();
       var params = _.getParamMap(window.location.href);
@@ -46,27 +48,17 @@ define('views/AddButton', [
         return this;
       }
           
-      var title = _.getParamMap(window.location.hash)['$title'];
-      if (aUri) {
-        var params = {
-          $forResource: aUri,
-          $propA: a,
-          $propB: b,
-          $type: this.vocModel.type, 
-          $title: title
-        };
-        this.router.navigate('chooser/' + encodeURIComponent(this.vocModel.properties[b].range) + "?" + $.param(params) , {trigger: true});
-      }
-      else if (bUri) {
-        var params = {
-          $forResource: bUri,
-          $propA: a,
-          $propB: b,
-          $title: title,
-          $type: this.vocModel.type
-        };
-        this.router.navigate('chooser/' + encodeURIComponent(this.vocModel.properties[a].range) + "?" + $.param(params) , {trigger: true});
-      }
+      var title = _.getParamMap(window.location.hash)['$title'],
+          prop = meta[aUri ? b : a],
+          params = _.extend({
+            $propA: a,
+            $propB: b,
+            $forResource: aUri || bUri,
+            $type: this.vocModel.type, 
+            $title: title
+          }, U.getWhereParams(prop));
+      
+      this.router.navigate('chooser/' + encodeURIComponent(prop.range) + "?" + $.param(params) , {trigger: true});
       return this;
     },
     render: function(options) {

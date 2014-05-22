@@ -877,10 +877,7 @@ define('views/EditView', [
         return;
       
       if (this.action === 'edit') {
-        this.resource.clear({
-          silent: true
-        });
-        
+        this.resource.resetUnsavedChanges();
         this.resource.set(this.originalResource);
       }
        

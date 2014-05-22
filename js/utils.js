@@ -3501,12 +3501,17 @@ define('utils', [
     },
     
     getListParams: function(resource, backlinkProp) {
-      var params = {};
+      var params = U.getWhereParams(backlinkProp);
       params[backlinkProp.backLink] = resource.getUri();
-      if (backlinkProp.where)
-        _.extend(params, U.getQueryParams(backlinkProp.where));
-      if (backlinkProp.whereOr)
-        params.$or = backlinkProp.whereOr;
+      return params;
+    },
+
+    getWhereParams: function(prop) {
+      var params = {};
+      if (prop.where)
+        _.extend(params, U.getQueryParams(prop.where));
+      if (prop.whereOr)
+        params.$or = prop.whereOr;
       
       return params;
     },

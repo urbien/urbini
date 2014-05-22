@@ -87,10 +87,10 @@ define('models/Resource', [
         Events.trigger('inlineResources', self, resources);
       });
       
-      this.on('change:' + this.idAttribute, function() {
-        debugger;
-      });
-      
+//      this.on('change:' + this.idAttribute, function() {
+//        debugger;
+//      });
+//      
 //      this.on('inlineBacklinks', function(backLinks) {        
 //        Events.trigger('inlineBacklinks', self, backLinks);
 //      });
