@@ -76,14 +76,7 @@ define('collections/ResourceList', [
 //        }
       }
       
-      try {
-        this.belongsInCollection = U.buildValueTester(this.params, this.vocModel) || G.trueFn;
-        this._unbreak();
-      } catch (err) {
-        this.belongsInCollection = G.falseFn; // for example, the where clause might assume a logged in user
-        this._break();
-      }
-      
+      this.calcBelongsFunction();
       if (options.cache !== false)
         this.announceNewList();
       
@@ -137,6 +130,16 @@ define('collections/ResourceList', [
       this.resetRange();
       this._fetchDeferreds = {};
       log("info", "init " + this.shortName + " resourceList");      
+    },
+    
+    calcBelongsFunction: function() {
+      try {
+        this.belongsInCollection = U.buildValueTester(this.params, this.vocModel) || G.trueFn;
+        this._unbreak();
+      } catch (err) {
+        this.belongsInCollection = G.falseFn; // for example, the where clause might assume a logged in user
+        this._break();
+      }
     },
     
     resetRange: function() {
@@ -248,6 +251,7 @@ define('collections/ResourceList', [
         
         Events.once('synced:' + uri, function(res) {
           self.params[param] = self.modelParams[param] = self.modelParamsStrict[param] = res.get('_uri');
+          self.calcBelongsFunction();
           self.trigger('queryChanged');
         });
       });
