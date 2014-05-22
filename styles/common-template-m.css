@@ -265,7 +265,20 @@ div.nabBtn {
   max-height: 60px;
   max-width: 50px;
 }
+
+.searchInput {
+  width: 80%;
+  border: none;
+  border-radius: 20px;
+  padding: 5px 5px;
+  line-height: 2rem;
+}
+
 @media screen and (max-width: 480px) and (orientation: portrait) {
+  .searchInput {
+    width: 75%;
+  }
+  
   .nab a { font-size: 16px; }
 
   .nab { 
@@ -1323,14 +1336,6 @@ div {
   -webkit-box-sizing: initial;
      -moz-box-sizing: initial;
           box-sizing: initial;
-}
-
-.searchInput {
-  width: 80%;
-  border: none;
-  border-radius: 20px;
-  padding: 5px 5px;
-  line-height: 2rem;
 }
 
 .stockCharts {
