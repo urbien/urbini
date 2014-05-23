@@ -150,7 +150,8 @@ button {
   margin: 5px 0;
   position: relative;
   font-size: 1.8rem;
-  padding: 1rem;
+  padding: 1px 0.5rem;
+/*  padding: 1rem; */
   text-align:left; 
   background:none;
   font-weight: 700;
@@ -161,7 +162,7 @@ button {
   height: 30px;
 }
 #mainGroup {
-  width:50%; 
+  width:48%; 
   float:right;
   overflow:hidden;
   /*
