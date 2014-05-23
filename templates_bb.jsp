@@ -64,7 +64,7 @@
         <div id="mainGroup" style="padding-right:5px;" {{= U.isAssignableFrom(this.vocModel, 'Tradle') ? 'class="grid_10"' : ''}}></div>
       {{ } }}
       {{ if (!this.isImageCover) { }}
-        <div id="resourceImage" style="width:50%;float:left;margin:0; padding:0;{{= U.getArrayOfPropertiesWith(this.vocModel.properties, "mainGroup") &&  U.isA(this.vocModel, 'ImageResource') ? 'min-height:210px;' : ''}}" ><!-- style="width:auto" --></div>
+        <div id="resourceImage" style="width:50%;float:left;margin:0; padding:0;{{= U.getArrayOfPropertiesWith(this.vocModel.properties, "mainGroup") &&  U.isA(this.vocModel, 'ImageResource') ? 'min-height:160px;' : ''}}" ><!-- style="width:auto" --></div>
         <div id="mainGroup" style="padding-right:5px;"></div>
       {{ } }}
 
@@ -133,7 +133,7 @@
 <script type="text/template" id="inlineListItemTemplate">
 <!-- one row of an inline backlink in view mode -->
 <li data-viewid="{{= viewId }}" data-backlink="{{= backlink }}">
-  <a href="{{= href }}" {{= obj._problematic ? 'class="problematic"' : '' }} {{= obj.img ? '' : 'style="padding:1rem 0;"'}}>
+  <a href="{{= href }}" {{= obj._problematic ? 'class="problematic"' : '' }} {{= obj.img || obj.needsAlignment ? '' : 'style="padding:1rem 0;"'}}>
     {{ if (obj.img) { }}
       <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
       {{ if (obj.top) { }}  
@@ -147,7 +147,10 @@
       data-for="{{= U.getImageAttribute(resource, imageProperty) }}"
       class="lazyImage" />
     {{ } }}
-    <span style="{{= obj.img ? 'position:absolute;padding:30px 10px;' : ''}}font-size:1.6rem;font-weight:bold;">{{= obj.gridCols  ? (obj.gridCols.indexOf(name) == -1 ? name + '<br/>' + gridCols : gridCols) : name }}</span>
+    {{ if (!obj.img  &&  obj.needsAlignment) { }}
+      <img src="{{= G.getBlankImgSrc() }}" height="80" style="vertical-align:middle;"/> 
+    {{ } }}
+    <span style="{{= obj.img || obj.needsAlignment ? 'position:absolute;padding:10px;' : ''}}font-size:1.6rem;font-weight:bold;">{{= obj.gridCols  ? (obj.gridCols.indexOf(name) == -1 ? name + '<br/>' + gridCols : gridCols) : name }}</span>
   </a>
   {{ if (typeof comment != 'undefined') { }}
     <p>{{= comment }}</p>
@@ -219,14 +222,14 @@
  {{ var params = {}; }}
  {{ params[backlink] = _uri; }}
  {{ if (!obj.value) { }}  
-   <a role="button" data-shortName="{{= shortName }}" style="width:auto;margin:5px;text-align:left; border: 1px solid #ccc; {{= U.isAssignableFrom(this.vocModel, 'Tradle') ? 'min-width:80px;float:right;' : 'min-width:115px;float:left;'}}  background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="#" data-title="{{= title }}">
-      <span><i class="{{= icon }}" style="margin-left:-5px;"></i>&#160;{{= name }}</span> 
+   <a role="button" data-shortName="{{= shortName }}" style="width:auto;padding:2px 10px;margin:3px;text-align:left; border: 1px solid #ccc;min-width:115px; {{= U.isAssignableFrom(this.vocModel, 'Tradle') ? 'float:right;color:#ddd;' : 'float:left;'}}  background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="#" data-title="{{= title }}">
+      <span><i class="{{= icon }}" style="margin-left:-5px;padding-right:3px;"></i>{{= name }}</span> 
    </a>
  {{ } }}
  {{ if (obj.value) { }}  
-   <a role="button" data-propName="{{= shortName }}"  style="width:auto;margin:5px;text-align:left; border: 1px solid #ccc; {{= U.isAssignableFrom(this.vocModel, 'Tradle') ? 'min-width:80px;float:right;' : 'min-width:115px;float:left;'}} background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
+   <a role="button" data-propName="{{= shortName }}"  style="width:auto;padding:2px 10px;margin:3px;text-align:left; border: 1px solid #ccc;min-width:115px; {{= U.isAssignableFrom(this.vocModel, 'Tradle') ? 'float:right;color:#ddd;' : 'float:left;'}} background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
      <!-- {{= obj.icon ? '<i class="' + icon + '" style="font-size:20px;top:35%"></i>' : '' }} -->
-     <span>{{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="float: right;position:relative;margin:-17px -10px 0 0;" class="counter">' + value + '</span>' : ''  }}</span>
+     <span>{{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="float: right;position:relative;color:#000;margin:-14px -10px 0 0;" class="counter">' + value + '</span>' : ''  }}</span>
    </a>
  {{ } }}
 </script>
