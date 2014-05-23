@@ -244,6 +244,11 @@ define('views/ResourceImageView', [
         metaW = imageProp['imageWidth'];
         metaH = imageProp['imageHeight'];
         metaDim = imageProp['maxImageDimension'];
+        var dim = U.getImageDimensions(image);
+//        if (dim) {
+//          oWidth = dim.w;
+//          oHeight = dim.h;
+//        }
         if (oWidth  &&  oHeight) {
           if (metaW)
             metaDim = metaW;
@@ -306,6 +311,11 @@ define('views/ResourceImageView', [
           var imeta = im.properties;
           var imgP = iProp  &&  imeta[U.getCloneOf(im, 'ImageResource.mediumImage')]; 
           metaDim = imgP && imgP.maxImageDimension;
+          if (!metaDim) {
+            var dim = U.getImageDimensions(img);
+            if (dim)
+              metaDim = Math.max(dim.w, dim.h);
+          }
         }
         else
           metaDim = 205;
@@ -317,19 +327,23 @@ define('views/ResourceImageView', [
       if (image.indexOf('Image/') == 0)
         image = decodeURIComponent(image.slice(6));
   
-      var clip;
+      var clip, w, h, t, r, b, l, left, top, maxW;
       if (oWidth) {
         metaDim = Math.min(oWidth, metaDim);
 //        if (this.isImageCover)
           clip = U.clipToFrame(140, 140, oWidth, oHeight, metaDim);
-//        else
+//        else {
 //          clip = U.clipToFrame(winW, winH, oWidth, oHeight, metaDim);
+//          if (!clip) {
+//            var dim = U.getImageDimensions(image);
+//            if (dim) {
+//              w = dim.w;
+//              h = dim.h;
+//            }
+//          }
+//        }
       }
 
-
-      var w, h, t, r, b, l, left, top, maxW;
-
-      
       if (metaDim) {
         if (!oWidth)
           maxW = metaDim;
@@ -346,8 +360,6 @@ define('views/ResourceImageView', [
           }
         }
       }
-      var w;
-      var h;
       if (!oWidth)
         w = 140;
       else if (!isIntersection) {
@@ -416,7 +428,8 @@ define('views/ResourceImageView', [
               li = '<div style="border: solid #ccc;width:140px;height:' + Math.floor(hIfImgWidth) + 'px;left:15px;position:absolute">{0}</div>'.format(iTemplate);
           }
           else if (oWidth)
-            li = '<div style="left:15px;position:absolute;max-height:140px;top:60px;' +'">{0}</div>'.format(iTemplate);            
+            li = '<div style="left:10px;position:absolute;max-height:140px;top:10px;' +'">{0}</div>'.format(iTemplate);            
+//            li = '<div style="left:15px;position:absolute;max-height:140px;top:60px;' +'">{0}</div>'.format(iTemplate);            
           else  
             li = '<div style="position:relative;height:' + (clip.clip_bottom - clip.clip_top) + 'px">{0}</div>'.format(iTemplate);
         }
@@ -438,14 +451,15 @@ define('views/ResourceImageView', [
       var isTradle = U.isAssignableFrom(this.vocModel, 'Tradle');
 
       if (this.isImageCover) {
-        if (U.isAssignableFrom(this.vocModel, 'model/company/ContactBySocial')) {
-          var friends = this.resource.get('friendsCount') || (this.resource.get('friends') && this.resource.get('friends').count);
-          this.el.style.top = '95px'; //!G.isBB() ? (friends ? '155px' : '190px') : '95px';
-        }
-        else if (isTradle)
-          this.el.style.top = '7px'; //'155px'; //!G.isBB() ? '195px' : '155px';
-        else
-          this.el.style.top = '95px'; //'155px'; //!G.isBB() ? '195px' : '155px';
+        this.el.style.top = '7px';
+//        if (U.isAssignableFrom(this.vocModel, 'model/company/ContactBySocial')) {
+//          var friends = this.resource.get('friendsCount') || (this.resource.get('friends') && this.resource.get('friends').count);
+//          this.el.style.top = '95px'; //!G.isBB() ? (friends ? '155px' : '190px') : '95px';
+//        }
+//        else if (isTradle)
+//          this.el.style.top = '7px'; //'155px'; //!G.isBB() ? '195px' : '155px';
+//        else
+//          this.el.style.top = '95px'; //'155px'; //!G.isBB() ? '195px' : '155px';
       }  
       if (l) {
         var h = t ? b - t : b;
@@ -512,7 +526,7 @@ define('views/ResourceImageView', [
       else
         coverDiv = '<div id="coverImage" style="height:';
       var isTradle = U.isAssignableFrom(this.vocModel, 'Tradle');
-      coverDiv += isTradle ? '160px;' : '290px;'; //!G.isBB() ? '350px;' : '290px;';
+      coverDiv += '160px;'; //isTradle ? '160px;' : '290px;'; //!G.isBB() ? '350px;' : '290px;';
       coverDiv += 'z-index:100;"></div>';
       var pe = this.el.parentElement;
       if (!pe)
