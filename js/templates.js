@@ -52,6 +52,7 @@ define('templates', [
       "int": "intPT",
       "float": "intPT",
       "double": "intPT",
+      "long": "intPT",
       "emailAddress": "emailPT",
       "phone": "telPT",
       "mobilePhone": "telPT",
