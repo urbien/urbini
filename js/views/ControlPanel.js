@@ -737,10 +737,10 @@ define('views/ControlPanel', [
           list.push(this.vocModel.properties[name]);
         }
         var props = _.sortBy(list, function(prop) {
-          return prop.dataSourceProviderIndex;
+          return prop.dataProviderPropertyIndex;
         });
 
-        for (var i=props.length - 1; i>=0; i--) {
+        for (var i=0; i<props.length; i++) {
           var name = props[i].shortName;
           this.renderInlineList(name, res.inlineLists[name], frag, displayedProps);
         }        
@@ -837,14 +837,16 @@ define('views/ControlPanel', [
             tmpl_data._uri = uri;
             tmpl_data.title = t;
             tmpl_data.comment = prop.comment;
-            tmpl_data.borderColor = borderColor[colorIdx];
-            tmpl_data.color = color[colorIdx];
+            tmpl_data.borderColor = isTradle ? "#000" : borderColor[colorIdx];
+            tmpl_data.color = isTradle ? "rgba(64, 64, 64, 0.7);" : color[colorIdx];
             tmpl_data.chat = isChat;
             var bl = prop.backLinkSortDescending;
             if (bl) {
               tmpl_data['$order'] = bl;
               tmpl_data['$asc'] = 0;
             }
+            if (isTradle)
+              tmpl_data['isTradle'] = true;
 //              var common = {range: range, backlink: prop.backLink, shortName: p, name: n, value: cnt, _uri: uri, title: t, comment: prop.comment, borderColor: borderColor[colorIdx], color: color[colorIdx], chat: isChat};
             colorIdx++;
             if (this.isMainGroup) {
