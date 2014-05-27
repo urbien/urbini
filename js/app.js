@@ -607,6 +607,7 @@ define('app', [
       G.lightColor = '#eeeeee';
       G.darkColor = '#757575';
     }
+    
     Templates.loadTemplates();
     extendMetadataKeys();
     setupNetworkEvents();
@@ -864,6 +865,7 @@ define('app', [
   function setupLoginLogout() {
     var ModalDialog;
     Events.on('req-login', function loginOrLogout(options) {
+      options = options || {};
       if (!G.online) {
         Errors.offline();
         return;
@@ -878,10 +880,13 @@ define('app', [
         return;
       }
       
-      options = _.extend({
-        online: G.localize('login'), 
-        offline: G.localize('youreOfflinePleaseLogin')
-      }, options);
+      if (!options.offline)
+        options.offline = G.localize('youreOfflinePleaseLogin');
+        
+//      options = _.extend({
+//        online: G.localize('login'), 
+//        offline: G.localize('youreOfflinePleaseLogin')
+//      }, options);
       
       var onDismiss;
       var returnUri = options.returnUri || window.location.href,

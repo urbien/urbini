@@ -30,11 +30,22 @@ define('views/ResourceImageView', [
 //      });
 //    
 //    }).resize();
-//  });  
+//  });
+
+  var BIGGER_BETTER_PERCENT = [[0.0, "#00ff00" ], [1.0, "#00aa00"]],
+      BIGGER_WORSE_PERCENT = [[0.0, "#00ff00" ], [0.50, "#ffff00"], [1.0, "#ff0000"]];
+
+  function theBiggerTheBetter(prop) {
+    var pName = prop.shortName;
+    if (pName == 'risk' || pName == 'maxDrawdown')
+      return false;
+    else
+      return true;
+  }
 
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'resizeVideo'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'resizeVideo', 'doDrawGauges'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);
       options = options || {};
       this.twin = options.twin;
@@ -45,6 +56,10 @@ define('views/ResourceImageView', [
       this.isAudio = res.isAssignableFrom('Audio')  ||  this.isAudioResource;
       this.isImage = res.isA('ImageResource');
       this.isImageCover = U.isA(this.vocModel, 'ImageCover');//  &&  U.getCloneOf(this.vocModel, 'ImageCover.coverPhoto');
+      this.isTradle = U.isAssignableFrom(this.vocModel, 'commerce/trading/Tradle');
+      if (this.isTradle)
+        this.makeTemplate('gaugesTemplate', 'gaugesTemplate', this.vocModel.type)
+        
       this.resource.on('change', this.refresh, this);
       return this;
     },
@@ -211,9 +226,28 @@ define('views/ResourceImageView', [
           imageProp = imagePropName && meta[imagePropName],
           image = imagePropName && res.get(imagePropName);
       
-      if (typeof image == 'undefined') {
-        this.el.style.display = 'none';
-        return this;
+      if (this.isTradle) {
+        if (this.resource.get('maxDrawdown') || this.resource.get('profit')) {
+          this.el.$html('<div class="gauges">' + this.gaugesTemplate({
+            gauges: [{
+              shortName: 'profit',
+              name: 'Profit'
+            }, {
+              shortName: 'maxDrawdown',
+              name: 'Risk'
+            }]
+          }) + '<div>');
+          
+          this.drawGauges();
+        }
+        
+        return;
+      }
+      else {
+        if (typeof image == 'undefined') {
+          this.el.style.display = 'none';
+          return this;
+        }
       }
       
       var viewport = G.viewport;
@@ -439,15 +473,16 @@ define('views/ResourceImageView', [
         else
           li = '<div style="left:15px;position:absolute;' + (this.isImageCover ? '' : 'top:95px;') + (h ? 'height:' + h  + 'px;' : 'max-height:140px;') +'">{0}</div>'.format(iTemplate);
       }
-      U.addToFrag(frag, li);
+      
+      if (li)
+        U.addToFrag(frag, li);
 //      this.$el[this.isAudio ? 'append' : 'html'](frag);
 //      this[this.isAudio ? 'append' : 'html'](frag);
       if (this.isAudio)
         this.el.appendChild(frag);
-      else {
-        this.el.innerHTML = "";
-        this.el.appendChild(frag);
-      }
+      else
+        this.el.$html(frag);
+      
       var isTradle = U.isAssignableFrom(this.vocModel, 'Tradle');
 
       if (this.isImageCover) {
@@ -469,7 +504,62 @@ define('views/ResourceImageView', [
       // HACK to update scroll bounds, remove when we start using mutation observer
       this.pageView._onViewportDimensionsChanged();
       this.pageView.trigger('loadLazyImages', this.el);
+        
       return this;
+    },
+    
+    drawGauges: function() {
+      U.require('lib/gauge').done(this.doDrawGauges);
+    },
+
+    _gaugeValues: {},
+    doDrawGauges: function(Gauges) {
+      var meta = this.vocModel.properties;
+      var canvases = this.el.$('canvas');
+      for (var i = 0; i < canvases.length; i++) {
+        var canvas = canvases[i];
+        var pName = canvas.dataset.shortname;
+        var value = this.resource.get(pName);
+//        var refresh = false;
+        if (value === undefined)
+          continue;
+        
+//        if (value === this._gaugeValues[pName])
+//          refresh = true;
+        
+        this._gaugeValues[pName] = value;
+        gauge = new Gauges.Gauge(canvas);
+        var prop = meta[pName];
+        var isPercent = prop.facet == 'Percent';
+        var isMoney = prop.range.endsWith('Money');
+        var gauge = new Gauges.Gauge(canvas);
+        gauge.setOptions({
+          textPrefix: isMoney ? '$' : '',
+          textSuffix: isPercent ? '%' : '',
+          lines: 12,
+          angle: 0,
+          lineWidth: 0.44,
+          fontSize: '1rem',
+          pointer: {
+            length: 0.9,
+            strokeWidth: 0.035,
+            color: '#000000'
+          },
+//          limitMax: 'false', 
+          percentColors: theBiggerTheBetter(prop) ? BIGGER_BETTER_PERCENT : BIGGER_WORSE_PERCENT, // !!!!
+          strokeColor: '#E0E0E0',
+          generateGradient: true
+        });
+      
+        gauge.setTextField(canvas.previousElementSibling);
+        gauge.maxValue = 100 * Math.ceil(value / 100);
+        gauge.animationSpeed = 32;
+        gauge.set(value);
+//        if (update) {
+//          gauge.ctx.clearRect(0, 0, gauge.ctx.canvas.width, gauge.ctx.canvas.height);
+//          gauge.render();
+//        }
+      }
     },
     
     renderHelperCover: function(options) {
@@ -525,8 +615,7 @@ define('views/ResourceImageView', [
       }
       else
         coverDiv = '<div id="coverImage" style="height:';
-      var isTradle = U.isAssignableFrom(this.vocModel, 'Tradle');
-      coverDiv += '160px;'; //isTradle ? '160px;' : '290px;'; //!G.isBB() ? '350px;' : '290px;';
+      coverDiv += '160px;'; //this.isTradle ? '160px;' : '290px;'; //!G.isBB() ? '350px;' : '290px;';
       coverDiv += 'z-index:100;"></div>';
       var pe = this.el.parentElement;
       if (!pe)

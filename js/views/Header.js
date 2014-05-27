@@ -23,6 +23,7 @@ define('views/Header', [
   var friendlyTypes = [G.commonTypes.Urbien, 'http://urbien.com/voc/dev/ImpressBackup/Movie', 'http://urbien.com/voc/dev/ImpressBackup/Artist', 'model/social/App'];
   var editablePhysicsConstants = ['drag', 'springStiffness', 'springDamping', 'tilt'];
   var NO_PROP = '_NO_PROP_';
+  var ModalDialog;
   return BasicView.extend({
 //    viewType: 'any',
     style: {
@@ -213,10 +214,96 @@ define('views/Header', [
       'change .filterConditionInput input'         : 'onFilter'
     },
     
-    activate: function(e) {
-      e.preventDefault();
-      var params = {};
-      params[this.activatedProp.shortName] = !this.resource.get(this.activatedProp.shortName);
+    activate: function(e, force) {
+      e && e.preventDefault();
+      var self = this;
+      U.require('views/ModalDialog').done(function(MD) {
+        ModalDialog = MD;
+        return self._activate(e, force);
+      });
+    },
+    
+    _activate: function(e, force) {
+      var params = {},
+          res = this.resource,
+          pName = this.activatedProp.shortName,
+          activated = !this.resource.get(pName);
+
+      
+      if (!force && activated && U.isAssignableFrom(this.vocModel, "commerce/trading/Tradle")) {
+        function undo() {
+          e.currentTarget.checked = false;
+        };
+        
+        var self = this,
+            tradle = this.resource,
+//            numNotifications = U.getBacklinkCount(tradle, 'notifications'),
+            numOrders = U.getBacklinkCount(tradle, 'orders'),
+            numRules = U.getBacklinkCount(tradle, 'tradleRules'),
+            dateRulesChanged = tradle.get('dateRulesChanged') || 0,
+            dateOrdersChanged = tradle.get('dateOrdersChanged') || 0,
+            dateBacktested = tradle.get('dateBacktested') || 0,
+            spinner;
+        
+        if (!numRules) {
+          U.alert("Your Tradle doesn't have any rules yet!");
+          undo();
+          return;
+        }
+        
+        if (!numOrders) {// && !numNotifications) {
+          U.alert("To do a dry run, add at least one order to your Tradle");
+          undo();
+          return;
+        }
+        
+        if (dateBacktested <= Math.max(dateRulesChanged, dateOrdersChanged)) {
+          function hide() {
+            ModalDialog.hide();
+            if (spinner)
+              G.hideSpinner(spinner);
+          }
+          
+          U.modalDialog({
+            id: 'backtestDialog',
+            header: 'Dry run the Tradle first?',
+//            title: 'Click <b>Activate</b> to activate your Tradle without a dry run',
+            details: '<p style="width:100%; text-align:center; font-style:italic;">(A dry run tests how this Tradle would perform in the last 5 days)</p>',
+            img: 'http://mark.urbien.com/urbien/images/tradle/target-practice-orange.png',
+//            bgImg: 'http://mark.urbien.com/urbien/images/tradle/target-practice-orange.png',
+            ok: 'Do a dry run',         // pass true to get default string 'Ok', or false to not have a button
+            cancel: 'Activate immediately',    // pass true to get default string 'Cancel', or false to not have a button
+            onok: function onok() {
+              spinner = {
+                name: 'backtestTradle',
+                timeout: 10000,
+                blockClick: true
+              };
+    
+              G.showSpinner(spinner);              
+              tradle.save({
+                backtest: true
+              }, {
+                sync: true,
+                redirect: false,
+                success: hide,
+                error: function() {
+                  debugger;
+                  hide();
+                }
+              });
+            },
+            oncancel: function oncancel() {
+              ModalDialog.hide();
+              self.activate(null, true); // force
+            }
+          });
+          
+          return;
+        }
+      }
+      
+      params[this.activatedProp.shortName] = activated;
       this.resource.save(params, {
         userEdit: true,
         redirect: false

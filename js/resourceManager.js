@@ -504,18 +504,29 @@ define('resourceManager', [
     RM.upgrade(stores).then(cb);
   });
   
-//  /**
-//   * sometimes when resources get created or edited, other resources get created/edited in the process.
-//   * this handles updating those "side effect modificaitons"
-//   */
-//  Events.on('sideEffects', function(res, sideEffects) {
+  /**
+   * sometimes when resources get created or edited, other resources get created/edited in the process.
+   * this handles updating those "side effect modificaitons"
+   */
+  Events.on('sideEffects', function(res, sideEffects) {
 //    var isNew = res.isNew();
 //    if (!isNew)
 //      return; // TODO: notify that these resources changed
-//    
+    
 //    var types = [];
 //    var typeToUris = {};
-//    _.each(sideEffects, function(uri) {
+    var i = sideEffects.length;
+    while (i--) {
+      var uri = sideEffects[i],
+          sideEffect = C.getResource(uri);
+      
+      if (sideEffect)
+        sideEffect.fetch({ forceFetch: true });
+    }
+    
+    
+//    while (i--) {
+//      var uri = sideEffects[i];
 //      if (isNew) {
 //        var type = U.getTypeUri(uri);
 //        if (type == null)
@@ -542,7 +553,7 @@ define('resourceManager', [
 //        });
 //      });
 //    });
-//  });
+  });
     
   return (Lablz.ResourceManager = ResourceManager);
 });

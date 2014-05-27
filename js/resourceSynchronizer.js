@@ -416,7 +416,7 @@ define('resourceSynchronizer', [
         atts = _.omit(ref, REF_STORE_PROPS),
         isNew = resource.isNew();
     
-    atts.$returnMade = true;
+//    atts.$returnMade = true;
     resource.save(atts, { // ref has only the changes the user made
       sync: true, 
       fromDB: true,

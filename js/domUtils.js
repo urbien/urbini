@@ -148,11 +148,6 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
   function getElementArray(els) {
     return isElementCollection(els) ? els : els && [els];
   };
-
-  function newNodeList() {
-    var frag = document.createDocumentFragment();
-    return frag.querySelectorAll("html");
-  }
   
   // Bezier functions
   function B1(t) { return t*t*t }
@@ -266,17 +261,13 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       },
   
       $hide: function() {
-        this.dataset._style_display = this.style.display;
         this.style.display = 'none';
         return this;
       },
       
       $show: function() {
-        if (this.style.display) {
-          var display = this.dataset._style_display || "";
-          delete this.dataset._style_display;
-          this.style.display = display;
-        }
+        if (this.style.display == 'none')
+          this.style.display = '';
         
         return this;
       },
@@ -339,7 +330,7 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
           
           return this.querySelectorAll(selector);
         default:
-          return newNodeList();
+          return DOM.emptyNodeList();
         }
       },
     
@@ -1281,6 +1272,11 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       for (var i = 0, l = nodes.length; i < l; i++) {
         a.appendChild(nodes[i]);
       }
+    },
+
+    emptyNodeList: function() {
+      var frag = document.createDocumentFragment();
+      return frag.querySelectorAll("html");
     },
     
     transparentStyle: TRANSPARENT_STYLE,

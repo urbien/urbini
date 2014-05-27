@@ -73,17 +73,38 @@ define('views/EditView', [
       });
       */
       // maybe move this to router
-      var codemirrorModes = U.getRequiredCodemirrorModes(this.resource, 'edit');
-      this.isCode = !!codemirrorModes.length;
-
+      
       var self = this;
+      var codemirrorModes = U.getRequiredCodemirrorModes(this.resource, 'edit');
+      var promises = [],
+          fetchPromise = this.getFetchPromise();
+      
+      this.isCode = !!codemirrorModes.length;
       var codemirrorPromise;
-      if (self.isCode)
+      if (self.isCode) {
         codemirrorPromise = U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes));
+        promises.push(codemirrorPromise);
+      }
       else
         codemirrorPromise = G.getResolvedPromise();
-      
-      this.ready = $.when(codemirrorPromise, this.getFetchPromise());
+
+//      if (U.isAssignableFrom(this.vocModel, 'commerce/trading/EnumRule')) {
+//        var dfd = $.Deferred(),
+//            res = this.resource;
+//        
+//        fetchPromise.done(function() {
+//          var enumRangeUri = res.get('enumerationRangeUri');
+//          var enumModel = U.getEnumModel(enumRangeUri);
+//          if (enumModel == null)
+//            Voc.getModels(enumRangeUri).done(dfd.resolve).fail(dfd.reject);          
+//        });
+//        
+//        fetchPromise = dfd.promise().done(function(enumModel) {
+//          debugger;
+//        });
+//      }
+
+      this.ready = $.when.apply($, promises);
       if (this.saveOnEdit) {
         this.listenToOnce(Events, 'pageChange', function(from, to) {
           // don't autosave new resources, they have to hit submit on those...or is that weird?
@@ -101,6 +122,12 @@ define('views/EditView', [
       });
 
       this.on('inactive', this.reset, this);
+      if (G.online && !this.resource.isNew()) {
+        this.onload(function() {          
+          this.resource.fetch({ forceFetch: true });
+        }, this);
+      }
+      
       return this;
     },
     events: {
@@ -1108,6 +1135,14 @@ define('views/EditView', [
     addProp: function(info) {
       var prop = info.prop,
           p = prop.shortName;
+      
+      if (p == 'value' && U.isAssignableFrom(this.vocModel, 'commerce/trading/EnumRule')) {
+        var enumModel = U.getEnumModel(this.resource.get('enumerationRangeUri'));
+        prop = info.prop = _.extend({}, prop, {
+          "facet": enumModel.type,
+          "range": "enum"
+        });
+      }
       
       if (isHidden(prop, info.params, info.reqParams, info.isEdit)) {
         var rules = ' data-formEl="true"',

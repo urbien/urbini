@@ -443,6 +443,8 @@ define('views/ResourceView', [
       */
       if (_.isEmpty(displayedProps))
         this.el.$hide();
+      else
+        this.el.$show();
 
       if (this.isCode && CodeMirror) {
 //        var doc = document;

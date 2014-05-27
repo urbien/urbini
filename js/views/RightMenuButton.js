@@ -96,6 +96,7 @@ define('views/RightMenuButton', [
     },
     
     leftMenu: function(e) {
+      Events.stopEvent(e);
       if (!this.leftMenuEl) {
         if (this.rightMenuEl)
           this.rightMenu.apply(this, arguments);
@@ -103,7 +104,6 @@ define('views/RightMenuButton', [
         return;
       }
       
-      Events.stopEvent(e);
       var self = this;
       if (MainMenuPanel)
         return this._leftMenu(e);
@@ -143,6 +143,7 @@ define('views/RightMenuButton', [
     },
     
     rightMenu: function(e) {
+      Events.stopEvent(e);
       if (!this.rightMenuEl) {
         if (this.leftMenuEl)
           this.leftMenu.apply(this, arguments);
@@ -150,7 +151,6 @@ define('views/RightMenuButton', [
         return;
       }
       
-      Events.stopEvent(e);
       if (G.currentUser.guest)
         return;
       

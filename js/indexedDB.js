@@ -531,7 +531,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
         name = '{0}starting IndexedDB {1}. {2}'.format(prefix, this.name, reason || ''),
         alreadyQueued = this.taskQueue.getQueued(name);
     
-    return alreadyQueued || this._queueTask(name, restart.bind(this, version), true);
+    return alreadyQueued || this._queueTask(name, restart.bind(this, version), true, true /* doesn't time out */);
   };
 
   function get(storeName, primaryKey) {

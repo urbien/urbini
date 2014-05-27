@@ -972,11 +972,12 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     if (propName == 'eventProperty' && res.vocModel.type.endsWith('commerce/trading/Rule')) {
       var subClassOf,
           wPropUri = valueRes.get('_uri'),
-          propType = valueRes.get('propertyType');
+          propType = valueRes.get('propertyType'),
+          isEnum = U.getTypeUri(wPropUri).endsWith('system/designer/EnumProperty');
       
       switch (propType) {
       case 'Text':
-        subClassOf = 'commerce/trading/StringRule';
+        subClassOf = isEnum ? 'commerce/trading/EnumRule' : 'commerce/trading/StringRule';
         break;
       case 'Date':
         subClassOf = 'commerce/trading/DateRule';
@@ -997,12 +998,16 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       }
       
       this.currentChooser = null; 
-      if (propType == 'Link' || propType == 'YesNo') { // no subclasses
+      if (isEnum || propType == 'Link' || propType == 'YesNo') { // no subclasses
         var params = _.extend(U.filterObj(res.attributes, U.isNativeModelParameter), props);
         params.$title = res.get('feed.displayName') + ' ' + valueRes.get('davDisplayName') + ' IS...';
-        if (propType == 'Link') {
+        if (isEnum) {
+          params.enumeration = valueRes.get('range');
+          params.enumerationRangeUri = valueRes.get('rangeUri');
+        }
+        else if (propType == 'Link') {
           params.resourceType = valueRes.get('range');
-          params.resourceTypeRangeUri = valueRes.get('rangeUri');
+          params.resourceTypeRangeUri = valueRes.get('rangeUri');          
         }
           
         Events.trigger('navigate', U.makeMobileUrl('make', subClassOf, params), {

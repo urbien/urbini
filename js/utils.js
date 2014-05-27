@@ -24,6 +24,7 @@ define('utils', [
       RECYCLED_ARRAYS = [],
       FRAGMENT_SEPARATOR = HAS_PUSH_STATE ? '/' : '#',
       LAZY_DATA_ATTR = G.lazyImgSrcAttr,
+      ModalDialog,
       $w,
       tempIdParam = '__tempId__';
 
@@ -3553,14 +3554,28 @@ define('utils', [
     DEFAULT_JS_PROP_VALUE: '/* put your JavaScript here buddy */',
     DEFAULT_CSS_PROP_VALUE: '/* put your CSS here buddy */',
     alert: function(options) {
-      setTimeout(function() {
-        U.require('@widgets').done(function($m) {          
-          var msg = typeof options === 'string' ? options : options.msg;
-          $m.showPageLoadingMsg($m.pageLoadErrorMessageTheme, msg, !options.spinner);
-          if (!options.persist)
-            setTimeout($m.hidePageLoadingMsg, Math.max(1500, msg.length * 50));
-        });
-      }, options.delay || 0);
+//      setTimeout(function() {
+//        U.require('@widgets').done(function($m) {          
+//          var msg = typeof options === 'string' ? options : options.msg;
+//          $m.showPageLoadingMsg($m.pageLoadErrorMessageTheme, msg, !options.spinner);
+//          if (!options.persist)
+//            setTimeout($m.hidePageLoadingMsg, Math.max(1500, msg.length * 50));
+//        });
+//      }, options.delay || 0);
+      if (typeof options == 'string')
+        options = { header: options };
+      
+      function hide() {
+        ModalDialog.hide();
+      };
+      
+      U.modalDialog(_.defaults(options, {
+        ok: false,
+        cancel: false,
+        onok: hide,
+        oncancel: hide,
+        dismissible: true
+      }));
     },
     
     /**
@@ -3600,7 +3615,51 @@ define('utils', [
       
       return dialog;
     },
+    
+    modalDialog: function(options) {
+      U.require('views/ModalDialog').done(function(MD) {
+        ModalDialog = MD;
         
+        function oncancel(e) {
+          Events.stopEvent(e);
+          $('.modal-popup-holder .headerMessageBar').remove();
+          if (options.oncancel)
+            options.oncancel.apply(this, arguments);
+          else
+            ModalDialog.hide();
+        };
+        
+        function onok(e) {
+          Events.stopEvent(e);
+          if (options.onok)
+            options.onok.apply(this, arguments);
+          else
+            ModalDialog.hide();
+        };
+        
+        var id = options.id = options.id || 'dialog' + G.nextId(),
+            existing = doc.getElementById(id),
+            popupHtml = U.template('genericDialogTemplate')(_.defaults(options, {
+              ok: true,
+              cancel: true
+            })),
+            holder = doc.getElementsByClassName('modal-popup-holder')[0],
+            dialog;
+        
+        existing && existing.$remove();
+        holder.$html(popupHtml);
+        if (options.dismissible)
+          holder.$('.closeDialogBtn').$on('tap', oncancel);
+        
+        dialog = holder.firstChild;
+        dialog.style['zIndex'] = 1000000;
+        dialog.$('[data-cancel]').$on('tap', oncancel);
+        dialog.$('[data-ok]').$on('tap', onok);
+        
+        ModalDialog.show(dialog, null, !options.dismissible);
+      });
+    },
+    
     deposit: function(params) {
       return $.Deferred(function(defer) {
         var trType = G.commonTypes.Transaction;

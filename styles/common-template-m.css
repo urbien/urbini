@@ -320,13 +320,17 @@ div.nabBtn {
 #menuItems, #rightMenuItems { display: table-cell; background: #394345; width:200px; }
 
 .headerMessageBar {
-  margin:0;
+  margin: 0;
   padding:10px 0 10px 0;
   text-align:center;
   text-shadow:none;
   font-size: 2rem;
   border: 1px solid black;
   color:#000;
+}
+
+.modal-popup-holder .headerMessageBar {
+  margin: 0 4% 2%;
 }
 
 .headerMessageBar.errorMessageBar {
@@ -1355,4 +1359,41 @@ div {
 
 .actionBtn {
   border-radius: 0.2rem;
+}
+
+.dialogBtn {
+  display: inline;
+  border: 1px solid black;
+  border-radius: 0.4rem;
+  font-size: 2rem;
+  padding: 0.5rem 1.5rem;
+  margin: 1rem;
+}
+
+.closeDialogBtn {
+  position: absolute;
+  top: -1.25rem;
+  right: -1.25rem;
+  font-size: 2.5rem;
+/* content: "\f057"; */
+}
+
+.gauges {
+  padding: 1rem 1rem;
+  margin: 0rem 1rem;
+}
+
+.gauge {
+  width: 140px;
+  display: inline-block;
+}
+
+.gauge > * {
+  display: inline-block;
+  width: 100%;
+  color: white;
+  text-align: center; 
+  font-size: 2rem; 
+  font-weight: bold;
+  font-family: 'Amaranth', sans-serif;
 }

@@ -364,7 +364,7 @@
   </div>
 </script>
 
-<script type="text/template" id="genericDialogTemplate">
+<!--script type="text/template" id="genericDialogTemplate1">
 <div data-role="popup" id="{{= id }}" data-overlay-theme="a" data-theme="c" data-dismissible="{{= obj.ok === false && obj.cancel === false }}" class="ui-content">
   {{ if (obj.header) { }}
   <div data-role="header" id="header" data-theme="a" class="ui-corner-top">
@@ -394,7 +394,7 @@
     </div>
   </div>
 </div>
-</script>
+</script-->
 
 <script type="text/template" id="chatViewTemplate1">
   <div id="chatHolder" class="chat-holder">
@@ -982,9 +982,46 @@
   </div>
 </script>
 
+<script type="text/template" id="genericDialogTemplate">
+  <!--div class="modal-popup" style="height: auto; background:{{= G.lightColor }}; color:{{= G.darkColor }};"-->
+  <div class="modal-popup" style="height: auto; color: black; background: white;">
+    {{ if (obj.header) { }}
+      <h2 style="margin-bottom: 0; padding: 1rem 1rem; background:#eee; text-align:center;">{{= header }}</h2>
+    {{ }                 }}
+    
+    {{ if (obj.ok === false && obj.cancel === false) { }}
+      <i class="closeDialogBtn ui-icon-remove-sign"></i>
+    {{ }                 }}
+  
+    {{ if (obj.ok || obj.cancel)                     { }}
+    <div>
+      {{ if (obj.title) { }}
+      <h3 style="padding:1rem 1rem; font-weight:100;">{{= title }}</h3>
+      {{ }                }}
+      {{ if (obj.img) { }}
+        <img src="{{= img }}" style="display:block; width: 100%;" />    
+      {{ }              }}
+      {{ if (obj.details) { }}
+      <div style="padding:1rem 1rem; width:100%;">{{= details }}</div>
+      {{ }                }}
+      
+      <div style="text-align:center; padding-bottom:2rem;">
+      {{ if (obj.cancel) { }}
+      <a href="#" class="dialogBtn" data-cancel="true">{{= loc(typeof cancel === 'string' ? cancel : 'cancel') }}</a>
+      {{ }                 }}
+      
+      {{ if (obj.ok) { }}
+      <a href="#" class="dialogBtn actionBtn" data-ok="true">{{= loc(typeof ok === 'string' ? ok : 'ok') }}</a>
+      {{ }                 }}
+      </div>
+    </div>
+    {{ }                                              }}
+  </div>
+</script>
+
 <script type="text/template" id="loginPopupTemplate">
 {{ if (obj.msg) { }}
-<div class="headerMessageBar" style="z-index: 100000; background: yellow; margin: 4%;">
+<div class="headerMessageBar" style="z-index: 100000; background: yellow;">
   {{= msg }}
 </div>
 {{ }              }}
@@ -1844,4 +1881,14 @@
 
 <!-- END EDIT TEMPLATES -->
 
+<script type="text/template" id="gaugesTemplate">
+{{ for (var i = 0; i < gauges.length; i++) { }}
+{{ var gauge = gauges[i];                    }}
+  <div class="gauge">
+    <div class="gaugeTextfield"></div>
+    <canvas id="{{= gauge.shortName }}Gauge" data-shortname="{{= gauge.shortName }}"></canvas>
+    <label for="{{= gauge.shortName }}">{{= gauge.name }}</label>
+  </div>
+{{ }                                         }}
+</script>
 </div>

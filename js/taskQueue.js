@@ -230,7 +230,7 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
     }
   }
   
-  function Task(name, taskFn, blocking, priority/*, noTimeout*/) {
+  function Task(name, taskFn, blocking, priority, preventTimeout) {
     if (!(this instanceof Task))
       return new Task(name, taskFn, blocking, priority);
     
@@ -251,12 +251,14 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
         otherPromise.always(defer.resolve);
         
       setTimeout(function() {
+        if (preventTimeout) {
+          debugger;
+          return;
+        }
+          
         if (defer.state() === 'pending') {
 //          debugger;
-          log('taskQueue', 'Task timed out: ' + self.name);
-          if (self.name.startsWith('starting IndexedDB'))
-            return;
-            
+          log('taskQueue', 'Task timed out: ' + self.name);            
           defer.reject();
         }
       }, 10000); // + Math.random() * 5000);

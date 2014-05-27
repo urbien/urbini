@@ -1371,7 +1371,10 @@ define('models/Resource', [
 //      return U.flattenModelJson(filtered, vocModel, preserve);
       if (this.has('davGetLastModified'))
         filtered.davGetLastModified = this.get('davGetLastModified');
-      
+
+      if (!filtered.$returnMade)
+        filtered.$returnMade = true;
+
       return filtered;
     },
     

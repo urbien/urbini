@@ -364,8 +364,8 @@
   <a target="#"><i class="ui-icon-signin"></i></a>
 </script>
 
-<script type="text/template" id="genericDialogTemplate">
-<section role="region" class="loginPopup" id="{{= id }}">
+<!--script type="text/template" id="genericDialogTemplate">
+<section role="region" id="{{= id }}">
   {{ if (obj.header) { }}
   <div data-role="header" id="header" class="ui-corner-top">
     <h1>{{= header }}</h1>
@@ -394,7 +394,7 @@
     </div>
   </div>
 </section>
-</script>
+</script-->
 
 <script type="text/template" id="logoutButtonTemplate">
   <li id="logout">

@@ -126,7 +126,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
 //          // generic selector
 //          return this.el ? this.el.querySelectorAll(selector) : [];
 //        }
-        return this.el ? this.el.$(selector) : [];
+        return this.el ? this.el.$(selector) : DOM.emptyNodeList();
       },
       
       setElement: function(element, delegate) {
