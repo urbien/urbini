@@ -283,6 +283,9 @@ define('utils', [
         else {
           log('xhr', '$.ajax', opts.url);
           $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType', 'processData', 'contentType'])).then(function(data, status, jqXHR) {
+            if (opts['for'])
+              opts['for']._setLastFetchOrigin('server');
+            
             var error;
             if (jqXHR.status > 399) {
               debugger;
@@ -296,6 +299,8 @@ define('utils', [
               defer.resolve(data, status, jqXHR);
           }, 
           function(jqXHR, textStatus, err) {
+            if (opts['for'])
+              opts['for']._setLastFetchOrigin('server');
 //            debugger;
             defer.reject(
               jqXHR, 

@@ -116,9 +116,6 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
     }
       
     intermediatePromise.done(function(data, status, xhr) {
-      if (self.data._getLastFetchOrigin() != 'server')
-        debugger;
-//      self.data._setLastFetchOrigin('server');
       dfd.resolveWith(self.data, [data, status, xhr]);
     }).fail(function(xhr, status, msg) {
   //    if (xhr.status === 304)
@@ -141,10 +138,6 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
     G.startedTask(tName);
     this.options.success = function() {
       G.finishedTask(tName);
-      if (self.data._getLastFetchOrigin() != 'server')
-        debugger;
-      
-//      self.data._setLastFetchOrigin('server');
     }
     
     return Backbone.defaultSync(this.method, this.data, this.options);

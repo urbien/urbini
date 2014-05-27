@@ -135,7 +135,7 @@ define('views/ResourceListView', [
           if (event == 'reset') {
             self._outOfData = false;
             self._isPaging = false;
-            if (self._pagingPromise.state() == 'pending')
+            if (self.isPaging())
               self._pagingPromise._canceled = true;
 //            self.mason.unsetLimit();
             self._removeBricks(self._displayedRange.from, self._displayedRange.to);
@@ -173,6 +173,10 @@ define('views/ResourceListView', [
 //      }, this);
       
       return this;
+    },
+    
+    isPaging: function() {
+      return this._pagingPromise && this._pagingPromise.state() == 'pending';
     },
 
     setBrickLimit: function(limit) {
