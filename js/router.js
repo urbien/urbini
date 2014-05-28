@@ -440,18 +440,17 @@ define('router', [
     },
 
     choose: function(path) { //, checked, props) {
-//      if (!Redirecter.getCurrentChooserBaseResource()) {
-//        var forResource = U.getCurrentUrlInfo().params.$forResource;
-//        if (forResource)
-//          Events.trigger('navigate', U.makeMobileUrl('view', forResource), { replace: true });
-//        else
-//          Events.trigger('back');
-//        
-//        return;
-//      }
-        
-      if (this.routePrereqsFulfilled('choose', arguments))
+      if (this.routePrereqsFulfilled('choose', arguments)) {
+        if (!Redirecter.getCurrentChooserBaseResource()) {
+          var forResource = U.getCurrentUrlInfo().params.$forResource;
+          if (!forResource) {
+            Events.trigger('back');
+            return;
+          }
+        }
+          
         this.list(path, G.LISTMODES.CHOOSER); //, {checked: checked !== 'n', props: props ? props.slice(',') : []});
+      }
     },
 
     /**

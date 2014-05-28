@@ -2906,6 +2906,8 @@ define('utils', [
     },
     
     makeHeaderTitle: function(pre, post) {
+      pre = pre || '';
+      post = post || '';
       return pre === post ? pre : pre + "&#160;<span style='padding: 0 7px;' class='ui-icon-caret-right'></span>&#160;" + post;
     },
 //    removeUnquotedWhitespace: function(text) {
