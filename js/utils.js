@@ -2159,7 +2159,7 @@ define('utils', [
      * @return the value of the app's App._name property, sth like urbien/voc/dev/AppName 
      */
     getAppName: function(type) {
-      return 'urbien/voc/dev' + type.slice(type.lastIndexOf('/'));
+      return G.hostName + '/voc/dev' + type.slice(type.lastIndexOf('/'));
     },
 
     makeMobileUrl: function(action, typeOrUri, params) {
@@ -3727,7 +3727,7 @@ define('utils', [
     },
     
     getPath: function(uri) {
-      var path = uri.match(/(hudsonfog\.com|urbien\.com)\/voc\/([^\?]*)/)[2]; // starting from hudsonfog.com/voc/
+      var path = uri.match(/([a-zA-Z]+\.[a-zA-Z]+)\/voc\/([^\?]*)/)[2]; // starting from hostName.xx/voc/
       var params = _.getParamMap(uri);
       for (var param in params) {
         path += '/' + encodeURIComponent(params[param]);
@@ -4448,7 +4448,7 @@ define('utils', [
   },
   {
     // http://.../voc/... with query string or without
-    regex: /^(http:\/\/)?(.*)\.com\/voc\/([^\?]+)\??(.*)/,
+    regex: /^(http:\/\/)?(.*)\.[a-zA-Z]+\/voc\/([^\?]+)\??(.*)/,
     onMatch: function(uri, matches, vocModel) {
       var sqlIdx = matches[2].indexOf(G.sqlUri);
       if (sqlIdx === -1) { // sth like http://www.hudsonfog.com/voc/commerce/urbien....

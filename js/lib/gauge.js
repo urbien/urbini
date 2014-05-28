@@ -182,16 +182,16 @@ define('lib/gauge', function() {
         backingStorePixelRatio = this.ctx.webkitBackingStorePixelRatio || this.ctx.mozBackingStorePixelRatio || this.ctx.msBackingStorePixelRatio || this.ctx.oBackingStorePixelRatio || this.ctx.backingStorePixelRatio || 1;
         this.displayScale = devicePixelRatio / backingStorePixelRatio;
       }
-      if (this.displayScale !== prevDisplayScale) {
-        width = this.canvas.G__width || this.canvas.width;
-        height = this.canvas.G__height || this.canvas.height;
-        this.canvas.width = width * this.displayScale;
-        this.canvas.height = height * this.displayScale;
-        this.canvas.style.width = "" + width + "px";
-        this.canvas.style.height = "" + height + "px";
-        this.canvas.G__width = width;
-        this.canvas.G__height = height;
-      }
+//      if (this.displayScale !== prevDisplayScale) {
+//        width = this.canvas.G__width || this.canvas.width;
+//        height = this.canvas.G__height || this.canvas.height;
+//        this.canvas.width = width * this.displayScale;
+//        this.canvas.height = height * this.displayScale;
+//        this.canvas.style.width = "" + width + "px";
+//        this.canvas.style.height = "" + height + "px";
+//        this.canvas.G__width = width;
+//        this.canvas.G__height = height;
+//      }
       return this;
     };
 

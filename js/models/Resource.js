@@ -1290,8 +1290,10 @@ define('models/Resource', [
     
     save: function(attrs, options) {
       options = _.defaults(options || {}, {patch: true, silent: false});
-      if (attrs)
-        this.set(attrs, {silent: true});
+      if (attrs) {
+//        options.silent = true;
+        this.set(attrs, options);
+      }
       else
         attrs = {};
       

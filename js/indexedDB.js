@@ -273,7 +273,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     this.storesToKill = [];
   };
   
-  IDB.prototype._queueTask = function(name, taskFn, isBlocking, priority) {
+  IDB.prototype._queueTask = function(name, taskFn, isBlocking, priority, preventTimeout) {
     log('db', 'queueing task', name);
 //    var originalTaskFn = taskFn;
 //    taskFn = function(defer) {
@@ -282,7 +282,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
 //        promise.then(defer.resolve, defer.reject);
 //    };
     
-    return this.taskQueue.queueTask(name, taskFn, isBlocking, priority);
+    return this.taskQueue.queueTask.apply(this.taskQueue, arguments);
   };
   
   IDB.prototype.setDefaultStoreOptions = function(options) {
@@ -531,7 +531,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
         name = '{0}starting IndexedDB {1}. {2}'.format(prefix, this.name, reason || ''),
         alreadyQueued = this.taskQueue.getQueued(name);
     
-    return alreadyQueued || this._queueTask(name, restart.bind(this, version), true, true /* doesn't time out */);
+    return alreadyQueued || this._queueTask(name, restart.bind(this, version), true, false, true /* doesn't time out */);
   };
 
   function get(storeName, primaryKey) {

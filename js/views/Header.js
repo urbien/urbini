@@ -252,7 +252,7 @@ define('views/Header', [
         }
         
         if (!numOrders) {// && !numNotifications) {
-          U.alert("To do a dry run, add at least one order to your Tradle");
+          U.alert("To do a dry run, add at least one trade to your Tradle");
           undo();
           return;
         }
@@ -268,7 +268,7 @@ define('views/Header', [
             id: 'backtestDialog',
             header: 'Dry run the Tradle first?',
 //            title: 'Click <b>Activate</b> to activate your Tradle without a dry run',
-            details: '<p style="width:100%; text-align:center; font-style:italic;">(A dry run tests how this Tradle would perform in the last 5 days)</p>',
+            details: '<p style="width:100%; text-align:center; font-style:italic;">(A dry run tests how this Tradle <br /> would perform in the last 5 days)</p>',
             img: 'http://mark.urbien.com/urbien/images/tradle/target-practice-orange.png',
 //            bgImg: 'http://mark.urbien.com/urbien/images/tradle/target-practice-orange.png',
             ok: 'Do a dry run',         // pass true to get default string 'Ok', or false to not have a button

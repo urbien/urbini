@@ -1397,3 +1397,17 @@ div {
   font-weight: bold;
   font-family: 'Amaranth', sans-serif;
 }
+
+@media screen and (max-width: 480px) and (orientation: portrait) {
+  .dialogBtn {
+    display: block;
+  }
+  
+  .gauges {
+    padding: 3rem 1rem;
+  }
+  
+  .gauge {
+    width: 75px;
+  }
+}

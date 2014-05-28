@@ -160,8 +160,8 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
     }
     
     function push(task) {
-      if (!running.length)
-        debugger;
+//      if (!running.length)
+//        debugger;
       
       task.queueTime = _.now();
       queue.push(task);
@@ -232,7 +232,7 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
   
   function Task(name, taskFn, blocking, priority, preventTimeout) {
     if (!(this instanceof Task))
-      return new Task(name, taskFn, blocking, priority);
+      return new Task(name, taskFn, blocking, priority, preventTimeout);
     
     var self = this,
         defer = $.Deferred(),
@@ -250,11 +250,10 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
       if (otherPromise && typeof otherPromise.then == 'function')
         otherPromise.always(defer.resolve);
         
+      if (preventTimeout)
+        return;
+      
       setTimeout(function() {
-        if (preventTimeout) {
-          debugger;
-          return;
-        }
           
         if (defer.state() === 'pending') {
 //          debugger;

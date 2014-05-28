@@ -6,8 +6,9 @@ define('views/ResourceImageView', [
   'domUtils',
   'events',
   'vocManager',
-  'views/BasicView'
-], function(G, _, U, DOM, Events, Voc, BasicView) {
+  'views/BasicView',
+  'lib/gauge'
+], function(G, _, U, DOM, Events, Voc, BasicView, Gauges) {
 
 //  $(function() {
 //    var $allVideos = $("iframe[src^='http://player.vimeo.com'], iframe[src^='http://www.youtube.com'], object, embed"),
@@ -45,7 +46,7 @@ define('views/ResourceImageView', [
 
   return BasicView.extend({
     initialize: function(options) {
-      _.bindAll(this, 'render', 'resizeVideo', 'doDrawGauges'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'resizeVideo'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);
       options = options || {};
       this.twin = options.twin;
@@ -508,12 +509,12 @@ define('views/ResourceImageView', [
       return this;
     },
     
-    drawGauges: function() {
-      U.require('lib/gauge').done(this.doDrawGauges);
-    },
-
     _gaugeValues: {},
-    doDrawGauges: function(Gauges) {
+    drawGauges: function() {
+//      U.require('lib/gauge').done(this.doDrawGauges);
+//    },
+//
+//    doDrawGauges: function(Gauges) {
       var meta = this.vocModel.properties;
       var canvases = this.el.$('canvas');
       for (var i = 0; i < canvases.length; i++) {
@@ -528,7 +529,6 @@ define('views/ResourceImageView', [
 //          refresh = true;
         
         this._gaugeValues[pName] = value;
-        gauge = new Gauges.Gauge(canvas);
         var prop = meta[pName];
         var isPercent = prop.facet == 'Percent';
         var isMoney = prop.range.endsWith('Money');
@@ -553,7 +553,7 @@ define('views/ResourceImageView', [
       
         gauge.setTextField(canvas.previousElementSibling);
         gauge.maxValue = 100 * Math.ceil(value / 100);
-        gauge.animationSpeed = 32;
+        gauge.animationSpeed = 10;
         gauge.set(value);
 //        if (update) {
 //          gauge.ctx.clearRect(0, 0, gauge.ctx.canvas.width, gauge.ctx.canvas.height);

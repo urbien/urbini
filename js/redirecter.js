@@ -725,7 +725,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
           rParams.$in = $in;
           rParams.domain = res.get('eventClass');
           rParams.$select = 'name,label,propertyType,range,rangeUri';
-          rParams.$title = CHOOSE_RULE_FOR + res.get('feed.displayName') + ' property...';
+          rParams.$title = CHOOSE_RULE_FOR + res.get('feed.displayName');
 //          if (lastEvent)
 //            rParams.$lastEvent = lastEvent.getUri();
             
@@ -1018,8 +1018,8 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       }
 
       var prevTitle = urlInfo.params.$title;
-      if (prevTitle && prevTitle.endsWith('property...'))
-        prevTitle = prevTitle.slice(0, prevTitle.length - 11) + ' - ';
+//      if (prevTitle && prevTitle.endsWith('property...'))
+//        prevTitle = prevTitle.slice(0, prevTitle.length - 11) + ' - ';
 
       Events.trigger('navigate', U.makeMobileUrl('chooser', 'system/designer/WebClass', {
         subClassOfUri: G.defaultVocPath + subClassOf,

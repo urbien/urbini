@@ -283,7 +283,7 @@ define('globals', function() {
   };
   
   function getDomain() {
-    return G.serverName.match(/([^\.\/]+\.com)/)[0];
+    return G.serverName.match(/([^\.\/]+\.(?:[a-zA-Z]+))/)[0];
   }
   
   function testCSS(prop) {
@@ -370,6 +370,7 @@ define('globals', function() {
     $.extend(G, {
       appUrl: G.serverName + '/' + G.pageRoot,
       sqlUrl: G.serverNameHttp + '/' + G.sqlUri,
+      hostName: getDomain().split('.')[0],
       modelsUrl: G.serverName + '/backboneModel',
       storeFilesInFileSystem: G.hasBlobs && G.hasFileSystem && G.browser.chrome,
       useInlineWorkers: G.hasBlobs && G.hasWebWorkers,
