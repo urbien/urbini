@@ -8,6 +8,7 @@ define('views/HomePage', [
 ], function(G, Events, U, BasicPageView, DOM) {
   return BasicPageView.extend({
     TAG: 'HomePage',
+    _paged: true,
     autoFinish: false,
     first: true,
     viewId: 'viewHome',
@@ -25,7 +26,19 @@ define('views/HomePage', [
 //      'tap #hpRightPanel'   : 'leftMenu',
 //      'hold #hpRightPanel'  : 'rightMenu',
 //      'tap #installApp'    : 'installApp'
-      'click #getStarted': 'getStarted'
+      'click #getStarted': 'getStarted',
+      'click .pgDown': 'pageDown',
+      'click .pgUp': 'pageUp'
+    },
+    
+    pageUp: function(e) {
+      Events.stopEvent(e);
+      Events.trigger('pageUp');
+    },
+    
+    pageDown: function(e) {
+      Events.stopEvent(e);
+      Events.trigger('pageDown');
     },
     
     getStarted: function(e) {
@@ -163,7 +176,7 @@ define('views/HomePage', [
       document.title = G.currentApp.title;
       return this;
     },
-    
+        
     removeInstallBtn: function() {
       this.$('#installApp').$remove();
     },

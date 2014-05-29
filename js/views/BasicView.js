@@ -35,6 +35,7 @@ define('views/BasicView', [
   var BasicView = Backbone.View.extend({
 //    viewType: 'resource',
     myBrick: null,
+    _paged: false,
     _scrollerType: 'verticalMain',
     _numBricks: 0,
     _initializedCounter: 0,
@@ -1123,7 +1124,7 @@ define('views/BasicView', [
     },
 
     addDraggable: function() {
-      Physics.addDraggable(this.hammer(), this._flexigroup ? this.getFlexigroupId() : this.getContainerBodyId(), this._dragAxis);
+      Physics.addDraggable(this.hammer(), this._flexigroup ? this.getFlexigroupId() : this.getContainerBodyId(), this._dragAxis, this._paged);
     },
 
     _updateSize: function(el) {

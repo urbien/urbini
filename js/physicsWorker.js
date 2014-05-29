@@ -3762,6 +3762,30 @@ function getRectVertices(width, height) {
       this.offsetBody.stop(coords[0], coords[1]);
       this.enableEdgeConstraints();
       log(this.containerId + ": Enabling edge constraints on jump to END");
+    },
+    
+    page: function(numPages) {
+      var coords = this.getTailEdgeCoords(),
+          body = this.offsetBody,
+          pos = body.state.pos,
+          pageHeight = 2 * BOUNDS.halfHeight(),
+          currentPage = Math.round(-pos.get(1) / pageHeight),
+          newPage = Math.max(currentPage + numPages, 0),
+          newY = Math.min(pageHeight * newPage, -coords[1]);
+      
+      API.cancelPendingActions(body);
+      console.log("New Page: " + newPage);
+      console.log("New Y: " + newY);
+      console.log("Tail edge: " + coords[1]);
+      API.snapTo({
+        body: body,
+        stiffness: 0.03,
+        damping: 0.5,
+        drag: 0.1,
+        x: pos.get(0), 
+        y: -newY, 
+        z: pos.get(2)
+      });
     }
   }
   
@@ -4383,6 +4407,37 @@ var API = {
     body.stop(destination);
   },
 
+//  /**
+//   * @options {
+//   *   body: {String} bodyId,
+//   *   pages: {Number} pages down to go (up is negative)
+//   *   
+//   * }
+//   */
+//  page: function(options) {
+//    var body = getBody(options.body),
+//        pos = body.state.pos,
+//        pageHeight = 2 * BOUNDS.halfHeight(),
+//        currentPage = Math.floor(-pos.get(1) / pageHeight),
+//        newPage = Math.max(currentPage + options.pages, 0),
+//        newY = pageHeight * newPage;
+//    
+//    console.log("New Page: " + newPage);
+//    console.log("New Y: " + newY);
+//    API.snapTo({
+//      body: body,
+////      a: options.a || 0.02,
+////      drag: 0.9,
+////      atmosphereRadius: 
+//      stiffness: 0.03,
+//      damping: 0.5,
+//      drag: 0.1,
+//      x: pos.get(0), 
+//      y: -newY, 
+//      z: pos.get(2)
+//    });
+//  },
+  
   snapTo: function(options) {
     var self = this,
         body = getBody(options.body),

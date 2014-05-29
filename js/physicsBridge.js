@@ -3,8 +3,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       jsBase = G.serverName + '/js/',
       physicsModuleInfo = G.files['lib/physicsjs-custom.js'],
       masonryModuleInfo = G.files['lib/jquery.masonry.js'],
-      commonMethods = ['step', 'addBody', 'removeBody', 'distanceConstraint', 'drag', 'dragend', 'benchBodies', 'unbenchBodies', 'style', 'animateStyle', 'track', 'trackDrag'],
-      layoutMethods = ['addBricks', 'setLimit', 'unsetLimit', 'sleep', 'wake', 'continue', 'home', 'end', 'resize', 'setBounds', 'lock', 'unlock', 'isLocked', 'destroy', 'reset'],
+      commonMethods = ['step', 'addBody', 'removeBody', 'distanceConstraint', 'drag', 'dragend', 'benchBodies', 'unbenchBodies', 'style', 'animateStyle', 'track', 'trackDrag', 'page'],
+      layoutMethods = ['addBricks', 'setLimit', 'unsetLimit', 'sleep', 'wake', 'continue', 'home', 'end', 'resize', 'setBounds', 'lock', 'unlock', 'isLocked', 'destroy', 'reset', 'page'],
       LOCK_STEP = false, // if true, step the world through postMessage, if false let the world run its own clock
       PHYSICS_TIME = _.now(), // from here on in,
       NOW = PHYSICS_TIME,     // these diverge
@@ -335,6 +335,25 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //    e.preventDefault();
   };
   
+  function dragend(draggable, v, coast) {
+    if (!draggable.isPaged())
+      THERE.dragend(v, draggable.getId(), !coast);
+  };
+  
+  function drag(draggable, v) {
+    if (draggable.isPaged()) {
+      getLayoutManagers(draggable.getId()).map(function(l) {
+        l.page(v[1] > 0 ? -1 : 1);
+      });
+//      THERE.page({
+//        body: draggable.getId(),
+//        pages: v[1] > 0 ? -1 : 1
+//      });
+    }
+    else
+      THERE.drag(v, draggable.getId());
+  }
+  
   function getLayoutManagers(/* ids */) {
     var i = arguments.length,
         manager,
@@ -347,6 +366,24 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     }
     
     return managers;
+  };
+  
+  Events.on('pageDown', function() {
+    simulateKeyPress(34);
+  });
+
+  Events.on('pageUp', function() {
+    simulateKeyPress(33);
+  });
+  
+  function simulateKeyPress(code) {
+    KeyHandler._onKeyDown({
+      keyCode: code
+    });
+    
+    KeyHandler._onKeyUp({
+      keyCode: code
+    });
   };
   
   KeyHandler = {
@@ -469,7 +506,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       for (var id in DRAGGABLES) {
         draggable = DRAGGABLES[id];
         if (draggable.isOn() && isDragAlongAxis(dir, draggable.axis))
-          THERE.drag(this._dragged, id);
+          drag(draggable, this._dragged);
       }
     },
     
@@ -482,7 +519,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         for (var id in DRAGGABLES) {
           draggable = DRAGGABLES[id];
           if (draggable.isOn() && isDragAlongAxis(dir, draggable.axis))
-            THERE.dragend(this._dragged, id, !this._coast);
+            dragend(draggable, this._dragged, !this._coast);
         }
 
         this._coast = false;
@@ -530,11 +567,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       v = MouseWheelHandler._vector;
       v[0] = v[1] = 0;
       v[axis == 'x' ? 0 : 1] = e.wheelDelta / 2 | 0;
-      THERE.drag(v, draggable.getId());
+      drag(draggable, v);
       
       if (!resetTimeout(this._endTimeout)) {
         this._endTimeout = setTimeout(function() {
-          THERE.dragend(v, draggable.getId(), false); // if true, will prevent coast
+          dragend(draggable, v, false); // if true, will prevent coast
         }, 100);
       }
       
@@ -939,8 +976,9 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
    * currently only sends drag data once a frame (maybe it should send every time it gets a drag event)
    * TODO: make it work for nested draggables
    */
-  function DragProxy(hammer, id, axis) {
+  function DragProxy(hammer, id, axis, paging) {
     this.id = id;
+    this.paging = !!paging;
     this.axis = axis;
     if (axis)
       this.dragEventName = axis == 'x' ? 'dragleft dragright' : 'dragup dragdown';
@@ -1095,7 +1133,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //          }
 //        );
 
-        THERE.dragend(this.lastDragVector, this.id);
+        dragend(this, this.lastDragVector);
         zero(this.lastDragVector);
         
 //        Physics.echo(enableClick); // async and faster than setTimeout 
@@ -1103,7 +1141,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       
       if (this.drag && !isEqual(this.dragVector, zeroVector)) {
 //        log("DRAG, distance: (" + this.dragVector[0] + ", " + this.dragVector[1] + ")");
-        THERE.drag(this.dragVector, this.id);
+        drag(this, this.dragVector);
       }
       
       zero(this.dragVector);
@@ -1120,6 +1158,10 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     
     getId: function() {
       return this.id;
+    },
+    
+    isPaged: function() {
+      return this.paging;
     }
   };
 
@@ -1195,14 +1237,14 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       THERE.unbenchBodies.apply(THERE, arguments);
     },
     
-    addDraggable: function(hammer, id, axis) {
+    addDraggable: function(hammer, id, axis, paging) {
       var proxy = DRAGGABLES[id];
       if (proxy) {
         this.connectDraggable(id);
       }
       else {
         numDraggables++;
-        proxy = DRAGGABLES[id] = new DragProxy(hammer, id, axis);
+        proxy = DRAGGABLES[id] = new DragProxy(hammer, id, axis, paging);
       }
       
       return proxy;
