@@ -3597,7 +3597,8 @@ Physics.geometry.nearestPointOnLine = function nearestPointOnLine( pt, linePt1, 
             }
 
             this.publish({
-                topic: 'step'
+                topic: 'step',
+                dt: diff
             });
             return this;
         },
@@ -3821,9 +3822,7 @@ Physics.integrator('verlet', function( parent ){
          */
         integratePositions: function( bodies, dt ){
 
-            // half the timestep
-            var dtdt = dt * dt
-                ,body = null
+            var body = null
                 ,state
                 ;
 

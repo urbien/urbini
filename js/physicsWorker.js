@@ -697,7 +697,8 @@ function Action(options) {
       trackedAction = options.track,
       action,
       previousRatio = 0,
-      goingBackwards = false;
+      goingBackwards = false,
+      defaultTimestep = WORLD_CONFIG.timestep;
 
   if (!(!!_onstep ^ !!_onIV ^ !!_onIP))
     throw "actions can currently only subscribe to ONE of 'integrate:positions', 'integrate:velocities' or 'step' events";
@@ -768,18 +769,18 @@ function Action(options) {
     return true;
   };
   
-  function setupIterator(fn, dt) {
+  function setupIterator(fn) {
     return function(data) {
       var ratio = this.ratio();
       if (canIterate(ratio)) {
-        timePassed += (dt || data.dt);
+        timePassed += data.dt;
         start();
         fn.call(this, ratio);
       }      
     }
   };
   
-  onstep = _onstep && setupIterator(_onstep, LAST_STEP_DT);  
+  onstep = _onstep && setupIterator(_onstep);  
   onIP = _onIP && setupIterator(_onIP);
   onIV = _onIV && setupIterator(_onIV);
   
@@ -3826,7 +3827,7 @@ var API = {
   step: function(time, dt) {
     LAST_STEP_TIME = time;
     LAST_STEP_DT = dt;
-    world.step(time);
+    world.step(time, dt);
     // only render if not paused
     if ( RERENDER && !world.isPaused() ) {
 //      log("RERENDERING");
