@@ -1841,7 +1841,7 @@ function getRectVertices(width, height) {
               }
             }
           }
-        }, this);
+        });
       }
       else {
         this.flexigroupOffset = 0;
@@ -1882,7 +1882,7 @@ function getRectVertices(width, height) {
         
 //      if (doSlidingWindow) {
 //        this._subscribe('integrate:velocities', this._onIntegrateVelocities, this, -Infinity); // lowest priority
-        this._subscribe('integrate:positions', this._onIntegratePositions, this, -Infinity); // lowest priority
+        this._subscribe('integrate:positions', this._onIntegratePositions, 0); // lowest priority
 //        this._onIntegratePositions = Physics.util.throttle(this._onIntegratePositions.bind(this), 30);
 //        this._onIntegrateVelocities = Physics.util.throttle(this._onIntegrateVelocities.bind(this), 30);
 //        Physics.util.bindAll(this, '_onIntegratePositions'); //, '_onIntegrateVelocities');
@@ -1966,7 +1966,7 @@ function getRectVertices(width, height) {
 //          this.container.options.drag = value;
 //          break;
         }
-      }, this);
+      });
 
       this._subscribe('beforeRender', function() {
         var bricks = this.mason.bricks,
@@ -1990,7 +1990,7 @@ function getRectVertices(width, height) {
             this.beforeRender(bricks[i]);
           }          
         }
-      }, this);
+      });
       
       this._subscribe('integrate:positions', function() {
         if (!this._sleeping && !this._transitioning) {
@@ -2000,7 +2000,7 @@ function getRectVertices(width, height) {
           if (this.tilt)
             this.tiltBricksInertially();
         }
-      }, this);
+      });
       
       this._subscribe('postRender', function() {
         if (this._sleeping && this.mason.bricks.length) {
@@ -2033,7 +2033,12 @@ function getRectVertices(width, height) {
     },
     
     _subscribe: function(event, handler, priority) {
-      world.subscribe(event, handler, this, priority);
+      handler = handler.bind(this);
+      console.log("Subscribing " + this.id + " to event " + event + " with priority " + priority);
+      world.subscribe(event, handler, null, priority);
+      if (world._topics[event].indexOf(handler) != -1)
+        console.log("Subscribed " + this.id + " to event " + event + " with priority " + priority);
+      
       var handlers = this._listeners[event] = this._listeners[event] || [];
       handlers.push(handler);
     },
@@ -3450,7 +3455,7 @@ function getRectVertices(width, height) {
       this._subscribe('postRender', function doRemove() {
         this._unsubscribe('postRender', doRemove); // so we can render them invisible
         world.remove(bricks);
-      }, this);
+      });
       
       while (i--) {
         brick = bricks[i];
