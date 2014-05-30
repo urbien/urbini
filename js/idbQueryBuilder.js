@@ -1,4 +1,4 @@
-define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'indexedDB'], function(G, _, U, IndexedDBModule) {
+define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'events', 'indexedDB'], function(G, _, U, Events, IndexedDBModule) {
   var operatorMap = {
       '=': 'eq',
       '==': 'eq',

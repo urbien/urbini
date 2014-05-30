@@ -1259,7 +1259,7 @@ div {
 .modal-active [data-role="page"] {
   z-index:0;
   -webkit-filter: blur(2px) contrast(0.4) brightness(1.4);
-          filter: blur(2px) contrast(0.4) brightness(1.4);          
+     -moz-filter: blur(2px) contrast(0.4) brightness(1.4);          
           filter: url(data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+DQoJPGZpbHRlciBpZD0iYmx1ciI+DQoJCTxmZUdhdXNzaWFuQmx1ciBzdGREZXZpYXRpb249IjIiIC8+DQoJPC9maWx0ZXI+DQo8L3N2Zz4=#blur);          
 }
 .section-header:after {
