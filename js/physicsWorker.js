@@ -1770,6 +1770,8 @@ function getRectVertices(width, height) {
           doSlidingWindow = this.slidingWindow,
           constantsEvent;
       
+//      Physics.util.bindAll(this);
+      
       this.reset();
       this._listeners = {};
       this.scrollbarId = this.scrollbar;
@@ -1826,22 +1828,7 @@ function getRectVertices(width, height) {
         this.flexigroup.mass = 10000;
         this.flexigroup.state.pos.setComponent(this.axisIdx, this.flexigroupOffset);
         this.flexigroup.state.pos.setComponent(this.orthoAxisIdx, this.bounds[this.aabbOrthoAxisDim]);
-        this._subscribe('remove:body', function(data) {
-          var body = data.body;
-          if (~this.getBricks().indexOf(body)) {
-            var csts = this.constraints,
-                i = csts.length;
-            
-            while (i--) {
-              c = csts[i];
-              if (body == c.bodyA) {
-//                constrainer.remove(c);
-                Physics.util.removeFromTo(csts, i, i + 1);
-                break;
-              }
-            }
-          }
-        });
+        this._subscribe('remove:body', this._onRemoveBody);
       }
       else {
         this.flexigroupOffset = 0;
@@ -1882,7 +1869,7 @@ function getRectVertices(width, height) {
         
 //      if (doSlidingWindow) {
 //        this._subscribe('integrate:velocities', this._onIntegrateVelocities, this, -Infinity); // lowest priority
-        this._subscribe('integrate:positions', this._onIntegratePositions, 0); // lowest priority
+        this._subscribe('integrate:positions', this._onIntegratePositions, 1); // lowest priority
 //        this._onIntegratePositions = Physics.util.throttle(this._onIntegratePositions.bind(this), 30);
 //        this._onIntegrateVelocities = Physics.util.throttle(this._onIntegrateVelocities.bind(this), 30);
 //        Physics.util.bindAll(this, '_onIntegratePositions'); //, '_onIntegrateVelocities');
@@ -1925,102 +1912,12 @@ function getRectVertices(width, height) {
 //      }, this);
 
       constantsEvent = (this.scrollerType ? this.scrollerType + ':' : '') + 'constants';
-      this._subscribe(constantsEvent, function(data) {
-        var name = data.name,
-            value = data.value;
-        
-        this[name] = value;
-        
-        switch (name) {
-        case 'springDamping':
-          this.headEdgeConstraint.damp(value);
-          if (this.tailEdgeConstraint)
-            this.tailEdgeConstraint.damp(value);
-          
-          break;
-        case 'springStiffness':
-          this.headEdgeConstraint.stiffness = value;
-          if (this.tailEdgeConstraint)
-            this.tailEdgeConstraint.stiffness = value;
-          
-          break;
-        case 'drag':
-          
-          break;
-//        case 'drag':
-//          var bricks = this.mason.bricks,
-//              i = bricks.length,
-//              brick;
-//          
-//          while (i--) {
-//            brick = bricks[i];
-//            if (!brick.options.hasOwnProperty('drag'))
-//              airDragBodies.push(bricks[i]);
-//              
-//            brick.options.drag = value;
-//          }
-//
-//          if (!this.container.options.hasOwnProperty('drag'))
-//            airDragBodies.push(this.container);
-//
-//          this.container.options.drag = value;
-//          break;
-        }
-      });
-
-      this._subscribe('beforeRender', function() {
-        var bricks = this.mason.bricks,
-            brick,
-            i = bricks.length;
-        
-        if (this._sleeping) {
-          while (i--) {
-            brick = bricks[i];
-            API.completePendingActions(brick);
-            world.removeBody(brick);
-          }
-          
-          if (this.scrollbar)
-            world.removeBody(this.scrollbar);
-
-          return;
-        }
-        else if (!this._transitioning) {
-          while (i--) {
-            this.beforeRender(bricks[i]);
-          }          
-        }
-      });
+      this._subscribe(constantsEvent, this._onConstantEvent);
+      this._subscribe('beforeRender', this._onBeforeRender);
+      this._subscribe('postRender', this._onPostRender);
       
-      this._subscribe('integrate:positions', function() {
-        if (!this._sleeping && !this._transitioning) {
-          if (this.scrollbar) 
-            this._updateScrollbar();
-          
-          if (this.tilt)
-            this.tiltBricksInertially();
-        }
-      });
-      
-      this._subscribe('postRender', function() {
-        if (this._sleeping && this.mason.bricks.length) {
-          world.remove(this.mason.bricks);
-          return;
-        }        
-      });
-      
-      if (this.jiggle) {
-        this._subscribe('sleep:' + this.id, function() {
-          var bricks = this.mason.bricks,
-              brick,
-              i = this.mason.bricks.length;
-          
-          while (i--) {
-            brick = bricks[i];
-            brick.state.renderData.set('rotate', ZERO_ROTATION); // TODO: when 3d rotation comes to physics, use the actual physical rotation
-          }
-        });
-      }
+      if (this.jiggle)
+        this._subscribe('sleep:' + this.id, this._onSleep);
       
       if (this.squeeze) 
         API.squashAndStretch(this.offsetBody, this.offsetBody);
@@ -2032,34 +1929,142 @@ function getRectVertices(width, height) {
       this['continue']();
     },
     
-    _subscribe: function(event, handler, priority) {
-      handler = handler.bind(this);
-      console.log("Subscribing " + this.id + " to event " + event + " with priority " + priority);
-      world.subscribe(event, handler, null, priority);
-      if (world._topics[event].indexOf(handler) != -1)
-        console.log("Subscribed " + this.id + " to event " + event + " with priority " + priority);
+    _onSleep: function() {
+      var bricks = this.mason.bricks,
+          brick,
+          i = this.mason.bricks.length;
       
-      var handlers = this._listeners[event] = this._listeners[event] || [];
+      while (i--) {
+        brick = bricks[i];
+        brick.state.renderData.set('rotate', ZERO_ROTATION); // TODO: when 3d rotation comes to physics, use the actual physical rotation
+      }
+    },
+    
+    _onConstantEvent: function(data) {
+      var name = data.name,
+          value = data.value;
+      
+      this[name] = value;
+      
+      switch (name) {
+      case 'springDamping':
+        this.headEdgeConstraint.damp(value);
+        if (this.tailEdgeConstraint)
+          this.tailEdgeConstraint.damp(value);
+        
+        break;
+      case 'springStiffness':
+        this.headEdgeConstraint.stiffness = value;
+        if (this.tailEdgeConstraint)
+          this.tailEdgeConstraint.stiffness = value;
+        
+        break;
+      case 'drag':
+        
+        break;
+//      case 'drag':
+//        var bricks = this.mason.bricks,
+//            i = bricks.length,
+//            brick;
+//        
+//        while (i--) {
+//          brick = bricks[i];
+//          if (!brick.options.hasOwnProperty('drag'))
+//            airDragBodies.push(bricks[i]);
+//            
+//          brick.options.drag = value;
+//        }
+//
+//        if (!this.container.options.hasOwnProperty('drag'))
+//          airDragBodies.push(this.container);
+//
+//        this.container.options.drag = value;
+//        break;
+      }
+    },
+    
+    _onBeforeRender: function() {
+      var bricks = this.mason.bricks,
+          brick,
+          i = bricks.length;
+      
+      if (this._sleeping) {
+        while (i--) {
+          brick = bricks[i];
+          API.completePendingActions(brick);
+          world.removeBody(brick);
+        }
+        
+        if (this.scrollbar)
+          world.removeBody(this.scrollbar);
+
+        return;
+      }
+      else if (!this._transitioning) {
+        while (i--) {
+          this.beforeRender(bricks[i]);
+        }          
+      }
+    },
+    
+    _onPostRender: function() {
+      if (this._sleeping && this.numBricks()) {
+        world.remove(this.mason.bricks);
+        return;
+      }        
+    },
+    
+    _onRemoveBody: function(data) {
+      var body = data.body;
+      if (this.getBricks().indexOf(body) == -1)
+        return;
+      
+      var csts = this.constraints,
+          i = csts.length;
+      
+      while (i--) {
+        c = csts[i];
+        if (body == c.bodyA) {
+//              constrainer.remove(c);
+          Physics.util.removeFromTo(csts, i, i + 1);
+          break;
+        }
+      }
+    },
+    
+    _subscribe: function(event, handler, priority) {
+      var orig = handler,
+          handlers = this._listeners[event] = this._listeners[event] || [];
+      
+      handler = handler.bind(this);
+      handler._orig = orig;
+      world.subscribe(event, handler, null, priority);      
       handlers.push(handler);
     },
 
     _unsubscribe: function(event, handler) {
       var handlers = this._listeners[event],
-          i = handlers.length;
+          i = handlers.length,
+          unsubscribed = false;
       
       while (i--) {
-        if (handler) {
-          if (handler == handlers[i]) {
-            world.unsubscribe(event, handler);
-            handlers.splice(i, 1);
-            break;
-          }
+        var hi = handlers[i];
+        if (handler && (handler == hi || handler == hi._orig)) {
+          debugger;
+          world.unsubscribe(event, hi);
+          handlers.splice(i, 1);
+          unsubscribed = true;
+          break;
         }
         else {
-          world.unsubscribe(event, handlers[i]);
+          world.unsubscribe(event, hi);
           handlers.length--;
+          unsubscribed = true;
         }
       }
+      
+      if (!unsubscribed)
+        debugger;
     },
     
     breakHeadEdgeConstraint: function(data) {
@@ -2854,8 +2859,17 @@ function getRectVertices(width, height) {
 //    },
 
     _onIntegratePositions: function() {
+      if (this._sleeping || this._transitioning)
+        return;
+      
+      if (this.scrollbar) 
+        this._updateScrollbar();
+      
+      if (this.tilt)
+        this.tiltBricksInertially();
+      
 //      this.offsetBody.state.renderData.set('perspective-origin-y', (-offset|0) + 'px');
-      if (this._sleeping || this._waiting || this._transitioning)
+      if (this._waiting)
         return;      
 
       var offset = this.offsetBody.state.pos.get(this.axisIdx),
@@ -3030,6 +3044,7 @@ function getRectVertices(width, height) {
     unsetLimit: function() {
       this.brickLimit = Infinity;
       if (this.tailEdge) {
+        debugger;
         this._unsubscribe('drag', this.breakTailEdgeConstraint);          
         this._unsubscribe('dragend', this.breakTailEdgeConstraint);          
         API.removeConstraint(this.tailEdgeConstraint);
@@ -3451,7 +3466,7 @@ function getRectVertices(width, height) {
         debugger;
         return;
       }
-      
+
       this._subscribe('postRender', function doRemove() {
         this._unsubscribe('postRender', doRemove); // so we can render them invisible
         world.remove(bricks);
