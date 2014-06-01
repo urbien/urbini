@@ -1,4 +1,4 @@
-define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G, Templates, Q, Events) {
+define('domUtils', ['globals', 'lib/fastdom', 'events', 'templates'], function(G, Q, Events, Templates) {
   var doc = document,
       LAZY_DATA_ATTR = G.lazyImgSrcAttr,
       LAZY_ATTR = LAZY_DATA_ATTR.slice(5),
@@ -1262,6 +1262,13 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
 //      tmp.body.$empty(); //childNodes.$remove();
 //      return copy;
     },
+
+//    parseHTML1: function(html) {
+//      var tmp = document.implementation.createHTMLDocument();
+//      tmp.body.innerHTML = html;
+//      tmp.innerHTML = html;
+//      return tmp.body.children; // live NodeList
+//    },
     
     /**
      * Replaces all of a's child nodes with b's
@@ -1278,7 +1285,14 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       var frag = document.createDocumentFragment();
       return frag.querySelectorAll("html");
     },
-    
+    window: {
+      width: function() {
+        return doc.documentElement.clientWidth;
+      },
+      height: function() {
+        return doc.documentElement.clientHeight;
+      }      
+    },
     transparentStyle: TRANSPARENT_STYLE,
     opaqueStyle: OPAQUE_STYLE,
     hideStyle: HIDE_STYLE,

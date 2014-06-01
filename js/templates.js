@@ -119,6 +119,7 @@ define('templates', [
         HTML_bootstrap = null; // in case loadTemplates is ever called again;
       }
       
+//      var elts = DOM.parseHTML1(HTML);
       var elts = $('script[type="text/template"]', $(HTML));
       _.each(elts, function(elt) {
         this.templates[elt.id] = {

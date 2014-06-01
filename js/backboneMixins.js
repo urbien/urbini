@@ -1,4 +1,5 @@
 define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils', 'hammer', 'domUtils'], function(G, _, Backbone, Events, U, Hammer, DOM) {
+
   (function(doc, _, Backbone) {
     Backbone.hammerOptions = {
 //      prevent_default: true,
@@ -500,37 +501,37 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
   
   var eventObjs = ['events', 'myEvents', 'globalEvents', 'pageEvents', 'windowEvents'];
   
-  function mixin() {
-    var to = this.prototype;
-    for (var i = 0, numMixins = arguments.length; i < numMixins; i++) {
-      var mixin = arguments[i],
-          from = mixin.prototype,
-          fromCl = from.className,
-          toCl = to.className,
-          namespace = (mixin.displayName || _.randomString(10).toLowerCase());
-      
-      _.extendMethod(to, from, 'initialize');
-      _.extendMethod(to, from, 'render');
-      
-      _.defaults(to, from);                
-      _.defaults(to.attributes, from.attributes);
-      _.defaults(to.style, from.style);
-      _.defaults(to.events, namespaceEvents(from.events, namespace, true)); // namespace events to prevent collisions
-      _.defaults(to.pageEvents, namespaceEvents(from.pageEvents, namespace, true));
-      _.defaults(to.windowEvents, namespaceEvents(from.windowEvents, namespace, true));
-      _.defaults(to.globalEvents, namespaceEvents(from.globalEvents, namespace));
-      _.defaults(to.myEvents, namespaceEvents(from.myEvents, namespace));
-      
-      if (fromCl)
-        to.className = _.unique(_.compact((fromCl + ' ' + (toCl || '')).split(' '))).join(' ');
-      
-//      _.defaults(to.events, from.events);
-//      _.defaults(to.pageEvents, from.pageEvents);
-//      _.defaults(to.windowEvents, from.windowEvents);
-//      _.defaults(to.globalEvents, from.globalEvents);
-//      _.defaults(to.myEvents, from.myEvents);
-    }
-  }
+//  function mixin() {
+//    var to = this.prototype;
+//    for (var i = 0, numMixins = arguments.length; i < numMixins; i++) {
+//      var mixin = arguments[i],
+//          from = mixin.prototype,
+//          fromCl = from.className,
+//          toCl = to.className,
+//          namespace = (mixin.displayName || _.randomString(10).toLowerCase());
+//      
+//      _.extendMethod(to, from, 'initialize');
+//      _.extendMethod(to, from, 'render');
+//      
+//      _.defaults(to, from);                
+//      _.defaults(to.attributes, from.attributes);
+//      _.defaults(to.style, from.style);
+//      _.defaults(to.events, namespaceEvents(from.events, namespace, true)); // namespace events to prevent collisions
+//      _.defaults(to.pageEvents, namespaceEvents(from.pageEvents, namespace, true));
+//      _.defaults(to.windowEvents, namespaceEvents(from.windowEvents, namespace, true));
+//      _.defaults(to.globalEvents, namespaceEvents(from.globalEvents, namespace));
+//      _.defaults(to.myEvents, namespaceEvents(from.myEvents, namespace));
+//      
+//      if (fromCl)
+//        to.className = _.unique(_.compact((fromCl + ' ' + (toCl || '')).split(' '))).join(' ');
+//      
+////      _.defaults(to.events, from.events);
+////      _.defaults(to.pageEvents, from.pageEvents);
+////      _.defaults(to.windowEvents, from.windowEvents);
+////      _.defaults(to.globalEvents, from.globalEvents);
+////      _.defaults(to.myEvents, from.myEvents);
+//    }
+//  }
 
   function namespaceEvents(events, namespaceStr, postpend) {
     var namespaced = {};
@@ -542,52 +543,52 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
     return namespaced;
   }
   
-  function patchBackboneExtend() {
-    // https://github.com/onsi/cocktail
-    var originalExtend = Backbone.View.extend;
-    var extend = function(protoProps, classProps) {
-//      for (var p in protoProps) {
-//        if (typeof protoProps[p] == 'function')
-//          protoProps[p] = U.toTimedFunction(protoProps, p, 2);
-//      }      
-
-      var klass = originalExtend.call(this, protoProps, classProps),
-          mixins = klass.prototype.mixins;
-
-      for (var i = 0; i < eventObjs.length; i++) {
-        var events = eventObjs[i];
-        if (klass.prototype[events]) {
-          klass.prototype[events] = _.clone(klass.prototype[events]); // otherwise we may inadvertently end up mixing in events to superclasses
-        }
-      }
-      
-      if (mixins && klass.prototype.hasOwnProperty('mixins'))
-        mixin.apply(klass, mixins);
-
-      return klass;
-    };
-
-    _([/*Backbone.Model, Backbone.Collection, Backbone.Router,*/ Backbone.View]).each(function(klass) {
-      klass.mixin = mixin;
-      klass.extend = extend;
-      klass.prototype.mixes = function(mixin) {
-        if (typeof mixin == 'string') {
-          return _.any(this.mixins, function(m) {
-            return m.displayName == mixin;
-          });
-        }
-        else
-          return _.contains(this.mixins, mixin);
-      };
-      
-      klass.mixes = function(mixin) {
-        return this.prototype.mixes(mixin);
-      };
-    })
-  }
-  
-  patchBackboneExtend();
-  Backbone.Mixin = {
-    extend: Backbone.View.extend
-  };
+//  function patchBackboneExtend() {
+//    // https://github.com/onsi/cocktail
+//    var originalExtend = Backbone.View.extend;
+//    var extend = function(protoProps, classProps) {
+////      for (var p in protoProps) {
+////        if (typeof protoProps[p] == 'function')
+////          protoProps[p] = U.toTimedFunction(protoProps, p, 2);
+////      }      
+//
+//      var klass = originalExtend.call(this, protoProps, classProps),
+//          mixins = klass.prototype.mixins;
+//
+//      for (var i = 0; i < eventObjs.length; i++) {
+//        var events = eventObjs[i];
+//        if (klass.prototype[events]) {
+//          klass.prototype[events] = _.clone(klass.prototype[events]); // otherwise we may inadvertently end up mixing in events to superclasses
+//        }
+//      }
+//      
+//      if (mixins && klass.prototype.hasOwnProperty('mixins'))
+//        mixin.apply(klass, mixins);
+//
+//      return klass;
+//    };
+//
+//    _([/*Backbone.Model, Backbone.Collection, Backbone.Router,*/ Backbone.View]).each(function(klass) {
+//      klass.mixin = mixin;
+//      klass.extend = extend;
+//      klass.prototype.mixes = function(mixin) {
+//        if (typeof mixin == 'string') {
+//          return _.any(this.mixins, function(m) {
+//            return m.displayName == mixin;
+//          });
+//        }
+//        else
+//          return _.contains(this.mixins, mixin);
+//      };
+//      
+//      klass.mixes = function(mixin) {
+//        return this.prototype.mixes(mixin);
+//      };
+//    })
+//  }
+//  
+//  patchBackboneExtend();
+//  Backbone.Mixin = {
+//    extend: Backbone.View.extend
+//  };
 });

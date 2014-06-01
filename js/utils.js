@@ -1795,8 +1795,8 @@ define('utils', [
             }
           }
           else if (isResourceView) {
-            var ww = $(window).width();
-            if (ww < $(window).height()) {
+            var ww = DOM.window.width();//$(window).width();
+            if (ww < DOM.window.height()) {
               if (ww <= 340) 
                 cloneOf = U.getCloneOf(vocModel, 'ImageResource.bigMedium320')[0];
               else  if (ww <= 380) 

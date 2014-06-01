@@ -1299,6 +1299,16 @@ function initWorld(_world, stepSelf) {
 	  Physics.util.ticker.subscribe(API.step);
 	
 	Physics.util.extend(Physics.util, {
+	  once: function(func) { // from underscore
+      var ran = false, memo;
+      return function() {
+        if (ran) return memo;
+        ran = true;
+        memo = func.apply(this, arguments);
+        func = null;
+        return memo;
+      };
+	  },
 	  extendArray: function(target, source) {
 	    var i = source.length;
 	    while (i--) {
@@ -2042,8 +2052,29 @@ function getRectVertices(width, height) {
       world.subscribe(event, handler, null, priority);      
       handlers.push(handler);
     },
+    
+    _once: function(event, handler, priority) {
+      var self = this;
+      var proxy = Physics.util.once(function() {
+        handler.apply(this, arguments);
+        self._unsubscribe(event, proxy);
+      });
+      
+      this._subscribe(event, proxy, priority);
+    },
 
     _unsubscribe: function(event, handler) {
+//      if (onNextTick) {
+        var self = this;
+        setTimeout(function() {
+          self._doUnsubscribe(event, handler);
+        }, 1);
+//      }
+//      else
+//        self._doUnsubscribe(event, handler);
+    },
+    
+    _doUnsubscribe: function(event, handler) {
       var handlers = this._listeners[event],
           i = handlers.length,
           unsubscribed = false;
@@ -2051,7 +2082,6 @@ function getRectVertices(width, height) {
       while (i--) {
         var hi = handlers[i];
         if (handler && (handler == hi || handler == hi._orig)) {
-          debugger;
           world.unsubscribe(event, hi);
           handlers.splice(i, 1);
           unsubscribed = true;
@@ -3468,8 +3498,7 @@ function getRectVertices(width, height) {
         return;
       }
 
-      this._subscribe('postRender', function doRemove() {
-        this._unsubscribe('postRender', doRemove); // so we can render them invisible
+      this._once('postRender', function doRemove() {
         world.remove(bricks);
       });
       

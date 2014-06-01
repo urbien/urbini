@@ -367,6 +367,7 @@ define('plugManager', ['globals', 'underscore', 'events', 'utils', 'modelLoader'
   
   _.extend(PlugManager, Backbone.Events);
   
+  Events.on('fetchPlugs', fetchPlugs);  
   Events.on('initPlugs', initPlugs);
   Events.on('newPlugs', setupPlugs);
   Events.on('newPlugs', savePlugsToStorage);

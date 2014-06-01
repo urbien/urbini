@@ -305,7 +305,11 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
          * @return {this}
          */
         subscribe: function( topic, fn, scope, priority ){
-
+            if (fn == undefined) {
+              console.debug("UNDEFINED listener: " + topic, scope, priority);
+              debugger;
+            }
+            
             var listeners = this._topics[ topic ] || (this._topics[ topic ] = [])
                 ,orig = fn
                 ,idx

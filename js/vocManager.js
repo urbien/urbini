@@ -7,11 +7,11 @@ define('vocManager', [
   'models/Resource', 
   'collections/ResourceList',
   'modelLoader',
-  'plugManager',
+//  'plugManager',
   'cache',
-  'apiAdapter',
+//  'apiAdapter',
   'lib/fastdom'
-], function(G, U, Errors, Events, Resource, ResourceList, ModelLoader, PlugManager, C, API, Q) {
+], function(G, U, Errors, Events, Resource, ResourceList, ModelLoader, /*PlugManager,*/ C, /*API,*/ Q) {
   Backbone.Model.prototype._super = function(funcName){
     return this.constructor.__super__[funcName].apply(this, _.rest(arguments));
   };
@@ -167,7 +167,8 @@ define('vocManager', [
          
 //        var plugTypes = G.localStorage.nukePlugs(); // keep for now, plugs are small and non-user-specific
         if (!c.guest) {
-          PlugManager.fetchPlugs(); //plugTypes);
+          Events.trigger('fetchPlugs');
+//          PlugManager.fetchPlugs(); //plugTypes);
         }
       }
     }
@@ -191,7 +192,8 @@ define('vocManager', [
         
     installed[G.currentApp.appPath] = jApp;
     if (uri && !U.isTempUri(uri)) {
-      PlugManager.fetchPlugs({appInstall: uri});
+      Events.trigger('fetchPlugs', {appInstall: uri});
+//      PlugManager.fetchPlugs({appInstall: uri});
     }
   });
   
