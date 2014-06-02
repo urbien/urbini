@@ -453,25 +453,27 @@ define('domUtils', ['globals', 'lib/fastdom', 'events', 'templates'], function(G
       
       $fadeTo: function(targetOpacity, time, callback) {
         targetOpacity = targetOpacity || 0;
-        var self = this,
-            opacityInterval = 0.1,
+        var style = this.style,
+            opacity = parseFloat(style.opacity),
             timeInterval = 40,
-            opacity,
+            opacityInterval = Math.abs(targetOpacity - opacity) / (time / timeInterval),
+            multiplier = targetOpacity - opacity > 0 ? 1 : -1,
             diff;
         
         (function fader() {        
-          opacity = self.opacity;
-          if (time <= 0 || opacity - targetOpacity <= opacityInterval) {
-            self.opacity = targetOpacity;
+          if (time <= 0 || Math.abs(targetOpacity - opacity) <= opacityInterval) {
+            style.opacity = targetOpacity;
             if (targetOpacity == 0)
-              self.display = "none";
+              style.display = "none";
             
             if (callback)
               callback.call(self);
           }
           else {
-            self.opacity -= opacityInterval;
-            setTimeout(fader, time -= timeInterval);
+            time = time - timeInterval;
+            opacity += opacityInterval * multiplier;
+            style.opacity = opacity;
+            setTimeout(fader, timeInterval);
           }
         })();
         

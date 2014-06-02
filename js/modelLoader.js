@@ -203,7 +203,7 @@ define('modelLoader', [
       promise = getMetadata().then(function(storedInfo) {
         var getDataPromise;
         if (info.lastModified) {
-          var lm = Math.max(info.lastModified, G.lastModified);
+          var lm = Math.max(info.lastModified || 0, G.lastModified || 0);
           if (lm > storedInfo.lastModified)
             return requireType();
           else {
@@ -222,7 +222,7 @@ define('modelLoader', [
         return (getDataPromise || getData()).then(function(jModel) {            
           if (jModel) {
             mightBeStale.infos[type] = {
-              lastModified: storedInfo.lastModified
+              lastModified: storedInfo.lastModified || 0
             };
           
             mightBeStale.models[type] = jModel;
@@ -369,7 +369,10 @@ define('modelLoader', [
     var mz = data.models || [],
         more = data.linkedModelsMetadata;
     
-    G.lastModified = Math.max(data.lastModified, G.lastModified);
+    if (isNaN(data.lastModified) || isNaN(G.lastModified))
+      debugger;
+    
+    G.lastModified = Math.max(data.lastModified || 0, G.lastModified || 0);
     G.classUsage = _.union(G.classUsage, _.map(data.classUsage, U.getTypeUri));
     if (more) {
       _.extend(G.linkedModelsMetadata, U.mapObj(more, function(type, meta) {

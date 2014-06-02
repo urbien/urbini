@@ -469,10 +469,11 @@ define('views/BasicPageView', [
         });
         
         bar.render(data);
-        bar.$el.css({opacity: 0});
-        self.$el.prepend(bar.$el);
+        bar.el.style.opacity = 0;
+        self.el.$prepend(bar.el);
+        bar.el.$fadeTo(1, 500);
         self.trigger('messageBarsAdded', bar);
-        bar.$el.animate({opacity: 1}, 500);
+//        bar.$el.animate({opacity: 1}, 500);
         
         self.listenToOnce(Events, 'messageBar.{0}.clear.{1}'.format(type, data.id || G.nextId()), bar.destroy, bar);
       });
