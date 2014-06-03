@@ -279,36 +279,38 @@ define('utils', [
               config: msgOpts
             }); //TODO: when we figure out transferrable objects, add parameter: [msgOpts]
           });
+          
+          return;
         }
-        else {
-          log('xhr', '$.ajax', opts.url);
-          $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType', 'processData', 'contentType'])).then(function(data, status, jqXHR) {
-            if (opts['for'])
-              opts['for']._setLastFetchOrigin('server');
-            
-            var error;
-            if (jqXHR.status > 399) {
-              debugger;
-              defer.reject(
-                jqXHR, 
-                (jqXHR.responseJson = U.getJSON(data) || {code: jqXHR.status}), 
-                opts
-              );
-            }
-            else if (jqXHR.status < 400)
-              defer.resolve(data, status, jqXHR);
-          }, 
-          function(jqXHR, textStatus, err) {
-            if (opts['for'])
-              opts['for']._setLastFetchOrigin('server');
+        
+        throw "Unsupported";
+//        log('xhr', '$.ajax', opts.url);
+//        $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType', 'processData', 'contentType'])).then(function(data, status, jqXHR) {
+//          if (opts['for'])
+//            opts['for']._setLastFetchOrigin('server');
+//          
+//          var error;
+//          if (jqXHR.status > 399) {
 //            debugger;
-            defer.reject(
-              jqXHR, 
-              (jqXHR.responseJson = U.getJSON(jqXHR.responseText) || {code: jqXHR.status, details: err}), 
-              opts
-            );
-          });
-        }
+//            defer.reject(
+//              jqXHR, 
+//              (jqXHR.responseJson = U.getJSON(data) || {code: jqXHR.status}), 
+//              opts
+//            );
+//          }
+//          else if (jqXHR.status < 400)
+//            defer.resolve(data, status, jqXHR);
+//        }, 
+//        function(jqXHR, textStatus, err) {
+//          if (opts['for'])
+//            opts['for']._setLastFetchOrigin('server');
+////            debugger;
+//          defer.reject(
+//            jqXHR, 
+//            (jqXHR.responseJson = U.getJSON(jqXHR.responseText) || {code: jqXHR.status, details: err}), 
+//            opts
+//          );
+//        });
       }).promise();
     },
     

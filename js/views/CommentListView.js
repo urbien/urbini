@@ -27,11 +27,11 @@ define('views/CommentListView', [
 
     postRender: function() {
       var result = ResourceListView.prototype.postRender.apply(this, arguments);
-      if (this.rendered && G.isJQM()) {
-        this.$el.trigger('create');
-        if (this.el.$hasClass('ui-listview'))
-          this.$el.listview('refresh');
-      }
+//      if (this.rendered && G.isJQM()) {
+//        this.$el.trigger('create');
+//        if (this.el.$hasClass('ui-listview'))
+//          this.$el.listview('refresh');
+//      }
 
       this.el.$css('display', 'block');
       return result;

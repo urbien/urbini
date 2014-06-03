@@ -85,7 +85,11 @@ define('views/ViewPage', [
       this.imgReady = this.imgReadyDfd.promise();
       if (viewType) {
         U.require(viewType, function(viewMod) {
-          self.imageView = new viewMod(_.extend({el: this.$(this.imgDiv)[0], arrows: false}, commonParams));
+          self.imageView = new viewMod(_.extend({
+            el: self.$(self.imgDiv)[0], 
+            arrows: false
+          }, commonParams));
+          
           self.addChild(self.imageView);
           self.imgReadyDfd.resolve();
 //          self._onViewportDimensionsChanged();
@@ -390,15 +394,6 @@ define('views/ViewPage', [
 //        });
 //      });
       
-      if (!this.rendered && !options.mock) {
-        this.addToWorld(null, true); // auto-add view page brick
-//        $.when.apply($, this._getLoadingPromises()).done(function() {
-//          var holder = self.$('#resourceViewHolder')[0];
-//          self._updateSize(holder);
-//          self.updateMason();
-//        });
-      }
-
       return this;
     },
     

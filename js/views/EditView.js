@@ -16,7 +16,29 @@ define('views/EditView', [
       scrollerClass = 'i-txt',
       switchClass = 'boolean',
       secs = [/* week seconds */604800, /* day seconds */ 86400, /* hour seconds */ 3600, /* minute seconds */ 60, /* second seconds */ 1];
-      
+
+  function clearForm(forms) {
+    var i = forms.length;
+    while (i--) {
+      var form = forms[i];
+      var type = form.type, tag = form.tagName.toLowerCase();
+      if (tag == 'form')
+        return clearForm(form.$('input'));
+      if (type == 'text' || type == 'password' || tag == 'textarea')
+        form.value = '';
+      else if (type == 'checkbox' || type == 'radio')
+        form.checked = false;
+      else if (tag == 'select') {
+//        var me = $(this);
+//        if (me.hasClass('ui-slider-switch')) {
+//          me.val(me.find('option')[0].value).slider('refresh');
+//        }
+//        else
+          form.selectedIndex = -1;
+      }
+    }
+  };
+  
   function isHidden(prop, currentAtts, reqParams, isEdit) {
     var p = prop.shortName; 
     return prop.required  &&  currentAtts[p]  &&  prop.containerMember && (isEdit || (reqParams  &&  reqParams[p]));
@@ -155,26 +177,26 @@ define('views/EditView', [
      * find all non-checked non-disabled checkboxes, check them, trigger jqm to repaint them and trigger a 'change' event so whatever we have tied to it is triggered (for some reason changing the prop isn't enough to trigger it)
      */
     checkAll: function() {
-      if (G.isJQM())
-        $(this.form).find("input:checkbox:not(:checked):not(:disabled)").prop('checked', true).checkboxradio('refresh').change();
-      else {
+//      if (G.isJQM())
+//        $(this.form).find("input:checkbox:not(:checked):not(:disabled)").prop('checked', true).checkboxradio('refresh').change();
+//      else {
         this.form.$("input:checkbox:not(:checked):not(:disabled)").$forEach(function(c) {
           c.checked = true;
         });
-      }
+//      }
     },
 
     /**
      * find all checked non-disabled checkboxes, uncheck them, trigger jqm to repaint them and trigger a 'change' event so whatever we have tied to it is triggered (for some reason changing the prop isn't enough to trigger it)
      */
     uncheckAll: function() {
-      if (G.isJQM())
-        $(this.form).find("input:checkbox:checked:not(:disabled)").prop('checked', false).checkboxradio('refresh').change();
-      else {
+//      if (G.isJQM())
+//        $(this.form).find("input:checkbox:checked:not(:disabled)").prop('checked', false).checkboxradio('refresh').change();
+//      else {
         this.form.$("input:checkbox:not(:checked):not(:disabled)").$forEach(function(c) {
           c.checked = false;
         });
-      }
+//      }
     },
 
     capturedImage: function(options) {
@@ -647,7 +669,7 @@ define('views/EditView', [
       _.extend(this, params);
     },
     resetForm: function() {
-      $(this.$('form')).clearForm();      
+      clearForm(this.$('form'));      
     },
     getInputs: function() {
       return this.form.$('[data-formEl]');
@@ -810,7 +832,8 @@ define('views/EditView', [
       }
       
       var res = this.resource, 
-          uri = res.getUri();
+          uri = res.getUri(),
+          returnUri = this.hashParams.$returnUri;
       
       if (!this.isEdit && uri) {
 //        this.incrementBLCount();
@@ -893,6 +916,19 @@ define('views/EditView', [
       if (!res.isNew() && _.isEmpty(atts)) {
         if (options && options.fromPageChange)
           return;
+                
+        if (returnUri) {
+          var nextUrlInfo = U.getUrlInfo(returnUri),
+              currentUrlInfo = U.getCurrentUrlInfo();
+              
+          if (nextUrlInfo.route != currentUrlInfo.route || 
+              nextUrlInfo.type != currentUrlInfo.type || 
+              nextUrlInfo.uri != currentUrlInfo.uri || 
+              _.isEqual(U.filterObj(nextUrlInfo.params, U.isNativeModelParameter), U.filterObj(currentUrlInfo.params, U.isNativeModelParameter))) {
+            Events.trigger('navigate', returnUri);
+            return;
+          }
+        }
         
         var prevHash = this.getPreviousHash();
         if (prevHash && !prevHash.startsWith('chooser/'))
@@ -1372,15 +1408,15 @@ define('views/EditView', [
       }        
       
       this.ul = this.$('#fieldsList').$html(frag)[0];
-      if (G.isJQM()) {
-        if (this.ul.$hasClass('ui-listview')) {
-          $(this.ul).trigger('create').listview('refresh');
-        }
-        else {
-          $(this.ul).trigger('create');
-          this.$el.trigger('create');
-        }
-      }
+//      if (G.isJQM()) {
+//        if (this.ul.$hasClass('ui-listview')) {
+//          $(this.ul).trigger('create').listview('refresh');
+//        }
+//        else {
+//          $(this.ul).trigger('create');
+//          this.$el.trigger('create');
+//        }
+//      }
 
       var doc = document;
       var form = this.form = this.$('form')[0];
@@ -1453,12 +1489,11 @@ define('views/EditView', [
           
           var validated = getRemoveErrorLabelsFunction(input);
           var setValues = _.debounce(function() {
-            self.setValues(this.name, this.value, {onValidated: validated, onValidationError: self.fieldError});
+            self.setValues(input.name, input.value, {onValidated: validated, onValidationError: self.fieldError});
           }, 500);
 
           input.addEventListener('input', function() {
-            var $input = $(input);
-            if ($input.data('codemirror'))
+            if (input.dataset.codemirror)
               return;
             
             input.dataset.modified = true;
@@ -1499,7 +1534,7 @@ define('views/EditView', [
       
       form.getElementsByTagName('input').$on('keydown', this._onKeyDownInInput); // end of function
       var edits = res.getUnsavedChanges();
-      form.querySelectorAll('.resourceProp').$forEach(function(resProp) {
+      form.getElementsByClassName('resourceProp').$forEach(function(resProp) {
         // TODO: disable resource chooser buttons for image range properties that have cameraOnly annotation      
         var name = resProp.name;
         var prop = meta[name];
@@ -1563,7 +1598,8 @@ define('views/EditView', [
         if (scrollers.length) {
           var scrollerWithValue = _.find(scrollers, function(s) { return !!s.value });
           if (scrollerWithValue) {
-            $(scrollerWithValue).triggerHandler('click', [true]);
+//            $(scrollerWithValue).triggerHandler('click', [true]);
+            scrollerWithValue.$trigger('click');
             return true;
           }
         }

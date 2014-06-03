@@ -99,8 +99,8 @@ define('views/HorizontalListView', [
         this._visible = true;
         this.el.dataset.viewid = this.cid;
 //        this.el.style.height = '150px';
-        if (G.isJQM())
-          this.$el.trigger("create");
+//        if (G.isJQM())
+//          this.$el.trigger("create");
         
         this.getPageView().invalidateSize();
       }

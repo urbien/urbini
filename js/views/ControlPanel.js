@@ -187,8 +187,8 @@ define('views/ControlPanel', [
         return;
       
       Events.stopEvent(e);
-      if ($(t).parents('.__dragged__').length)
-        return;
+//      if ($(t).parents('.__dragged__').length)
+//        return;
       
       var self = this,       
           shortName = t.dataset.shortname,
@@ -765,7 +765,7 @@ define('views/ControlPanel', [
             var prop = meta[p];
             if (displayedProps[p] || !_.has(backlinks, p))
               continue;
-            if (prop['app']  &&  (!currentAppProps  || $.inArray(p, currentAppProps) == -1))
+            if (prop['app']  &&  (!currentAppProps  || currentAppProps.indexOf(p) == -1))
               continue;
             if (!prop  ||  prop.mainBackLink  ||  (!_.has(atts, p)  &&  typeof prop.readOnly != 'undefined'))
               continue;
@@ -884,11 +884,12 @@ define('views/ControlPanel', [
           if (_.has(displayedProps, p) || prop.displayInline)  
             continue;
           
-          if (prop['app']  &&  (!currentAppProps  || $.inArray(p, currentAppProps) == -1))
+          if (prop['app']  &&  (!currentAppProps  || currentAppProps.indexOf(p) == -1))
             continue;
           
-          if (mainGroup  &&  $.inArray(p, mainGroupArr) != -1)
+          if (mainGroupArr  &&  ~mainGroupArr.indexOf(p))
             continue;
+          
           var count = -1;
           if (!_.has(backlinks, p)) {
             var idx;
@@ -999,11 +1000,11 @@ define('views/ControlPanel', [
 //          this.innerHTML = '<i class="ui-icon-ban-circle"></i> ' + this.innerHTML;
 //      });
       
-      if (G.isJQM()) {
-        this.$el.trigger('create');
-//        if (this.el.$hasClass('ui-listview'))  //this.rendered &&
-//          this.$el.listview('refresh');
-      }
+//      if (G.isJQM()) {
+//        this.$el.trigger('create');
+////        if (this.el.$hasClass('ui-listview'))  //this.rendered &&
+////          this.$el.listview('refresh');
+//      }
 
       Q.write(function() {
         this.el.$html(frag);

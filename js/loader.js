@@ -2,7 +2,7 @@
 var __started = new Date(),
     ArrayProto = Array.prototype;
 
-$.extend({
+_.extend(_, {
   RESOLVED_PROMISE: $.Deferred().resolve().promise(),
   whenAll: function() {
     var args = [].slice.call(arguments),
@@ -37,7 +37,7 @@ $.extend({
             }            
           };
     
-      $.each(args, function(idx, item) {
+      $.each(args, function(item, idx) {
         item.always(resolveOrReject.bind(item)); 
       });
     }).promise();
@@ -225,6 +225,8 @@ define('globals', function() {
     return $.Deferred(function(defer) {
       if (name === 'globals')
         return defer.resolve(G);
+      else if (name == 'underscore')
+        return defer.resolve(window._);
       
       var cached, realPath;  
       if (/\.(jsp|css|html)\.js$/.test(url))
@@ -913,10 +915,11 @@ define('globals', function() {
           worker;
 
       // recycling the worker needs to be the first order of business when this promise if resolved/rejected 
-      bundlePromise.always(function() {
-        if (worker)
-          G.recycleXhrWorker(worker);
-      });
+      if (worker) {
+        bundlePromise.always(function() {
+            G.recycleXhrWorker(worker);
+        });
+      }
       
       function onResponse(resp) {
         if (useWorker) {
@@ -1108,8 +1111,8 @@ define('globals', function() {
       simplewebrtc: 'lib/simplewebrtc',
       jqmConfig: 'jqm-config',
       jqueryMobile: 'lib/jquery.mobile-1.3.2',
-      _underscore: 'lib/underscore',
-      underscore: 'underscoreMixins',
+//      _underscore: 'lib/underscore',
+//      underscore: 'underscoreMixins',
       backbone: 'lib/backbone',
       indexedDBShim: 'lib/IndexedDBShim',
       jqueryIndexedDB: 'lib/jquery-indexeddb',
@@ -1167,7 +1170,7 @@ define('globals', function() {
       decode = decodeURIComponent,
       params = query ? (function() {
         var pairs = query.split('&'), map = {};
-        $.each(pairs, function(idx, pair) {
+        $.each(pairs, function(pair, idx) {
           pair = pair.split('=');
           map[decode(pair[0])] = decode(pair[1]);
         });
@@ -1819,7 +1822,7 @@ define('globals', function() {
       separator = separator || '/';
       var parts = path.split(separator);
       var stack = [];
-      $.each(parts, function(idx, part) {
+      $.each(parts, function(part, idx) {
         if (part == '..')
           stack.pop();
         else

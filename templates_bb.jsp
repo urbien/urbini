@@ -94,7 +94,7 @@
     </section>
     <div id="about" class="hidden" style="padding: 7px;"></div>
     
-    {{ if ($('#other')) { }}
+    {{ if (document.getElementById('other')) { }}
       <!--br/>
       <br/-->
     {{ } }}

@@ -1,9 +1,10 @@
 //'use strict';
 define('templates', [
   'globals', 
-  'underscore', 
+  'underscore',
+  'domUtils',
   'events'].concat(Lablz._widgetTemplates)
-, function(G,_, Events, HTML, HTML_bb, HTML_topcoat, HTML_bootstrap) {
+, function(G,_, DOM, Events, HTML, HTML_bb, HTML_topcoat, HTML_bootstrap) {
   _.templateSettings = {
     evaluate:    /\{\{(.+?)\}\}/g,
     interpolate: /\{\{=(.+?)\}\}/g
@@ -15,32 +16,32 @@ define('templates', [
       lazyReplacement,
       lazyRegex,
       emptyLazyRegex,
-      lazyClassRegex = /(class="?'?[^"']*)lazyImage\s*([^"']*"?'?)/ig,
-      initBlankImg,
+      lazyClassRegex = DOM.lazyClassRegex,
+//      initBlankImg,
       prepTemplate;
   
-  if (G.lazifyImages) {
-    initBlankImg = function() {
-      if (!blankImgSrc) {
-        blankImgSrc = G.getBlankImgSrc();
-        lazyReplacement = 'src="{0}" {1}'.format(blankImgSrc, lazyImgSrcAttr);
-        lazyRegex = new RegExp('src="{0}" {1}=\"?\'?([^\"\']+)\"?\'?'.format(blankImgSrc, lazyImgSrcAttr), 'ig');
-  //      emptyLazyRegex = new RegExp('src="{0}" {1}=\"\s*"?\'?'.format(blankImgSrc, lazyImgSrcAttr), 'ig');
-      }
-    };
-    
-    prepTemplate = function(text) {
-      initBlankImg();
-      return text.trim().replace(lazyImgSrcAttr, lazyReplacement);
-    };
-    
-    Events.once('appStart', initBlankImg);
-  } 
-  else {
-    prepTemplate = function(text) {
-      return text.trim().replace(lazyImgSrcAttr, "src").replace(lazyClassRegex, "$1$2");
-    };
-  }
+//  if (G.lazifyImages) {
+//    initBlankImg = function() {
+//      if (!blankImgSrc) {
+//        blankImgSrc = G.getBlankImgSrc();
+//        lazyReplacement = 'src="{0}" {1}'.format(blankImgSrc, lazyImgSrcAttr);
+//        lazyRegex = new RegExp('src="{0}" {1}=\"?\'?([^\"\']+)\"?\'?'.format(blankImgSrc, lazyImgSrcAttr), 'ig');
+//  //      emptyLazyRegex = new RegExp('src="{0}" {1}=\"\s*"?\'?'.format(blankImgSrc, lazyImgSrcAttr), 'ig');
+//      }
+//    };
+//    
+//    prepTemplate = function(text) {
+//      initBlankImg();
+//      return text.trim().replace(lazyImgSrcAttr, lazyReplacement);
+//    };
+//    
+//    Events.once('appStart', initBlankImg);
+//  } 
+//  else {
+//  }
+  function prepTemplate(text) {
+    return text.trim().replace(lazyImgSrcAttr, "src").replace(lazyClassRegex, "$1$2");
+  };
   
   var Templates = {
     // Hash of preloaded templates for the app
@@ -105,6 +106,9 @@ define('templates', [
     // This implementation should be changed in a production environment:
     // All the template files should be concatenated in a single file.
     loadTemplates: function() {
+      var self = this,
+          div = document.createElement('div');
+      
       if (HTML_bb) {
         HTML += HTML_bb;
         HTML_bb = null; // in case loadTemplates is ever called again;
@@ -120,12 +124,13 @@ define('templates', [
       }
       
 //      var elts = DOM.parseHTML1(HTML);
-      var elts = $('script[type="text/template"]', $(HTML));
-      _.each(elts, function(elt) {
-        this.templates[elt.id] = {
+      
+      div.innerHTML = HTML;
+      div.$('script[type="text/template"]').$forEach(function(elt) {
+        self.templates[elt.id] = {
           'default': prepTemplate(elt.innerHTML)
         };
-      }.bind(this));      
+      });
     },
  
     _treatTemplate: function(text) {
@@ -207,15 +212,10 @@ define('templates', [
         text = text || Templates.__DEFAULT_TEMPLATE;
         t.set({templateText: text});
       }
-    },
-    
+    }
 //    removeEmptyLazyImagesInHTML: function(html) {
 //      return html.replace(emptyLazyRegex, 'src="$1"').replace(lazyClassRegex, '$1 $2'); // gave up. Replacing classes is tricky, don't know which ones to replace without more complex regex
-//    },
-    
-    unlazifyImagesInHTML: function(html) {
-      return html.replace(lazyRegex, 'src="$1"').replace(lazyClassRegex, '$1 wasLazyImage $2');
-    }
+//    },    
   };
   
   Events.on('newResource:' + G.commonTypes.Jst, Templates.prepNewTemplate);

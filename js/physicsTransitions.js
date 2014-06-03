@@ -158,9 +158,9 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
 
       Physics.disableDrag();
       if (this.from)
-        this.from.$el.trigger('page_beforehide');
+        this.from.el.$trigger('page_beforehide');
         
-      this.to.$el.trigger('page_beforeshow');
+      this.to.el.$trigger('page_beforeshow');
       this.transition.apply(this, arguments);
       Physics.there.chain(this.chain);
       if (this.options.render) {

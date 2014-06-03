@@ -233,7 +233,9 @@ define('views/ResourceView', [
       if (isAbout  &&  isApp) {
         this.el.classList.remove('hidden');
         this.el.$html(res.get('description'));
-        this.$el.trigger('create');      
+//        if (G.isJQM())
+//          this.$el.trigger('create');
+        
         return this;
       }
       var meta = vocModel.properties;
@@ -273,8 +275,11 @@ define('views/ResourceView', [
           U.addToFrag(frag, this.buyTemplate({color: color[2], name: meta['price'].displayName, shortName: 'price', value: U.getFlatValue(meta.price, res.get('price')), buyUrl: buyUrl}));
           U.addToFrag(frag, this.sellTemplate({color: color[2], background: 'rgba(255, 0, 0, 0.9)'}));
         }
-        this.$el.html(frag);      
-        this.$el.trigger('create');
+        this.el.$html(frag);
+        
+//        if (G.isJQM())
+//          this.$el.trigger('create');
+        
         return this;
       }
       
@@ -335,7 +340,7 @@ define('views/ResourceView', [
             if (!willShow(res, prop, userRole))
               continue;
   
-            if (prop['app']  &&  (!currentAppProps || $.inArray(p, currentAppProps) == -1))
+            if (prop['app']  &&  (!currentAppProps || currentAppProps.indexOf(p) == -1))
               continue;
             displayedProps[p] = true;
             var val = U.makeProp(res, prop, res.get(p));
@@ -377,7 +382,7 @@ define('views/ResourceView', [
 //          delete json[p];
           continue;
         }
-        if (prop['app']  &&  (!currentAppProps || $.inArray(p, currentAppProps) == -1))
+        if (prop['app']  &&  (!currentAppProps || currentAppProps.indexOf(p) == -1))
           continue;
         if (prop.autoincrement)
           continue;

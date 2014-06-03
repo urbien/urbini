@@ -16,7 +16,7 @@ define('views/VideoButton', [
       event: 'video:off'        
     },
     render: function(options) {      
-      this.$el.html(this.template());
+      this.el.$html(this.template());
       if (U.getHashParams()['-autoVideo'] === 'y')
         this.pageView.trigger('video:on');
       

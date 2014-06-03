@@ -103,14 +103,14 @@ define('views/MainMenuPanel', [
     },
 //    tap: Events.defaultTapHandler,
     render:function (eventName) {
-      if (G.isJQM()) {
-        var mi = this.el.$('#menuItems')[0];
-        if (mi) {
-  //        $('#' + this.viewId).panel().panel("open");
-          this.$el.panel("open");
-          return;
-        }
-      }
+//      if (G.isJQM()) {
+//        var mi = this.el.$('#menuItems')[0];
+//        if (mi) {
+//  //        $('#' + this.viewId).panel().panel("open");
+//          this.$el.panel("open");
+//          return;
+//        }
+//      }
       
       var self = this;
       var res = this.model;
@@ -270,11 +270,11 @@ define('views/MainMenuPanel', [
 //      if (!G.isJQM()) 
 //        this.el.style.visibility = 'visible';
 //      else {
-      if (G.isJQM()) {
-        this.$el.panel().panel("open");
-        $(ul).listview();
-//        $(this.$('#menuItems')).listview();
-      }
+//      if (G.isJQM()) {
+//        this.$el.panel().panel("open");
+//        $(ul).listview();
+////        $(this.$('#menuItems')).listview();
+//      }
 //      p.panel().panel("open");
 //      this.$('#menuItems').listview();
 //      if (U.isMasonry(this.vocModel))

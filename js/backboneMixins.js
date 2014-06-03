@@ -131,14 +131,14 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       },
       
       setElement: function(element, delegate) {
-        var $element = element instanceof $ ? element : $(element),
-            renderData = DOM.blankRenderData(),
+//        var $element = element instanceof $ ? element : $(element),
+        var renderData = DOM.blankRenderData(),
             attrs,
             classes,
             style;
         
-        element = $element[0];
-        this.$el = $element; // may not be set yet even if this.el is
+//        element = $element[0];
+//        this.$el = $element; // may not be set yet even if this.el is
         if (this.el) {
           if (this.el == element && this._delegatedEvents) // events have been delegated
             return this;

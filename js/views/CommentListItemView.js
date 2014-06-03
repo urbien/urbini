@@ -100,7 +100,7 @@ define('views/CommentListItemView', [
 //        this._html = '<{0} data-viewid="{2}">{1}</{0}>'.format(this.tagName, html, this.cid);
         this._html = '<{0}>{1}</{0}>'.format(this.tagName, html);
       else
-        this.$el.html(html);
+        this.el.$html(html);
       
       U.recycle(json);
       return this;

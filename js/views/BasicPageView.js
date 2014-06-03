@@ -496,7 +496,7 @@ define('views/BasicPageView', [
         }));
         
         header.render();
-        self.$el.prepend(header.$el);        
+        self.el.$prepend(header.el);        
         Events.once('endRTCCall', header.destroy.bind(header));
       });      
     },
@@ -551,7 +551,7 @@ define('views/BasicPageView', [
             };
             
         var countdownPromise = U.countdown(seconds).progress(countdownSpan.text.bind(countdownSpan)).done(cleanup);
-        this.$el.one('page_hide', countdownPromise.cancel);
+        this.el.$once('page_hide', countdownPromise.cancel);
         
         hash = U.replaceParam(hash, '-autoClose', null);
       }
@@ -653,7 +653,7 @@ define('views/BasicPageView', [
       if (this._lastPageEvent == e)
         fn();
       else
-        this.$el.one(e, fn);
+        this.el.$once(e, fn);
     };
   });
   

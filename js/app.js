@@ -13,8 +13,10 @@ define('app', [
  'vocManager',
  'resourceManager',
  'collections/ResourceList',
- 'physicsBridge'
- ], function(G, _, Backbone, __bbMxns__, Templates, U, Events, Errors, C, ModelLoader, Voc, ResourceManager, ResourceList, Physics) {
+ 'physicsBridge',
+ 'router',
+ '@widgets'
+ ], function(G, _, Backbone, __bbMxns__, Templates, U, Events, Errors, C, ModelLoader, Voc, ResourceManager, ResourceList, Physics, Router, $m) {
 //  var Chrome;
   var Router;
   Backbone.emulateHTTP = true;
@@ -26,13 +28,13 @@ define('app', [
 //  ,
 //      modelsNeededImmediately = [];
   
-  Backbone.View.prototype.close = function() {
-    this.$el.detach();
-    this.unbind();
-    if (this.onClose){
-      this.onClose();
-    }
-  };  
+//  Backbone.View.prototype.close = function() {
+//    this.$el.detach();
+//    this.unbind();
+//    if (this.onClose){
+//      this.onClose();
+//    }
+//  };  
   
   function extendMetadataKeys() {
     var extended = {};
@@ -424,7 +426,50 @@ define('app', [
 //      Voc.getModels(null, {go: true});    
   }
   
-  function doPostStartTasks() {
+  function askForEmail() {
+    Events.trigger('navigate', U.makeMobileUrl('edit', G.currentUser._uri, {
+      '-info': 'Complete your registration',
+      $editCols: 'firstName, lastName, email',
+      $returnUri: U.getHash()
+    }));
+    
+//    U.modalDialog({
+//      id: 'completeRegistrationDialog',
+//      header: 'Complete your registration',
+////      title: 'Click <b>Activate</b> to activate your Tradle without a dry run',
+//      details: '<p style="width:100%; text-align:center; font-style:italic;">(A dry run tests how this Tradle <br /> would perform in the last 7 days)</p>',
+//      img: '/images/tradle/target-practice-orange.png',
+////      bgImg: 'http://mark.urbien.com/urbien/images/tradle/target-practice-orange.png',
+//      ok: 'Do a dry run',         // pass true to get default string 'Ok', or false to not have a button
+//      cancel: 'Activate immediately',    // pass true to get default string 'Cancel', or false to not have a button
+//      onok: function onok() {
+//        spinner = {
+//          name: 'backtestTradle',
+//          timeout: 10000,
+//          blockClick: true
+//        };
+//
+//        G.showSpinner(spinner);              
+//        tradle.save({
+//          backtest: true
+//        }, {
+//          sync: true,
+//          redirect: false,
+//          success: hide,
+//          error: function() {
+//            debugger;
+//            hide();
+//          }
+//        });
+//      },
+//      oncancel: function oncancel() {
+//        ModalDialog.hide();
+//        self.activate(null, true); // force
+//      }
+//    });
+  }
+  
+  function doPostStartTasks() {    
     Voc.getModels();
 //    initGrabs();
     setupPushNotifications();
@@ -519,33 +564,33 @@ define('app', [
     G.currentUser.role = G.currentUser.guest ? 'guest' : G.currentUser.role || 'contact';
   }
   
-  function setupWidgetLibrary() {
-    if (G.isJQM()) {
-      var jqmEvents = ['pagebeforecreate', 'pagecreate', 'pagebeforechange', 'pagechange'],
-          jqmTransitionEvents = ['pagebeforehide', 'pagehide', 'pagebeforeshow', 'pageshow'],
-          $doc = $(document);
-      
-      function fwdEvent(page_event) {
-        return function(e) {
-          e.target.dispatchEvent(new Event(page_event));
-        }
-      }
-      
-      for (var i = 0, len = jqmEvents.length; i < len; i++) {
-        var pageevent = jqmEvents[i],
-            page_event = 'page_' + pageevent.slice(4);
-            
-        $doc.on(pageevent, fwdEvent(page_event));        
-      }
-      
-      for (var i = 0, len = jqmTransitionEvents.length; i < len; i++) {
-        var pageevent = jqmTransitionEvents[i],
-            page_event = 'page_' + pageevent.slice(4);
-            
-        $doc.on(page_event, fwdEvent(pageevent));        
-      }
-    }
-  }
+//  function setupWidgetLibrary() {
+//    if (G.isJQM()) {
+//      var jqmEvents = ['pagebeforecreate', 'pagecreate', 'pagebeforechange', 'pagechange'],
+//          jqmTransitionEvents = ['pagebeforehide', 'pagehide', 'pagebeforeshow', 'pageshow'],
+//          $doc = $(document);
+//      
+//      function fwdEvent(page_event) {
+//        return function(e) {
+//          e.target.dispatchEvent(new Event(page_event));
+//        }
+//      }
+//      
+//      for (var i = 0, len = jqmEvents.length; i < len; i++) {
+//        var pageevent = jqmEvents[i],
+//            page_event = 'page_' + pageevent.slice(4);
+//            
+//        $doc.on(pageevent, fwdEvent(page_event));        
+//      }
+//      
+//      for (var i = 0, len = jqmTransitionEvents.length; i < len; i++) {
+//        var pageevent = jqmTransitionEvents[i],
+//            page_event = 'page_' + pageevent.slice(4);
+//            
+//        $doc.on(page_event, fwdEvent(pageevent));        
+//      }
+//    }
+//  }
   
 //  function setupScrollMonitor() {
 //    Events.on('scrollVelocity', function(velocity) {
@@ -564,7 +609,7 @@ define('app', [
       adaptToPushState();
     
     ModelLoader.loadEnums();
-    setupWidgetLibrary();
+//    setupWidgetLibrary();
     setupPackagedApp();
     setupUser();
 //    setupAvailibilityMonitor();
@@ -615,11 +660,8 @@ define('app', [
 //      G.removeHoverStyles();
     
     Physics.init();
-    return $.whenAll(modelsViewsTemplatesAndDB.promise(), localized, require(['@widgets', 'router']).done(function($w, r) {
-      Router = r;
-    }));
-  }
-  
+    return $.whenAll(modelsViewsTemplatesAndDB.promise(), localized);
+  };
   
   function setupCleaner() {
     var fileTypes = ['js', 'css', 'jsp'];
@@ -735,6 +777,9 @@ define('app', [
       }
       else
         Backbone.history.start();
+      
+      if (!G.currentUser.guest && !G.currentUser.email)// && new Date().getTime() - G.currentUser.dateRegistered < 24 * 3600000)
+        askForEmail();
       
       dfd.resolve();
     }).promise();
@@ -923,28 +968,27 @@ define('app', [
       
       var _onDismiss = onDismiss;
       onDismiss = function() {
-        $('.modal-popup-holder .headerMessageBar').remove();
+        document.$('.modal-popup-holder .headerMessageBar').$remove();
         if (_onDismiss)
           _onDismiss.apply(this, arguments);
       };
         
 //      existingPopup.remove();
       var popupHtml = U.template('loginPopupTemplate')({nets: nets, msg: options.online, dismissible: false});
-      $('.modal-popup-holder').html(popupHtml);
+      document.$('.modal-popup-holder')[0].$html(popupHtml);
 //      $(document.body).append(popupHtml);
-      var $popup = $('#login_popup');
+      var popup = document.getElementById('login_popup');
       if (onDismiss) {
-        $popup.find('[data-cancel]').click(onDismiss);
+        popup.$('[data-cancel]').$on('click', onDismiss);
       }
 //      if (!G.currentApp.widgetLibrary  ||  G.currentApp.widgetLibrary == 'Jquery Mobile') {
-      if (G.isJQM()) {
-        $popup.trigger('create');
-        $popup.popup().popup("open");
-        $popup.parent().css('z-index', 1000000);
-      }  
-      else {
+//      if (G.isJQM()) {
+//        $popup.trigger('create');
+//        $popup.popup().popup("open");
+//        $popup.parent().css('z-index', 1000000);
+//      }  
+//      else {
 //        $popup.css('left', (G.viewport.width - 255) / 2);
-        var popup = $popup[0];
         ModalDialog.show(popup, onDismiss, !options.dismissible);
         
         nets.map(function(net) {
@@ -953,7 +997,7 @@ define('app', [
             window.location.href = net.url;
           });
         });
-      }
+//      }
       
       return false; // prevents login button highlighting
     });
@@ -962,10 +1006,14 @@ define('app', [
     Events.on('logout', function(options) {
       options = _.extend({}, defaults, options);
       var url = G.serverName + '/j_security_check?j_signout=true';
-      $.get(url, function() {
+      U.ajax({
+        url: url,
+        type: 'GET',
+        success: function() {
           // may be current page is not public so go to home page (?)
-        window.location.hash = options.returnUri;
-        window.location.reload();
+          window.location.hash = options.returnUri;
+          window.location.reload();
+        }
       });        
     });
   }

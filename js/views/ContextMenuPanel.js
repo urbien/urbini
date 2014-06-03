@@ -277,11 +277,11 @@ define('views/ContextMenuPanel', [
 //      if (!G.isJQM()) 
 //        this.el.style.visibility = 'visible';
 //      else {
-      if (G.isJQM()) {
-//        p.panel().panel("open");
-        this.$el.panel("open");
-        $(ul).listview();
-      }
+//      if (G.isJQM()) {
+////        p.panel().panel("open");
+//        this.$el.panel("open");
+//        $(ul).listview();
+//      }
     },
     
     render: function (eventName) {
@@ -290,14 +290,14 @@ define('views/ContextMenuPanel', [
         return;
       }
       
-      if (G.isJQM()) {
-        var mi = this.el.querySelector('#rightMenuItems');
-        if (mi) {
-          this.$el.panel("open");
-  //        $('#' + this.viewId).panel().panel("open");
-          return;
-        }
-      }
+//      if (G.isJQM()) {
+//        var mi = this.el.querySelector('#rightMenuItems');
+//        if (mi) {
+//          this.$el.panel("open");
+//  //        $('#' + this.viewId).panel().panel("open");
+//          return;
+//        }
+//      }
       
       var self = this,
           res = this.model,
@@ -429,13 +429,13 @@ define('views/ContextMenuPanel', [
       
       if (!G.isJQM()) 
         this.el.style.visibility = 'visible';
-      else {
-
-        this.$el.panel().panel("open");
-//      p.panel().panel("open");
-        $(ul).listview();
-//      p.trigger("updatelayout")
-      }
+//      else {
+//
+//        this.$el.panel().panel("open");
+////      p.panel().panel("open");
+//        $(ul).listview();
+////      p.trigger("updatelayout")
+//      }
 //      if (!window.location.hash  ||  window.location.hash == '#')
 //        $(this.el.parentElement).blurjs({source: '#homePage', radius: 10, overlay: 'rgba(48, 46, 46, 0.5)'});
       return this;

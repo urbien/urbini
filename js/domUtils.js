@@ -1,4 +1,4 @@
-define('domUtils', ['globals', 'lib/fastdom', 'events', 'templates'], function(G, Q, Events, Templates) {
+define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) {
   var doc = document,
       LAZY_DATA_ATTR = G.lazyImgSrcAttr,
       LAZY_ATTR = LAZY_DATA_ATTR.slice(5),
@@ -868,8 +868,13 @@ define('domUtils', ['globals', 'lib/fastdom', 'events', 'templates'], function(G
       return text;
     },
 
+    lazyClassRegex: /(class="?'?[^"']*)lazyImage\s*([^"']*"?'?)/ig,
+    lazyRegex: null,
     unlazifyImagesInHTML: function(html) {
-      return Templates.unlazifyImagesInHTML(html);
+      if (!DOM.lazyRegex)
+        DOM.lazyRegex = new RegExp('src="{0}" {1}=\"?\'?([^\"\']+)\"?\'?'.format(G.getBlankImgSrc(), G.lazyImgSrcAttr), 'ig');
+      
+      return html.replace(DOM.lazyRegex, 'src="$1"').replace(DOM.lazyClassRegex, '$1 wasLazyImage $2');
     },
     
     /**

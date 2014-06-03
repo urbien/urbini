@@ -69,30 +69,6 @@ define('views/Header', [
       
       this.makeTemplate('physicsConstantsTemplate', 'physicsConstantsTemplate', this.vocModel && this.vocModel.type);
       
-      if (/^view/.test(this.hash)) {
-        if (this.resource.isA('Activatable')) {
-          this.activatedProp = vocModel.properties[U.getCloneOf(vocModel, 'Activatable.activated')[0]];
-          if (this.activatedProp && U.isPropEditable(this.resource, this.activatedProp)) {
-            this._activatable = true;
-          }
-        }
-        
-        if (this.resource.isA('FolderItem')) {
-          var pName = this.hashParams.$rootFolderProp || U.getCloneOf(vocModel, 'FolderItem.rootFolder')[0] || U.getCloneOf(vocModel, 'FolderItem.folder')[0],
-              rootFolder = this.resource ? this.resource.get(pName) : this.hashParams[pName] || this.hashParams.$rootFolder;
-          
-          if (pName) {
-            this._isFolderItem = true;
-            this.folderProp = vocModel.properties[pName];
-            
-            if (rootFolder)
-              this.rootFolder = rootFolder;
-            else
-              this.rootFolder = this.resource.get(pName);
-          }
-        }
-      }
-
       return this;
     },
     
@@ -833,7 +809,7 @@ define('views/Header', [
                 if (existing)
                   DOM.replaceChildNodes(existing, frag);
                 else
-                  self.$el.append(frag);
+                  self.el.$append(frag);
               }
             });
           }
@@ -846,7 +822,7 @@ define('views/Header', [
             if (existing)
               DOM.replaceChildNodes(existing, frag);
             else
-              self.$el.append(frag);
+              self.el.$append(frag);
           }
           
         }
@@ -902,7 +878,41 @@ define('views/Header', [
       navbar.classList.remove('ui-mini');
     },
     
+    _checkActivatable: function() {
+      var vocModel = this.vocModel;
+      
+      this._activatable = false;
+      if (!/^view/.test(this.hash))
+        return;
+      
+      if (this.resource.isA('Activatable')) {
+        this.activatedProp = vocModel.properties[U.getCloneOf(vocModel, 'Activatable.activated')[0]];
+        if (this.activatedProp && U.isPropEditable(this.resource, this.activatedProp)) {
+          this._activatable = true;
+        }
+      }
+        
+      if (!this.resource.isA('FolderItem'))
+        return;
+      
+      var pName = this.hashParams.$rootFolderProp || U.getCloneOf(vocModel, 'FolderItem.rootFolder')[0] || U.getCloneOf(vocModel, 'FolderItem.folder')[0],
+          rootFolder = this.resource ? this.resource.get(pName) : this.hashParams[pName] || this.hashParams.$rootFolder;
+      
+      if (pName) {
+        this._isFolderItem = true;
+        this.folderProp = vocModel.properties[pName];
+        
+        if (rootFolder)
+          this.rootFolder = rootFolder;
+        else
+          this.rootFolder = this.resource.get(pName);
+      }
+    },
+    
     renderHelper: function() {
+      if (!_.has(this, '_activatable'))
+        this._checkActivatable();
+      
       var self = this;
       var isJQM = G.isJQM(); //!wl  ||  wl == 'Jquery Mobile';
       var res = this.resource; // undefined, if this is a header for a collection view
@@ -1034,8 +1044,9 @@ define('views/Header', [
       
 //      this.renderError();
       this.renderSpecialButtons();
-      
-      this.$el.trigger('create');
+
+//      if (G.isJQM())
+//        this.$el.trigger('create');
       if (this.isEdit  ||  this.isChat  ||  this.noButtons) {
         this.$('#headerButtons').$addClass('hidden');
       }

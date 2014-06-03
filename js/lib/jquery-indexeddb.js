@@ -55,7 +55,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
       pendingTransDfd.resolve();
   };
 
-  $.extend({
+  $.extend($, {
     /**
      * The IndexedDB object used to open databases
      * @param {Object} dbName - name of the database
