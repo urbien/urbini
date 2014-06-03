@@ -108,7 +108,7 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
       intermediatePromise = this._defaultSync();
     else {
       intermediatePromise = U.ajax({
-        url: options.url, 
+        url: options.url,
         type: 'GET', 
         headers: options.headers,
         'for': this.data

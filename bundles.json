@@ -1,43 +1,167 @@
 {
-  pre: [
-	  'lib/backbone.js', 'backboneMixins.js', 'physicsBridge.js', 'taskQueue.js', 'lib/IndexedDBShim.js', 'lib/jquery-indexeddb.js', 'lib/queryIndexedDB.js', 'templates.js', 'cache.js', 'utils.js', 'domUtils.js', 'error.js', 'events.js', 'models/Resource.js', 
-	  'collections/ResourceList.js', 'views/HomePage.js', 'vocManager.js', 'modelLoader.js', 'plugManager.js', 'resourceManager.js', 'indexedDB.js', 'idbQueryBuilder.js', 'synchronizer.js', 'resourceSynchronizer.js', 'collectionSynchronizer.js', 'router.js', 
-	  'app.js', 'appAuth.js', 'apiAdapter.js', 'redirecter.js', 'views/BasicView.js', 'views/BasicPageView.js', 'lib/hammer.js', 'lib/fastdom.js', 'FrameWatch.js', 'physicsTransitions.js', 'lib/l20n.js', 'widgetsLibAdapter.js',
-	  {path: 'lib/jqm-icon-pack-3.0.0-fa.css', priority: 100}, '../styles/styles.css', '../styles/common-template-m.css', 'xhrWorker.js', 'physicsWorker.js', 
- 	  '../templates.jsp'
-  ],
-  post: [
- 		'views/ResourceView.js', 'views/ControlPanel.js', 'views/Header.js', 'views/BackButton.js', 'views/MapItButton.js', 'views/AddButton.js', 'views/RightMenuButton.js', 'views/LoginButton.js', 'views/ToggleButton.js', 'views/ResourceImageView.js', 
-	  'views/ResourceListItemView.js', 'views/ResourceListView.js', 'views/ResourceMasonryItemView.js', 'views/ListPage.js', 'views/ViewPage.js', 'views/SaveButton.js', 'views/CancelButton.js',
-	  'views/ToggleButton1.js', 'chrome.js', 'firefox.js' 
-  ],
-  extras: [
-		'views/EditPage.js', 'views/EditView.js', 'views/ChatPage.js', 'views/HorizontalListView.js', 'views/HorizontalListItemView.js', 'views/VideoButton.js', 'views/CallInProgressHeader.js', 'lib/mobiscroll.js', 
-		'views/IntersectionListView.js', 'views/IntersectionListItemView.js', 'views/MapView.js', 'lib/leaflet.js', 'lib/leaflet.markercluster.js', 'maps.js', 'lib/codemirror.js', 'lib/codemirrorXMLMode.js', 'lib/codemirrorHTMLMode.js', 'lib/codemirrorJSMode.js', 'lib/codemirrorCSSMode.js', 
-		'views/CameraPopup.js', 'lib/whammy.js', 'lib/recorder.js', 'lib/recorderWorker.js', 'lib/socket.io.js', 'lib/simplewebrtc.js', 'fileSystem.js', 'lib/jquery.draggable.js', 'lib/d3.js', 'd3widgets.js', 'views/SocialNetworkPage.js', 'views/StaticPage.js',
-		'views/CommentListView.js', 'views/CommentListItemView.js', 'views/PublishButton.js', 'views/ChatButton.js', 'views/MessageBar.js', 'tourGuide.js', 'views/MenuPanel.js', 'views/MainMenuPanel.js', 'views/ContextMenuPanel.js', 'views/ModalDialog.js',
-		'lib/crossfilter/crossfilter.js', 'lib/dc/dc.js', 'lib/dc/dc.css', 'lib/stockCharts.js', 'lib/gauge.js',
-		'../styles/leaflet/leaflet.css', '../styles/leaflet/MarkerCluster.Default.css', '../styles/leaflet/leaflet.ie.css', '../styles/leaflet/MarkerCluster.Default.ie.css', '../styles/codemirror.css'
-  ],
-  appcache: [
-  	'lib/physicsjs-custom.js', 'lib/jquery.masonry.js', 'loader.js', 'initPackage.js', 'bootoffline.js'
-  ],
-  widgetsFramework: {
-    bb: [
-    	'lib/bb/style/buttons.css', 'lib/bb/style/action_menu.css', 'lib/bb/style/headers.css', 'lib/bb/style_unstable/lists.css', 'lib/bb/style_unstable/drawer.css', 'lib/bb/style/switches.css', '../styles/bb_styles.css',
-    	'../templates_bb.jsp'
-    ],
-    topcoat: [
-       'lib/topcoat/style/topcoat-mobile-dark.css', 'lib/topcoat/style/topcoat-mobile-light.css', 'lib/topcoat/style/main.css',  '../styles/topcoat_styles.css',
-       '../templates_topcoat.jsp' 
-    ],
-    bootstrap: [
-       'lib/bootstrap/css/bootstrap.css', 'lib/bootstrap/css/bootstrap-theme.css', 'lib/form-elements.css',  '../styles/bootstrap_styles.css',
-       '../templates_bootstrap.jsp' 
-    ],
-    jqm: [
-      'jqm-config.js', 'lib/jquery.mobile-1.3.2.js', 'lib/jquery.mobile-1.3.2.min.css', 'lib/jquery.mobile.theme-1.3.2.min.css', 'lib/jquery.mobile.structure-1.3.2.min.css',
-      '../styles/jqm_styles.css'
-    ]
-  }
+   "pre":[
+      "lib/backbone.js",
+      "backboneMixins.js",
+      "physicsBridge.js",
+      "taskQueue.js",
+      "lib/IndexedDBShim.js",
+      "lib/jquery-indexeddb.js",
+      "lib/queryIndexedDB.js",
+      "templates.js",
+      "cache.js",
+      "utils.js",
+      "domUtils.js",
+      "error.js",
+      "events.js",
+      "models/Resource.js",
+      "collections/ResourceList.js",
+      "views/HomePage.js",
+      "vocManager.js",
+      "modelLoader.js",
+      "plugManager.js",
+      "resourceManager.js",
+      "indexedDB.js",
+      "idbQueryBuilder.js",
+      "synchronizer.js",
+      "resourceSynchronizer.js",
+      "collectionSynchronizer.js",
+      "router.js",
+      "app.js",
+      "appAuth.js",
+      "apiAdapter.js",
+      "redirecter.js",
+      "views/BasicView.js",
+      "views/BasicPageView.js",
+      "lib/hammer.js",
+      "lib/fastdom.js",
+      "FrameWatch.js",
+      "physicsTransitions.js",
+      "lib/l10n.js",
+      "widgetsLibAdapter.js",
+      {
+         "path":"lib/jqm-icon-pack-3.0.0-fa.css",
+         "priority":100
+      },
+      "../styles/styles.css",
+      "../styles/common-template-m.css",
+      "xhrWorker.js",
+      "physicsWorker.js",
+      "../templates.jsp"
+   ],
+   "post":[
+      "views/ResourceView.js",
+      "views/ControlPanel.js",
+      "views/Header.js",
+      "views/BackButton.js",
+      "views/MapItButton.js",
+      "views/AddButton.js",
+      "views/RightMenuButton.js",
+      "views/LoginButton.js",
+      "views/ToggleButton.js",
+      "views/ResourceImageView.js",
+      "views/ResourceListItemView.js",
+      "views/ResourceListView.js",
+      "views/ResourceMasonryItemView.js",
+      "views/ListPage.js",
+      "views/ViewPage.js",
+      "views/SaveButton.js",
+      "views/CancelButton.js",
+      "views/ToggleButton1.js",
+      "chrome.js",
+      "firefox.js"
+   ],
+   "extras":[
+      "views/EditPage.js",
+      "views/EditView.js",
+      "views/ChatPage.js",
+      "views/HorizontalListView.js",
+      "views/HorizontalListItemView.js",
+      "views/VideoButton.js",
+      "views/CallInProgressHeader.js",
+      "lib/mobiscroll.js",
+      "views/IntersectionListView.js",
+      "views/IntersectionListItemView.js",
+      "views/MapView.js",
+      "lib/leaflet.js",
+      "lib/leaflet.markercluster.js",
+      "maps.js",
+      "lib/codemirror.js",
+      "lib/codemirrorXMLMode.js",
+      "lib/codemirrorHTMLMode.js",
+      "lib/codemirrorJSMode.js",
+      "lib/codemirrorCSSMode.js",
+      "views/CameraPopup.js",
+      "lib/whammy.js",
+      "lib/recorder.js",
+      "lib/recorderWorker.js",
+      "lib/socket.io.js",
+      "lib/simplewebrtc.js",
+      "fileSystem.js",
+      "lib/jquery.draggable.js",
+      "lib/d3.js",
+      "d3widgets.js",
+      "views/SocialNetworkPage.js",
+      "views/StaticPage.js",
+      "views/CommentListView.js",
+      "views/CommentListItemView.js",
+      "views/PublishButton.js",
+      "views/ChatButton.js",
+      "views/MessageBar.js",
+      "tourGuide.js",
+      "views/MenuPanel.js",
+      "views/MainMenuPanel.js",
+      "views/ContextMenuPanel.js",
+      "views/ModalDialog.js",
+      "lib/crossfilter/crossfilter.js",
+      "lib/dc/dc.js",
+      "lib/dc/dc.css",
+      "lib/stockCharts.js",
+      "lib/gauge.js",
+      "../styles/leaflet/leaflet.css",
+      "../styles/leaflet/MarkerCluster.Default.css",
+      "../styles/leaflet/leaflet.ie.css",
+      "../styles/leaflet/MarkerCluster.Default.ie.css",
+      "../styles/codemirror.css"
+   ],
+   "appcache":[
+      "lib/physicsjs-custom.js",
+      "lib/jquery.masonry.js",
+      "loader.js",
+      "initPackage.js",
+      "bootoffline.js"
+   ],
+   "widgetsFramework":{
+      "bb":[
+         "lib/bb/style/buttons.css",
+         "lib/bb/style/action_menu.css",
+         "lib/bb/style/headers.css",
+         "lib/bb/style_unstable/lists.css",
+         "lib/bb/style_unstable/drawer.css",
+         "lib/bb/style/switches.css",
+         "../styles/bb_styles.css",
+         "../templates_bb.jsp"
+      ],
+      "topcoat":[
+         "lib/topcoat/style/topcoat-mobile-dark.css",
+         "lib/topcoat/style/topcoat-mobile-light.css",
+         "lib/topcoat/style/main.css",
+         "../styles/topcoat_styles.css",
+         "../templates_topcoat.jsp"
+      ],
+      "bootstrap":[
+         "lib/bootstrap/css/bootstrap.css",
+         "lib/bootstrap/css/bootstrap-theme.css",
+         "lib/form-elements.css",
+         "../styles/bootstrap_styles.css",
+         "../templates_bootstrap.jsp"
+      ],
+      "jqm":[
+         "jqm-config.js",
+         "lib/jquery.mobile-1.3.2.js",
+         "lib/jquery.mobile-1.3.2.min.css",
+         "lib/jquery.mobile.theme-1.3.2.min.css",
+         "lib/jquery.mobile.structure-1.3.2.min.css",
+         "../styles/jqm_styles.css"
+      ]
+   }
 }

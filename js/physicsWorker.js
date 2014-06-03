@@ -408,10 +408,10 @@ this.onmessage = function(e){
 function _onmessage(e) {
 	if (!world) {
 	  if (!e.data.physicsJSUrl)
-	    throw new "Missing required imports: Physics";
+	    throw "Missing required imports: Physics";
 
     if (!e.data.masonryUrl)
-      throw new "Missing required imports: Masonry";
+      throw "Missing required imports: Masonry";
 
 	  console.log("IMPORTING: " + e.data.physicsJSUrl);
 	  importScripts(e.data.physicsJSUrl);
@@ -3364,7 +3364,7 @@ function getRectVertices(width, height) {
       if (this.scrolled) // only be fancy on the first page
         world.add(bricks);
       else if (this.fly) {
-        function fix(brick) {
+        var fix = function(brick) {
           brick.fixed = true;
           brick.state.renderData.set('transform-origin', '0% 0%');
         };
@@ -4828,8 +4828,10 @@ var API = {
 	      break;
 	    case 'backward':
   	    coeff *= -1;
+  	    break;
   	    // fall through
 	    case 'forward':
+        coeff *= -1;
 	      v = Math.abs(v);
 	      break;
 	    }
@@ -4963,6 +4965,7 @@ var API = {
 //        maxDelta = 0.001,
     var minVel = 1,
         maxSkew = Math.PI / 4, // don't use a skew value past 45 degrees, it looks bad
+        oldSkew,
         newSkew = [0, 0, 0],
         angle,
         rescale = false,
@@ -4974,7 +4977,7 @@ var API = {
         vx,
         vy,
         skewX,
-        skewY;
+        skewY
     
     world.subscribe('integrate:positions', function skew() {
       if (IS_DRAGGING || movingBody.fixed)
@@ -4984,9 +4987,9 @@ var API = {
       vMag = v.norm();
       vx = Physics.util.truncate(v.get(0), 3);
       vy = Physics.util.truncate(v.get(1), 3);
-      skew = skewBody.state.renderData.get('skew');
+      oldSkew = skewBody.state.renderData.get('skew');
       scale = skewBody.state.renderData.get('scale');
-      Physics.util.extend(newSkew, skew);
+      Physics.util.extend(newSkew, oldSkew);
       Physics.util.extend(newScale, scale);      
       angle = Math.atan2(vy, vx);
       if (vMag > minVel) {

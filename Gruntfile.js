@@ -1,15 +1,34 @@
 module.exports = function(grunt) {
 
+  var jsFiles = ['Gruntfile.js'];
+  (function buildJSFileList(jsFiles) {    
+    var bundles = grunt.file.readJSON('bundles.json');
+    for (var name in bundles) {
+      var bundle = bundles[name],
+          i = bundle.length,
+          fileInfo,
+          filePath;
+      
+      while (i--) {
+        fileInfo = bundle[i];
+        filePath = typeof fileInfo == 'object' ? fileInfo.path : fileInfo;
+        if (/\.js$/.test(filePath))
+          jsFiles.push('js/' + filePath);
+      }
+    }
+  })(jsFiles);
+  
   grunt.initConfig({
     jshint: {
-      files: ['Gruntfile.js', 'js/*.js', 'js/views/*.js', 'js/collections/*.js', 'js/models/*.js', 'js/bookmarklets/*.js' ],
+      files: jsFiles,
       options: {
         // options here to override JSHint defaults
         globals: {
           jQuery: true,
           console: true,
           module: true,
-          document: true
+          document: true,
+          '_': true
         },
         asi: true,      
         boss: true,     
@@ -34,7 +53,7 @@ module.exports = function(grunt) {
     uglify: {
       compress: {
         expand: true,
-        src: ['js/*.js', '!js/**/*.min.js', 'js/views/*.js', 'js/models/*.js', 'js/collections/*.js', 'js/bookmarklets/*.js'],
+        src: jsFiles, 
         dest: 'test/',
         ext: '.min.js',
         flatten: false

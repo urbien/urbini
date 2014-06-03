@@ -186,6 +186,11 @@ define('globals', function() {
           defer.resolve(name);
           G.log(G.TAG, 'cache', 'end cache.get: ' + url);
           break;
+        case '.json':
+          G.log(G.TAG, 'cache', 'cache.get: ' + url);
+          defer.resolve(JSON.parse(text));
+          G.log(G.TAG, 'cache', 'end cache.get: ' + url);
+          break;
         case '.html':
         case '.jsp':
         case '.lol':
@@ -229,13 +234,13 @@ define('globals', function() {
         return defer.resolve(window._);
       
       var cached, realPath;  
-      if (/\.(jsp|css|html)\.js$/.test(url))
+      if (/\.(jsp|css|html|json)\.js$/.test(url))
         url = url.replace(/\.js$/, '');
   
       var inAppcache = realPath = Bundler.getFromAppcacheBundle(url);
       if (inAppcache || (G.inFirefoxOS && G.minify)) {
         var path = requireConfig.paths[name] || name;
-        if (!/\.(jsp|css|html)$/.test(url)) {
+        if (!/\.(jsp|css|html|json)$/.test(url)) {
           orgLoad(name, url.replace(path, realPath));
           return;
         }
@@ -599,7 +604,7 @@ define('globals', function() {
         G.log(G.TAG, 'nuke', "nuking scripts, localStorage has", length, "keys", start);
         for (var i = length - 1; i > -1; i--) {
           var key = localStorage.key(i);
-          if (/\.(?:js|css|jsp)$/.test(key)) {          
+          if (/\.(?:js|css|jsp|json)$/.test(key)) {          
             var start1 = new Date().getTime();
             G.localStorage.del(key);
             G.log(G.TAG, "nuke", key, new Date().getTime() - start1);
@@ -724,7 +729,7 @@ define('globals', function() {
       G.finishedTask("loading pre-bundle and widgets-bundle");
       G.startedTask("loading modules");
       var essential = getCSS(preBundle, widgetsBundle);
-      essential.unshift.call(essential, 'events', 'app', 'lib/l20n');
+      essential.unshift.call(essential, 'events', 'app', 'lib/l10n');
       return require('__domReady__').then(function() {
         return require(essential);
       });

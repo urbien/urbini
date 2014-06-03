@@ -296,6 +296,8 @@ define('views/Header', [
         break;
       case 'tilt':
         val -= 1; // min at 0 instead of 1
+        val /= 100;
+        break;
         // fall through;
       default:
         val /= 100;

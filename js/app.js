@@ -534,30 +534,57 @@ define('app', [
 //  };
 
   function localize() {
-    var locale = G.modules['locale/{0}.lol'.format(G.language)] || G.modules['locale/en.lol'];
-    return $.Deferred(function(defer) {      
-      var ctx = window.L20n.getContext({
-        delimiter: {
-          start: '((',
-          end: '))'
+    var lang = G.language,
+        localeName = '../locale/{0}.json'.format(lang),
+        dfd = $.Deferred();
+        
+    function setLocale(locale) {
+      var l = {};
+      l[lang] = locale;
+      String.locale = lang;
+      String.toLocaleString(l);
+      G.localize = function(string, fallback) {
+        var localized = ("%" + string).toLocaleString();
+        if (localized !== string) {
+          return localized;
+        } else {
+          return fallback;
         }
-      });
+      };  
       
-      ctx.addResource(locale);
-      ctx.freeze();
-      G.localizationContext = document.l10n = ctx;
-      G.localize = function() {
-        return ctx.get.apply(ctx, arguments);
-      };
-      
-      ctx.ready(defer.resolve.bind(defer));
-      ctx.addEventListener('error', function(err) {
-        if (err instanceof L20n.Compiler.Error) {
-          // do something
-          debugger;
-        }
-      });
-    }).promise();
+      dfd.resolve();
+    };
+    
+    require(localeName).done(setLocale).fail(function() {
+      lang = 'en';
+      require('locale/en.json').done(setLocale);
+    });
+        
+    return dfd.promise();
+    
+//    return $.Deferred(function(defer) {      
+//      var ctx = window.L20n.getContext({
+//        delimiter: {
+//          start: '((',
+//          end: '))'
+//        }
+//      });
+//      
+//      ctx.addResource(locale);
+//      ctx.freeze();
+//      G.localizationContext = document.l10n = ctx;
+//      G.localize = function() {
+//        return ctx.get.apply(ctx, arguments);
+//      };
+//      
+//      ctx.ready(defer.resolve.bind(defer));
+//      ctx.addEventListener('error', function(err) {
+//        if (err instanceof L20n.Compiler.Error) {
+//          // do something
+//          debugger;
+//        }
+//      });
+//    }).promise();
   }
   
   function setupUser() {

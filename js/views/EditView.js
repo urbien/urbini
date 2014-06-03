@@ -739,12 +739,6 @@ define('views/EditView', [
             errDiv.appendChild(label);
         }
       }
-      
-      if (badInputs.length) {
-        $('html, body').animate({
-          scrollTop: $(badInputs[0]).offset().top - 10
-        }, 1000);
-      }
     },
     
 //    redirect: function(options) {

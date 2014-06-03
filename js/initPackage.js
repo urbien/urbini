@@ -2110,7 +2110,7 @@
     body = doc.getElementsByTagName('head')[0],
     isOpera = typeof opera !== 'undefined' && opera.toString() === '[object Opera]',
 //    readyRegExp = /^(complete|loaded)$/,
-    extRegExp = /\.(jsp|html|htm|css|jsp|lol|js)$/,
+    extRegExp = /\.(jsp|html|htm|css|jsp|lol|js|json)$/,
     currentlyAddingScript = null,
 //    useInteractive = false,
     config = {
