@@ -69,29 +69,12 @@ define('views/Header', [
       
       this.makeTemplate('physicsConstantsTemplate', 'physicsConstantsTemplate', this.vocModel && this.vocModel.type);
       
-      if (/^view/.test(this.hash)) {
-        if (this.resource.isA('Activatable')) {
+      if (this.resource) {
+        if (/^view/.test(this.hash)) {
+          this._isActivatable = this.resource.isA('Activatable');
           this.activatedProp = vocModel.properties[U.getCloneOf(vocModel, 'Activatable.activated')[0]];
-          if (this.activatedProp && U.isPropEditable(this.resource, this.activatedProp)) {
-            this._activatable = true;
-          }
         }
-        
-        if (this.resource.isA('FolderItem')) {
-          var pName = this.hashParams.$rootFolderProp || U.getCloneOf(vocModel, 'FolderItem.rootFolder')[0] || U.getCloneOf(vocModel, 'FolderItem.folder')[0],
-              rootFolder = this.resource ? this.resource.get(pName) : this.hashParams[pName] || this.hashParams.$rootFolder;
-          
-          if (pName) {
-            this._isFolderItem = true;
-            this.folderProp = vocModel.properties[pName];
-            
-            if (rootFolder)
-              this.rootFolder = rootFolder;
-            else
-              this.rootFolder = this.resource.get(pName);
-          }
-        }
-      }
+      }      
 
       return this;
     },
@@ -618,9 +601,11 @@ define('views/Header', [
         this.rootFolder = this.rootFolder || this.resource.get(this.folderProp.shortName);
         if (this.rootFolder) {
           var rootFolderEl = this.$('.rootFolder')[0];
-          rootFolderEl.$show();
-          rootFolderEl.href = U.makePageUrl('view', this.rootFolder);
-          rootFolderEl.$('span')[0].textContent = U.getPropDisplayName(this.folderProp);
+          if (rootFolderEl) {
+            rootFolderEl.$show();
+            rootFolderEl.href = U.makePageUrl('view', this.rootFolder);
+            rootFolderEl.$('span')[0].textContent = U.getPropDisplayName(this.folderProp);
+          }
         }
       }
     },
@@ -630,7 +615,8 @@ define('views/Header', [
 //    },
     
     refreshActivated: function() {
-      if (this._activatable) {
+      this._checkActivatable();
+      if (this._showActivate) {
         var activatables = this.$('.activatable');
         if (activatables.length > 0) {
           activatables[0].$show()
@@ -902,6 +888,32 @@ define('views/Header', [
       navbar.classList.remove('ui-mini');
     },
     
+    _checkActivatable: function() {
+      if (!this.resource)
+        return;
+      
+      var vocModel = this.vocModel;
+      if (this._isActivatable && this.resource.isLoaded() && !_.has(this, '_showActivate'))
+        this._showActivate = this.activatedProp && U.isPropEditable(this.resource, this.activatedProp);
+              
+      var isFolderItem = this.resource.isA('FolderItem');
+      if (!isFolderItem)
+        return;
+      
+      var pName = this.hashParams.$rootFolderProp || U.getCloneOf(vocModel, 'FolderItem.rootFolder')[0] || U.getCloneOf(vocModel, 'FolderItem.folder')[0],
+          rootFolder = this.resource ? this.resource.get(pName) : this.hashParams[pName] || this.hashParams.$rootFolder;
+      
+      if (pName) {
+        this._isFolderItem = true;
+        this.folderProp = vocModel.properties[pName];
+        
+        if (rootFolder)
+          this.rootFolder = rootFolder;
+        else
+          this.rootFolder = this.resource.get(pName);
+      }
+    },
+
     renderHelper: function() {
       var self = this;
       var isJQM = G.isJQM(); //!wl  ||  wl == 'Jquery Mobile';
@@ -951,8 +963,8 @@ define('views/Header', [
 
       var tmpl_data = this.getBaseTemplateData();
 
-      tmpl_data.isActivatable = this._activatable;
-      if (this._activatable)
+      tmpl_data.isActivatable = this._isActivatable;
+      if (this._isActivatable)
         tmpl_data.activatedProp = this.activatedProp;
 
       tmpl_data.isFolderItem = this._isFolderItem;

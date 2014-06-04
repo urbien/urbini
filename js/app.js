@@ -962,10 +962,13 @@ define('app', [
     Events.on('logout', function(options) {
       options = _.extend({}, defaults, options);
       var url = G.serverName + '/j_security_check?j_signout=true';
-      $.get(url, function() {
-          // may be current page is not public so go to home page (?)
-        window.location.hash = options.returnUri;
-        window.location.reload();
+      U.ajax({
+        url: url,
+        success: function() {
+            // may be current page is not public so go to home page (?)
+          window.location.hash = options.returnUri;
+          window.location.reload();
+        }
       });        
     });
   }

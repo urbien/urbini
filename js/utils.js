@@ -3955,6 +3955,7 @@ define('utils', [
       };
     },
     
+    _forbiddenIndexNames: ['primary'],
     getIndexNames: function(vocModel) {
       var vc = U.getColsMeta(vocModel, 'view');
       var gc = U.getColsMeta(vocModel, 'grid');
@@ -3967,7 +3968,7 @@ define('utils', [
       var props = vocModel.properties;
       return _.filter(cols, function(c) {
         var p = props[c];
-        return p && !p.backLink; // && !_.contains(SQL_WORDS, c.toLowerCase());
+        return p && !p.backLink && !_.contains(U._forbiddenIndexNames, c.toLowerCase());
       });
     },
 

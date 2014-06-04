@@ -170,7 +170,8 @@ define('views/MainMenuPanel', [
           html += this.menuItemTemplate(t);
         }
       }
-      if (U.isAssignableFrom(this.vocModel, 'commerce/trading/Tradle')) {
+      
+      if (this.resource && U.isAssignableFrom(this.vocModel, 'commerce/trading/Tradle')) {
         html += this.menuItemTemplate({title: this.loc("Embed"), id: 'embed', pageUrl: G.serverName + '/widget/embed.html?uri=' + encodeURIComponent(res.getUri()) });
       }
       
