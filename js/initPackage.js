@@ -1694,9 +1694,35 @@
   }
 
   _.mixin({
+    toQueryParams: function(string, separator) {
+      if (!string)
+        return {};
+          
+      var match = string.trim().match(/([^?#]*)(#.*)?$/);
+      if (!match) 
+        return {};
+      
+      return match[1].split(separator || '&').reduce(function(hash, pair) {
+        if ((pair = pair.split('='))[0]) {
+          var key = decodeURIComponent(pair.shift()),
+              value = pair.length > 1 ? pair.join('=') : pair[0];
+              
+          if (value != undefined) value = decodeURIComponent(value);
+          
+          if (key in hash) {
+            if (!_.isArray(hash[key])) hash[key] = [hash[key]];
+            hash[key].push(value);
+          }
+          else hash[key] = value;
+        }
+        return hash;
+      }, {});
+    },
+    
     inArray: function(el, arr) { // compatibility with jquery
       return arr.indexOf(el);
     },
+    
     param: function toQueryString(obj) {
       var parts = [];
       for (var i in obj) {
@@ -1856,20 +1882,8 @@
     },
     
     getParamMap: function(str, delimiter) {
-      var map = {};
-      if (!str)
-        return map;
       var qIdx = str.indexOf('?');
-      if (qIdx != -1)
-        str = str.slice(qIdx + 1);
-        
-      _.each(str.split(delimiter || "&"), function(nv) {
-        nv = nv.split("=");
-        if (nv.length == 2)
-          map[_.decode(nv[0])] = _.decode(nv[1]);
-      });
-      
-      return map;
+      return _.toQueryParams(~qIdx ? str.slice(qIdx + 1) : str, delimiter);
     },    
     
     encode: function(str) {
@@ -2095,7 +2109,28 @@
 
 }).call(this);
 
-(function($) {
+(function(_) {
+  /* TODO remove after jQuery removal migration -- START */
+  window.jQuery = window.$ = function(selector, context) {
+    if (selector == document || selector == window) {
+      debugger;
+      return selector;
+    }
+    
+    context = context || document;
+    try {
+      return context.querySelectorAll.apply(context, arguments);
+    } catch (err) {
+      debugger;
+    }
+  };
+  
+  "extend Deferred when".split(" ").forEach(function(name) {
+    $[name] = _[name].bind(_);
+  });
+  /* remove after jQuery removal migration -- END */
+  
+  
   var ArrayProto = Array.prototype,
     slice = ArrayProto.slice,
     root = this,
@@ -2107,7 +2142,6 @@
     }).promise(),
     doc = document,
     head = doc.getElementsByTagName('head')[0],
-    body = doc.getElementsByTagName('head')[0],
     isOpera = typeof opera !== 'undefined' && opera.toString() === '[object Opera]',
 //    readyRegExp = /^(complete|loaded)$/,
     extRegExp = /\.(jsp|html|htm|css|jsp|lol|js|json)$/,
@@ -2222,9 +2256,9 @@
   }
   
   function require(modules, cb) {
-    modules = modules ? ($.isArray(modules) ? modules : [modules]) : [];
+    modules = modules ? (_.isArray(modules) ? modules : [modules]) : [];
     var promise, prereqs = [];
-    $.each(modules, function(name, idx) {
+    modules.forEach(function(name, idx) {
       if (name === '__domReady__') {
         prereqs.push(domReady);
         return;
@@ -2280,7 +2314,7 @@
   }
   
   require.config = function(cfg) {
-    $.extend(config, cfg);
+    _.extend(config, cfg);
   };
   
   require.getConfig = function() {
@@ -2316,6 +2350,5 @@
     head.appendChild(s);
   }
   
-  window.jQuery = window.$ = _; // while migrating from jQuery
   window.moduleMap = moduleMap;
 })(_, undefined);

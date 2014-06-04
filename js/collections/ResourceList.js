@@ -54,7 +54,7 @@ define('collections/ResourceList', [
       this.url = this.baseUrl;
       if (options.params) {
         this._parseParams(options.params);
-//        this.query = $.param(this.params);
+//        this.query = _.param(this.params);
       }
       else
         this._parseQuery(options._query);
@@ -410,7 +410,7 @@ define('collections/ResourceList', [
       if (adapter && adapter.getCollectionUrl)
         return adapter.getCollectionUrl.call(this, params);
       
-      return this.baseUrl + '?' + $.param(params);
+      return this.baseUrl + '?' + _.param(params);
     },
     
     _parseQuery: function(query) {
@@ -459,7 +459,7 @@ define('collections/ResourceList', [
       this.params = params;
       this.modelParams = modelParams;
       this.modelParamsStrict = strict;
-      this.url = this.baseUrl + (_.size(this.params) ? "?" + $.param(this.params) : ''); //this.getUrl();
+      this.url = this.baseUrl + (_.size(this.params) ? "?" + _.param(this.params) : ''); //this.getUrl();
       this.query = U.getQueryString(modelParams, true); // sort params in alphabetical order for easier lookup
 //      if (_.size(this._tempParams))
 //        this._watchTempParams();

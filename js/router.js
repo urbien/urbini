@@ -24,8 +24,7 @@ define('router', [
 ], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth, Redirecter, Transitioner, DOM, Q, Physics /*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
   var Modules = {},
-      doc = document,
-      $doc = $(doc);
+      doc = document;
   
   function log() {
     var args = [].slice.call(arguments);
@@ -473,7 +472,7 @@ define('router', [
       if (query) {        
         if (_.has(params, '$page')) {
           this.page = parseInt(params.$page);
-          query = $.param(params);
+          query = _.param(params);
         }
 //        var q = query.split("&");
 //        for (var i = q.length - 1; i >= 0; i--) {
@@ -662,7 +661,7 @@ define('router', [
       for (var tName in templateToTypes) {
         var types = templateToTypes[tName];
         templates.push(new jstModel({
-          _uri:  jstUriBase + $.param({templateName: tName}),
+          _uri:  jstUriBase + _.param({templateName: tName}),
           templateName: tName,
           forResource: currentAppUri,
           modelDavClassUri: type
@@ -746,7 +745,7 @@ define('router', [
 //      var jsUriBase = G.sqlUrl + '/' + jsType.slice(7) + '?';
 //      _.each(viewToTypes, function(types, tName) {
 //        views.push(new jsModel({
-//          _uri:  jsUriBase + $.param({viewName: tName}),
+//          _uri:  jsUriBase + _.param({viewName: tName}),
 //          viewName: tName,
 //          forResource: currentAppUri,
 //          modelDavClassUri: modelUri

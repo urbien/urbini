@@ -13,6 +13,27 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       connectionType = G.commonTypes.Connection,
       CHOOSE_RULE_FOR = 'Choose a rule for ';
   
+  function getForResourceInfo() {
+    var info = {
+        ffwd: redirecter.isChooserFastForwarded()
+      },
+      forRes = redirecter.getCurrentChooserBaseResource();
+    
+    if (forRes)
+      info.promise = U.resolvedPromise(forRes);
+    else {
+      var urlInfo = U.getCurrentUrlInfo(),
+          forResUri = urlInfo.params.$forResource;
+      
+      if (forResUri)
+        info.promise = U.getResourcePromise(forResUri);
+      else
+        info.promise = G.getRejectedPromise();
+    }
+    
+    return info;
+  };
+  
   function Redirecter() {
   }
   
@@ -56,7 +77,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
         return;
       }
       
-      Events.trigger('navigate', 'home/?' + $.param({
+      Events.trigger('navigate', 'home/?' + _.param({
         '-gluedInfo': G.localize('changedYourMindClickToInstall', {
             appName: G.currentApp.title,
             installUrl: U.makePageUrl('make', G.commonTypes.AppInstall, {
@@ -260,7 +281,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
             info.params = U.filterObj(info.params, U.isMetaParameter);
             info.params[U.getCloneOf(blModel, 'Templatable.isTemplate')[0]] = true;
             info.params[bl.backLink] = baseVal;
-            info.params.$template = $.param(params);
+            info.params.$template = _.param(params);
           }
           
           if (U.isA(model, 'Folder') && U.isA(blModel, 'FolderItem')) {
@@ -866,7 +887,8 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       return this.currentChooser['for'];
     else {
       var forRes = U.getCurrentUrlInfo().params.$forResource;
-      return forRes && C.getResource(forRes);
+      if (forRes)
+        return C.getResource(forRes);
     }
   };
 
@@ -928,28 +950,30 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   };
 
   Events.on('choseMulti', function(propName, list, checked) {
-    var res = redirecter.getCurrentChooserBaseResource(),
-        ffwd = redirecter.isChooserFastForwarded(),
-        editableProps = res.getEditableProps(U.getCurrentUrlInfo()),
-        merged = getEditableProps(editableProps),
-        props = {};
-    
-    props[propName] = _.pluck(checked, 'value').join(',');
-    props[propName + '.displayName'] = _.pluck(checked, 'name').join(',');
-    if (merged && merged.length == 1) {
-      res.save(props, {
-        userEdit: true
-      }); // let redirect after save handle it
-    }
-    else {
-      if (ffwd) {
-        res.set(props);
-        Events.trigger('navigate', U.makeMobileUrl(res.get('_uri') ? 'edit' : 'make', res.vocModel.type, U.filterObj(res.attributes, U.isModelParameter)));
+    var info = getForResourceInfo();
+    info.promise.done(function(forRes) {
+      var urlInfo = U.getCurrentUrlInfo(),
+          editableProps = forRes.getEditableProps(urlInfo),
+          merged = getEditableProps(editableProps),
+          props = {};
+      
+      props[propName] = _.pluck(checked, 'value').join(',');
+      props[propName + '.displayName'] = _.pluck(checked, 'name').join(',');
+      if (merged && merged.length == 1) {
+        res.save(props, {
+          userEdit: true
+        }); // let redirect after save handle it
       }
       else {
-        Events.trigger('choseMulti:' + propName, res, props); // let EditView handle it
-      }
-    }    
+        if (info.ffwd) {
+          res.set(props);
+          Events.trigger('navigate', U.makeMobileUrl(res.get('_uri') ? 'edit' : 'make', res.vocModel.type, U.filterObj(res.attributes, U.isModelParameter)));
+        }
+        else {
+          Events.trigger('choseMulti:' + propName, res, props); // let EditView handle it
+        }
+      }    
+    });
   });
 
   Events.on('chose', function(propName, valueRes) {
@@ -967,91 +991,94 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       return;
     }
     
-    var res = redirecter.getCurrentChooserBaseResource(),
-        ffwd = redirecter.isChooserFastForwarded(),
-        editableProps = res.getEditableProps(urlInfo),
-        merged = getEditableProps(editableProps),
-        props = {};
+    var info = getForResourceInfo();
+    info.promise.done(function(forRes) {
+      var urlInfo = U.getCurrentUrlInfo(),
+          forType = forRes.vocModel.type,
+          editableProps = forRes.getEditableProps(urlInfo),
+          merged = getEditableProps(editableProps),
+          props = {};
 
-    props[propName] = valueRes.getUri();
-    if (propName == 'eventProperty' && res.vocModel.type.endsWith('commerce/trading/Rule')) {
-      var subClassOf,
-          wPropUri = valueRes.get('_uri'),
-          propType = valueRes.get('propertyType'),
-          isEnum = U.getTypeUri(wPropUri).endsWith('system/designer/EnumProperty');
-      
-      switch (propType) {
-      case 'Text':
-        subClassOf = isEnum ? 'commerce/trading/EnumRule' : 'commerce/trading/StringRule';
-        break;
-      case 'Date':
-        subClassOf = 'commerce/trading/DateRule';
-        break;
-      case 'Link':
-        subClassOf = 'commerce/trading/LinkRule';
-        break;
-      case 'YesNo':
-        subClassOf = 'commerce/trading/BooleanRule';
-        break;
-      case 'Numeric':
-      case 'Fraction':
-      case 'Percent':
-      case 'Money':
-      /* falls through */
-      default:
-        subClassOf = 'commerce/trading/NumericRule';
-        break;
-      }
-      
-      this.currentChooser = null; 
-      if (isEnum || propType == 'Link' || propType == 'YesNo') { // no subclasses
-        var params = _.extend(U.filterObj(res.attributes, U.isNativeModelParameter), props);
-        params.$title = res.get('feed.displayName') + ' ' + valueRes.get('davDisplayName') + ' IS...';
-        if (isEnum) {
-          params.enumeration = valueRes.get('range');
-          params.enumerationRangeUri = valueRes.get('rangeUri');
+      props[propName] = valueRes.getUri();
+      if (propName == 'eventProperty' && forType.endsWith('commerce/trading/Rule')) {
+        var subClassOf,
+            wPropUri = valueRes.get('_uri'),
+            propType = valueRes.get('propertyType'),
+            isEnum = U.getTypeUri(wPropUri).endsWith('system/designer/EnumProperty');
+        
+        switch (propType) {
+        case 'Text':
+          subClassOf = isEnum ? 'commerce/trading/EnumRule' : 'commerce/trading/StringRule';
+          break;
+        case 'Date':
+          subClassOf = 'commerce/trading/DateRule';
+          break;
+        case 'Link':
+          subClassOf = 'commerce/trading/LinkRule';
+          break;
+        case 'YesNo':
+          subClassOf = 'commerce/trading/BooleanRule';
+          break;
+        case 'Numeric':
+        case 'Fraction':
+        case 'Percent':
+        case 'Money':
+        /* falls through */
+        default:
+          subClassOf = 'commerce/trading/NumericRule';
+          break;
         }
-        else if (propType == 'Link') {
-          params.resourceType = valueRes.get('range');
-          params.resourceTypeRangeUri = valueRes.get('rangeUri');          
-        }
+        
+        this.currentChooser = null; 
+        if (isEnum || propType == 'Link' || propType == 'YesNo') { // no subclasses
+          var params = _.extend(U.filterObj(forRes.attributes, U.isNativeModelParameter), props);
+          params.$title = forRes.get('feed.displayName') + ' ' + valueRes.get('davDisplayName') + ' IS...';
+          if (isEnum) {
+            params.enumeration = valueRes.get('range');
+            params.enumerationRangeUri = valueRes.get('rangeUri');
+          }
+          else if (propType == 'Link') {
+            params.resourceType = valueRes.get('range');
+            params.resourceTypeRangeUri = valueRes.get('rangeUri');          
+          }
+            
+          Events.trigger('navigate', U.makeMobileUrl('make', subClassOf, params), {
+            replace: true
+          });
           
-        Events.trigger('navigate', U.makeMobileUrl('make', subClassOf, params), {
-          replace: true
-        });
+          return;
+        }
+  
+        var prevTitle = urlInfo.params.$title;
+  //      if (prevTitle && prevTitle.endsWith('property...'))
+  //        prevTitle = prevTitle.slice(0, prevTitle.length - 11) + ' - ';
+  
+        Events.trigger('navigate', U.makeMobileUrl('chooser', 'system/designer/WebClass', {
+          subClassOfUri: G.defaultVocPath + subClassOf,
+          $createInstance: 'y',
+          $props: _.param(_.extend(U.filterObj(forRes.attributes, U.isNativeModelParameter), props)),
+          $title: (prevTitle || forRes.get('feed.displayName')) + ' ' + valueRes.get('davDisplayName')
+        }));
         
         return;
       }
-
-      var prevTitle = urlInfo.params.$title;
-//      if (prevTitle && prevTitle.endsWith('property...'))
-//        prevTitle = prevTitle.slice(0, prevTitle.length - 11) + ' - ';
-
-      Events.trigger('navigate', U.makeMobileUrl('chooser', 'system/designer/WebClass', {
-        subClassOfUri: G.defaultVocPath + subClassOf,
-        $createInstance: 'y',
-        $props: $.param(_.extend(U.filterObj(res.attributes, U.isNativeModelParameter), props)),
-        $title: (prevTitle || res.get('feed.displayName')) + ' ' + valueRes.get('davDisplayName')
-      }));
       
-      return;
-    }
-    
-    if (merged && merged.length == 1) {
-      res.save(props, {
-        userEdit: true
-      }); // let redirect after save handle it
-    }
-    else {
-      if (ffwd) {
-        res.set(props);
-        Events.trigger('navigate', U.makeMobileUrl(res.get('_uri') ? 'edit' : 'make', res.vocModel.type, U.filterObj(res.attributes, U.isModelParameter)), {
-          replace: true
-        });
+      if (merged && merged.length == 1) {
+        forRes.save(props, {
+          userEdit: true
+        }); // let redirect after save handle it
       }
-      else
-        Events.trigger('chose:' + propName, valueRes, redirecter.currentChooserFor); // let EditView handle it
-    }
+      else {
+        if (info.ffwd) {
+          forRes.set(props);
+          Events.trigger('navigate', U.makeMobileUrl(forRes.get('_uri') ? 'edit' : 'make', forType, U.filterObj(forRes.attributes, U.isModelParameter)), {
+            replace: true
+          });
+        }
+        else
+          Events.trigger('chose:' + propName, valueRes, redirecter.currentChooserFor); // let EditView handle it
+      }
+    });
   });
   
   Events.on('savedEdit', function(res, options) {

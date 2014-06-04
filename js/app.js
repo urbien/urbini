@@ -546,9 +546,14 @@ define('app', [
       String.locale = lang;
       String.toLocaleString(l);
       G.localize = function(string, data) {
-        var localized = ("%" + string).toLocaleString(),
-            toReplace = localized.match(paramsRegex);
+        var fallback = string,
+            key = "%" + string,
+            localized = key.toLocaleString(),
+            toReplace;
         
+        if (localized == key)
+          localized = fallback;
+          
         if (data && toReplace) {
           var i = toReplace.length;
           while (i--) {
@@ -816,8 +821,8 @@ define('app', [
       else
         Backbone.history.start();
       
-//      if (!G.currentUser.guest && !G.currentUser.email && new Date().getTime() - G.currentUser.dateRegistered < 24 * 3600000)
-//        askForEmail();
+      if (!G.currentUser.guest && !G.currentUser.email && new Date().getTime() - G.currentUser.dateRegistered < 24 * 3600000)
+        askForEmail();
       
       dfd.resolve();
     }).promise();

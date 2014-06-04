@@ -1158,7 +1158,7 @@ define('views/ChatPage', [
       if (this.hasVideo && cachedStream)
         webrtc.startLocalMedia(cachedStream);
       
-      $(window).unload(function() {
+      window.addEventListener('unload', function() {
         self.endChat();
       });
       

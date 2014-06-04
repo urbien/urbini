@@ -547,7 +547,7 @@ define('views/ResourceView', [
 //            day = now.getDate(),
 //            year = now.getFullYear();
 //        
-//        var yahooIChartUrl = "http://ichart.yahoo.com/table.csv?" + $.param({
+//        var yahooIChartUrl = "http://ichart.yahoo.com/table.csv?" + _.param({
 //          s: res.get('symbol'),
 //          // from date
 //          a: month,
@@ -590,11 +590,11 @@ define('views/ResourceView', [
           chartParams.f = toDate.getFullYear();
         }
         
-        var yahooIChartUrl = "http://ichart.yahoo.com/table.csv?" + $.param(chartParams);
+        var yahooIChartUrl = "http://ichart.yahoo.com/table.csv?" + _.param(chartParams);
         var script = document.createElement('script');
         script.type = "text/javascript";
         script.async = true;
-        script.src = "//query.yahooapis.com/v1/public/yql?" + $.param({
+        script.src = "//query.yahooapis.com/v1/public/yql?" + _.param({
           q: "select * from csv where url = '" + yahooIChartUrl + "'",
           format: 'json',
 //          diagnostics: true,

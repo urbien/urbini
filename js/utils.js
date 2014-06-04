@@ -199,7 +199,7 @@ define('utils', [
         }
 
         // start repeat url check - see if we're calling a url we already called before
-        var _url = opts.url + (_.size(opts.data) ? '?' + $.param(opts.data) : '');
+        var _url = opts.url + (_.size(opts.data) ? '?' + _.param(opts.data) : '');
         if (_.contains(xhrHistory, _url))
           console.log('ajax', 'calling this url again!', _url);
         else
@@ -805,7 +805,7 @@ define('utils', [
     
     $and: function() {
       if (arguments.length == 1)
-        return $.param(arguments[0]);
+        return _.param(arguments[0]);
       
       return _.map(slice.call(arguments), function(arg) {
         return U.$and(arg);
@@ -1176,7 +1176,7 @@ define('utils', [
       if (_.isEmpty(q))
         return url[0];
       
-      q = sort ? U.getQueryString(q, {sort: sort}) : $.param(q);
+      q = sort ? U.getQueryString(q, {sort: sort}) : _.param(q);
       return url.length == 1 ? q : [url[0], q].join('?');
     },
    
@@ -1236,7 +1236,7 @@ define('utils', [
       if (_.isEmpty(params))
         return params;
       
-      var query = $.param(params);
+      var query = _.param(params);
       var parsed = U.parseAPIQuery(query, '&');
       var filtered = {};
       _.each(parsed, function(clause) {
@@ -1464,7 +1464,7 @@ define('utils', [
     getQueryString: function(paramMap, options) {
       options = options || {};
       if (!options.sort) {
-        var result = $.param(paramMap);
+        var result = _.param(paramMap);
         return options.delimiter ? result.replace(/\&/g, options.delimiter) : result;
       }
       
@@ -1698,10 +1698,7 @@ define('utils', [
           success: function() {
             dfd.resolve(res);
           },
-          error: function() {
-            debugger;
-            dfd.reject();
-          }
+          error: dfd.reject
         });
       });
       
@@ -1797,7 +1794,7 @@ define('utils', [
             }
           }
           else if (isResourceView) {
-            var ww = DOM.window.width();//$(window).width();
+            var ww = DOM.window.width();
             if (ww < DOM.window.height()) {
               if (ww <= 340) 
                 cloneOf = U.getCloneOf(vocModel, 'ImageResource.bigMedium320')[0];
@@ -2446,7 +2443,7 @@ define('utils', [
 ////      if (ignoredParams)
 ////        console.log('ignoring url parameters during regular to mobile url conversion: ' + ignoredParams);
 //      
-//      return (url.toLowerCase().startsWith('mkresource.html') ? 'make/' : '') + encodeURIComponent(type) + (_.size(params) ? '?' + $.param(params) : '');
+//      return (url.toLowerCase().startsWith('mkresource.html') ? 'make/' : '') + encodeURIComponent(type) + (_.size(params) ? '?' + _.param(params) : '');
 //    },
     
     primitiveTypes: {
@@ -2995,7 +2992,7 @@ define('utils', [
       return U.makeUri(type, params);
     },
     makeUri: function(type, params) {
-      return G.sqlUrl + '/' + type.slice(7) + '?' + (typeof params == 'string' ? params : $.param(params));
+      return G.sqlUrl + '/' + type.slice(7) + '?' + (typeof params == 'string' ? params : _.param(params));
     },
     sq: function(a) {
       return a * a;
@@ -3149,7 +3146,7 @@ define('utils', [
           for (var p in query) {
             var one = {};
             one[p] = query[p];
-            q.push($.param(one));
+            q.push(_.param(one));
           }
           
           query = q;
@@ -3631,7 +3628,7 @@ define('utils', [
         
         function oncancel(e) {
           Events.stopEvent(e);
-          $('.modal-popup-holder .headerMessageBar').remove();
+          $('.modal-popup-holder .headerMessageBar').$remove();
           if (options.oncancel)
             options.oncancel.apply(this, arguments);
           else
@@ -3957,6 +3954,7 @@ define('utils', [
       };
     },
     
+    _forbiddenIndexNames: ['primary'],
     getIndexNames: function(vocModel) {
       var vc = U.getColsMeta(vocModel, 'view');
       var gc = U.getColsMeta(vocModel, 'grid');
@@ -3969,7 +3967,7 @@ define('utils', [
       var props = vocModel.properties;
       return _.filter(cols, function(c) {
         var p = props[c];
-        return p && !p.backLink; // && !_.contains(SQL_WORDS, c.toLowerCase());
+        return p && !p.backLink && !_.contains(U._forbiddenIndexNames, c.toLowerCase());
       });
     },
 
@@ -3980,48 +3978,48 @@ define('utils', [
       });
     },
     
-    isIntersecting: function(rectA, rectB) {
-//      var outOfTop = rectA.bottom - rectB.top,
-//          outOfBottom = rectB.bottom - rectA.top,
-//          outOfLeft = rectA.right - rectB.left,
-//          outOfRight = rectB.right - rectA.left;
-//      
-//      if (outOfTop < 0)
-//        console.log("Out of top by", -outOfTop);
-//      else if (outOfBottom < 0)
-//        console.log("Out of bottom by", -outOfBottom);
-//      else if (outOfLeft < 0)
-//        console.log("Out of left by", -outOfLeft);
-//      else if (outOfRight < 0)
-//        console.log("Out of right by", -outOfRight);
-//      else
-//        return true;
-//      
-//      return false;
-
-      return rectA.bottom >= rectB.top 
-          && rectA.top    <= rectB.bottom 
-          && rectA.right  >= rectB.left 
-          && rectA.left   <= rectB.right;
-    },
-
-    isRectPartiallyInViewport: function(rect, fuzz) {
-      var viewport = G.viewport;
-      fuzz = fuzz || 0; 
-      return rect.bottom + fuzz >= 0 
-          && rect.top - fuzz <= viewport.height 
-          && rect.right + fuzz >= 0 
-          && rect.left - fuzz <= viewport.width;
-    },
-
-    isRectInViewport: function(rect, fuzz) {
-      fuzz = fuzz || 0; 
-      return rect.top + fuzz >= 0 &&
-             rect.left + fuzz >= 0 &&
-             rect.bottom - fuzz <= (window.innerHeight || documentElement.clientHeight) && /*or $(window).height() */
-             rect.right - fuzz <= (window.innerWidth || documentElement.clientWidth); /*or $(window).width() */
-    },
-    
+//    isIntersecting: function(rectA, rectB) {
+////      var outOfTop = rectA.bottom - rectB.top,
+////          outOfBottom = rectB.bottom - rectA.top,
+////          outOfLeft = rectA.right - rectB.left,
+////          outOfRight = rectB.right - rectA.left;
+////      
+////      if (outOfTop < 0)
+////        console.log("Out of top by", -outOfTop);
+////      else if (outOfBottom < 0)
+////        console.log("Out of bottom by", -outOfBottom);
+////      else if (outOfLeft < 0)
+////        console.log("Out of left by", -outOfLeft);
+////      else if (outOfRight < 0)
+////        console.log("Out of right by", -outOfRight);
+////      else
+////        return true;
+////      
+////      return false;
+//
+//      return rectA.bottom >= rectB.top 
+//          && rectA.top    <= rectB.bottom 
+//          && rectA.right  >= rectB.left 
+//          && rectA.left   <= rectB.right;
+//    },
+//
+//    isRectPartiallyInViewport: function(rect, fuzz) {
+//      var viewport = G.viewport;
+//      fuzz = fuzz || 0; 
+//      return rect.bottom + fuzz >= 0 
+//          && rect.top - fuzz <= viewport.height 
+//          && rect.right + fuzz >= 0 
+//          && rect.left - fuzz <= viewport.width;
+//    },
+//
+//    isRectInViewport: function(rect, fuzz) {
+//      fuzz = fuzz || 0; 
+//      return rect.top + fuzz >= 0 &&
+//             rect.left + fuzz >= 0 &&
+//             rect.bottom - fuzz <= (window.innerHeight || documentElement.clientHeight) &&
+//             rect.right - fuzz <= (window.innerWidth || documentElement.clientWidth);
+//    },
+//    
 //    isInViewport: function(element) {
 //      var rect = element.getBoundingClientRect(),
 //          documentElement = doc.documentElement;
@@ -4322,7 +4320,7 @@ define('utils', [
       if (!this.params)
         return base;
       
-      return base + (base.indexOf("?") == -1 ? '?' : '&') + $.param(this.params || {});        
+      return base + (base.indexOf("?") == -1 ? '?' : '&') + _.param(this.params || {});        
     };
     
     _.each(allUrlInfoProps, function(prop) {
@@ -4364,7 +4362,7 @@ define('utils', [
         uri = uri.slice(route.length + 1);
       
       if (_.size(uriParams))
-        uri += '?' + $.param(uriParams);
+        uri += '?' + _.param(uriParams);
     }
     else {
       uri = decodeURIComponent(route.length ? hashParts[0].slice(route.length + 1) : hashParts[0]);        

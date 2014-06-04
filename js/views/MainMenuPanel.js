@@ -113,10 +113,10 @@ define('views/MainMenuPanel', [
 //      }
       
       var self = this;
-      var res = this.model;
-      var json = this.resource && res.toJSON();
+      var resOrCol = this.model;
+      var json = this.resource && resOrCol.toJSON();
       
-      if (!res)
+      if (!resOrCol)
         this.html(this.template());
       else
         this.html(this.template(json));      
@@ -170,8 +170,13 @@ define('views/MainMenuPanel', [
           html += this.menuItemTemplate(t);
         }
       }
-      if (U.isAssignableFrom(this.vocModel, 'commerce/trading/Tradle')) {
-        html += this.menuItemTemplate({title: this.loc("Embed"), id: 'embed', pageUrl: G.serverName + '/widget/embed.html?uri=' + encodeURIComponent(res.getUri()) });
+      
+      if (this.resource && U.isAssignableFrom(this.vocModel, 'commerce/trading/Tradle')) {
+        html += this.menuItemTemplate({
+          title: this.loc("embed"), 
+          id: 'embed', 
+          pageUrl: G.serverName + '/widget/embed.html?uri=' + encodeURIComponent(resOrCol.getUri()) 
+        });
       }
       
       var params = {lastPublished: '!null'};
@@ -185,7 +190,7 @@ define('views/MainMenuPanel', [
       var hash = window.location.hash;
       hash = G.pageRoot + hash;
       
-//      var url = encodeURIComponent('model/social/App') + "?" + $.param(params);
+//      var url = encodeURIComponent('model/social/App') + "?" + _.param(params);
 /*      
       var url = U.makePageUrl('list', 'model/social/App', params);
       if (!hash  ||  hash != url) 
@@ -223,7 +228,7 @@ define('views/MainMenuPanel', [
 //  
 //        }
         
-        var isCreatorOrAdmin = (G.currentUser._uri == G.currentApp.creator  ||  U.isUserInRole(U.getUserRole(), 'admin', res));
+        var isCreatorOrAdmin = (G.currentUser._uri == G.currentApp.creator  ||  U.isUserInRole(U.getUserRole(), 'admin', resOrCol));
 //        var isCreatorOrAdmin = (G.currentUser._uri == G.currentApp.creator  ||  (this.resource  &&  U.isUserInRole(U.getUserRole(), 'admin', res)) || (this.collection &&  this.collection.models.length  &&  U.isUserInRole(U.getUserRole(), 'admin', res.models[0])));
                 
         var user = G.currentUser;

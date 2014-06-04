@@ -67,8 +67,17 @@ define('views/Header', [
         this.makeTemplate('filterConditionInputTemplate', 'filterConditionInputTemplate', type);
       }
       
-      this.makeTemplate('physicsConstantsTemplate', 'physicsConstantsTemplate', this.vocModel && this.vocModel.type);
+      this.makeTemplate('physicsConstantsTemplate', 'physicsConstantsTemplate', vocModel && vocModel.type);
       
+      if (this.resource && /^view/.test(this.hash) && this.resource.isA('Activatable'))
+        this.activatedProp = vocModel.properties[U.getCloneOf(vocModel, 'Activatable.activated')[0]];
+
+      if (U.isA(vocModel, 'FolderItem')) {
+        var pName = this.hashParams.$rootFolderProp || U.getCloneOf(vocModel, 'FolderItem.rootFolder')[0] || U.getCloneOf(vocModel, 'FolderItem.folder')[0];
+        if (pName)
+          this.folderProp = vocModel.properties[pName];
+      }
+
       return this;
     },
     
@@ -592,8 +601,12 @@ define('views/Header', [
     },
     
     refreshFolder: function() {
-      if (this._isFolderItem && this.folderProp) {
-        this.rootFolder = this.rootFolder || this.resource.get(this.folderProp.shortName);
+      if (this.folderProp) {
+        var pName = this.folderProp.shortName;
+        this.rootFolder = (this.resource && this.resource.get(pName)) || 
+                          this.hashParams[pName] || 
+                          this.hashParams.$rootFolder;
+        
         if (this.rootFolder) {
           var rootFolderEl = this.$('.rootFolder')[0];
           rootFolderEl.$show();
@@ -608,6 +621,7 @@ define('views/Header', [
 //    },
     
     refreshActivated: function() {
+      this._checkActivatable();
       if (this._activatable) {
         var activatables = this.$('.activatable');
         if (activatables.length > 0) {
@@ -881,40 +895,11 @@ define('views/Header', [
     },
     
     _checkActivatable: function() {
-      var vocModel = this.vocModel;
-      
-      this._activatable = false;
-      if (!/^view/.test(this.hash))
-        return;
-      
-      if (this.resource.isA('Activatable')) {
-        this.activatedProp = vocModel.properties[U.getCloneOf(vocModel, 'Activatable.activated')[0]];
-        if (this.activatedProp && U.isPropEditable(this.resource, this.activatedProp)) {
-          this._activatable = true;
-        }
-      }
-        
-      if (!this.resource.isA('FolderItem'))
-        return;
-      
-      var pName = this.hashParams.$rootFolderProp || U.getCloneOf(vocModel, 'FolderItem.rootFolder')[0] || U.getCloneOf(vocModel, 'FolderItem.folder')[0],
-          rootFolder = this.resource ? this.resource.get(pName) : this.hashParams[pName] || this.hashParams.$rootFolder;
-      
-      if (pName) {
-        this._isFolderItem = true;
-        this.folderProp = vocModel.properties[pName];
-        
-        if (rootFolder)
-          this.rootFolder = rootFolder;
-        else
-          this.rootFolder = this.resource.get(pName);
-      }
+      if (this.activatedProp && this.resource.isLoaded() && !_.has(this, '_activatable'))
+        this._activatable = this.activatedProp && U.isPropEditable(this.resource, this.activatedProp);
     },
     
     renderHelper: function() {
-      if (!_.has(this, '_activatable'))
-        this._checkActivatable();
-      
       var self = this;
       var isJQM = G.isJQM(); //!wl  ||  wl == 'Jquery Mobile';
       var res = this.resource; // undefined, if this is a header for a collection view
@@ -963,19 +948,12 @@ define('views/Header', [
 
       var tmpl_data = this.getBaseTemplateData();
 
-      tmpl_data.isActivatable = this._activatable;
-      if (this._activatable)
-        tmpl_data.activatedProp = this.activatedProp;
-
-      tmpl_data.isFolderItem = this._isFolderItem;
-      if (this._isFolderItem) {
-        tmpl_data.folderProp = this.folderProp;
-      }
-      
+      tmpl_data.activatedProp = this.activatedProp;
+      tmpl_data.folderProp = this.folderProp;      
 
 //      tmpl_data.physics = this.getPhysicsConstants(); //Physics.scrollerConstants[this._scrollerType]);
       if (U.isChatPage()) {
-//        tmpl_data.more = $.param({
+//        tmpl_data.more = _.param({
 //          "data-position": "fixed"
 //        });
       }

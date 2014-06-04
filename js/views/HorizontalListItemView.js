@@ -226,18 +226,18 @@ define('views/HorizontalListItemView', [
           target = U.makePageUrl('view', resource);
         else {
           if (isFriendApp) {
-            var and1 = $.param({
+            var and1 = _.param({
               fromApp: iValues.a,
               toApp: iValues.b
             });
 
-            var and2 = $.param({
+            var and2 = _.param({
               fromApp: iValues.b,
               toApp: iValues.a
             });
 
             target = U.makePageUrl('list', G.commonTypes.Handler, {
-              $or: U.makeOrGroup($.param({$and: and1}), $.param({$and: and2}))
+              $or: U.makeOrGroup(_.param({$and: and1}), _.param({$and: and2}))
             });
           }
           else {

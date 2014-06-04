@@ -2,7 +2,7 @@
 var __started = new Date(),
     ArrayProto = Array.prototype;
 
-_.extend(_, {
+_.extend($, {
   RESOLVED_PROMISE: $.Deferred().resolve().promise(),
   whenAll: function() {
     var args = [].slice.call(arguments),
@@ -37,7 +37,7 @@ _.extend(_, {
             }            
           };
     
-      $.each(args, function(item, idx) {
+      args.forEach(function(item, idx) {
         item.always(resolveOrReject.bind(item)); 
       });
     }).promise();
@@ -374,7 +374,7 @@ define('globals', function() {
         defaultVocPath = G.defaultVocPath;
     
     G.serverNameHttp = G.serverName.replace(/^[a-zA-Z]+:\/\//, 'http://');
-    $.extend(G, {
+    _.extend(G, {
       appUrl: G.serverName + '/' + G.pageRoot,
       sqlUrl: G.serverNameHttp + '/' + G.sqlUri,
       hostName: getDomain().split('.')[0],
@@ -842,7 +842,7 @@ define('globals', function() {
           def = G.minifyByDefault;
 
       var pruned = [];
-      var cachedPromises = $.map(modules, function(dmInfo, i) {
+      var cachedPromises = modules.map(function(dmInfo, i) {
         var url;
         for (var n in dmInfo) {
           url = n;
@@ -1174,15 +1174,7 @@ define('globals', function() {
       hash = window.location.hash ? window.location.hash.slice(1) : window.location.href.slice(window.location.href.indexOf(Lablz.pageRoot) + Lablz.pageRoot.length + 1),
       query = hash.split('?')[1],
       decode = decodeURIComponent,
-      params = query ? (function() {
-        var pairs = query.split('&'), map = {};
-        $.each(pairs, function(pair, idx) {
-          pair = pair.split('=');
-          map[decode(pair[0])] = decode(pair[1]);
-        });
-          
-        return map;
-      })() : {},
+      params = _.toQueryParams(query),
       head = doc.getElementsByTagName('head')[0],
       body = doc.getElementsByTagName('body')[0],
 //      $head = $('head'),
@@ -1213,7 +1205,7 @@ define('globals', function() {
     G.setOnline(true);
   }, false);
 
-  $.extend(G, {
+  _.extend(G, {
     _widgetLibrary: G.currentApp.widgetLibrary || 'topcoat',
     isJQM: function() {
       return G.getWidgetLibrary().toLowerCase() == 'jquery mobile';
@@ -1828,7 +1820,7 @@ define('globals', function() {
       separator = separator || '/';
       var parts = path.split(separator);
       var stack = [];
-      $.each(parts, function(part, idx) {
+      _.each(parts, function(part, idx) {
         if (part == '..')
           stack.pop();
         else

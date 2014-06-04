@@ -150,7 +150,7 @@ define('views/ControlPanel', [
 //          info.params = U.filterObj(info.params, U.isMetaParameter);
 //          info.params[U.getCloneOf(blModel, 'Templatable.isTemplate')[0]] = true;
 //          info.params[bl.backLink] = baseVal;
-//          info.params.$template = $.param(params);
+//          info.params.$template = _.param(params);
 //        }
 //        
 //        if (U.isA(model, 'Folder') && U.isA(blModel, 'FolderItem')) {
@@ -267,7 +267,7 @@ define('views/ControlPanel', [
 //  
 //        params[prop.backLink] = self.resource.getUri();
 //        
-//        self.router.navigate('make/{0}?{1}'.format(encodeURIComponent(prop.range), $.param(params)), {trigger: true});
+//        self.router.navigate('make/{0}?{1}'.format(encodeURIComponent(prop.range), _.param(params)), {trigger: true});
 //        G.log(self.TAG, 'add', 'user wants to add to backlink');
       });
     },

@@ -229,7 +229,7 @@
  {{ if (obj.value) { }}  
    <a role="button" data-propName="{{= shortName }}"  style="width:auto;padding:2px 10px;margin:3px;text-align:left; border: 1px solid #ccc;min-width:115px; {{= U.isAssignableFrom(this.vocModel, 'Tradle') ? 'float:right;color:#ddd;' : 'float:left;'}} background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
      <!-- {{= obj.icon ? '<i class="' + icon + '" style="font-size:20px;top:35%"></i>' : '' }} -->
-     <span>{{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="float: right;position:relative;color:#000;margin:-14px -10px 0 0;" class="counter">' + value + '</span>' : ''  }}</span>
+     <span>{{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="float: right;color:#000;" class="counter">' + value + '</span>' : ''  }}</span>
    </a>
  {{ } }}
 </script>
@@ -459,13 +459,13 @@
     {{ if (this.filter) { }}
       <div style="margin:10px 0 0 10px; position:absolute;"><a class="filterToggle lightText" href="#"><i class="ui-icon-fasearch"></i></a></div> 
     {{ }                  }}
-    {{ if (isFolderItem) { }}
-      <a class="rootFolder actionBtn" style="display: none; position: absolute; padding: 4px 10px; margin: 10px 10px 0 10px; font-size: 1.5rem;" href="{{= U.makePageUrl('view', this.rootFolder) }}">
+    {{ if (folderProp) { }}
+      <a class="rootFolder actionBtn" style="display: none; position: absolute; padding: 4px 10px; margin: 10px 10px 0 10px; font-size: 1.5rem;" href="#">
         <i class="ui-icon-chevron-left" style="padding: 0px 3px 0px 0px"></i>
-        <span>{{= U.getPropDisplayName(this.folderProp) }}</span>
+        <span>{{= U.getPropDisplayName(folderProp) }}</span>
       </a>
     {{ }                     }}
-    {{ if (isActivatable) { }}
+    {{ if (activatedProp) { }}
       <section class="activatable" style="float: right; display: none;">
         <label class="pack-switch" style="right: 2rem;top:0rem;left:auto;position:absolute;color:{{= G.darkColor }};">
           <input type="checkbox" name="{{= activatedProp.shortName }}" class="formElement boolean" {{= this.resource.get(activatedProp.shortName) ? 'checked="checked"' : '' }} />

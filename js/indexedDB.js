@@ -134,6 +134,8 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
         _item = item; // for now we don't need a new object
     
     delete item.__tasks__; // HACK
+    delete item.primary;
+    
     for (var prop in item) {
       var val = item[prop];
       

@@ -13,8 +13,7 @@ define('views/ResourceListView', [
   'vocManager',
   'physicsBridge'
 ], function(G, U, DOM, Events, BasicView, /*Scrollable, */ ResourceMasonryItemView, ResourceListItemView, ResourceList, Q, Voc, Physics) {
-  var $wnd = $(window),
-      doc = document,
+  var doc = document,
       MASONRY_FN = 'masonry', // in case we decide to switch to Packery or some other plugin
       ITEM_SELECTOR = '.masonry-brick';
 
@@ -961,20 +960,17 @@ define('views/ResourceListView', [
     },
     
     prefetch: function(num) {
-      if (true)
-        return;
-      
-      num = num || this.options.bricksPerPage * this.options.minPagesInSlidingWindow;
-      var total = this.collection.getTotal(),
-          availableRange = this.collection.getRange();
-      
-      if (total)
-        num = Math.min(num, total - availableRange[1]);
-      
-      if (num) {
-        this.log("Prophylactic prefetching: " + num + " bricks");
-        this.fetchResources(availableRange[1], availableRange[1] + num);
-      }
+//      num = num || this.options.bricksPerPage * this.options.minPagesInSlidingWindow;
+//      var total = this.collection.getTotal(),
+//          availableRange = this.collection.getRange();
+//      
+//      if (total)
+//        num = Math.min(num, total - availableRange[1]);
+//      
+//      if (num) {
+//        this.log("Prophylactic prefetching: " + num + " bricks");
+//        this.fetchResources(availableRange[1], availableRange[1] + num);
+//      }
     },
 
     onResourceChanged: function(res) { // attach/detach when sliding window moves

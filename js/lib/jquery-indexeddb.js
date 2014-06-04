@@ -1,5 +1,6 @@
 //'use strict';
 define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDBShim' : []), function(G) {
+  window.$ = window.$ || {};
   var usingShim = G.dbType == 'shim';
 	var indexedDB = usingShim ? window.shimIndexedDB : window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
   var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
@@ -55,7 +56,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
       pendingTransDfd.resolve();
   };
 
-  $.extend($, {
+  _.extend($, {
     /**
      * The IndexedDB object used to open databases
      * @param {Object} dbName - name of the database
@@ -90,7 +91,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
               };
               idbRequest.onerror = function(e) {
 //								log("req failed", idbRequest, e, this);
-                debugger;
+//                debugger;
                 log("req failed");
                 dfd.rejectWith(idbRequest, [idbRequest.error, e]);
               };
@@ -248,7 +249,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
         },
 
         "range": function(r) {
-          if ($.isArray(r)) {
+          if (_.isArray(r)) {
             if (r.length === 1) {
               return IDBKeyRange.only(r[0]);
             } else {
@@ -458,7 +459,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
         }
       });
 
-      return $.extend(dbPromise, {
+      return _.extend(dbPromise, {
         "cmp": function(key1, key2) {
           return indexedDB.cmp(key1, key2);
         },
@@ -485,7 +486,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
           });
         },
         "transaction": function(storeNames, mode) {
-          !$.isArray(storeNames) && (storeNames = [storeNames]);
+          !_.isArray(storeNames) && (storeNames = [storeNames]);
           mode = getDefaultTransaction(mode);
           return $.Deferred(function(dfd) {
             var idbTransaction;

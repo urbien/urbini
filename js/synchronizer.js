@@ -221,10 +221,14 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
   Synchronizer.prototype._onDBError = function(err) {
     if (this.options.dbOnly)
       this._error(this.data, {type: 'not_found'}, this.options);            
-    else if (G.online)
-      this._fetchFromServer();
+    else if (G.online) {
+      if (U.isModel(this.data) && this.data.isNew())
+        this._error(this.data, {code: 400, type: 'not_found'});
+      else
+        this._fetchFromServer();
+    }
     else if (this._isSyncRequest())
-      this._error(this.data, {type: 'offline'}, this.options);      
+      this._error(this.data, {type: 'offline'}, this.options);
   };
 
   Synchronizer.prototype._isStale = function() {

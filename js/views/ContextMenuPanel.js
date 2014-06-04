@@ -414,7 +414,7 @@ define('views/ContextMenuPanel', [
         }
         
         if (pageTemplate) {
-          var fragment = "static/?" + $.param({
+          var fragment = "static/?" + _.param({
             template: pageTemplate
           });
           
@@ -466,7 +466,7 @@ define('views/ContextMenuPanel', [
       
       if (isList) {
         var grab = {
-          filter: $.param(this.collection.params), 
+          filter: _.param(this.collection.params), 
           grabClass: this.vocModel.type,
           title: pageTitle
         };
@@ -478,7 +478,7 @@ define('views/ContextMenuPanel', [
         html += this.menuItemTemplate({
           title: pageTitle, 
           data: {
-            grab: $.param(grab)
+            grab: _.param(grab)
           }
         });
         
@@ -491,7 +491,7 @@ define('views/ContextMenuPanel', [
       
       var grab = {
         grabClass: this.vocModel.type,
-        filter: $.param({SELF: uri}),
+        filter: _.param({SELF: uri}),
         title: pageTitle
       };
       
@@ -504,13 +504,13 @@ define('views/ContextMenuPanel', [
 //        U.addToFrag(frag, this.menuItemTemplate({
 //          title: resName, 
 //          data: {
-//            grab: $.param(grab)
+//            grab: _.param(grab)
 //          }
 //        }));
         html += this.menuItemTemplate({
           title: resName, 
           data: {
-            grab: $.param(grab)
+            grab: _.param(grab)
           }
         });
       }
@@ -524,7 +524,7 @@ define('views/ContextMenuPanel', [
         var propName = U.getPropDisplayName(blProp);
         var grab = {
           grabClass: U.getTypeUri(blProp.range),
-          filter: $.param(qParams),
+          filter: _.param(qParams),
           title: resName + ' - ' + propName
         };
         
@@ -539,7 +539,7 @@ define('views/ContextMenuPanel', [
         U.addToFrag(frag, this.menuItemTemplate({
           title: propName, 
           data: {
-            grab: $.param(grab)
+            grab: _.param(grab)
           }
         }));
       }
@@ -585,7 +585,7 @@ define('views/ContextMenuPanel', [
             var cOf = U.getCloneOf(this.vocModel, 'CollaborationPoint.members');
             if (cOf  &&  cOf.length) { 
               var loc = window.location.href;
-              loc += (loc.indexOf('?') == -1 ? '?' : '&') + $.param({
+              loc += (loc.indexOf('?') == -1 ? '?' : '&') + _.param({
                 "-info": this.loc("youHaveSubscribedToNotificationsForThisResource")
               });
               

@@ -1045,7 +1045,7 @@ define('models/Resource', [
           debugger;
           var where = {$or: blProp.whereOr};
           try {
-            var testFunction = U.buildValueTester($.param(where), blVocModel);
+            var testFunction = U.buildValueTester(_.param(where), blVocModel);
           } catch (err) {
             log('error', err); // for example, the where clause might assume a logged in user
           }

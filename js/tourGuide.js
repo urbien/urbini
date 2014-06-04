@@ -235,7 +235,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       params.$in = 'tour,' + _.map(tours, function(t) { return t.getUri(); }).join(',');
     
     return $.Deferred(function(defer) {
-      var myTours = C.getResourceList(MY_TOUR_MODEL, $.param(params));
+      var myTours = C.getResourceList(MY_TOUR_MODEL, _.param(params));
       
       if (!myTours) {
         myTours = new ResourceList(null, {
@@ -379,7 +379,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
           $and: U.$and.apply(null, ands),
           $select: 'app,route,modelType'
         },
-        tours = C.getResourceList(TOUR_MODEL, $.param(params)),
+        tours = C.getResourceList(TOUR_MODEL, _.param(params)),
         tour;
       
       if (!tours) {
@@ -567,7 +567,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       var stepParams = {
             tour: tourUri
           },
-          steps = C.getResourceList(STEP_MODEL, $.param(stepParams));
+          steps = C.getResourceList(STEP_MODEL, _.param(stepParams));
       
       if (!steps) {
         steps = new ResourceList(null, {model: STEP_MODEL, params: stepParams});

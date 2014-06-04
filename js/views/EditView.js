@@ -180,7 +180,7 @@ define('views/EditView', [
 //      if (G.isJQM())
 //        $(this.form).find("input:checkbox:not(:checked):not(:disabled)").prop('checked', true).checkboxradio('refresh').change();
 //      else {
-        this.form.$("input:checkbox:not(:checked):not(:disabled)").$forEach(function(c) {
+        this.getForm().$("input:checkbox:not(:checked):not(:disabled)").$forEach(function(c) {
           c.checked = true;
         });
 //      }
@@ -193,7 +193,7 @@ define('views/EditView', [
 //      if (G.isJQM())
 //        $(this.form).find("input:checkbox:checked:not(:disabled)").prop('checked', false).checkboxradio('refresh').change();
 //      else {
-        this.form.$("input:checkbox:not(:checked):not(:disabled)").$forEach(function(c) {
+        this.getForm().$("input:checkbox:not(:checked):not(:disabled)").$forEach(function(c) {
           c.checked = false;
         });
 //      }
@@ -616,7 +616,7 @@ define('views/EditView', [
 //            $title: 'Add-ons',
 //            $forResource: this.resource.get('implementor')
 //          };
-//        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + $.param(rParams), {trigger: true});
+//        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + _.param(rParams), {trigger: true});
 //        return;
 //      }
 //
@@ -669,13 +669,13 @@ define('views/EditView', [
       _.extend(this, params);
     },
     resetForm: function() {
-      clearForm(this.$('form'));      
+      clearForm(this.$('form'));
     },
     getInputs: function() {
-      return this.form.$('[data-formEl]');
+      return this.getForm().$('[data-formEl]');
     },
     getScrollers: function() {
-      return this.form.$('.' + scrollerClass);
+      return this.getForm().$('.' + scrollerClass);
     },
     
     refreshScrollers: function() {
@@ -694,7 +694,7 @@ define('views/EditView', [
         errors = resource;
       
       var badInputs = [];
-      var errDiv = this.form.querySelectorAll('div[name="errors"]');
+      var errDiv = this.getForm().$('div[name="errors"]');
       errDiv.$empty();
       errDiv = errDiv[0];
 //      errDiv.empty();
@@ -720,7 +720,7 @@ define('views/EditView', [
         if (input) {
           badInputs.push(input);
           var id = input.id;
-          var err = this.form.querySelector('label.error[for="{0}"]'.format(id));
+          var err = this.getForm().$('label.error[for="{0}"]'.format(id))[0];
           if (err) {
             err.innerText = msg;
             madeError = true;
@@ -911,18 +911,18 @@ define('views/EditView', [
         if (options && options.fromPageChange)
           return;
                 
-        if (returnUri) {
-          var nextUrlInfo = U.getUrlInfo(returnUri),
-              currentUrlInfo = U.getCurrentUrlInfo();
-              
-          if (nextUrlInfo.route != currentUrlInfo.route || 
-              nextUrlInfo.type != currentUrlInfo.type || 
-              nextUrlInfo.uri != currentUrlInfo.uri || 
-              _.isEqual(U.filterObj(nextUrlInfo.params, U.isNativeModelParameter), U.filterObj(currentUrlInfo.params, U.isNativeModelParameter))) {
-            Events.trigger('navigate', returnUri);
-            return;
-          }
-        }
+//        if (returnUri) {
+//          var nextUrlInfo = U.getUrlInfo(returnUri),
+//              currentUrlInfo = U.getCurrentUrlInfo();
+//              
+//          if (nextUrlInfo.route != currentUrlInfo.route || 
+//              nextUrlInfo.type != currentUrlInfo.type || 
+//              nextUrlInfo.uri != currentUrlInfo.uri || 
+//              _.isEqual(U.filterObj(nextUrlInfo.params, U.isNativeModelParameter), U.filterObj(currentUrlInfo.params, U.isNativeModelParameter))) {
+//            Events.trigger('navigate', returnUri);
+//            return;
+//          }
+//        }
         
         var prevHash = this.getPreviousHash();
         if (prevHash && !prevHash.startsWith('chooser/'))
@@ -986,7 +986,7 @@ define('views/EditView', [
 //            successUrl: G.serverName + '/' + G.pageRoot + '#aspects%2fcommerce%2fTransaction?transactionType=Deposit&$orderBy=dateSubmitted&$asc=0'
           };
           
-          Events.trigger('navigate', 'make/aspects%2fcommerce%2fTransaction?' + $.param(params));
+          Events.trigger('navigate', 'make/aspects%2fcommerce%2fTransaction?' + _.param(params));
         }, 2000);
         return;
       }
@@ -1018,7 +1018,14 @@ define('views/EditView', [
     
     onsuccess: function() {
       var self = this, res = this.resource;
-      var props = _.extend({}, this.originalResource, U.filterObj(res.getUnsavedChanges(), function(name, val) {return /^[a-zA-Z]+/.test(name)})); // starts with a letter
+      var unsaved = res.getUnsavedChanges();
+      var props = {};
+      for (var p in unsaved) {
+        if (/^[a-zA-Z]+/.test(p) && this.originalResource[p] != unsaved[p])
+          props[p] = unsaved[p];
+      }
+      
+//      _.extend({}, this.originalResource, U.filterObj(res.getUnsavedChanges(), function(name, val) {return /^[a-zA-Z]+/.test(name)})); // starts with a letter
 //      var props = atts;
       if (this.isEdit && _.isEmpty(props)) {
 //        debugger; // user didn't modify anything?
@@ -1280,6 +1287,11 @@ define('views/EditView', [
       
       return false;
     },
+    
+    getForm: function() {
+      return this.form || (this.form = this.$('form')[0]);
+    },
+    
     /**
      * @return select list, checkbox, radio button, all other non-text and non-resource-ranged property inputs
      */
@@ -1305,7 +1317,10 @@ define('views/EditView', [
       
       var res = this.resource;
       if (!this.originalResource)
-        this.originalResource = U.filterObj(res.attributes, U.isModelParameter);
+        this.originalResource = U.filterObj(res.attributes, function(p, val) {
+          var prop = meta[p];
+          return prop && !prop.backLink && U.isModelParameter(p); 
+        });
       
       var type = res.type,
           reqParams = this.hashParams,
@@ -1413,7 +1428,7 @@ define('views/EditView', [
 //      }
 
       var doc = document;
-      var form = this.form = this.$('form')[0];
+      var form = this.form = this.getForm();
       
       if (this.isForInterfaceImplementor) {
 //        var start = +new Date();
@@ -1526,7 +1541,7 @@ define('views/EditView', [
           this.setValues(name, value);
       }
       
-      form.getElementsByTagName('input').$on('keydown', this._onKeyDownInInput); // end of function
+//      form.getElementsByTagName('input').$on('keydown', this._onKeyDownInInput); // end of function
       var edits = res.getUnsavedChanges();
       form.getElementsByClassName('resourceProp').$forEach(function(resProp) {
         // TODO: disable resource chooser buttons for image range properties that have cameraOnly annotation      

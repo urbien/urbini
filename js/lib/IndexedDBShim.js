@@ -5,6 +5,23 @@ define('indexedDBShim', ['taskQueue', 'utils'], function(TaskQueue, U) {
  * An initialization file that checks for conditions, removes console.log and warn, etc
  */
 var idbModules = window.idbModules = {};
+
+var cleanInterface = false;
+(function () {
+    var testObject = {test: true};
+    //Test whether Object.defineProperty really works.
+    if (Object.defineProperty) {
+        try {
+            Object.defineProperty(testObject, 'test', { enumerable: false });
+            if (testObject.test) {
+                cleanInterface = true;
+            }
+        } catch (e) {
+        //Object.defineProperty does not work as intended.
+        }
+    }
+})();
+
 /*jshint globalstrict: true*/
 (function(idbModules) {
     /**
@@ -30,7 +47,7 @@ var idbModules = window.idbModules = {};
      */
 
     function throwDOMException(name, message, error) {
-        var e = new DOMException.constructor(0, message);
+        var e = new DOMException.prototype.constructor(0, message);
         e.name = name;
         e.message = message;
         if (idbModules.DEBUG) {
@@ -48,7 +65,7 @@ var idbModules = window.idbModules = {};
         this.length = 0;
         this._items = [];
         //Internal functions on the prototype have been made non-enumerable below.
-        if (Object.defineProperty) {
+        if (cleanInterface) {
             Object.defineProperty(this, '_items', {
                 enumerable: false
             });
@@ -87,7 +104,7 @@ var idbModules = window.idbModules = {};
             }
         }
     };
-    if (Object.defineProperty) {
+    if (cleanInterface) {
         for (var i in {
             'indexOf': false,
             'push': false,
@@ -345,7 +362,7 @@ var idbModules = window.idbModules = {};
                                 switch(value.$type) {
                                     case 'blob':
                                     case 'file': 
-                                        value = U.dataURLToBlob(value.$enc);
+                                        value = dataURLToBlob(value.$enc);
                                         break;
                                     case 'bool':
                                         value = Boolean(value.$enc === 'true');
@@ -564,13 +581,14 @@ var idbModules = window.idbModules = {};
         this.__range = range;
         this.source = this.__idbObjectStore = idbObjectStore;
         this.__req = cursorRequest;
-        
+
         this.key = undefined;
         this.direction = direction;
-        
+
         this.__keyColumnName = keyColumnName;
         this.__valueColumnName = valueColumnName;
-        
+        this.__valueDecoder = valueColumnName === "value" ? idbModules.Sca : idbModules.Key;
+
         if (!this.source.transaction.__active) {
             idbModules.util.throwDOMException("TransactionInactiveError - The transaction this IDBObjectStore belongs to is not active.");
         }
@@ -581,8 +599,10 @@ var idbModules = window.idbModules = {};
 
         this["continue"]();
     }
-    
-    IDBCursor.prototype.__find = function(key, tx, success, error){
+
+    IDBCursor.prototype.__find = function (key, tx, success, error, recordsToLoad) {
+        recordsToLoad = recordsToLoad || 1;
+
         var me = this;
         var sql = ["SELECT * FROM ", idbModules.util.quote(me.__idbObjectStore.name)];
         var sqlValues = [];
@@ -608,40 +628,67 @@ var idbModules = window.idbModules = {};
             sqlValues.push(idbModules.Key.encode(me.__lastKeyContinued));
         }
         sql.push("ORDER BY ", me.__keyColumnName);
-        sql.push("LIMIT 1 OFFSET " + me.__offset);
+        sql.push("LIMIT " + recordsToLoad + " OFFSET " + me.__offset);
         idbModules.DEBUG && console.log(sql.join(" "), sqlValues);
-        tx.executeSql(sql.join(" "), sqlValues, function(tx, data){
-            if (data.rows.length === 1) {
-                var key = idbModules.Key.decode(data.rows.item(0)[me.__keyColumnName]);
-                var primaryKey = idbModules.Key.decode(data.rows.item(0).key);
-                var val = me.__valueColumnName === "value" ? idbModules.Sca.decode(data.rows.item(0)[me.__valueColumnName]) : idbModules.Key.decode(data.rows.item(0)[me.__valueColumnName]);
-                success(key, val, primaryKey);
+
+        me.__prefetchedData = null;
+        tx.executeSql(sql.join(" "), sqlValues, function (tx, data) {
+
+            if (data.rows.length > 1) {
+                me.__prefetchedData = data.rows;
+                me.__prefetchedIndex = 0;
+                idbModules.DEBUG && console.log("Preloaded " + me.__prefetchedData.length + " records for cursor");
+                me.__decode(data.rows.item(0), success);
+            }
+            else if (data.rows.length === 1) {
+                me.__decode(data.rows.item(0), success);
             }
             else {
                 idbModules.DEBUG && console.log("Reached end of cursors");
                 success(undefined, undefined);
             }
-        }, function(tx, data){
+        }, function (tx, data) {
             idbModules.DEBUG && console.log("Could not execute Cursor.continue");
             error(data);
         });
     };
-    
-    IDBCursor.prototype["continue"] = function(key){
+
+    IDBCursor.prototype.__decode = function (rowItem, callback) {
+        var key = idbModules.Key.decode(rowItem[this.__keyColumnName]);
+        var val = this.__valueDecoder.decode(rowItem[this.__valueColumnName]);
+        var primaryKey = idbModules.Key.decode(rowItem.key);
+        callback(key, val, primaryKey);
+    };
+
+    IDBCursor.prototype["continue"] = function (key) {
+        var recordsToPreloadOnContinue = idbModules.cursorPreloadPackSize || 100;
         var me = this;
-        this.__idbObjectStore.transaction.__addToTransactionQueue(function(tx, args, success, error){
+
+        this.__idbObjectStore.transaction.__addToTransactionQueue(function (tx, args, success, error) {
+
             me.__offset++;
-            me.__find(key, tx, function(key, val, primaryKey){
+
+            var successCallback = function(key, val, primaryKey) {
                 me.key = key;
                 me.value = val;
                 me.primaryKey = primaryKey;
                 success(typeof me.key !== "undefined" ? me : undefined, me.__req);
-            }, function(data){
-                error(data);
-            });
+            };
+
+            if (me.__prefetchedData) {
+                // We have pre-loaded data for the cursor
+                me.__prefetchedIndex++;
+                if (me.__prefetchedIndex < me.__prefetchedData.length) {
+                    me.__decode(me.__prefetchedData.item(me.__prefetchedIndex), successCallback);
+                    return;
+                }
+            }
+            // No pre-fetched data, do query
+            me.__find(key, tx, successCallback, error, recordsToPreloadOnContinue);
+
         });
     };
-    
+
     IDBCursor.prototype.advance = function(count){
         if (count <= 0) {
             idbModules.util.throwDOMException("Type Error - Count is invalid - 0 or negative", count);
@@ -653,15 +700,13 @@ var idbModules = window.idbModules = {};
                 me.key = key;
                 me.value = value;
                 success(typeof me.key !== "undefined" ? me : undefined, me.__req);
-            }, function(data){
-                error(data);
-            });
+            }, error);
         });
     };
-    
+
     IDBCursor.prototype.update = function(valueToUpdate){
         var me = this,
-            request = this.__idbObjectStore.transaction.__createRequest(function(){}); //Stub request
+                request = this.__idbObjectStore.transaction.__createRequest(function(){}); //Stub request
         idbModules.Sca.encode(valueToUpdate, function(encoded) {
             me.__idbObjectStore.transaction.__pushToQueue(request, function(tx, args, success, error){
                 me.__find(undefined, tx, function(key, value, primaryKey){
@@ -677,14 +722,12 @@ var idbModules = window.idbModules = {};
                     }, function(tx, data){
                         error(data);
                     });
-                }, function(data){
-                    error(data);
-                });
+                }, error);
             });
         });
         return request;
     };
-    
+
     IDBCursor.prototype["delete"] = function(){
         var me = this;
         return this.__idbObjectStore.transaction.__addToTransactionQueue(function(tx, args, success, error){
@@ -703,12 +746,10 @@ var idbModules = window.idbModules = {};
                 }, function(tx, data){
                     error(data);
                 });
-            }, function(data){
-                error(data);
-            });
+            }, error);
         });
     };
-    
+
     idbModules.IDBCursor = IDBCursor;
 }(idbModules));
 
@@ -785,6 +826,7 @@ var idbModules = window.idbModules = {};
                                 tx.executeSql("UPDATE __sys__ set indexList = ? where name = ?", [me.__idbObjectStore.__storeProps.indexList, me.__idbObjectStore.name], function(){
                                     me.__idbObjectStore.__setReadyState("createIndex", true);
                                     defer.resolve();
+//                                    success(me);
                                 }, error);
                             }
                         }(0));
@@ -1382,7 +1424,6 @@ var idbModules = window.idbModules = {};
       transaction.tq.queueTask("create object store " + storeName, function() {
         var defer = this;
         transaction.__addToTransactionQueue(function(tx, args, success, failure){
-//        transaction.db.__db.transaction(function(tx){
             function error(){
                 defer.reject();
                 idbModules.util.throwDOMException(0, "Could not create new object store", arguments);
@@ -1402,7 +1443,7 @@ var idbModules = window.idbModules = {};
                     defer.resolve(result);
                 }, error);
             }, error);
-          });
+        });
         }, false, 100);
         
         // The IndexedDB Specification needs us to return an Object Store immediatly, but WebSQL does not create and return the store immediatly
@@ -1425,7 +1466,7 @@ var idbModules = window.idbModules = {};
         me.objectStoreNames.splice(me.objectStoreNames.indexOf(storeName), 1);
         
         var transaction = me.__versionTransaction;
-        transaction.db.__db.transaction(function(tx){
+        transaction.__addToTransactionQueue(function(tx, args, success, failure){
             if (!me.__versionTransaction) {
                 idbModules.util.throwDOMException(0, "Invalid State error", me.transaction);
             }
@@ -1447,7 +1488,7 @@ var idbModules = window.idbModules = {};
     };
     
     IDBDatabase.prototype.transaction = function(storeNames, mode){
-        var transaction = new idbModules.IDBTransaction(storeNames, typeof mode == 'undefined' ? 1 : mode, this);
+        var transaction = new idbModules.IDBTransaction(storeNames, mode || 1, this);
         return transaction;
     };
     
@@ -1648,6 +1689,12 @@ var idbModules = window.idbModules = {};
                 window.IDBCursor = idbModules.IDBCursor;
                 window.IDBIndex = idbModules.IDBIndex;
                 window.IDBKeyRange = idbModules.IDBKeyRange;
+                // On some browsers the assignment fails, overwrite with the defineProperty method
+                if (window.indexedDB !== idbModules.shimIndexedDB && Object.defineProperty) {
+                    Object.defineProperty(window, 'indexedDB', {
+                        value: idbModules.shimIndexedDB
+                    });
+                }
             };
             window.shimIndexedDB.__debug = function(val){
                 idbModules.DEBUG = val;
@@ -1662,7 +1709,18 @@ var idbModules = window.idbModules = {};
         window.indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.oIndexedDB || window.msIndexedDB;
     }
     
-    if (typeof window.indexedDB === "undefined" && typeof window.openDatabase !== "undefined") {
+    /*
+    detect browsers with known IndexedDb issues (e.g. Android pre-4.4)
+    */
+    var poorIndexedDbSupport = false;
+    if (navigator.userAgent.match(/Android 2/) || navigator.userAgent.match(/Android 3/) || navigator.userAgent.match(/Android 4\.[0-3]/)) {
+        /* Chrome is an exception. It supports IndexedDb */
+        if (!navigator.userAgent.match(/Chrome/)) {
+            poorIndexedDbSupport = true;
+        }
+    }
+
+    if ((typeof window.indexedDB === "undefined" || poorIndexedDbSupport) && typeof window.openDatabase !== "undefined") {
         window.shimIndexedDB.__useShim();
     }
     else {
@@ -1676,10 +1734,12 @@ var idbModules = window.idbModules = {};
         if(!window.IDBTransaction){
             window.IDBTransaction = {};
         }
+        /* Some browsers (e.g. Chrome 18 on Android) support IndexedDb but do not allow writing of these properties */
+        try {
         window.IDBTransaction.READ_ONLY = window.IDBTransaction.READ_ONLY || "readonly";
         window.IDBTransaction.READ_WRITE = window.IDBTransaction.READ_WRITE || "readwrite";
+        } catch (e) {}
     }
     
 }(window, idbModules));
-
 })
