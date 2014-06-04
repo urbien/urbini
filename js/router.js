@@ -220,17 +220,19 @@ define('router', [
       });
 
 
-      // a hack to prevent browser address bar from dropping down
-      // see: https://forum.jquery.com/topic/stopping-the-url-bar-from-dropping-down-i-discovered-a-workaround
-      $('[data-role="page"]').on('pagecreate',function(event) {
-        $('a[href]', this).each(function() {
-            var self = $(this);
-            if (!self.is( "[rel='external']" ) ) {
-                self.attr('link', self.attr('href'));
-                self.removeAttr('href');
-            }
+      if (G.isJQM()) {
+        // a hack to prevent browser address bar from dropping down
+        // see: https://forum.jquery.com/topic/stopping-the-url-bar-from-dropping-down-i-discovered-a-workaround
+        $('[data-role="page"]').on('pagecreate',function(event) {
+          $('a[href]', this).each(function() {
+              var self = $(this);
+              if (!self.is( "[rel='external']" ) ) {
+                  self.attr('link', self.attr('href'));
+                  self.removeAttr('href');
+              }
+          });
         });
-      });
+      }
 
       Events.on('uriChanged', function(tempUri, data) {
         self.checkUpdateHash(tempUri, U.getValue(data, '_uri'));
@@ -440,18 +442,17 @@ define('router', [
     },
 
     choose: function(path) { //, checked, props) {
-//      if (!Redirecter.getCurrentChooserBaseResource()) {
-//        var forResource = U.getCurrentUrlInfo().params.$forResource;
-//        if (forResource)
-//          Events.trigger('navigate', U.makeMobileUrl('view', forResource), { replace: true });
-//        else
-//          Events.trigger('back');
-//        
-//        return;
-//      }
-        
-      if (this.routePrereqsFulfilled('choose', arguments))
+      if (this.routePrereqsFulfilled('choose', arguments)) {
+        if (!Redirecter.getCurrentChooserBaseResource()) {
+          var forResource = U.getCurrentUrlInfo().params.$forResource;
+          if (!forResource) {
+            Events.trigger('back');
+            return;
+          }
+        }
+          
         this.list(path, G.LISTMODES.CHOOSER); //, {checked: checked !== 'n', props: props ? props.slice(',') : []});
+      }
     },
 
     /**

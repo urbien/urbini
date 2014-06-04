@@ -1,4 +1,4 @@
-define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G, Templates, Q, Events) {
+define('domUtils', ['globals', 'lib/fastdom', 'events', 'templates'], function(G, Q, Events, Templates) {
   var doc = document,
       LAZY_DATA_ATTR = G.lazyImgSrcAttr,
       LAZY_ATTR = LAZY_DATA_ATTR.slice(5),
@@ -453,25 +453,27 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       
       $fadeTo: function(targetOpacity, time, callback) {
         targetOpacity = targetOpacity || 0;
-        var self = this,
-            opacityInterval = 0.1,
+        var style = this.style,
+            opacity = parseFloat(style.opacity),
             timeInterval = 40,
-            opacity,
+            opacityInterval = Math.abs(targetOpacity - opacity) / (time / timeInterval),
+            multiplier = targetOpacity - opacity > 0 ? 1 : -1,
             diff;
         
         (function fader() {        
-          opacity = self.opacity;
-          if (time <= 0 || opacity - targetOpacity <= opacityInterval) {
-            self.opacity = targetOpacity;
+          if (time <= 0 || Math.abs(targetOpacity - opacity) <= opacityInterval) {
+            style.opacity = targetOpacity;
             if (targetOpacity == 0)
-              self.display = "none";
+              style.display = "none";
             
             if (callback)
               callback.call(self);
           }
           else {
-            self.opacity -= opacityInterval;
-            setTimeout(fader, time -= timeInterval);
+            time = time - timeInterval;
+            opacity += opacityInterval * multiplier;
+            style.opacity = opacity;
+            setTimeout(fader, timeInterval);
           }
         })();
         
@@ -1262,6 +1264,13 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
 //      tmp.body.$empty(); //childNodes.$remove();
 //      return copy;
     },
+
+//    parseHTML1: function(html) {
+//      var tmp = document.implementation.createHTMLDocument();
+//      tmp.body.innerHTML = html;
+//      tmp.innerHTML = html;
+//      return tmp.body.children; // live NodeList
+//    },
     
     /**
      * Replaces all of a's child nodes with b's
@@ -1278,7 +1287,14 @@ define('domUtils', ['globals', 'templates', 'lib/fastdom', 'events'], function(G
       var frag = document.createDocumentFragment();
       return frag.querySelectorAll("html");
     },
-    
+    window: {
+      width: function() {
+        return doc.documentElement.clientWidth;
+      },
+      height: function() {
+        return doc.documentElement.clientHeight;
+      }      
+    },
     transparentStyle: TRANSPARENT_STYLE,
     opaqueStyle: OPAQUE_STYLE,
     hideStyle: HIDE_STYLE,

@@ -305,7 +305,11 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
          * @return {this}
          */
         subscribe: function( topic, fn, scope, priority ){
-
+            if (fn == undefined) {
+              console.debug("UNDEFINED listener: " + topic, scope, priority);
+              debugger;
+            }
+            
             var listeners = this._topics[ topic ] || (this._topics[ topic ] = [])
                 ,orig = fn
                 ,idx
@@ -3597,7 +3601,8 @@ Physics.geometry.nearestPointOnLine = function nearestPointOnLine( pt, linePt1, 
             }
 
             this.publish({
-                topic: 'step'
+                topic: 'step',
+                dt: diff
             });
             return this;
         },
@@ -3821,9 +3826,7 @@ Physics.integrator('verlet', function( parent ){
          */
         integratePositions: function( bodies, dt ){
 
-            // half the timestep
-            var dtdt = dt * dt
-                ,body = null
+            var body = null
                 ,state
                 ;
 

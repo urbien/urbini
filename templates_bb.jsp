@@ -354,9 +354,9 @@
 
 <script type="text/template" id="rightMenuButtonTemplate">
   <!-- button that toggles the object properties panel -->
-  <a target="#" href="#{{= viewId }}" style="color: {{= G.darkColor }};"><i class="{{= obj.icon || 'ui-icon-reorder' }}"></i></a><!-- {{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }} -->
+  <span target="#" href="#{{= viewId }}" style="cursor: pointer; color: {{= G.darkColor }};"><i class="{{= obj.icon || 'ui-icon-reorder' }}"></i></a><!-- {{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }} -->
     {{= !this.viewId  ||  this.viewId.indexOf('viewHome') != -1 ? '' : '<span class="menuBadge">{0}</span>'.format(obj.newAlerts || '') }}
-  </a>
+  </span>
 </script>
 
 <script type="text/template" id="loginButtonTemplate">

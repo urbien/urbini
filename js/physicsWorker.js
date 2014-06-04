@@ -697,7 +697,8 @@ function Action(options) {
       trackedAction = options.track,
       action,
       previousRatio = 0,
-      goingBackwards = false;
+      goingBackwards = false,
+      defaultTimestep = WORLD_CONFIG.timestep;
 
   if (!(!!_onstep ^ !!_onIV ^ !!_onIP))
     throw "actions can currently only subscribe to ONE of 'integrate:positions', 'integrate:velocities' or 'step' events";
@@ -768,18 +769,18 @@ function Action(options) {
     return true;
   };
   
-  function setupIterator(fn, dt) {
+  function setupIterator(fn) {
     return function(data) {
       var ratio = this.ratio();
       if (canIterate(ratio)) {
-        timePassed += (dt || data.dt);
+        timePassed += data.dt;
         start();
         fn.call(this, ratio);
       }      
     }
   };
   
-  onstep = _onstep && setupIterator(_onstep, LAST_STEP_DT);  
+  onstep = _onstep && setupIterator(_onstep);  
   onIP = _onIP && setupIterator(_onIP);
   onIV = _onIV && setupIterator(_onIV);
   
@@ -1298,6 +1299,16 @@ function initWorld(_world, stepSelf) {
 	  Physics.util.ticker.subscribe(API.step);
 	
 	Physics.util.extend(Physics.util, {
+	  once: function(func) { // from underscore
+      var ran = false, memo;
+      return function() {
+        if (ran) return memo;
+        ran = true;
+        memo = func.apply(this, arguments);
+        func = null;
+        return memo;
+      };
+	  },
 	  extendArray: function(target, source) {
 	    var i = source.length;
 	    while (i--) {
@@ -1770,6 +1781,8 @@ function getRectVertices(width, height) {
           doSlidingWindow = this.slidingWindow,
           constantsEvent;
       
+//      Physics.util.bindAll(this);
+      
       this.reset();
       this._listeners = {};
       this.scrollbarId = this.scrollbar;
@@ -1826,22 +1839,7 @@ function getRectVertices(width, height) {
         this.flexigroup.mass = 10000;
         this.flexigroup.state.pos.setComponent(this.axisIdx, this.flexigroupOffset);
         this.flexigroup.state.pos.setComponent(this.orthoAxisIdx, this.bounds[this.aabbOrthoAxisDim]);
-        this._subscribe('remove:body', function(data) {
-          var body = data.body;
-          if (~this.getBricks().indexOf(body)) {
-            var csts = this.constraints,
-                i = csts.length;
-            
-            while (i--) {
-              c = csts[i];
-              if (body == c.bodyA) {
-//                constrainer.remove(c);
-                Physics.util.removeFromTo(csts, i, i + 1);
-                break;
-              }
-            }
-          }
-        }, this);
+        this._subscribe('remove:body', this._onRemoveBody);
       }
       else {
         this.flexigroupOffset = 0;
@@ -1882,7 +1880,7 @@ function getRectVertices(width, height) {
         
 //      if (doSlidingWindow) {
 //        this._subscribe('integrate:velocities', this._onIntegrateVelocities, this, -Infinity); // lowest priority
-        this._subscribe('integrate:positions', this._onIntegratePositions, this, -Infinity); // lowest priority
+        this._subscribe('integrate:positions', this._onIntegratePositions, 1); // lowest priority
 //        this._onIntegratePositions = Physics.util.throttle(this._onIntegratePositions.bind(this), 30);
 //        this._onIntegrateVelocities = Physics.util.throttle(this._onIntegrateVelocities.bind(this), 30);
 //        Physics.util.bindAll(this, '_onIntegratePositions'); //, '_onIntegrateVelocities');
@@ -1925,102 +1923,12 @@ function getRectVertices(width, height) {
 //      }, this);
 
       constantsEvent = (this.scrollerType ? this.scrollerType + ':' : '') + 'constants';
-      this._subscribe(constantsEvent, function(data) {
-        var name = data.name,
-            value = data.value;
-        
-        this[name] = value;
-        
-        switch (name) {
-        case 'springDamping':
-          this.headEdgeConstraint.damp(value);
-          if (this.tailEdgeConstraint)
-            this.tailEdgeConstraint.damp(value);
-          
-          break;
-        case 'springStiffness':
-          this.headEdgeConstraint.stiffness = value;
-          if (this.tailEdgeConstraint)
-            this.tailEdgeConstraint.stiffness = value;
-          
-          break;
-        case 'drag':
-          
-          break;
-//        case 'drag':
-//          var bricks = this.mason.bricks,
-//              i = bricks.length,
-//              brick;
-//          
-//          while (i--) {
-//            brick = bricks[i];
-//            if (!brick.options.hasOwnProperty('drag'))
-//              airDragBodies.push(bricks[i]);
-//              
-//            brick.options.drag = value;
-//          }
-//
-//          if (!this.container.options.hasOwnProperty('drag'))
-//            airDragBodies.push(this.container);
-//
-//          this.container.options.drag = value;
-//          break;
-        }
-      }, this);
-
-      this._subscribe('beforeRender', function() {
-        var bricks = this.mason.bricks,
-            brick,
-            i = bricks.length;
-        
-        if (this._sleeping) {
-          while (i--) {
-            brick = bricks[i];
-            API.completePendingActions(brick);
-            world.removeBody(brick);
-          }
-          
-          if (this.scrollbar)
-            world.removeBody(this.scrollbar);
-
-          return;
-        }
-        else if (!this._transitioning) {
-          while (i--) {
-            this.beforeRender(bricks[i]);
-          }          
-        }
-      }, this);
+      this._subscribe(constantsEvent, this._onConstantEvent);
+      this._subscribe('beforeRender', this._onBeforeRender);
+      this._subscribe('postRender', this._onPostRender);
       
-      this._subscribe('integrate:positions', function() {
-        if (!this._sleeping && !this._transitioning) {
-          if (this.scrollbar) 
-            this._updateScrollbar();
-          
-          if (this.tilt)
-            this.tiltBricksInertially();
-        }
-      }, this);
-      
-      this._subscribe('postRender', function() {
-        if (this._sleeping && this.mason.bricks.length) {
-          world.remove(this.mason.bricks);
-          return;
-        }        
-      });
-      
-      if (this.jiggle) {
-        this._subscribe('sleep:' + this.id, function() {
-          var bricks = this.mason.bricks,
-              brick,
-              i = this.mason.bricks.length;
-          
-          while (i--) {
-            brick = bricks[i];
-            brick.state.renderData.set('rotate', ZERO_ROTATION); // TODO: when 3d rotation comes to physics, use the actual physical rotation
-          }
-        });
-      }
+      if (this.jiggle)
+        this._subscribe('sleep:' + this.id, this._onSleep);
       
       if (this.squeeze) 
         API.squashAndStretch(this.offsetBody, this.offsetBody);
@@ -2032,29 +1940,162 @@ function getRectVertices(width, height) {
       this['continue']();
     },
     
+    _onSleep: function() {
+      var bricks = this.mason.bricks,
+          brick,
+          i = this.mason.bricks.length;
+      
+      while (i--) {
+        brick = bricks[i];
+        brick.state.renderData.set('rotate', ZERO_ROTATION); // TODO: when 3d rotation comes to physics, use the actual physical rotation
+      }
+    },
+    
+    _onConstantEvent: function(data) {
+      var name = data.name,
+          value = data.value;
+      
+      this[name] = value;
+      
+      switch (name) {
+      case 'springDamping':
+        this.headEdgeConstraint.damp(value);
+        if (this.tailEdgeConstraint)
+          this.tailEdgeConstraint.damp(value);
+        
+        break;
+      case 'springStiffness':
+        this.headEdgeConstraint.stiffness = value;
+        if (this.tailEdgeConstraint)
+          this.tailEdgeConstraint.stiffness = value;
+        
+        break;
+      case 'drag':
+        
+        break;
+//      case 'drag':
+//        var bricks = this.mason.bricks,
+//            i = bricks.length,
+//            brick;
+//        
+//        while (i--) {
+//          brick = bricks[i];
+//          if (!brick.options.hasOwnProperty('drag'))
+//            airDragBodies.push(bricks[i]);
+//            
+//          brick.options.drag = value;
+//        }
+//
+//        if (!this.container.options.hasOwnProperty('drag'))
+//          airDragBodies.push(this.container);
+//
+//        this.container.options.drag = value;
+//        break;
+      }
+    },
+    
+    _onBeforeRender: function() {
+      var bricks = this.mason.bricks,
+          brick,
+          i = bricks.length;
+      
+      if (this._sleeping) {
+        while (i--) {
+          brick = bricks[i];
+          API.completePendingActions(brick);
+          world.removeBody(brick);
+        }
+        
+        if (this.scrollbar)
+          world.removeBody(this.scrollbar);
+
+        return;
+      }
+      else if (!this._transitioning) {
+        while (i--) {
+          this.beforeRender(bricks[i]);
+        }          
+      }
+    },
+    
+    _onPostRender: function() {
+      if (this._sleeping && this.numBricks()) {
+        world.remove(this.mason.bricks);
+        return;
+      }        
+    },
+    
+    _onRemoveBody: function(data) {
+      var body = data.body;
+      if (this.getBricks().indexOf(body) == -1)
+        return;
+      
+      var csts = this.constraints,
+          i = csts.length;
+      
+      while (i--) {
+        c = csts[i];
+        if (body == c.bodyA) {
+//              constrainer.remove(c);
+          Physics.util.removeFromTo(csts, i, i + 1);
+          break;
+        }
+      }
+    },
+    
     _subscribe: function(event, handler, priority) {
-      world.subscribe(event, handler, this, priority);
-      var handlers = this._listeners[event] = this._listeners[event] || [];
+      var orig = handler,
+          handlers = this._listeners[event] = this._listeners[event] || [];
+      
+      handler = handler.bind(this);
+      handler._orig = orig;
+      world.subscribe(event, handler, null, priority);      
       handlers.push(handler);
+    },
+    
+    _once: function(event, handler, priority) {
+      var self = this;
+      var proxy = Physics.util.once(function() {
+        handler.apply(this, arguments);
+        self._unsubscribe(event, proxy);
+      });
+      
+      this._subscribe(event, proxy, priority);
     },
 
     _unsubscribe: function(event, handler) {
+//      if (onNextTick) {
+        var self = this;
+        setTimeout(function() {
+          self._doUnsubscribe(event, handler);
+        }, 1);
+//      }
+//      else
+//        self._doUnsubscribe(event, handler);
+    },
+    
+    _doUnsubscribe: function(event, handler) {
       var handlers = this._listeners[event],
-          i = handlers.length;
+          i = handlers.length,
+          unsubscribed = false;
       
       while (i--) {
-        if (handler) {
-          if (handler == handlers[i]) {
-            world.unsubscribe(event, handler);
-            handlers.splice(i, 1);
-            break;
-          }
+        var hi = handlers[i];
+        if (handler && (handler == hi || handler == hi._orig)) {
+          world.unsubscribe(event, hi);
+          handlers.splice(i, 1);
+          unsubscribed = true;
+          break;
         }
         else {
-          world.unsubscribe(event, handlers[i]);
+          world.unsubscribe(event, hi);
           handlers.length--;
+          unsubscribed = true;
         }
       }
+      
+      if (!unsubscribed)
+        debugger;
     },
     
     breakHeadEdgeConstraint: function(data) {
@@ -2849,8 +2890,17 @@ function getRectVertices(width, height) {
 //    },
 
     _onIntegratePositions: function() {
+      if (this._sleeping || this._transitioning)
+        return;
+      
+      if (this.scrollbar) 
+        this._updateScrollbar();
+      
+      if (this.tilt)
+        this.tiltBricksInertially();
+      
 //      this.offsetBody.state.renderData.set('perspective-origin-y', (-offset|0) + 'px');
-      if (this._sleeping || this._waiting || this._transitioning)
+      if (this._waiting)
         return;      
 
       var offset = this.offsetBody.state.pos.get(this.axisIdx),
@@ -3025,6 +3075,7 @@ function getRectVertices(width, height) {
     unsetLimit: function() {
       this.brickLimit = Infinity;
       if (this.tailEdge) {
+        debugger;
         this._unsubscribe('drag', this.breakTailEdgeConstraint);          
         this._unsubscribe('dragend', this.breakTailEdgeConstraint);          
         API.removeConstraint(this.tailEdgeConstraint);
@@ -3446,11 +3497,10 @@ function getRectVertices(width, height) {
         debugger;
         return;
       }
-      
-      this._subscribe('postRender', function doRemove() {
-        this._unsubscribe('postRender', doRemove); // so we can render them invisible
+
+      this._once('postRender', function doRemove() {
         world.remove(bricks);
-      }, this);
+      });
       
       while (i--) {
         brick = bricks[i];
@@ -3762,6 +3812,30 @@ function getRectVertices(width, height) {
       this.offsetBody.stop(coords[0], coords[1]);
       this.enableEdgeConstraints();
       log(this.containerId + ": Enabling edge constraints on jump to END");
+    },
+    
+    page: function(numPages) {
+      var coords = this.getTailEdgeCoords(),
+          body = this.offsetBody,
+          pos = body.state.pos,
+          pageHeight = 2 * BOUNDS.halfHeight(),
+          currentPage = Math.round(-pos.get(1) / pageHeight),
+          newPage = Math.max(currentPage + numPages, 0),
+          newY = Math.min(pageHeight * newPage, -coords[1]);
+      
+      API.cancelPendingActions(body);
+      console.log("New Page: " + newPage);
+      console.log("New Y: " + newY);
+      console.log("Tail edge: " + coords[1]);
+      API.snapTo({
+        body: body,
+        stiffness: 0.03,
+        damping: 0.5,
+        drag: 0.1,
+        x: pos.get(0), 
+        y: -newY, 
+        z: pos.get(2)
+      });
     }
   }
   
@@ -3782,7 +3856,7 @@ var API = {
   step: function(time, dt) {
     LAST_STEP_TIME = time;
     LAST_STEP_DT = dt;
-    world.step(time);
+    world.step(time, dt);
     // only render if not paused
     if ( RERENDER && !world.isPaused() ) {
 //      log("RERENDERING");
@@ -4383,6 +4457,37 @@ var API = {
     body.stop(destination);
   },
 
+//  /**
+//   * @options {
+//   *   body: {String} bodyId,
+//   *   pages: {Number} pages down to go (up is negative)
+//   *   
+//   * }
+//   */
+//  page: function(options) {
+//    var body = getBody(options.body),
+//        pos = body.state.pos,
+//        pageHeight = 2 * BOUNDS.halfHeight(),
+//        currentPage = Math.floor(-pos.get(1) / pageHeight),
+//        newPage = Math.max(currentPage + options.pages, 0),
+//        newY = pageHeight * newPage;
+//    
+//    console.log("New Page: " + newPage);
+//    console.log("New Y: " + newY);
+//    API.snapTo({
+//      body: body,
+////      a: options.a || 0.02,
+////      drag: 0.9,
+////      atmosphereRadius: 
+//      stiffness: 0.03,
+//      damping: 0.5,
+//      drag: 0.1,
+//      x: pos.get(0), 
+//      y: -newY, 
+//      z: pos.get(2)
+//    });
+//  },
+  
   snapTo: function(options) {
     var self = this,
         body = getBody(options.body),

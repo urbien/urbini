@@ -395,3 +395,18 @@ body > .section:not([data-role="page"]) {
      -moz-filter: brightness(0.8);
           filter: brightness(0.8);
 }
+
+.paging {
+  width:100%; 
+  text-align:center; 
+  position: absolute; 
+  cursor: pointer;
+}
+
+.pgDown {
+  bottom: 0;
+}
+
+.pgUp {
+  top: 0;
+}

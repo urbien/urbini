@@ -6,12 +6,12 @@ define('views/HorizontalListView', [
   'views/ResourceListView',
   'views/HorizontalListItemView',
 //  'views/mixins/Scrollable',
-  'views/mixins/LazyImageLoader',
+//  'views/mixins/LazyImageLoader',
   'domUtils'
-], function(G, U, Events, ResourceListView, HorizontalListItemView, LazyImageLoader, DOM) {
+], function(G, U, Events, ResourceListView, HorizontalListItemView, /*LazyImageLoader,*/ DOM) {
   var mixins = [];
-  if (G.lazifyImages)
-    mixins.unshift(LazyImageLoader);
+//  if (G.lazifyImages)
+//    mixins.unshift(LazyImageLoader);
   
   return ResourceListView.extend({
     mixins: mixins,

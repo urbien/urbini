@@ -268,8 +268,8 @@ define('views/Header', [
             id: 'backtestDialog',
             header: 'Dry run the Tradle first?',
 //            title: 'Click <b>Activate</b> to activate your Tradle without a dry run',
-            details: '<p style="width:100%; text-align:center; font-style:italic;">(A dry run tests how this Tradle <br /> would perform in the last 5 days)</p>',
-            img: 'http://mark.urbien.com/urbien/images/tradle/target-practice-orange.png',
+            details: '<p style="width:100%; text-align:center; font-style:italic;">(A dry run tests how this Tradle <br /> would perform in the last 7 days)</p>',
+            img: '/images/tradle/target-practice-orange.png',
 //            bgImg: 'http://mark.urbien.com/urbien/images/tradle/target-practice-orange.png',
             ok: 'Do a dry run',         // pass true to get default string 'Ok', or false to not have a button
             cancel: 'Activate immediately',    // pass true to get default string 'Cancel', or false to not have a button

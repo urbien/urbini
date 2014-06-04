@@ -1125,7 +1125,7 @@ define('models/Resource', [
     
     clearErrors: function(data) {
 //      delete data._problematic;
-      this.unset('_error');
+      this.unset('_error', { silent: true });
     },
     
     getUnsavedChanges: function() {

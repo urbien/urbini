@@ -225,7 +225,7 @@ define('views/ControlPanel', [
         }
         
         var meta = pModel.properties,
-            title = _.getParamMap(window.location.hash).$title,
+            title = self.hashParams.$title,
             propA = meta[a],
             propB = meta[b],
             aUri = a == prop.backLink ? self.resource.get('_uri') : null,

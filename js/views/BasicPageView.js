@@ -6,23 +6,24 @@ define('views/BasicPageView', [
   'events',
   'error',
   'views/BasicView',
-  'views/mixins/LazyImageLoader',
+//  'views/mixins/LazyImageLoader',
 //  'views/mixins/Scrollable',
   'lib/fastdom',
   '@widgets',
   'domUtils'
 //  ,
 //  'jqueryImagesLoaded'
-], function(G, _, U, Events, Errors, BasicView, LazyImageLoader, Q, $m, DOM) {
+], function(G, _, U, Events, Errors, BasicView, /*LazyImageLoader,*/ Q, $m, DOM) {
   var MESSAGE_BAR_TYPES = ['info', 'error', 'tip', 'countdown'],
       pageEvents = ['page_show', 'page_hide', 'page_beforeshow'],
       doc = document,
-      viewport = G.viewport,
-      mixins = [];
+      viewport = G.viewport;
+//  ,
+//      mixins = [];
 //      mixins = [Scrollable];
 
-  if (G.lazifyImages)
-    mixins.unshift(LazyImageLoader);
+//  if (G.lazifyImages)
+//    mixins.unshift(LazyImageLoader);
   
   function isInsideDraggableElement(element) {
     return !!$(element).parents('[draggable=true]').length;
@@ -60,7 +61,7 @@ define('views/BasicPageView', [
       'transform-origin': '50% 50%',
       perspective: '1000px'
     },
-    mixins: mixins,
+//    mixins: mixins,
 //    constructor: function(options) {
 //      options = options || {};
 //      var atts = options.attributes = options.attributes || {};
@@ -468,10 +469,11 @@ define('views/BasicPageView', [
         });
         
         bar.render(data);
-        bar.$el.css({opacity: 0});
-        self.$el.prepend(bar.$el);
+        bar.el.style.opacity = 0;
+        self.el.$prepend(bar.el);
+        bar.el.$fadeTo(1, 500);
         self.trigger('messageBarsAdded', bar);
-        bar.$el.animate({opacity: 1}, 500);
+//        bar.$el.animate({opacity: 1}, 500);
         
         self.listenToOnce(Events, 'messageBar.{0}.clear.{1}'.format(type, data.id || G.nextId()), bar.destroy, bar);
       });

@@ -291,6 +291,7 @@ define('resourceSynchronizer', [
         props = vocModel.properties;
 
     if (!IDB.hasStore(type)) {
+      Voc.getModels(type);
 //      Events.trigger('modelsChanged', type);
 //      if (vocModel.superClasses.length)
 //        type = vocModel.superClasses[0];
@@ -484,9 +485,11 @@ define('resourceSynchronizer', [
         }, dfd.reject);
       },
       error: function(model, xhr, options) {
-        var code = xhr.status || xhr.code;
-        if (code < 200) // timeout probably
+        var code = xhr.status || xhr.code; 
+        if (code < 200) { // timeout probably
+          resource.clearErrors();
           return ResourceSynchronizer.sync();
+        }
         
         switch (code) {
 //          case 409:

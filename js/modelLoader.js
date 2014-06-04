@@ -5,11 +5,11 @@ define('modelLoader', [
   'utils', 
   'models/Resource', 
   'collections/ResourceList', 
-  'apiAdapter', 
+//  'apiAdapter', 
   'indexedDB',
   'lib/fastdom',
   'cache'
-], function(G, _, Events, U, Resource, ResourceList, API, IndexedDBModule, Q, C) {
+], function(G, _, Events, U, Resource, ResourceList, /*API,*/ IndexedDBModule, Q, C) {
   var MODEL_CACHE = [],
       MODEL_PREFIX = 'model:',
       ENUMERATIONS_KEY = 'enumerations',
@@ -203,7 +203,7 @@ define('modelLoader', [
       promise = getMetadata().then(function(storedInfo) {
         var getDataPromise;
         if (info.lastModified) {
-          var lm = Math.max(info.lastModified, G.lastModified);
+          var lm = Math.max(info.lastModified || 0, G.lastModified || 0);
           if (lm > storedInfo.lastModified)
             return requireType();
           else {
@@ -222,7 +222,7 @@ define('modelLoader', [
         return (getDataPromise || getData()).then(function(jModel) {            
           if (jModel) {
             mightBeStale.infos[type] = {
-              lastModified: storedInfo.lastModified
+              lastModified: storedInfo.lastModified || 0
             };
           
             mightBeStale.models[type] = jModel;
@@ -369,7 +369,10 @@ define('modelLoader', [
     var mz = data.models || [],
         more = data.linkedModelsMetadata;
     
-    G.lastModified = Math.max(data.lastModified, G.lastModified);
+    if (isNaN(data.lastModified) || isNaN(G.lastModified))
+      debugger;
+    
+    G.lastModified = Math.max(data.lastModified || 0, G.lastModified || 0);
     G.classUsage = _.union(G.classUsage, _.map(data.classUsage, U.getTypeUri));
     if (more) {
       _.extend(G.linkedModelsMetadata, U.mapObj(more, function(type, meta) {
@@ -469,44 +472,8 @@ define('modelLoader', [
     if (!m.prototype)
       m = Resource.extend({}, m);
     
-    if (m.adapter) {
-      var appProviderType = U.getLongUri1("model/social/AppProviderAccount"),
-          appConsumerType = U.getLongUri1("model/social/AppConsumerAccount");
-      
-      if (!U.getModel(appProviderType) || !U.getModel(appConsumerType)) {
-        // wait till those models (and the associated resource lists - app.js getAppAccounts()) are initialized 
-        ModelLoader.getModels([appProviderType, appConsumerType]).done(loadModel.bind(null, m));
-        return;
-      }
-      
-      var currentApp = G.currentApp,
-          consumers = currentApp.dataConsumerAccounts,
-          providers = currentApp.dataProviders,
-          consumer = consumers && _.where({ // consumers could be an array of json objects, or a resourcelist
-            provider: m.app
-          }),
-          // HACK!!!!! //
-//          provider = providers && providers.where({
-//            app: m.app
-//          }, true);      
-          provider = providers && providers.models[0];      
-          // END HACK //
-
-
-      if (!provider || !consumer)
-        delete m.adapter;
-      else {
-        m.API = new API(consumer, provider);
-        m.adapter = new Function('Events', 'Globals', 'ResourceList', 'Utils', 'Cache', 'API', "return " + m.adapter)(Events, G, ResourceList, U, C, m.API);
-      }
-      
-//      if (provider == null)
-//        throw new Error("The app whose data you are trying to use does not share its data");          
-//          
-//      if (consumer == null)
-//        throw new Error("This app is not configured to consume data from app '{0}'".format(provider.app));
-      
-    }
+//    if (m.adapter)
+//      setupAdapter(m);
 
     if (m.interfaces) {
       m.interfaces = _.map(m.interfaces, function(i) {
@@ -563,6 +530,44 @@ define('modelLoader', [
     
     return m;
   }
+  
+//  function setupAdapter(m) {
+//    var appProviderType = U.getLongUri1("model/social/AppProviderAccount"),
+//        appConsumerType = U.getLongUri1("model/social/AppConsumerAccount");
+//    
+//    if (!U.getModel(appProviderType) || !U.getModel(appConsumerType)) {
+//      // wait till those models (and the associated resource lists - app.js getAppAccounts()) are initialized 
+//      ModelLoader.getModels([appProviderType, appConsumerType]).done(loadModel.bind(null, m));
+//      return;
+//    }
+//    
+//    var currentApp = G.currentApp,
+//        consumers = currentApp.dataConsumerAccounts,
+//        providers = currentApp.dataProviders,
+//        consumer = consumers && _.where({ // consumers could be an array of json objects, or a resourcelist
+//          provider: m.app
+//        }),
+//        // HACK!!!!! //
+////        provider = providers && providers.where({
+////          app: m.app
+////        }, true);      
+//        provider = providers && providers.models[0];      
+//        // END HACK //
+//
+//
+//    if (!provider || !consumer)
+//      delete m.adapter;
+//    else {
+//      m.API = new API(consumer, provider);
+//      m.adapter = new Function('Events', 'Globals', 'ResourceList', 'Utils', 'Cache', 'API', "return " + m.adapter)(Events, G, ResourceList, U, C, m.API);
+//    }
+//    
+////    if (provider == null)
+////      throw new Error("The app whose data you are trying to use does not share its data");          
+////        
+////    if (consumer == null)
+////      throw new Error("This app is not configured to consume data from app '{0}'".format(provider.app));
+//  }
   
   function getInit() {
     var self = this;

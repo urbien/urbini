@@ -155,14 +155,26 @@ define('views/EditView', [
      * find all non-checked non-disabled checkboxes, check them, trigger jqm to repaint them and trigger a 'change' event so whatever we have tied to it is triggered (for some reason changing the prop isn't enough to trigger it)
      */
     checkAll: function() {
-      $(this.form).find("input:checkbox:not(:checked):not(:disabled)").prop('checked', true).checkboxradio('refresh').change();
+      if (G.isJQM())
+        $(this.form).find("input:checkbox:not(:checked):not(:disabled)").prop('checked', true).checkboxradio('refresh').change();
+      else {
+        this.form.$("input:checkbox:not(:checked):not(:disabled)").$forEach(function(c) {
+          c.checked = true;
+        });
+      }
     },
 
     /**
      * find all checked non-disabled checkboxes, uncheck them, trigger jqm to repaint them and trigger a 'change' event so whatever we have tied to it is triggered (for some reason changing the prop isn't enough to trigger it)
      */
     uncheckAll: function() {
-      $(this.form).find("input:checkbox:checked:not(:disabled)").prop('checked', false).checkboxradio('refresh').change();
+      if (G.isJQM())
+        $(this.form).find("input:checkbox:checked:not(:disabled)").prop('checked', false).checkboxradio('refresh').change();
+      else {
+        this.form.$("input:checkbox:not(:checked):not(:disabled)").$forEach(function(c) {
+          c.checked = false;
+        });
+      }
     },
 
     capturedImage: function(options) {
@@ -394,33 +406,34 @@ define('views/EditView', [
         G.log(this.TAG, 'testing', chosenRes.attributes);
         var props = {};
         var link = e.target;
-        if (!isBuy  &&  chosenRes.isA('Buyable')  &&  this.$el.find('.buyButton')) {
-  //        Events.trigger('buy', this.model);
-          var price = chosenRes.get('price');
-          if (price  &&  price.value) { 
-            Events.stopEvent(e);
-            var $popup = $('#buy_popup');
-            var dn = U.getDisplayName(chosenRes);
-            var msg = 'Try ' + chosenRes.vocModel.displayName + ': ' + dn + 'for free for 3 days'; // + ' for ' + price.currency + price.value;
-            var href = chosenRes.getUri();          
-            var html = this.popupTemplate({href: href, msg: msg, displayName: dn, title: 'New ' + chosenRes.vocModel.displayName});
-            if ($popup.length == 0) {
-              $($(document).find($('.ui-page-active'))[0]).append(html);
-              
-    //          $('body').append(html);
-              $popup = $('#buy_popup');
-            }
-            else {
-              $('#buyMsg').html(msg);
-              $('#buyLink').attr('href', href);
-              $('#tryLink').attr('href', href);
-              $('#buyName').html(dn);
-            }
-            $popup.trigger('create');
-            $popup.popup().popup("open");
-            return;
-          }
-        }
+//        if (!isBuy  &&  chosenRes.isA('Buyable')  &&  this.$el.find('.buyButton')) {
+//  //        Events.trigger('buy', this.model);
+//          var price = chosenRes.get('price');
+//          if (price  &&  price.value) { 
+//            Events.stopEvent(e);
+//            var $popup = $('#buy_popup');
+//            var dn = U.getDisplayName(chosenRes);
+//            var msg = 'Try ' + chosenRes.vocModel.displayName + ': ' + dn + 'for free for 3 days'; // + ' for ' + price.currency + price.value;
+//            var href = chosenRes.getUri();          
+//            var html = this.popupTemplate({href: href, msg: msg, displayName: dn, title: 'New ' + chosenRes.vocModel.displayName});
+//            if ($popup.length == 0) {
+//              G.activePage.$append(html);
+//              
+//    //          $('body').append(html);
+//              $popup = document.getElementById('buy_popup');
+//            }
+//            else {
+//              document.getElementById('buyMsg').$html(msg);
+//              document.getElementById('buyLink').href = href;
+//              document.getElementById('tryLink').href = href;
+//              document.getElementById('buyName').$html(dn);
+//            }
+//            
+//            $popup.trigger('create');
+//            $popup.popup().popup("open");
+//            return;
+//          }
+//        }
         
         var uri = chosenRes.getUri();
         props[prop] = uri;

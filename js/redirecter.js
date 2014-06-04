@@ -862,7 +862,12 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   };
   
   Redirecter.prototype.getCurrentChooserBaseResource = function() {
-    return this.currentChooser && this.currentChooser['for'];
+    if (this.currentChooser)
+      return this.currentChooser['for'];
+    else {
+      var forRes = U.getCurrentUrlInfo().params.$forResource;
+      return forRes && C.getResource(forRes);
+    }
   };
 
   Redirecter.prototype.isChooserFastForwarded = function() {

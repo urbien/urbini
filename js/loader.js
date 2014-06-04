@@ -283,7 +283,7 @@ define('globals', function() {
   };
   
   function getDomain() {
-    return G.serverName.match(/([^\.\/]+\.(?:[a-zA-Z]+))/)[0];
+    return window.location.host.match(/[a-zA-Z]+\.[a-zA-Z]+$/)[0];
   }
   
   function testCSS(prop) {

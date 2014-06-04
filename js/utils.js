@@ -1795,8 +1795,8 @@ define('utils', [
             }
           }
           else if (isResourceView) {
-            var ww = $(window).width();
-            if (ww < $(window).height()) {
+            var ww = DOM.window.width();//$(window).width();
+            if (ww < DOM.window.height()) {
               if (ww <= 340) 
                 cloneOf = U.getCloneOf(vocModel, 'ImageResource.bigMedium320')[0];
               else  if (ww <= 380) 
@@ -2906,6 +2906,8 @@ define('utils', [
     },
     
     makeHeaderTitle: function(pre, post) {
+      pre = pre || '';
+      post = post || '';
       return pre === post ? pre : pre + "&#160;<span style='padding: 0 7px;' class='ui-icon-caret-right'></span>&#160;" + post;
     },
 //    removeUnquotedWhitespace: function(text) {
