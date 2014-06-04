@@ -196,8 +196,10 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   window.onscroll = function(e) {
 //    debugger;
     console.log("NATIVE SCROLL: " + window.pageXOffset + ", " + window.pageYOffset);
-    if (window.pageYOffset != 1 || window.pageXOffset)
+    if (window.pageYOffset != 1 || window.pageXOffset) {
+      e.preventDefault();
       window.scrollTo(0, 1);
+    }
   };
   
 //  window.scrollTo(0, 1);
