@@ -1779,8 +1779,8 @@ define('globals', function() {
     
     _logArray: new Array(0),
     log: function(tag, type) {
-//      if (!G.DEBUG || !TRACE.ON || !console || !console.log || !type)
-//        return;
+      if (!G.DEBUG || !TRACE.ON || !console || !console.log || !type)
+        return;
       
       var types = typeof type == 'string' ? [type] : type;
       for (var i = 0; i < types.length; i++) {
