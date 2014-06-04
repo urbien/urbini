@@ -407,16 +407,19 @@ this.onmessage = function(e){
 
 function _onmessage(e) {
 	if (!world) {
-	  if (!e.data.physicsJSUrl)
+	  var physicsJSUrl = e.data.physicsJSUrl,
+	      masonryUrl = e.data.masonryUrl;
+	  
+	  if (!physicsJSUrl)
 	    throw "Missing required imports: Physics";
 
-    if (!e.data.masonryUrl)
+    if (!masonryUrl)
       throw "Missing required imports: Masonry";
 
-	  console.log("IMPORTING: " + e.data.physicsJSUrl);
-	  importScripts(e.data.physicsJSUrl);
-    console.log("IMPORTING: " + e.data.masonryUrl);
-	  importScripts(e.data.masonryUrl);
+	  console.log("IMPORTING: " + physicsJSUrl);
+	  importScripts(physicsJSUrl);
+    console.log("IMPORTING: " + masonryUrl);
+	  importScripts(masonryUrl);
 	  DEBUG = e.data.debug;
 //	  with (e.data.styleInfo) {
 	    // Transfer protocol props
@@ -4116,26 +4119,26 @@ var API = {
   accelerateLeft: function(options) {
     options.x = LEFT.state.pos.get(0);
     options.z = LEFT.state.pos.get(2);
-    this.accelerateTo(options);
+    API.accelerateTo(options);
   },
 
   accelerateRight: function(options) {
     options.x = RIGHT.state.pos.get(0);
     options.z = RIGHT.state.pos.get(2);
-    this.accelerateTo(options);
+    API.accelerateTo(options);
   },
 
   accelerateCenter: function(options) {
     options.x = ORIGIN.state.pos.get(0);
     options.z = ORIGIN.state.pos.get(2);
-    this.accelerateTo(options);
+    API.accelerateTo(options);
   },
   
   accelerateBy: function(options) {
     options.x = body.state.pos.get(0) + (options.x || 0);
     options.y = body.state.pos.get(1) + (options.y || 0);
     options.z = body.state.pos.get(2) + (options.z || 0);
-    return this.accelerateTo(options);
+    return API.accelerateTo(options);
   },
 
   /**
@@ -4827,11 +4830,9 @@ var API = {
 	    case 'both':
 	      break;
 	    case 'backward':
-  	    coeff *= -1;
-  	    break;
-  	    // fall through
-	    case 'forward':
         coeff *= -1;
+  	    /* fall through */
+	    case 'forward':
 	      v = Math.abs(v);
 	      break;
 	    }
@@ -4883,165 +4884,91 @@ var API = {
 //	  };
 	},
   
-//  rotateWhenMoving: function(movingBody, rotateBody, moveAxis, rotateAxis, doGradient) {
+//	skewWhenMoving: function(movingBody, skewBody, axis) {
 //    movingBody = getBody(movingBody);
-//    rotateBody = getBody(rotateBody);
-//    var minIncDelta = 0.001,
-//        minDecDelta = 0.0001,
-//        maxIncDelta = Infinity, // don't need it yet
-//        maxDecDelta = 0.0003,
-//        decDelta,
-////        minAngle = -Math.PI / 4
-////        maxAngle = Math.PI / 4,
-//        angles = [0, 0, 0],
-//        coeff,
+//    skewBody = getBody(skewBody);
+//	  
+////    var minDelta = 0.0001,
+////        maxDelta = 0.001,
+//    var minVel = 1,
+//        maxSkew = Math.PI / 4, // don't use a skew value past 45 degrees, it looks bad
+//        oldSkew,
+//        newSkew = [0, 0, 0],
+//        angle,
+//        rescale = false,
+//        newScale = [1, 1, 1],
+//        doScaleX = !axis || axis == 'x',
+//        doScaleY = !axis || axis == 'y',
 //        v,
-//        rotation,
-//        r,
-//        rMag,
-//        newR,
-//        newRMag,
-//        newRSign,
-//        rSign,
-//        bgPosition = [],
-//        _parseFloat = parseFloat.bind(self),
-//        thresh = 1;
+//        vMag,
+//        vx,
+//        vy,
+//        skewX,
+//        skewY
 //    
-//    world.subscribe('integrate:positions', function rotate() {
+//    world.subscribe('integrate:positions', function skew() {
 //      if (IS_DRAGGING || movingBody.fixed)
 //        return;
 //      
-//      coeff = CONSTANTS.tilt;
-//      v = Math.abs(Physics.util.truncate(movingBody.state.vel.get(moveAxis), 3));
-//      rotation = rotateBody.state.renderData.get('rotate');
-//      r = rotation[rotateAxis];
-//      if (v < thresh || hasDistanceConstraint(movingBody, true)) {
-//        decDelta = Math.max(r / 30, maxDecDelta);
-//        newR = Math.max(0, r - decDelta); // gradually kill tilt. If it's being pulled by a constraint, we don't want the tilt to go nuts first one way then the other
+//      v = movingBody.state.vel;
+//      vMag = v.norm();
+//      vx = Physics.util.truncate(v.get(0), 3);
+//      vy = Physics.util.truncate(v.get(1), 3);
+//      oldSkew = skewBody.state.renderData.get('skew');
+//      scale = skewBody.state.renderData.get('scale');
+//      Physics.util.extend(newSkew, oldSkew);
+//      Physics.util.extend(newScale, scale);      
+//      angle = Math.atan2(vy, vx);
+//      if (vMag > minVel) {
+//        rescale = true;
+//        
+//        // If the X velocity is greater, stretch in X, squash in Y. And vice versa
+//        if (Math.abs(vx) > Math.abs(vy)) {
+//          newScale[0] = 1 + ((0.5 - Math.abs(Math.cos(angle) * Math.sin(angle))) * Math.abs((vx / 10)));
+//          newScale[1] = 1 / newScale[0];
+//        }
+//        else {
+//          newScale[1] = 1 + ((0.5 - Math.abs(cos(angle) * sin(angle))) * Math.abs((vy / 10)));
+//          newScale[0] = 1 / newScale[1];
+//        }
+//
+//        if (!doScaleX)
+//          newScale[0] = scale[0];
+//        
+//        if (!doScaleY)
+//          newScale[1] = scale[1];
+//
+//        skewX = -maxSkew * Math.sin(angle) * Math.cos(angle) * vMag / 10;
+//        Physics.util.clamp(skewX, -maxSkew, maxSkew);
 //      }
 //      else {
-//        newR = coeff * Math.log(v + 1 - thresh) / 10;
-//        newR = Physics.util.clamp(newR, r - maxDecDelta, r + maxIncDelta);
-//        if (newR < r)
-//          newR = Math.min(newR, r - minDecDelta);
-//        else
-//          newR = Math.max(newR, r + minIncDelta);
+//        skewX = 0;
+//        if (newScale[0] != 0 || newScale[1] != 0 || newScale[2] != 0) {
+//          newScale[0] = newScale[1] = newScale[2] = 1;
+//          rescale = true;
+//        }
 //      }
-//      
-//      if (Math.abs(newR) < minDecDelta) {
-//        if (r == 0)
-//          return;
-//        else
-//          newR = 0;
-//      }
-////      else if (Math.abs(newR - r) < minDelta)
-////        return;
 //
-//      if (doGradient) {
-//        Physics.util.extend(bgPosition, rotateBody.state.renderData.get('background-position').match(/\d+/ig));
-//        bgPosition[rotateAxis ^ 1] = Physics.util.clamp(50 + 10 * 100 * newR | 0, 0, 100) + '%';
-//        rotateBody.state.renderData.set('background-position', bgPosition.join(' '));
+//      if (newSkew[0] != skewX) {
+//        newSkew[0] = skewX;
+//  //      newSkew[1] = skewY;
+//        skewBody.state.renderData.set('skew', newSkew);
 //      }
 //      
-////      log("ROTATION: " + newR + " for VELOCITY: " + v);
-//      Physics.util.extend(angles, rotation);
-//      angles[rotateAxis] = newR;
-//      rotateBody.state.renderData.set('rotate', angles);
+//      if (rescale) {
+//        skewBody.state.renderData.set('scale', newScale);
+//        rescale = false;
+//      }
 //    });
 //    
 //    world.subscribe('remove:body', function unsub(data) {
-//      if (data.body == movingBody || data.body == rotateBody) {
+//      if (data.body == movingBody || data.body == skewBody) {
 //        world.unsubscribe('remove:body', unsub);
-//        world.unsubscribe('integrate:positions', rotate);
+//        world.unsubscribe('integrate:positions', skew);
 //      }
 //    });
 //  },
-	
-	skewWhenMoving: function(movingBody, skewBody, axis) {
-    movingBody = getBody(movingBody);
-    skewBody = getBody(skewBody);
-	  
-//    var minDelta = 0.0001,
-//        maxDelta = 0.001,
-    var minVel = 1,
-        maxSkew = Math.PI / 4, // don't use a skew value past 45 degrees, it looks bad
-        oldSkew,
-        newSkew = [0, 0, 0],
-        angle,
-        rescale = false,
-        newScale = [1, 1, 1],
-        doScaleX = !axis || axis == 'x',
-        doScaleY = !axis || axis == 'y',
-        v,
-        vMag,
-        vx,
-        vy,
-        skewX,
-        skewY
-    
-    world.subscribe('integrate:positions', function skew() {
-      if (IS_DRAGGING || movingBody.fixed)
-        return;
-      
-      v = movingBody.state.vel;
-      vMag = v.norm();
-      vx = Physics.util.truncate(v.get(0), 3);
-      vy = Physics.util.truncate(v.get(1), 3);
-      oldSkew = skewBody.state.renderData.get('skew');
-      scale = skewBody.state.renderData.get('scale');
-      Physics.util.extend(newSkew, oldSkew);
-      Physics.util.extend(newScale, scale);      
-      angle = Math.atan2(vy, vx);
-      if (vMag > minVel) {
-        rescale = true;
-        
-        // If the X velocity is greater, stretch in X, squash in Y. And vice versa
-        if (Math.abs(vx) > Math.abs(vy)) {
-          newScale[0] = 1 + ((0.5 - Math.abs(Math.cos(angle) * Math.sin(angle))) * Math.abs((vx / 10)));
-          newScale[1] = 1 / newScale[0];
-        }
-        else {
-          newScale[1] = 1 + ((0.5 - Math.abs(cos(angle) * sin(angle))) * Math.abs((vy / 10)));
-          newScale[0] = 1 / newScale[1];
-        }
-
-        if (!doScaleX)
-          newScale[0] = scale[0];
-        
-        if (!doScaleY)
-          newScale[1] = scale[1];
-
-        skewX = -maxSkew * Math.sin(angle) * Math.cos(angle) * vMag / 10;
-        Physics.util.clamp(skewX, -maxSkew, maxSkew);
-      }
-      else {
-        skewX = 0;
-        if (newScale[0] != 0 || newScale[1] != 0 || newScale[2] != 0) {
-          newScale[0] = newScale[1] = newScale[2] = 1;
-          rescale = true;
-        }
-      }
-
-      if (newSkew[0] != skewX) {
-        newSkew[0] = skewX;
-  //      newSkew[1] = skewY;
-        skewBody.state.renderData.set('skew', newSkew);
-      }
-      
-      if (rescale) {
-        skewBody.state.renderData.set('scale', newScale);
-        rescale = false;
-      }
-    });
-    
-    world.subscribe('remove:body', function unsub(data) {
-      if (data.body == movingBody || data.body == skewBody) {
-        world.unsubscribe('remove:body', unsub);
-        world.unsubscribe('integrate:positions', skew);
-      }
-    });
-  },
-
+//
 //	trackDrag: function(body, type, bodies) {
 //	  body = getBody(body);
 //	  if (bodies)
@@ -5204,13 +5131,13 @@ var API = {
 var Matrix = {
   _recycled: [],
   recycle: function(m) {
-    if (this._recycled.length > 100)
-      this._recycled.length = 20;
+    if (Matrix._recycled.length > 100)
+      Matrix._recycled.length = 20;
     
-    this._recycled.push(m);
+    Matrix._recycled.push(m);
   },
   getNewMatrix: function() {
-    var m = this._recycled.pop() || [],
+    var m = Matrix._recycled.pop() || [],
         i = arguments.length;
     
     if (i) {
@@ -5234,7 +5161,7 @@ var Matrix = {
     return str;
   },
   identity: function() {
-    return this.getNewMatrix(
+    return Matrix.getNewMatrix(
       1, 0, 0, 0, 
       0, 1, 0, 0,
       0, 0, 1, 0,
@@ -5247,53 +5174,53 @@ var Matrix = {
       a[i] *= s;
     }
     
-    return this;
+    return Matrix;
   },
   scaleX: function(a, s) {
-    return this.scale3d(a, s, 1, 1);
+    return Matrix.scale3d(a, s, 1, 1);
   },
   scaleY: function(a, s) {
-    return this.scale3d(a, 1, s, 1);
+    return Matrix.scale3d(a, 1, s, 1);
   },
   scaleZ: function(a, s) {
-    return this.scale3d(a, 1, 1, s);
+    return Matrix.scale3d(a, 1, 1, s);
   },
   scale3d: function(a, x, y, z) {
     if (x == 1 && y == 1 && z == 1)
       return a;
     
-    var i = this.identity();
+    var i = Matrix.identity();
     i[0] = x;
     i[5] = y;
     i[10] = z;
-    return this.multiply(a, i);
+    return Matrix.multiply(a, i);
   },
   translateX: function(a, d) {
-    return this.translate3d(a, d, 0, 0);
+    return Matrix.translate3d(a, d, 0, 0);
   },
   translateY: function(a, d) {
-    return this.translate3d(a, 0, d, 0);
+    return Matrix.translate3d(a, 0, d, 0);
   },
   translateZ: function(a, d) {
-    return this.translate3d(a, 0, 0, d);
+    return Matrix.translate3d(a, 0, 0, d);
   },
   translate3d: function(a, x, y, z) {
     if (!x && !y && !z)
       return a;
     
-    var i = this.identity(),
+    var i = Matrix.identity(),
         result;
     
     i[12] = x;
     i[13] = y;
     i[14] = z;
-    result = this.multiply(a, i);
-    this.recycle(i);
+    result = Matrix.multiply(a, i);
+    Matrix.recycle(i);
     return result;
   },
   
   multiply: function(a, b) {
-    var result = this.getNewMatrix(),
+    var result = Matrix.getNewMatrix(),
         q,
         r,
         cellResult;
@@ -5310,14 +5237,14 @@ var Matrix = {
     }
     
     Physics.util.extendArray(a, result);
-    this.recycle(result);
-    return this;
+    Matrix.recycle(result);
+    return Matrix;
   },
   rotateX: function(a, rad) {
     if (rad == 0)
       return a;
     
-    var tmp = this.getNewMatrix(
+    var tmp = Matrix.getNewMatrix(
         1, 0, 0, 0,
         0, Math.cos(rad), Math.sin(-rad), 0,
         0, Math.sin(rad), Math.cos(rad), 0,
@@ -5325,14 +5252,14 @@ var Matrix = {
       ),
       result = Matrix.multiply(a, tmp);
     
-    this.recycle(tmp);
+    Matrix.recycle(tmp);
     return result;
   },
   rotateY: function(a, rad) {
     if (rad == 0)
       return a;
       
-    var tmp = this.getNewMatrix(
+    var tmp = Matrix.getNewMatrix(
         Math.cos(rad), 0, Math.sin(rad), 0,
         0, 1, 0, 0,
         Math.sin(-rad), 0, Math.cos(rad), 0,
@@ -5341,14 +5268,14 @@ var Matrix = {
       result;
     
     result = Matrix.multiply(a, tmp);
-    this.recycle(tmp);
+    Matrix.recycle(tmp);
     return result;
   },
   rotateZ: function(a, rad) {
     if (rad == 0)
       return a;
     
-    var tmp = this.getNewMatrix(
+    var tmp = Matrix.getNewMatrix(
         Math.cos(rad), Math.sin(-rad), 0, 0,
         Math.sin(rad), Math.cos(rad), 0, 0,
         0, 0, 1, 0,
@@ -5356,14 +5283,14 @@ var Matrix = {
       ), 
       result = Matrix.multiply(a, tmp);
     
-    this.recycle(tmp);
+    Matrix.recycle(tmp);
     return result;
   },
   rotate3d: function(a, xRad, yRad, zRad) {
-    this.rotateX(a, xRad);
-    this.rotateY(a, yRad);
-    this.rotateZ(a, zRad);
-    return this;
+    Matrix.rotateX(a, xRad);
+    Matrix.rotateY(a, yRad);
+    Matrix.rotateZ(a, zRad);
+    return Matrix;
   },
   clone: function(a /* matrix or values list */) {
     if (arguments.length == 2) {

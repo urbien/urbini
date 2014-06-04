@@ -58,6 +58,7 @@ define('error', [
           break;
         case 'error':
         case 'abort':
+        /* falls through */
         default: 
           Events.trigger('back');
           Errors.errDialog({msg: resp.details || Errors.not_found, delay: 1000});

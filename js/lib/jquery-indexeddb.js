@@ -101,7 +101,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
                   var res;
                   try {
                     res = idbRequest.result;
-                  } catch (e) {
+                  } catch (err) {
                     res = null; // Required for Older Chrome versions, accessing result causes error 
                   }
                   dfd.notifyWith(idbRequest, [res, e]);
@@ -310,8 +310,8 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
                     if (elem.data) cursorReq.result["continue"].apply(cursorReq.result, [elem.data]);
                     else cursorReq.result["continue"]();
                   }
-                } catch (e) {
-                  dfd.rejectWith(cursorReq, [cursorReq.result, e]);
+                } catch (err) {
+                  dfd.rejectWith(cursorReq, [cursorReq.result, err]);
                 }
               };
               cursorReq.onerror = function(e) {
@@ -504,17 +504,17 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
                 idbTransaction.oncomplete = function(e) {
                   dfd.resolveWith(idbTransaction, [e]);
                 };
-              } catch (e) {
-								console.log("Creating a transaction failed", e, storeNames, mode, this);
-                e.type = "exception";
-                dfd.rejectWith(this, [e]);
+              } catch (err) {
+								console.log("Creating a transaction failed", err, storeNames, mode, this);
+                err.type = "exception";
+                dfd.rejectWith(this, [err]);
                 return;
               }
               try {
                 dfd.notifyWith(idbTransaction, [wrap.transaction(idbTransaction)]);
-              } catch (e) {
-                e.type = "exception";
-                dfd.rejectWith(this, [e]);
+              } catch (err) {
+                err.type = "exception";
+                dfd.rejectWith(this, [err]);
               }
             }, function(err, e) {
               dfd.rejectWith(this, [e, err]);

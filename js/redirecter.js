@@ -997,6 +997,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       case 'Fraction':
       case 'Percent':
       case 'Money':
+      /* falls through */
       default:
         subClassOf = 'commerce/trading/NumericRule';
         break;

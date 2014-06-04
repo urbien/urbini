@@ -607,8 +607,9 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     if (fn == 'sort') {
       var backup2 = query[fn];
       query[fn] = function(column, reverse) {
-        arguments[0] = prepPropName(arguments[0]);
-        return backup2.apply(query, arguments);
+        var args = _.toArray(arguments);
+        args[0] = prepPropName(args[0]);
+        return backup2.apply(query, args);
       }
     }
   }

@@ -1,3 +1,4 @@
 *.min.js
+*.min.css
 *.js.map
 server/node_modules/

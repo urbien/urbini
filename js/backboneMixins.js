@@ -30,15 +30,15 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
     
     function getEventInfo(key) {
       var match = key.match(delegateEventSplitter),
-          bareEventName = eventName = match[2],
+          eventName = match[2],
           selector = match[3];
       
       if (/\..*/.test(eventName)) {
 //        G.log('events', 'ignoring namespace on event: ' + eventName);
-        bareEventName = eventName.replace(/\..*/, '');
+        eventName = eventName.replace(/\..*/, '');
       }
       
-      match.eventName = Events.getEventName(bareEventName);
+      match.eventName = Events.getEventName(eventName);
       match.selector = selector;
       match.length = 0;
       return match;

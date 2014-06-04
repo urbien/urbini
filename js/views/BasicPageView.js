@@ -47,7 +47,6 @@ define('views/BasicPageView', [
     _autoFetch: true,
     _fetchPromise: null,
     _draggable: true,
-    _scrollbar: true,
     _dragAxis: 'y',
     _scrollbar: true,
     _flexigroup: false,
@@ -607,7 +606,7 @@ define('views/BasicPageView', [
           hash = U.replaceParam(hash, regularParam, null);
       });      
 
-      for (event in events) {
+      for (var event in events) {
         Events.trigger('messageBar', event, events[event]);
       }
 

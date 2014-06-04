@@ -390,7 +390,7 @@ define('utils', [
       
       var iAmRes = me == resUri; 
 //      iAmRes = iAmRes ||U.isSameUser(me, resUri); // HACK to detect Urbien1 as Urbien
-      var roles = typeof ar === 'array' ? ar : ar.split(",");
+      var roles = _.isArray(ar) ? ar : ar.split(",");
       for (var i = 0; i < roles.length; i++) {
         var r = roles[i].trim();
         if (_.contains(['siteOwner'], r)  &&  userRole == r) 
@@ -3327,7 +3327,7 @@ define('utils', [
             log('error', "couldn't parse date bound: " + bound);
             return function() {return true};
           }
-          // fall through to default
+        /* falls through */
         default: {
           return function(res) {
             try {
@@ -3694,7 +3694,7 @@ define('utils', [
             });
           });
         });
-      }).promise();;
+      }).promise();
     },
     
     /**
@@ -4094,7 +4094,7 @@ define('utils', [
     
     getClonedProps: function(vocModel, iFace) {
       var meta = vocModel.properties,
-          extractProp = new RegExp(',?\ *' + iFace + '\.([^,\ ]+)', 'g'),
+          extractProp = new RegExp(',? *' + iFace + '\.([^, ]+)', 'g'),
           cloned = [];
           
       for (var name in meta) {

@@ -12,9 +12,9 @@ define('physicsTransitions', ['globals', 'utils', 'domUtils', 'lib/fastdom', 'ph
       drag: 0.3 // inversely proportional to distance^2 from the target (the closer, the more drag) 
     },
     snapDefaultSettings = {
-      stiffness: 0.03,
-      damping: 0.5,
-      drag: 0.1
+      stiffness: 0.2,
+      damping: 0.55,
+      drag: 0.8
     },
     zoomInToDefaultSettings = {
       fadeDuration: 500,

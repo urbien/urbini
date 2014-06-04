@@ -185,11 +185,11 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
     }
     
     if (_.isEmpty(temps)) {
-      function search() {
+      var search = function() {
         options = _.clone(options);
         options.filter = data.belongsInCollection;
         return IDB.search(type, options);
-      }
+      };
       
       query = QueryBuilder.buildQuery(data, filter);
       if (query) {

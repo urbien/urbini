@@ -1,12 +1,11 @@
 /*jshint globalstrict: true*/
-'use strict';
+//'use strict';
 define('indexedDBShim', ['taskQueue', 'utils'], function(TaskQueue, U) {
 /**
  * An initialization file that checks for conditions, removes console.log and warn, etc
  */
 var idbModules = window.idbModules = {};
 /*jshint globalstrict: true*/
-'use strict';
 (function(idbModules) {
     /**
      * A utility method to callback onsuccess, onerror, etc as soon as the calling function's context is over

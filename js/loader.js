@@ -947,8 +947,9 @@ define('globals', function() {
             var m = modules[i];
 //            for (var name in m) {
             var name = m.name;
-            var minIdx = name.indexOf('.min.js');
-            name = minIdx == -1 ? name : name.slice(0, minIdx) + '.js';
+            var ext = name.slice(name.lastIndexOf(".") + 1);
+            var minMatch = name.match(/\.min\.(js|css)$/);
+            name = minMatch == null ? name : name.slice(0, name.lastIndexOf('.min.' + minMatch[1])) + '.' + minMatch[1];
             G.modules[name] = m.body;
             newModules[getFilePathInStorage(name)] = m.body;
             newModules[getMetadataURL(name)] = {
@@ -1778,8 +1779,8 @@ define('globals', function() {
     
     _logArray: new Array(0),
     log: function(tag, type) {
-      if (!G.DEBUG || !TRACE.ON || !console || !console.log || !type)
-        return;
+//      if (!G.DEBUG || !TRACE.ON || !console || !console.log || !type)
+//        return;
       
       var types = typeof type == 'string' ? [type] : type;
       for (var i = 0; i < types.length; i++) {

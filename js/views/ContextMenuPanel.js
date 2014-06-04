@@ -375,7 +375,7 @@ define('views/ContextMenuPanel', [
 //        this.buildGrabbed(frag);
 //        this.buildGrab(frag);
         html += this.buildActionsMenu();
-        html += this.menuItemTemplate({title: this.loc("Physics"), id: 'physics123'});
+        html += this.menuItemTemplate({title: this.loc("physics"), id: 'physics123'});
         if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory')) {
           var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.allowedChangeHistory');
           if (!ch  ||  !ch.length)

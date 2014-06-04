@@ -518,7 +518,7 @@ define('app', [
     }; 
     
     G.getBaseObjectStoresInfo = function() {
-      return $.extend(true, {}, requiredStores);
+      return _.extend({}, requiredStores);
     };
     
     for (var storeName in requiredStores) {
@@ -536,20 +536,31 @@ define('app', [
   function localize() {
     var lang = G.language,
         localeName = '../locale/{0}.json'.format(lang),
-        dfd = $.Deferred();
+        dfd = $.Deferred(),
+        paramsRegex = /{{.+?}}/ig;
+//        paramsRegex = /{{\s*\$(.+?)\s*}}/ig;
         
     function setLocale(locale) {
       var l = {};
       l[lang] = locale;
       String.locale = lang;
       String.toLocaleString(l);
-      G.localize = function(string, fallback) {
-        var localized = ("%" + string).toLocaleString();
-        if (localized !== string) {
-          return localized;
-        } else {
-          return fallback;
+      G.localize = function(string, data) {
+        var localized = ("%" + string).toLocaleString(),
+            toReplace = localized.match(paramsRegex);
+        
+        if (data && toReplace) {
+          var i = toReplace.length;
+          while (i--) {
+            var placeholder = toReplace[i],
+                varName = placeholder.slice(2, placeholder.length - 2);
+            
+            if (data[varName])
+              localized = localized.replace(placeholder, data[varName]);
+          }
         }
+          
+        return localized;
       };  
       
       dfd.resolve();
@@ -805,8 +816,8 @@ define('app', [
       else
         Backbone.history.start();
       
-      if (!G.currentUser.guest && !G.currentUser.email)// && new Date().getTime() - G.currentUser.dateRegistered < 24 * 3600000)
-        askForEmail();
+//      if (!G.currentUser.guest && !G.currentUser.email && new Date().getTime() - G.currentUser.dateRegistered < 24 * 3600000)
+//        askForEmail();
       
       dfd.resolve();
     }).promise();

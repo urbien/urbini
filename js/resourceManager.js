@@ -18,7 +18,7 @@ define('resourceManager', [
       
   function getSynchronizer(method, data, options) {
     return U.isModel(data) ? new ResourceSynchronizer(method, data, options) : new CollectionSynchronizer(method, data, options);
-  }
+  };
 
   var Blob = window.Blob,
       FileSystem,
@@ -55,8 +55,7 @@ define('resourceManager', [
     return getSynchronizer(method, data, options).sync();
   };   
   
-  var RM;
-  var ResourceManager = RM = {
+  var RM = {
     TAG: 'Storage', 
     init: _.once(function() {
       MODULE_STORE = G.getModulesStoreInfo();
@@ -262,7 +261,7 @@ define('resourceManager', [
       }
       
       if (_.isEmpty(temps)) {
-        function search() {
+        var search = function() {
           options = _.clone(options);
           options.filter = data.belongsInCollection;
           return IDB.search(type, options);
@@ -555,5 +554,5 @@ define('resourceManager', [
 //    });
   });
     
-  return (Lablz.ResourceManager = ResourceManager);
+  return (Lablz.ResourceManager = RM);
 });
