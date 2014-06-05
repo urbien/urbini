@@ -853,9 +853,8 @@ define('views/EditView', [
 //      var inputs = U.isAssignableFrom(this.vocModel, "Intersection") ? this.getInputs() : this.inputs;
       var inputs = this.getInputs();
       inputs.$attr('disabled', true).$filter(function(input) { 
-        return //!input.classList.contains(scrollerClass) && 
-               !input.classList.contains(switchClass) && 
-               input.dataset.name != 'interfaceProperties'; 
+//        return !input.classList.contains(scrollerClass) && 
+        return !input.classList.contains(switchClass) && input.dataset.name != 'interfaceProperties'; 
       });
       
 //      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceProperties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case 
