@@ -1063,7 +1063,7 @@ define('globals', function() {
         bg: '#000'
       },
       taskQueue: {
-        on: false,
+        on: true,
         color: '#88FFFF',
         bg: '#000'
       },
@@ -1088,7 +1088,7 @@ define('globals', function() {
         bg: '#DDD'
       },
       events: {
-        on: true,
+        on: false,
         color: '#baFF00',
         bg: '#555'
       },
@@ -1496,6 +1496,9 @@ define('globals', function() {
           newV = data ? data.VERSION : G.getVersion(),
           oldV = G.getVersion(!data) || newV; // get old
 
+      if (!newV)
+        return;
+      
       if (newV.All > oldV.All) {
         if (G._nuking)
           return;

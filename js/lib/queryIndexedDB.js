@@ -168,6 +168,7 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
      * @param op getAll or getAllKeys
      */
     function queryIndex(store, op) {
+      console.log("querying index: " + indexName);
       return $.Deferred(function(defer) {
 //        var qLimit = query.limit,
         var qOffset = query.offset,
@@ -179,6 +180,7 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
         var request = typeof range !== 'undefined' ? index[op](range, direction) : index[op](undefined, direction);
         request.done(function(result, event) {
           if (!negate) {
+            console.log("querying index finished: " + indexName);
 //            defer.resolve(arrayLimit(arrayOffset(result.sort(sort), qOffset), qLimit));
             // we don't want to LIMIT every time, until we're done with the whole operation (this may be a subquery and by limiting now, we may not have enough later)
             defer.resolve(arrayOffset(sort ? result.sort(sort) : result, qOffset));
@@ -189,6 +191,7 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
 //          request = index[op]();
           request.done(function(all, event) {
 //            defer.resolve(arrayLimit(arrayOffset(arraySub(all, result).sort(sort), qOffset), qLimit));
+            console.log("querying index finished: " + indexName);
             defer.resolve(arrayOffset(arraySub(all, result).sort(sort), qOffset));
           }).fail(function(err, event) {
             debugger;
@@ -212,14 +215,30 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
     return query;
   }
 
-  var SetOps = {Intersection: {name: 'Intersection', op: arrayIntersect}, Union: {name: 'Union', op: arrayUnion}};
+  var SetOps = {
+    Intersection: {
+      name: 'Intersection', 
+      op: arrayIntersect
+    }, 
+    Union: {
+      name: 'Union', 
+      op: arrayUnion
+    }
+  };
+  
   function SetOperation(setOp) {
     return function(query1, query2) {
       var query;
       function queryFunc(store, op) {
-        return $.when(query1._queryFunc(store, op), query2._queryFunc(store, op)).then(function(results1, results2) {
-          var sort = query.sortFunction || function(items) {return items};
-          return arrayLimit(arrayOffset(setOp.op(results1, results2, query1.primaryKey || query2.primaryKey).sort(sort), query.offset), query.limit);
+        var q1 = query1._queryFunc(store, op), 
+            q2 = query2._queryFunc(store, op);
+        
+        return $.when(q1, q2).then(function(results1, results2) {
+          var sort = query.sortFunction,
+              unsorted = setOp.op(results1, results2, query1.primaryKey || query2.primaryKey),
+              sorted = sort ? unsorted.sort() : unsorted;
+              
+          return arrayLimit(arrayOffset(sorted, query.offset), query.limit);
         }, function(err) {
           debugger;
         }, function(event) {

@@ -13,10 +13,15 @@ define('views/EditView', [
   var spinner = {
         name: 'loading edit view'
       },
-      scrollerClass = 'i-txt',
-      switchClass = 'boolean',
-      secs = [/* week seconds */604800, /* day seconds */ 86400, /* hour seconds */ 3600, /* minute seconds */ 60, /* second seconds */ 1];
+//      scrollerClass = 'i-txt',
+      switchClass = 'boolean';
+//      ,
+//      secs = [/* week seconds */604800, /* day seconds */ 86400, /* hour seconds */ 3600, /* minute seconds */ 60, /* second seconds */ 1];
 
+//  function parseTime(time) {
+//    debugger;
+//  };
+  
   function clearForm(forms) {
     var i = forms.length;
     while (i--) {
@@ -51,21 +56,21 @@ define('views/EditView', [
     };
   };
 
-  var scrollerTypes = ['date', 'duration'];
-//  var scrollerModules = ['mobiscroll', 'mobiscroll-datetime', 'mobiscroll-duration'];
+//  var scrollerTypes = ['date', 'duration'];
   return BasicView.extend({
     autoFinish: false,
     initialize: function(options) {
       var self = this;
-      _.each(scrollerTypes, function(s) {
-        self['scroll' + s.camelize(true)] = function(e) {
-          self.mobiscroll.apply(self, [e, s].concat(_.tail(arguments)));
-        }
-      });
+//      _.each(scrollerTypes, function(s) {
+//        self['scroll' + s.camelize(true)] = function(e) {
+//          self.mobiscroll.apply(self, [e, s].concat(_.tail(arguments)));
+//        }
+//      });
     
       _.bindAll(this, 'render', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 
-                      'onSelected', 'setValues', 'getInputs', 'getScrollers', 'getValue', 'addProp', 
-                      'scrollDate', 'scrollDuration', 'capturedImage', 'onerror', 'onsuccess', 'onSaveError',
+                      'onSelected', 'setValues', 'getInputs', 'getValue', 'addProp', 
+//                      'getScrollers', 'scrollDate', 'scrollDuration', 
+                      'capturedImage', 'onerror', 'onsuccess', 'onSaveError',
                       'checkAll', 'uncheckAll'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);
       var type = this.vocModel.type;
@@ -156,8 +161,8 @@ define('views/EditView', [
 //      'click #cancel'                     :'cancel',
 //      'submit form'                       :'submit',
       'click .resourceProp'               :'chooser',
-      'click input[data-duration]'        :'scrollDuration',
-      'click input[data-date]'            :'scrollDate',
+//      'click input[data-duration]'        :'scrollDuration',
+//      'click input[data-date]'            :'scrollDate',
 //      'click select[data-enum]': 'scrollEnum',
       'click .cameraCapture'              :'cameraCapture',
       'change .cameraCapture'             :'cameraCapture',
@@ -165,7 +170,8 @@ define('views/EditView', [
       'click #uncheck-all'                :'uncheckAll',
       'keydown input'                     :'onKeyDownInInput',
       'change select'                     :'onSelected',
-      'change input[type="checkbox"]'     :'onSelected'
+      'change input[type="checkbox"]'     :'onSelected',
+      'change input[type="date"]'         :'onSelected'
     },
     
     globalEvents: {
@@ -345,69 +351,69 @@ define('views/EditView', [
       Events.trigger('info', {info: msg, page: this.getPageView(), persist: true});
     },
     
-    getScroller: function(prop, input) {
-      var settings = {
-        theme: 'ios',
-        display: 'modal',
-        mode:'scroller',
-        durationWheels: ['years', 'days', 'hours', 'minutes', 'seconds'],
-        label: U.getPropDisplayName(prop),
-        shortName: prop.shortName,
-        onSelect: this.onSelected,
-        input: input
-      };
-      
-      scrollerType = settings.__type = _.find(['date', 'duration'], function(type) {
-        return _.has(input.dataset, type);
-      });
-
-      var scroller;
-      switch (scrollerType) {
-        case 'date':
-        case 'duration':
-          var isDate = scrollerType === 'date';
-          scroller = $(input).mobiscroll()[scrollerType](settings);
-          var val = input.value && parseInt(input.value);
-          if (typeof val === 'number')
-            scroller.mobiscroll(isDate ? 'setDate' : 'setSeconds', isDate ? new Date(val) : val, true);
-          
-          break;
-      }
-      
-      return scroller;
-    },
-
-    mobiscroll: function(e, scrollerType, dontClick) {
-      if (this.fetchingScrollers)
-        return;
-      
-      this.fetchingScrollers = true;
-      $(e.target).blur(); // hack to suppress keyboard that would open on this input field
-      Events.stopEvent(e);
-      
-//      // mobiscrollers don't disappear on their own when you hit the back button
-//      Events.once('pageChange', function() {
-//        $('.jqm, .dw-modal').remove();
+//    getScroller: function(prop, input) {
+//      var settings = {
+//        theme: 'ios',
+//        display: 'modal',
+//        mode:'scroller',
+//        durationWheels: ['years', 'days', 'hours', 'minutes', 'seconds'],
+//        label: U.getPropDisplayName(prop),
+//        shortName: prop.shortName,
+//        onSelect: this.onSelected,
+//        input: input
+//      };
+//      
+//      scrollerType = settings.__type = _.find(['date', 'duration'], function(type) {
+//        return _.has(input.dataset, type);
 //      });
-      
-      var self = this;
-      var thisName = e.target.name;
-      var meta = this.vocModel.properties;
-//      var scrollerModules = ['mobiscroll', 'mobiscroll-datetime', 'mobiscroll-duration'];
-      var scrollers = self.getScrollers();
-//      if (_.any(scrollers, function(s) { return s.dataset.duration }))
-//        modules.push('mobiscroll-duration');
-      
-      U.require('mobiscroll', function() {
-        self.loadedScrollers = true;
-        self.refreshScrollers();
-        if (!dontClick) {
-          var scroller = _.find(scrollers, function(s) {return s.name === thisName; });
-          if (scroller)
-            $(scroller).click().focus();
-        }
-      });
-    },
+//
+//      var scroller;
+//      switch (scrollerType) {
+//        case 'date':
+//        case 'duration':
+//          var isDate = scrollerType === 'date';
+//          scroller = $(input).mobiscroll()[scrollerType](settings);
+//          var val = input.value && parseInt(input.value);
+//          if (typeof val === 'number')
+//            scroller.mobiscroll(isDate ? 'setDate' : 'setSeconds', isDate ? new Date(val) : val, true);
+//          
+//          break;
+//      }
+//      
+//      return scroller;
+//    },
+//
+//    mobiscroll: function(e, scrollerType, dontClick) {
+//      if (this.fetchingScrollers)
+//        return;
+//      
+//      this.fetchingScrollers = true;
+//      $(e.target).blur(); // hack to suppress keyboard that would open on this input field
+//      Events.stopEvent(e);
+//      
+////      // mobiscrollers don't disappear on their own when you hit the back button
+////      Events.once('pageChange', function() {
+////        $('.jqm, .dw-modal').remove();
+////      });
+//      
+//      var self = this;
+//      var thisName = e.target.name;
+//      var meta = this.vocModel.properties;
+////      var scrollerModules = ['mobiscroll', 'mobiscroll-datetime', 'mobiscroll-duration'];
+//      var scrollers = self.getScrollers();
+////      if (_.any(scrollers, function(s) { return s.dataset.duration }))
+////        modules.push('mobiscroll-duration');
+//      
+//      U.require('mobiscroll', function() {
+//        self.loadedScrollers = true;
+//        self.refreshScrollers();
+//        if (!dontClick) {
+//          var scroller = _.find(scrollers, function(s) {return s.name === thisName; });
+//          if (scroller)
+//            $(scroller).click().focus();
+//        }
+//      });
+//    },
 
     onChoose: function(e, prop) {
       var hash = window.location.href;
@@ -674,21 +680,21 @@ define('views/EditView', [
     getInputs: function() {
       return this.getForm().$('[data-formEl]');
     },
-    getScrollers: function() {
-      return this.getForm().$('.' + scrollerClass);
-    },
-    
-    refreshScrollers: function() {
-      if (this.loadedScrollers) {
-        var meta = this.vocModel.properties;
-        var self = this;
-        this.getScrollers().$forEach(function(scroller) {
-          $(scroller).mobiscroll('destroy');
-          var prop = meta[scroller.name];
-          self.getScroller(prop, scroller);
-        });
-      }
-    },
+//    getScrollers: function() {
+//      return this.getForm().$('.' + scrollerClass);
+//    },
+//    
+//    refreshScrollers: function() {
+//      if (this.loadedScrollers) {
+//        var meta = this.vocModel.properties;
+//        var self = this;
+//        this.getScrollers().$forEach(function(scroller) {
+//          $(scroller).mobiscroll('destroy');
+//          var prop = meta[scroller.name];
+//          self.getScroller(prop, scroller);
+//        });
+//      }
+//    },
     fieldError: function(resource, errors) {
       if (arguments.length === 1)
         errors = resource;
@@ -783,6 +789,10 @@ define('views/EditView', [
       }
       else if (p && p.multiValue)
         val = this.getResourceInputValue(input); //input.innerHTML;
+      else if (p && U.isDateProp(p))
+        val = Date.parse(input.value);
+//      else if (p && U.isTimeProp(p))
+//        val = parseTime(input.value);        
       else
         val = input.tagName === 'A' ? this.getResourceInputValue(input) : input.value;
 
@@ -842,11 +852,9 @@ define('views/EditView', [
       this._submitted = true;
 //      var inputs = U.isAssignableFrom(this.vocModel, "Intersection") ? this.getInputs() : this.inputs;
       var inputs = this.getInputs();
-      inputs.$attr('disabled', true);
-      inputs = _.filter(inputs, function(input) { 
-        return !input.classList.contains(scrollerClass) && 
-               !input.classList.contains(switchClass) && 
-               input.dataset.name != 'interfaceProperties'; 
+      inputs.$attr('disabled', true).$filter(function(input) { 
+//        return !input.classList.contains(scrollerClass) && 
+        return !input.classList.contains(switchClass) && input.dataset.name != 'interfaceProperties'; 
       });
       
 //      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceProperties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case 
@@ -1079,14 +1087,14 @@ define('views/EditView', [
           return this;
       }
 
-      if (this.loadedScrollers) {
-        this.getScrollers().$forEach(function(scroller) {
-          $(scroller).mobiscroll('destroy');        
-        });
-      }
+//      if (this.loadedScrollers) {
+//        this.getScrollers().$forEach(function(scroller) {
+//          $(scroller).mobiscroll('destroy');        
+//        });
+//      }
       
       this.render();
-      this.refreshScrollers();
+//      this.refreshScrollers();
     },
     
     onSelected: function(e) {
@@ -1116,37 +1124,37 @@ define('views/EditView', [
         return;
       }
       
-      if (arguments.length > 1) {
-        var val = arguments[0],
-            scroller = arguments[1],
-            settings = scroller.settings,
-            name = settings.shortName;
-        
-        input = settings.input;
-        
-        switch (settings.__type) {
-          case 'date': {
-            atts[name] = new Date(val).getTime();
-//            $(input).data('data-date', millis);
-            break;
-          }
-          case 'duration': {
-            atts[name] = scroller.getSeconds();
-//            $(input).data('data-duration', secs);
-            break;
-          }
-          case 'enum': {
-//            $(input).data('data-enum', atts[name] = scroller.getEnumValue());
-            break;
-          }
-          default:
-            debugger;
-        }
-      }
-      else {
+//      if (arguments.length > 1) {
+//        var val = arguments[0],
+//            scroller = arguments[1],
+//            settings = scroller.settings,
+//            name = settings.shortName;
+//        
+//        input = settings.input;
+//        
+//        switch (settings.__type) {
+//          case 'date': {
+//            atts[name] = new Date(val).getTime();
+////            $(input).data('data-date', millis);
+//            break;
+//          }
+//          case 'duration': {
+//            atts[name] = scroller.getSeconds();
+////            $(input).data('data-duration', secs);
+//            break;
+//          }
+//          case 'enum': {
+////            $(input).data('data-enum', atts[name] = scroller.getEnumValue());
+//            break;
+//          }
+//          default:
+//            debugger;
+//        }
+//      }
+//      else {
         input = e.target;
         atts[input.name] = this.getValue(input);
-      }
+//      }
 
       this.setValues(atts, {onValidationError: this.fieldError, onValidated: getRemoveErrorLabelsFunction(input)});
     },
@@ -1468,12 +1476,12 @@ define('views/EditView', [
             self.setValues('interfaceProperties', props);
             
             self.ul1 = self.$('#interfaceProps').$html(frag)[0];
-            if (G.isJQM()) {
-              if (self.ul1.$hasClass('ui-listview'))
-                $(self.ul1).trigger('create').listview('refresh');
-              else
-                $(self.ul1).trigger('create');
-            }
+//            if (G.isJQM()) {
+//              if (self.ul1.$hasClass('ui-listview'))
+//                $(self.ul1).trigger('create').listview('refresh');
+//              else
+//                $(self.ul1).trigger('create');
+//            }
           
             self.redelegateEvents();
 //            var checkboxes = self.form.querySelectorAll('input[type="checkbox"]'),
@@ -1493,12 +1501,15 @@ define('views/EditView', [
       var inputs = this.inputs = this.getInputs(); //form.find('input');
       var initInputs = function(inputs) {
         _.each(inputs, function(input) {
-          if (input.$hasClass(scrollerClass))
-            return;
+//          if (input.$hasClass(scrollerClass))
+//            return;
           
           var validated = getRemoveErrorLabelsFunction(input);
           var setValues = _.debounce(function() {
-            self.setValues(input.name, input.value, {onValidated: validated, onValidationError: self.fieldError});
+            self.setValues(input.name, input.value, {
+              onValidated: validated, 
+              onValidationError: self.fieldError
+            });
           }, 500);
 
           input.addEventListener('input', function() {
@@ -1602,17 +1613,17 @@ define('views/EditView', [
       }
         
       // only trigger the first you find
-      _.any(['[data-date]', '[data-duration]','[data-enum]'], function(scrollerType) { 
-        var scrollers = self.$(scrollerType);
-        if (scrollers.length) {
-          var scrollerWithValue = _.find(scrollers, function(s) { return !!s.value });
-          if (scrollerWithValue) {
-//            $(scrollerWithValue).triggerHandler('click', [true]);
-            scrollerWithValue.$trigger('click');
-            return true;
-          }
-        }
-      });
+//      _.any(['[data-date]', '[data-duration]','[data-enum]'], function(scrollerType) { 
+//        var scrollers = self.$(scrollerType);
+//        if (scrollers.length) {
+//          var scrollerWithValue = _.find(scrollers, function(s) { return !!s.value });
+//          if (scrollerWithValue) {
+////            $(scrollerWithValue).triggerHandler('click', [true]);
+//            scrollerWithValue.$trigger('click');
+//            return true;
+//          }
+//        }
+//      });
       
 //      form.find('fieldset input[type="checkbox"]').$forEach(function() {
 //        form.find('label[for="{0}"]'.format(this.id)).addClass('req');

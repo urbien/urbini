@@ -1684,17 +1684,19 @@ define('utils', [
     
     getResourcePromise: function(uri, sync) {
       var res = U.getResource(uri);
-      if (res && sync)
-        return U.resolvedPromise(res);
+      if (res) {
+        if (!sync || U.isTempUri(uri))
+          return U.resolvedPromise(res);
+      }
 
       var dfd = $.Deferred();
-      U.getModels(U.getTypeUri(uri)).done(function(model) {
+      U.getModels([U.getTypeUri(uri)]).done(function(model) {
         res = res || new model({
           _uri: uri
         });
         
         res.fetch({
-          forceFetch: sync && !U.isTempUri(uri),
+          forceFetch: sync,
           success: function() {
             dfd.resolve(res);
           },

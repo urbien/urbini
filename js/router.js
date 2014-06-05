@@ -219,19 +219,19 @@ define('router', [
       });
 
 
-      if (G.isJQM()) {
-        // a hack to prevent browser address bar from dropping down
-        // see: https://forum.jquery.com/topic/stopping-the-url-bar-from-dropping-down-i-discovered-a-workaround
-        $('[data-role="page"]').on('pagecreate',function(event) {
-          $('a[href]', this).each(function() {
-              var self = $(this);
-              if (!self.is( "[rel='external']" ) ) {
-                  self.attr('link', self.attr('href'));
-                  self.removeAttr('href');
-              }
-          });
-        });
-      }
+//      if (G.isJQM()) {
+//        // a hack to prevent browser address bar from dropping down
+//        // see: https://forum.jquery.com/topic/stopping-the-url-bar-from-dropping-down-i-discovered-a-workaround
+//        $('[data-role="page"]').on('pagecreate',function(event) {
+//          $('a[href]', this).each(function() {
+//              var self = $(this);
+//              if (!self.is( "[rel='external']" ) ) {
+//                  self.attr('link', self.attr('href'));
+//                  self.removeAttr('href');
+//              }
+//          });
+//        });
+//      }
 
       Events.on('uriChanged', function(tempUri, data) {
         self.checkUpdateHash(tempUri, U.getValue(data, '_uri'));
@@ -394,7 +394,7 @@ define('router', [
       var homePage = C.getCachedView();
       if (!homePage) {
         if (G.homePage) {
-          $(document.body).append(G.homePage);
+          document.body.$append(G.homePage);
           delete G.homePage;
         }
         

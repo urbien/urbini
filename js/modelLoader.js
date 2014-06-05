@@ -120,10 +120,12 @@ define('modelLoader', [
         promises = [],
         overallPromise;
 
-    _.each(types, function(type) {      
-      var promise = /*modelToPromiseObj[type] =*/ getModelPromise(type) || makeModelPromise(type);
+    for (var i = 0; i < types.length; i++) {      
+      var type = types[i],
+          promise = /*modelToPromiseObj[type] =*/ getModelPromise(type) || makeModelPromise(type);
+      
       promises.push(promise);
-    });
+    }
     
     return $.whenAll.apply($, promises);
 //    return _.extend(modelToPromiseObj, _.pick(overallPromise, 'promise', 'done', 'fail', 'then', 'always', 'state'));
@@ -155,8 +157,13 @@ define('modelLoader', [
 
   function gotModel(model) {
     var promiseInfo = MODEL_PROMISES[model.type];
-    if (promiseInfo)
-      promiseInfo.deferred.resolve(model);
+    if (!promiseInfo) {
+      makeModelPromise(model.type);
+      return gotModel(model);
+    }
+    
+    cache(model);
+    promiseInfo.deferred.resolve(model);
   }
 
   function didntGetModel(type) {
@@ -250,10 +257,10 @@ define('modelLoader', [
   }
   
   function fetchModels(models, options) {
+    if (_.isEmpty(models))
+      return G.getResolvedPromise();
+    
     var promise = $.Deferred(function(defer) {
-      if (_.isEmpty(models))
-        return defer.resolve();
-
       if (!G.online)
         return defer.rejectWith(this, [null, {type: 'offline'}, options]);
 
@@ -300,28 +307,27 @@ define('modelLoader', [
 
   function _getModels(models, options) {
     options = options || {};
-    var promises = [],
-        filtered,
+    var filtered = [],
         force = options.force,
         overallPromise;
         
-    filtered = _.filter(models, function(type) {
+    models.forEach(function(type) {
       var promise = !force && getModelPromise(type);
-      if (promise && promise.state() !== 'rejected') {
-        promises.push(promise);
-      }
-      else {
-        promises.push(makeModelPromise(type));
-        return true;
+      if (!promise || promise.state() == 'rejected') {
+//        promises.push(promise);
+//      }
+//      else {
+        makeModelPromise(type);
+        filtered.push(type);
       }
     });
     
     if (!filtered.length)
       return;
     if (!G.hasLocalStorage && G.dbType === 'none')
-      fetchModels(filtered, options).then(parseAndLoadModels);
+      fetchModels(filtered, options).done(parseAndLoadModels);
     else {
-      sortModelsByStatus(filtered, options).then(function(modelsInfo) {
+      sortModelsByStatus(filtered, options).done(function(modelsInfo) {
         if (G.online)
           fetchAndLoadModels(modelsInfo, options);
         else {
@@ -342,11 +348,31 @@ define('modelLoader', [
     var mightBeStale = modelsInfo.mightBeStale || {},
         modelsToGet = _.extend({}, modelsInfo.need, mightBeStale.infos);
     
-    $.when(fetchModels(modelsToGet, options), loadModels(modelsInfo.have, true)).then(function(data) {
+    loadModels(modelsInfo.have, true);  
+    fetchModels(modelsToGet, options).done(function(data) {
       parseAndLoadModels(data, modelsInfo);
     });
     
     return makeModelsPromise(modelsInfo.getAllTypes());
+  }
+
+  function getCached(model) {
+    var i = MODEL_CACHE.length;
+    while (i--) {
+      var m = MODEL_CACHE[i];
+      if (m.type == model.type)
+        return m;
+    }
+    
+    return null;
+  }
+
+  function cache(model) {
+    var collision = getCached(model);
+    if (collision)
+      MODEL_CACHE.remove(collision);
+    
+    MODEL_CACHE.push(model);
   }
   
   function parseAndLoadModels(data, modelsInfo) {
@@ -384,47 +410,46 @@ define('modelLoader', [
       _.extend(G.classMap, data.classMap);
     
     var newModels = [],
-        loadedTypes = [];
+        loadedTypes = [],
+        updatedTypes = [],
+        notStale = [];
     
     for (var i = 0; i < mz.length; i++) {
-      var newModel = mz[i];
-      newModel.lastModified = newModel.lastModified ? Math.max(G.lastModified, newModel.lastModified) : G.lastModified;            
-      loadedTypes.push(newModel.type);
-      _.pushUniq(newModels, newModel);
+      var newModel = mz[i],
+          type = newModel.type,
+          existing,
+          isUpdated;
+      
+      newModel.lastModified = newModel.lastModified ? Math.max(G.lastModified, newModel.lastModified) : G.lastModified;
+      existing = getCached(newModel);
+      if (existing) {
+        if (existing.lastModified < newModel.lastModified) {
+          _.pushUniq(updatedTypes, type);
+          loadedTypes.push(type);
+        }
+        else if (!existing.enumeration)
+          debugger;
+      }
+      else {
+        loadedTypes.push(type);
+        _.pushUniq(newModels, newModel);
+      }
     }
     
-    var notStale = _.filter(_.values(mightBeStale.models), function(model) {
-      return !_.contains(loadedTypes, model.type);
-    });
+    for (var p in mightBeStale.models) {
+      var model = mightBeStale.models[p];
+      if (!_.contains(loadedTypes, model.type))
+        notStale.push(model);
+    }
     
     var changedModels = _.union(newModels, notStale);
-    for (var i = 0; i < changedModels.length; i++) {
-      var model = changedModels[i],
-          collisions = _.filter(MODEL_CACHE, function(m) {
-            return m.type == model.type;
-          });
-      
-      collisions = U.copyArray(MODEL_CACHE, collisions);
-      MODEL_CACHE.push(model);
-    }
     
-    // new promise
-    var promise = loadModels(changedModels); 
-//      setTimeout(function() {
-//    G.whenNotRendering(function() {
-      Q.defer(30, 'nonDom', storeModels.bind(null, newModels));
-//    });
-//      }, 100);
+    loadModels(changedModels); 
+    Q.defer(30, 'nonDom', storeModels.bind(null, newModels));
     
-//        Voc.setupPlugs(data.plugs);
     Events.trigger('newPlugs', data.plugs);
-    if (newModels.length) {
-      promise.done(function() {        
-        Events.trigger('modelsChanged', _.pluck(newModels, 'type'));
-      });
-    }
-    
-    return promise;
+    if (updatedTypes.length)
+      Events.trigger('modelsChanged', updatedTypes);
   }
 
   function loadModels(models, preventOverwrite) {

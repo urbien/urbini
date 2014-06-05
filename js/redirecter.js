@@ -547,6 +547,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
         }), options);
       }
       else {
+        debugger;
         U.getResourcePromise(feedUri, true).done(function() {
           Redirecter.prototype._forType['commerce/trading/TradleFeed'](res, options);
         });

@@ -103,15 +103,35 @@ define('resourceManager', [
       return IDB.start();
     },
 
+    _upgradePromise: null,
     upgrade: function(mk, del) {
       if (G.dbType === 'none')
         return REJECTED_PROMISE;
-      
-      if (!IDB.isOpen())
-        return IDB.onOpen().then(this.upgrade.bind(this, mk, del));
-      
-      mk = mk || [];
+
       del = del || [];
+      if (mk) {
+        mk = mk.filter(function(name) {
+          return !IDB.isStoreBeingCreated(name);
+        });
+        
+        if (!mk.length && !del.length) {
+          if (IDB.isOpen()) {
+            if (this._upgradePromise) {
+              if (this._upgradePromise.state() == 'resolved')
+                debugger;
+              else
+                return this._upgradePromise;
+            }
+          }
+          else
+            return IDB.onOpen();
+        }
+      }
+      else
+        mk = [];
+
+      if (!IDB.isOpen())
+        return IDB.onOpen().then(this.upgrade.bind(this, mk, del));      
       
       if (del.length)
         IDB.deleteObjectStores(del);
@@ -144,7 +164,7 @@ define('resourceManager', [
         IDB.createObjectStore(type, options, indices);
       }
 
-      return IDB.start();
+      return RM._upgradePromise = IDB.start();
     },
     
     put: function(storeName, items) {
@@ -335,15 +355,14 @@ define('resourceManager', [
   });
 
   Events.on('modelsChanged', function(changedTypes) {
-    IDB.onOpen(function() {
-      changedTypes = _.filter(changedTypes, function(t) {
-        return IDB.hasStore(t);
-      });
-      
-      if (changedTypes.length)
-        RM.upgrade(changedTypes, changedTypes);  
-//        RM.deleteObjectStores(changedTypes).createObjectStores(changedTypes).start();
+    changedTypes = _.filter(changedTypes, function(t) {
+      return IDB.hasStore(t);
     });
+    
+    if (changedTypes.length) {
+      debugger;
+      RM.upgrade(changedTypes, changedTypes);
+    }
   });
   
   Events.on('userChanged', function() {
@@ -500,7 +519,7 @@ define('resourceManager', [
 //  });
 
   Events.on('createObjectStores', function(stores, cb) {
-    RM.upgrade(stores).then(cb);
+    RM.upgrade(stores).done(cb);
   });
   
   /**

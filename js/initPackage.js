@@ -1498,14 +1498,9 @@
 
   // Deferred helper
   _d.when = function( subordinate /* , ..., subordinateN */ ) { 
-
     var i = 0,
-      resolveValues = ( _.isArray(subordinate) && arguments.length === 1 ) ? subordinate : slice.call( arguments ),
+      resolveValues = _.toArray(arguments),
       length = resolveValues.length;
-
-      if ( _.isArray(subordinate) && subordinate.length === 1 ) {
-        subordinate = subordinate[ 0 ];
-      }
 
       // the count of uncompleted subordinates
       var remaining = length !== 1 || ( subordinate && _.isFunction( subordinate.promise ) ) ? length : 0,

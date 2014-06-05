@@ -704,7 +704,7 @@
 <script type="text/template" id="datePET">
 <div class="_prim">
   <label for="{{= id }}" class="ui-input-text">{{= name }}</label>
-  <input id="{{= id }}" name="{{= shortName }}" {{= rules }} class="i-txt ui-input-text" value="{{= value }}" />
+  <input id="{{= id }}" name="{{= shortName }}" {{= rules }} class="ui-input-text" value="{{= value }}" type="date" />
 </div>
 </script>
 
