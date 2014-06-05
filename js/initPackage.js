@@ -36,7 +36,8 @@
     nativeLastIndexOf  = ArrayProto.lastIndexOf,
     nativeIsArray      = Array.isArray,
     nativeKeys         = Object.keys,
-    nativeBind         = FuncProto.bind;
+    nativeBind         = FuncProto.bind,
+    r20                = /%20/g;
 
   // Create a safe reference to the Underscore object for use below.
   var _ = function(obj) {
@@ -1575,7 +1576,7 @@
   };
 
   String.prototype.splitAndTrim = function(delimiter) {
-    return _.map(this.split(delimiter), function(str) {
+    return this.split(delimiter).map(function(str) {
       return str.replace(/\s/g, '');
     });
   };
@@ -1699,10 +1700,10 @@
       
       return match[1].split(separator || '&').reduce(function(hash, pair) {
         if ((pair = pair.split('='))[0]) {
-          var key = decodeURIComponent(pair.shift()),
+          var key = _.decode(pair.shift()),
               value = pair.length > 1 ? pair.join('=') : pair[0];
               
-          if (value != undefined) value = decodeURIComponent(value);
+          if (value != undefined) value = _.decode(value);
           
           if (key in hash) {
             if (!_.isArray(hash[key])) hash[key] = [hash[key]];
@@ -1718,7 +1719,7 @@
       return arr.indexOf(el);
     },
     
-    param: function toQueryString(obj) {
+    param: function param(obj) {
       var parts = [];
       for (var i in obj) {
         if (obj.hasOwnProperty(i)) {
@@ -1726,7 +1727,7 @@
         }
       }
       
-      return parts.join("&");
+      return parts.join("&").replace(r20, "+");
     },
 //    partial: function(fn) {
 ////      var args = slice.call(arguments, 1);
