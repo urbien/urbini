@@ -1480,7 +1480,7 @@ define('globals', function() {
       if (typeof key == 'object')
         newV = key;
       else {
-        newV = _.clone(G.VERSION);
+        newV = _.clone(G.VERSION) || {};
         newV[key] = version;
       }
       

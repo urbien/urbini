@@ -1053,7 +1053,7 @@ define('app', [
         url: url,
         type: 'GET',
         success: function() {
-          // may be current page is not public so go to home page (?)
+            // may be current page is not public so go to home page (?)
           window.location.hash = options.returnUri;
           window.location.reload();
         }

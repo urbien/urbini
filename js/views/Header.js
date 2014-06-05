@@ -609,9 +609,11 @@ define('views/Header', [
         
         if (this.rootFolder) {
           var rootFolderEl = this.$('.rootFolder')[0];
-          rootFolderEl.$show();
-          rootFolderEl.href = U.makePageUrl('view', this.rootFolder);
-          rootFolderEl.$('span')[0].textContent = U.getPropDisplayName(this.folderProp);
+          if (rootFolderEl) {
+            rootFolderEl.$show();
+            rootFolderEl.href = U.makePageUrl('view', this.rootFolder);
+            rootFolderEl.$('span')[0].textContent = U.getPropDisplayName(this.folderProp);
+          }
         }
       }
     },

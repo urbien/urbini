@@ -1442,7 +1442,10 @@ define('router', [
           fromView.el.$trigger('page_hide');
         
         toView.el.$trigger('page_show');
-        G.$activePage = $m.activePage = toView.$el;
+        G.$activePage = toView.$el;
+        if ($m)
+          $m.activePage = G.$activePage;
+        
         G.activePage = toView.el;
       });
     },
