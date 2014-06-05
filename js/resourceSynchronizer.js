@@ -15,7 +15,8 @@ define('resourceSynchronizer', [
       REJECTED_PROMISE = G.getRejectedPromise(),
       REF_STORE,
       REF_STORE_PROPS,
-      serverSyncTimeout;
+      serverSyncTimeout,
+      syncQueue;
   
   var backboneDefaultSync = Backbone.defaultSync || Backbone.sync;
 //  function isSyncPostponable(vocModel) {
@@ -390,12 +391,12 @@ define('resourceSynchronizer', [
   }
   
   function syncResources(refs) {
-    var self = this,
-        q = new TaskQueue('syncing some refs');
+    var self = this;
+    syncQueue = syncQueue || new TaskQueue('syncing some refs');
     
     return $.whenAll.apply($, _.map(refs, function(ref) {
       if (ref._dirty) {
-        return q.queueTask('sync ref: ' + ref._uri, function() {
+        return syncQueue.queueTask('sync ref: ' + ref._uri, function() {
           return syncResource(ref, refs);
         });
       }          

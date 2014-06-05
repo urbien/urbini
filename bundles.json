@@ -78,7 +78,6 @@
       "views/HorizontalListItemView.js",
       "views/VideoButton.js",
       "views/CallInProgressHeader.js",
-      "lib/mobiscroll.js",
       "views/IntersectionListView.js",
       "views/IntersectionListItemView.js",
       "views/MapView.js",

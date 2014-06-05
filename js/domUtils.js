@@ -334,6 +334,16 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         }
       },
     
+      $closest: function(selector) {
+        var parent = this;
+        while ((parent = parent.parentNode)) {
+          if (parent.$matches(selector))
+            return parent;
+        }
+        
+        return DOM.emptyNodeList();
+      },
+      
       $offset: function() {
         var box = this.getBoundingClientRect(),
             docElem = doc.documentElement;

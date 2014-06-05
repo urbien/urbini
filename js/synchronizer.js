@@ -267,11 +267,14 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
   Synchronizer.addItems = function(classUri, items) {
     var IDB = IndexedDBModule.getIDB();    
     if (!IDB.hasStore(classUri)) {
-      return $.Deferred(function(defer) {          
-        Events.trigger('createObjectStores', [classUri], function() {
-          Synchronizer.addItems(classUri, items).then(defer.resolve, defer.reject);
-        });
-      }).promise();
+      var dfd = $.Deferred();
+      U.require('resourceManager').done(function(RM) {
+        RM.upgrade([classUri]).done(function() {
+          Synchronizer.addItems(classUri, items).done(dfd.resolve).fail(dfd.reject);
+        }).fail(dfd.reject);
+      }).fail(dfd.reject);
+      
+      return dfd.promise();
     }
 
     if (classUri.startsWith('http')) {

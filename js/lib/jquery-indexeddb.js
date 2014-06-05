@@ -184,6 +184,8 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
           };
 					
 					result._getAll = function(range, direction, keysOnly) {
+					  var now = _.now();
+					  console.log("Start getAll: " + now);
             return $.Deferred(function(dfd) {
               var results = [];
               var callback = keysOnly ? function(result) {
@@ -201,8 +203,10 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
                   return idbObjectStore[op](wrap.range(range));
                 }
               }, callback).done(function() {
+                console.log("End getAll (success): " + now);
                 dfd.resolve(results);
               }).fail(function() {
+                console.log("End getAll (fail): " + now);
                 dfd.rejectWith(this, arguments);
               });
               

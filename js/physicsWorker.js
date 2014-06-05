@@ -420,7 +420,7 @@ function _onmessage(e) {
 	  importScripts(physicsJSUrl);
     console.log("IMPORTING: " + masonryUrl);
 	  importScripts(masonryUrl);
-	  DEBUG = e.data.debug;
+	  DEBUG = false;//e.data.debug;
 //	  with (e.data.styleInfo) {
 	    // Transfer protocol props
 //	  UNIT_MAP = e.data.styleInfo.units;
