@@ -4,7 +4,7 @@
 	  'collections/ResourceList.js', 'views/HomePage.js', 'vocManager.js', 'modelLoader.js', 'plugManager.js', 'resourceManager.js', 'indexedDB.js', 'idbQueryBuilder.js', 'synchronizer.js', 'resourceSynchronizer.js', 'collectionSynchronizer.js', 'router.js', 
 	  'app.js', 'appAuth.js', 'apiAdapter.js', 'redirecter.js', 'views/BasicView.js', 'views/BasicPageView.js', 'lib/hammer.js', 'lib/fastdom.js', 'FrameWatch.js', 'physicsTransitions.js', 'lib/l20n.js', 'widgetsLibAdapter.js',
 	  {path: 'lib/jqm-icon-pack-3.0.0-fa.css', priority: 100}, '../styles/styles.css', '../styles/common-template-m.css', 'xhrWorker.js', 'physicsWorker.js', 
- 	  '../templates.jsp'
+ 	  '../templates.jsp', '../styles/fluid_960_grid/reset.css', '../styles/fluid_960_grid/text.css', '../styles/fluid_960_grid/grid.css', '../styles/fluid_960_grid/layout.css', '../styles/fluid_960_grid/nav.css'
   ],
   post: [
  		'views/ResourceView.js', 'views/ControlPanel.js', 'views/Header.js', 'views/BackButton.js', 'views/MapItButton.js', 'views/AddButton.js', 'views/RightMenuButton.js', 'views/LoginButton.js', 'views/ToggleButton.js', 'views/ResourceImageView.js', 
