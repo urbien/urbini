@@ -641,9 +641,14 @@
   </form>
   
   {{ if (U.isAssignableFrom(this.vocModel, U.getLongUri1("model/portal/Comment"))) { }}
-    <br/><table class="ui-btn-up-g" width="100%" style="padding: 5px" id="comments">
+    <br/><table width="100%" style="padding: 5px" id="comments">
     </table>
   {{ } }}
+  {{ if (U.isAssignableFrom(this.vocModel, U.getLongUri1("commerce/trading/Rule"))) { }}
+    <br/><table width="100%" style="padding: 5px" id="rules">
+    </table>
+  {{ } }}
+  
 </div>
 </script>
 
