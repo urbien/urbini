@@ -566,7 +566,7 @@ define('collections/ResourceList', [
       }
       
       if (needsToBeStored)
-        Events.trigger('updatedResources', this.models);
+        Events.trigger('updatedResources', this.models, this.vocModel.type);
     },
 
     isBroken: function() {
@@ -869,7 +869,7 @@ define('collections/ResourceList', [
           this.trigger('updated', updated);
         
         // not everyone who cares about resources being updated has access to the collection
-        Events.trigger('updatedResources', _.union(updated, added));
+        Events.trigger('updatedResources', _.union(updated, added), this.vocModel.type);
       }
 //      else if (this.params.$offset)
 //        this.trigger('endOfList');
