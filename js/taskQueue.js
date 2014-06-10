@@ -175,8 +175,8 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
       log('taskQueue', 'Checking task:', task.name);
       var blocking = task.blocking;
       if (!isOpen()) {
-        console.debug("Running", tq.running);
-        console.debug("Queue", tq.queue.getRawQueue());
+//        console.debug("Running", tq.running);
+//        console.debug("Queue", tq.queue.getRawQueue());
         log('taskQueue', 'queue is ' + (isBlocked() ? 'blocked' : 'paused') + ', queueing {0}blocking task: {1}'.format(task.blocking ? '' : 'non-' , task.name));
         push(task);
       }      

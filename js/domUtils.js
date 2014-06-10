@@ -215,7 +215,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         var arg0 = arguments[0];
         switch (arguments.length) {
         case 1:
-          if (typeof arg == 'string') // get
+          if (typeof arg0 == 'string') // get
             return this.getAttribute(arg0);
           
           for (var prop in arg0) { // set
@@ -605,6 +605,11 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
       if (!htmlCollectionProto[prop])
         extendCollection(htmlCollectionProto, prop);
     }
+    
+    NodeList.prototype.$eq = HTMLCollection.prototype.$eq = function(idx) {
+      return this[idx >= 0 ? idx : this.length + idx];
+    };
+    
   })(window, document);
 
   DOM = {
@@ -1309,6 +1314,9 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
       height: function() {
         return doc.documentElement.clientHeight;
       }      
+    },
+    isCollection: function(obj) {
+      return isElementCollection(obj);
     },
     transparentStyle: TRANSPARENT_STYLE,
     opaqueStyle: OPAQUE_STYLE,

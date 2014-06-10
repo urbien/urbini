@@ -41,7 +41,8 @@ define('collections/ResourceList', [
       var vocModel = this.vocModel = this.model,
           meta = vocModel.properties;
           
-      _.bindAll(this, 'fetch', 'parse', '_parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'onResourceChange', 'disablePaging', 'enablePaging'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'fetch', 'parse', '_parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 
+          'setPerPage', 'pager', 'getUrl', 'onResourceChange', 'disablePaging', 'enablePaging'); // fixes loss of context for 'this' within methods
 //      this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
 //      this.on('aroundMe', vocModel.getAroundMe);
@@ -327,7 +328,7 @@ define('collections/ResourceList', [
           
         if (U.isTempUri(uri)) {
 //          Events.once('synced:' + uri, this.onSyncedResource.bind(this, resource));
-          resource.once('syncedWithServer', this.onSyncedResource.bind(this, resource));
+          this.listenToOnce(resource, 'syncedWithServer', this.onSyncedResource);
         }
         
         if (setInitialParams) {
@@ -335,8 +336,8 @@ define('collections/ResourceList', [
           resource.set(params, {silent: true});
         }
 
-        this.listenTo(resource, 'change', self.onResourceChange);
-        this.listenTo(resource, 'change', self.onResourceChange);
+        this.stopListening(resource, 'change', this.onResourceChange);
+        this.listenTo(resource, 'change', this.onResourceChange);
       }
 
       if (multiAdd && !this.resetting) {
@@ -398,7 +399,7 @@ define('collections/ResourceList', [
       params = params ? _.clone(params) : {};
       params.$minify = params.$mobile = 'y';
       for (var p in this.params) {
-        if (!U.isMetaParameter(p) || U.isApiMetaParameter(p)) {
+        if (p == '_uri' || !U.isMetaParameter(p) || U.isApiMetaParameter(p)) {
           params[p] = this.params[p];
         }
       }
@@ -583,7 +584,7 @@ define('collections/ResourceList', [
 
     onReset: function(model, options) {
       if (options.params) {
-        _.extend(this.params, options.params);
+        this._parseParams(options.params);
         try {
           this.belongsInCollection = U.buildValueTester(this.params, this.vocModel) || G.trueFn;
           this._unbreak();
@@ -646,7 +647,7 @@ define('collections/ResourceList', [
       
       this.rUri = options.rUri;
       urlParams = this.rUri ? _.getParamMap(this.rUri) : {};
-      if (urlParams) {
+      if (!_.isEmpty(urlParams)) {
         limit = urlParams.$limit;
         limit = limit && parseInt(limit);
       }

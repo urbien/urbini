@@ -24,6 +24,11 @@ define('views/Header', [
   var editablePhysicsConstants = ['drag', 'springStiffness', 'springDamping', 'tilt'];
   var NO_PROP = '_NO_PROP_';
   var ModalDialog;
+  var showFilter = (function() {
+//    return U.isUserInRole(U.getUserRole(), 'siteOwner');
+    return false;
+  })();
+  
   return BasicView.extend({
 //    viewType: 'any',
     style: {
@@ -58,7 +63,8 @@ define('views/Header', [
       this.on('destroyed', function() {
         self.buttonViews = {};
       });
-      
+    
+      this.filterParams = {};
       if (this.filter) {
         var type = vocModel && vocModel.type;
         this.makeTemplate('searchTemplate', 'searchTemplate', type);
@@ -72,10 +78,29 @@ define('views/Header', [
       if (this.resource && /^view/.test(this.hash) && this.resource.isA('Activatable'))
         this.activatedProp = vocModel.properties[U.getCloneOf(vocModel, 'Activatable.activated')[0]];
 
-      if (U.isA(vocModel, 'FolderItem')) {
+      if (this.collection) {
+        var params = this.hashParams,
+            forRes = params.$forResource,
+            forResType = forRes && U.getTypeUri(forRes),
+            forResModel = forRes && U.getModel(forResType);
+            
+        if (forRes) {
+          this.folder = {
+            name: forResModel ? forResModel.displayName : forResType.slice(forResType.lastIndexOf('/') + 1).uncamelize(true),
+            uri: forRes
+          };
+          
+          console.log("FOLDER NAME: " + this.folder.name);
+        }
+      }
+      else if (this.resource && U.isA(vocModel, 'FolderItem')) {
         var pName = this.hashParams.$rootFolderProp || U.getCloneOf(vocModel, 'FolderItem.rootFolder')[0] || U.getCloneOf(vocModel, 'FolderItem.folder')[0];
-        if (pName)
-          this.folderProp = vocModel.properties[pName];
+        if (pName) {
+          this.folder = {
+            shortName: pName,
+            name: U.getPropDisplayName(vocModel.properties[pName])
+          };
+        }
       }
 
       return this;
@@ -187,6 +212,7 @@ define('views/Header', [
       'change .physicsConstants input'             : 'changePhysics',
       'click .filterToggle'                        : 'toggleFilter',
       'click #categories'                          : 'showCategories',
+      'click .back'                                : G.back,
 //      'click #installApp'         : 'installApp',
       'click #moreRanges'                          : 'showMoreRanges',
       'click .filterCondition i.ui-icon-remove-sign, .filterCondition i.ui-icon-remove': 'removeFilterCondition',
@@ -196,7 +222,8 @@ define('views/Header', [
       'keyup .searchInput'                         : 'search',
       'keyup .filterConditionInput input'          : 'onFilter',
       'change .filterConditionInput select'        : 'onFilter',
-      'change .filterConditionInput input'         : 'onFilter'
+      'change .filterConditionInput input'         : 'onFilter',
+      'change .category input'                     : 'onChoseCategory'
     },
     
     activate: function(e, force) {
@@ -373,7 +400,8 @@ define('views/Header', [
         delete this.hashParams['$less']; 
         this.hashParams['$more'] = 'y'; 
       }
-      this.router.navigate(U.makeMobileUrl('chooser', this.vocModel.type, this.hashParams), {trigger: true, replace: true, forceFetch: true});
+      
+      Events.trigger('navigate', U.makeMobileUrl('chooser', this.vocModel.type, this.hashParams), {trigger: true, replace: true, forceFetch: true});
     },
     
     showCategories: function(e) {
@@ -392,16 +420,17 @@ define('views/Header', [
         }
         params['application'] = self.vocModel.type;
         params.$title = 'Categories';
-        var uri = U.makeMobileUrl('list', U.getModel("Tag").type, params); //, $orderBy: "tagUsesCount", $asc: "-1"});
-        self.router.navigate(uri, {trigger: true, replace: true, forceFetch: true});
+        var fragment = U.makeMobileUrl('list', U.getModel("Tag").type, params); //, $orderBy: "tagUsesCount", $asc: "-1"});
+        Events.trigger('navigate', fragment, {trigger: true, replace: true, forceFetch: true});
       }).fail(function() {
-        self.router.navigate(U.makeMobileUrl('list', self.vocModel.type));
+        Events.trigger('navigate', U.makeMobileUrl('list', self.vocModel.type));
       });
     },
     
     toggleFilter: function(e) {
       Events.stopEvent(e);
       this.filterContainer.$empty();
+      this.filterParams = _.pick(this.filterParams, 'type');
       
       switch (this.filterType) {
       case null:
@@ -411,8 +440,7 @@ define('views/Header', [
         this.redelegateEvents();
         break;
       case 'simple':
-        var userRole = U.getUserRole();
-        if (U.isUserInRole(userRole, 'siteOwner')) {
+        if (showFilter) {
           this.filterType = 'complex';
           this.showFilter();
           this.redelegateEvents();
@@ -423,24 +451,33 @@ define('views/Header', [
         }
       case 'complex':
         this.filterType = null;
-        this.filter.style.display = '';
+        this.filter.style.display = 'inline-block';
         this.hideFilter();
         break;
       }
     },
     
     hideFilter: function() {
+      this.doFilter();
       this.titleContainer.classList.remove('hidden');
-      
       this.filterIcon.className = this.searchIconClass;
       this.filterContainer.classList.add('hidden');
       this.redelegateEvents();
     },
 
+    doFilter: _.debounce(function() {
+      // HACK
+      this.pageView.listView.doFilter(this.filterParams);
+    }, 100),
+    
     showSearch: function() {
       this.titleContainer.classList.add('hidden');
       
-      this.filterIcon.className = 'ui-icon-beaker';
+      if (showFilter)
+        this.filterIcon.className = 'ui-icon-beaker';
+      else
+        this.filterIcon.className = 'ui-icon-remove';
+        
       this.filterContainer.$html(this.searchTemplate(this.getBaseTemplateData()));
       this.filterContainer.classList.remove('hidden');
       this.filterContainer.$('.searchBar input')[0].focus();
@@ -564,7 +601,8 @@ define('views/Header', [
     },
     
     search: _.debounce(function(e) {
-      Events.trigger('searchList', this.getPageView(), e.target.value);
+      this.filterParams.$like = 'davDisplayName,' + e.target.value;
+      this.doFilter();
     }, 20),
 
     onFilter: Q.debounce(function(e) {
@@ -572,7 +610,7 @@ define('views/Header', [
           filter,
           propName,
           value,
-          filterParams = {},
+          params = this.filterParams,
           i = filters.length;
       
       while (i--) {
@@ -580,11 +618,11 @@ define('views/Header', [
         propName = filter.$('select')[0].value;
         if (propName != NO_PROP) {
           value = filter.$('.filterConditionInput select, .filterConditionInput input')[0].value;
-          filterParams[propName] = value; // U.getFlatValue(this.vocModel.properties[propName], value);
+          params[propName] = value; // U.getFlatValue(this.vocModel.properties[propName], value);
         }
       }
       
-      Events.trigger('filterList', this.getPageView(), filterParams);
+      this.doFilter();
     }, 20),
 
     refresh: function() {
@@ -601,21 +639,30 @@ define('views/Header', [
     },
     
     refreshFolder: function() {
-      if (this.folderProp) {
-        var pName = this.folderProp.shortName;
-        this.rootFolder = (this.resource && this.resource.get(pName)) || 
-                          this.hashParams[pName] || 
-                          this.hashParams.$rootFolder;
-        
-        if (this.rootFolder) {
-          var rootFolderEl = this.$('.rootFolder')[0];
-          if (rootFolderEl) {
-            rootFolderEl.$show();
-            rootFolderEl.href = U.makePageUrl('view', this.rootFolder);
-            rootFolderEl.$('span')[0].textContent = U.getPropDisplayName(this.folderProp);
-          }
-        }
+      if (!this.folder)
+        return;
+      
+      if (!this.folder.uri) {
+        this.folder.uri = (this.resource && this.resource.get(this.folder.shortName)) || 
+                          this.hashParams[this.folder.shortName] || 
+                          this.hashParams.$rootFolder ||
+                          this.hashParams.$forResource;
       }
+          
+      if (!this.folder.uri)
+        return;
+      
+      var rootFolderEl = this.$('.rootFolder')[0];
+      if (!rootFolderEl)
+        return;
+      
+      rootFolderEl.style.display = 'inline-block';
+      rootFolderEl.$('span')[0].textContent = this.folder.name;
+      rootFolderEl.href = U.makePageUrl('view', this.folder.uri);
+//        else {
+//          rootFolderEl.classList.add('back');
+//          this.redelegateEvents();
+//        }
     },
     
 //    _getRootFolderHref: function() {
@@ -625,10 +672,10 @@ define('views/Header', [
     refreshActivated: function() {
       this._checkActivatable();
       if (this._activatable) {
-        var activatables = this.$('.activatable');
-        if (activatables.length > 0) {
-          activatables[0].$show()
-            .$('input')[0].checked = this.resource.get(this.activatedProp.shortName) ? 'checked' : '';
+        var activatable = this.$('.activatable')[0];
+        if (activatable) {
+          activatable.style.display = 'inline-block';
+          activatable.$('input')[0].checked = this.resource.get(this.activatedProp.shortName) ? 'checked' : '';
         }
       }
     },
@@ -901,9 +948,80 @@ define('views/Header', [
         this._activatable = this.activatedProp && U.isPropEditable(this.resource, this.activatedProp);
     },
     
+    renderSubclasses: function() {
+      if (!this.vocModel.type.endsWith('commerce/trading/Feed'))
+        return;
+
+      this.categories = this.$('.categories')[0];
+      if (!this.categoriesTemplate)
+        this.makeTemplate('categoriesTemplate', 'categoriesTemplate', this.vocModel.type);
+          
+      if (!this.subClasses) {
+        var sCls = this.vocModel.subClasses,
+            sCl,
+            i = sCls.length;
+        
+        if (!i)
+          return;
+        
+        this.subClasses = [{
+          name: 'All',
+          on: true
+        }];
+      
+//        if (this.vocModel.type.endsWith('commerce/trading/Feed')) {
+          this.subClasses.push({
+            name: 'Stocks',
+            type: U.getLongUri1('commerce/trading/Stock')
+          }, {
+            name: 'Indexes',
+            type: U.getLongUri1('commerce/trading/Index')            
+          }
+//          , {
+//            name: 'Market feeds',
+//            type: 'subClassOf:' + U.getLongUri1('commerce/trading/MarketFeed')
+//          }
+          );
+//        }
+//        else {
+//          while (i-- > 1) {
+//            sCl = sCls[i];
+//            this.subClasses[i] = {
+//              name: U.getPlural(sCl.displayName),
+//              type: 'subClassOf:' + U.getLongUri1(sCl.type)
+//            };
+//          }
+//        }
+      }
+        
+      this.categories.$show().$html(this.categoriesTemplate({
+        categories: this.subClasses
+      }));
+    },
+
+    onChoseCategory: function(e) {
+      var input = e.currentTarget,
+          catName = input.value,
+          cats = this.categories.$('input[type="radio"]'),
+          filter = this.filterParams,
+          i = cats.length;
+          
+      while (i--) {
+        var cat = cats[i];
+        cat.parentElement.classList[cat.checked ? 'add' : 'remove']('actionBtn');
+      }
+      
+      if (catName == 'All')
+        delete filter.type;
+      else
+        filter.type = input.dataset.type;
+      
+      this.doFilter();
+    },
+    
     renderHelper: function() {
       var self = this;
-      var isJQM = G.isJQM(); //!wl  ||  wl == 'Jquery Mobile';
+//      var isJQM = G.isJQM(); //!wl  ||  wl == 'Jquery Mobile';
       var res = this.resource; // undefined, if this is a header for a collection view
       var error = res && res.get('_error');
       if (error)
@@ -951,7 +1069,7 @@ define('views/Header', [
       var tmpl_data = this.getBaseTemplateData();
 
       tmpl_data.activatedProp = this.activatedProp;
-      tmpl_data.folderProp = this.folderProp;      
+      tmpl_data.folder = this.folder;      
 
 //      tmpl_data.physics = this.getPhysicsConstants(); //Physics.scrollerConstants[this._scrollerType]);
       if (U.isChatPage()) {
@@ -959,10 +1077,10 @@ define('views/Header', [
 //          "data-position": "fixed"
 //        });
       }
-      if (isJQM) {
-        if (!this.publish  &&  this.doTry  &&  this.forkMe)
-          tmpl_data.className = 'ui-grid-b';
-      }      
+//      if (isJQM) {
+//        if (!this.publish  &&  this.doTry  &&  this.forkMe)
+//          tmpl_data.className = 'ui-grid-b';
+//      }      
 
       if (this.filter)
         this.categories = false; // HACK for now, search is more important at the moment        
@@ -1026,44 +1144,45 @@ define('views/Header', [
       
 //      this.renderError();
       this.renderSpecialButtons();
+      this.renderSubclasses();
 
 //      if (G.isJQM())
 //        this.$el.trigger('create');
       if (this.isEdit  ||  this.isChat  ||  this.noButtons) {
         this.$('#headerButtons').$addClass('hidden');
       }
-      if (isJQM) {
-        if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges) {
-          this.$('#name').$removeClass('resTitle');
-          if (this.resource  &&  !this.isEdit) {
-            var pt = this.titleContainer;
-            if (pt.length) {
-              pt.$css({
-                'padding-bottom': '4px',
-                'border-bottom': '1px solid rgba(255,255,255,0.5)'
-              });
-            }
-          }
-          // this.$el.find('#pageTitle').css('margin-bottom', '0px'); 
-        }
-      }      
+//      if (isJQM) {
+//        if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges) {
+//          this.$('#name').$removeClass('resTitle');
+//          if (this.resource  &&  !this.isEdit) {
+//            var pt = this.titleContainer;
+//            if (pt.length) {
+//              pt.$css({
+//                'padding-bottom': '4px',
+//                'border-bottom': '1px solid rgba(255,255,255,0.5)'
+//              });
+//            }
+//          }
+//          // this.$el.find('#pageTitle').css('margin-bottom', '0px'); 
+//        }
+//      }      
       if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges  &&  !this.isEdit /* &&  !G.isBB()*/) {
         this.$('#name.resTitle').$css('padding', '0px');
       }
 //      var wl = G.currentApp.widgetLibrary;
-      if (isJQM) {
-        if (this.noButtons) 
-          this.$('h4').$css('margin-top', '10px');
-        else
-          this.$('h4').$css('margin-top', '4px');
-      }
+//      if (isJQM) {
+//        if (this.noButtons) 
+//          this.$('h4').$css('margin-top', '10px');
+//        else
+//          this.$('h4').$css('margin-top', '4px');
+//      }
       
       for (var btn in btns) {
         var badge = btns[btn].$('.menuBadge');
         if (badge.length) {
-          if (G.isJQM())
-            badge.$css('left', Math.floor(btnWidth/2) + '%');
-          else
+//          if (G.isJQM())
+//            badge.$css('left', Math.floor(btnWidth/2) + '%');
+//          else
             badge.$css('left', '50%');
         }
       }
@@ -1077,8 +1196,8 @@ define('views/Header', [
       // END HACK
       
 //      this.refreshCallInProgressHeader();
-      if (isJQM)
-        this.restyleNavbar();
+//      if (isJQM)
+//        this.restyleNavbar();
       if (G.isTopcoat())
         this.$('li').$attr('class', 'topcoat-button-bar__item');
       

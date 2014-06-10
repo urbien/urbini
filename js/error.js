@@ -17,7 +17,7 @@ define('error', [
       log('error', 'requesting user-login');
       if (options.sync) {
         Events.trigger('req-login', {
-          online: 'You are not authorized to view this resource. Login to a different account?',
+          online: Errors.msgs.unauthorized,
           dismissible: false
         });
         
@@ -86,10 +86,13 @@ define('error', [
   
   var Errors = {
     TAG: "Errors",
+    getMessage: function(key) {
+      return Errors.msgs[key];
+    },
     msgs: {
       not_found: "The page you're looking for is probably in a parallel universe",
       login: "Please login, then we'll show you the top secret information you're looking for",
-      unauthorized: "You are unauthorized to view this information",
+      unauthorized: "Unauthorized. Login with a different account?",
       offline: 'Your device is currently offline. Please come back to the 21st century, we miss you!',
       timeout: 'Slow internet connection, please try again'
     },

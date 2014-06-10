@@ -690,6 +690,9 @@ define('views/ContextMenuPanel', [
     },
     
     buildActionsMenuForRes: function() {
+      if (U.isAssignableFrom(this.vocModel, 'commerce/trading/Rule'))
+        return; // can't edit or add rules from menu
+      
       var m = this.resource,
           user = G.currentUser,
           edit = m.get('edit'),

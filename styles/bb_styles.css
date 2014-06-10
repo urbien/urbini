@@ -12,10 +12,6 @@ html {
   font-size: 1.2rem;
 }
 
-#name.resTitle {
-/*  padding-bottom: 4px; */
-  padding: 6px 0 9px 0;
-}
 #other li {
   min-height: 3rem;
 }
@@ -122,17 +118,11 @@ html {
   margin-top: -15px;
 }
 */
-#buttons h4 {
-  margin-top: 0px;
-}
+
 button {
   border-radius: 1rem;
   font-size: 1.8rem;
   font-weight: bold;
-}
-
-#headerDiv h4 {
-  padding-top: 5px; 
 }
 
 #headerButtons a[role="button"] {

@@ -1582,7 +1582,7 @@
   };
   
   String.prototype.uncamelize = function(capitalFirst) {
-    var str = this.replace(/[A-Z]/g, ' $&').toLowerCase();
+    var str = this.replace(/[A-Z]/g, ' $&').trim().toLowerCase();
     return capitalFirst ? str.slice(0, 1).toUpperCase() + str.slice(1) : str; 
   };
 
@@ -2108,10 +2108,8 @@
 (function(_) {
   /* TODO remove after jQuery removal migration -- START */
   window.jQuery = window.$ = function(selector, context) {
-    if (selector == document || selector == window) {
-      debugger;
+    if (selector == document || selector == window || selector instanceof HTMLElement || selector instanceof HTMLCollection || selector instanceof Node || selector instanceof NodeList)
       return selector;
-    }
     
     context = context || document;
     try {

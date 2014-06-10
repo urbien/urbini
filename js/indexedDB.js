@@ -949,8 +949,8 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
         start = _.now(),
         processingTime = 0,
         waitingTime = 0,
-        now,
-        tmp,
+//        now,
+//        tmp,
         keys,
         val;
 
@@ -958,14 +958,14 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       filter = null;
     
     transPromise = trans.progress(function(trans) {      
-      now = _.now();
+//      now = _.now();
       trans.objectStore(storeName).each(function processItem(item) {
   //      var t = _.now();
-        tmp = _.now();
-        if (now)
-          waitingTime += tmp - now;
-        
-        now = tmp;
+//        tmp = _.now();
+//        if (now)
+//          waitingTime += tmp - now;
+//        
+//        now = tmp;
         val = item.value;
         if (!filter || filter && filter(val)) {
           queueParse(val);
@@ -978,7 +978,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       debugger;
       dfd.reject();
     }).done(function() {
-      log('Getting {0} items from DB objectStore {1} took {2}ms, waiting time: {3}'.format(results.length + promises.length, storeName, _.now() - start | 0, waitingTime | 0));
+//      log('Getting {0} items from DB objectStore {1} took {2}ms, waiting time: {3}'.format(results.length + promises.length, storeName, _.now() - start | 0, waitingTime | 0));
       dfd.resolve(results);
 //      if (promises.length) {
 //        $.when.apply($, promises).done(function() {

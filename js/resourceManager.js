@@ -217,16 +217,28 @@ define('resourceManager', [
       return vocModel && !U.isA(vocModel, "Buyable");
     },    
 
-    deleteItem: function(item) {
-      var type = item.vocModel.type,
-          uri = item.get('_uri'),
+    deleteUri: function(uri, vocModel) {
+      var types = U.getTypes(vocModel),
+          type,
+          i = types.length,
+          uri,
           REF_STORE = G.getRefStoreInfo();
       
       G.log(RM.TAG, 'db', 'deleting item', uri);
-      IDB['delete'](type, uri);
+      while (i--) {
+        type = types[i];
+        if (IDB.hasStore(type))
+          IDB['delete'](type, uri);
+      }
+      
       IDB.queryByIndex('_uri').eq(uri).getAll(REF_STORE.name).done(function(results) {
-        IDB['delete'](REF_STORE.name, _.pluck(results || [], REF_STORE.options.keyPath));
-      });      
+        if (results && results.length)
+          IDB['delete'](REF_STORE.name, _.pluck(results, REF_STORE.options.keyPath));
+      });            
+    },
+
+    deleteItem: function(item) {
+      RM.deleteUri(item.get('_uri'), item.vocModel);
     },
     
     getItem: function(type, uri) {
@@ -335,23 +347,24 @@ define('resourceManager', [
   
   Events.on('updatedResources', function(resources) {
     var i = resources.length;
-    if (i) {
-      var atts,
-          val;
-      
-      //// HACK
-      while (i--) {
-        atts = resources[i].attributes;
-        for (var p in atts) {
-          val = atts[p];
-          if (val && val._list)
-            delete val._list;
-        }
+    if (!i)
+      return;
+    
+    var atts,
+        val;
+    
+    //// HACK
+    while (i--) {
+      atts = resources[i].attributes;
+      for (var p in atts) {
+        val = atts[p];
+        if (val && val._list)
+          delete val._list;
       }
-      //// HACK (remove when you figure out why _list is not parsed and removed earlier
-      
-      Q.nonDom(RM.addItems.bind(RM, resources));
     }
+    //// HACK (remove when you figure out why _list is not parsed and removed earlier
+    
+    Q.nonDom(RM.addItems.bind(RM, resources));
   });
 
   Events.on('modelsChanged', function(changedTypes) {
@@ -426,6 +439,19 @@ define('resourceManager', [
   
   Events.on('delete', function(res) {
     RM.deleteItem(res);
+  });
+
+  Events.on('findAndDelete', function(uris) {
+    debugger;
+    uris = typeof uris == 'string' ? [uris] : uris;
+    var modelTypes = _.uniq(uris.map(U.getTypeUri));
+    Voc.getModels(modelTypes).done(function() {
+      uris.forEach(function(uri) {
+        var model = U.getModel(U.getTypeUri(uri));
+        if (model)
+          RM.deleteUri(uri, model);
+      });      
+    });
   });
 
   function getTypeToInfoMap(infos) {

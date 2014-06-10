@@ -795,7 +795,6 @@
   {{ if (typeof comment != 'undefined') { }}
     <p style="padding-left: 15px;">{{= comment }}</p>
   {{ } }}
-  </a>
 </li>
 </script>
 

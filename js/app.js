@@ -654,6 +654,7 @@ define('app', [
     var localized = localize();
     var modelsViewsTemplatesAndDB = $.Deferred();
     ResourceManager.openDB().done(function() {
+//      loadCurrentModel().done(modelsViewsTemplatesAndDB.resolve);
 //      return getAppAccounts().done(function() {
         return loadCurrentModel().done(function() {
           $.whenAll.apply($, getTemplates(), getViews()).done(modelsViewsTemplatesAndDB.resolve);
@@ -814,8 +815,8 @@ define('app', [
       else
         Backbone.history.start();
       
-      if (!G.currentUser.guest && !G.currentUser.email && new Date().getTime() - G.currentUser.dateRegistered < 24 * 3600000)
-        askForEmail();
+//      if (!G.currentUser.guest && !G.currentUser.email && new Date().getTime() - G.currentUser.dateRegistered < 24 * 3600000)
+//        askForEmail();
       
       dfd.resolve();
     }).promise();

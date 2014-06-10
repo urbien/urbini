@@ -218,12 +218,18 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
     throw "This function must be overridden";
   };
 
+  Synchronizer.prototype.canFetchFromServer = function() {
+    throw "This function must be overridden";
+  },
+  
   Synchronizer.prototype._onDBError = function(err) {
     if (this.options.dbOnly)
       this._error(this.data, {type: 'not_found'}, this.options);            
     else if (G.online) {
-      if (U.isModel(this.data) && this.data.isNew())
+      if (!this.canFetchFromServer()) {
+        debugger;
         this._error(this.data, {code: 400, type: 'not_found'});
+      }
       else
         this._fetchFromServer();
     }

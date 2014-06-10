@@ -207,8 +207,7 @@ define('views/BasicPageView', [
       else
         this.onload(onload);
       
-      if (!this._title)
-        this._updateTitle();
+      this._updateTitle();
     },
     
     _onInactive: function() {

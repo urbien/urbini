@@ -734,6 +734,11 @@ define('globals', function() {
         return require(essential);
       });
     }).then(function(Events, App) {
+      G.back = function(e) {
+        Events.stopEvent(e);
+        Events.trigger('back');
+      };
+      
       Events.once('dbOpen', DB_OPEN_DFD.resolve);
       Events.once('appStart', APP_START_DFD.resolve);
       G.log(G.TAG, 'info', "Loaded pre-bundle: " + (new Date().getTime() - __started) + ' millis');
@@ -1063,7 +1068,7 @@ define('globals', function() {
         bg: '#000'
       },
       taskQueue: {
-        on: true,
+        on: false,
         color: '#88FFFF',
         bg: '#000'
       },

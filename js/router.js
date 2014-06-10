@@ -145,12 +145,8 @@ define('router', [
       });
 
       Events.once('pageChange', this.loadTourGuide.bind(this));
-      Events.on('back', Q.debounce(function(ifNoHistory) {
-//        var now = +new Date();
-//        if (self.lastBackClick && now - self.lastBackClick < 100)
-//          debugger;
-//          
-//        self.lastBackClick = now;
+      Events.on('back', _.debounce(function(ifNoHistory) {
+        console.log("BACK PRESSED!");
         self.previousFragment = null;
         self.backClicked = true;
         window.history.back();
@@ -294,6 +290,8 @@ define('router', [
     fragmentToOptions: {},
     
     navigate: function(fragment, options) {
+      console.log("NAVIGATING: " + fragment);
+      
 //      if (this.previousHash === fragment) {
 ////      prevents some (not all) duplicate history entries, BUT creates unwanted forward history (for example make/edit views)
 //        Events.trigger('back');
@@ -443,8 +441,10 @@ define('router', [
     choose: function(path) { //, checked, props) {
       if (this.routePrereqsFulfilled('choose', arguments)) {
         if (!Redirecter.getCurrentChooserBaseResource()) {
-          var forResource = U.getCurrentUrlInfo().params.$forResource;
-          if (!forResource) {
+          var params = U.getCurrentUrlInfo().params,
+              forResource = params.$forResource;
+          
+          if (!forResource && !params.$createInstance) {
             Events.trigger('back');
             return;
           }
@@ -914,7 +914,7 @@ define('router', [
           prereqs,
           installationState,
           isWriteRoute,
-          hashInfo = G.currentHashInfo,
+          hashInfo = U.getCurrentUrlInfo(),
           type = hashInfo.type,
           params = hashInfo.params;
       

@@ -200,15 +200,17 @@ define('resourceSynchronizer', [
     });
   };
   
+  ResourceSynchronizer.prototype.canFetchFromServer = function() {
+    return !this.data.isNew();
+  },
+  
   ResourceSynchronizer.prototype._onDBSuccess = function(result) {
     var isTemp = !!this.info.tempUri,
         dbOnly = this.options.dbOnly;
     
     if (!result) {
-      if (isTemp || dbOnly) {
-        debugger;
+      if (isTemp || dbOnly)
         return;
-      }
       else
         return this._fetchFromServer(100);
     }
@@ -230,8 +232,10 @@ define('resourceSynchronizer', [
     var urlInfo = U.getCurrentUrlInfo();
     if (this.info && !_.isUndefined(this.info.key))
       return this.info.key;
-    else
-      return urlInfo.route == 'make' ? null : U.getLongUri1(this.data.getUri(), this.data.vocModel);
+    else {
+      var uri = this.data.getUri();
+      return uri ? U.getLongUri1(uri, this.data.vocModel) : null;
+    }
   };
   
   ResourceSynchronizer.sync = function() {

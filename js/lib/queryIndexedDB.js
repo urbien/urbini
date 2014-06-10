@@ -168,7 +168,7 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
      * @param op getAll or getAllKeys
      */
     function queryIndex(store, op) {
-      console.log("querying index: " + indexName);
+//      console.log("querying index: " + indexName);
       return $.Deferred(function(defer) {
 //        var qLimit = query.limit,
         var qOffset = query.offset,
@@ -180,7 +180,7 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
         var request = typeof range !== 'undefined' ? index[op](range, direction) : index[op](undefined, direction);
         request.done(function(result, event) {
           if (!negate) {
-            console.log("querying index finished: " + indexName);
+//            console.log("querying index finished: " + indexName);
 //            defer.resolve(arrayLimit(arrayOffset(result.sort(sort), qOffset), qLimit));
             // we don't want to LIMIT every time, until we're done with the whole operation (this may be a subquery and by limiting now, we may not have enough later)
             defer.resolve(arrayOffset(sort ? result.sort(sort) : result, qOffset));
@@ -191,7 +191,7 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
 //          request = index[op]();
           request.done(function(all, event) {
 //            defer.resolve(arrayLimit(arrayOffset(arraySub(all, result).sort(sort), qOffset), qLimit));
-            console.log("querying index finished: " + indexName);
+//            console.log("querying index finished: " + indexName);
             defer.resolve(arrayOffset(arraySub(all, result).sort(sort), qOffset));
           }).fail(function(err, event) {
             debugger;
