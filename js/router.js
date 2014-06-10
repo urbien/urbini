@@ -391,12 +391,21 @@ define('router', [
       
       var homePage = C.getCachedView();
       if (!homePage) {
-        if (G.homePage) {
-          document.body.$append(G.homePage);
-          delete G.homePage;
+        var homePageEl = doc.$('#homePage')[0];
+        if (!homePageEl) {
+          if (G.homePage) {
+            document.body.$append(G.homePage);
+            delete G.homePage;
+          }
+          else {
+            debugger;
+            document.body.$append(localStorage.getItem('homePage'));
+          }
         }
         
-        homePage = new HomePage({el: doc.$('#homePage')[0] });
+        homePage = new HomePage({
+          el: homePageEl 
+        });
       }
       
       this.changePage(homePage);
