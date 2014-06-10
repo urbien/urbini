@@ -601,11 +601,15 @@ define('views/Header', [
     },
     
     search: _.debounce(function(e) {
-      this.filterParams.$like = 'davDisplayName,' + e.target.value;
+      if (e.target.value)
+        this.filterParams.$like = 'davDisplayName,' + e.target.value;
+      else
+        delete this.filterParams.$like;
+      
       this.doFilter();
     }, 20),
 
-    onFilter: Q.debounce(function(e) {
+    onFilter: _.debounce(function(e) {
       var filters = this.$('.filterCondition'),
           filter,
           propName,
@@ -1000,23 +1004,42 @@ define('views/Header', [
     },
 
     onChoseCategory: function(e) {
-      var input = e.currentTarget,
+      var self = this,
+          input = e.currentTarget,
           catName = input.value,
           cats = this.categories.$('input[type="radio"]'),
           filter = this.filterParams,
-          i = cats.length;
+          i = cats.length,
+          runFilter = function() {
+            delete filter.type;
+            if (type)
+              filter.type = type;
+            
+            self.doFilter();
+            while (i--) {
+              var cat = cats[i];
+              cat.parentElement.classList[cat.checked ? 'add' : 'remove']('actionBtn');
+            }
+          };
+           
+      this._lastCategory = input;
+      if (catName != 'All') {
+        var type = input.dataset.type;
+        if (!U.getModel(type)) {
+          if (e instanceof Event)
+            Events.stopEvent(e);
           
-      while (i--) {
-        var cat = cats[i];
-        cat.parentElement.classList[cat.checked ? 'add' : 'remove']('actionBtn');
+          this._fetchingFilterType = type;
+          Voc.getModels(type).done(function() {
+            if (input == self._lastCategory)
+              runFilter()
+          });
+          
+          return;
+        }        
       }
       
-      if (catName == 'All')
-        delete filter.type;
-      else
-        filter.type = input.dataset.type;
-      
-      this.doFilter();
+      runFilter();
     },
     
     renderHelper: function() {

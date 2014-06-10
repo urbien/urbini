@@ -162,6 +162,8 @@ define('views/ResourceListView', [
       };
       
       this.originalParams = _.clone(this.collection.params);
+      this.originalModel = this.collection.vocModel;
+      this.setDisplayModel(this.originalModel);
       
 //      Physics.here.on('translate.' + this.axis.toLowerCase(), this.getBodyId(), this.onScroll);
 //      
@@ -172,6 +174,19 @@ define('views/ResourceListView', [
 //      }, this);
       
       return this;
+    },
+
+    getDisplayModel: function(vocModel) {
+      return this.displayModel;
+    },
+    
+    setDisplayModel: function(vocModel) {
+      this.itemViewCache.map(function(v) {
+        v.destroy();
+      });
+      
+      this.itemViewCache.length = 0;
+      this.displayModel = vocModel;
     },
     
     isPaging: function() {
@@ -303,11 +318,15 @@ define('views/ResourceListView', [
           numResults,
           indicatorId,
           hideIndicator;
-      
+
+//      if (this._filterParams.type)
+//        this.setDisplayModel(U.getModel(this._filterParams.type));
+
       if (_.isEmpty(filterParams)) {
         indicatorId = this.showLoadingIndicator(3000); // 3 second timeout
         hideIndicator = this.hideLoadingIndicator.bind(this, indicatorId);
 
+//        this.setDisplayModel(col.vocModel);
         filtered.reset(col.models, {
           params: this.originalParams
         });
@@ -784,13 +803,6 @@ define('views/ResourceListView', [
         Q.defer(1, 'read', this.checkOffsetTop, this);
     },
     
-    /**
-     * re-render the elements in the sliding window
-     */
-    refresh: function() {
-      debugger;
-    },
-        
     /** 
     * shorten the dummy div below this page by this page's height/width (if there's a dummy div to shorten)
     * @param force - will add as much as it can, including a half page

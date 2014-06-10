@@ -11,7 +11,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   var redirecter,
       interfaceImplementorType = 'system/designer/InterfaceImplementor',
       connectionType = G.commonTypes.Connection,
-      CHOOSE_RULE_FOR = 'Choose a rule for ';
+      CHOOSE_INDICATOR_FOR = 'Choose an indicator for ';
   
   function makeWriteUrl(res) {
     var uri = res.get('_uri'),
@@ -772,7 +772,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
           rParams.$in = $in;
           rParams.domain = res.get('eventClass');
           rParams.$select = 'name,label,propertyType,range,rangeUri';
-          rParams.$title = CHOOSE_RULE_FOR + res.get('feed.displayName');
+          rParams.$title = CHOOSE_INDICATOR_FOR + res.get('feed.displayName');
 //          if (lastEvent)
 //            rParams.$lastEvent = lastEvent.getUri();
             
@@ -1025,8 +1025,8 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       var params = urlInfo.params.$props;
       params = params ? U.getQueryParams(params) : {};
       var prevTitle = urlInfo.params.$title;
-      if (prevTitle.startsWith(CHOOSE_RULE_FOR))
-        prevTitle = prevTitle.slice(CHOOSE_RULE_FOR.length);
+      if (prevTitle.startsWith(CHOOSE_INDICATOR_FOR))
+        prevTitle = prevTitle.slice(CHOOSE_INDICATOR_FOR.length);
       
       params.$title = prevTitle + ' ' + valueRes.get('label');
       

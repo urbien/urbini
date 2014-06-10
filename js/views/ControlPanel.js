@@ -175,15 +175,18 @@ define('views/ControlPanel', [
 //    },
     
     clickInlined: function(e) {
-      var data = e.currentTarget.dataset;
+      var link = e.currentTarget,
+          data = link.dataset;
+      
       if (data.backlink == 'tradleRules') {
         Events.stopEvent(e);
         return;
       }
       
       if (data.backlink != 'indicators' || !this.vocModel.type.endsWith('commerce/trading/Tradle')) {
-        if (data.href)
-          Events.trigger('navigate', data.href);
+        var href = data.href || link.href;
+        if (href)
+          Events.trigger('navigate', href);
         else
           Events.stopEvent(e);
         

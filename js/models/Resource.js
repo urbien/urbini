@@ -657,9 +657,6 @@ define('models/Resource', [
           displayNameChanged,
           imageType;
 
-      if (uri && ~uri.indexOf('Rule?eventClass'))
-        debugger;
-      
       if (!this.subscribedToUpdates && uri)
         this.subscribeToUpdates();
       

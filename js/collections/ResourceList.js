@@ -301,6 +301,8 @@ define('collections/ResourceList', [
       
       options = _.defaults({}, options, { silent: true, parse: true });
       var self = this,
+          colModel = this.vocModel,
+          colType = colModel.type,
           multiAdd = _.isArray(resources),
           fromServer = this._getLastFetchOrigin() == 'server',
           params = this.modelParamsStrict,
@@ -316,6 +318,20 @@ define('collections/ResourceList', [
       if (!resources.length)
         return;
 
+//      for (var i = 0; i < resources.length; i++) {
+//        var r = resources[i];
+//        if (!U.isModel(r)) {
+//          var resType = U.getTypeUri(r._uri),
+//              model;
+//          
+//          if (resType != colType)
+//            model = U.getModel(resType);
+//          
+//          model = model || colModel;
+//          resources[i] = new model(r, options);
+//        }
+//      }
+      
       Backbone.Collection.prototype.add.call(this, resources, options);
       
       numAfter = this.length;
@@ -325,7 +341,7 @@ define('collections/ResourceList', [
       for (var i = numBefore; i < numAfter; i++) {
         var resource = models[i],
             uri = resource.getUri();
-          
+        
         if (U.isTempUri(uri)) {
 //          Events.once('synced:' + uri, this.onSyncedResource.bind(this, resource));
           this.listenToOnce(resource, 'syncedWithServer', this.onSyncedResource);
@@ -510,11 +526,14 @@ define('collections/ResourceList', [
       if (this._getLastFetchOrigin() !== 'db')
         this._lastFetchedOn = G.currentServerTime();
       
-      var vocModel = this.vocModel;
+      var vocModel = this.vocModel,
+          type = vocModel.type;
+      
       for (var i = 0, len = response.length; i < len; i++) {
         var res = response[i];
-        if (!U.isModel(res))
+        if (!U.isModel(res)) {
           res._uri = U.getLongUri1(res._uri, vocModel);
+        }
       }
       
       var adapter = this.vocModel.adapter;

@@ -74,23 +74,14 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
     
     // state machine methods
     function pause() {
-      if (tq.state !== STATE_OPEN)
-        debugger;
-      
       tq.state = STATE_PAUSED;
     };
     
     function block() {
-      if (tq.state === STATE_BLOCKED)
-        debugger;
-      
       tq.state = STATE_BLOCKED;
     };
     
     function open() {
-      if (tq.state === STATE_PAUSED)
-        debugger;
-      
       tq.state = STATE_OPEN;
     };
     
@@ -136,7 +127,6 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
           
         task.run();
       } catch (err) {
-        debugger;
         log('error', 'task crashed: ', task.name);
         task.reject(err);
       }
@@ -160,9 +150,6 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
     }
     
     function push(task) {
-//      if (!running.length)
-//        debugger;
-      
       task.queueTime = _.now();
       queue.push(task);
     }
@@ -271,7 +258,6 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
       
       setTimeout(function() {
         if (defer.state() === 'pending') {
-          debugger;
           log('taskQueue', 'Task timed out: ' + self.name);            
           defer.reject();
         }
