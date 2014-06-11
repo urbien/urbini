@@ -67,9 +67,11 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     if (params && params.$returnUri)
       Events.trigger('navigate', params.$returnUri, {replace: true});
     else {
-      Events.trigger('back', function ifNoHistory() {
-        Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()));
-      });
+      debugger;
+      Events.trigger('back', 'going back after successful edit'); 
+//      function ifNoHistory() {
+//        Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()));
+//      });
       
       Events.trigger('messageBar', 'info', {
         message: 'Edits applied'
@@ -107,9 +109,10 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
         Events.trigger('navigate', params.$returnUri, {replace: true});
       }
       else {
-        Events.trigger('back',  function ifNoHistory() {
-          Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()));
-        });
+        Events.trigger('back', 'going back after canceled edit'); 
+//        Events.trigger('back',  function ifNoHistory() {
+//          Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()));
+//        });
       }
     }
   };
@@ -318,10 +321,11 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   }
 
   Redirecter.prototype._default = function(res, options, redirectInfo) {
-    Events.trigger('back', function ifNoHistory() {
-      Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()));
-    });
+//    Events.trigger('back', function ifNoHistory() {
+//      Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()));
+//    });
     
+    Events.trigger('back', 'default redirect after successful mkresource'); 
     var msg = redirectInfo.msg || '{0} "{1}" was created successfully'.format(res.vocModel.displayName, U.getDisplayName(res));
     Events.trigger('messageBar', 'info', {
       message: msg
@@ -741,7 +745,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
           eventClassRangeUri = res.get('eventClassRangeUri');
 
       if (!eventClassRangeUri) {
-        Events.trigger('back')
+        Events.trigger('back', 'no eventClassRangeUri found on indicator, can\'t forward to event property chooser'); 
         return;
       }
 
@@ -964,7 +968,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     
     if (!merged) {
       // make the resource and let the redirect
-      res.save();
+      res.save(null, { redirect: true });
       return true;
     }
     
@@ -1004,7 +1008,8 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       props[propName + '.displayName'] = _.pluck(checked, 'name').join(',');
       if (merged && merged.length == 1) {
         res.save(props, {
-          userEdit: true
+          userEdit: true,
+          redirect: true
         }); // let redirect after save handle it
       }
       else {
@@ -1108,7 +1113,8 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       
       if (merged && merged.length == 1) {
         forRes.save(props, {
-          userEdit: true
+          userEdit: true,
+          redirect: true
         }); // let redirect after save handle it
       }
       else {
@@ -1125,12 +1131,16 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   }, 200, true));
   
   Events.on('savedEdit', function(res, options) {
-    if (!options || options.redirect !== false)
+//    if (!options || options.redirect !== false)
+//    if (!options || !options.userEdit)
+    if (options && options.redirect)
       redirecter.redirectAfterEdit(res, options);
   });
   
   Events.on('savedMake', function(res, options) {
-    if (!options || options.redirect !== false)
+//    if (!options || options.redirect !== false)
+//    if (!options || !options.userEdit)
+    if (options && options.redirect)
       redirecter.redirectAfterMake(res, options);
   });
 

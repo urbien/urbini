@@ -21,7 +21,7 @@ define('views/BackButton', [
     },
     back: function(e) {
       Events.stopEvent(e);
-      Events.trigger('back');
+      Events.trigger('back', 'Back button in header pressed');
       return this;
     },
     render: function(options) {

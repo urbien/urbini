@@ -212,7 +212,7 @@ define('views/Header', [
       'change .physicsConstants input'             : 'changePhysics',
       'click .filterToggle'                        : 'toggleFilter',
       'click #categories'                          : 'showCategories',
-      'click .back'                                : G.back,
+      'click .back'                                : 'back',
 //      'click #installApp'         : 'installApp',
       'click #moreRanges'                          : 'showMoreRanges',
       'click .filterCondition i.ui-icon-remove-sign, .filterCondition i.ui-icon-remove': 'removeFilterCondition',
@@ -224,6 +224,10 @@ define('views/Header', [
       'change .filterConditionInput select'        : 'onFilter',
       'change .filterConditionInput input'         : 'onFilter',
       'change .category input'                     : 'onChoseCategory'
+    },
+    
+    back: function() {
+      Events.trigger('back', 'Back clicked from header');
     },
     
     activate: function(e, force) {
@@ -297,7 +301,6 @@ define('views/Header', [
                 backtest: true
               }, {
                 sync: true,
-                redirect: false,
                 success: hide,
                 error: function() {
                   debugger;

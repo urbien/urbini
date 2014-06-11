@@ -145,8 +145,11 @@ define('router', [
       });
 
       Events.once('pageChange', this.loadTourGuide.bind(this));
-      Events.on('back', _.debounce(function(ifNoHistory) {
-        console.log("BACK PRESSED!");
+      Events.on('back', _.debounce(function(reason) {
+        if (!reason)
+          debugger;
+        
+        console.log("GOING BACK: " + reason);
         self.previousFragment = null;
         self.backClicked = true;
         window.history.back();
@@ -394,13 +397,15 @@ define('router', [
         var homePageEl = doc.$('#homePage')[0];
         if (!homePageEl) {
           if (G.homePage) {
-            document.body.$append(G.homePage);
+            doc.body.$append(G.homePage);
             delete G.homePage;
           }
           else {
             debugger;
-            document.body.$append(localStorage.getItem('homePage'));
+            doc.body.$append(localStorage.getItem('homePage'));
           }
+          
+          homePageEl = doc.$('#homePage')[0];
         }
         
         homePage = new HomePage({
@@ -454,7 +459,7 @@ define('router', [
               forResource = params.$forResource;
           
           if (!forResource && !params.$createInstance) {
-            Events.trigger('back');
+            Events.trigger('back', 'back from chooser route due to no current chooser, no $forResource and no $createInstance'); 
             return;
           }
         }
@@ -1671,8 +1676,7 @@ define('router', [
             
       if (prev) {
         if (prev == view) {
-          G.log(this.TAG, 'history', 'Duplicate history entry, backing up some more');
-          Events.trigger('back');
+          Events.trigger('back', 'Duplicate history entry, backing up some more');
           return;
         }
 //        else

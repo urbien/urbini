@@ -28,7 +28,7 @@ define('error', [
     },
     "404": function(model, resp, options) {
       if (options.sync)
-        Events.trigger('back');
+        Events.trigger('back', '404 on synchronized request: ' + (model.getUri ? model.getUri() : model.getUrl()) + ', options.url: ' + (options && options.url));
 //      log("error", 'no results');
 //      var errMsg = resp.details;
 //      if (!errMsg) {
@@ -53,14 +53,14 @@ define('error', [
         case 'offline':
         case 'timeout':
           debugger;
-          Events.trigger('back');
+          Events.trigger('back', 'timeout on synchronized request: ' + (model.getUri ? model.getUri() : model.getUrl()) + ', options.url: ' + (options && options.url));
           Errors.errDialog({msg: resp.details || Errors[G.online ? type : 'offline'], delay: 1000});
           break;
         case 'error':
         case 'abort':
         /* falls through */
         default: 
-          Events.trigger('back');
+          Events.trigger('back', 'default error on synchronized request: ' + (model.getUri ? model.getUri() : model.getUrl()) + ', options.url: ' + (options && options.url));
           Errors.errDialog({msg: resp.details || Errors.not_found, delay: 1000});
       }
     }
