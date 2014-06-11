@@ -1007,7 +1007,7 @@ define('views/ResourceListItemView', [
         }
       }
             
-      additional.isEdit = params['$edit']  ||  (preinit.prototype.doesModelSubclass(G.commonTypes.WebProperty) && params['$type'] != "http://www.hudsonfog.com/voc/commerce/trading/Rule");
+      additional.isEdit = params['$edit']  ||  (preinit.prototype.doesModelSubclass(G.commonTypes.WebProperty) && params['$type'] != "http://www.hudsonfog.com/voc/commerce/trading/TradleIndicator");
       return preinit.extend(additional);
     }
   });  

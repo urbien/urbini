@@ -2,7 +2,7 @@
 var __started = new Date(),
     ArrayProto = Array.prototype;
 
-$.extend({
+_.extend($, {
   RESOLVED_PROMISE: $.Deferred().resolve().promise(),
   whenAll: function() {
     var args = [].slice.call(arguments),
@@ -37,7 +37,7 @@ $.extend({
             }            
           };
     
-      $.each(args, function(idx, item) {
+      args.forEach(function(item, idx) {
         item.always(resolveOrReject.bind(item)); 
       });
     }).promise();
@@ -186,6 +186,11 @@ define('globals', function() {
           defer.resolve(name);
           G.log(G.TAG, 'cache', 'end cache.get: ' + url);
           break;
+        case '.json':
+          G.log(G.TAG, 'cache', 'cache.get: ' + url);
+          defer.resolve(JSON.parse(text));
+          G.log(G.TAG, 'cache', 'end cache.get: ' + url);
+          break;
         case '.html':
         case '.jsp':
         case '.lol':
@@ -225,15 +230,17 @@ define('globals', function() {
     return $.Deferred(function(defer) {
       if (name === 'globals')
         return defer.resolve(G);
+      else if (name == 'underscore')
+        return defer.resolve(window._);
       
       var cached, realPath;  
-      if (/\.(jsp|css|html)\.js$/.test(url))
+      if (/\.(jsp|css|html|json)\.js$/.test(url))
         url = url.replace(/\.js$/, '');
   
       var inAppcache = realPath = Bundler.getFromAppcacheBundle(url);
       if (inAppcache || (G.inFirefoxOS && G.minify)) {
         var path = requireConfig.paths[name] || name;
-        if (!/\.(jsp|css|html)$/.test(url)) {
+        if (!/\.(jsp|css|html|json)$/.test(url)) {
           orgLoad(name, url.replace(path, realPath));
           return;
         }
@@ -367,7 +374,7 @@ define('globals', function() {
         defaultVocPath = G.defaultVocPath;
     
     G.serverNameHttp = G.serverName.replace(/^[a-zA-Z]+:\/\//, 'http://');
-    $.extend(G, {
+    _.extend(G, {
       appUrl: G.serverName + '/' + G.pageRoot,
       sqlUrl: G.serverNameHttp + '/' + G.sqlUri,
       hostName: getDomain().split('.')[0],
@@ -597,7 +604,7 @@ define('globals', function() {
         G.log(G.TAG, 'nuke', "nuking scripts, localStorage has", length, "keys", start);
         for (var i = length - 1; i > -1; i--) {
           var key = localStorage.key(i);
-          if (/\.(?:js|css|jsp)$/.test(key)) {          
+          if (/\.(?:js|css|jsp|json)$/.test(key)) {          
             var start1 = new Date().getTime();
             G.localStorage.del(key);
             G.log(G.TAG, "nuke", key, new Date().getTime() - start1);
@@ -722,7 +729,7 @@ define('globals', function() {
       G.finishedTask("loading pre-bundle and widgets-bundle");
       G.startedTask("loading modules");
       var essential = getCSS(preBundle, widgetsBundle);
-      essential.unshift.call(essential, 'events', 'app', 'lib/l20n');
+      essential.unshift.call(essential, 'events', 'app', 'lib/l10n');
       return require('__domReady__').then(function() {
         return require(essential);
       });
@@ -835,7 +842,7 @@ define('globals', function() {
           def = G.minifyByDefault;
 
       var pruned = [];
-      var cachedPromises = $.map(modules, function(dmInfo, i) {
+      var cachedPromises = modules.map(function(dmInfo, i) {
         var url;
         for (var n in dmInfo) {
           url = n;
@@ -913,10 +920,11 @@ define('globals', function() {
           worker;
 
       // recycling the worker needs to be the first order of business when this promise if resolved/rejected 
-      bundlePromise.always(function() {
-        if (worker)
-          G.recycleXhrWorker(worker);
-      });
+      if (worker) {
+        bundlePromise.always(function() {
+            G.recycleXhrWorker(worker);
+        });
+      }
       
       function onResponse(resp) {
         if (useWorker) {
@@ -939,8 +947,9 @@ define('globals', function() {
             var m = modules[i];
 //            for (var name in m) {
             var name = m.name;
-            var minIdx = name.indexOf('.min.js');
-            name = minIdx == -1 ? name : name.slice(0, minIdx) + '.js';
+            var ext = name.slice(name.lastIndexOf(".") + 1);
+            var minMatch = name.match(/\.min\.(js|css)$/);
+            name = minMatch == null ? name : name.slice(0, name.lastIndexOf('.min.' + minMatch[1])) + '.' + minMatch[1];
             G.modules[name] = m.body;
             newModules[getFilePathInStorage(name)] = m.body;
             newModules[getMetadataURL(name)] = {
@@ -1079,7 +1088,7 @@ define('globals', function() {
         bg: '#DDD'
       },
       events: {
-        on: true,
+        on: false,
         color: '#baFF00',
         bg: '#555'
       },
@@ -1108,8 +1117,8 @@ define('globals', function() {
       simplewebrtc: 'lib/simplewebrtc',
       jqmConfig: 'jqm-config',
       jqueryMobile: 'lib/jquery.mobile-1.3.2',
-      _underscore: 'lib/underscore',
-      underscore: 'underscoreMixins',
+//      _underscore: 'lib/underscore',
+//      underscore: 'underscoreMixins',
       backbone: 'lib/backbone',
       indexedDBShim: 'lib/IndexedDBShim',
       jqueryIndexedDB: 'lib/jquery-indexeddb',
@@ -1164,18 +1173,9 @@ define('globals', function() {
 //      ALL_IN_APPCACHE,
       hash = window.location.hash ? window.location.hash.slice(1) : window.location.href.slice(window.location.href.indexOf(Lablz.pageRoot) + Lablz.pageRoot.length + 1),
       query = hash.split('?')[1],
-      decode = decodeURIComponent,
-      params = query ? (function() {
-        var pairs = query.split('&'), map = {};
-        $.each(pairs, function(idx, pair) {
-          pair = pair.split('=');
-          map[decode(pair[0])] = decode(pair[1]);
-        });
-          
-        return map;
-      })() : {},
-      head = doc.getElementsByTagName('head')[0],
-      body = doc.getElementsByTagName('body')[0],
+      params = _.toQueryParams(query),
+      head = doc.head,
+      body = doc.body,
 //      $head = $('head'),
 //      head = $head[0],
 //      $body = $('body'),
@@ -1204,7 +1204,7 @@ define('globals', function() {
     G.setOnline(true);
   }, false);
 
-  $.extend(G, {
+  _.extend(G, {
     _widgetLibrary: G.currentApp.widgetLibrary || 'topcoat',
     isJQM: function() {
       return G.getWidgetLibrary().toLowerCase() == 'jquery mobile';
@@ -1479,7 +1479,7 @@ define('globals', function() {
       if (typeof key == 'object')
         newV = key;
       else {
-        newV = _.clone(G.VERSION);
+        newV = _.clone(G.VERSION) || {};
         newV[key] = version;
       }
       
@@ -1495,6 +1495,9 @@ define('globals', function() {
           newV = data ? data.VERSION : G.getVersion(),
           oldV = G.getVersion(!data) || newV; // get old
 
+      if (!newV)
+        return;
+      
       if (newV.All > oldV.All) {
         if (G._nuking)
           return;
@@ -1819,7 +1822,7 @@ define('globals', function() {
       separator = separator || '/';
       var parts = path.split(separator);
       var stack = [];
-      $.each(parts, function(idx, part) {
+      _.each(parts, function(part, idx) {
         if (part == '..')
           stack.pop();
         else

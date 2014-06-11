@@ -49,7 +49,9 @@ define('views/MessageBar', [
         return;
       }
       
-      this.$el.trigger('create');
+//    if (G.isJQM())
+//    this.$el.trigger('create');
+      
       _.extend(this, _.pick(options, 'persist'));
       if (!this.persist) {
         var self = this,

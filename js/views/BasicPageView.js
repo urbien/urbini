@@ -47,7 +47,6 @@ define('views/BasicPageView', [
     _autoFetch: true,
     _fetchPromise: null,
     _draggable: true,
-    _scrollbar: true,
     _dragAxis: 'y',
     _scrollbar: true,
     _flexigroup: false,
@@ -208,8 +207,7 @@ define('views/BasicPageView', [
       else
         this.onload(onload);
       
-      if (!this._title)
-        this._updateTitle();
+      this._updateTitle();
     },
     
     _onInactive: function() {
@@ -496,7 +494,7 @@ define('views/BasicPageView', [
         }));
         
         header.render();
-        self.$el.prepend(header.$el);        
+        self.el.$prepend(header.el);        
         Events.once('endRTCCall', header.destroy.bind(header));
       });      
     },
@@ -551,7 +549,7 @@ define('views/BasicPageView', [
             };
             
         var countdownPromise = U.countdown(seconds).progress(countdownSpan.text.bind(countdownSpan)).done(cleanup);
-        this.$el.one('page_hide', countdownPromise.cancel);
+        this.el.$once('page_hide', countdownPromise.cancel);
         
         hash = U.replaceParam(hash, '-autoClose', null);
       }
@@ -607,7 +605,7 @@ define('views/BasicPageView', [
           hash = U.replaceParam(hash, regularParam, null);
       });      
 
-      for (event in events) {
+      for (var event in events) {
         Events.trigger('messageBar', event, events[event]);
       }
 
@@ -653,7 +651,7 @@ define('views/BasicPageView', [
       if (this._lastPageEvent == e)
         fn();
       else
-        this.$el.one(e, fn);
+        this.el.$once(e, fn);
     };
   });
   

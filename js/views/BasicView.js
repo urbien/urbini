@@ -11,7 +11,6 @@ define('views/BasicView', [
 ], function(G, _Backbone, U, DOM, Templates, Events, Physics, Q) {
   var AP = Array.prototype,
       backboneOn = Backbone.View.prototype.on,
-      $wnd = $(window),
       baseTemplateData = function() {};
 
   baseTemplateData.prototype = {
@@ -624,7 +623,7 @@ define('views/BasicView', [
     },
     
     atBottom: function() {
-      return this.pageView.$el.height() - $wnd.height() - $wnd.scrollTop() < 20;
+      return this.pageView.el.$outerHeight() - DOM.window.height() - window.pageYOffset < 20;
     },
     
 //    onInactive: function(callback) {
@@ -883,15 +882,17 @@ define('views/BasicView', [
 //    },
     
     padding: function(horizontal) {
-      var one = horizontal ? 'left' : 'top';
-      var two = horizontal ? 'right' : 'bottom';
-      var padding = this.$el.css('padding') || "0px";
-      var onePadding = this.$el.css('padding-' + one) || "0px",
-          twoPadding = this.$el.css('padding-' + two) || "0px";
-      
-      padding = parseFloat(padding);
-      return (parseFloat(onePadding) || padding) 
-           + (parseFloat(twoPadding) || padding);
+      var padding = this.el.$padding();
+      return horizontal ? padding.left + padding.right : padding.top + padding.bottom;
+//      var one = horizontal ? 'left' : 'top';
+//      var two = horizontal ? 'right' : 'bottom';
+//      var padding = this.el.$css('padding') || "0px";
+//      var onePadding = this.el.$css('padding-' + one) || "0px",
+//          twoPadding = this.el.$css('padding-' + two) || "0px";
+//      
+//      padding = parseFloat(padding);
+//      return (parseFloat(onePadding) || padding) 
+//           + (parseFloat(twoPadding) || padding);
     },
     
     innerHeight: function() {
@@ -903,13 +904,13 @@ define('views/BasicView', [
     },
     
     restyle: function() {
-      if (G.isJQM()) {
-        this.$el.find('ul[data-role]').listview();
-        this.$el.find('div[data-role="fieldcontain"]').fieldcontain();
-        this.$el.find('button[data-role="button"]').button();
-        this.$el.find('input,textarea').textinput();
-//      this.$el.page();
-      }
+//      if (G.isJQM()) {
+//        this.$el.find('ul[data-role]').listview();
+//        this.$el.find('div[data-role="fieldcontain"]').fieldcontain();
+//        this.$el.find('button[data-role="button"]').button();
+//        this.$el.find('input,textarea').textinput();
+////      this.$el.page();
+//      }
     },
     
     getHashInfo: function() {

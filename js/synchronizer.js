@@ -108,7 +108,7 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
       intermediatePromise = this._defaultSync();
     else {
       intermediatePromise = U.ajax({
-        url: options.url, 
+        url: options.url,
         type: 'GET', 
         headers: options.headers,
         'for': this.data
@@ -218,13 +218,23 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
     throw "This function must be overridden";
   };
 
+  Synchronizer.prototype.canFetchFromServer = function() {
+    throw "This function must be overridden";
+  },
+  
   Synchronizer.prototype._onDBError = function(err) {
     if (this.options.dbOnly)
       this._error(this.data, {type: 'not_found'}, this.options);            
-    else if (G.online)
-      this._fetchFromServer();
+    else if (G.online) {
+      if (!this.canFetchFromServer()) {
+        debugger;
+        this._error(this.data, {code: 400, type: 'not_found'});
+      }
+      else
+        this._fetchFromServer();
+    }
     else if (this._isSyncRequest())
-      this._error(this.data, {type: 'offline'}, this.options);      
+      this._error(this.data, {type: 'offline'}, this.options);
   };
 
   Synchronizer.prototype._isStale = function() {
@@ -263,11 +273,14 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
   Synchronizer.addItems = function(classUri, items) {
     var IDB = IndexedDBModule.getIDB();    
     if (!IDB.hasStore(classUri)) {
-      return $.Deferred(function(defer) {          
-        Events.trigger('createObjectStores', [classUri], function() {
-          Synchronizer.addItems(classUri, items).then(defer.resolve, defer.reject);
-        });
-      }).promise();
+      var dfd = $.Deferred();
+      U.require('resourceManager').done(function(RM) {
+        RM.upgrade([classUri]).done(function() {
+          Synchronizer.addItems(classUri, items).done(dfd.resolve).fail(dfd.reject);
+        }).fail(dfd.reject);
+      }).fail(dfd.reject);
+      
+      return dfd.promise();
     }
 
     if (classUri.startsWith('http')) {

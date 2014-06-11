@@ -41,7 +41,8 @@ define('collections/ResourceList', [
       var vocModel = this.vocModel = this.model,
           meta = vocModel.properties;
           
-      _.bindAll(this, 'fetch', 'parse', '_parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'setPerPage', 'pager', 'getUrl', 'onResourceChange', 'disablePaging', 'enablePaging'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'fetch', 'parse', '_parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 
+          'setPerPage', 'pager', 'getUrl', 'onResourceChange', 'disablePaging', 'enablePaging'); // fixes loss of context for 'this' within methods
 //      this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
 //      this.on('aroundMe', vocModel.getAroundMe);
@@ -54,7 +55,7 @@ define('collections/ResourceList', [
       this.url = this.baseUrl;
       if (options.params) {
         this._parseParams(options.params);
-//        this.query = $.param(this.params);
+//        this.query = _.param(this.params);
       }
       else
         this._parseQuery(options._query);
@@ -300,6 +301,8 @@ define('collections/ResourceList', [
       
       options = _.defaults({}, options, { silent: true, parse: true });
       var self = this,
+          colModel = this.vocModel,
+          colType = colModel.type,
           multiAdd = _.isArray(resources),
           fromServer = this._getLastFetchOrigin() == 'server',
           params = this.modelParamsStrict,
@@ -315,6 +318,20 @@ define('collections/ResourceList', [
       if (!resources.length)
         return;
 
+//      for (var i = 0; i < resources.length; i++) {
+//        var r = resources[i];
+//        if (!U.isModel(r)) {
+//          var resType = U.getTypeUri(r._uri),
+//              model;
+//          
+//          if (resType != colType)
+//            model = U.getModel(resType);
+//          
+//          model = model || colModel;
+//          resources[i] = new model(r, options);
+//        }
+//      }
+      
       Backbone.Collection.prototype.add.call(this, resources, options);
       
       numAfter = this.length;
@@ -324,10 +341,10 @@ define('collections/ResourceList', [
       for (var i = numBefore; i < numAfter; i++) {
         var resource = models[i],
             uri = resource.getUri();
-          
+        
         if (U.isTempUri(uri)) {
 //          Events.once('synced:' + uri, this.onSyncedResource.bind(this, resource));
-          resource.once('syncedWithServer', this.onSyncedResource.bind(this, resource));
+          this.listenToOnce(resource, 'syncedWithServer', this.onSyncedResource);
         }
         
         if (setInitialParams) {
@@ -335,8 +352,8 @@ define('collections/ResourceList', [
           resource.set(params, {silent: true});
         }
 
-        this.listenTo(resource, 'change', self.onResourceChange);
-        this.listenTo(resource, 'change', self.onResourceChange);
+        this.stopListening(resource, 'change', this.onResourceChange);
+        this.listenTo(resource, 'change', this.onResourceChange);
       }
 
       if (multiAdd && !this.resetting) {
@@ -398,7 +415,7 @@ define('collections/ResourceList', [
       params = params ? _.clone(params) : {};
       params.$minify = params.$mobile = 'y';
       for (var p in this.params) {
-        if (!U.isMetaParameter(p) || U.isApiMetaParameter(p)) {
+        if (p == '_uri' || !U.isMetaParameter(p) || U.isApiMetaParameter(p)) {
           params[p] = this.params[p];
         }
       }
@@ -410,7 +427,7 @@ define('collections/ResourceList', [
       if (adapter && adapter.getCollectionUrl)
         return adapter.getCollectionUrl.call(this, params);
       
-      return this.baseUrl + '?' + $.param(params);
+      return this.baseUrl + '?' + _.param(params);
     },
     
     _parseQuery: function(query) {
@@ -459,7 +476,7 @@ define('collections/ResourceList', [
       this.params = params;
       this.modelParams = modelParams;
       this.modelParamsStrict = strict;
-      this.url = this.baseUrl + (_.size(this.params) ? "?" + $.param(this.params) : ''); //this.getUrl();
+      this.url = this.baseUrl + (_.size(this.params) ? "?" + _.param(this.params) : ''); //this.getUrl();
       this.query = U.getQueryString(modelParams, true); // sort params in alphabetical order for easier lookup
 //      if (_.size(this._tempParams))
 //        this._watchTempParams();
@@ -509,11 +526,14 @@ define('collections/ResourceList', [
       if (this._getLastFetchOrigin() !== 'db')
         this._lastFetchedOn = G.currentServerTime();
       
-      var vocModel = this.vocModel;
+      var vocModel = this.vocModel,
+          type = vocModel.type;
+      
       for (var i = 0, len = response.length; i < len; i++) {
         var res = response[i];
-        if (!U.isModel(res))
+        if (!U.isModel(res)) {
           res._uri = U.getLongUri1(res._uri, vocModel);
+        }
       }
       
       var adapter = this.vocModel.adapter;
@@ -583,7 +603,7 @@ define('collections/ResourceList', [
 
     onReset: function(model, options) {
       if (options.params) {
-        _.extend(this.params, options.params);
+        this._parseParams(options.params);
         try {
           this.belongsInCollection = U.buildValueTester(this.params, this.vocModel) || G.trueFn;
           this._unbreak();
@@ -646,7 +666,7 @@ define('collections/ResourceList', [
       
       this.rUri = options.rUri;
       urlParams = this.rUri ? _.getParamMap(this.rUri) : {};
-      if (urlParams) {
+      if (!_.isEmpty(urlParams)) {
         limit = urlParams.$limit;
         limit = limit && parseInt(limit);
       }

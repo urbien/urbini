@@ -94,7 +94,7 @@
     </section>
     <div id="about" class="hidden" style="padding: 7px;"></div>
     
-    {{ if ($('#other')) { }}
+    {{ if (document.getElementById('other')) { }}
       <!--br/>
       <br/-->
     {{ } }}
@@ -132,8 +132,8 @@
 
 <script type="text/template" id="inlineListItemTemplate">
 <!-- one row of an inline backlink in view mode -->
-<li data-viewid="{{= viewId }}" data-backlink="{{= backlink }}">
-  <a href="{{= href }}" {{= obj._problematic ? 'class="problematic"' : '' }} {{= obj.img || obj.needsAlignment ? '' : 'style="padding:1rem 0;"'}}>
+<li data-viewid="{{= viewId }}">
+  <a href="{{= href }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="{{= obj.img || obj.needsAlignment ? '' : 'padding:1rem 0;'}} {{= obj.noclick ? 'cursor:default;' : 'cursor:pointer;' }}">
     {{ if (obj.img) { }}
       <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
       {{ if (obj.top) { }}  
@@ -161,7 +161,46 @@
       <i class="ui-icon-remove"></i>
     </a>
   {{ } }}
-  </a>
+</li>
+</script>
+
+<script type="text/template" id="inlineCompareIndicatorsRuleTemplate">
+<li data-viewid="{{= viewId }}">
+  <div style="font-size:1.6rem;font-weight:bold;text-align:center; height: 80px; background:white;">
+    <div class="cf" style="float:left; width:42%;">
+      <!--img src="{{= feedImage }}" /-->
+      <div style="font-size:2.5rem;padding-bottom:1rem;">
+        {{= resource.get('eventPropertyDisplayName') }}
+      </div>
+      <div>
+        <a style="text-decoration:none; font-weight: 100;" href="{{= resource.get('tradleFeed') }}">{{ resource.get('tradleFeed.displayName') }}</a>
+      </div>
+    </div>
+    <div class="cf" style="float:left; width:14%;font-size:2.3rem;">
+      <div>
+        <
+      </div>
+      <div>
+        <span style="font-size:1.5rem;">BY</span> 37%
+      </div>
+    </div>
+    <div class="cf" style="float:left; width:42%">
+    {{ if (obj.compareWith) {   }}
+      <!--img src="{{= compareWith.feedImage }}" /-->
+      <div style="font-size:2.5rem;padding-bottom:1rem;">
+        {{= resource.get('compareWithEventPropertyDisplayName') }}
+      </div>
+      <div>
+        <a style="text-decoration:none; font-weight: 100;" href="{{= resource.get('compareWithTradleFeed') }}">{{ resource.get('compareWithTradleFeed.displayName') }}</a>
+      </div>
+    {{ }                        }}
+    {{ if (!obj.compareWith) {  }}
+      <div style="font-size:2.5rem;padding-bottom:1rem;">
+        {{= resource.get('value') }}
+      </div>
+    {{ }                        }}
+    </div>
+  </div>
 </li>
 </script>
 
@@ -229,7 +268,7 @@
  {{ if (obj.value) { }}  
    <a role="button" data-propName="{{= shortName }}"  style="width:auto;padding:2px 10px;margin:3px;text-align:left; border: 1px solid #ccc;min-width:115px; {{= U.isAssignableFrom(this.vocModel, 'Tradle') ? 'float:right;color:#ddd;' : 'float:left;'}} background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
      <!-- {{= obj.icon ? '<i class="' + icon + '" style="font-size:20px;top:35%"></i>' : '' }} -->
-     <span>{{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="float: right;position:relative;color:#000;margin:-14px -10px 0 0;" class="counter">' + value + '</span>' : ''  }}</span>
+     <span>{{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="float:right;color:#000;" class="counter">' + value + '</span>' : ''  }}</span>
    </a>
  {{ } }}
 </script>
@@ -304,7 +343,12 @@
 
 <script type="text/template" id="propGroupsDividerTemplate">
   <!-- row divider / property group header in resource view -->
-  <header {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';"' : '' }}>{{= value }}</header>
+  <header {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';"' : '' }}>
+    {{= value }}
+    {{ if (obj.add) { }}
+      <a href="#" class="add cf lightText" style="cursor:pointer; float:right" data-shortname="{{= shortName }}"><i class="ui-icon-plus-sign"></i></a>
+    {{ }              }}
+  </header>
 </script>
 
 <script type="text/template" id="saveButtonTemplate">
@@ -354,7 +398,7 @@
 
 <script type="text/template" id="rightMenuButtonTemplate">
   <!-- button that toggles the object properties panel -->
-  <span target="#" href="#{{= viewId }}" style="cursor: pointer; color: {{= G.darkColor }};"><i class="{{= obj.icon || 'ui-icon-reorder' }}"></i></a><!-- {{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }} -->
+  <a target="#" href="#{{= viewId }}" style="cursor: pointer; color: {{= G.darkColor }};"><i class="{{= obj.icon || 'ui-icon-reorder' }}"></i></a><!-- {{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }} -->
     {{= !this.viewId  ||  this.viewId.indexOf('viewHome') != -1 ? '' : '<span class="menuBadge">{0}</span>'.format(obj.newAlerts || '') }}
   </span>
 </script>
@@ -450,31 +494,23 @@
     </section>
     </div>
   </div>
-  <div id="buttons" style="position:relative">  
-    {{ if (this.categories) { }}
-       <div style="position:absolute;top:14px;padding-left:10px;"><a id="categories" class="lightDark" href="#">
-       <i class="ui-icon-tags"></i></a></div> 
-    {{ } }} 
-    {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
-    {{ if (this.filter) { }}
-      <div style="margin:10px 0 0 10px; position:absolute;"><a class="filterToggle lightText" href="#"><i class="ui-icon-fasearch"></i></a></div> 
-    {{ }                  }}
-    {{ if (isFolderItem) { }}
-      <a class="rootFolder actionBtn" style="display: none; position: absolute; padding: 4px 10px; margin: 10px 10px 0 10px; font-size: 1.5rem;" href="{{= U.makePageUrl('view', this.rootFolder) }}">
-        <i class="ui-icon-chevron-left" style="padding: 0px 3px 0px 0px"></i>
-        <span>{{= U.getPropDisplayName(this.folderProp) }}</span>
-      </a>
-    {{ }                     }}
-    {{ if (isActivatable) { }}
-      <section class="activatable" style="float: right; display: none;">
-        <label class="pack-switch" style="right: 2rem;top:0rem;left:auto;position:absolute;color:{{= G.darkColor }};">
-          <input type="checkbox" name="{{= activatedProp.shortName }}" class="formElement boolean" {{= this.resource.get(activatedProp.shortName) ? 'checked="checked"' : '' }} />
-          <span style="top:2rem"></span>
-        </label>
-      </section>
-    {{ }                     }}
-    <div id="name" class="resTitle" style="background:{{= G.darkColor }};color:{{= G.lightColor }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
-      <h4 id="pageTitle" style="font-weight:normal;color:{{= G.lightColor }};">{{= this.title }}</h4>
+  <div id="buttons" style="white-space: nowrap; position:relative; height: 48px; background:{{= G.darkColor }};color:{{= G.lightColor }}">
+    <div class="cf vcentered" style="z-index:1; width:20%;float:left;background:inherit;">
+      <span class="placeholder"></span>
+      {{ if (this.categories) { }}
+         <div style="position:absolute;top:14px;padding-left:10px;"><a id="categories" class="lightDark" href="#">
+         <i class="ui-icon-tags"></i></a></div> 
+      {{ } }} 
+      {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
+      {{ if (folder) { }}
+        <a class="rootFolder actionBtn" style="display: none; padding: 4px 10px; margin-left: 5px; font-size: 1.5rem;" href="#">
+          <i class="ui-icon-chevron-left" style="padding: 0px 3px 0px 0px"></i>
+          <span>{{= folder.name }}</span>
+        </a>
+      {{ }                     }}
+    </div>
+    <div id="name" class="cf vcentered resTitle" style="z-index:0; width:60%;float:left;background:inherit; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
+      <h4 id="pageTitle" style="text-overflow: ellipsis; font-weight:normal;color:{{= G.lightColor }};">{{= this.title }}</h4>
       {{= this.filter ? "<div class='filter'></div>" : "" }}
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
         <button style="max-width:200px; display: inline-block;" id="doTryBtn">
@@ -513,9 +549,35 @@
           {{ } }}
         </button>
       </div>
+      <div style="clear:both"></div>
     </div>
-    <div class="physicsConstants" style="display:none; background-color:#606060; color:#FFFFFF; padding:5px; display:none;"></div>
+    <div class="cf vcentered" style="z-index:1; width:20%;float:left;background:inherit;">
+      {{ if (activatedProp) { }}
+        <section class="activatable" style="float: right; display: none;">
+          <label class="pack-switch" style="float: right; right: 2rem; height: auto; vertical-align:inherit; color:{{= G.darkColor }};">
+            <input type="checkbox" name="{{= activatedProp.shortName }}" class="formElement boolean" {{= this.resource.get(activatedProp.shortName) ? 'checked="checked"' : '' }} />
+            <span></span>
+          </label>
+        </section>
+      {{ }                     }}
+      {{ if (this.filter) { }}
+        <div style="margin-right: 5px; display:inline-block; float: right;"><a class="filterToggle lightText" href="#"><i class="ui-icon-fasearch"></i></a></div> 
+      {{ }                  }}
+      <div style="clear:both"></div>
+    </div>
   </div>
+  <div class="physicsConstants" style="display:none; background-color: #606060; color:#FFFFFF; display:none;"></div>
+  <div class="categories" style="display:none; padding: 5px; background-color:#ddd; display:none;"></div>
+</script>
+
+<script type="text/template" id="categoriesTemplate">
+{{ for (var i = 0; i < categories.length; i++) {  }}
+{{  var c = categories[i];                        }}
+    <label class="category {{= c.on ? 'actionBtn' : '' }}">
+      <input type="radio" name="category" data-type="{{= c.type || '' }}" data-on="{{= !!c.on }}" value="{{= c.name }}" />
+      {{= c.name }}
+    </label>
+{{ }                                              }}
 </script>
 
 <script type="text/template" id="menuP">

@@ -125,7 +125,7 @@ define('views/EditPage', [
     },
     
     renderHelper: function(options) {
-      this.$el.html(this.template(this.settings));
+      this.el.$html(this.template(this.settings));
       var views = {
         '#resourceEditView': this.editView,
         '#headerDiv'       : this.header

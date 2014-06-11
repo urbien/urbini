@@ -29,10 +29,10 @@ define('apiAdapter', ['globals', 'underscore'], function(G, _) {
       };
       
       if (authenticated)
-        return endpoint + '?' + $.param(params);
+        return endpoint + '?' + _.param(params);
       else {
         params.$auth = 'simple';
-        return G.apiUrl + encodeURIComponent(type) + '?' + $.param(params);
+        return G.apiUrl + encodeURIComponent(type) + '?' + _.param(params);
       }
     },
 
@@ -69,9 +69,9 @@ define('apiAdapter', ['globals', 'underscore'], function(G, _) {
         params.$returnUri = redirectUri;
       
 //      oauthVersion = getOAuthVersion(oauthVersion);
-//      window.location.href = G.apiUrl + 'oauth' + oauthVersion + '?' + $.param(params);
+//      window.location.href = G.apiUrl + 'oauth' + oauthVersion + '?' + _.param(params);
 
-      Events.trigger('navigate', G.apiUrl + 'oauth?' + $.param(params));
+      Events.trigger('navigate', G.apiUrl + 'oauth?' + _.param(params));
 
 //      var self = this,
 //          authDfd = $.Deferred(),
@@ -89,7 +89,7 @@ define('apiAdapter', ['globals', 'underscore'], function(G, _) {
 //            response_type: 'token',
 //            client_id: this.consumer.clientId, // TODO: get actual prop name, dev may have renamed it
 //            redirect_uri: G.appUrl, // catch in "list" route and close popup
-//            state: U.getHash() + '&' + $.param({
+//            state: U.getHash() + '&' + _.param({
 //              provider: this.provider._uri
 //            })
 //          },
@@ -120,7 +120,7 @@ define('apiAdapter', ['globals', 'underscore'], function(G, _) {
 //        if (scope)
 //          authParams.scope = scope;
 //        
-//        authUrl = this.provider.authorizationEndpoint + '?' + $.param(authParams);
+//        authUrl = this.provider.authorizationEndpoint + '?' + _.param(authParams);
 //        window[cbName] = function(authInfo) {
 //          debugger;
 //          !popup.closed && popup.close();
@@ -159,7 +159,7 @@ define('apiAdapter', ['globals', 'underscore'], function(G, _) {
           defer.resolve.apply(defer, arguments);
         };
         
-        url += (url.indexOf("?") == -1 ?  "?" : '&') + $.param({
+        url += (url.indexOf("?") == -1 ?  "?" : '&') + _.param({
           access_token: accessToken,
           callback: cb
         });

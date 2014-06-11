@@ -41,6 +41,8 @@ define('views/ControlPanel', [
 //      'click a[data-shortName]': 'click',
       'click [data-cancel]': 'cancel',
       'click #mainGroup a[data-shortName]': 'add',
+      'click .add': 'add',
+      'click [data-backlink]': 'clickInlined',
 //      'click a[data-shortName]': 'lookupFrom',
 //      'pinchout li[data-propname]': 'insertInlineScroller',
 //      'pinchin li[data-propname]': 'removeInlineScroller',
@@ -150,7 +152,7 @@ define('views/ControlPanel', [
 //          info.params = U.filterObj(info.params, U.isMetaParameter);
 //          info.params[U.getCloneOf(blModel, 'Templatable.isTemplate')[0]] = true;
 //          info.params[bl.backLink] = baseVal;
-//          info.params.$template = $.param(params);
+//          info.params.$template = _.param(params);
 //        }
 //        
 //        if (U.isA(model, 'Folder') && U.isA(blModel, 'FolderItem')) {
@@ -172,6 +174,86 @@ define('views/ControlPanel', [
 //      });
 //    },
     
+    clickInlined: function(e) {
+      var link = e.currentTarget,
+          data = link.dataset;
+      
+      if (data.backlink == 'tradleRules') {
+        Events.stopEvent(e);
+        return;
+      }
+      
+      if (data.backlink != 'indicators' || !this.vocModel.type.endsWith('commerce/trading/Tradle')) {
+        var href = data.href || link.href;
+        if (href)
+          Events.trigger('navigate', href);
+        else
+          Events.stopEvent(e);
+        
+        return;
+      }
+
+      Events.stopEvent(e);
+      var indicator = this.resource.getInlineList('indicators').get(data.uri),
+          propRange = U.getTypeUri(indicator.get('eventProperty')),
+          isEnum = /\/EnumProperty$/.test(propRange),
+          propType = indicator.get('propertyType'),
+          params = {
+            indicator: indicator.getUri(),
+            tradle: indicator.get('tradle')
+          },
+          subClassOf;
+
+      switch (propType) {
+      case 'Text':
+        subClassOf = isEnum ? 'commerce/trading/EnumRule' : 'commerce/trading/StringRule';
+        break;
+      case 'Date':
+        subClassOf = 'commerce/trading/DateRule';
+        break;
+      case 'Link':
+        subClassOf = 'commerce/trading/LinkRule';
+        break;
+      case 'YesNo':
+        subClassOf = 'commerce/trading/BooleanRule';
+        break;
+      case 'Numeric':
+      case 'Fraction':
+      case 'Percent':
+      case 'Money':
+      /* falls through */
+      default:
+        subClassOf = 'commerce/trading/NumericRule';
+        break;
+      }
+      
+      if (isEnum || propType == 'Link' || propType == 'YesNo') { // no subclasses
+//        var params = _.extend(U.filterObj(this.resource.attributes, U.isNativeModelParameter), props);
+        params.$title = indicator.get('feed.displayName') + ' ' + U.getDisplayName(indicator) + ' IS...';
+        if (isEnum) {
+          params.enumeration = indicator.get('eventPropertyRange');
+          params.enumerationRangeUri = indicator.get('eventPropertyRangeUri');
+        }
+        else if (propType == 'Link') {
+          params.resourceType = indicator.get('eventPropertyRange');
+          params.resourceTypeRangeUri = indicator.get('eventPropertyRangeUri');          
+        }
+          
+        Events.trigger('navigate', U.makeMobileUrl('make', subClassOf, params), {
+          replace: true
+        });
+        
+        return;
+      }
+      
+      Events.trigger('navigate', U.makeMobileUrl('chooser', 'system/designer/WebClass', {
+        subClassOfUri: G.defaultVocPath + subClassOf,
+        $createInstance: 'y',
+        $props: _.param(params),
+        $title: indicator.get('feed.displayName') + ' ' + U.getDisplayName(indicator)
+      }));      
+    },
+    
     add: function(e) {
 //      var t = e.target;
 //      while (t && t.tagName != 'A') {
@@ -187,8 +269,8 @@ define('views/ControlPanel', [
         return;
       
       Events.stopEvent(e);
-      if ($(t).parents('.__dragged__').length)
-        return;
+//      if ($(t).parents('.__dragged__').length)
+//        return;
       
       var self = this,       
           shortName = t.dataset.shortname,
@@ -267,15 +349,12 @@ define('views/ControlPanel', [
 //  
 //        params[prop.backLink] = self.resource.getUri();
 //        
-//        self.router.navigate('make/{0}?{1}'.format(encodeURIComponent(prop.range), $.param(params)), {trigger: true});
+//        self.router.navigate('make/{0}?{1}'.format(encodeURIComponent(prop.range), _.param(params)), {trigger: true});
 //        G.log(self.TAG, 'add', 'user wants to add to backlink');
       });
     },
 
     renderInlineList: function(name, list, frag, displayedProps) {
-      if (!list.length)
-        return;
-      
       var vocModel = this.vocModel,
           meta = this.vocModel.properties,
           resources = list.models,
@@ -284,14 +363,28 @@ define('views/ControlPanel', [
           isCancelable = U.isA(listVocModel, 'Cancellable'),
           prop = meta[name],
           propDisplayName = U.getPropDisplayName(prop),
-          canceledProp;
+          canceledProp,
+          canAdd = U.isPropEditable(this.resource, prop),
+          isRule = U.isAssignableFrom(listVocModel, 'commerce/trading/Rule'),
+          linkToEdit = U.isAssignableFrom(listVocModel, G.commonTypes.WebProperty, 'commerce/trading/Notification'),
+          action = linkToEdit ? 'edit' : 'view';
       
-      if (isCancelable) {
+      if (list.length && isCancelable) {
         canceledProp = listMeta[U.getCloneOf(listVocModel, 'Cancellable.cancelled')[0]];
         isCancelable = canceledProp && U.isPropEditable(list.models[0], canceledProp);
       }
 
-      U.addToFrag(frag, this.propGroupsDividerTemplate({value: propDisplayName}));
+      if (list.length || canAdd) {
+        U.addToFrag(frag, this.propGroupsDividerTemplate({
+          value: propDisplayName,
+          add: canAdd,
+          shortName: name == 'indicators' ? 'feeds' : name
+        }));
+      }
+
+      if (!list.length)
+        return;
+      
       var hasImages;
       for (var i = 0, l = resources.length; i < l; i++) {
         var iRes = resources[i],
@@ -406,14 +499,19 @@ define('views/ControlPanel', [
           }
         }
 
-//        if (isCancelable) {
-//          params.Cancelable = {
-//            canceled: iRes.get(canceledProp.shortName)
-//          }
-//        }
+        if (isCancelable) {
+          params.Cancelable = {
+            canceled: iRes.get(canceledProp.shortName)
+          }
+        }
         
-        var action = (U.isAssignableFrom(listVocModel, 'WebProperty')  ||  U.isAssignableFrom(listVocModel, 'commerce/trading/Notification')  ||  U.isAssignableFrom(listVocModel, 'commerce/trading/Rule')) ? 'edit' : 'view';
-        params.href = U.makePageUrl(action, iRes.getUri(), {$title: params.name});
+        if (isRule) {
+          params.href = '#';
+          params.noclick = true;
+        }
+        else
+          params.href = U.makePageUrl(action, iRes.getUri(), { $title: params.name });
+        
         params.resource = iRes;
         if (params.img)
           hasImages = true;
@@ -763,9 +861,9 @@ define('views/ControlPanel', [
               continue;
             
             var prop = meta[p];
-            if (displayedProps[p] || !_.has(backlinks, p))
+            if (!prop || prop.displayInline || displayedProps[p] || !_.has(backlinks, p))
               continue;
-            if (prop['app']  &&  (!currentAppProps  || $.inArray(p, currentAppProps) == -1))
+            if (prop['app']  &&  (!currentAppProps  || currentAppProps.indexOf(p) == -1))
               continue;
             if (!prop  ||  prop.mainBackLink  ||  (!_.has(atts, p)  &&  typeof prop.readOnly != 'undefined'))
               continue;
@@ -881,33 +979,39 @@ define('views/ControlPanel', [
             continue;
           
           var prop = meta[p];
-          if (_.has(displayedProps, p) || prop.displayInline)  
+          if (prop.displayInline || _.has(displayedProps, p) || !_.has(backlinks, p))  
             continue;
           
-          if (prop['app']  &&  (!currentAppProps  || $.inArray(p, currentAppProps) == -1))
+          if (prop['app']  &&  (!currentAppProps  || currentAppProps.indexOf(p) == -1))
             continue;
           
-          if (mainGroup  &&  $.inArray(p, mainGroupArr) != -1)
+          if (mainGroupArr  &&  ~mainGroupArr.indexOf(p))
             continue;
+          
           var count = -1;
-          if (!_.has(backlinks, p)) {
-            var idx;
-            if (p.length <= 5  ||  p.indexOf('Count') != p.length - 5) 
-              continue;
-            
-            var pp = p.substring(0, p.length - 5);
-            if (_.has(displayedProps, pp))  
-              continue;
-            
-            var pMeta = meta[pp];
-            if (!pMeta  ||  !pMeta.backLink || atts[pp]) 
-              continue;
-            count = atts[p];
-//            p = pp;
-            prop = pMeta;
-            json[pp] = {count: count};
-            p = pp;
+          if (_.has(atts, p + 'Count')) {
+            count = atts[p + 'Count'];
+            json[p] = {count: count};
           }
+          
+//          if (!_.has(backlinks, p)) {
+//            var idx;
+//            if (p.length <= 5  ||  p.indexOf('Count') != p.length - 5) 
+//              continue;
+//            
+//            var pp = p.substring(0, p.length - 5);
+//            if (_.has(displayedProps, pp))  
+//              continue;
+//            
+//            var pMeta = meta[pp];
+//            if (!pMeta  ||  !pMeta.backLink || atts[pp]) 
+//              continue;
+//            count = atts[p];
+////            p = pp;
+//            prop = pMeta;
+//            json[pp] = {count: count};
+//            p = pp;
+//          }
           
           hasValue = _.has(atts, p);
           if (count == -1) {
@@ -999,11 +1103,11 @@ define('views/ControlPanel', [
 //          this.innerHTML = '<i class="ui-icon-ban-circle"></i> ' + this.innerHTML;
 //      });
       
-      if (G.isJQM()) {
-        this.$el.trigger('create');
-//        if (this.el.$hasClass('ui-listview'))  //this.rendered &&
-//          this.$el.listview('refresh');
-      }
+//      if (G.isJQM()) {
+//        this.$el.trigger('create');
+////        if (this.el.$hasClass('ui-listview'))  //this.rendered &&
+////          this.$el.listview('refresh');
+//      }
 
       Q.write(function() {
         this.el.$html(frag);

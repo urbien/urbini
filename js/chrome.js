@@ -132,7 +132,7 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
           appInstall = G.currentAppInstall,      
           endpointList = new ResourceList(G.currentUser.pushEndpoints, {
             model: U.getModel(G.commonTypes.PushEndpoint),
-            query: $.param({
+            query: _.param({
               appInstall: appInstall
             })
           });

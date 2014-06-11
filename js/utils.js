@@ -185,7 +185,7 @@ define('utils', [
               debugger;
               Events.trigger('error', {
                 resource: resource,
-                error: "{0} don't support an attachments".format(getPlural(resource.vocModel.displayName))
+                error: "{0} don't support an attachments".format(U.getPlural(resource.vocModel.displayName))
               });
               
               return;
@@ -199,7 +199,7 @@ define('utils', [
         }
 
         // start repeat url check - see if we're calling a url we already called before
-        var _url = opts.url + (_.size(opts.data) ? '?' + $.param(opts.data) : '');
+        var _url = opts.url + (_.size(opts.data) ? '?' + _.param(opts.data) : '');
         if (_.contains(xhrHistory, _url))
           console.log('ajax', 'calling this url again!', _url);
         else
@@ -279,36 +279,38 @@ define('utils', [
               config: msgOpts
             }); //TODO: when we figure out transferrable objects, add parameter: [msgOpts]
           });
+          
+          return;
         }
-        else {
-          log('xhr', '$.ajax', opts.url);
-          $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType', 'processData', 'contentType'])).then(function(data, status, jqXHR) {
-            if (opts['for'])
-              opts['for']._setLastFetchOrigin('server');
-            
-            var error;
-            if (jqXHR.status > 399) {
-              debugger;
-              defer.reject(
-                jqXHR, 
-                (jqXHR.responseJson = U.getJSON(data) || {code: jqXHR.status}), 
-                opts
-              );
-            }
-            else if (jqXHR.status < 400)
-              defer.resolve(data, status, jqXHR);
-          }, 
-          function(jqXHR, textStatus, err) {
-            if (opts['for'])
-              opts['for']._setLastFetchOrigin('server');
+        
+        throw "Unsupported";
+//        log('xhr', '$.ajax', opts.url);
+//        $.ajax(_.pick(opts, ['timeout', 'type', 'url', 'headers', 'data', 'dataType', 'processData', 'contentType'])).then(function(data, status, jqXHR) {
+//          if (opts['for'])
+//            opts['for']._setLastFetchOrigin('server');
+//          
+//          var error;
+//          if (jqXHR.status > 399) {
 //            debugger;
-            defer.reject(
-              jqXHR, 
-              (jqXHR.responseJson = U.getJSON(jqXHR.responseText) || {code: jqXHR.status, details: err}), 
-              opts
-            );
-          });
-        }
+//            defer.reject(
+//              jqXHR, 
+//              (jqXHR.responseJson = U.getJSON(data) || {code: jqXHR.status}), 
+//              opts
+//            );
+//          }
+//          else if (jqXHR.status < 400)
+//            defer.resolve(data, status, jqXHR);
+//        }, 
+//        function(jqXHR, textStatus, err) {
+//          if (opts['for'])
+//            opts['for']._setLastFetchOrigin('server');
+////            debugger;
+//          defer.reject(
+//            jqXHR, 
+//            (jqXHR.responseJson = U.getJSON(jqXHR.responseText) || {code: jqXHR.status, details: err}), 
+//            opts
+//          );
+//        });
       }).promise();
     },
     
@@ -388,7 +390,7 @@ define('utils', [
       
       var iAmRes = me == resUri; 
 //      iAmRes = iAmRes ||U.isSameUser(me, resUri); // HACK to detect Urbien1 as Urbien
-      var roles = typeof ar === 'array' ? ar : ar.split(",");
+      var roles = _.isArray(ar) ? ar : ar.split(",");
       for (var i = 0; i < roles.length; i++) {
         var r = roles[i].trim();
         if (_.contains(['siteOwner'], r)  &&  userRole == r) 
@@ -803,7 +805,7 @@ define('utils', [
     
     $and: function() {
       if (arguments.length == 1)
-        return $.param(arguments[0]);
+        return _.param(arguments[0]);
       
       return _.map(slice.call(arguments), function(arg) {
         return U.$and(arg);
@@ -1174,7 +1176,7 @@ define('utils', [
       if (_.isEmpty(q))
         return url[0];
       
-      q = sort ? U.getQueryString(q, {sort: sort}) : $.param(q);
+      q = sort ? U.getQueryString(q, {sort: sort}) : _.param(q);
       return url.length == 1 ? q : [url[0], q].join('?');
     },
    
@@ -1234,7 +1236,7 @@ define('utils', [
       if (_.isEmpty(params))
         return params;
       
-      var query = $.param(params);
+      var query = _.param(params);
       var parsed = U.parseAPIQuery(query, '&');
       var filtered = {};
       _.each(parsed, function(clause) {
@@ -1462,7 +1464,7 @@ define('utils', [
     getQueryString: function(paramMap, options) {
       options = options || {};
       if (!options.sort) {
-        var result = $.param(paramMap);
+        var result = _.param(paramMap);
         return options.delimiter ? result.replace(/\&/g, options.delimiter) : result;
       }
       
@@ -1680,26 +1682,41 @@ define('utils', [
       });
     },
     
+    evalResourcePath: function(res, path) {
+      if (typeof path == 'string')
+        path = path.split('.');
+      
+      var first = res.get(path[0]);
+      if (path.length == 1)
+        return U.resolvedPromise(first);
+      
+      if (first == null)
+        return G.getRejectedPromise();
+      
+      return U.getResourcePromise(first).then(function(r) {
+        return U.evalResourcePath(r, path.slice(1));
+      });
+    },
+    
     getResourcePromise: function(uri, sync) {
       var res = U.getResource(uri);
-      if (res && sync)
-        return U.resolvedPromise(res);
+      if (res) {
+        if (!sync || U.isTempUri(uri))
+          return U.resolvedPromise(res);
+      }
 
       var dfd = $.Deferred();
-      U.getModels(U.getTypeUri(uri)).done(function(model) {
+      U.getModels([U.getTypeUri(uri)]).done(function(model) {
         res = res || new model({
           _uri: uri
         });
         
         res.fetch({
-          forceFetch: sync && !U.isTempUri(uri),
+          forceFetch: sync,
           success: function() {
             dfd.resolve(res);
           },
-          error: function() {
-            debugger;
-            dfd.reject();
-          }
+          error: dfd.reject
         });
       });
       
@@ -1795,7 +1812,7 @@ define('utils', [
             }
           }
           else if (isResourceView) {
-            var ww = DOM.window.width();//$(window).width();
+            var ww = DOM.window.width();
             if (ww < DOM.window.height()) {
               if (ww <= 340) 
                 cloneOf = U.getCloneOf(vocModel, 'ImageResource.bigMedium320')[0];
@@ -1898,37 +1915,31 @@ define('utils', [
     },
     
     /**
-     * @param className: class name or uri
+     * @param model
+     * @params class names or uris
+     * 
+     * returns true if the model is assignable from any of the passed in class names/uris
      */
-    isAssignableFrom: function(model, className) {
+    isAssignableFrom: function(model/*, className1, className2, ...*/) {
       if (!model)
         return false;
       
-      if (/\//.test(className))
-        className = U.getTypeUri(className);
-      
       model = U.isModel(model) || U.isCollection(model) ? model.vocModel : model;
-      if (model.type == className ||  model.shortName == className || U.isA(model, className))
-        return true;
+      for (var i = 1; i < arguments.length; i++) {
+        var className = arguments[i];
+        if (/\//.test(className))
+          className = U.getTypeUri(className);
+        
+        if (model.type == className ||  model.shortName == className || U.isA(model, className))
+          return true;
+        
+        if (_.any(model.superClasses, function(s) { return s == className || s.endsWith("/" + className) }))
+          return true;
+      }
       
-      var supers = model.superClasses;
-      return _.any(supers, function(s) {return s == className || s.endsWith("/" + className)});
-      
-//      var m = model;
-//      while (true) {
-//        var subClassOf = m.subClassOf;
-//        if (!subClassOf.startsWith(G.DEFAULT_VOC_BASE))
-//          subClassOf = G.DEFAULT_VOC_BASE + subClassOf;
-//        
-//        if (m.shortName == className  ||  m.type == className)
-//          return true;
-//        if (m.subClassOf == 'Resource')
-//          return false;
-//        
-//        m = U.getModel(subClassOf);
-//      }
+      return false;
     },
-
+    
     getValue: function(modelOrJson, prop) {
       if (U.isModel(modelOrJson))
         return modelOrJson.get(prop);
@@ -2444,7 +2455,7 @@ define('utils', [
 ////      if (ignoredParams)
 ////        console.log('ignoring url parameters during regular to mobile url conversion: ' + ignoredParams);
 //      
-//      return (url.toLowerCase().startsWith('mkresource.html') ? 'make/' : '') + encodeURIComponent(type) + (_.size(params) ? '?' + $.param(params) : '');
+//      return (url.toLowerCase().startsWith('mkresource.html') ? 'make/' : '') + encodeURIComponent(type) + (_.size(params) ? '?' + _.param(params) : '');
 //    },
     
     primitiveTypes: {
@@ -2993,7 +3004,7 @@ define('utils', [
       return U.makeUri(type, params);
     },
     makeUri: function(type, params) {
-      return G.sqlUrl + '/' + type.slice(7) + '?' + (typeof params == 'string' ? params : $.param(params));
+      return G.sqlUrl + '/' + type.slice(7) + '?' + (typeof params == 'string' ? params : _.param(params));
     },
     sq: function(a) {
       return a * a;
@@ -3147,7 +3158,7 @@ define('utils', [
           for (var p in query) {
             var one = {};
             one[p] = query[p];
-            q.push($.param(one));
+            q.push(_.param(one));
           }
           
           query = q;
@@ -3180,6 +3191,32 @@ define('utils', [
       _.each(query, function(clause) {
         var param = clause.name;
         switch (param) {
+        case 'type':
+          var superUri = clause.value;
+          if (/subClassOf:/.test(superUri)) {
+            superUri = superUri.slice(11);
+            rules.push(function(res) {
+              var model,
+                  resType;
+              
+              if (U.isModel(res))
+                model = res.vocModel;
+              else {
+                resType = U.getTypeUri(res._uri);
+                model = U.getModel(resType);
+              }
+              
+              return model ? U.isAssignableFrom(model, superUri) : resType == superUri;
+            });
+          }
+          else {
+            rules.push(function(res) {
+              var type = U.isModel(res) ? res.vocModel.type : U.getTypeUri(res._uri);
+              return type == superUri;
+            });
+          }
+          
+          break;
         case '$or':
         case '$and':
           var chainFn = param === '$or' ? _.any : _.all;
@@ -3325,7 +3362,7 @@ define('utils', [
             log('error', "couldn't parse date bound: " + bound);
             return function() {return true};
           }
-          // fall through to default
+        /* falls through */
         default: {
           return function(res) {
             try {
@@ -3629,7 +3666,7 @@ define('utils', [
         
         function oncancel(e) {
           Events.stopEvent(e);
-          $('.modal-popup-holder .headerMessageBar').remove();
+          $('.modal-popup-holder .headerMessageBar').$remove();
           if (options.oncancel)
             options.oncancel.apply(this, arguments);
           else
@@ -3692,7 +3729,7 @@ define('utils', [
             });
           });
         });
-      }).promise();;
+      }).promise();
     },
     
     /**
@@ -3955,6 +3992,7 @@ define('utils', [
       };
     },
     
+    _forbiddenIndexNames: ['primary'],
     getIndexNames: function(vocModel) {
       var vc = U.getColsMeta(vocModel, 'view');
       var gc = U.getColsMeta(vocModel, 'grid');
@@ -3967,7 +4005,7 @@ define('utils', [
       var props = vocModel.properties;
       return _.filter(cols, function(c) {
         var p = props[c];
-        return p && !p.backLink; // && !_.contains(SQL_WORDS, c.toLowerCase());
+        return p && !p.backLink && !_.contains(U._forbiddenIndexNames, c.toLowerCase());
       });
     },
 
@@ -3978,48 +4016,48 @@ define('utils', [
       });
     },
     
-    isIntersecting: function(rectA, rectB) {
-//      var outOfTop = rectA.bottom - rectB.top,
-//          outOfBottom = rectB.bottom - rectA.top,
-//          outOfLeft = rectA.right - rectB.left,
-//          outOfRight = rectB.right - rectA.left;
-//      
-//      if (outOfTop < 0)
-//        console.log("Out of top by", -outOfTop);
-//      else if (outOfBottom < 0)
-//        console.log("Out of bottom by", -outOfBottom);
-//      else if (outOfLeft < 0)
-//        console.log("Out of left by", -outOfLeft);
-//      else if (outOfRight < 0)
-//        console.log("Out of right by", -outOfRight);
-//      else
-//        return true;
-//      
-//      return false;
-
-      return rectA.bottom >= rectB.top 
-          && rectA.top    <= rectB.bottom 
-          && rectA.right  >= rectB.left 
-          && rectA.left   <= rectB.right;
-    },
-
-    isRectPartiallyInViewport: function(rect, fuzz) {
-      var viewport = G.viewport;
-      fuzz = fuzz || 0; 
-      return rect.bottom + fuzz >= 0 
-          && rect.top - fuzz <= viewport.height 
-          && rect.right + fuzz >= 0 
-          && rect.left - fuzz <= viewport.width;
-    },
-
-    isRectInViewport: function(rect, fuzz) {
-      fuzz = fuzz || 0; 
-      return rect.top + fuzz >= 0 &&
-             rect.left + fuzz >= 0 &&
-             rect.bottom - fuzz <= (window.innerHeight || documentElement.clientHeight) && /*or $(window).height() */
-             rect.right - fuzz <= (window.innerWidth || documentElement.clientWidth); /*or $(window).width() */
-    },
-    
+//    isIntersecting: function(rectA, rectB) {
+////      var outOfTop = rectA.bottom - rectB.top,
+////          outOfBottom = rectB.bottom - rectA.top,
+////          outOfLeft = rectA.right - rectB.left,
+////          outOfRight = rectB.right - rectA.left;
+////      
+////      if (outOfTop < 0)
+////        console.log("Out of top by", -outOfTop);
+////      else if (outOfBottom < 0)
+////        console.log("Out of bottom by", -outOfBottom);
+////      else if (outOfLeft < 0)
+////        console.log("Out of left by", -outOfLeft);
+////      else if (outOfRight < 0)
+////        console.log("Out of right by", -outOfRight);
+////      else
+////        return true;
+////      
+////      return false;
+//
+//      return rectA.bottom >= rectB.top 
+//          && rectA.top    <= rectB.bottom 
+//          && rectA.right  >= rectB.left 
+//          && rectA.left   <= rectB.right;
+//    },
+//
+//    isRectPartiallyInViewport: function(rect, fuzz) {
+//      var viewport = G.viewport;
+//      fuzz = fuzz || 0; 
+//      return rect.bottom + fuzz >= 0 
+//          && rect.top - fuzz <= viewport.height 
+//          && rect.right + fuzz >= 0 
+//          && rect.left - fuzz <= viewport.width;
+//    },
+//
+//    isRectInViewport: function(rect, fuzz) {
+//      fuzz = fuzz || 0; 
+//      return rect.top + fuzz >= 0 &&
+//             rect.left + fuzz >= 0 &&
+//             rect.bottom - fuzz <= (window.innerHeight || documentElement.clientHeight) &&
+//             rect.right - fuzz <= (window.innerWidth || documentElement.clientWidth);
+//    },
+//    
 //    isInViewport: function(element) {
 //      var rect = element.getBoundingClientRect(),
 //          documentElement = doc.documentElement;
@@ -4092,7 +4130,7 @@ define('utils', [
     
     getClonedProps: function(vocModel, iFace) {
       var meta = vocModel.properties,
-          extractProp = new RegExp(',?\ *' + iFace + '\.([^,\ ]+)', 'g'),
+          extractProp = new RegExp(',? *' + iFace + '\.([^, ]+)', 'g'),
           cloned = [];
           
       for (var name in meta) {
@@ -4320,7 +4358,7 @@ define('utils', [
       if (!this.params)
         return base;
       
-      return base + (base.indexOf("?") == -1 ? '?' : '&') + $.param(this.params || {});        
+      return base + (base.indexOf("?") == -1 ? '?' : '&') + _.param(this.params || {});        
     };
     
     _.each(allUrlInfoProps, function(prop) {
@@ -4362,7 +4400,7 @@ define('utils', [
         uri = uri.slice(route.length + 1);
       
       if (_.size(uriParams))
-        uri += '?' + $.param(uriParams);
+        uri += '?' + _.param(uriParams);
     }
     else {
       uri = decodeURIComponent(route.length ? hashParts[0].slice(route.length + 1) : hashParts[0]);        

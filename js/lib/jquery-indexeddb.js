@@ -1,5 +1,6 @@
 //'use strict';
 define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDBShim' : []), function(G) {
+  window.$ = window.$ || {};
   var usingShim = G.dbType == 'shim';
 	var indexedDB = usingShim ? window.shimIndexedDB : window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
   var IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange;
@@ -55,7 +56,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
       pendingTransDfd.resolve();
   };
 
-  $.extend({
+  _.extend($, {
     /**
      * The IndexedDB object used to open databases
      * @param {Object} dbName - name of the database
@@ -90,7 +91,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
               };
               idbRequest.onerror = function(e) {
 //								log("req failed", idbRequest, e, this);
-                debugger;
+//                debugger;
                 log("req failed");
                 dfd.rejectWith(idbRequest, [idbRequest.error, e]);
               };
@@ -101,7 +102,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
                   var res;
                   try {
                     res = idbRequest.result;
-                  } catch (e) {
+                  } catch (err) {
                     res = null; // Required for Older Chrome versions, accessing result causes error 
                   }
                   dfd.notifyWith(idbRequest, [res, e]);
@@ -183,6 +184,8 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
           };
 					
 					result._getAll = function(range, direction, keysOnly) {
+					  var now = _.now();
+					  console.log("Start getAll: " + now);
             return $.Deferred(function(dfd) {
               var results = [];
               var callback = keysOnly ? function(result) {
@@ -200,8 +203,10 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
                   return idbObjectStore[op](wrap.range(range));
                 }
               }, callback).done(function() {
+                console.log("End getAll (success): " + now);
                 dfd.resolve(results);
               }).fail(function() {
+                console.log("End getAll (fail): " + now);
                 dfd.rejectWith(this, arguments);
               });
               
@@ -248,7 +253,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
         },
 
         "range": function(r) {
-          if ($.isArray(r)) {
+          if (_.isArray(r)) {
             if (r.length === 1) {
               return IDBKeyRange.only(r[0]);
             } else {
@@ -310,8 +315,8 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
                     if (elem.data) cursorReq.result["continue"].apply(cursorReq.result, [elem.data]);
                     else cursorReq.result["continue"]();
                   }
-                } catch (e) {
-                  dfd.rejectWith(cursorReq, [cursorReq.result, e]);
+                } catch (err) {
+                  dfd.rejectWith(cursorReq, [cursorReq.result, err]);
                 }
               };
               cursorReq.onerror = function(e) {
@@ -458,7 +463,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
         }
       });
 
-      return $.extend(dbPromise, {
+      return _.extend(dbPromise, {
         "cmp": function(key1, key2) {
           return indexedDB.cmp(key1, key2);
         },
@@ -485,7 +490,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
           });
         },
         "transaction": function(storeNames, mode) {
-          !$.isArray(storeNames) && (storeNames = [storeNames]);
+          !_.isArray(storeNames) && (storeNames = [storeNames]);
           mode = getDefaultTransaction(mode);
           return $.Deferred(function(dfd) {
             var idbTransaction;
@@ -504,17 +509,17 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
                 idbTransaction.oncomplete = function(e) {
                   dfd.resolveWith(idbTransaction, [e]);
                 };
-              } catch (e) {
-								console.log("Creating a transaction failed", e, storeNames, mode, this);
-                e.type = "exception";
-                dfd.rejectWith(this, [e]);
+              } catch (err) {
+								console.log("Creating a transaction failed", err, storeNames, mode, this);
+                err.type = "exception";
+                dfd.rejectWith(this, [err]);
                 return;
               }
               try {
                 dfd.notifyWith(idbTransaction, [wrap.transaction(idbTransaction)]);
-              } catch (e) {
-                e.type = "exception";
-                dfd.rejectWith(this, [e]);
+              } catch (err) {
+                err.type = "exception";
+                dfd.rejectWith(this, [err]);
               }
             }, function(err, e) {
               dfd.rejectWith(this, [e, err]);

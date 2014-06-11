@@ -199,11 +199,14 @@ define('views/PublishButton', [
         });
 
         this.html(html);
-        this.$el.trigger('create');
+        
+//        if (G.isJQM())
+//          this.$el.trigger('create');
       }
       else if (this.template) {
         this.html(this.template({wasPublished: !!this.resource.get('lastPublished')}));
-        this.$el.trigger('create');
+//      if (G.isJQM())
+//        this.$el.trigger('create');
       }
       
       // TODO: figure out why click on Try button doesn't arrive in handler without this hack

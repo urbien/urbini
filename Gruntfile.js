@@ -1,15 +1,48 @@
 module.exports = function(grunt) {
 
+  var jsFiles = ['Gruntfile.js'],
+      cssFiles = [];
+  
+  (function buildJSFileList(jsFiles) {
+    var loadBundle = function(bundle) {
+      var i = bundle.length,
+              fileInfo,
+              filePath;
+      
+      while (i--) {
+        fileInfo = bundle[i];
+        filePath = typeof fileInfo == 'object' ? fileInfo.path : fileInfo;
+        if (/\.js$/.test(filePath))
+          jsFiles.push('js/' + filePath);
+        else if (/\.css$/.test(filePath))
+          cssFiles.push('js/' + filePath);
+      }      
+    };
+    
+    var bundles = grunt.file.readJSON('bundles.json');
+    for (var name in bundles) {
+      var bundle = bundles[name];
+      if (name == 'widgetsFramework') {
+        for (var fName in bundle) {
+          loadBundle(bundle[fName]);
+        }
+      }
+      else
+        loadBundle(bundle);
+    }
+  })(jsFiles);
+  
   grunt.initConfig({
     jshint: {
-      files: ['Gruntfile.js', 'js/*.js', 'js/views/*.js', 'js/collections/*.js', 'js/models/*.js', 'js/bookmarklets/*.js' ],
+      files: jsFiles,
       options: {
         // options here to override JSHint defaults
         globals: {
           jQuery: true,
           console: true,
           module: true,
-          document: true
+          document: true,
+          '_': true
         },
         asi: true,      
         boss: true,     
@@ -34,18 +67,28 @@ module.exports = function(grunt) {
     uglify: {
       compress: {
         expand: true,
-        src: ['js/*.js', '!js/**/*.min.js', 'js/views/*.js', 'js/models/*.js', 'js/collections/*.js', 'js/bookmarklets/*.js'],
+        src: jsFiles, 
         dest: 'test/',
         ext: '.min.js',
-        flatten: false
+        flatten: false,
+        mangle: true
       }
     },
+    cssmin: {
+      minify: {
+        expand: true,
+        src: cssFiles,
+        ext: '.min.css'
+      }
+    }
   });
-  grunt.loadNpmTasks('grunt-contrib-jshint');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
-  grunt.loadNpmTasks('grunt-contrib-concat');
+  
+//  grunt.loadNpmTasks('grunt-contrib-jshint');
+//  grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-cssmin');
+//  grunt.loadNpmTasks('grunt-contrib-concat');
  
-  grunt.task.registerTask('default', ['jshint', 'uglify']);
+  grunt.task.registerTask('default', [/*'jshint', 'uglify',*/ 'cssmin']);
 };
 /*
     bower: {

@@ -99,7 +99,7 @@ define('views/SocialNetworkPage', [
     render: function() {
       var self = this;
       
-      this.$el.html(this.template());
+      this.el.$html(this.template());
       this.assign('#headerDiv', this.header, {
         buttons: this.headerButtons
       });

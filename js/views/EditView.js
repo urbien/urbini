@@ -13,10 +13,37 @@ define('views/EditView', [
   var spinner = {
         name: 'loading edit view'
       },
-      scrollerClass = 'i-txt',
-      switchClass = 'boolean',
-      secs = [/* week seconds */604800, /* day seconds */ 86400, /* hour seconds */ 3600, /* minute seconds */ 60, /* second seconds */ 1];
-      
+//      scrollerClass = 'i-txt',
+      switchClass = 'boolean';
+//      ,
+//      secs = [/* week seconds */604800, /* day seconds */ 86400, /* hour seconds */ 3600, /* minute seconds */ 60, /* second seconds */ 1];
+
+//  function parseTime(time) {
+//    debugger;
+//  };
+  
+  function clearForm(forms) {
+    var i = forms.length;
+    while (i--) {
+      var form = forms[i];
+      var type = form.type, tag = form.tagName.toLowerCase();
+      if (tag == 'form')
+        return clearForm(form.$('input'));
+      if (type == 'text' || type == 'password' || tag == 'textarea')
+        form.value = '';
+      else if (type == 'checkbox' || type == 'radio')
+        form.checked = false;
+      else if (tag == 'select') {
+//        var me = $(this);
+//        if (me.hasClass('ui-slider-switch')) {
+//          me.val(me.find('option')[0].value).slider('refresh');
+//        }
+//        else
+          form.selectedIndex = -1;
+      }
+    }
+  };
+  
   function isHidden(prop, currentAtts, reqParams, isEdit) {
     var p = prop.shortName; 
     return prop.required  &&  currentAtts[p]  &&  prop.containerMember && (isEdit || (reqParams  &&  reqParams[p]));
@@ -29,21 +56,21 @@ define('views/EditView', [
     };
   };
 
-  var scrollerTypes = ['date', 'duration'];
-//  var scrollerModules = ['mobiscroll', 'mobiscroll-datetime', 'mobiscroll-duration'];
+//  var scrollerTypes = ['date', 'duration'];
   return BasicView.extend({
     autoFinish: false,
     initialize: function(options) {
       var self = this;
-      _.each(scrollerTypes, function(s) {
-        self['scroll' + s.camelize(true)] = function(e) {
-          self.mobiscroll.apply(self, [e, s].concat(_.tail(arguments)));
-        }
-      });
+//      _.each(scrollerTypes, function(s) {
+//        self['scroll' + s.camelize(true)] = function(e) {
+//          self.mobiscroll.apply(self, [e, s].concat(_.tail(arguments)));
+//        }
+//      });
     
       _.bindAll(this, 'render', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 
-                      'onSelected', 'setValues', 'getInputs', 'getScrollers', 'getValue', 'addProp', 
-                      'scrollDate', 'scrollDuration', 'capturedImage', 'onerror', 'onsuccess', 'onSaveError',
+                      'onSelected', 'setValues', 'getInputs', 'getValue', 'addProp', 
+//                      'getScrollers', 'scrollDate', 'scrollDuration', 
+                      'capturedImage', 'onerror', 'onsuccess', 'onSaveError',
                       'checkAll', 'uncheckAll'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);
       var type = this.vocModel.type;
@@ -134,8 +161,8 @@ define('views/EditView', [
 //      'click #cancel'                     :'cancel',
 //      'submit form'                       :'submit',
       'click .resourceProp'               :'chooser',
-      'click input[data-duration]'        :'scrollDuration',
-      'click input[data-date]'            :'scrollDate',
+//      'click input[data-duration]'        :'scrollDuration',
+//      'click input[data-date]'            :'scrollDate',
 //      'click select[data-enum]': 'scrollEnum',
       'click .cameraCapture'              :'cameraCapture',
       'change .cameraCapture'             :'cameraCapture',
@@ -143,7 +170,8 @@ define('views/EditView', [
       'click #uncheck-all'                :'uncheckAll',
       'keydown input'                     :'onKeyDownInInput',
       'change select'                     :'onSelected',
-      'change input[type="checkbox"]'     :'onSelected'
+      'change input[type="checkbox"]'     :'onSelected',
+      'change input[type="date"]'         :'onSelected'
     },
     
     globalEvents: {
@@ -155,26 +183,26 @@ define('views/EditView', [
      * find all non-checked non-disabled checkboxes, check them, trigger jqm to repaint them and trigger a 'change' event so whatever we have tied to it is triggered (for some reason changing the prop isn't enough to trigger it)
      */
     checkAll: function() {
-      if (G.isJQM())
-        $(this.form).find("input:checkbox:not(:checked):not(:disabled)").prop('checked', true).checkboxradio('refresh').change();
-      else {
-        this.form.$("input:checkbox:not(:checked):not(:disabled)").$forEach(function(c) {
+//      if (G.isJQM())
+//        $(this.form).find("input:checkbox:not(:checked):not(:disabled)").prop('checked', true).checkboxradio('refresh').change();
+//      else {
+        this.getForm().$("input:checkbox:not(:checked):not(:disabled)").$forEach(function(c) {
           c.checked = true;
         });
-      }
+//      }
     },
 
     /**
      * find all checked non-disabled checkboxes, uncheck them, trigger jqm to repaint them and trigger a 'change' event so whatever we have tied to it is triggered (for some reason changing the prop isn't enough to trigger it)
      */
     uncheckAll: function() {
-      if (G.isJQM())
-        $(this.form).find("input:checkbox:checked:not(:disabled)").prop('checked', false).checkboxradio('refresh').change();
-      else {
-        this.form.$("input:checkbox:not(:checked):not(:disabled)").$forEach(function(c) {
+//      if (G.isJQM())
+//        $(this.form).find("input:checkbox:checked:not(:disabled)").prop('checked', false).checkboxradio('refresh').change();
+//      else {
+        this.getForm().$("input:checkbox:not(:checked):not(:disabled)").$forEach(function(c) {
           c.checked = false;
         });
-      }
+//      }
     },
 
     capturedImage: function(options) {
@@ -323,69 +351,69 @@ define('views/EditView', [
       Events.trigger('info', {info: msg, page: this.getPageView(), persist: true});
     },
     
-    getScroller: function(prop, input) {
-      var settings = {
-        theme: 'ios',
-        display: 'modal',
-        mode:'scroller',
-        durationWheels: ['years', 'days', 'hours', 'minutes', 'seconds'],
-        label: U.getPropDisplayName(prop),
-        shortName: prop.shortName,
-        onSelect: this.onSelected,
-        input: input
-      };
-      
-      scrollerType = settings.__type = _.find(['date', 'duration'], function(type) {
-        return _.has(input.dataset, type);
-      });
-
-      var scroller;
-      switch (scrollerType) {
-        case 'date':
-        case 'duration':
-          var isDate = scrollerType === 'date';
-          scroller = $(input).mobiscroll()[scrollerType](settings);
-          var val = input.value && parseInt(input.value);
-          if (typeof val === 'number')
-            scroller.mobiscroll(isDate ? 'setDate' : 'setSeconds', isDate ? new Date(val) : val, true);
-          
-          break;
-      }
-      
-      return scroller;
-    },
-
-    mobiscroll: function(e, scrollerType, dontClick) {
-      if (this.fetchingScrollers)
-        return;
-      
-      this.fetchingScrollers = true;
-      $(e.target).blur(); // hack to suppress keyboard that would open on this input field
-      Events.stopEvent(e);
-      
-//      // mobiscrollers don't disappear on their own when you hit the back button
-//      Events.once('pageChange', function() {
-//        $('.jqm, .dw-modal').remove();
+//    getScroller: function(prop, input) {
+//      var settings = {
+//        theme: 'ios',
+//        display: 'modal',
+//        mode:'scroller',
+//        durationWheels: ['years', 'days', 'hours', 'minutes', 'seconds'],
+//        label: U.getPropDisplayName(prop),
+//        shortName: prop.shortName,
+//        onSelect: this.onSelected,
+//        input: input
+//      };
+//      
+//      scrollerType = settings.__type = _.find(['date', 'duration'], function(type) {
+//        return _.has(input.dataset, type);
 //      });
-      
-      var self = this;
-      var thisName = e.target.name;
-      var meta = this.vocModel.properties;
-//      var scrollerModules = ['mobiscroll', 'mobiscroll-datetime', 'mobiscroll-duration'];
-      var scrollers = self.getScrollers();
-//      if (_.any(scrollers, function(s) { return s.dataset.duration }))
-//        modules.push('mobiscroll-duration');
-      
-      U.require('mobiscroll', function() {
-        self.loadedScrollers = true;
-        self.refreshScrollers();
-        if (!dontClick) {
-          var scroller = _.find(scrollers, function(s) {return s.name === thisName; });
-          if (scroller)
-            $(scroller).click().focus();
-        }
-      });
-    },
+//
+//      var scroller;
+//      switch (scrollerType) {
+//        case 'date':
+//        case 'duration':
+//          var isDate = scrollerType === 'date';
+//          scroller = $(input).mobiscroll()[scrollerType](settings);
+//          var val = input.value && parseInt(input.value);
+//          if (typeof val === 'number')
+//            scroller.mobiscroll(isDate ? 'setDate' : 'setSeconds', isDate ? new Date(val) : val, true);
+//          
+//          break;
+//      }
+//      
+//      return scroller;
+//    },
+//
+//    mobiscroll: function(e, scrollerType, dontClick) {
+//      if (this.fetchingScrollers)
+//        return;
+//      
+//      this.fetchingScrollers = true;
+//      $(e.target).blur(); // hack to suppress keyboard that would open on this input field
+//      Events.stopEvent(e);
+//      
+////      // mobiscrollers don't disappear on their own when you hit the back button
+////      Events.once('pageChange', function() {
+////        $('.jqm, .dw-modal').remove();
+////      });
+//      
+//      var self = this;
+//      var thisName = e.target.name;
+//      var meta = this.vocModel.properties;
+////      var scrollerModules = ['mobiscroll', 'mobiscroll-datetime', 'mobiscroll-duration'];
+//      var scrollers = self.getScrollers();
+////      if (_.any(scrollers, function(s) { return s.dataset.duration }))
+////        modules.push('mobiscroll-duration');
+//      
+//      U.require('mobiscroll', function() {
+//        self.loadedScrollers = true;
+//        self.refreshScrollers();
+//        if (!dontClick) {
+//          var scroller = _.find(scrollers, function(s) {return s.name === thisName; });
+//          if (scroller)
+//            $(scroller).click().focus();
+//        }
+//      });
+//    },
 
     onChoose: function(e, prop) {
       var hash = window.location.href;
@@ -594,7 +622,7 @@ define('views/EditView', [
 //            $title: 'Add-ons',
 //            $forResource: this.resource.get('implementor')
 //          };
-//        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + $.param(rParams), {trigger: true});
+//        this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + "?" + _.param(rParams), {trigger: true});
 //        return;
 //      }
 //
@@ -647,32 +675,32 @@ define('views/EditView', [
       _.extend(this, params);
     },
     resetForm: function() {
-      $(this.$('form')).clearForm();      
+      clearForm(this.$('form'));
     },
     getInputs: function() {
-      return this.form.$('[data-formEl]');
+      return this.getForm().$('[data-formEl]');
     },
-    getScrollers: function() {
-      return this.form.$('.' + scrollerClass);
-    },
-    
-    refreshScrollers: function() {
-      if (this.loadedScrollers) {
-        var meta = this.vocModel.properties;
-        var self = this;
-        this.getScrollers().$forEach(function(scroller) {
-          $(scroller).mobiscroll('destroy');
-          var prop = meta[scroller.name];
-          self.getScroller(prop, scroller);
-        });
-      }
-    },
+//    getScrollers: function() {
+//      return this.getForm().$('.' + scrollerClass);
+//    },
+//    
+//    refreshScrollers: function() {
+//      if (this.loadedScrollers) {
+//        var meta = this.vocModel.properties;
+//        var self = this;
+//        this.getScrollers().$forEach(function(scroller) {
+//          $(scroller).mobiscroll('destroy');
+//          var prop = meta[scroller.name];
+//          self.getScroller(prop, scroller);
+//        });
+//      }
+//    },
     fieldError: function(resource, errors) {
       if (arguments.length === 1)
         errors = resource;
       
       var badInputs = [];
-      var errDiv = this.form.querySelectorAll('div[name="errors"]');
+      var errDiv = this.getForm().$('div[name="errors"]');
       errDiv.$empty();
       errDiv = errDiv[0];
 //      errDiv.empty();
@@ -698,7 +726,7 @@ define('views/EditView', [
         if (input) {
           badInputs.push(input);
           var id = input.id;
-          var err = this.form.querySelector('label.error[for="{0}"]'.format(id));
+          var err = this.getForm().$('label.error[for="{0}"]'.format(id))[0];
           if (err) {
             err.innerText = msg;
             madeError = true;
@@ -716,12 +744,6 @@ define('views/EditView', [
           else
             errDiv.appendChild(label);
         }
-      }
-      
-      if (badInputs.length) {
-        $('html, body').animate({
-          scrollTop: $(badInputs[0]).offset().top - 10
-        }, 1000);
       }
     },
     
@@ -767,6 +789,10 @@ define('views/EditView', [
       }
       else if (p && p.multiValue)
         val = this.getResourceInputValue(input); //input.innerHTML;
+      else if (p && U.isDateProp(p))
+        val = Date.parse(input.value);
+//      else if (p && U.isTimeProp(p))
+//        val = parseTime(input.value);        
       else
         val = input.tagName === 'A' ? this.getResourceInputValue(input) : input.value;
 
@@ -810,7 +836,8 @@ define('views/EditView', [
       }
       
       var res = this.resource, 
-          uri = res.getUri();
+          uri = res.getUri(),
+          returnUri = this.hashParams.$returnUri;
       
       if (!this.isEdit && uri) {
 //        this.incrementBLCount();
@@ -825,11 +852,9 @@ define('views/EditView', [
       this._submitted = true;
 //      var inputs = U.isAssignableFrom(this.vocModel, "Intersection") ? this.getInputs() : this.inputs;
       var inputs = this.getInputs();
-      inputs.$attr('disabled', true);
-      inputs = _.filter(inputs, function(input) { 
-        return !input.classList.contains(scrollerClass) && 
-               !input.classList.contains(switchClass) && 
-               input.dataset.name != 'interfaceProperties'; 
+      inputs.$attr('disabled', true).$filter(function(input) { 
+//        return !input.classList.contains(scrollerClass) && 
+        return !input.classList.contains(switchClass) && input.dataset.name != 'interfaceProperties'; 
       });
       
 //      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceProperties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case 
@@ -893,6 +918,19 @@ define('views/EditView', [
       if (!res.isNew() && _.isEmpty(atts)) {
         if (options && options.fromPageChange)
           return;
+                
+//        if (returnUri) {
+//          var nextUrlInfo = U.getUrlInfo(returnUri),
+//              currentUrlInfo = U.getCurrentUrlInfo();
+//              
+//          if (nextUrlInfo.route != currentUrlInfo.route || 
+//              nextUrlInfo.type != currentUrlInfo.type || 
+//              nextUrlInfo.uri != currentUrlInfo.uri || 
+//              _.isEqual(U.filterObj(nextUrlInfo.params, U.isNativeModelParameter), U.filterObj(currentUrlInfo.params, U.isNativeModelParameter))) {
+//            Events.trigger('navigate', returnUri);
+//            return;
+//          }
+//        }
         
         var prevHash = this.getPreviousHash();
         if (prevHash && !prevHash.startsWith('chooser/'))
@@ -956,7 +994,7 @@ define('views/EditView', [
 //            successUrl: G.serverName + '/' + G.pageRoot + '#aspects%2fcommerce%2fTransaction?transactionType=Deposit&$orderBy=dateSubmitted&$asc=0'
           };
           
-          Events.trigger('navigate', 'make/aspects%2fcommerce%2fTransaction?' + $.param(params));
+          Events.trigger('navigate', 'make/aspects%2fcommerce%2fTransaction?' + _.param(params));
         }, 2000);
         return;
       }
@@ -988,7 +1026,14 @@ define('views/EditView', [
     
     onsuccess: function() {
       var self = this, res = this.resource;
-      var props = _.extend({}, this.originalResource, U.filterObj(res.getUnsavedChanges(), function(name, val) {return /^[a-zA-Z]+/.test(name)})); // starts with a letter
+      var unsaved = res.getUnsavedChanges();
+      var props = {};
+      for (var p in unsaved) {
+        if (/^[a-zA-Z]+/.test(p) && this.originalResource[p] != unsaved[p])
+          props[p] = unsaved[p];
+      }
+      
+//      _.extend({}, this.originalResource, U.filterObj(res.getUnsavedChanges(), function(name, val) {return /^[a-zA-Z]+/.test(name)})); // starts with a letter
 //      var props = atts;
       if (this.isEdit && _.isEmpty(props)) {
 //        debugger; // user didn't modify anything?
@@ -1042,14 +1087,14 @@ define('views/EditView', [
           return this;
       }
 
-      if (this.loadedScrollers) {
-        this.getScrollers().$forEach(function(scroller) {
-          $(scroller).mobiscroll('destroy');        
-        });
-      }
+//      if (this.loadedScrollers) {
+//        this.getScrollers().$forEach(function(scroller) {
+//          $(scroller).mobiscroll('destroy');        
+//        });
+//      }
       
       this.render();
-      this.refreshScrollers();
+//      this.refreshScrollers();
     },
     
     onSelected: function(e) {
@@ -1079,37 +1124,37 @@ define('views/EditView', [
         return;
       }
       
-      if (arguments.length > 1) {
-        var val = arguments[0],
-            scroller = arguments[1],
-            settings = scroller.settings,
-            name = settings.shortName;
-        
-        input = settings.input;
-        
-        switch (settings.__type) {
-          case 'date': {
-            atts[name] = new Date(val).getTime();
-//            $(input).data('data-date', millis);
-            break;
-          }
-          case 'duration': {
-            atts[name] = scroller.getSeconds();
-//            $(input).data('data-duration', secs);
-            break;
-          }
-          case 'enum': {
-//            $(input).data('data-enum', atts[name] = scroller.getEnumValue());
-            break;
-          }
-          default:
-            debugger;
-        }
-      }
-      else {
+//      if (arguments.length > 1) {
+//        var val = arguments[0],
+//            scroller = arguments[1],
+//            settings = scroller.settings,
+//            name = settings.shortName;
+//        
+//        input = settings.input;
+//        
+//        switch (settings.__type) {
+//          case 'date': {
+//            atts[name] = new Date(val).getTime();
+////            $(input).data('data-date', millis);
+//            break;
+//          }
+//          case 'duration': {
+//            atts[name] = scroller.getSeconds();
+////            $(input).data('data-duration', secs);
+//            break;
+//          }
+//          case 'enum': {
+////            $(input).data('data-enum', atts[name] = scroller.getEnumValue());
+//            break;
+//          }
+//          default:
+//            debugger;
+//        }
+//      }
+//      else {
         input = e.target;
         atts[input.name] = this.getValue(input);
-      }
+//      }
 
       this.setValues(atts, {onValidationError: this.fieldError, onValidated: getRemoveErrorLabelsFunction(input)});
     },
@@ -1250,6 +1295,11 @@ define('views/EditView', [
       
       return false;
     },
+    
+    getForm: function() {
+      return this.form || (this.form = this.$('form')[0]);
+    },
+    
     /**
      * @return select list, checkbox, radio button, all other non-text and non-resource-ranged property inputs
      */
@@ -1275,7 +1325,10 @@ define('views/EditView', [
       
       var res = this.resource;
       if (!this.originalResource)
-        this.originalResource = U.filterObj(res.attributes, U.isModelParameter);
+        this.originalResource = U.filterObj(res.attributes, function(p, val) {
+          var prop = meta[p];
+          return prop && !prop.backLink && U.isModelParameter(p); 
+        });
       
       var type = res.type,
           reqParams = this.hashParams,
@@ -1372,18 +1425,18 @@ define('views/EditView', [
       }        
       
       this.ul = this.$('#fieldsList').$html(frag)[0];
-      if (G.isJQM()) {
-        if (this.ul.$hasClass('ui-listview')) {
-          $(this.ul).trigger('create').listview('refresh');
-        }
-        else {
-          $(this.ul).trigger('create');
-          this.$el.trigger('create');
-        }
-      }
+//      if (G.isJQM()) {
+//        if (this.ul.$hasClass('ui-listview')) {
+//          $(this.ul).trigger('create').listview('refresh');
+//        }
+//        else {
+//          $(this.ul).trigger('create');
+//          this.$el.trigger('create');
+//        }
+//      }
 
       var doc = document;
-      var form = this.form = this.$('form')[0];
+      var form = this.form = this.getForm();
       
       if (this.isForInterfaceImplementor) {
 //        var start = +new Date();
@@ -1423,12 +1476,12 @@ define('views/EditView', [
             self.setValues('interfaceProperties', props);
             
             self.ul1 = self.$('#interfaceProps').$html(frag)[0];
-            if (G.isJQM()) {
-              if (self.ul1.$hasClass('ui-listview'))
-                $(self.ul1).trigger('create').listview('refresh');
-              else
-                $(self.ul1).trigger('create');
-            }
+//            if (G.isJQM()) {
+//              if (self.ul1.$hasClass('ui-listview'))
+//                $(self.ul1).trigger('create').listview('refresh');
+//              else
+//                $(self.ul1).trigger('create');
+//            }
           
             self.redelegateEvents();
 //            var checkboxes = self.form.querySelectorAll('input[type="checkbox"]'),
@@ -1448,17 +1501,19 @@ define('views/EditView', [
       var inputs = this.inputs = this.getInputs(); //form.find('input');
       var initInputs = function(inputs) {
         _.each(inputs, function(input) {
-          if (input.$hasClass(scrollerClass))
-            return;
+//          if (input.$hasClass(scrollerClass))
+//            return;
           
           var validated = getRemoveErrorLabelsFunction(input);
           var setValues = _.debounce(function() {
-            self.setValues(this.name, this.value, {onValidated: validated, onValidationError: self.fieldError});
+            self.setValues(input.name, input.value, {
+              onValidated: validated, 
+              onValidationError: self.fieldError
+            });
           }, 500);
 
           input.addEventListener('input', function() {
-            var $input = $(input);
-            if ($input.data('codemirror'))
+            if (input.dataset.codemirror)
               return;
             
             input.dataset.modified = true;
@@ -1497,9 +1552,9 @@ define('views/EditView', [
           this.setValues(name, value);
       }
       
-      form.getElementsByTagName('input').$on('keydown', this._onKeyDownInInput); // end of function
+//      form.getElementsByTagName('input').$on('keydown', this._onKeyDownInInput); // end of function
       var edits = res.getUnsavedChanges();
-      form.querySelectorAll('.resourceProp').$forEach(function(resProp) {
+      form.getElementsByClassName('resourceProp').$forEach(function(resProp) {
         // TODO: disable resource chooser buttons for image range properties that have cameraOnly annotation      
         var name = resProp.name;
         var prop = meta[name];
@@ -1558,16 +1613,17 @@ define('views/EditView', [
       }
         
       // only trigger the first you find
-      _.any(['[data-date]', '[data-duration]','[data-enum]'], function(scrollerType) { 
-        var scrollers = self.$(scrollerType);
-        if (scrollers.length) {
-          var scrollerWithValue = _.find(scrollers, function(s) { return !!s.value });
-          if (scrollerWithValue) {
-            $(scrollerWithValue).triggerHandler('click', [true]);
-            return true;
-          }
-        }
-      });
+//      _.any(['[data-date]', '[data-duration]','[data-enum]'], function(scrollerType) { 
+//        var scrollers = self.$(scrollerType);
+//        if (scrollers.length) {
+//          var scrollerWithValue = _.find(scrollers, function(s) { return !!s.value });
+//          if (scrollerWithValue) {
+////            $(scrollerWithValue).triggerHandler('click', [true]);
+//            scrollerWithValue.$trigger('click');
+//            return true;
+//          }
+//        }
+//      });
       
 //      form.find('fieldset input[type="checkbox"]').$forEach(function() {
 //        form.find('label[for="{0}"]'.format(this.id)).addClass('req');

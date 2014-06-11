@@ -5,6 +5,8 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
       STATE_OPEN = 'open',
       taskQueues = [];
   
+  window.taskQueues = taskQueues;
+
   function PriorityQueue() {
     var queue = [];
     return {
@@ -60,54 +62,43 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
     if (!(this instanceof TaskQueue))
       return new TaskQueue(name);
     
-    taskQueues.push(this);
-//    window.taskQueue = this;
-    
     var tq = this,
         queue = this.queue = new PriorityQueue(),
         running = this.running = [];
     
+    function reset() {
+      queue.clear();
+      running.length = 0;
+      open();
+    };
+    
     // state machine methods
-    _.extend(tq, {
-      destroy: function() {
-        Array.remove(taskQueues, this);
-      },
-      reset: function() {
-        queue.clear();
-        running.length = 0;
-        this.open();
-      },
-      pause: function() {
-        if (tq.state !== STATE_OPEN)
-          debugger;
-        
-        tq.state = STATE_PAUSED;
-      },
-      block: function() {
-        if (tq.state === STATE_BLOCKED)
-          debugger;
-        
-        tq.state = STATE_BLOCKED;
-      },
-      open: function() {
-        if (tq.state === STATE_PAUSED)
-          debugger;
-        
-        tq.state = STATE_OPEN;
-      },
-      isOpen: function () {
-        return tq.state === STATE_OPEN;
-      },
-      isPaused: function() {
-        return tq.state === STATE_PAUSED;
-      },
-      isBlocked: function() {
-        return tq.state === STATE_BLOCKED;
-      }
-    });
+    function pause() {
+      tq.state = STATE_PAUSED;
+    };
+    
+    function block() {
+      tq.state = STATE_BLOCKED;
+    };
+    
+    function open() {
+      tq.state = STATE_OPEN;
+    };
+    
+    function isOpen() {
+      return tq.state === STATE_OPEN;
+    };
+    
+    function isPaused() {
+      return tq.state === STATE_PAUSED;
+    };
+    
+    function isBlocked() {
+      return tq.state === STATE_BLOCKED;
+    }
     // end state machine methods
 
-    tq.open();
+    open();
     tq.name = name;
     
     function checkForDisaster(task) {
@@ -128,7 +119,7 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
       
       checkForDisaster(task);
       if (task.blocking)
-        tq.block();
+        block();
 
       try {
         if (task.queueTime)
@@ -136,7 +127,6 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
           
         task.run();
       } catch (err) {
-        debugger;
         log('error', 'task crashed: ', task.name);
         task.reject(err);
       }
@@ -145,10 +135,10 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
       running.push(task);
       promise.always(function() {
         var resolved = promise.state() === 'resolved';
-        log(resolved? 'taskQueue' : 'error', 'Task {0}: {1}'.format(resolved ? 'completed' : 'failed', task.name), arguments[0] || '');
+        log(resolved? 'taskQueue' : 'error', 'Task {0}: {1}'.format(resolved ? 'completed' : 'failed', task.name));
         running.splice(running.indexOf(task), 1);
-        if (tq.isBlocked())
-          tq.open();
+        if (isBlocked())
+          open();
         
         next(); 
       });
@@ -160,9 +150,6 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
     }
     
     function push(task) {
-//      if (!running.length)
-//        debugger;
-      
       task.queueTime = _.now();
       queue.push(task);
     }
@@ -174,13 +161,15 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
       var qLength = queue.length();
       log('taskQueue', 'Checking task:', task.name);
       var blocking = task.blocking;
-      if (tq.isBlocked() || tq.isPaused()) {
-        log('taskQueue', 'queueing {0}blocking task: {1}'.format(task.blocking ? '' : 'non-' , task.name));
+      if (!isOpen()) {
+//        console.debug("Running", tq.running);
+//        console.debug("Queue", tq.queue.getRawQueue());
+        log('taskQueue', 'queue is ' + (isBlocked() ? 'blocked' : 'paused') + ', queueing {0}blocking task: {1}'.format(task.blocking ? '' : 'non-' , task.name));
         push(task);
       }      
       else if (task.blocking) {
         if (running.length) {
-          tq.pause();
+          pause();
           push(task);
         }
         else
@@ -193,7 +182,7 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
     }
     
     function next() {
-      if (tq.isBlocked() || !queue.length())
+      if (isBlocked() || !queue.length())
         return;
       
       var task = queue.peek();
@@ -201,15 +190,23 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
         if (!running.length)
           runTask(queue.pop());
       }
-      else if (!tq.isPaused())
+      else if (!isPaused())
         runTask(queue.pop());
     }
     
-    return {
+    var api = {
       debug: function(debug) {
         tq.debug = debug;
       },
       queueTask: queueTask,
+      destroy: function() {
+        Array.remove(taskQueues, tq);
+      },
+      reset: function() {
+        queue.clear();
+        running.length = 0;
+        open();
+      },
       newTask: function() {
         return Task.apply(null, arguments);
       },
@@ -226,8 +223,14 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
         }));
         
         return queued.length ? $.whenAll.apply($, queued) : null;
+      },
+      state: function() {
+        return tq.state;
       }
     }
+    
+    taskQueues.push(api);
+    return api;
   }
   
   function Task(name, taskFn, blocking, priority, preventTimeout) {
@@ -242,7 +245,7 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
     this.name = name;
     this.priority = priority || 0;
     this.blocking = blocking || false;
-//    this.canTimeout = !noTimeout;
+//    this.canTimeout = !preventTimeout;
     this.run = function() {
       log('taskQueue', 'Running task:', this.name);
       started = true;
@@ -254,9 +257,7 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
         return;
       
       setTimeout(function() {
-          
         if (defer.state() === 'pending') {
-//          debugger;
           log('taskQueue', 'Task timed out: ' + self.name);            
           defer.reject();
         }

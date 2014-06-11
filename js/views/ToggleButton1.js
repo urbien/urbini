@@ -71,7 +71,7 @@ define('views/ToggleButton1', [
         (this.depressed.target || this.pageView).trigger(this.depressed.event);
     },
     render: function(options) {      
-      this.$el.html(this.template());
+      this.el.$html(this.template());
       return this;
     }
   }, {

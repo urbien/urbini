@@ -298,17 +298,26 @@ define('models/Resource', [
     cancel: function(options) {
       options = options || {};
       var props = this.vocModel.properties;
-      var canceled = U.getCloneOf(this.vocModel, 'Cancellable.cancelled');
-      if (!canceled.length)
+      var canceled = U.getCloneOf(this.vocModel, 'Cancellable.cancelled')[0];
+      if (!canceled)
         throw new Error("{0} can not be canceled because it does not have a 'canceled' property".format(U.getDisplayName(this)));
       
-      this.set(canceled[0], true, {userEdit: true});
+      this.set(canceled, true, {
+        userEdit: true
+      });
+      
       var self = this;
 //      this.save(props, options);
       var success = options.success;
       options.success = function(resource, response, options) {
-        if (!response || !response.error)          
+        if (!response || !response.error) {
+          var alsoDeleted = response && response._alsoDeleted;
+          if (alsoDeleted)
+            Events.trigger('findAndDelete', alsoDeleted);
+          
+          log("info", "CANCELED: " + self.getUri());
           self.trigger('cancel');
+        }
         
 //        if (self.collection && !self.collection.belongsInCollection(self)) // move to ResourceList.onResourceChange when ready to generalize
 //          self.collection.remove(self);
@@ -322,9 +331,16 @@ define('models/Resource', [
           }
         }
         
-//        if (self.vocModel.deleteOnCancel) {
-        self['delete']();
-//        }
+        if (self.vocModel.deleteOnCancel) {
+          self['delete']();
+        }
+      };
+      
+      var error = options.error;
+      options.error = function(model, err, options) {
+        debugger;
+        if (error)
+          error.apply(this, arguments);
       };
 
       this.save(null, options);
@@ -333,8 +349,16 @@ define('models/Resource', [
       this.collection && this.collection.remove(this);
     },
     'delete': function() {
-      this.trigger('delete', this);
+      var preventDelete = false;
+      Events.on('preventDelete', function() {
+        preventDelete = true;
+      });
+      
       Events.trigger('delete', this);
+      if (preventDelete)
+        return;
+      
+      this.trigger('delete', this);
       this.remove();
     },
     getUrl: function() {
@@ -381,21 +405,21 @@ define('models/Resource', [
 //    },
     
     getUri: function() {
-      if (_.isEmpty(this.attributes))
-        return null;
+//      if (_.isEmpty(this.attributes))
+//        return null;
+//      
+//      var uri = this.get('_uri');
+//      if (!uri && this.vocModel) {
+//        uri = U.buildUri(this);
+//        if (uri) {
+//          debugger;
+//          this.trigger('uriChanged', uri);
+////          this.attributes['_uri'] = uri; // HACK?
+////          this.checkIfLoaded();
+//        }
+//      }
       
-      var uri = this.get('_uri');
-      if (!uri && this.vocModel) {
-        uri = U.buildUri(this);
-        if (uri) {
-          debugger;
-          this.trigger('uriChanged', uri);
-//          this.attributes['_uri'] = uri; // HACK?
-//          this.checkIfLoaded();
-        }
-      }
-      
-      return uri;
+      return this.get('_uri');
     },
     
     _setLastFetchOrigin: function(lfo) {
@@ -632,7 +656,7 @@ define('models/Resource', [
           meta,
           displayNameChanged,
           imageType;
-      
+
       if (!this.subscribedToUpdates && uri)
         this.subscribeToUpdates();
       
@@ -1045,7 +1069,7 @@ define('models/Resource', [
           debugger;
           var where = {$or: blProp.whereOr};
           try {
-            var testFunction = U.buildValueTester($.param(where), blVocModel);
+            var testFunction = U.buildValueTester(_.param(where), blVocModel);
           } catch (err) {
             log('error', err); // for example, the where clause might assume a logged in user
           }
@@ -1234,7 +1258,7 @@ define('models/Resource', [
         if (!opts.fromDB)
           self.notifyContainers();
         
-        self.trigger('syncedWithServer');
+        self.trigger('syncedWithServer', self);
         if (tempUri) {
           self.subscribedToUpdates = false;
           self.subscribeToUpdates();
@@ -1622,10 +1646,22 @@ define('models/Resource', [
 //    shortName: "Resource",
 //    displayName: "Resource",
     properties: {
-      davDisplayName: {range: "string"},
-      davGetLastModified: {range: "long"},
-      _uri: {range: "Resource"},
-      _shortUri: {range: "Resource"}
+      davDisplayName: {
+        shortName: 'davDisplayName',
+        range: "string"
+      },
+      davGetLastModified: {
+        shortName: 'davGetLastModified',
+        range: "long"
+      },
+      _uri: {
+        shortName: '_uri',
+        range: "Resource"
+      },
+      _shortUri: {
+        shortName: '_shortUri',
+        range: "Resource"
+      }
     }
   });
   

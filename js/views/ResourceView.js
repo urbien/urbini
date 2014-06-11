@@ -233,7 +233,9 @@ define('views/ResourceView', [
       if (isAbout  &&  isApp) {
         this.el.classList.remove('hidden');
         this.el.$html(res.get('description'));
-        this.$el.trigger('create');      
+//        if (G.isJQM())
+//          this.$el.trigger('create');
+        
         return this;
       }
       var meta = vocModel.properties;
@@ -273,8 +275,11 @@ define('views/ResourceView', [
           U.addToFrag(frag, this.buyTemplate({color: color[2], name: meta['price'].displayName, shortName: 'price', value: U.getFlatValue(meta.price, res.get('price')), buyUrl: buyUrl}));
           U.addToFrag(frag, this.sellTemplate({color: color[2], background: 'rgba(255, 0, 0, 0.9)'}));
         }
-        this.$el.html(frag);      
-        this.$el.trigger('create');
+        this.el.$html(frag);
+        
+//        if (G.isJQM())
+//          this.$el.trigger('create');
+        
         return this;
       }
       
@@ -335,7 +340,7 @@ define('views/ResourceView', [
             if (!willShow(res, prop, userRole))
               continue;
   
-            if (prop['app']  &&  (!currentAppProps || $.inArray(p, currentAppProps) == -1))
+            if (prop['app']  &&  (!currentAppProps || currentAppProps.indexOf(p) == -1))
               continue;
             displayedProps[p] = true;
             var val = U.makeProp(res, prop, res.get(p));
@@ -377,7 +382,7 @@ define('views/ResourceView', [
 //          delete json[p];
           continue;
         }
-        if (prop['app']  &&  (!currentAppProps || $.inArray(p, currentAppProps) == -1))
+        if (prop['app']  &&  (!currentAppProps || currentAppProps.indexOf(p) == -1))
           continue;
         if (prop.autoincrement)
           continue;
@@ -542,7 +547,7 @@ define('views/ResourceView', [
 //            day = now.getDate(),
 //            year = now.getFullYear();
 //        
-//        var yahooIChartUrl = "http://ichart.yahoo.com/table.csv?" + $.param({
+//        var yahooIChartUrl = "http://ichart.yahoo.com/table.csv?" + _.param({
 //          s: res.get('symbol'),
 //          // from date
 //          a: month,
@@ -585,11 +590,11 @@ define('views/ResourceView', [
           chartParams.f = toDate.getFullYear();
         }
         
-        var yahooIChartUrl = "http://ichart.yahoo.com/table.csv?" + $.param(chartParams);
+        var yahooIChartUrl = "http://ichart.yahoo.com/table.csv?" + _.param(chartParams);
         var script = document.createElement('script');
         script.type = "text/javascript";
         script.async = true;
-        script.src = "//query.yahooapis.com/v1/public/yql?" + $.param({
+        script.src = "//query.yahooapis.com/v1/public/yql?" + _.param({
           q: "select * from csv where url = '" + yahooIChartUrl + "'",
           format: 'json',
 //          diagnostics: true,

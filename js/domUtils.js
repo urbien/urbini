@@ -1,4 +1,4 @@
-define('domUtils', ['globals', 'lib/fastdom', 'events', 'templates'], function(G, Q, Events, Templates) {
+define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) {
   var doc = document,
       LAZY_DATA_ATTR = G.lazyImgSrcAttr,
       LAZY_ATTR = LAZY_DATA_ATTR.slice(5),
@@ -215,7 +215,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events', 'templates'], function(G
         var arg0 = arguments[0];
         switch (arguments.length) {
         case 1:
-          if (typeof arg == 'string') // get
+          if (typeof arg0 == 'string') // get
             return this.getAttribute(arg0);
           
           for (var prop in arg0) { // set
@@ -334,6 +334,16 @@ define('domUtils', ['globals', 'lib/fastdom', 'events', 'templates'], function(G
         }
       },
     
+      $closest: function(selector) {
+        var parent = this;
+        while ((parent = parent.parentNode)) {
+          if (parent.$matches(selector))
+            return parent;
+        }
+        
+        return DOM.emptyNodeList();
+      },
+      
       $offset: function() {
         var box = this.getBoundingClientRect(),
             docElem = doc.documentElement;
@@ -595,6 +605,11 @@ define('domUtils', ['globals', 'lib/fastdom', 'events', 'templates'], function(G
       if (!htmlCollectionProto[prop])
         extendCollection(htmlCollectionProto, prop);
     }
+    
+    NodeList.prototype.$eq = HTMLCollection.prototype.$eq = function(idx) {
+      return this[idx >= 0 ? idx : this.length + idx];
+    };
+    
   })(window, document);
 
   DOM = {
@@ -868,8 +883,13 @@ define('domUtils', ['globals', 'lib/fastdom', 'events', 'templates'], function(G
       return text;
     },
 
+    lazyClassRegex: /(class="?'?[^"']*)lazyImage\s*([^"']*"?'?)/ig,
+    lazyRegex: null,
     unlazifyImagesInHTML: function(html) {
-      return Templates.unlazifyImagesInHTML(html);
+      if (!DOM.lazyRegex)
+        DOM.lazyRegex = new RegExp('src="{0}" {1}=\"?\'?([^\"\']+)\"?\'?'.format(G.getBlankImgSrc(), G.lazyImgSrcAttr), 'ig');
+      
+      return html.replace(DOM.lazyRegex, 'src="$1"').replace(DOM.lazyClassRegex, '$1 wasLazyImage $2');
     },
     
     /**
@@ -1294,6 +1314,9 @@ define('domUtils', ['globals', 'lib/fastdom', 'events', 'templates'], function(G
       height: function() {
         return doc.documentElement.clientHeight;
       }      
+    },
+    isCollection: function(obj) {
+      return isElementCollection(obj);
     },
     transparentStyle: TRANSPARENT_STYLE,
     opaqueStyle: OPAQUE_STYLE,

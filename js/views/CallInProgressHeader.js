@@ -26,8 +26,8 @@ define('views/CallInProgressHeader', [
     },
     
     render: function() {
-      this.$el.html(this.template());
-      this.$el.trigger('create');
+      this.el.$html(this.template());
+      this.el.$trigger('create');
     },
     
     backToCall: function(e) {

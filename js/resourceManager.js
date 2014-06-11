@@ -18,7 +18,7 @@ define('resourceManager', [
       
   function getSynchronizer(method, data, options) {
     return U.isModel(data) ? new ResourceSynchronizer(method, data, options) : new CollectionSynchronizer(method, data, options);
-  }
+  };
 
   var Blob = window.Blob,
       FileSystem,
@@ -55,8 +55,7 @@ define('resourceManager', [
     return getSynchronizer(method, data, options).sync();
   };   
   
-  var RM;
-  var ResourceManager = RM = {
+  var RM = {
     TAG: 'Storage', 
     init: _.once(function() {
       MODULE_STORE = G.getModulesStoreInfo();
@@ -104,15 +103,35 @@ define('resourceManager', [
       return IDB.start();
     },
 
+    _upgradePromise: null,
     upgrade: function(mk, del) {
       if (G.dbType === 'none')
         return REJECTED_PROMISE;
-      
-      if (!IDB.isOpen())
-        return IDB.onOpen().then(this.upgrade.bind(this, mk, del));
-      
-      mk = mk || [];
+
       del = del || [];
+      if (mk) {
+        mk = mk.filter(function(name) {
+          return !IDB.isStoreBeingCreated(name);
+        });
+        
+        if (!mk.length && !del.length) {
+          if (IDB.isOpen()) {
+            if (this._upgradePromise) {
+              if (this._upgradePromise.state() == 'resolved')
+                debugger;
+              else
+                return this._upgradePromise;
+            }
+          }
+          else
+            return IDB.onOpen();
+        }
+      }
+      else
+        mk = [];
+
+      if (!IDB.isOpen())
+        return IDB.onOpen().then(this.upgrade.bind(this, mk, del));      
       
       if (del.length)
         IDB.deleteObjectStores(del);
@@ -145,7 +164,7 @@ define('resourceManager', [
         IDB.createObjectStore(type, options, indices);
       }
 
-      return IDB.start();
+      return RM._upgradePromise = IDB.start();
     },
     
     put: function(storeName, items) {
@@ -198,16 +217,28 @@ define('resourceManager', [
       return vocModel && !U.isA(vocModel, "Buyable");
     },    
 
-    deleteItem: function(item) {
-      var type = item.vocModel.type,
-          uri = item.get('_uri'),
+    deleteUri: function(uri, vocModel) {
+      var types = U.getTypes(vocModel),
+          type,
+          i = types.length,
+          uri,
           REF_STORE = G.getRefStoreInfo();
       
       G.log(RM.TAG, 'db', 'deleting item', uri);
-      IDB['delete'](type, uri);
+      while (i--) {
+        type = types[i];
+        if (IDB.hasStore(type))
+          IDB['delete'](type, uri);
+      }
+      
       IDB.queryByIndex('_uri').eq(uri).getAll(REF_STORE.name).done(function(results) {
-        IDB['delete'](REF_STORE.name, _.pluck(results || [], REF_STORE.options.keyPath));
-      });      
+        if (results && results.length)
+          IDB['delete'](REF_STORE.name, _.pluck(results, REF_STORE.options.keyPath));
+      });            
+    },
+
+    deleteItem: function(item) {
+      RM.deleteUri(item.get('_uri'), item.vocModel);
     },
     
     getItem: function(type, uri) {
@@ -262,7 +293,7 @@ define('resourceManager', [
       }
       
       if (_.isEmpty(temps)) {
-        function search() {
+        var search = function() {
           options = _.clone(options);
           options.filter = data.belongsInCollection;
           return IDB.search(type, options);
@@ -316,35 +347,35 @@ define('resourceManager', [
   
   Events.on('updatedResources', function(resources, type) {
     var i = resources.length;
-    if (i) {
-      var atts,
-          val;
-      
-      //// HACK
-      while (i--) {
-        atts = resources[i].attributes;
-        for (var p in atts) {
-          val = atts[p];
-          if (val && val._list)
-            delete val._list;
-        }
+    if (!i)
+      return;
+    
+    var atts,
+        val;
+    
+    //// HACK
+    while (i--) {
+      atts = resources[i].attributes;
+      for (var p in atts) {
+        val = atts[p];
+        if (val && val._list)
+          delete val._list;
       }
-      //// HACK (remove when you figure out why _list is not parsed and removed earlier
-      
-      Q.nonDom(RM.addItems.bind(RM, type, resources));
     }
+    //// HACK (remove when you figure out why _list is not parsed and removed earlier
+    
+    Q.nonDom(RM.addItems.bind(RM, resources));
   });
 
   Events.on('modelsChanged', function(changedTypes) {
-    IDB.onOpen(function() {
-      changedTypes = _.filter(changedTypes, function(t) {
-        return IDB.hasStore(t);
-      });
-      
-      if (changedTypes.length)
-        RM.upgrade(changedTypes, changedTypes);  
-//        RM.deleteObjectStores(changedTypes).createObjectStores(changedTypes).start();
+    changedTypes = _.filter(changedTypes, function(t) {
+      return IDB.hasStore(t);
     });
+    
+    if (changedTypes.length) {
+      debugger;
+      RM.upgrade(changedTypes, changedTypes);
+    }
   });
   
   Events.on('userChanged', function() {
@@ -408,6 +439,19 @@ define('resourceManager', [
   
   Events.on('delete', function(res) {
     RM.deleteItem(res);
+  });
+
+  Events.on('findAndDelete', function(uris) {
+    debugger;
+    uris = typeof uris == 'string' ? [uris] : uris;
+    var modelTypes = _.uniq(uris.map(U.getTypeUri));
+    Voc.getModels(modelTypes).done(function() {
+      uris.forEach(function(uri) {
+        var model = U.getModel(U.getTypeUri(uri));
+        if (model)
+          RM.deleteUri(uri, model);
+      });      
+    });
   });
 
   function getTypeToInfoMap(infos) {
@@ -501,7 +545,7 @@ define('resourceManager', [
 //  });
 
   Events.on('createObjectStores', function(stores, cb) {
-    RM.upgrade(stores).then(cb);
+    RM.upgrade(stores).done(cb);
   });
   
   /**
@@ -555,5 +599,5 @@ define('resourceManager', [
 //    });
   });
     
-  return (Lablz.ResourceManager = ResourceManager);
+  return (Lablz.ResourceManager = RM);
 });

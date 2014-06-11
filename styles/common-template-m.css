@@ -425,9 +425,7 @@ div.nabBtn {
 #editForm img {
   height: 41px;padding-right:35px;float:right;
 }
-#name.resTitle {
-  padding-bottom: 7px;
-}
+
 .chattee img {
   max-height: 44px;
 }
@@ -974,6 +972,11 @@ section[id^="view"] {
   position: relative;
   opacity: 0.8;
 }
+
+#pageTitle {
+  margin: 0;
+}
+
 .menuItems {
   cursor: pointer;
 }
@@ -1410,4 +1413,40 @@ div {
   .gauge {
     width: 75px;
   }
+}
+
+.placeholder {
+  font-size:0;
+}
+
+.placeholder:after {
+  content:"."
+}
+
+.category {
+  cursor: pointer;
+  padding: 3px;
+  display: inline-block;
+  width: auto;
+  padding: 4px 10px;
+}
+
+label.category {
+  -webkit-appearance: button;
+     -moz-appearance: button;
+          appearance: button;
+}
+
+.category input {
+  display: none;
+}
+
+.cf:before,
+.cf:after {
+    content: " "; /* 1 */
+    display: table; /* 2 */
+}
+
+.cf:after {
+    clear: both;
 }

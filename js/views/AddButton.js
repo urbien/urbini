@@ -35,7 +35,7 @@ define('views/AddButton', [
           colParams[forClass[0]] = params['$type'];
       }
       if (!U.isAssignableFrom(this.vocModel, 'Intersection')) {
-        this.router.navigate('make/' + encodeURIComponent(this.vocModel.type) + '?' + $.param(colParams), {trigger: true});
+        this.router.navigate('make/' + encodeURIComponent(this.vocModel.type) + '?' + _.param(colParams), {trigger: true});
         return this;
       }
         
@@ -44,7 +44,7 @@ define('views/AddButton', [
       var aUri = colParams[a];
       var bUri = colParams[b];
       if (!aUri  &&  !bUri) {
-        this.router.navigate('make/' + encodeURIComponent(this.vocModel.type) + '?' + $.param(colParams), {trigger: true});
+        this.router.navigate('make/' + encodeURIComponent(this.vocModel.type) + '?' + _.param(colParams), {trigger: true});
         return this;
       }
           
@@ -58,7 +58,7 @@ define('views/AddButton', [
             $title: title
           }, U.getWhereParams(prop));
       
-      this.router.navigate('chooser/' + encodeURIComponent(prop.range) + "?" + $.param(params) , {trigger: true});
+      this.router.navigate('chooser/' + encodeURIComponent(prop.range) + "?" + _.param(params) , {trigger: true});
       return this;
     },
     render: function(options) {

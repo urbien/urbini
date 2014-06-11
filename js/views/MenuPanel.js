@@ -179,8 +179,8 @@ define('views/MenuPanel', [
 
         this._hidden = true;
         this._transitioning = true;
-        if (G.isJQM())
-          this.$el.closest('[data-role="panel"]').panel('close');
+//        if (G.isJQM())
+//          this.$el.closest('[data-role="panel"]').panel('close');
 
         Physics.there.chain(
           {

@@ -73,7 +73,7 @@
     </ul>
     <div id="about" class="hidden" style="padding: 7px;" data-theme="d"></div>
     
-    {{ if ($('#other')) { }}
+    {{ if (document.getElementById('other')) { }}
       <!--br/>
       <br/-->
     {{ } }}
@@ -795,7 +795,6 @@
   {{ if (typeof comment != 'undefined') { }}
     <p style="padding-left: 15px;">{{= comment }}</p>
   {{ } }}
-  </a>
 </li>
 </script>
 

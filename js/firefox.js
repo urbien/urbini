@@ -155,7 +155,7 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
           channels = G.currentApp.pushChannels,
           endpointList = new ResourceList(G.currentUser.pushEndpoints, {
           model: pushEndpointModel,
-          query: $.param({
+          query: _.param({
             appInstall: appInstall,
             browser: G.browser.name.capitalizeFirst()
           })

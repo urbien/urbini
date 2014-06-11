@@ -106,6 +106,14 @@ body {
                      translateY(-50%);
 }
 
+.vcentered {
+  position: relative;
+  top: 50%;
+  -webkit-transform: translateY(-50%);
+     -moz-transform: translateY(-50%);
+                     translateY(-50%);
+}
+
 .bigCircle {
   background: rgba(1, 5, 54, 0.3);
   position: absolute;

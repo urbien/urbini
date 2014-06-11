@@ -42,7 +42,20 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
       filter: filter
     });
   };
-
+  
+  CollectionSynchronizer.prototype.canFetchFromServer = function() {
+    var params = this.data.params,
+        meta = this.data.vocModel;
+    
+    for (var p in params) {
+      var prop = meta[p];
+      if (prop && U.isResourceProp(p) && U.isTempUri(params[p]))
+        return false
+    }
+    
+    return true;
+  },
+  
 //  CollectionSynchronizer.prototype._fetchFromServer = function() {
 //    if (!this.data.isUpdate())
 //  };
@@ -185,11 +198,11 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
     }
     
     if (_.isEmpty(temps)) {
-      function search() {
+      var search = function() {
         options = _.clone(options);
         options.filter = data.belongsInCollection;
         return IDB.search(type, options);
-      }
+      };
       
       query = QueryBuilder.buildQuery(data, filter);
       if (query) {
@@ -222,6 +235,8 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
       }
       
       return self._getItems(options);
+    }, function() {
+      debugger;
     });
   };
   

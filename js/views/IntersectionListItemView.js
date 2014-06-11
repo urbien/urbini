@@ -54,7 +54,7 @@ define('views/IntersectionListItemView', [
       if (options.renderToHtml)
         this._html = html;
       else 
-        this.$el.html(this.template(html));
+        this.el.$html(this.template(html));
       
       return this;
     },

@@ -70,14 +70,14 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
     }
     
     function cacheList(list) {
-      var qs = list.query, // || $.param(list.params);
+      var qs = list.query, // || _.param(list.params);
           typeUri = list.vocModel.type;
       
       return (lists[typeUri] = lists[typeUri] || {})[qs || typeUri] = list;
     }
 
     function uncacheList(list) {
-      var qs = list.query, // || $.param(list.params);
+      var qs = list.query, // || _.param(list.params);
           typeUri = list.vocModel.type;
       
       var subCache = lists[typeUri];
