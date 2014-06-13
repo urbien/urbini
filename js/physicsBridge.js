@@ -18,7 +18,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       MouseWheelHandler,
       MOUSE_WHEEL_TIMEOUT,
       KeyHandler,
-      PAGE_VECTOR_MAG = 60,
+      PAGE_VECTOR_MAG = 40,
       ARROW_KEY_VECTOR_MAG = 25,
       ID_TO_LAYOUT_MANAGER = {},
       ID_TO_EL = {},
@@ -207,8 +207,10 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   hammer.on('touchstart', function(e) {
     G.enableClick();
   });
+  
 //  hammer.on('tap', disableClick);
-  hammer.on('dragleft dragright dragup dragdown', function(e) {
+  
+  function backupDragHandler(e) {
     G.disableClick();
     var draggable,
         rejects,
@@ -257,8 +259,9 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 
     // oh well, we tried harder than they deserve
     e.preventDefault();
-  });
+  };
   
+  hammer.on('dragleft dragright dragup dragdown', backupDragHandler);
   hammer.on('dragend', function(e) {
     var draggable;
     for (var id in DRAGGABLES) {
@@ -550,6 +553,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           axis,
           coast,
           v,
+          delta,
           args,
           rejects = [];
       
@@ -562,13 +566,25 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         }
       }
       
+      if (!dragEl) {
+        for (var id in DRAGGABLES) {
+          draggable = DRAGGABLES[id];
+          el = draggable.getElement();
+          if (e.target.contains(el)) {
+            dragEl = el;
+            break;
+          }
+        }        
+      }
+      
       if (!dragEl)
         return;
       
       axis = draggable.getAxis();
       v = MouseWheelHandler._vector;
       v[0] = v[1] = 0;
-      v[axis == 'x' ? 0 : 1] = e.wheelDelta / 2 | 0;
+      delta = PAGE_VECTOR_MAG * Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+      v[axis == 'x' ? 0 : 1] = delta || 0;
       drag(draggable, v);
       
       if (!resetTimeout(this._endTimeout)) {
@@ -576,15 +592,6 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           dragend(draggable, v, false); // if true, will prevent coast
         }, 100);
       }
-      
-//      THERE.dragend(v, draggable.getId(), false);
-    
-//      e.target.$trigger(new Event('dragup'));
-//      if (!resetTimeout(this._endTimeout)) {
-//        this._endTimeout = setTimeout(function() {
-//          e.target.$trigger(new Event('dragend'));
-//        }, 100);
-//      }
     }
   };
 
