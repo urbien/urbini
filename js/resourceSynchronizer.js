@@ -15,7 +15,8 @@ define('resourceSynchronizer', [
       REJECTED_PROMISE = G.getRejectedPromise(),
       REF_STORE,
       REF_STORE_PROPS,
-      serverSyncTimeout;
+      serverSyncTimeout,
+      syncQueue;
   
   var backboneDefaultSync = Backbone.defaultSync || Backbone.sync;
 //  function isSyncPostponable(vocModel) {
@@ -199,15 +200,17 @@ define('resourceSynchronizer', [
     });
   };
   
+  ResourceSynchronizer.prototype.canFetchFromServer = function() {
+    return !this.data.isNew();
+  },
+  
   ResourceSynchronizer.prototype._onDBSuccess = function(result) {
     var isTemp = !!this.info.tempUri,
         dbOnly = this.options.dbOnly;
     
     if (!result) {
-      if (isTemp || dbOnly) {
-        debugger;
+      if (isTemp || dbOnly)
         return;
-      }
       else
         return this._fetchFromServer(100);
     }
@@ -229,8 +232,10 @@ define('resourceSynchronizer', [
     var urlInfo = U.getCurrentUrlInfo();
     if (this.info && !_.isUndefined(this.info.key))
       return this.info.key;
-    else
-      return urlInfo.route == 'make' ? null : U.getLongUri1(this.data.getUri(), this.data.vocModel);
+    else {
+      var uri = this.data.getUri();
+      return uri ? U.getLongUri1(uri, this.data.vocModel) : null;
+    }
   };
   
   ResourceSynchronizer.sync = function() {
@@ -390,12 +395,12 @@ define('resourceSynchronizer', [
   }
   
   function syncResources(refs) {
-    var self = this,
-        q = new TaskQueue('syncing some refs');
+    var self = this;
+    syncQueue = syncQueue || new TaskQueue('syncing some refs');
     
     return $.whenAll.apply($, _.map(refs, function(ref) {
       if (ref._dirty) {
-        return q.queueTask('sync ref: ' + ref._uri, function() {
+        return syncQueue.queueTask('sync ref: ' + ref._uri, function() {
           return syncResource(ref, refs);
         });
       }          

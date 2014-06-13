@@ -8,13 +8,11 @@ var canBlob = typeof Blob !== 'undefined',
     originUrl = 'http://mark.obval.com/urbien';
 
 function sendXhr(options) {
-  var url = options.url;
-  
-  var method = (options.type || 'GET').toUpperCase();
-  var isPOST = method === 'POST', 
-      isGET = method === 'GET';
-  
-  var params = options.data,
+  var url = options.url,
+      method = (options.type || 'GET').toUpperCase(),
+      isPOST = method === 'POST', 
+      isGET = method === 'GET',
+      params = options.data,
       upload = false;
   
   if (typeof params !== 'undefined' && typeof params !== 'string') {
@@ -53,7 +51,7 @@ function sendXhr(options) {
   
   if (isPOST)
     xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-    
+
   xhr.send(params || "")
   return xhr;
 }
@@ -125,7 +123,23 @@ var commands = {
     var dataType = options.dataType || 'JSON';
     
     delete options.dataType;
-    var xhr = sendXhr(options);
+    var xhr;
+    try {
+      xhr = sendXhr(options);
+    } catch (err) {
+      debugger;
+      postMessage({
+        responseHeaders: [],
+        status: 400, 
+        data: {
+          type: 'other', 
+          details: err.message
+        }
+      });
+      
+      return;
+    }
+    
     var status = xhr.status;
     var text = xhr.responseText;
     var resp = {

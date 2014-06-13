@@ -185,7 +185,7 @@ define('utils', [
               debugger;
               Events.trigger('error', {
                 resource: resource,
-                error: "{0} don't support an attachments".format(getPlural(resource.vocModel.displayName))
+                error: "{0} don't support an attachments".format(U.getPlural(resource.vocModel.displayName))
               });
               
               return;
@@ -1682,19 +1682,37 @@ define('utils', [
       });
     },
     
+    evalResourcePath: function(res, path) {
+      if (typeof path == 'string')
+        path = path.split('.');
+      
+      var first = res.get(path[0]);
+      if (path.length == 1)
+        return U.resolvedPromise(first);
+      
+      if (first == null)
+        return G.getRejectedPromise();
+      
+      return U.getResourcePromise(first).then(function(r) {
+        return U.evalResourcePath(r, path.slice(1));
+      });
+    },
+    
     getResourcePromise: function(uri, sync) {
       var res = U.getResource(uri);
-      if (res && sync)
-        return U.resolvedPromise(res);
+      if (res) {
+        if (!sync || U.isTempUri(uri))
+          return U.resolvedPromise(res);
+      }
 
       var dfd = $.Deferred();
-      U.getModels(U.getTypeUri(uri)).done(function(model) {
+      U.getModels([U.getTypeUri(uri)]).done(function(model) {
         res = res || new model({
           _uri: uri
         });
         
         res.fetch({
-          forceFetch: sync && !U.isTempUri(uri),
+          forceFetch: sync,
           success: function() {
             dfd.resolve(res);
           },
@@ -1897,37 +1915,31 @@ define('utils', [
     },
     
     /**
-     * @param className: class name or uri
+     * @param model
+     * @params class names or uris
+     * 
+     * returns true if the model is assignable from any of the passed in class names/uris
      */
-    isAssignableFrom: function(model, className) {
+    isAssignableFrom: function(model/*, className1, className2, ...*/) {
       if (!model)
         return false;
       
-      if (/\//.test(className))
-        className = U.getTypeUri(className);
-      
       model = U.isModel(model) || U.isCollection(model) ? model.vocModel : model;
-      if (model.type == className ||  model.shortName == className || U.isA(model, className))
-        return true;
+      for (var i = 1; i < arguments.length; i++) {
+        var className = arguments[i];
+        if (/\//.test(className))
+          className = U.getTypeUri(className);
+        
+        if (model.type == className ||  model.shortName == className || U.isA(model, className))
+          return true;
+        
+        if (_.any(model.superClasses, function(s) { return s == className || s.endsWith("/" + className) }))
+          return true;
+      }
       
-      var supers = model.superClasses;
-      return _.any(supers, function(s) {return s == className || s.endsWith("/" + className)});
-      
-//      var m = model;
-//      while (true) {
-//        var subClassOf = m.subClassOf;
-//        if (!subClassOf.startsWith(G.DEFAULT_VOC_BASE))
-//          subClassOf = G.DEFAULT_VOC_BASE + subClassOf;
-//        
-//        if (m.shortName == className  ||  m.type == className)
-//          return true;
-//        if (m.subClassOf == 'Resource')
-//          return false;
-//        
-//        m = U.getModel(subClassOf);
-//      }
+      return false;
     },
-
+    
     getValue: function(modelOrJson, prop) {
       if (U.isModel(modelOrJson))
         return modelOrJson.get(prop);
@@ -3179,6 +3191,32 @@ define('utils', [
       _.each(query, function(clause) {
         var param = clause.name;
         switch (param) {
+        case 'type':
+          var superUri = clause.value;
+          if (/subClassOf:/.test(superUri)) {
+            superUri = superUri.slice(11);
+            rules.push(function(res) {
+              var model,
+                  resType;
+              
+              if (U.isModel(res))
+                model = res.vocModel;
+              else {
+                resType = U.getTypeUri(res._uri);
+                model = U.getModel(resType);
+              }
+              
+              return model ? U.isAssignableFrom(model, superUri) : resType == superUri;
+            });
+          }
+          else {
+            rules.push(function(res) {
+              var type = U.isModel(res) ? res.vocModel.type : U.getTypeUri(res._uri);
+              return type == superUri;
+            });
+          }
+          
+          break;
         case '$or':
         case '$and':
           var chainFn = param === '$or' ? _.any : _.all;

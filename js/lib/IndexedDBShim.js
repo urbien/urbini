@@ -4,7 +4,8 @@ define('indexedDBShim', ['taskQueue', 'utils'], function(TaskQueue, U) {
 /**
  * An initialization file that checks for conditions, removes console.log and warn, etc
  */
-var idbModules = window.idbModules = {};
+var idbModules = window.idbModules = {},
+    taskQueue = new TaskQueue("IDBShim upgrade queue");
 
 var cleanInterface = false;
 (function () {
@@ -777,6 +778,7 @@ var cleanInterface = false;
     }
     
     IDBIndex.prototype.__createIndex = function(indexName, keyPath, optionalParameters){
+//      console.debug("createIndex", arguments);
         var me = this;
         var transaction = me.__idbObjectStore.transaction;
       transaction.tq.queueTask("create index " + indexName, function() {
@@ -811,7 +813,7 @@ var cleanInterface = false;
                             if (i < data.rows.length) {
                                 try {
                                     var value = idbModules.Sca.decode(data.rows.item(i).value);
-                                    var indexKey = eval("value['" + keyPath + "']");
+                                    var indexKey = value[keyPath];
                                     tx.executeSql("UPDATE " + idbModules.util.quote(me.__idbObjectStore.name) + " set " + columnName + " = ? where key = ?", [idbModules.Key.encode(indexKey), data.rows.item(i).key], function(tx, data){
                                         initIndexForRow(i + 1);
                                     }, error);
@@ -824,6 +826,7 @@ var cleanInterface = false;
                             else {
                                 idbModules.DEBUG && console.log("Updating the indexes in table", me.__idbObjectStore.__storeProps);
                                 tx.executeSql("UPDATE __sys__ set indexList = ? where name = ?", [me.__idbObjectStore.__storeProps.indexList, me.__idbObjectStore.name], function(){
+//                                  console.debug("finished createIndex", indexName, arguments);
                                     me.__idbObjectStore.__setReadyState("createIndex", true);
                                     defer.resolve();
 //                                    success(me);
@@ -1016,7 +1019,7 @@ var cleanInterface = false;
                 }
                 if (value) {
                     try {
-                        var primaryKey = eval("value['" + props.keyPath + "']");
+                        var primaryKey = value[props.keyPath];
                         if (!primaryKey) {
                             if (props.autoInc === "true") {
                                 getNextAutoIncKey();
@@ -1062,7 +1065,7 @@ var cleanInterface = false;
         var indexes = JSON.parse(this.__storeProps.indexList);
         for (var key in indexes) {
             try {
-                paramMap[indexes[key].columnName] = idbModules.Key.encode(eval("value['" + indexes[key].keyPath + "']"));
+                paramMap[indexes[key].columnName] = idbModules.Key.encode(value[indexes[key].keyPath]);
             } 
             catch (e) {
                 error(e);
@@ -1213,8 +1216,7 @@ var cleanInterface = false;
     };
     
     IDBObjectStore.prototype.index = function(indexName){
-        var index = new idbModules.IDBIndex(indexName, this);
-        return index;
+        return new idbModules.IDBIndex(indexName, this);
     };
     
     IDBObjectStore.prototype.createIndex = function(indexName, keyPath, optionalParameters){
@@ -1415,6 +1417,7 @@ var cleanInterface = false;
     };
     
     IDBDatabase.prototype.createObjectStore = function(storeName, createOptions){
+//      console.debug("createObjectStore", arguments);
         var me = this;
         createOptions = createOptions || {};
         createOptions.keyPath = createOptions.keyPath || null;
@@ -1424,6 +1427,7 @@ var cleanInterface = false;
       transaction.tq.queueTask("create object store " + storeName, function() {
         var defer = this;
         transaction.__addToTransactionQueue(function(tx, args, success, failure){
+//        transaction.db.__db.transaction(function(tx){
             function error(){
                 defer.reject();
                 idbModules.util.throwDOMException(0, "Could not create new object store", arguments);
@@ -1438,6 +1442,7 @@ var cleanInterface = false;
             idbModules.DEBUG && console.log(sql);
             tx.executeSql(sql, [], function(tx, data){
                 tx.executeSql("INSERT INTO __sys__ VALUES (?,?,?,?)", [storeName, createOptions.keyPath, createOptions.autoIncrement ? true : false, "{}"], function(){
+//                  console.debug("finished createObjectStore", storeName, arguments);
                     result.__setReadyState("createObjectStore", true);
                     success(result);
                     defer.resolve(result);
@@ -1453,6 +1458,7 @@ var cleanInterface = false;
     };
     
     IDBDatabase.prototype.deleteObjectStore = function(storeName){
+      debugger;
       var me = this;
       var transaction = me.__versionTransaction;
       transaction.tq.queueTask("delete object store " + storeName, function() {
@@ -1565,7 +1571,8 @@ var cleanInterface = false;
                                         e.oldVersion = oldVersion;
                                         e.newVersion = version;
                                         var trans = req.transaction = req.result.__versionTransaction = new idbModules.IDBTransaction([], 2, req.source);
-                                        trans.tq = new TaskQueue("IDBShim upgrade to " + version);
+//                                        trans.tq = new TaskQueue("IDBShim upgrade to " + version);
+                                        trans.tq = taskQueue;
                                         idbModules.util.callback("onupgradeneeded", req, e, function(){
                                           trans.tq.queueTask("Complete upgrade transaction", function() {
                                             var e = idbModules.Event("success");

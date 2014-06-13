@@ -225,6 +225,11 @@
       this.alleyDim += this.getGutterWidth(true);
   
       this.cols = Math.floor( ( containerDim - this.getGutterWidth(true) ) / this.alleyDim );
+      if (isNaN(this.cols)) {
+        debugger;
+        this.cols = 1;
+      }
+      
       this.cols = Math.max( this.cols, 1 );
   
       return this;

@@ -90,62 +90,55 @@ define('app', [
     return promise;
   } 
 
-//  function buildLocalizationContext() {
-//    G.localizationContext = {
-//      user: G.currentUser,
-//      app: G.currentApp
-//    };
-//  };
-  
-  function getAppAccounts() {
-    var currentApp = G.currentApp,
-        consumers = currentApp.dataConsumerAccounts || [],
-        providers = currentApp.dataProviders || [],
-        accesses = currentApp.dataAccesses || [],
-        providerType = "model/social/AppProviderAccount",
-        consumerType = "model/social/AppConsumerAccount",
-        accessType = "model/social/AppDataShareAccess1",
-        models = [];
-    
-    if (providers.length)
-      models.push(providerType);
-    if (consumers.length)
-      models.push(consumerType);
-    if (accesses.length)
-      models.push(accessType);
-    
-    if (!models.length)
-      return RESOLVED_PROMISE;
-    
-//    var needed = _.union(models, modelsNeededImmediately);
-    return Voc.getModels(models).then(function() {
-      if (providers.length) {
-        currentApp.dataProviders = new ResourceList(providers, {
-          model: U.getModel(providerType)
-        });
-      }
-
-      if (consumers.length) {
-        currentApp.dataConsumerAccounts = new ResourceList(consumers, {
-          model: U.getModel(consumerType),
-          params: {
-            $in: 'provider,' + _.pluck(providers, '_uri').join(',')
-          }
-        });
-      }
-
-      if (accesses.length) {
-        currentApp.dataAccesses = new ResourceList(accesses, {
-          model: U.getModel(accessType), 
-          params: {
-            $not: $param({
-              $in: 'appAccount,' + _.pluck(consumers, '_uri').join(',')
-            })
-          }
-        });
-      }
-    });
-  }
+//  function getAppAccounts() {
+//    var currentApp = G.currentApp,
+//        consumers = currentApp.dataConsumerAccounts || [],
+//        providers = currentApp.dataProviders || [],
+//        accesses = currentApp.dataAccesses || [],
+//        providerType = "model/social/AppProviderAccount",
+//        consumerType = "model/social/AppConsumerAccount",
+//        accessType = "model/social/AppDataShareAccess1",
+//        models = [];
+//    
+//    if (providers.length)
+//      models.push(providerType);
+//    if (consumers.length)
+//      models.push(consumerType);
+//    if (accesses.length)
+//      models.push(accessType);
+//    
+//    if (!models.length)
+//      return RESOLVED_PROMISE;
+//    
+////    var needed = _.union(models, modelsNeededImmediately);
+//    return Voc.getModels(models).then(function() {
+//      if (providers.length) {
+//        currentApp.dataProviders = new ResourceList(providers, {
+//          model: U.getModel(providerType)
+//        });
+//      }
+//
+//      if (consumers.length) {
+//        currentApp.dataConsumerAccounts = new ResourceList(consumers, {
+//          model: U.getModel(consumerType),
+//          params: {
+//            $in: 'provider,' + _.pluck(providers, '_uri').join(',')
+//          }
+//        });
+//      }
+//
+//      if (accesses.length) {
+//        currentApp.dataAccesses = new ResourceList(accesses, {
+//          model: U.getModel(accessType), 
+//          params: {
+//            $not: $param({
+//              $in: 'appAccount,' + _.pluck(consumers, '_uri').join(',')
+//            })
+//          }
+//        });
+//      }
+//    });
+//  }
 
   function getTemplates() {
     var currentApp = G.currentApp,
@@ -661,11 +654,12 @@ define('app', [
     var localized = localize();
     var modelsViewsTemplatesAndDB = $.Deferred();
     ResourceManager.openDB().done(function() {
-      return getAppAccounts().done(function() {
-        loadCurrentModel().done(function() {
+//      loadCurrentModel().done(modelsViewsTemplatesAndDB.resolve);
+//      return getAppAccounts().done(function() {
+        return loadCurrentModel().done(function() {
           $.whenAll.apply($, getTemplates(), getViews()).done(modelsViewsTemplatesAndDB.resolve);
         });
-      });
+//      });
     });
       
     setupWorkers();
@@ -821,8 +815,8 @@ define('app', [
       else
         Backbone.history.start();
       
-      if (!G.currentUser.guest && !G.currentUser.email && new Date().getTime() - G.currentUser.dateRegistered < 24 * 3600000)
-        askForEmail();
+//      if (!G.currentUser.guest && !G.currentUser.email && new Date().getTime() - G.currentUser.dateRegistered < 24 * 3600000)
+//        askForEmail();
       
       dfd.resolve();
     }).promise();
@@ -1053,7 +1047,7 @@ define('app', [
         url: url,
         type: 'GET',
         success: function() {
-          // may be current page is not public so go to home page (?)
+            // may be current page is not public so go to home page (?)
           window.location.hash = options.returnUri;
           window.location.reload();
         }

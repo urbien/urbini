@@ -1088,7 +1088,7 @@ define('globals', function() {
         bg: '#DDD'
       },
       events: {
-        on: true,
+        on: false,
         color: '#baFF00',
         bg: '#555'
       },
@@ -1173,10 +1173,9 @@ define('globals', function() {
 //      ALL_IN_APPCACHE,
       hash = window.location.hash ? window.location.hash.slice(1) : window.location.href.slice(window.location.href.indexOf(Lablz.pageRoot) + Lablz.pageRoot.length + 1),
       query = hash.split('?')[1],
-      decode = decodeURIComponent,
       params = _.toQueryParams(query),
-      head = doc.getElementsByTagName('head')[0],
-      body = doc.getElementsByTagName('body')[0],
+      head = doc.head,
+      body = doc.body,
 //      $head = $('head'),
 //      head = $head[0],
 //      $body = $('body'),
@@ -1480,7 +1479,7 @@ define('globals', function() {
       if (typeof key == 'object')
         newV = key;
       else {
-        newV = _.clone(G.VERSION);
+        newV = _.clone(G.VERSION) || {};
         newV[key] = version;
       }
       
@@ -1496,6 +1495,9 @@ define('globals', function() {
           newV = data ? data.VERSION : G.getVersion(),
           oldV = G.getVersion(!data) || newV; // get old
 
+      if (!newV)
+        return;
+      
       if (newV.All > oldV.All) {
         if (G._nuking)
           return;

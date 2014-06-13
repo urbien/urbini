@@ -36,7 +36,8 @@
     nativeLastIndexOf  = ArrayProto.lastIndexOf,
     nativeIsArray      = Array.isArray,
     nativeKeys         = Object.keys,
-    nativeBind         = FuncProto.bind;
+    nativeBind         = FuncProto.bind,
+    r20                = /%20/g;
 
   // Create a safe reference to the Underscore object for use below.
   var _ = function(obj) {
@@ -1498,14 +1499,9 @@
 
   // Deferred helper
   _d.when = function( subordinate /* , ..., subordinateN */ ) { 
-
     var i = 0,
-      resolveValues = ( _.isArray(subordinate) && arguments.length === 1 ) ? subordinate : slice.call( arguments ),
+      resolveValues = _.toArray(arguments),
       length = resolveValues.length;
-
-      if ( _.isArray(subordinate) && subordinate.length === 1 ) {
-        subordinate = subordinate[ 0 ];
-      }
 
       // the count of uncompleted subordinates
       var remaining = length !== 1 || ( subordinate && _.isFunction( subordinate.promise ) ) ? length : 0,
@@ -1580,13 +1576,13 @@
   };
 
   String.prototype.splitAndTrim = function(delimiter) {
-    return _.map(this.split(delimiter), function(str) {
+    return this.split(delimiter).map(function(str) {
       return str.replace(/\s/g, '');
     });
   };
   
   String.prototype.uncamelize = function(capitalFirst) {
-    var str = this.replace(/[A-Z]/g, ' $&').toLowerCase();
+    var str = this.replace(/[A-Z]/g, ' $&').trim().toLowerCase();
     return capitalFirst ? str.slice(0, 1).toUpperCase() + str.slice(1) : str; 
   };
 
@@ -1704,10 +1700,10 @@
       
       return match[1].split(separator || '&').reduce(function(hash, pair) {
         if ((pair = pair.split('='))[0]) {
-          var key = decodeURIComponent(pair.shift()),
+          var key = _.decode(pair.shift()),
               value = pair.length > 1 ? pair.join('=') : pair[0];
               
-          if (value != undefined) value = decodeURIComponent(value);
+          if (value != undefined) value = _.decode(value);
           
           if (key in hash) {
             if (!_.isArray(hash[key])) hash[key] = [hash[key]];
@@ -1723,7 +1719,7 @@
       return arr.indexOf(el);
     },
     
-    param: function toQueryString(obj) {
+    param: function param(obj) {
       var parts = [];
       for (var i in obj) {
         if (obj.hasOwnProperty(i)) {
@@ -1731,7 +1727,7 @@
         }
       }
       
-      return parts.join("&");
+      return parts.join("&").replace(r20, "+");
     },
 //    partial: function(fn) {
 ////      var args = slice.call(arguments, 1);
@@ -2112,10 +2108,8 @@
 (function(_) {
   /* TODO remove after jQuery removal migration -- START */
   window.jQuery = window.$ = function(selector, context) {
-    if (selector == document || selector == window) {
-      debugger;
+    if (selector == document || selector == window || selector instanceof HTMLElement || selector instanceof HTMLCollection || selector instanceof Node || selector instanceof NodeList)
       return selector;
-    }
     
     context = context || document;
     try {

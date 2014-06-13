@@ -9,6 +9,7 @@ DOMReady.add( function () {
       mp = d.createElement('div'),
       mph = d.createElement('div');
   
+  d.title = l.currentApp.title;
   mc.className = 'modal-cover';
   mp.className = 'modal-popups vcenter';
   mph.className = 'modal-popup-holder';
@@ -16,7 +17,7 @@ DOMReady.add( function () {
 
   d.body.appendChild(mc);
   d.body.appendChild(mp);
-  
+
   if (localStorage  &&  localStorage.getItem) {
     try {
       localStorage.setItem('homePage', l.homePage);

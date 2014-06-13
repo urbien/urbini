@@ -145,12 +145,11 @@ define('router', [
       });
 
       Events.once('pageChange', this.loadTourGuide.bind(this));
-      Events.on('back', Q.debounce(function(ifNoHistory) {
-//        var now = +new Date();
-//        if (self.lastBackClick && now - self.lastBackClick < 100)
-//          debugger;
-//          
-//        self.lastBackClick = now;
+      Events.on('back', _.debounce(function(reason) {
+        if (!reason)
+          debugger;
+        
+        console.log("GOING BACK: " + reason);
         self.previousFragment = null;
         self.backClicked = true;
         window.history.back();
@@ -219,19 +218,19 @@ define('router', [
       });
 
 
-      if (G.isJQM()) {
-        // a hack to prevent browser address bar from dropping down
-        // see: https://forum.jquery.com/topic/stopping-the-url-bar-from-dropping-down-i-discovered-a-workaround
-        $('[data-role="page"]').on('pagecreate',function(event) {
-          $('a[href]', this).each(function() {
-              var self = $(this);
-              if (!self.is( "[rel='external']" ) ) {
-                  self.attr('link', self.attr('href'));
-                  self.removeAttr('href');
-              }
-          });
-        });
-      }
+//      if (G.isJQM()) {
+//        // a hack to prevent browser address bar from dropping down
+//        // see: https://forum.jquery.com/topic/stopping-the-url-bar-from-dropping-down-i-discovered-a-workaround
+//        $('[data-role="page"]').on('pagecreate',function(event) {
+//          $('a[href]', this).each(function() {
+//              var self = $(this);
+//              if (!self.is( "[rel='external']" ) ) {
+//                  self.attr('link', self.attr('href'));
+//                  self.removeAttr('href');
+//              }
+//          });
+//        });
+//      }
 
       Events.on('uriChanged', function(tempUri, data) {
         self.checkUpdateHash(tempUri, U.getValue(data, '_uri'));
@@ -294,6 +293,8 @@ define('router', [
     fragmentToOptions: {},
     
     navigate: function(fragment, options) {
+      console.log("NAVIGATING: " + fragment);
+      
 //      if (this.previousHash === fragment) {
 ////      prevents some (not all) duplicate history entries, BUT creates unwanted forward history (for example make/edit views)
 //        Events.trigger('back');
@@ -393,12 +394,23 @@ define('router', [
       
       var homePage = C.getCachedView();
       if (!homePage) {
-        if (G.homePage) {
-          $(document.body).append(G.homePage);
-          delete G.homePage;
+        var homePageEl = doc.$('#homePage')[0];
+        if (!homePageEl) {
+          if (G.homePage) {
+            doc.body.$append(G.homePage);
+            delete G.homePage;
+          }
+          else {
+            debugger;
+            doc.body.$append(localStorage.getItem('homePage'));
+          }
+          
+          homePageEl = doc.$('#homePage')[0];
         }
         
-        homePage = new HomePage({el: doc.$('#homePage')[0] });
+        homePage = new HomePage({
+          el: homePageEl 
+        });
       }
       
       this.changePage(homePage);
@@ -443,9 +455,11 @@ define('router', [
     choose: function(path) { //, checked, props) {
       if (this.routePrereqsFulfilled('choose', arguments)) {
         if (!Redirecter.getCurrentChooserBaseResource()) {
-          var forResource = U.getCurrentUrlInfo().params.$forResource;
-          if (!forResource) {
-            Events.trigger('back');
+          var params = U.getCurrentUrlInfo().params,
+              forResource = params.$forResource;
+          
+          if (!forResource && !params.$createInstance) {
+            Events.trigger('back', 'back from chooser route due to no current chooser, no $forResource and no $createInstance'); 
             return;
           }
         }
@@ -914,7 +928,7 @@ define('router', [
           prereqs,
           installationState,
           isWriteRoute,
-          hashInfo = G.currentHashInfo,
+          hashInfo = U.getCurrentUrlInfo(),
           type = hashInfo.type,
           params = hashInfo.params;
       
@@ -1442,7 +1456,10 @@ define('router', [
           fromView.el.$trigger('page_hide');
         
         toView.el.$trigger('page_show');
-        G.$activePage = $m.activePage = toView.$el;
+        G.$activePage = toView.$el;
+        if ($m)
+          $m.activePage = G.$activePage;
+        
         G.activePage = toView.el;
       });
     },
@@ -1659,8 +1676,7 @@ define('router', [
             
       if (prev) {
         if (prev == view) {
-          G.log(this.TAG, 'history', 'Duplicate history entry, backing up some more');
-          Events.trigger('back');
+          Events.trigger('back', 'Duplicate history entry, backing up some more');
           return;
         }
 //        else

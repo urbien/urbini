@@ -75,7 +75,7 @@ define('views/ResourceListView', [
     },
     stashed: [],
     initialize: function(options) {
-      _.bindAll(this, 'render', 'fetchResources', 'refresh', 'setMode', 'onResourceChanged', '_onPhysicsMessage', 'doSearch', 'doFilter');
+      _.bindAll(this, 'render', 'fetchResources', 'refresh', 'setMode', 'onResourceChanged', '_onPhysicsMessage', 'doFilter');
       options = options || {};
       BasicView.prototype.initialize.call(this, options);
       this.displayMode = options.displayMode || 'vanillaList';
@@ -162,6 +162,8 @@ define('views/ResourceListView', [
       };
       
       this.originalParams = _.clone(this.collection.params);
+      this.originalModel = this.collection.vocModel;
+      this.setDisplayModel(this.originalModel);
       
 //      Physics.here.on('translate.' + this.axis.toLowerCase(), this.getBodyId(), this.onScroll);
 //      
@@ -172,6 +174,19 @@ define('views/ResourceListView', [
 //      }, this);
       
       return this;
+    },
+
+    getDisplayModel: function(vocModel) {
+      return this.displayModel;
+    },
+    
+    setDisplayModel: function(vocModel) {
+      this.itemViewCache.map(function(v) {
+        v.destroy();
+      });
+      
+      this.itemViewCache.length = 0;
+      this.displayModel = vocModel;
     },
     
     isPaging: function() {
@@ -200,7 +215,6 @@ define('views/ResourceListView', [
     },
     
     globalEvents: {
-      'searchList': 'doSearch',
       'filterList': 'doFilter'
     },
     
@@ -226,84 +240,93 @@ define('views/ResourceListView', [
 //      else
 //        this.doSearch(value);
 //    },
+//    
+//    doSearch: _.debounce(function(page, value) {
+//      console.log("DO SEARCH", value);
+//      if (this.getPageView() != page || this._searchValue == value) {
+//        console.log("ALREADY SEARCHED", value);
+//        return;
+//      }
+//      
+//      if (this.mason.isLocked()) {
+//        console.log("SEARCH LOCKED", value);
+//        return this.doSearch(this.getPageView(), value);
+//      }
+//        
+//      console.log("SEARCHING", value);
+//      this._searchValue = value;
+//      var pageView = this.getPageView(),
+//          col = pageView.collection,
+//          filtered = pageView.filteredCollection,
+//          value = this._searchValue,
+//          valueLowerCase,
+//          resourceMatches,
+//          numResults,
+//          indicatorId,
+//          hideIndicator;
+//      
+//      if (!value) {
+//        filtered.reset(col.models, {
+//          params: this.originalParams
+//        });
+//        
+//        return;
+//      }
+//      
+//      valueLowerCase = value.toLowerCase();
+//      resourceMatches = col.models.filter(function(res) {
+//        var dn = U.getDisplayName(res);
+//        return dn && ~dn.toLowerCase().indexOf(valueLowerCase);
+//      });
+//  
+//      filtered.reset(resourceMatches, {
+//        params: _.defaults({
+//          '$like': 'davDisplayName,' + value
+//        }, this.originalParams)
+//      });      
+//    }, 300),
     
-    doSearch: _.debounce(function(page, value) {
-      console.log("DO SEARCH", value);
-      if (this.getPageView() != page || this._searchValue == value) {
-        console.log("ALREADY SEARCHED", value);
-        return;
-      }
-      
-      if (this.mason.isLocked()) {
-        console.log("SEARCH LOCKED", value);
-        return this.doSearch(this.getPageView(), value);
-      }
-        
-      console.log("SEARCHING", value);
-      this._searchValue = value;
-      var pageView = this.getPageView(),
-          col = pageView.collection,
-          filtered = pageView.filteredCollection,
-          value = this._searchValue,
-          valueLowerCase,
-          resourceMatches,
-          numResults,
-          indicatorId,
-          hideIndicator;
-      
-      if (!value) {
-        filtered.reset(col.models, {
-          params: this.originalParams
-        });
-        
-        return;
-      }
-      
-      valueLowerCase = value.toLowerCase();
-      resourceMatches = col.models.filter(function(res) {
-        var dn = U.getDisplayName(res);
-        return dn && ~dn.toLowerCase().indexOf(valueLowerCase);
-      });
-  
-      filtered.reset(resourceMatches, {
-        params: _.defaults({
-          '$like': 'davDisplayName,' + value
-        }, this.originalParams)
-      });      
-    }, 300),
-    
-    doFilter: _.debounce(function(page, filterParams) {
+    doFilter: function(filterParams) {
       // TODO: filter similar to search, except per property instead of for displayName, maybe generalize it so it works for search too
       console.log("DO FILTER", value);
       if (!this._filterParams)
         this._filterParams = _.clone(this.originalParams);
       
-      if (this.getPageView() != page || _.isEqual(this._filterParams, filterParams)) {
+      if (_.isEqual(this._filterParams, filterParams)) {
         console.log("ALREADY FILTERED " + JSON.stringify(filterParams));
         return;
       }
       
       if (this.mason.isLocked()) {
         console.log("FILTER LOCKED", value);
-        return this.doFilter(this.getPageView(), filterParams);
+        var self = this;
+        clearTimeout(this._delayTimeout);
+        this._delayTimeout = setTimeout(function() {
+          self.doFilter(filterParams);
+        }, this._timesDelayed++ * 100);
       }
         
+      clearTimeout(this._delayTimeout);
+      this._timesDelayed = 0;
       console.log("FILTERING", filterParams);
-      this._filterParams = filterParams;
-      var pageView = this.getPageView(),
-          col = pageView.collection,
-          filtered = pageView.filteredCollection,
+      this._filterParams = _.clone(filterParams);
+      var col = this.getPageView().collection,
+          filtered = this.collection,
           value = this._searchValue,
           valueLowerCase,
           resourceMatches,
           numResults,
           indicatorId,
           hideIndicator;
-      
+
+//      if (this._filterParams.type)
+//        this.setDisplayModel(U.getModel(this._filterParams.type));
+
       if (_.isEmpty(filterParams)) {
         indicatorId = this.showLoadingIndicator(3000); // 3 second timeout
         hideIndicator = this.hideLoadingIndicator.bind(this, indicatorId);
 
+//        this.setDisplayModel(col.vocModel);
         filtered.reset(col.models, {
           params: this.originalParams
         });
@@ -319,12 +342,17 @@ define('views/ResourceListView', [
 //        return dn && ~dn.toLowerCase().indexOf(valueLowerCase);
 //      });
 
-      filtered.belongsInCollection = U.buildValueTester(this._filterParams, this.vocModel) || G.trueFn;
-      resourceMatches = col.models.filter(filtered.belongsInCollection.bind(filtered));
-      filtered.reset(resourceMatches, {
-        params: _.defaults(this._filterParams, this.originalParams)
-      });      
-    }, 100),
+      filtered.reset([], {
+        params: _.defaults(this._filterParams, this.originalParams)        
+      });
+      
+      filtered.filterAndAddResources(col.models);
+//      filtered.belongsInCollection = U.buildValueTester(this._filterParams, this.vocModel) || G.trueFn;
+//      resourceMatches = col.models.filter(filtered.belongsInCollection.bind(filtered));
+//      filtered.reset(resourceMatches, {
+//        params: _.defaults(this._filterParams, this.originalParams)
+//      });      
+    },
     
 //    myEvents: {
 //      'active': '_onActive'
@@ -775,13 +803,6 @@ define('views/ResourceListView', [
         Q.defer(1, 'read', this.checkOffsetTop, this);
     },
     
-    /**
-     * re-render the elements in the sliding window
-     */
-    refresh: function() {
-      debugger;
-    },
-        
     /** 
     * shorten the dummy div below this page by this page's height/width (if there's a dummy div to shorten)
     * @param force - will add as much as it can, including a half page
@@ -820,7 +841,7 @@ define('views/ResourceListView', [
         if (force) {
           // settle for loading an incomplete page
           to = availableRange[1];
-          if (form >= to) {
+          if (from >= to) {
             // we're out of candy, no need to continue
             this.log("2. BRICK LIMIT");
             this.setBrickLimit(availableRange[1]);
@@ -881,9 +902,10 @@ define('views/ResourceListView', [
         Q.write(this.renderItem, this, [col.models[i], atTheHead]);
       }
       
+      var last = col.models[to - 1];
       Q.write(function() {
         if (!this.isDestroyed()) {
-          this.renderItem(col.models[to - 1], atTheHead);
+          this.renderItem(last, atTheHead);
           this.postRender(from, to);
         }
       }, this);
@@ -1164,7 +1186,8 @@ define('views/ResourceListView', [
           switch (resp.code) {
             case 401:
               Events.trigger('req-login', {
-                dismissible: false
+                dismissible: false,
+                online: Errors.getMessage('unauthorized')
               });
               return;
             default:

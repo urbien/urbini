@@ -134,8 +134,6 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
         _item = item; // for now we don't need a new object
     
     delete item.__tasks__; // HACK
-    delete item.primary;
-    
     for (var prop in item) {
       var val = item[prop];
       
@@ -267,7 +265,13 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   }
   
   IDB.prototype.onOpen = function(cb) {
-    return this._openPromise.then(cb);
+    switch (this._openPromise.state()) {
+    case 'resolved':
+      return this._openPromise.done(cb);
+      break;
+    default:
+      return this._openPromise.then(cb);
+    }
   };
   
   IDB.prototype._clearStoreMonitors = function() {
@@ -366,9 +370,15 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
    */
   IDB.prototype.createObjectStore = function(name, options, indices) {
     var store;
-    if (name instanceof Store)
+    if (name instanceof Store) {
       store = name;
+      if (this.isStoreBeingCreated(store.name))
+        return this;
+    }
     else if (typeof name == 'string') {
+      if (this.isStoreBeingCreated(name))
+        return this;
+        
       if (this.defaultIndexOptions) {
         for (var prop in indices) {
           indices[prop] = _.defaults(indices[prop] || {}, this.defaultIndexOptions || {});
@@ -380,9 +390,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       store = new Store(name, _.defaults(options || {}, this.defaultStoreOptions || {}), indices);
     }
 
-    if (!_.find(this.storesToMake, function(s) { return s.name === store.name }))
-      this.storesToMake.push(store);
-    
+    this.storesToMake.push(store);
     return this;
   };
 
@@ -398,6 +406,12 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     this.createObjectStore(store);
   };
 
+  IDB.prototype.isStoreBeingCreated = function(name) {
+    return !!_.find(this.storesToMake, function(store) {
+      return store.name == name;
+    });
+  };
+  
   /**
    * @param stores - an array of store config objects. See IDB.createObjectStore doc for store config object example
    */
@@ -489,7 +503,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   
   IDB.prototype.open = function(version) {
     if (this._openDfd && this._openDfd.state() == 'pending') {
-//      debugger;
+      debugger;
 //      this._openDfd.reject();
       return this._openPromise;
     }
@@ -507,15 +521,29 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     
     console.log("1. opening indexedDB");
     this.$idb = $.indexedDB(this.name, settings);
-    this.$idb.done(function(db, event) {
+    this.$idb.done(function onopen(db, event) {
       console.log("opened indexedDB");
       self.db = db;
       self.dbVersion = db.version;
+      if (!self.storesToMake.length) { // first open is special
+        self.storesToMake = self.storesToMake.filter(function(store) {
+          return !self.hasStore(store.name);
+        });
+              
+        if (self.storesToMake.length) {
+          self.db.close();
+          settings.version = db.version + 1;
+          self.$idb = $.indexedDB(self.name, settings);
+          self.$idb.done(onopen);
+          return;
+        }
+      }
+      
       self._openDfd.resolve();
       Events.trigger('dbOpen');
     });
     
-    return this.$idb;
+    return this._openPromise;
   };
   
   function restart(version) {
@@ -618,7 +646,6 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   
   function wrapQueryRunMethod(query, fn) {
     var backup = query[fn];
-    
     if (backup._wrapped)
       return;
     
@@ -626,37 +653,49 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       if (!instance.hasStore(storeName))
         return REJECTED_PROMISE;
 
-      var args = arguments;
-      return instance._queueTask('querying object store {0} by indices'.format(storeName), function(defer) {
-        args[0] = instance.$idb.objectStore(args[0], READ_ONLY);
-        return backup.apply(query, args).then(function(results) {
-          if (results) {
-            queueParse.apply(null, results);
-            return results;
-          }
-          else 
-            return [];
-        });
-      });
-      
-//      // alternate implementation, not necessary now that _getAll in jquery-indexeddb makes sure transaction is complete before returning results
-//      var args = arguments,
-//          storeName = args[0];
+//      var args = _.toArray(arguments),
+//          taskName = 'querying object store {0} by indices {1}'.format(storeName, _.now());
 //      
-//      return self._queueTask('querying object store {0} by indices'.format(storeName), function(defer) {
-//        var trans = self.$idb.transaction([storeName], READ_ONLY),
-//            parseDfd = $.Deferred(),
-//            parsePromise = parseDfd.promise();
-//        
-//        return trans.progress(function() {
-//          var store = trans.objectStore(storeName);
-//          backup.apply(query, args).then(function(results) {
-//            parsePromise = parse.call(self, results);
-//          });
-//        }).then(function() {
-//          return parsePromise;
-//        });
+//      return instance._queueTask(taskName, function(defer) {
+//        console.debug("running task: " + taskName, query, fn, storeName);
+//        var a = args.slice();
+//        a[0] = instance.$idb.objectStore(a[0], READ_ONLY);
+//        var intermediate = backup.apply(query, args);
+//        setTimeout(function() {
+//          if (intermediate.state() == 'pending' || defer.state() == 'pending')
+//            debugger;
+//        }, 5000);
+//
+//        intermediate.done(function(results) {
+//          console.log("almost done with task: " + taskName);
+//          if (results)
+//            queueParse.apply(null, results);
+//          else 
+//            results = [];
+//          
+//          defer.resolve(results);
+//        }).fail(defer.reject);
 //      });
+      
+      // alternate implementation, not necessary now that _getAll in jquery-indexeddb makes sure transaction is complete before returning results
+      var args = _.toArray(arguments),
+          storeName = args[0],
+          results;
+      
+      return instance._queueTask('querying object store {0} by indices'.format(storeName), function(defer) {
+        instance.$idb.transaction([storeName], READ_ONLY).progress(function(trans) {
+          args[0] = trans.objectStore(storeName);
+          backup.apply(query, args).done(function(_results) {
+            results = _results;
+            if (results)
+              queueParse.apply(null, results);
+            else 
+              results = [];            
+          }).fail(defer.reject);
+        }).done(function() {
+          defer.resolve(results);
+        }).fail(defer.reject);
+      });
 
     };
     
@@ -910,8 +949,8 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
         start = _.now(),
         processingTime = 0,
         waitingTime = 0,
-        now,
-        tmp,
+//        now,
+//        tmp,
         keys,
         val;
 
@@ -919,14 +958,14 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       filter = null;
     
     transPromise = trans.progress(function(trans) {      
-      now = _.now();
+//      now = _.now();
       trans.objectStore(storeName).each(function processItem(item) {
   //      var t = _.now();
-        tmp = _.now();
-        if (now)
-          waitingTime += tmp - now;
-        
-        now = tmp;
+//        tmp = _.now();
+//        if (now)
+//          waitingTime += tmp - now;
+//        
+//        now = tmp;
         val = item.value;
         if (!filter || filter && filter(val)) {
           queueParse(val);
@@ -939,7 +978,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       debugger;
       dfd.reject();
     }).done(function() {
-      log('Getting {0} items from DB objectStore {1} took {2}ms, waiting time: {3}'.format(results.length + promises.length, storeName, _.now() - start | 0, waitingTime | 0));
+//      log('Getting {0} items from DB objectStore {1} took {2}ms, waiting time: {3}'.format(results.length + promises.length, storeName, _.now() - start | 0, waitingTime | 0));
       dfd.resolve(results);
 //      if (promises.length) {
 //        $.when.apply($, promises).done(function() {

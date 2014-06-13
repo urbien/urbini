@@ -122,7 +122,6 @@
   {{ if (typeof comment != 'undefined') { }}
     <p>{{= comment }}</p>
   {{ } }}
-  </a>
 </li>
 </script>
 
