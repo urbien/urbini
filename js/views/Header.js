@@ -82,6 +82,12 @@ define('views/Header', [
     },
     
     getButtonViews: function() {
+      /*
+      if (this.hashParams['-embed']) {
+        this.btnsReq = G.getResolvedPromise();
+        return;
+      }
+      */
       var res = this.resource;
       var vocModel = this.vocModel;
       var type = vocModel && vocModel.type;
@@ -637,7 +643,8 @@ define('views/Header', [
     
     render: function(options) {
       var self = this,
-          args = arguments;
+          args = arguments,
+          embed = this.hashParams["-embed"];
 
       if (!this.rendered) {
         this.onload(function() {
@@ -680,11 +687,10 @@ define('views/Header', [
           });
       };
       
-      if (this.btnsReq.state() !== 'pending') {
-        doRender();
-        doRender = null;
-      }
-      
+       if (this.btnsReq.state() !== 'pending') {
+          doRender();
+          doRender = null;
+        }
       if (this.ready.state() == 'pending') {
         this.ready.done(function() {
           if (doRender)
@@ -962,20 +968,27 @@ define('views/Header', [
           tmpl_data.className = 'ui-grid-b';
       }      
 
-      if (this.filter)
-        this.categories = false; // HACK for now, search is more important at the moment        
-
       this.html(this.template(tmpl_data));
       this.titleContainer = this.$('#pageTitle')[0];
-      if (this.filter)
-        this.filter = this.$('.filterToggle')[0];
-      
       if (this.filter) {
-        this.filterIcon = this.filter.$('i')[0];
-        this.searchIconClass = this.filterIcon.className;
-        this.filterContainer = this.$('.filter')[0];
+        this.categories = false; // HACK for now, search is more important at the moment        
+
+        this.getFetchPromise().done(function() {
+          if (self.collection.models.length < 10) {
+            self.$('.filterToggle')[0].style.display = 'none';
+          }
+          else { 
+            if (self.filter)
+              self.filter = self.$('.filterToggle')[0];
+            
+            if (self.filter) {
+              self.filterIcon = self.filter.$('i')[0];
+              self.searchIconClass = self.filterIcon.className;
+              self.filterContainer = self.$('.filter')[0];
+            }
+          }
+        });
       }
-      
       this.renderPhysics();
       this.refreshTitle();
       this.refreshActivated();

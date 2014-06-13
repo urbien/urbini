@@ -313,7 +313,7 @@ define('resourceManager', [
     //////////////////////////////////////////////////// END indexedDB stuff ///////////////////////////////////////////////////////////
   };
   
-  Events.on('updatedResources', function(resources) {
+  Events.on('updatedResources', function(resources, type) {
     var i = resources.length;
     if (i) {
       var atts,
@@ -330,7 +330,7 @@ define('resourceManager', [
       }
       //// HACK (remove when you figure out why _list is not parsed and removed earlier
       
-      Q.nonDom(RM.addItems.bind(RM, resources));
+      Q.nonDom(RM.addItems.bind(RM, type, resources));
     }
   });
 
