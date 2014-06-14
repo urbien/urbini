@@ -4299,6 +4299,10 @@ define('utils', [
     },
     isWriteRoute: function(route) {
       return _.contains(['make', 'edit'], route);
+    },
+    
+    isNumericType: function(propertyType) {
+      return /Numeric|Fraction|Percent|Money|Duration/.test(propertyType);
     }
   };
   

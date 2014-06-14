@@ -940,18 +940,18 @@ define('router', [
       // the user is attempting to install the app, or at least pretending well
       isWriteRoute = U.isWriteRoute(route);
       if (!type || !type.endsWith(G.commonTypes.AppInstall)) {
-        if (G.currentApp.forceInstall || isWriteRoute) {
-          installationState = AppAuth.getAppInstallationState(); //hashInfo.type);
-          if (!installationState.allowed) {
-            if (G.currentUser.guest) {
-              this._requestLogin();
-              return false;
-            }
-  
-            Voc.getModels(hashInfo.type);
-            AppAuth.requestInstall(G.currentApp);
+//        if (G.currentApp.forceInstall || isWriteRoute) {
+//          installationState = AppAuth.getAppInstallationState(); //hashInfo.type);
+//          if (!installationState.allowed) {
+        if ((G.currentApp.forceInstall || isWriteRoute) && !G.currentUser.installedThisApp) {
+          if (G.currentUser.guest) {
+            this._requestLogin();
             return false;
           }
+
+          Voc.getModels(hashInfo.type);
+          AppAuth.requestInstall(G.currentApp);
+          return false;
         }
       }
 

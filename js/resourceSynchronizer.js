@@ -17,7 +17,8 @@ define('resourceSynchronizer', [
       REF_STORE_PROPS,
       serverSyncTimeout,
       syncQueue,
-      SYNCING = false;
+      SYNCING = false,
+      SYNC_POSTPONED = 0;
   
   var backboneDefaultSync = Backbone.defaultSync || Backbone.sync;
 //  function isSyncPostponable(vocModel) {
@@ -79,6 +80,7 @@ define('resourceSynchronizer', [
   };
 
   ResourceSynchronizer.prototype._saveItem = function() {
+//    console.log("1. SAVE ITEM");
     var self = this,
         IDB = IndexedDBModule.getIDB(),
         item = this.data,
@@ -117,11 +119,13 @@ define('resourceSynchronizer', [
         result = _.pick(result, REF_STORE_PROPS);
       }
         
+//      console.log("2.a SAVE ITEM");
       _.extend(result, itemJson);      
       return self._saveItemHelper(result, item);            
     }
     
     function notFound() {
+//      console.log("2.b SAVE ITEM");
       return self._saveItemHelper(itemRef, item);            
     }
     
@@ -134,6 +138,7 @@ define('resourceSynchronizer', [
   };  
   
   ResourceSynchronizer.prototype._saveItemHelper = function(itemRef, item) {
+//    console.log("3. SAVE ITEM");
     var self = this,
         type = item.vocModel.type;
     
@@ -150,11 +155,22 @@ define('resourceSynchronizer', [
 //        tempUri = U.makeTempUri(type, now);
 //        item.set({'_uri': tempUri});
 //      }
-    
+//    var IDB = IndexedDBModule.getIDB();
     itemRef._dirty = 1;
     itemRef._problematic = 0;
+//    return $.whenAll(
+//      IDB.put(REF_STORE.name, itemRef), 
+//      Synchronizer.addItems(type, [item])
+//    ).then(function() {
+//      console.log("5. SAVE ITEM");
+//      syncWithServer(100);
+//    }, function() {
+//      debugger;
+//    });
     return put(REF_STORE.name, itemRef).then(function() {
+//      console.log("4. SAVE ITEM");
       return Synchronizer.addItems(type, [item]).then(function() {
+//        console.log("5. SAVE ITEM");
         syncWithServer();
       }, function() {
         debugger;
@@ -244,6 +260,7 @@ define('resourceSynchronizer', [
   };
   
   function syncWithServer(delay) {
+    console.log("1. SYNCING!");
     if (delay) {
       if (!serverSyncTimeout)
         serverSyncTimeout = setTimeout(syncWithServer, delay);
@@ -265,10 +282,17 @@ define('resourceSynchronizer', [
       return;
     }
 
-    if (SYNCING)
-      return;
+    if (SYNCING) {
+      SYNC_POSTPONED++;
+      if (SYNC_POSTPONED < 5) {
+        serverSyncTimeout = setTimeout(syncWithServer, 1000);
+        return;
+      }
+    }
 
+    SYNC_POSTPONED = 0;
     SYNCING = true;
+    console.log("2. SYNCING!");
     var IDB = IndexedDBModule.getIDB(),
         version = IDB.getVersion() || 0,
         types = [],
@@ -283,7 +307,9 @@ define('resourceSynchronizer', [
     };
     
     IDB.queryByIndex('_problematic').eq(0).and(IDB.queryByIndex('_dirty').eq(1)).getAll(REF_STORE.name).done(function(results) {
+      console.log("3. SYNCING!");
       if (!results || !results.length) {
+        console.log("3.1 SYNCING - nothing to sync!");
         SYNCING = false;
         return;
       }
@@ -293,6 +319,7 @@ define('resourceSynchronizer', [
       }
       
       Voc.getModels(types, {sync: false}).done(function() {
+        console.log("4. SYNCING!");
         syncResources(results).always(function() {
           SYNCING = false;
         });
@@ -301,6 +328,7 @@ define('resourceSynchronizer', [
   }
   
   function syncResource(ref, refs) {
+    console.log("5. SYNCING!", ref._uri);
     var IDB = IndexedDBModule.getIDB(),
         uri = ref._uri,
         type = U.getTypeUri(uri),
@@ -398,7 +426,12 @@ define('resourceSynchronizer', [
 //            Events.trigger('uriChanged', updatedRef._tempUri, updatedRef._uri);
           
           var idx = refs.indexOf(ref);
-          refs[idx] = updatedRef;
+          if (~idx) {
+            if (updatedRef._deleted)
+              refs.splice(idx, 1);
+            else
+              refs[idx] = updatedRef;
+          }
         }
       });
     }, function() {
@@ -440,16 +473,11 @@ define('resourceSynchronizer', [
       sync: true, 
       fromDB: true,
       success: function success(model, data, options) {
-        if (!data) { // probably it was canceled and deleted
-          checkDelete(model);
-          dfd.resolve();
-//          Events.trigger('synced:' + ref._uri, data, model);
-          return;
-        }
-        
-        if (checkDelete(model)) {
-          dfd.resolve();
-//          Events.trigger('synced:' + ref._uri, data, model);
+        if (checkDelete(model) || !data) {
+          // probably it was canceled and deleted
+          ref = _.clone(ref);
+          ref._deleted = true;
+          dfd.resolve(ref);
           return;
         }
         
@@ -511,7 +539,7 @@ define('resourceSynchronizer', [
         
         debugger;
         // for now
-        resource['delete'];
+        resource['delete']();
         
 //        var problem = U.getJSON(xhr.responseText);
 //        if (problem)
@@ -543,24 +571,9 @@ define('resourceSynchronizer', [
   }
   
   function checkDelete(res) {
-    var canceled = U.getCloneOf(res.vocModel, 'Cancellable.cancelled');
-    if (!canceled || !canceled.length || !res.get(canceled[0]))
-      return;
-    
-    res.on('delete', deleteItem.bind(null, res));
-    res['delete']();
-  }
-  
-  function deleteItem(item) {
-    var IDB = IndexedDBModule.getIDB(),
-        type = item.vocModel.type,
-        uri = item.get('_uri');
-    
-    G.log('db', 'db', 'deleting item', uri);
-    IDB['delete'](type, uri);
-    IDB.queryByIndex('_uri').eq(uri).getAll(REF_STORE.name).done(function(results) {
-      IDB['delete'](REF_STORE.name, _.pluck(results || [], REF_STORE.options.keyPath));
-    });      
+    var canceled = U.getCloneOf(res.vocModel, 'Cancellable.cancelled')[0];
+    if (canceled && res.get(canceled))
+      res['delete']();
   }
 
   ResourceSynchronizer.init = function() {    

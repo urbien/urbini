@@ -152,24 +152,26 @@
 </script>
 
 <script type="text/template" id="inlineCompareIndicatorsRuleTemplate">
-<li data-viewid="{{= viewId }}">
-  <div style="font-size:1.6rem;font-weight:bold;text-align:center; height: 80px; background:white;">
+<li data-viewid="{{= viewId }}" style="background:white;">
+  <div style="font-size:1.6rem;font-weight:bold;text-align:center; height: 80px; padding:1rem 0;">
     <div class="cf" style="float:left; width:42%;">
       <!--img src="{{= feedImage }}" /-->
       <div style="font-size:2.5rem;padding-bottom:1rem;">
-        {{= resource.get('eventPropertyDisplayName') }}
+        {{= resource.get('indicator.displayName') }}
       </div>
       <div>
-        <a style="text-decoration:none; font-weight: 100;" href="{{= resource.get('tradleFeed') }}">{{ resource.get('tradleFeed.displayName') }}</a>
+        <a style="text-decoration:none; font-weight: 100;" href="{{= U.makeMobileUrl('view', resource.get('tradleFeed')) }}">
+          {{= resource.get('tradleFeed.displayName') }}
+        </a>
       </div>
     </div>
     <div class="cf" style="float:left; width:14%;font-size:2.3rem;">
-      <div style="font-size:4rem;">
-      {{= ~resource.getUri().indexOf('MoreThan') ? ">" : "<" }}
+      <div style="font-size:4.5rem;">
+      {{= ~resource.vocModel.shortName.indexOf('MoreThan') ? ">" : "<" }}
       </div>
-      {{ if (resource.get('compareWith')) {   }}
+      {{ if (~resource.vocModel.shortName.indexOf('ByRule')) {   }}
       <div>
-        <span style="font-size:1.5rem;">BY</span> 37%
+        <span style="font-size:1.5rem;">BY</span> {{= resource.get('percentValue') }}%
       </div>
       {{ }                        }}
     </div>
@@ -177,15 +179,17 @@
     {{ if (resource.get('compareWith')) {   }}
       <!--img src="{{= compareWith.feedImage }}" /-->
       <div style="font-size:2.5rem;padding-bottom:1rem;">
-        {{= resource.get('compareWithEventPropertyDisplayName') }}
+        {{= resource.get('compareWith.displayName') }}
       </div>
       <div>
-        <a style="text-decoration:none; font-weight: 100;" href="{{= resource.get('compareWithTradleFeed') }}">{{ resource.get('compareWithTradleFeed.displayName') }}</a>
+        <a href="{{= U.makeMobileUrl('view', resource.get('compareWithTradleFeed')) }}" style="text-decoration:none; font-weight: 100;">
+          {{= resource.get('compareWithTradleFeed.displayName') }}
+        </a>
       </div>
     {{ }                        }}
     {{ if (!resource.get('compareWith')) {  }}
       <div style="font-size:4rem;padding-bottom:1rem;">
-        {{= resource.get('value') }}
+        {{= resource.get('doubleValue') }}
       </div>
     {{ }                        }}
     </div>
@@ -1278,8 +1282,11 @@
   <div class="cf vcentered" style="z-index:1; width:20%;float:left;background:inherit;">
     <span class="placeholder"></span>
     {{ if (this.categories) { }}
-       <div style="position:absolute;top:14px;padding-left:10px;"><a id="categories" class="lightDark" href="#">
-       <i class="ui-icon-tags"></i></a></div> 
+       <div style="display:inline-block; margin-left: 5px; font-size: 1.5rem;">
+         <a id="categories" class="lightDark" href="#">
+           <i class="ui-icon-tags"></i>
+         </a>
+       </div> 
     {{ } }} 
     {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
     {{ if (folder) { }}
@@ -1289,7 +1296,7 @@
       </a>
     {{ }                     }}
   </div>
-  <div id="name" class="cf vcentered resTitle" style="z-index:0; width:60%;float:left;background:inherit; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
+  <div id="name" class="cf vcentered resTitle" style="z-index:0; width:60%;float:left;background:inherit;" align="center">
     <h4 id="pageTitle" style="text-overflow: ellipsis; font-weight:normal;color:{{= G.lightColor }};">{{= this.title }}</h4>
     {{= this.filter ? "<div class='filter'></div>" : "" }}
     <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
@@ -1334,7 +1341,7 @@
   <div class="cf vcentered" style="z-index:1; width:20%;float:left;background:inherit;">
     {{ if (activatedProp) { }}
       <section class="activatable" style="float: right; display: none;">
-        <label class="pack-switch" style="float: right; right: 2rem; height: 2rem; vertical-align:inherit; color:{{= G.darkColor }};">
+        <label class="pack-switch" style="float: right; right: 2rem; height: auto; vertical-align:inherit; color:{{= G.darkColor }};">
           <input type="checkbox" name="{{= activatedProp.shortName }}" class="formElement boolean" {{= this.resource.get(activatedProp.shortName) ? 'checked="checked"' : '' }} />
           <span></span>
         </label>
@@ -1347,14 +1354,14 @@
   </div>
 </div>
 <div class="physicsConstants" style="display:none; background-color: #606060; color:#FFFFFF; display:none;"></div>
-<div class="categories" style="display:none; padding: 5px; background-color:#ddd; display:none;"></div>
+<div class="subClasses" style="display:none; padding: 5px; background-color:#ddd; display:none;"></div>
 </script>
 
-<script type="text/template" id="categoriesTemplate">
-{{ for (var i = 0; i < categories.length; i++) {  }}
-{{  var c = categories[i];                        }}
-  <label class="category {{= c.on ? 'actionBtn' : '' }}">
-    <input type="radio" name="category" data-type="{{= c.type || '' }}" data-on="{{= !!c.on }}" value="{{= c.name }}" />
+<script type="text/template" id="subClassesTemplate">
+{{ for (var i = 0; i < subClasses.length; i++) {  }}
+{{  var c = subClasses[i];                        }}
+  <label class="subClass {{= c.on ? 'actionBtn' : '' }}">
+    <input type="radio" name="subClass" data-type="{{= c.type || '' }}" data-on="{{= !!c.on }}" value="{{= c.name }}" />
     {{= c.name }}
   </label>
 {{ }                                              }}
@@ -1816,7 +1823,7 @@
 <script type="text/template" id="mvListItem">
 <!-- a multivalue input for edit forms -->
 {{ var id = G.nextId() }}
-<label>
+<label class="pack-checkbox">
   <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}" value="{{= _uri }}" {{= obj._checked ? 'checked="checked"' : '' }} />
   <span></span>
 </label>

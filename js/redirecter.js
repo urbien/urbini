@@ -586,54 +586,14 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
             {
               tradle: res.get('tradle'),
               tradleFeed: res.getUri(),
-              feed: res.get('feed')
+              feed: res.get('feed'),
+              eventClass: eventClassUri,
+              eventClassRangeUri: eventClassRangeUri
             }
           )
         }), options);
       });
     });
-    
-    return true;
-  };
-
-  Redirecter.prototype._forType['commerce/trading/TradleIndicator'] = function(res, options) {
-    debugger;
-    var eventProperty = res.get('eventProperty'),
-        eventPropertyDN = res.get('eventProperty.displayName'),
-        feedDN = res.get('feed.displayName'),
-        eventPropertyUri = res.get('eventProperty.davPropertyUri'),
-        match = U.getTypeUri(eventProperty).match(/\/(Integer|Long|Float|Double|Inline)Property$/),
-        type = match && match[1];
-    
-    if (type == 'Inline') {
-      var eventPropertyRes = C.getResource(eventProperty),
-          pType = eventPropertyRes.get('propertyType');
-      
-      if (pType != 'Money')
-        match = null;
-    }
-    
-    if (!match) {
-      Events.trigger('back', 'created a TradleIndicator, returning to feeds list');
-      return true;
-    }
-    
-    var wCl = G.commonTypes.WebClass;
-    Events.trigger('navigate', U.makeMobileUrl('chooser', wCl, {
-      $title: 'Choose values for ' + feedDN + ' ' + eventPropertyDN,
-      $forResource: res.getUri(),
-      $prop: 'variant',
-      $type: wCl,
-      $or: U.makeOrGroup(
-        {
-          applicableToProperty: eventPropertyUri,
-          applicableToResource: res.get('feed')
-        }, 
-        {
-          $in: 'davClassUri,' + ['RawValue', 'PreviousValue'].map(function(n) { return G.defaultVocPath + 'commerce/trading/' + n }).join(',')
-        }
-      )
-    }));
     
     return true;
   };
@@ -1089,22 +1049,44 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       return;
     }
     else if (params.$tradleFeedParams) {
-      var eventPropertyUri = valueRes.get('davPropertyUri'),
-          tfParams = _.toQueryParams(params.$tradleFeedParams),
-          and1 = _.param({
-            applicableToProperty: eventPropertyUri,
-            applicableToResource: tfParams.feed
-          }),
-          and2 = _.param({
-            $in: 'davClassUri,' + ['RawValue', 'PreviousValue'].map(function(n) { return G.defaultVocPath + 'commerce/trading/' + n }).join(',')
-          });
+      var eventProperty = valueRes.getUri(),
+          propertyType = valueRes.get('propertyType'),
+          isNumeric = U.isNumericType(propertyType),
+          tfParams = _.toQueryParams(params.$tradleFeedParams);
       
       tfParams.eventProperty = valueRes.getUri();
-      Events.trigger('navigate', U.makeMobileUrl('chooser', G.commonTypes.WebClass, {
-        $or: U.makeOrGroup(_.param({$and: and1}), _.param({$and: and2})),
-        $indicator: _.param(tfParams)
-      }));
+      if (isNumeric) {
+        var eventPropertyUri = valueRes.get('davPropertyUri'),
+            and1 = _.param({
+              applicableToProperty: eventPropertyUri,
+              applicableToModel: tfParams.eventClass,
+              applicableToClass: tfParams.eventClassRangeUri
+  //            applicableToResource: tfParams.feed
+            }),
+            and2 = _.param({
+              parentFolder: G.currentApp._uri,
+              $in: 'name,RawValue,PreviousValue'
+            });
       
+        Events.trigger('navigate', U.makeMobileUrl('chooser', G.commonTypes.WebClass, {
+          $or: U.makeOrGroup(_.param({$and: and1}), _.param({$and: and2})),
+          $indicator: _.param(tfParams)
+        }));
+        
+        return;
+      }
+      
+      Voc.getModels('commerce/trading/TradleIndicator').done(function(iModel) {
+        var indicator = new iModel({
+          tradleFeed: tfParams.tradleFeed,
+          tradle: tfParams.tradle,
+          eventProperty: eventProperty
+        });
+        
+        indicator.save();
+      });
+      
+      Events.trigger('back', 'chose property for indicator, heading back');
       return;
     }
     
@@ -1119,7 +1101,6 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       Array.remove(merged, propName);
       props[propName] = valueRes.getUri();
       if (forRes.vocModel.type.endsWith('commerce/trading/TradleIndicator')) {
-        debugger;
         if (forRes.get('eventProperty')) {
           forRes.save(props, { userEdit: true });
           Events.trigger('back', 'back from choosing TradleIndicator variant');

@@ -4,33 +4,33 @@ define('appAuth', ['globals', 'underscore', 'utils', 'events', 'error', 'vocMana
       APP_TYPE = COMMON_TYPES.App;
   
   var AppAuth = {
-    getAppInstallationState: function(type) {
-      var appPath,
-          user = G.currentUser,
-          state = {
-            guest: !user._uri
-          };
-      
-      if (state.guest)
-        return state;
-      
-//      if (type) {
-//        if (!U.isAnAppClass(type)) {
-//          state.allowed = state.installed = true;
-//          return state;
-//        }
-//      } 
-
-      appPath = G.currentApp.appPath.toLowerCase();      
-      var appPathInstallationKey = user.installedApps && _.filter(_.keys(user.installedApps), function(path) {return path.toLowerCase() === appPath});
-      var appInfo = appPathInstallationKey && appPathInstallationKey.length && user.installedApps[appPathInstallationKey[0]];
-      if (appInfo) {
-        state.installed = true;
-        state.allowed = appInfo.allow;
-      }
-
-      return state;      
-    },
+//    getAppInstallationState: function(type) {
+//      var appPath,
+//          user = G.currentUser,
+//          state = {
+//            guest: !user._uri
+//          };
+//      
+//      if (state.guest)
+//        return state;
+//      
+////      if (type) {
+////        if (!U.isAnAppClass(type)) {
+////          state.allowed = state.installed = true;
+////          return state;
+////        }
+////      } 
+//
+//      appPath = G.currentApp.appPath.toLowerCase();      
+//      var appPathInstallationKey = user.installedApps && _.filter(_.keys(user.installedApps), function(path) {return path.toLowerCase() === appPath});
+//      var appInfo = appPathInstallationKey && appPathInstallationKey.length && user.installedApps[appPathInstallationKey[0]];
+//      if (appInfo) {
+//        state.installed = true;
+//        state.allowed = appInfo.allow;
+//      }
+//
+//      return state;      
+//    },
     
     /**
      * @return promise to return a list of FriendApp objects that represent apps that 'app' follows

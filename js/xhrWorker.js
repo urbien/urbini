@@ -130,7 +130,7 @@ var commands = {
       debugger;
       postMessage({
         responseHeaders: [],
-        status: 400, 
+        status: err.code, 
         data: {
           type: 'other', 
           details: err.message

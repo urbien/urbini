@@ -662,6 +662,7 @@ define('app', [
     });
       
     setupWorkers();
+    Physics.init();
 //    buildLocalizationContext();
 //        getAppAccounts().always(loadModels);
     Voc.checkUser();
@@ -695,7 +696,6 @@ define('app', [
 //    if (G.browser.mobile)
 //      G.removeHoverStyles();
     
-    Physics.init();
     return $.whenAll(modelsViewsTemplatesAndDB.promise(), localized);
   };
   

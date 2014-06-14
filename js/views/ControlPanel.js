@@ -219,11 +219,11 @@ define('views/ControlPanel', [
       case 'YesNo':
         subClassOf = 'commerce/trading/BooleanRule';
         break;
-      case 'Numeric':
-      case 'Fraction':
-      case 'Percent':
-      case 'Money':
-      /* falls through */
+//      case 'Numeric':
+//      case 'Fraction':
+//      case 'Percent':
+//      case 'Money':
+//      /* falls through */
       default:
         subClassOf = 'commerce/trading/NumericRule';
         break;
@@ -241,10 +241,7 @@ define('views/ControlPanel', [
           params.resourceTypeRangeUri = indicator.get('eventPropertyRangeUri');          
         }
           
-        Events.trigger('navigate', U.makeMobileUrl('make', subClassOf, params), {
-          replace: true
-        });
-        
+        Events.trigger('navigate', U.makeMobileUrl('make', subClassOf, params));
         return;
       }
       
@@ -380,7 +377,7 @@ define('views/ControlPanel', [
         U.addToFrag(frag, this.propGroupsDividerTemplate({
           value: propDisplayName,
           add: canAdd,
-          shortName: name == 'indicators' ? 'feeds' : name
+          shortName: (vocModel.shortName == 'Tradle' && name == 'indicators') ? 'feeds' : name
         }));
       }
 
