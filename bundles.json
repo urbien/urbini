@@ -1,5 +1,5 @@
 {
-   "pre":[
+  "pre":[
       "lib/backbone.js",
       "backboneMixins.js",
       "physicsBridge.js",
@@ -46,8 +46,13 @@
       "../styles/common-template-m.css",
       "xhrWorker.js",
       "physicsWorker.js",
-      "../templates.jsp"
-   ],
+      "../templates.jsp",
+      "../styles/fluid_960_grid/reset.css",
+      "../styles/fluid_960_grid/text.css",
+      "../styles/fluid_960_grid/grid.css",
+      "../styles/fluid_960_grid/layout.css",
+      "../styles/fluid_960_grid/nav.css"   
+    ],
    "post":[
       "views/ResourceView.js",
       "views/ControlPanel.js",
