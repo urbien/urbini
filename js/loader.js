@@ -643,9 +643,9 @@ define('globals', function() {
     }
     
     switch (G._widgetLibrary.toLowerCase()) {
-    case 'building blocks':
-      templates.push('../templates_bb.jsp');
-      break;
+//    case 'building blocks':
+//      templates.push('../templates.jsp');
+//      break;
     case 'topcoat':
       templates.push('../templates_topcoat.jsp');
       break;

@@ -717,8 +717,8 @@
 <script type="text/template" id="mvListItem">
   <!-- a multivalue input for edit forms -->
   {{ var id = G.nextId() }}
-  <label class="pack-checkbox">
-    <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}"  class="pack-checkbox" value="{{= _uri }}" {{= obj._checked ? 'checked="checked"' : '' }} />
+  <label>
+    <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}" value="{{= _uri }}" {{= obj._checked ? 'checked="checked"' : '' }} />
     <span></span>
   </label>
   <label for="{{= id }}">{{= davDisplayName }}<!-- {{= obj._thumb ? '<img src="' + _thumb + '" style="float:right;max-height:40px;" />' : '' }}--></label>

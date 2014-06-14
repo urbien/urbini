@@ -454,15 +454,15 @@ define('router', [
 
     choose: function(path) { //, checked, props) {
       if (this.routePrereqsFulfilled('choose', arguments)) {
-        if (!Redirecter.getCurrentChooserBaseResource()) {
-          var params = U.getCurrentUrlInfo().params,
-              forResource = params.$forResource;
-          
-          if (!forResource && !params.$createInstance) {
-            Events.trigger('back', 'back from chooser route due to no current chooser, no $forResource and no $createInstance'); 
-            return;
-          }
-        }
+//        if (!Redirecter.getCurrentChooserBaseResource()) {
+//          var params = U.getCurrentUrlInfo().params,
+//              forResource = params.$forResource;
+//          
+//          if (!forResource && !params.$createInstance) {
+//            Events.trigger('back', 'back from chooser route due to no current chooser, no $forResource and no $createInstance'); 
+//            return;
+//          }
+//        }
           
         this.list(path, G.LISTMODES.CHOOSER); //, {checked: checked !== 'n', props: props ? props.slice(',') : []});
       }

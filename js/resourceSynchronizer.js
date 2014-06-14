@@ -16,7 +16,8 @@ define('resourceSynchronizer', [
       REF_STORE,
       REF_STORE_PROPS,
       serverSyncTimeout,
-      syncQueue;
+      syncQueue,
+      SYNCING = false;
   
   var backboneDefaultSync = Backbone.defaultSync || Backbone.sync;
 //  function isSyncPostponable(vocModel) {
@@ -263,7 +264,11 @@ define('resourceSynchronizer', [
       
       return;
     }
-      
+
+    if (SYNCING)
+      return;
+
+    SYNCING = true;
     var IDB = IndexedDBModule.getIDB(),
         version = IDB.getVersion() || 0,
         types = [],
@@ -272,17 +277,25 @@ define('resourceSynchronizer', [
     if (version <= 1)
       return;
 
-    var retry = setTimeout.bind(window, syncWithServer, 2000);
+    var retry = function() {
+      SYNCING = false;
+      syncWithServer(2000);
+    };
+    
     IDB.queryByIndex('_problematic').eq(0).and(IDB.queryByIndex('_dirty').eq(1)).getAll(REF_STORE.name).done(function(results) {
-      if (!results || !results.length)
+      if (!results || !results.length) {
+        SYNCING = false;
         return;
+      }
       
       for (var i = 0; i < results.length; i++) {
         _.pushUniq(types, U.getTypeUri(results[i]._uri));
       }
       
       Voc.getModels(types, {sync: false}).done(function() {
-        syncResources(results);
+        syncResources(results).always(function() {
+          SYNCING = false;
+        });
       }).fail(retry);
     }).fail(retry);
   }
@@ -493,60 +506,36 @@ define('resourceSynchronizer', [
         var code = xhr.status || xhr.code; 
         if (code < 200) { // timeout probably
           resource.clearErrors();
-          return ResourceSynchronizer.sync();
+          return syncWithServer();
         }
         
-        switch (code) {
-//          case 409:
-//            if (isNew) {
-//              ref._tempUri = ref._uri;
-//              ref._uri = model.getUri();
-//              var i = refs.length,
-//                  r;
-//              
-//              while (i--) {
-//                r = refs[i];
-//                if (r != ref)
-//                  updateReferences(r);
-//              }
-//  //            success(model, model.toJSON(), options);
-//              return;
-//            }
-        }
+        debugger;
+        // for now
+        resource['delete'];
         
-//          else if (code == 304)
-//            return;
-        
-        var problem = U.getJSON(xhr.responseText);
-        if (problem)
-          ref._error = problem;
-        
-        var isMkResource = !ref._tempUri;
-        var toSave;
-        var errInfo = _.pick(ref, '_uri', '_error');
-        ref._error = ref._error || {code: -1, details: (isMkResource ? 'There was a problem creating this resource' : 'There was a problem with your edit')};
-        resource.set(errInfo);
-        
-        if (isMkResource)
-          toSave = _.extend(U.getQueryParams(atts, resource.vocModel), errInfo);
-        else
-          toSave = resource.toJSON(); //_.extend(resource.toJSON(), errInfo);
-        
-        resource.trigger('syncError', ref._error);
-        ref._problematic = 1;
-//          if (status > 399 && status < 600) {
-//          IDB.transaction([type, REF_STORE.name], 1).fail(function() {
-//            debugger;
-//          }).progress(function(transaction) {
-//            IDB.put(transaction.objectStore(type, 1), toSave);
-//            IDB.put(transaction.objectStore(REF_STORE.name, 1), ref);
-//          }).then(dfd.resolve, dfd.reject); // resolve in any case, so sync operation can conclude
-        $.whenAll(IDB.put(type, toSave), IDB.put(REF_STORE.name, ref)).then(function() {
-          dfd.resolve();
-        }, function() {
-          debugger;          
-          dfd.reject();
-        });
+//        var problem = U.getJSON(xhr.responseText);
+//        if (problem)
+//          ref._error = problem;
+//        
+//        var isMkResource = !ref._tempUri;
+//        var toSave;
+//        var errInfo = _.pick(ref, '_uri', '_error');
+//        ref._error = ref._error || {code: -1, details: (isMkResource ? 'There was a problem creating this resource' : 'There was a problem with your edit')};
+//        resource.set(errInfo);
+//        
+//        if (isMkResource)
+//          toSave = _.extend(U.getQueryParams(atts, resource.vocModel), errInfo);
+//        else
+//          toSave = resource.toJSON(); //_.extend(resource.toJSON(), errInfo);
+//        
+//        resource.trigger('syncError', ref._error);
+//        ref._problematic = 1;
+//        $.whenAll(IDB.put(type, toSave), IDB.put(REF_STORE.name, ref)).then(function() {
+//          dfd.resolve();
+//        }, function() {
+//          debugger;          
+//          dfd.reject();
+//        });
       }
     });
       

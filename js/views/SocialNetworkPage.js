@@ -24,8 +24,7 @@ define('views/SocialNetworkPage', [
       this.headerButtons = {
         back: true,
         menu: true,
-        rightMenu: !G.currentUser.guest,
-        login: G.currentUser.guest
+        rightMenu: !G.currentUser.guest
       };
       
       this.header = new Header({

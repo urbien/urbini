@@ -564,9 +564,8 @@ define('app', [
       dfd.resolve();
     };
     
-    require(localeName).done(setLocale).fail(function() {
-      lang = 'en';
-      require('locale/en.json').done(setLocale);
+    require(localeName.format(lang)).done(setLocale).fail(function() {
+      require(localeName.format('en')).done(setLocale);
     });
         
     return dfd.promise();

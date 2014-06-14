@@ -3,51 +3,7 @@
   Font Awesome - http://fortawesome.github.com/Font-Awesome
 </Attributions-->
 
-<!-- Templates -->
-<script type="text/template" id="resource-list">
-  <!-- Resource list page -->
-  <section id="{{= viewId }}"></section>
-  <section id="{{= viewId + 'r' }}"></section> 
-  <!-- div id="headerMessageBar"></div -->
-  <div id="headerDiv"></div>
-  <div id="mapHolder" data-role="none"></div>
-  <div id="sidebarDiv" role="main">
-  <!--
-   {{ if (this.collection.models.length > 5) { }}
-    <form role="search">
-      <p>
-        <input type="text" placeholder="Search..." required="">
-        <button type="reset">Clear</button>
-      </p>
-    </form>
-   {{ } }}
-   -->
-    <section  id="sidebar" data-type="list">
-   </div>
-    </section>
-    <div id="nabs_grid" class="masonry">
-    </div>
-    
-    <table class="table-stroke" width="100%" style="display:none" id="comments">
-    </table>
-    <form data-ajax="false" id="mv" action="#">
-      <div style="width:100%;padding-top:1rem;text-align:center">
-        <button class="btn btn-default" type="submit" style="background-color:#eee; font-size:18px; width:90%;padding:1rem 0 3rem 0;" id="mvSubmit">{{= loc('submit') }}</button>
-      </div>
-      <br/>
-      <div data-role="fieldcontain">
-        <fieldset id="mvChooser">
-        </fieldset>
-      </div>
-    </form>  
-    <form data-ajax="false" id="editRlForm" action="#">
-      <input type="submit" id="editRlSubmit" value="Submit" />
-      <ul data-role="listview" id="editRlList" class="action-list" data-inset="true">
-      </ul>
-    </form>  
-  </div>
-</script>  
- 
+<!-- Templates --> 
 <script type="text/template" id="resource">
   <!-- Single resource view -->  
   <section id="{{= viewId }}" data-type="sidebar"></section>
@@ -137,23 +93,29 @@
 <script type="text/template" id="cpTemplate">
 <!-- readwrite backlink in resource view -->
 <li class="list-group-item" data-propName="{{= shortName }}">
-     <a href="{{= U.makePageUrl(action, range, params)) }}">{{= name }}<span class="badge pull-right" style="margin-right:2.5rem;">{{= value }}</span></a>
-     <a href="#" data-shortName="{{= shortName }}" data-title="{{= title }}" class="cp"><i class="ui-icon-plus-sign"></i>
-     {{ if (typeof comment != 'undefined') { }}
-       <p>{{= comment }}</p>
-     {{ } }}
-     </a>
-   </li>
+  {{ if (obj.prop && prop.where) _.extend(params, U.getQueryParams(prop.where)); }}
+  <p>
+    <a {{= prop.lookupFrom ? 'data-lookupFrom=' + prop.lookupFrom : '' }} data-shortName="{{= shortName }}" href="{{= U.makePageUrl(action, range, params) }}" class="cpA">{{= name }}</a>
+    <div style="color:{{= G.lightColor }};font-weight:bold;background:{{= G.darkColor }};display:inline;position:absolute;right:1rem;font-size: 1.5rem;border-radius:1rem;border: 1px solid {{= G.darkColor }};padding: 0.1rem 0.3rem;">{{= value }}</div>
+  </p>     
+  {{ if (typeof comment != 'undefined') { }}
+    <br/><p style="padding: 0.7rem 0;font-size:1.3rem;color:#808080; line-height:1.5rem;">{{= comment }}</p>
+  {{ } }}
+  </li>
 </script>
 
 <script type="text/template" id="cpTemplateNoAdd">
 <!-- readonly backlink in resource view -->
 <li class="list-group-item" data-propName="{{= shortName }}">
+<p>
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
-     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
+     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title, '$orderBy': obj.$order, '$asc': obj.$asc})) }}" class="cpA">{{= name }}
+     
+     <!--span class="ui-li-count">{{= value }}</span></a><a target="#" data-icon="chevron-right" data-iconshadow="false" class="cp" -->
      </a>
-     <span class="badge pull-right" style="margin-right:2.5rem;">{{= value }}</span>
+     <div style="{{= G.darkColor }}display:inline;position:absolute;right:1rem;font-size: 1.5rem;border-radius:1rem;border: 1px solid {{= G.darkColor }};padding: 0.1rem 0.3rem;">{{= value }}</div>
+</p>     
    </li>
 </script>
 
@@ -193,7 +155,6 @@
    </button>
  {{ } }}
 </script>
-
 
 <script type="text/template" id="listItemTemplate">
   <!-- bb one row on a list page -->
@@ -263,150 +224,87 @@
   <li class="list-group-item active" {{= G.coverImage ? 'style="background:' + G.coverImage.background + ';color:' + G.coverImage.color + ';"' : '' }}>{{= value }}</li>
 </script>
 
-<script type="text/template" id="mapItButtonTemplate">
-  <!-- button that toggles map view -->
-  <a id="mapIt" target="#"><i class="ui-icon-map-marker"></i></a>
-</script>
-
-<script type="text/template" id="backButtonTemplate">
-  <!-- The UI back button (not the built-in browser one) -->
-  <a target="#" class="back"><i class="ui-icon-chevron-left"></i></a>
-</script>
-
-<script type="text/template" id="chatButtonTemplate">
-  <!-- Button that opens up a chat page -->
-  <a href="{{= url || '#' }}"><i class="ui-icon-comments-alt"></i>
-    {{= '<span class="menuBadge">{0}</span>'.format(obj.unreadMessages || '') }}
-  </a>
-</script>
-
-<script type="text/template" id="videoButtonTemplate">
-  <!-- Button that toggles video chat -->
-  <a target="#" ><i class="ui-icon-facetime-video"></i>Video</a>
-</script>
-
-<script type="text/template" id="addButtonTemplate">
-  <!-- button used for creating new resources -->
-  <!--a target="#" {{= obj.empty ? 'class="hint--bottom hint--always" data-hint="Add item"' : '' }}><i class="ui-icon-plus-sign"></i></a-->
-  <a target="#"><i class="ui-icon-plus-sign"></i></a>
-</script>
-
-<script type="text/template" id="menuButtonTemplate">
-  <!-- button that toggles the menu panel -->
-  <a target="#" href="#{{= viewId }}"><i class="ui-icon-reorder"></i>
-    {{= '<span class="badge">{0}</span>'.format(obj.newAlerts || '') }}
-  </a>
-</script>
-
-<script type="text/template" id="rightMenuButtonTemplate">
-  <!-- button that toggles the object properties panel -->
-  <a target="#" href="#{{= viewId }}"><i class="ui-icon-reorder"></i></a>
-    {{= '<span class="badge">{0}</span>'.format(obj.count || '') }}
-  </a>
-</script>
-
-<script type="text/template" id="loginButtonTemplate">
-  <!-- button that summons the login popup -->
-  <a target="#"><i class="ui-icon-signin"></i></a>
-</script>
-
-<script type="text/template" id="logoutButtonTemplate">
-  <li class="list-group-item" id="logout">
-    <a id="logout" target="#" data-icon="signout">{{= loc('signOut') }}</a>
-  </li>
-</script>
-
-<script type="text/template" id="publishBtnTemplate">
-  <!-- button to (re-)publish an app, i.e. a glorified 'Save App' button -->
-  <a target="#" data-icon="book" id="publish" data-role="button" data-position="notext">{{= loc(wasPublished ? 'appChangedClickToRepublish' : 'publishAppWhenDone') }}</a>
-</script>
-
-<script type="text/template" id="resetTemplateBtnTemplate">
-<!-- button to reset a template to its default value -->
-<a target="#" data-icon="retweet" id="resetTemplate" data-role="button" data-position="notext" data-mini="true">{{= loc('resetToDefault') }}</a>
-</script>
-
-<script type="text/template" id="doTryBtnTemplate">
-  <!-- button that spirits you away to go try a particular app -->
-  <a target="#" id="doTry"><i class="circle-arrow-up"></i>{{= loc('gotoApp') }}</a>
-</script>
-
-<script type="text/template" id="installAppBtnTemplate">
-  <!-- button that installs a given app when clicked -->
-  <a target="#" data-icon="plus-sign" id="installApp" data-role="button" data-position="notext" style="background:#0F0;color:#FFF">{{= loc('install') }}</a>
-</script>
-
-<script type="text/template" id="forkMeBtnTemplate">
-  <!-- a la Github's Fork It button, let's you clone an existing app -->
-  <a target="#" data-icon="copy" id="forkMe" data-role="button" data-position="notext">{{= loc('forkMe') }}</a>
-</script>
-
-<script type="text/template" id="enterTournamentBtnTemplate">
-  <!-- button that will enter the user into a tournament -->
-  <a target="#" data-icon="star" id="enterTournament" data-role="button" data-position="notext">{{= loc('enterData') + ': ' + name }}</a>
-</script>
-
-<script type="text/template" id="testPlugBtnTemplate">
-  <!-- button that allows you to test a script connecting two apps -->
-  <a target="#" data-icon="bolt" id="testPlug" data-role="button" data-position="notext">{{= loc('testThisPlug') }}</a>
-</script>
-
 <script type="text/template" id="headerTemplate">
   <!-- the page header, including buttons and the page title, used for all pages except the home page -->
   <div id="callInProgress"></div>
-  <div id="header" {{= obj.style ? style : '' }} {{= obj.more || '' }} >
+  <div id="header" {{= obj.style ? style : 'style="background:' + G.lightColor + ';color:' + G.darkColor + '"' }} {{= obj.more || '' }} >
     <nav  id="headerUl" class="navbar navbar-default" role="navigation">
     </nav>      
   </div>
-  <div id="buttons">  
-    {{ if (this.categories) { }}
-       <div style="margin:10px 0 0 10px; float:left"><a id="categories" href="#" {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';background:' + G.coverImage.color +';"' : '' }}>
-       <i class="ui-icon-tags"></i></a></div> 
-    {{ } }} 
-    {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
-    <div id="name" class="resTitle" style="background:{{= G.coverImage ? G.coverImage.background : '#757575' }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
-      <h4 id="pageTitle" style="font-weight:normal;">{{= this.title }}</h4>
+  <div id="buttons" style="white-space: nowrap; position:relative; height: 48px; background:{{= G.darkColor }};color:{{= G.lightColor }}">
+    <div class="cf vcentered" style="z-index:1; width:20%;float:left;background:inherit;">
+      <span class="placeholder"></span>
+      {{ if (this.categories) { }}
+         <div style="position:absolute;top:14px;padding-left:10px;"><a id="categories" class="lightDark" href="#">
+         <i class="ui-icon-tags"></i></a></div> 
+      {{ } }} 
+      {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
+      {{ if (folder) { }}
+        <a class="rootFolder actionBtn" style="display: none; padding: 4px 10px; margin-left: 5px; font-size: 1.5rem;" href="#">
+          <i class="ui-icon-chevron-left" style="padding: 0px 3px 0px 0px"></i>
+          <span>{{= folder.name }}</span>
+        </a>
+      {{ }                     }}
+    </div>
+    <div id="name" class="cf vcentered resTitle" style="z-index:0; width:60%;float:left;background:inherit; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
+      <h4 id="pageTitle" style="text-overflow: ellipsis; font-weight:normal;color:{{= G.lightColor }};">{{= this.title }}</h4>
       {{= this.filter ? "<div class='filter'></div>" : "" }}
       <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
-        <button style="max-width:200px; display: inline-block;" class="btn" id="doTryBtn">
+        <button style="max-width:200px; display: inline-block;" id="doTryBtn">
           {{ if (obj.tryApp) { }}
               {{= tryApp }}
           {{ } }}
         </button>
-        <button style="max-width:200px; display: inline-block;"  class="btn" id="forkMeBtn">
+        <button style="max-width:200px; display: inline-block;" id="forkMeBtn">
           {{ if (obj.forkMeApp) { }}
               {{= forkMeApp }}
           {{ } }}
         </button>
-        <button style="max-width:400px;" id="publishBtn" class="headerSpecialBtn btn">
+        <button style="max-width:400px;" id="publishBtn" class="headerSpecialBtn">
           {{ if (obj.publishApp) { }}
               {{= publish }}
           {{ } }}
         </button>
-        <button style="max-width:200px;" id="testPlugBtn" class="headerSpecialBtn btn">
+        <button style="max-width:200px;" id="testPlugBtn" class="headerSpecialBtn">
           {{ if (obj.testPlug) { }}
               {{= testPlug }}
           {{ } }}
         </button>
-        <button style="max-width:200px;" id="installAppBtn"  class="headerSpecialBtn btn">
+        <button style="max-width:200px;" id="installAppBtn"  class="headerSpecialBtn">
           {{ if (obj.installApp) { }}
             {{= installApp }}
           {{ } }}
         </button>
-        <button style="max-width:320px;" id="enterTournamentBtn" class="headerSpecialBtn btn">
+        <button style="max-width:320px;" id="enterTournamentBtn" class="headerSpecialBtn">
           {{ if (obj.enterTournament) { }}
               {{= enterTournament }}
           {{ } }}
         </button>
-        <button style="max-width:320px;" id="resetTemplateBtn" class="headerSpecialBtn btn">
+        <button style="max-width:320px;" id="resetTemplateBtn" class="headerSpecialBtn">
           {{ if (obj.resetTemplate) { }}
               {{= resetTemplate }}
           {{ } }}
         </button>
       </div>
+      <div style="clear:both"></div>
     </div>
-    <div class="physicsConstants" style="background-color:#606060; display:none; color: #ffffff;"></div>    
+    <div class="cf vcentered" style="z-index:1; width:20%;float:left;background:inherit;">
+      {{ if (activatedProp) { }}
+        <section class="activatable" style="float: right; display: none;">
+          <label class="pack-switch" style="float: right; right: 2rem; height: 2rem; vertical-align:inherit; color:{{= G.darkColor }};">
+            <input type="checkbox" name="{{= activatedProp.shortName }}" class="formElement boolean" {{= this.resource.get(activatedProp.shortName) ? 'checked="checked"' : '' }} />
+            <span></span>
+          </label>
+        </section>
+      {{ }                     }}
+      {{ if (this.filter) { }}
+        <div style="margin-right: 5px; display:inline-block; float: right;"><a class="filterToggle lightText" href="#"><i class="ui-icon-fasearch"></i></a></div> 
+      {{ }                  }}
+      <div style="clear:both"></div>
+    </div>
   </div>
+  <div class="physicsConstants" style="display:none; background-color: #606060; color:#FFFFFF; display:none;"></div>
+  <div class="categories" style="display:none; padding: 5px; background-color:#ddd; display:none;"></div>
 </script>
 
 <script type="text/template" id="menuP">

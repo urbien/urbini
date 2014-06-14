@@ -8,15 +8,7 @@ define('views/Header', [
   'physicsBridge',
   'domUtils',
   'lib/fastdom'
-//  ,
-//  'views/BackButton',
-//  'views/LoginButton',
-//  'views/AddButton',
-//  'views/MapItButton',
-//  'views/AroundMeButton',
-//  'views/MenuButton',
-//  'views/PublishButton'
-], function(G, Events, U, Voc, BasicView, Physics, DOM, Q/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
+], function(G, Events, U, Voc, BasicView, Physics, DOM, Q) {
   var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate', 'installApp'];
   var REGULAR_BUTTONS = ['back', 'cancel', 'save', 'mapIt', 'add', 'video', 'chat', 'login', 'rightMenu'];
   var commonTypes = G.commonTypes;

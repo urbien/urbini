@@ -1911,7 +1911,7 @@ define('utils', [
     },
     
     makeOrGroup: function() {
-      return slice.call(arguments).join('||');
+      return slice.call(arguments).map(function(arg) { return typeof arg == 'string' ? arg : _.param(arg) }).join('||');
     },
     
     /**
