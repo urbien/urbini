@@ -262,7 +262,7 @@ section[data-type="sidebar"]:after, #header section[role="region"] > header:firs
   position:relative; 
   font-size: 22px;
   margin-top:-40px;
-  margin-right:20px;
+  margin-right:15px;
 }
 
 [data-type="list"] li > a {
