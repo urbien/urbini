@@ -730,7 +730,7 @@
     >
     
     {{ if (obj.icon  &&  obj.homePage) { }}
-      <i class="ui-icon-{{= icon }}" style="float-left; font-size: 20px; padding-right: 5px;"></i>
+      <i class="ui-icon-{{= icon }}" style="float: right; font-size: 20px; padding-right: 5px;"></i>
     {{ }               }}
       {{= title }}
       {{= obj.image || title.length < 20 ? '' : '<div class="dimmer">' }}
