@@ -80,7 +80,7 @@ define('resourceSynchronizer', [
   };
 
   ResourceSynchronizer.prototype._saveItem = function() {
-//    console.log("1. SAVE ITEM");
+    console.log("1. SAVE ITEM");
     var self = this,
         IDB = IndexedDBModule.getIDB(),
         item = this.data,
@@ -119,13 +119,13 @@ define('resourceSynchronizer', [
         result = _.pick(result, REF_STORE_PROPS);
       }
         
-//      console.log("2.a SAVE ITEM");
+      console.log("2.a SAVE ITEM");
       _.extend(result, itemJson);      
       return self._saveItemHelper(result, item);            
     }
     
     function notFound() {
-//      console.log("2.b SAVE ITEM");
+      console.log("2.b SAVE ITEM");
       return self._saveItemHelper(itemRef, item);            
     }
     
@@ -138,9 +138,10 @@ define('resourceSynchronizer', [
   };  
   
   ResourceSynchronizer.prototype._saveItemHelper = function(itemRef, item) {
-//    console.log("3. SAVE ITEM");
+    console.log("3. SAVE ITEM");
     var self = this,
-        type = item.vocModel.type;
+        type = item.vocModel.type,
+        dfd = $.Deferred();
     
     // a mkresource went awry, not sure if we need to do anything special as opposed to edit
     
@@ -167,17 +168,22 @@ define('resourceSynchronizer', [
 //    }, function() {
 //      debugger;
 //    });
-    return put(REF_STORE.name, itemRef).then(function() {
-//      console.log("4. SAVE ITEM");
-      return Synchronizer.addItems(type, [item]).then(function() {
-//        console.log("5. SAVE ITEM");
+    put(REF_STORE.name, itemRef).done(function() {
+      console.log("4. SAVE ITEM");
+      Synchronizer.addItems(type, [item]).done(function() {
+        console.log("5. SAVE ITEM");
+        dfd.resolve();
         syncWithServer();
-      }, function() {
+      }).fail(function() {
         debugger;
+        dfd.reject();
       });
-    }, function() {
+    }).fail(function() {
       debugger;
+      dfd.reject();
     });
+    
+    return dfd.promise();
   };
   
   function put(storeName, items) {
@@ -537,7 +543,6 @@ define('resourceSynchronizer', [
           return syncWithServer();
         }
         
-        debugger;
         // for now
         resource['delete']();
         

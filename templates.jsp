@@ -152,9 +152,10 @@
 </script>
 
 <script type="text/template" id="inlineCompareIndicatorsRuleTemplate">
-<li data-viewid="{{= viewId }}" style="background:white;">
+<li data-viewid="{{= viewId }}" style="background:white; padding:0;">
+  {{ var byPercent = ~resource.getUri().indexOf('ByRule?') }}
   <div style="font-size:1.6rem;font-weight:bold;text-align:center; height: 80px; padding:1rem 0;">
-    <div class="cf" style="float:left; width:42%;">
+    <div class="cf" style="float:left; width:40%; height:100%;">
       <!--img src="{{= feedImage }}" /-->
       <div style="font-size:2.5rem;padding-bottom:1rem;">
         {{= resource.get('indicator.displayName') }}
@@ -165,17 +166,18 @@
         </a>
       </div>
     </div>
-    <div class="cf" style="float:left; width:14%;font-size:2.3rem;">
-      <div style="font-size:4.5rem;">
-      {{= ~resource.vocModel.shortName.indexOf('MoreThan') ? ">" : "<" }}
+    <div class="cf" style="float:left; width:20%; height:100%; font-size:2.3rem;">
+      <div style="font-size:4.5rem;" class="{{= byPercent ? '' : 'vcentered' }}">
+      {{= U.getRuleOperator(resource) }}
       </div>
-      {{ if (~resource.vocModel.shortName.indexOf('ByRule')) {   }}
+      {{ if (byPercent) {   }}
       <div>
-        <span style="font-size:1.5rem;">BY</span> {{= resource.get('percentValue') }}%
+        <span style="font-size:1.5rem;">BY</span> 
+        {{= resource.get('percentValue') }}%
       </div>
       {{ }                        }}
     </div>
-    <div class="cf" style="float:left; width:42%">
+    <div class="cf" style="float:left; width:40%; height:100%;">
     {{ if (resource.get('compareWith')) {   }}
       <!--img src="{{= compareWith.feedImage }}" /-->
       <div style="font-size:2.5rem;padding-bottom:1rem;">
@@ -188,8 +190,8 @@
       </div>
     {{ }                        }}
     {{ if (!resource.get('compareWith')) {  }}
-      <div style="font-size:4rem;padding-bottom:1rem;">
-        {{= resource.get('doubleValue') }}
+      <div class="vcentered" style="font-size:4rem;padding-bottom:1rem;">
+        {{= U.getRuleValue(resource) }}
       </div>
     {{ }                        }}
     </div>

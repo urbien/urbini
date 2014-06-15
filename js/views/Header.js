@@ -681,7 +681,7 @@ define('views/Header', [
       if (!rootFolderEl)
         return;
       
-      rootFolderEl.style.display = 'inline-block';
+      rootFolderEl.style.display = 'initial';
       rootFolderEl.$('span')[0].textContent = this.folder.name;
       rootFolderEl.href = U.makePageUrl('view', this.folder.uri);
 //        else {

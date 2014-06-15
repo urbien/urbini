@@ -368,6 +368,9 @@ define('views/ControlPanel', [
           linkToEdit = U.isAssignableFrom(listVocModel, G.commonTypes.WebProperty, 'commerce/trading/Notification'),
           action = linkToEdit ? 'edit' : 'view';
       
+      if (isRule && !this.compareIndicatorsTemplate)
+        this.makeTemplate('inlineCompareIndicatorsRuleTemplate', 'compareIndicatorsTemplate', listVocModel.type);
+      
       if (list.length && isCancelable) {
         canceledProp = listMeta[U.getCloneOf(listVocModel, 'Cancellable.cancelled')[0]];
         isCancelable = canceledProp && U.isPropEditable(list.models[0], canceledProp);
@@ -398,15 +401,15 @@ define('views/ControlPanel', [
             grid = U.getCols(iRes, 'grid', true);
             
         if (isRule) {
-          var uri = iRes.getUri(),
-              type = U.getTypeUri(uri);
-          
-          if (/ThanIndicator/.test(type)) {
-            if (!this.compareIndicatorsTemplate)
-              this.makeTemplate('inlineCompareIndicatorsRuleTemplate', 'compareIndicatorsTemplate', listVocModel.type);
+//          var uri = iRes.getUri(),
+//              type = U.getTypeUri(uri);
+//          
+//          if (/ThanIndicator/.test(type)) {
+//            if (!this.compareIndicatorsTemplate)
+//              this.makeTemplate('inlineCompareIndicatorsRuleTemplate', 'compareIndicatorsTemplate', listVocModel.type);
             
             template = this.compareIndicatorsTemplate;
-          }
+//          }
         }
         else if (U.isA(listVocModel, 'Intersection')) {
           var oH, oW, ab;
@@ -528,7 +531,7 @@ define('views/ControlPanel', [
           hasImages = true;
         else if (hasImages)
           params.needsAlignment = true;
-          
+        
         U.addToFrag(frag, template.call(this, params));
         displayedProps[name] = true;
         this.stopListening(iRes, 'change', this.update);
