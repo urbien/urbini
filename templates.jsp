@@ -156,7 +156,9 @@
   {{ var byPercent = ~resource.getUri().indexOf('ByRule?') }}
   <div class="cf" style="font-size:1.6rem;font-weight:bold;text-align:center; height: auto; padding:1rem 0;">
     <div style="float:left; width:40%; height:100%;">
-      <!--img src="{{= feedImage }}" /-->
+      {{ if (resource.get('feedImage')) { }}
+        <img style="float:left" src="{{= resource.get('feedImage') }}" />
+      {{ }                               }}
       <div style="font-size:2.5rem;padding-bottom:1rem;">
         {{= resource.get('indicator.displayName') }}
       </div>
@@ -179,7 +181,9 @@
     </div>
     <div style="float:left; width:40%; height:100%;">
     {{ if (resource.get('compareWith')) {   }}
-      <!--img src="{{= compareWith.feedImage }}" /-->
+      {{ if (resource.get('compareWithFeedImage')) { }}
+        <img style="float:right;" src="{{= resource.get('compareWithFeedImage') }}" />
+      {{ }                               }}
       <div style="font-size:2.5rem;padding-bottom:1rem;">
         {{= resource.get('compareWith.displayName') }}
       </div>
@@ -197,8 +201,8 @@
     </div>
   </div>
   {{ if (obj.Cancelable && !Cancelable.canceled) { }}
-    <a style="width: auto; height: auto; float: right; padding: 1rem; position: absolute; top: 0; right: 0;" href="#" data-uri="{{= resource.getUri() }}" data-cancel="true">
-      <i class="ui-icon-remove"></i>
+    <a style="width: 2%; height: 100%; position: absolute; top: 0; right: 0;" href="#" data-uri="{{= resource.getUri() }}" data-cancel="true">
+      <i class="vcentered ui-icon-remove" style="font-size: 2rem; position: absolute; color: #ddd;"></i>
     </a>
   {{ } }}
 </li>
