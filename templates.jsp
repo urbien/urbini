@@ -154,8 +154,8 @@
 <script type="text/template" id="inlineCompareIndicatorsRuleTemplate">
 <li data-viewid="{{= viewId }}" style="background:white; padding:0;">
   {{ var byPercent = ~resource.getUri().indexOf('ByRule?') }}
-  <div style="font-size:1.6rem;font-weight:bold;text-align:center; height: 80px; padding:1rem 0;">
-    <div class="cf" style="float:left; width:40%; height:100%;">
+  <div class="cf" style="font-size:1.6rem;font-weight:bold;text-align:center; height: auto; padding:1rem 0;">
+    <div style="float:left; width:40%; height:100%;">
       <!--img src="{{= feedImage }}" /-->
       <div style="font-size:2.5rem;padding-bottom:1rem;">
         {{= resource.get('indicator.displayName') }}
@@ -166,7 +166,7 @@
         </a>
       </div>
     </div>
-    <div class="cf" style="float:left; width:20%; height:100%; font-size:2.3rem;">
+    <div style="float:left; width:20%; height:100%; font-size:2.3rem;">
       <div style="font-size:4.5rem;" class="{{= byPercent ? '' : 'vcentered' }}">
       {{= U.getRuleOperator(resource) }}
       </div>
@@ -177,7 +177,7 @@
       </div>
       {{ }                        }}
     </div>
-    <div class="cf" style="float:left; width:40%; height:100%;">
+    <div style="float:left; width:40%; height:100%;">
     {{ if (resource.get('compareWith')) {   }}
       <!--img src="{{= compareWith.feedImage }}" /-->
       <div style="font-size:2.5rem;padding-bottom:1rem;">
@@ -1280,7 +1280,7 @@
   </section>
   </div>
 </div>
-<div id="buttons" style="white-space: nowrap; position:relative; height: 48px; background:{{= G.darkColor }};color:{{= G.lightColor }}">
+<div id="buttons" style="white-space: nowrap; position:relative; height: 50px; background:{{= G.darkColor }};color:{{= G.lightColor }}">
   <div class="cf vcentered" style="z-index:1; width:20%;float:left;background:inherit;">
     <span class="placeholder"></span>
     {{ if (this.categories) { }}
@@ -1343,7 +1343,7 @@
   <div class="cf vcentered" style="z-index:1; width:20%;float:left;background:inherit;">
     {{ if (activatedProp) { }}
       <section class="activatable" style="float: right; display: none;">
-        <label class="pack-switch" style="float: right; right: 2rem; height: auto; vertical-align:inherit; color:{{= G.darkColor }};">
+        <label class="pack-switch" style="float: right; right: 2rem; vertical-align:inherit; color:{{= G.darkColor }};">
           <input type="checkbox" name="{{= activatedProp.shortName }}" class="formElement boolean" {{= this.resource.get(activatedProp.shortName) ? 'checked="checked"' : '' }} />
           <span></span>
         </label>
