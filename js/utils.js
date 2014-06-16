@@ -226,7 +226,14 @@ define('utils', [
                   code = xhr.status,
                   headers = xhr.responseHeaders,
                   error;
-              
+
+              if (/Failed to execute \'send\' on \'XMLHttpRequest\'/.test(resp && resp.details)) {
+                debugger;
+                defer.reject(xhr, resp, opts);
+                return;
+              }
+
+                  
 //              Events.trigger('garbage', resp);
               if (headers.length) {
                 var h = headers.splitAndTrim(/\n/),
@@ -1911,7 +1918,7 @@ define('utils', [
     },
     
     makeOrGroup: function() {
-      return slice.call(arguments).join('||');
+      return slice.call(arguments).map(function(arg) { return typeof arg == 'string' ? arg : _.param(arg) }).join('||');
     },
     
     /**
@@ -4299,6 +4306,58 @@ define('utils', [
     },
     isWriteRoute: function(route) {
       return _.contains(['make', 'edit'], route);
+    },
+    
+    isNumericType: function(propertyType) {
+      return /Numeric|Fraction|Percent|Money|Duration/.test(propertyType);
+    },
+
+    isNumeric: function(ruleTypeUri) {
+      return ruleTypeUri.match(/(Rose|Fell)?(More|Less)(?:Than)[^\/]*(?:Rule)/);
+    },
+    
+    getRuleOperator: function(rule) {
+      var op = rule.get('operator');
+      if (op)
+        return op;
+      
+      var vocModel = rule.vocModel;
+      var type = U.getTypeUri(rule.getUri());
+      var numeric = U.isNumeric(type);
+      if (numeric) {
+        if (numeric[1])
+          return numeric[1];
+        else 
+          return numeric[2] == 'More' ? '>' : '<';
+      }
+      else if (type.endsWith('StringContainsRule'))
+        return "CONTAINS";
+      else
+        return "IS";
+    },      
+
+    getRuleValue: function(rule) {
+      var vocModel = rule.vocModel;
+      var type = U.getTypeUri(rule.getUri());
+      if (U.isNumeric(type)) {
+        var val = rule.get('doubleValue');
+        if (val !== undefined)
+          return val;
+        
+        val = rule.get('percentValue');
+        if (val !== undefined)
+          return val + '%';
+        
+        return 0;
+      }
+      
+      var ruleType = type.match(/(String|Enum|Boolean)[a-zA-Z]*?Rule/);
+      if (ruleType)
+        return rule.get(ruleType[1].toLowerCase() + 'Value');
+      else if (type.endsWith('LinkRule'))
+        return rule.get('resourceValue.displayName');
+      else
+        throw "unsupported";
     }
   };
   

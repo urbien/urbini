@@ -21,7 +21,7 @@ define('views/SaveButton', [
     },
     save: function(e) {
       Events.stopEvent(e);
-      Events.trigger('userSaved');
+      this.getPageView().trigger('userSaved');
       return this;
     },
     render: function(options) {

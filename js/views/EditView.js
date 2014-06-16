@@ -18,9 +18,9 @@ define('views/EditView', [
 //      ,
 //      secs = [/* week seconds */604800, /* day seconds */ 86400, /* hour seconds */ 3600, /* minute seconds */ 60, /* second seconds */ 1];
 
-//  function parseTime(time) {
-//    debugger;
-//  };
+  function mobiscroll(scroller) {
+    return $.fn.mobiscroll.apply(scroller, _.rest(arguments));
+  };
   
   function clearForm(forms) {
     var i = forms.length;
@@ -108,28 +108,27 @@ define('views/EditView', [
       
       this.isCode = !!codemirrorModes.length;
       var codemirrorPromise;
-      if (self.isCode) {
+      if (this.isCode) {
         codemirrorPromise = U.require(['codemirror', 'codemirrorCss'].concat(codemirrorModes));
         promises.push(codemirrorPromise);
       }
       else
         codemirrorPromise = G.getResolvedPromise();
 
-//      if (U.isAssignableFrom(this.vocModel, 'commerce/trading/EnumRule')) {
-//        var dfd = $.Deferred(),
-//            res = this.resource;
-//        
-//        fetchPromise.done(function() {
-//          var enumRangeUri = res.get('enumerationRangeUri');
-//          var enumModel = U.getEnumModel(enumRangeUri);
-//          if (enumModel == null)
-//            Voc.getModels(enumRangeUri).done(dfd.resolve).fail(dfd.reject);          
-//        });
-//        
-//        fetchPromise = dfd.promise().done(function(enumModel) {
-//          debugger;
-//        });
-//      }
+      if (U.isAssignableFrom(this.vocModel, 'commerce/trading/EnumRule')) {
+        var dfd = $.Deferred(),
+            res = this.resource;
+        
+        promises.push(dfd.promise());
+        fetchPromise.done(function() {
+          var enumRangeUri = res.get('enumerationRangeUri');
+          var enumModel = U.getEnumModel(enumRangeUri);
+          if (enumModel == null)
+            Voc.getModels(enumRangeUri).done(dfd.resolve).fail(dfd.reject);
+          else
+            dfd.resolve();
+        });
+      }
 
       this.ready = $.when.apply($, promises);
       if (this.saveOnEdit) {
@@ -174,11 +173,6 @@ define('views/EditView', [
       'change input[type="date"]'         :'onSelected'
     },
     
-    globalEvents: {
-      'userSaved': 'submit',
-      'userCanceled': 'cancel'
-    },
-
     /** 
      * find all non-checked non-disabled checkboxes, check them, trigger jqm to repaint them and trigger a 'change' event so whatever we have tied to it is triggered (for some reason changing the prop isn't enough to trigger it)
      */
@@ -351,69 +345,72 @@ define('views/EditView', [
       Events.trigger('info', {info: msg, page: this.getPageView(), persist: true});
     },
     
-//    getScroller: function(prop, input) {
-//      var settings = {
-//        theme: 'ios',
-//        display: 'modal',
-//        mode:'scroller',
-//        durationWheels: ['years', 'days', 'hours', 'minutes', 'seconds'],
-//        label: U.getPropDisplayName(prop),
-//        shortName: prop.shortName,
-//        onSelect: this.onSelected,
-//        input: input
-//      };
-//      
-//      scrollerType = settings.__type = _.find(['date', 'duration'], function(type) {
-//        return _.has(input.dataset, type);
+    getScroller: function(prop, input) {
+      var settings = {
+        theme: 'ios',
+        display: 'modal',
+        mode:'scroller',
+        durationWheels: ['years', 'days', 'hours', 'minutes', 'seconds'],
+        label: U.getPropDisplayName(prop),
+        shortName: prop.shortName,
+        onSelect: this.onSelected,
+        input: input
+      };
+      
+      scrollerType = settings.__type = _.find(['date', 'duration'], function(type) {
+        return _.has(input.dataset, type);
+      });
+
+      var scroller;
+      switch (scrollerType) {
+        case 'date':
+        case 'duration':
+          var isDate = scrollerType === 'date';
+          scroller = mobiscroll(input)[scrollerType](settings);
+          var val = input.value && parseInt(input.value);
+          if (typeof val === 'number')
+            mobiscroll(scroller, isDate ? 'setDate' : 'setSeconds', isDate ? new Date(val) : val, true);
+          
+          break;
+      }
+      
+      return scroller;
+    },
+
+    mobiscroll: function(e, scrollerType, dontClick) {
+      if (this.fetchingScrollers)
+        return;
+      
+      this.fetchingScrollers = true;
+      e.target.blur(); // hack to suppress keyboard that would open on this input field
+      Events.stopEvent(e);
+      
+//      // mobiscrollers don't disappear on their own when you hit the back button
+//      Events.once('pageChange', function() {
+//        $('.jqm, .dw-modal').remove();
 //      });
-//
-//      var scroller;
-//      switch (scrollerType) {
-//        case 'date':
-//        case 'duration':
-//          var isDate = scrollerType === 'date';
-//          scroller = $(input).mobiscroll()[scrollerType](settings);
-//          var val = input.value && parseInt(input.value);
-//          if (typeof val === 'number')
-//            scroller.mobiscroll(isDate ? 'setDate' : 'setSeconds', isDate ? new Date(val) : val, true);
-//          
-//          break;
-//      }
-//      
-//      return scroller;
-//    },
-//
-//    mobiscroll: function(e, scrollerType, dontClick) {
-//      if (this.fetchingScrollers)
-//        return;
-//      
-//      this.fetchingScrollers = true;
-//      $(e.target).blur(); // hack to suppress keyboard that would open on this input field
-//      Events.stopEvent(e);
-//      
-////      // mobiscrollers don't disappear on their own when you hit the back button
-////      Events.once('pageChange', function() {
-////        $('.jqm, .dw-modal').remove();
-////      });
-//      
-//      var self = this;
-//      var thisName = e.target.name;
-//      var meta = this.vocModel.properties;
-////      var scrollerModules = ['mobiscroll', 'mobiscroll-datetime', 'mobiscroll-duration'];
-//      var scrollers = self.getScrollers();
-////      if (_.any(scrollers, function(s) { return s.dataset.duration }))
-////        modules.push('mobiscroll-duration');
-//      
-//      U.require('mobiscroll', function() {
-//        self.loadedScrollers = true;
-//        self.refreshScrollers();
-//        if (!dontClick) {
-//          var scroller = _.find(scrollers, function(s) {return s.name === thisName; });
-//          if (scroller)
-//            $(scroller).click().focus();
-//        }
-//      });
-//    },
+      
+      var self = this;
+      var thisName = e.target.name;
+      var meta = this.vocModel.properties;
+//      var scrollerModules = ['mobiscroll', 'mobiscroll-datetime', 'mobiscroll-duration'];
+      var scrollers = self.getScrollers();
+//      if (_.any(scrollers, function(s) { return s.dataset.duration }))
+//        modules.push('mobiscroll-duration');
+      
+      U.require('mobiscroll', function() {
+        self.loadedScrollers = true;
+        self.refreshScrollers();
+        if (!dontClick) {
+          var scroller = _.find(scrollers, function(s) {return s.name === thisName; });
+          if (scroller) {
+            var mobiscroller = mobiscroll(scroller);
+            mobiscroller.click();
+            mobiscroller.focus();
+          }
+        }
+      });
+    },
 
     onChoose: function(e, prop) {
       var hash = window.location.href;
@@ -423,6 +420,7 @@ define('views/EditView', [
           vocModel = this.vocModel; 
       
       return function(options) {
+        Events.trigger('handlingChoice');
         var chosenRes;
         var checked;
         var isBuy = options.buy;
@@ -493,7 +491,7 @@ define('views/EditView', [
           }
         }
         
-        Events.trigger('back');
+        Events.trigger('back', 'returning from chooser to edit view');
 //        this.router.navigate(hash, {trigger: true, replace: true});
       }.bind(this);
 //      G.Router.changePage(self.parentView);
@@ -507,7 +505,7 @@ define('views/EditView', [
       return function(res, atts) {
         self.setValues(atts, {skipValidation: true, skipRefresh: false});
         self.setResourceInputValue(link, atts[prop + '.displayName']);
-        Events.trigger('back');
+        Events.trigger('back', 'returning from multi-chooser to edit view');
       };
     },
 
@@ -680,21 +678,23 @@ define('views/EditView', [
     getInputs: function() {
       return this.getForm().$('[data-formEl]');
     },
-//    getScrollers: function() {
-//      return this.getForm().$('.' + scrollerClass);
-//    },
-//    
-//    refreshScrollers: function() {
-//      if (this.loadedScrollers) {
-//        var meta = this.vocModel.properties;
-//        var self = this;
-//        this.getScrollers().$forEach(function(scroller) {
-//          $(scroller).mobiscroll('destroy');
-//          var prop = meta[scroller.name];
-//          self.getScroller(prop, scroller);
-//        });
-//      }
-//    },
+
+    getScrollers: function() {
+      return this.getForm().$('.' + scrollerClass);
+    },
+    
+    refreshScrollers: function() {
+      if (this.loadedScrollers) {
+        var meta = this.vocModel.properties;
+        var self = this;
+        this.getScrollers().$forEach(function(scroller) {
+          mobiscroll(scroller, 'destroy');
+          var prop = meta[scroller.name];
+          self.getScroller(prop, scroller);
+        });
+      }
+    },
+
     fieldError: function(resource, errors) {
       if (arguments.length === 1)
         errors = resource;
@@ -934,7 +934,7 @@ define('views/EditView', [
         
         var prevHash = this.getPreviousHash();
         if (prevHash && !prevHash.startsWith('chooser/'))
-          Events.trigger('back');
+          Events.trigger('back', 'going back from edit view (after submit with no properties set by the user) 1');
         else
           Events.trigger('navigate', U.makeMobileUrl('view', this.resource));
         
@@ -1002,7 +1002,7 @@ define('views/EditView', [
       switch (code) {
         case 401:
           Events.trigger('req-login', {
-            msg: 'You are not unauthorized to make these changes',
+            msg: Errors.getMessage('unauthorized'),
             dismissible: false
           });
 //          Errors.errDialog({msg: msg || 'You are not authorized to make these changes', delay: 100});
@@ -1038,7 +1038,7 @@ define('views/EditView', [
       if (this.isEdit && _.isEmpty(props)) {
 //        debugger; // user didn't modify anything?
 //        this.redirect();
-        Events.trigger('back');
+        Events.trigger('back', 'going back from edit view (after submit with no properties set by the user) 2');
         return;
       }
             
@@ -1054,6 +1054,7 @@ define('views/EditView', [
         
       res.save(props, {
         sync: sync,
+        redirect: true,
         userEdit: true,
         success: function(resource, response, options) {
           self.getInputs().$attr('disabled', false);
@@ -1087,11 +1088,11 @@ define('views/EditView', [
           return this;
       }
 
-//      if (this.loadedScrollers) {
-//        this.getScrollers().$forEach(function(scroller) {
-//          $(scroller).mobiscroll('destroy');        
-//        });
-//      }
+      if (this.loadedScrollers) {
+        this.getScrollers().$forEach(function(scroller) {
+          mobiscroll(scroller, 'destroy');        
+        });
+      }
       
       this.render();
 //      this.refreshScrollers();
@@ -1418,10 +1419,13 @@ define('views/EditView', [
       }
       
       if (!grouped.length || editCols) {
-        _.each(ungrouped, function(p) {          
-          _.extend(state, {name: p, prop: meta[p], isEdit: self.isEdit});
+        for (var i = 0; i < ungrouped.length; i++) {
+          var p = ungrouped[i];
+          state.name = p;
+          state.prop = meta[p];
+          state.isEdit = self.isEdit;
           self.addProp(state);
-        });
+        }
       }        
       
       this.ul = this.$('#fieldsList').$html(frag)[0];

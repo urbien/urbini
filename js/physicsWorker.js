@@ -1400,7 +1400,7 @@ function initWorld(_world, stepSelf) {
     while (i--) {
       body = bodies[i];
       if (!hasDragConstraint(body)) {
-        DRAG_CONSTRAINTS.push(constrainer.distanceConstraint(body, DRAG_ANCHOR, 0.99, body.state.pos.dist(DRAG_ANCHOR.state.pos)));
+        DRAG_CONSTRAINTS.push(constrainer.distanceConstraint(body, DRAG_ANCHOR, 0.03, body.state.pos.dist(DRAG_ANCHOR.state.pos)));
       }
     }
 	  

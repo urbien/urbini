@@ -8,15 +8,7 @@ define('views/Header', [
   'physicsBridge',
   'domUtils',
   'lib/fastdom'
-//  ,
-//  'views/BackButton',
-//  'views/LoginButton',
-//  'views/AddButton',
-//  'views/MapItButton',
-//  'views/AroundMeButton',
-//  'views/MenuButton',
-//  'views/PublishButton'
-], function(G, Events, U, Voc, BasicView, Physics, DOM, Q/*, BackButton, LoginButton, AddButton, MapItButton, AroundMeButton, MenuButton, PublishButton*/) {
+], function(G, Events, U, Voc, BasicView, Physics, DOM, Q) {
   var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate', 'installApp'];
   var REGULAR_BUTTONS = ['back', 'cancel', 'save', 'mapIt', 'add', 'video', 'chat', 'login', 'rightMenu'];
   var commonTypes = G.commonTypes;
@@ -79,18 +71,38 @@ define('views/Header', [
         this.activatedProp = vocModel.properties[U.getCloneOf(vocModel, 'Activatable.activated')[0]];
 
       if (this.collection) {
-        var params = this.hashParams,
+        var self = this,
+            params = this.hashParams,
             forRes = params.$forResource,
             forResType = forRes && U.getTypeUri(forRes),
-            forResModel = forRes && U.getModel(forResType);
+            forResModel = forRes && U.getModel(forResType),
+            $params = params.$indicator || params.$params,
+            forTradle = $params ? _.toQueryParams($params).tradle : params.tradle,
+            name, 
+            uri;
             
-        if (forRes) {
+        if (forTradle) {
+          this.folder = {
+            name: 'Tradle',
+            uri: forTradle
+          }
+        }
+        else if (forRes) {
           this.folder = {
             name: forResModel ? forResModel.displayName : forResType.slice(forResType.lastIndexOf('/') + 1).uncamelize(true),
             uri: forRes
-          };
+          }
           
-          console.log("FOLDER NAME: " + this.folder.name);
+          if (U.getTypeUri(forRes).endsWith('commerce/trading/TradleIndicator')) {
+            U.getResourcePromise(forRes).done(function(indicator) {
+              self.folder = {
+                name: 'Tradle',
+                uri: indicator.get('tradle')
+              }
+              
+              self.refreshFolder();
+            });
+          }
         }
       }
       else if (this.resource && U.isA(vocModel, 'FolderItem')) {
@@ -229,7 +241,7 @@ define('views/Header', [
       'keyup .filterConditionInput input'          : 'onFilter',
       'change .filterConditionInput select'        : 'onFilter',
       'change .filterConditionInput input'         : 'onFilter',
-      'change .category input'                     : 'onChoseCategory'
+      'change .subClass input'                     : 'onChoseSubClass'
     },
     
     back: function() {
@@ -669,7 +681,7 @@ define('views/Header', [
       if (!rootFolderEl)
         return;
       
-      rootFolderEl.style.display = 'inline-block';
+      rootFolderEl.style.display = 'initial';
       rootFolderEl.$('span')[0].textContent = this.folder.name;
       rootFolderEl.href = U.makePageUrl('view', this.folder.uri);
 //        else {
@@ -965,9 +977,9 @@ define('views/Header', [
       if (!this.vocModel.type.endsWith('commerce/trading/Feed'))
         return;
 
-      this.categories = this.$('.categories')[0];
+      this.subClassesEl = this.$('.subClasses')[0];
       if (!this.categoriesTemplate)
-        this.makeTemplate('categoriesTemplate', 'categoriesTemplate', this.vocModel.type);
+        this.makeTemplate('subClassesTemplate', 'subClassesTemplate', this.vocModel.type);
           
       if (!this.subClasses) {
         var sCls = this.vocModel.subClasses,
@@ -989,11 +1001,10 @@ define('views/Header', [
           }, {
             name: 'Indexes',
             type: U.getLongUri1('commerce/trading/Index')            
+          }, {
+            name: 'Macro',
+            type: U.getLongUri1('commerce/trading/AlphaFlashFeed')
           }
-//          , {
-//            name: 'Market feeds',
-//            type: 'subClassOf:' + U.getLongUri1('commerce/trading/MarketFeed')
-//          }
           );
 //        }
 //        else {
@@ -1007,18 +1018,18 @@ define('views/Header', [
 //        }
       }
         
-      this.categories.$show().$html(this.categoriesTemplate({
-        categories: this.subClasses
+      this.subClassesEl.$show().$html(this.subClassesTemplate({
+        subClasses: this.subClasses
       }));
     },
 
-    onChoseCategory: function(e) {
+    onChoseSubClass: function(e) {
       var self = this,
           input = e.currentTarget,
-          catName = input.value,
-          cats = this.categories.$('input[type="radio"]'),
+          sClName = input.value,
+          sCls = this.subClassesEl.$('input[type="radio"]'),
           filter = this.filterParams,
-          i = cats.length,
+          i = sCls.length,
           runFilter = function() {
             delete filter.type;
             if (type)
@@ -1026,13 +1037,13 @@ define('views/Header', [
             
             self.doFilter();
             while (i--) {
-              var cat = cats[i];
-              cat.parentElement.classList[cat.checked ? 'add' : 'remove']('actionBtn');
+              var sCl = sCls[i];
+              sCl.parentElement.classList[sCl.checked ? 'add' : 'remove']('actionBtn');
             }
           };
            
-      this._lastCategory = input;
-      if (catName != 'All') {
+      this._lastSubClass = input;
+      if (sClName != 'All') {
         var type = input.dataset.type;
         if (!U.getModel(type)) {
           if (e instanceof Event)
@@ -1040,7 +1051,7 @@ define('views/Header', [
           
           this._fetchingFilterType = type;
           Voc.getModels(type).done(function() {
-            if (input == self._lastCategory)
+            if (input == self._lastSubClass)
               runFilter()
           });
           
@@ -1063,10 +1074,11 @@ define('views/Header', [
       if (this.rendered)
         this.html("");
       
-      var isTemplates = window.location.hash && window.location.hash.indexOf('#templates/') != -1; 
-      
+      var isTemplates = this._hashInfo.route == 'templates';
       if (!isTemplates  &&  !res) {
-        if (U.isAssignableFrom(this.vocModel, G.commonTypes.App))
+        if (U.isAssignableFrom(this.vocModel, G.commonTypes.WebClass))
+          this.categories = false;
+        else if (U.isAssignableFrom(this.vocModel, G.commonTypes.App))
           this.categories = true;
         else if (U.isA(this.vocModel, 'Taggable')) {
           var cOf = U.getCloneOf(this.vocModel, 'Taggable.tags');

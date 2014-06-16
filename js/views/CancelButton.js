@@ -21,7 +21,7 @@ define('views/CancelButton', [
     },
     cancel: function(e) {
       Events.stopEvent(e);
-      Events.trigger('userCanceled');
+      this.getPageView().trigger('userCanceled');
       return this;
     },
     render: function(options) {

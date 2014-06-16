@@ -16,10 +16,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   function makeWriteUrl(res) {
     var uri = res.get('_uri'),
         route = uri ? 'edit' : 'make',
-        params = U.filterObj(res.attributes, U.isModelParameter);
-    
-    if (route == 'edit')
-      params._uri = uri;
+        params = uri ? { _uri: uri } : U.filterObj(res.attributes, U.isModelParameter);
     
     return U.makeMobileUrl(route, res.vocModel.type, params);
   };
@@ -67,15 +64,14 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     if (params && params.$returnUri)
       Events.trigger('navigate', params.$returnUri, {replace: true});
     else {
-      debugger;
       Events.trigger('back', 'going back after successful edit'); 
 //      function ifNoHistory() {
 //        Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()));
 //      });
-      
-      Events.trigger('messageBar', 'info', {
-        message: 'Edits applied'
-      });
+//      
+//      Events.trigger('messageBar', 'info', {
+//        message: 'Edits applied'
+//      });
     }
   };
 
@@ -551,27 +547,57 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
           eventClassRangeUri = feed.get('eventClassRangeUri'),
           tradleUri = res.get('tradle');
     
-      if (eventClassUri) {
-        Events.trigger('navigate', U.makeMobileUrl('make', 'commerce/trading/TradleIndicator', {
-          eventClass: eventClassUri,
-          eventClassRangeUri: eventClassRangeUri,
-          feed: feedUri,
-          tradle: tradleUri,
-          tradleFeed: res.get('_uri')
-        }), options);
-      }
-      else {
-        debugger;
+      if (!eventClassUri) {
         U.getResourcePromise(feedUri, true).done(function() {
           Redirecter.prototype._forType['commerce/trading/TradleFeed'](res, options);
         });
+        
+        return;
       }
+      
+      Voc.getModels(U.getTypeUri(eventClassRangeUri)).done(function(eventModel) {
+        var props = eventModel.properties,
+            userRole = U.getUserRole(),
+            isIndexEvent = U.isAssignableFrom(eventModel, 'commerce/trading/IndexEvent'),
+            isSECEvent = U.isAssignableFrom(eventModel, 'commerce/trading/SECForm4'),
+            secIgnore = ['title', 'xmlUrl'],
+            $in = 'name';
+        
+        for (var shortName in props) {
+          var prop = props[shortName];
+          if (!prop.backLink && 
+              (!prop.subPropertyOf || !prop.subPropertyOf.endsWith('/feed')) && 
+              (!isIndexEvent || shortName != 'index') && 
+              U.isNativeModelParameter(shortName) &&
+              !U.isDateProp(prop) &&
+              (!isSECEvent || !_.contains(secIgnore, shortName)) && 
+              U.isNativeModelParameter(shortName) && 
+              U.isPropVisible(null, prop, userRole)) {
+            $in += ',' + shortName;
+          }
+        }
+      
+        Events.trigger('navigate', U.makeMobileUrl('chooser', 'system/designer/WebProperty', {
+          domain: eventClassUri,
+          $in: $in,
+          $select: 'name,label,propertyType,range,rangeUri,davPropertyUri',
+          $title: CHOOSE_INDICATOR_FOR + res.get('feed.displayName'),
+          $tradleFeedParams: _.param(
+            {
+              tradle: res.get('tradle'),
+              tradleFeed: res.getUri(),
+              feed: res.get('feed'),
+              eventClass: eventClassUri,
+              eventClassRangeUri: eventClassRangeUri
+            }
+          )
+        }), options);
+      });
     });
     
     return true;
   };
 
-  
   if (connectionType) {
     Redirecter.prototype._forType[connectionType] = function(res, options) {
       Events.trigger('navigate', U.makeMobileUrl('edit', res), _.defaults(options, {forceFetch: true}));
@@ -737,58 +763,6 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
 
 //    if (U.isAssignableFrom(vocModel, 'commerce/trading/TradleFeed') && prop.range.endsWith('commerce/trading/Feed'))
 //      rParams['-info'] = 'Choose a feed for your Tradle';
-    
-    if (isIndicator) {
-      var $in = 'name',
-          feedUri = res.get('feed'),
-          getFeed = U.getResourcePromise(feedUri),
-          eventClassRangeUri = res.get('eventClassRangeUri');
-
-      if (!eventClassRangeUri) {
-        Events.trigger('back', 'no eventClassRangeUri found on indicator, can\'t forward to event property chooser'); 
-        return;
-      }
-
-      eventClassRangeUri = U.getTypeUri(eventClassRangeUri);
-//      $.when(getFeed, Voc.getModels(eventClassRangeUri)).done(function(feed, eventModel) {
-      Voc.getModels(U.getTypeUri(eventClassRangeUri)).done(function(eventModel) {
-        var props = eventModel.properties,
-            userRole = U.getUserRole(),
-            isIndexEvent = U.isAssignableFrom(eventModel, 'commerce/trading/IndexEvent'),
-            isSECEvent = U.isAssignableFrom(eventModel, 'commerce/trading/SECForm4'),
-            secIgnore = ['title', 'xmlUrl'];
-        
-        for (var shortName in props) {
-          var prop = props[shortName];
-          if (!prop.backLink && 
-              (!prop.subPropertyOf || !prop.subPropertyOf.endsWith('/feed')) && 
-              (!isIndexEvent || shortName != 'index') && 
-              U.isNativeModelParameter(shortName) &&
-              !U.isDateProp(prop) &&
-              (!isSECEvent || !_.contains(secIgnore, shortName)) && 
-              U.isNativeModelParameter(shortName) && 
-              U.isPropVisible(null, prop, userRole)) {
-            $in += ',' + shortName;
-          }
-        }
-
-//        getLastEvent.done(function(lastEvent) {          
-          rParams.$in = $in;
-          rParams.domain = res.get('eventClass');
-          rParams.$select = 'name,label,propertyType,range,rangeUri';
-          rParams.$title = CHOOSE_INDICATOR_FOR + res.get('feed.displayName');
-//          if (lastEvent)
-//            rParams.$lastEvent = lastEvent.getUri();
-            
-          Events.trigger('navigate', U.makeMobileUrl('chooser', U.getTypeUri(range), rParams), options);
-//        });
-      });
-      
-      return;
-    }    
-
-    if (isCompareWithIndicatorRule)
-      rParams._uri = '!' + res.get('indicator');
     
     Events.trigger('navigate', U.makeMobileUrl('chooser', U.getTypeUri(range), rParams), options);
   };
@@ -960,7 +934,8 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
 //    if (fastForwarded)
 //      return true;
     
-    if (res.vocModel.type == G.commonTypes.AppInstall)
+    var type = res.vocModel.type;
+    if (type == G.commonTypes.AppInstall)
       return false;
         
     var editableProps = res.getEditableProps(U.getCurrentUrlInfo()),
@@ -997,16 +972,50 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   };
 
   Events.on('choseMulti', _.debounce(function(propName, list, checked) {
+    var urlInfo = U.getCurrentUrlInfo(),
+        params = urlInfo.params;
+    
+    if (params.$indicator) {
+      Voc.getModels(['commerce/trading/TradleIndicator', 'commerce/trading/TradleFeed']).done(function(iModel, tfModel) {
+        var i = checked.length,
+            common = _.toQueryParams(params.$indicator);
+            
+        while (i--) {
+          var indicator = new iModel(_.extend({
+            variant: checked[i].value
+          }, common));
+          indicator.save();
+        }
+      
+        U.getResourcePromise(common.tradleFeed).done(function(tf) {
+          Events.trigger('loadChooser', tf, tfModel.properties.feed);
+        });
+        
+//        Events.trigger('navigate', U.makeMobileUrl('chooser', 'commerce/trading/Feed', _.extend({
+//          
+//        },
+//          tradle: common.tradle,
+//          $propA: 'tradle',
+//          $propB: 'feed',
+//          $type: U.getTypeUri('commerce/trading/TradleFeed'),
+//          activated: true,
+//          eventClass: '!$this.null'
+//        }));
+      });
+      
+      return;
+    }
+    
     var info = getForResourceInfo();
     info.promise.done(function(forRes) {
-      var urlInfo = U.getCurrentUrlInfo(),
-          editableProps = forRes.getEditableProps(urlInfo),
-          merged = getEditableProps(editableProps),
+      var editableProps = forRes.getEditableProps(urlInfo),
+          merged = getEditableProps(editableProps) || [],
           props = {};
       
+      Array.remove(merged, propName);
       props[propName] = _.pluck(checked, 'value').join(',');
       props[propName + '.displayName'] = _.pluck(checked, 'name').join(',');
-      if (merged && merged.length == 1) {
+      if (!merged.length) {
         res.save(props, {
           userEdit: true,
           redirect: true
@@ -1025,8 +1034,10 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   }, 200, true));
 
   Events.on('chose', _.debounce(function(propName, valueRes) {
-    var urlInfo = U.getCurrentUrlInfo();
-    if (urlInfo.params.$createInstance == 'y') {
+    var urlInfo = U.getCurrentUrlInfo(),
+        params = urlInfo.params;
+    
+    if (params.$createInstance == 'y') {
       var params = urlInfo.params.$props;
       params = params ? U.getQueryParams(params) : {};
       var prevTitle = urlInfo.params.$title;
@@ -1034,84 +1045,75 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
         prevTitle = prevTitle.slice(CHOOSE_INDICATOR_FOR.length);
       
       params.$title = prevTitle + ' ' + valueRes.get('label');
-      
       Events.trigger('navigate', U.makeMobileUrl('make', valueRes.get('davClassUri'), params));
+      return;
+    }
+    else if (params.$tradleFeedParams) {
+      var eventProperty = valueRes.getUri(),
+          propertyType = valueRes.get('propertyType'),
+          isNumeric = U.isNumericType(propertyType),
+          tfParams = _.toQueryParams(params.$tradleFeedParams);
+      
+      tfParams.eventProperty = valueRes.getUri();
+      if (isNumeric) {
+        var eventPropertyUri = valueRes.get('davPropertyUri'),
+            and1 = _.param({
+              applicableToProperty: eventPropertyUri,
+              applicableToModel: tfParams.eventClass,
+              applicableToClass: tfParams.eventClassRangeUri
+  //            applicableToResource: tfParams.feed
+            }),
+            and2 = _.param({
+              parentFolder: G.currentApp._uri,
+              $in: 'name,RawValue,PreviousValue'
+            });
+      
+        Events.trigger('navigate', U.makeMobileUrl('chooser', G.commonTypes.WebClass, {
+          $or: U.makeOrGroup(_.param({$and: and1}), _.param({$and: and2})),
+          $indicator: _.param(tfParams)
+        }));
+        
+        return;
+      }
+      
+      Voc.getModels('commerce/trading/TradleIndicator').done(function(iModel) {
+        var indicator = new iModel({
+          tradleFeed: tfParams.tradleFeed,
+          tradle: tfParams.tradle,
+          eventProperty: eventProperty
+        });
+        
+        indicator.save();
+      });
+      
+      Events.trigger('back', 'chose property for indicator, heading back');
       return;
     }
     
     var info = getForResourceInfo();
     info.promise.done(function(forRes) {
-      var urlInfo = U.getCurrentUrlInfo(),
-          forType = forRes.vocModel.type,
+      var forModel = forRes.vocModel,
+          forType = forModel.type,
           editableProps = forRes.getEditableProps(urlInfo),
-          merged = getEditableProps(editableProps),
+          merged = getEditableProps(editableProps) || [],
           props = {};
-
-      props[propName] = valueRes.getUri();
-//      if (propName == 'eventProperty' && forType.endsWith('commerce/trading/Rule')) {
-//        var subClassOf,
-//            wPropUri = valueRes.get('_uri'),
-//            propType = valueRes.get('propertyType'),
-//            isEnum = U.getTypeUri(wPropUri).endsWith('system/designer/EnumProperty');
-//        
-//        switch (propType) {
-//        case 'Text':
-//          subClassOf = isEnum ? 'commerce/trading/EnumRule' : 'commerce/trading/StringRule';
-//          break;
-//        case 'Date':
-//          subClassOf = 'commerce/trading/DateRule';
-//          break;
-//        case 'Link':
-//          subClassOf = 'commerce/trading/LinkRule';
-//          break;
-//        case 'YesNo':
-//          subClassOf = 'commerce/trading/BooleanRule';
-//          break;
-//        case 'Numeric':
-//        case 'Fraction':
-//        case 'Percent':
-//        case 'Money':
-//        /* falls through */
-//        default:
-//          subClassOf = 'commerce/trading/NumericRule';
-//          break;
-//        }
-//        
-//        this.currentChooser = null; 
-//        if (isEnum || propType == 'Link' || propType == 'YesNo') { // no subclasses
-//          var params = _.extend(U.filterObj(forRes.attributes, U.isNativeModelParameter), props);
-//          params.$title = forRes.get('feed.displayName') + ' ' + valueRes.get('davDisplayName') + ' IS...';
-//          if (isEnum) {
-//            params.enumeration = valueRes.get('range');
-//            params.enumerationRangeUri = valueRes.get('rangeUri');
-//          }
-//          else if (propType == 'Link') {
-//            params.resourceType = valueRes.get('range');
-//            params.resourceTypeRangeUri = valueRes.get('rangeUri');          
-//          }
-//            
-//          Events.trigger('navigate', U.makeMobileUrl('make', subClassOf, params), {
-//            replace: true
-//          });
-//          
-//          return;
-//        }
-//  
-//        var prevTitle = urlInfo.params.$title;
-//  //      if (prevTitle && prevTitle.endsWith('property...'))
-//  //        prevTitle = prevTitle.slice(0, prevTitle.length - 11) + ' - ';
-//  
-//        Events.trigger('navigate', U.makeMobileUrl('chooser', 'system/designer/WebClass', {
-//          subClassOfUri: G.defaultVocPath + subClassOf,
-//          $createInstance: 'y',
-//          $props: _.param(_.extend(U.filterObj(forRes.attributes, U.isNativeModelParameter), props)),
-//          $title: (prevTitle || forRes.get('feed.displayName')) + ' ' + valueRes.get('davDisplayName')
-//        }));
-//        
-//        return;
-//      }
       
-      if (merged && merged.length == 1) {
+      Array.remove(merged, propName);
+      props[propName] = valueRes.getUri();
+      if (forRes.vocModel.type.endsWith('commerce/trading/TradleIndicator')) {
+        if (forRes.get('eventProperty')) {
+          forRes.save(props, { userEdit: true });
+          Events.trigger('back', 'back from choosing TradleIndicator variant');
+          return;
+        }
+        else {
+          forRes.set(props, { userEdit: true });
+          Events.trigger('loadChooser', forRes, forModel.properties.variant, { replace: true });          
+          return;
+        }
+      }
+      
+      if (!merged.length) {
         forRes.save(props, {
           userEdit: true,
           redirect: true
@@ -1124,8 +1126,18 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
             replace: true
           });
         }
-        else
+        else {
+          var handled = false,
+              onHandled = function() {
+                handled = true;
+              };
+              
+          Events.on('handlingChoice', onHandled);
           Events.trigger('chose:' + propName, valueRes, redirecter.currentChooserFor); // let EditView handle it
+          Events.off('handlingChoice', onHandled);
+          if (!handled)
+            Events.trigger('back', 'chooser without context, unable to handle choice so going back...')
+        }
       }
     });
   }, 200, true));

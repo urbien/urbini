@@ -39,7 +39,6 @@ define('views/ViewPage', [
 //        menu: true,
 //        chat: res.isA("ChatRoom"),
         rightMenu: true //!G.currentUser.guest,
-//        login: G.currentUser.guest,
       };
 
       var params = _.getParamMap(window.location.hash);

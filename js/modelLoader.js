@@ -427,8 +427,6 @@ define('modelLoader', [
           _.pushUniq(updatedTypes, type);
           loadedTypes.push(type);
         }
-        else if (!existing.enumeration)
-          debugger;
       }
       else {
         loadedTypes.push(type);

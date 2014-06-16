@@ -20,6 +20,7 @@ define('views/ControlPanel', [
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
       this.makeTemplate('inlineListItemTemplate', 'inlineListItemTemplate', type);
+      
 //      this.makeTemplate('comment-item', 'commentItemTemplate', type);
       this.makeTemplate('cpTemplate', '_cpTemplate', type);
       this.makeTemplate('cpMainGroupTemplate', 'cpMainGroupTemplate', type);
@@ -180,6 +181,7 @@ define('views/ControlPanel', [
       
       if (data.backlink == 'tradleRules') {
         Events.stopEvent(e);
+//        U.alert("Click one of your indicators to create a rule with it");
         return;
       }
       
@@ -217,11 +219,11 @@ define('views/ControlPanel', [
       case 'YesNo':
         subClassOf = 'commerce/trading/BooleanRule';
         break;
-      case 'Numeric':
-      case 'Fraction':
-      case 'Percent':
-      case 'Money':
-      /* falls through */
+//      case 'Numeric':
+//      case 'Fraction':
+//      case 'Percent':
+//      case 'Money':
+//      /* falls through */
       default:
         subClassOf = 'commerce/trading/NumericRule';
         break;
@@ -239,10 +241,7 @@ define('views/ControlPanel', [
           params.resourceTypeRangeUri = indicator.get('eventPropertyRangeUri');          
         }
           
-        Events.trigger('navigate', U.makeMobileUrl('make', subClassOf, params), {
-          replace: true
-        });
-        
+        Events.trigger('navigate', U.makeMobileUrl('make', subClassOf, params));
         return;
       }
       
@@ -364,10 +363,13 @@ define('views/ControlPanel', [
           prop = meta[name],
           propDisplayName = U.getPropDisplayName(prop),
           canceledProp,
-          canAdd = U.isPropEditable(this.resource, prop),
           isRule = U.isAssignableFrom(listVocModel, 'commerce/trading/Rule'),
+          canAdd = !isRule && U.isPropEditable(this.resource, prop), // don't allow add other than by clicking individual indicators 
           linkToEdit = U.isAssignableFrom(listVocModel, G.commonTypes.WebProperty, 'commerce/trading/Notification'),
           action = linkToEdit ? 'edit' : 'view';
+      
+      if (isRule && !this.compareIndicatorsTemplate)
+        this.makeTemplate('inlineCompareIndicatorsRuleTemplate', 'compareIndicatorsTemplate', listVocModel.type);
       
       if (list.length && isCancelable) {
         canceledProp = listMeta[U.getCloneOf(listVocModel, 'Cancellable.cancelled')[0]];
@@ -378,7 +380,7 @@ define('views/ControlPanel', [
         U.addToFrag(frag, this.propGroupsDividerTemplate({
           value: propDisplayName,
           add: canAdd,
-          shortName: name == 'indicators' ? 'feeds' : name
+          shortName: (vocModel.shortName == 'Tradle' && name == 'indicators') ? 'feeds' : name
         }));
       }
 
@@ -395,9 +397,21 @@ define('views/ControlPanel', [
               name: U.getDisplayName(iRes),
               backlink: name
             },
+            template = this.inlineListItemTemplate,
             grid = U.getCols(iRes, 'grid', true);
             
-        if (U.isA(listVocModel, 'Intersection')) {
+        if (isRule) {
+//          var uri = iRes.getUri(),
+//              type = U.getTypeUri(uri);
+//          
+//          if (/ThanIndicator/.test(type)) {
+//            if (!this.compareIndicatorsTemplate)
+//              this.makeTemplate('inlineCompareIndicatorsRuleTemplate', 'compareIndicatorsTemplate', listVocModel.type);
+            
+            template = this.compareIndicatorsTemplate;
+//          }
+        }
+        else if (U.isA(listVocModel, 'Intersection')) {
           var oH, oW, ab;
           var a = U.getCloneOf(listVocModel, 'Intersection.a')[0];
           var b = U.getCloneOf(listVocModel, 'Intersection.b')[0];
@@ -517,8 +531,8 @@ define('views/ControlPanel', [
           hasImages = true;
         else if (hasImages)
           params.needsAlignment = true;
-          
-        U.addToFrag(frag, this.inlineListItemTemplate(params));
+        
+        U.addToFrag(frag, template.call(this, params));
         displayedProps[name] = true;
         this.stopListening(iRes, 'change', this.update);
         this.listenTo(iRes, 'change', this.update);

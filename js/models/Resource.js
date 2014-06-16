@@ -1287,6 +1287,9 @@ define('models/Resource', [
           else {
             if (self.isA('Intersection')) {
 //              self._setLastFetchOrigin('server');
+              if (options.redirect)
+                debugger;
+              
               self.set(self.parse(conflict, {overwriteUserChanges: true}));
               return options.success(self, self.toJSON(), options);
             }

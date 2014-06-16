@@ -643,9 +643,9 @@ define('globals', function() {
     }
     
     switch (G._widgetLibrary.toLowerCase()) {
-    case 'building blocks':
-      templates.push('../templates_bb.jsp');
-      break;
+//    case 'building blocks':
+//      templates.push('../templates.jsp');
+//      break;
     case 'topcoat':
       templates.push('../templates_topcoat.jsp');
       break;
@@ -1344,8 +1344,8 @@ define('globals', function() {
     },
 
     dbType: (function() {
-//      if (browser.chrome) // testing how things work without indexeddb
-//        return 'shim';
+      if (browser.chrome) // testing how things work without indexeddb
+        return 'shim';
 //      var using = (browser.chrome && !G.inWebview) || !window.indexedDB;
       var using = !window.indexedDB && !window.mozIndexedDB && !window.webkitIndexedDB && !window.msIndexedDB,
           type;

@@ -98,6 +98,20 @@ define('views/EditPage', [
 //      'click': 'click',
       'click #homeBtn': 'home'
     },
+    
+    myEvents: {
+      'userSaved': 'submit',
+      'userCanceled': 'cancel'
+    },
+
+    submit: function() {
+      this.editView.submit.apply(this.editView, arguments);
+    },
+
+    cancel: function() {
+      this.editView.cancel.apply(this.editView, arguments);
+    },
+
     resetForm: function() {
       this.editView && this.editView.resetForm();
     },

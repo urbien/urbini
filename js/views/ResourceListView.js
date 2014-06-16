@@ -107,7 +107,7 @@ define('views/ResourceListView', [
   
       var vocModel = this.vocModel;
       this.mvProp = this.hashParams.$multiValue;
-      this.isMultiValueChooser = !!this.mvProp;
+      this.isMultiValueChooser = !!this.mvProp || this.hashParams.$indicator;
       if (this.mvProp) {
         this.mvVals = [];
         var pr = '$' + this.mvProp;
@@ -472,12 +472,15 @@ define('views/ResourceListView', [
     },
     
     click: function(e) {
+      if (this.isMultiValueChooser)
+        return;
+      
       var top = e.target,
           params = this.hashParams,
           parentView = this,
           navOptions = {},
           link,
-          self,
+          itemView,
           type,
           isWebCl,
           isImplementor,
@@ -498,12 +501,12 @@ define('views/ResourceListView', [
         top = top.parentNode;
       }
 
-      self = viewId && this.children[viewId]; // list item view
-      if (!self || self.mvProp) // ||  self.TAG == 'HorizontalListItemView') 
+      itemView = viewId && this.children[viewId]; // list item view
+      if (!itemView || itemView.mvProp) // ||  itemView.TAG == 'HorizontalListItemView') 
         return;
       
-      if (self.TAG !== 'HorizontalListItemView' && this.displayMode != 'vanillaList'  && !this._flexigroup)
-        navOptions.via = self;
+      if (itemView.TAG !== 'HorizontalListItemView' && this.displayMode != 'vanillaList'  && !this._flexigroup)
+        navOptions.via = itemView;
       
       if (link) {
         Events.stopEvent(e);
@@ -512,19 +515,19 @@ define('views/ResourceListView', [
       }
       
       if (params.$template) {
-        var meta = self.vocModel.properties,
-//            resParams = _.extend(U.getQueryParams(params.$template), self.resource.attributes),
+        var meta = itemView.vocModel.properties,
+//            resParams = _.extend(U.getQueryParams(params.$template), itemView.resource.attributes),
             resParams = U.getQueryParams(params.$template),
             res;
         
-        resParams[U.getCloneOf(self.vocModel, 'Templatable.basedOnTemplate')[0]] = self.resource.get('_uri');
-        resParams[U.getCloneOf(self.vocModel, 'Templatable.isTemplate')[0]] = false;
+        resParams[U.getCloneOf(itemView.vocModel, 'Templatable.basedOnTemplate')[0]] = itemView.resource.get('_uri');
+        resParams[U.getCloneOf(itemView.vocModel, 'Templatable.isTemplate')[0]] = false;
         for (var p in resParams) {
           if (!U.isNativeModelParameter(p) || meta[p].autoincrement)
             delete resParams[p];
         }
         
-        res = new self.vocModel(resParams);
+        res = new itemView.vocModel(resParams);
         res.save(null, {
           success: function() {
             Events.trigger('navigate', U.makeMobileUrl('view', res.getUri()), navOptions); //, {trigger: true, forceFetch: true});        
@@ -537,36 +540,36 @@ define('views/ResourceListView', [
       Events.stopEvent(e);
       parentView = this;
       type = params['$type'];
-      isWebCl = self.doesModelSubclass(G.commonTypes.WebClass);
+      isWebCl = itemView.doesModelSubclass(G.commonTypes.WebClass);
       isImplementor = type && type.endsWith('system/designer/InterfaceImplementor');
-      cloned = self.clonedProperties;
+      cloned = itemView.clonedProperties;
       
-      if (self.doesModelSubclass('model/workflow/Alert')) {
+      if (itemView.doesModelSubclass('model/workflow/Alert')) {
         Events.stopEvent(e);
         var prms = {};
-        var atype = self.resource.get('alertType');
+        var atype = itemView.resource.get('alertType');
         var action = atype  &&  atype == 'SyncFail' ? 'edit' : 'view';
-        var uri = self.resource.get('forum') || self.resource.getUri();
-        Events.trigger('navigate', U.makeMobileUrl(action, uri, {'-info': self.resource.get('davDisplayName')}), navOptions);//, {trigger: true, forceFetch: true});
+        var uri = itemView.resource.get('forum') || itemView.resource.getUri();
+        Events.trigger('navigate', U.makeMobileUrl(action, uri, {'-info': itemView.resource.get('davDisplayName')}), navOptions);//, {trigger: true, forceFetch: true});
         return;
       }
-      if (self.doesModelSubclass('model/social/QuizQuestion')) {
+      if (itemView.doesModelSubclass('model/social/QuizQuestion')) {
         var title = _.getParamMap(window.location.hash).$title;
         if (!title)
-          title = U.makeHeaderTitle(self.resource.get('davDisplayName'), pModel.displayName);
+          title = U.makeHeaderTitle(itemView.resource.get('davDisplayName'), pModel.displayName);
         var prms = {
           '-info': 'Please choose the answer', 
-          $forResource: self.resource.get('_uri'), 
+          $forResource: itemView.resource.get('_uri'), 
           $propA: 'question',
           $propB: 'answer',
-          quiz: self.resource.get('quiz'),
-          question: self.resource.get('_uri'),
+          quiz: itemView.resource.get('quiz'),
+          question: itemView.resource.get('_uri'),
 //            user: G.currentUser._uri,
-          $type: self.vocModel.properties['answers'].range,
-          $title: self.resource.get('davDisplayName')
+          $type: itemView.vocModel.properties['answers'].range,
+          $title: itemView.resource.get('davDisplayName')
         };
         
-        Events.trigger('navigate', U.makeMobileUrl('chooser', self.vocModel.properties['options'].range, prms), navOptions); //, {trigger: true, forceFetch: true});
+        Events.trigger('navigate', U.makeMobileUrl('chooser', itemView.vocModel.properties['options'].range, prms), navOptions); //, {trigger: true, forceFetch: true});
         return;
       }
 
@@ -574,8 +577,8 @@ define('views/ResourceListView', [
       var p1 = params['$propA'];
       var p2 = params['$propB'];
       
-      var t = type ? type : self.vocModel.type;
-//      var self = this;
+      var t = type ? type : itemView.vocModel.type;
+//      var itemView = this;
       Voc.getModels(t).then(function() {
         var type = t;
         var isIntersection = type ? U.isA(U.getModel(type), 'Intersection') : false;
@@ -584,7 +587,7 @@ define('views/ResourceListView', [
         if (!isImplementor && parentView && parentView.mode == G.LISTMODES.CHOOSER) {
           if (!isIntersection  &&  (!p1  &&  !p2)) {
             Events.stopEvent(e);
-            Events.trigger('chose', self.hashParams.$prop, self.model);
+            Events.trigger('chose', itemView.hashParams.$prop, itemView.model);
             return;
           }
         }
@@ -594,39 +597,39 @@ define('views/ResourceListView', [
           Events.stopEvent(e);
           var rParams = {};
           var pRange = U.getModel(t).properties[p1].range;
-          if (U.isAssignableFrom(self.vocModel, pRange)) {
-            rParams[p1] = self.resource.get('_uri');
+          if (U.isAssignableFrom(itemView.vocModel, pRange)) {
+            rParams[p1] = itemView.resource.get('_uri');
             rParams[p2] = params['$forResource'];
           }
           else {
             rParams[p1] = params['$forResource'];
-            rParams[p2] = self.resource.get('_uri');
+            rParams[p2] = itemView.resource.get('_uri');
           }
-          self.forResource = params['$forResource'];
-          rParams.$title = self.resource.get('davDisplayName');
-          if (self.doesModelSubclass(G.commonTypes.WebClass)) {
+          itemView.forResource = params['$forResource'];
+          rParams.$title = itemView.resource.get('davDisplayName');
+          if (itemView.doesModelSubclass(G.commonTypes.WebClass)) {
             if (type.endsWith('system/designer/InterfaceImplementor')) {
   //            Voc.getModels(type).done(function() {
                 var m = new (U.getModel('InterfaceImplementor'))();
-                var uri = self.resource.get('_uri');
-                var props = {interfaceClass: uri, implementor: self.forResource};
+                var uri = itemView.resource.get('_uri');
+                var props = {interfaceClass: uri, implementor: itemView.forResource};
                 m.save(props, {
                   userEdit: true,
                   success: function() {
-                    Events.trigger('navigate', U.makeMobileUrl('view', self.forResource), navOptions); //, {trigger: true, forceFetch: true});        
+                    Events.trigger('navigate', U.makeMobileUrl('view', itemView.forResource), navOptions); //, {trigger: true, forceFetch: true});        
                   }
                 });
   //            });
               return;
             }
-            rParams[p2 + '.davClassUri'] =  self.resource.get('davClassUri');
+            rParams[p2 + '.davClassUri'] =  itemView.resource.get('davClassUri');
           }
           else if (U.isAssignableFrom(pModel, 'model/study/QuizAnswer')) {
             var m = new pModel();
             m.save(rParams, {
               userEdit: true,
               success: function() {
-                Events.trigger('navigate', U.makeMobileUrl('view', self.forResource), navOptions); //, {trigger: true, forceFetch: true});        
+                Events.trigger('navigate', U.makeMobileUrl('view', itemView.forResource), navOptions); //, {trigger: true, forceFetch: true});        
               }
             });
             return;
@@ -634,9 +637,9 @@ define('views/ResourceListView', [
           
           Events.trigger('navigate', U.makeMobileUrl('make', type, rParams), navOptions); //, {trigger: true, forceFetch: true});
           return;
-  //        self.router.navigate('make/' + encodeURIComponent(type) + '?' + p2 + '=' + encodeURIComponent(self.resource.get('_uri')) + '&' + p1 + '=' + encodeURIComponent(params['$forResource']) + '&' + p2 + '.davClassUri=' + encodeURIComponent(self.resource.get('davClassUri')) +'&$title=' + encodeURIComponent(self.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
+  //        itemView.router.navigate('make/' + encodeURIComponent(type) + '?' + p2 + '=' + encodeURIComponent(itemView.resource.get('_uri')) + '&' + p1 + '=' + encodeURIComponent(params['$forResource']) + '&' + p2 + '.davClassUri=' + encodeURIComponent(itemView.resource.get('davClassUri')) +'&$title=' + encodeURIComponent(itemView.resource.get('davDisplayName')), {trigger: true, forceFetch: true});
         }
-        if (isImplementor  &&  self.resource.get('implementor.davClassUri').toLowerCase().indexOf('/' + G.currentApp.appPath.toLowerCase() + '/') != -1) {
+        if (isImplementor  &&  itemView.resource.get('implementor.davClassUri').toLowerCase().indexOf('/' + G.currentApp.appPath.toLowerCase() + '/') != -1) {
           return G.getRejectedPromise();
         }
         if (isIntersection  &&  !U.intersectionHasOwnProperties(pModel)) {
@@ -645,14 +648,14 @@ define('views/ResourceListView', [
           var b = clonedI.b;
 
           if (a  &&  b) {
-            if (self.hashParams[a]) 
-              Events.trigger('navigate', U.makeMobileUrl('view', self.resource.get(b)), navOptions); //, {trigger: true, forceFetch: true});
-            else if (self.hashParams[b])
-              Events.trigger('navigate', U.makeMobileUrl('view', self.resource.get(a)), navOptions); //, {trigger: true, forceFetch: true});
+            if (itemView.hashParams[a]) 
+              Events.trigger('navigate', U.makeMobileUrl('view', itemView.resource.get(b)), navOptions); //, {trigger: true, forceFetch: true});
+            else if (itemView.hashParams[b])
+              Events.trigger('navigate', U.makeMobileUrl('view', itemView.resource.get(a)), navOptions); //, {trigger: true, forceFetch: true});
             else
               return G.getRejectedPromise();
 //            else
-//              Events.trigger('navigate', U.makeMobileUrl('view', self.resource.getUri())); //, {trigger: true, forceFetch: true});
+//              Events.trigger('navigate', U.makeMobileUrl('view', itemView.resource.getUri())); //, {trigger: true, forceFetch: true});
               
             return;
           } 
@@ -670,18 +673,18 @@ define('views/ResourceListView', [
             var appModel;
             var tag = params['tagUses.tag.tag'];
             var tag = params['tags'];
-            var tt = self.resource.get('tag') || U.getDisplayName(self.resource);
+            var tt = itemView.resource.get('tag') || U.getDisplayName(itemView.resource);
             if (app) {
               for (var p in params) {
                 if (m.properties[p])
                   delete params[p];
               }
               params.$title = tt;
-    //          params['tagUses.tag.tag'] = '*' + self.resource.get('tag') + '*';
+    //          params['tagUses.tag.tag'] = '*' + itemView.resource.get('tag') + '*';
     //              params['tagUses.tag.application'] = app;
             }
             else { //if (tag  ||  tags) {
-              app = self._hashInfo.type;
+              app = itemView._hashInfo.type;
 //              app = decodeURIComponent(app.substring(0, idx));
             }
             
@@ -700,7 +703,7 @@ define('views/ResourceListView', [
           }
           else if (U.isA(m, 'Reference')) {
             var forResource = U.getCloneOf(m, 'Reference.forResource')[0];
-            var uri = forResource && self.resource.get(forResource);
+            var uri = forResource && itemView.resource.get(forResource);
             if (uri) {
               Events.trigger('navigate', U.makeMobileUrl('view', uri), navOptions); //, {trigger: true, forceFetch: true});
               return;
@@ -708,7 +711,7 @@ define('views/ResourceListView', [
           }
     
           var action = U.isAssignableFrom(m, "InterfaceImplementor") ? 'edit' : 'view';
-          Events.trigger('navigate', U.makeMobileUrl(action, self.resource.getUri()), navOptions); //, {trigger: true, forceFetch: true});
+          Events.trigger('navigate', U.makeMobileUrl(action, itemView.resource.getUri()), navOptions); //, {trigger: true, forceFetch: true});
     //          else {
     //            var r = _.getParamMap(window.location.href);
     //            this.router.navigate('view/' + encodeURIComponent(r[pr[0]]), {trigger: true, forceFetch: true});

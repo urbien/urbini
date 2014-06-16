@@ -47,7 +47,7 @@ define('views/ListPage', [
       this.mode = options.mode || G.LISTMODES.DEFAULT;
 //      this.options = _.pick(options, 'checked', 'props');
       this.viewId = options.viewId;
-      
+
       var self = this;
       var rl = this.collection;
       var filtered = this.filteredCollection = rl.clone();
@@ -169,15 +169,24 @@ define('views/ListPage', [
         }
       }
       
-      this.headerButtons = {
-        back: true,
-        add: showAddButton,
-//        aroundMe: isGeo,
-//        mapIt: isGeo, // no maps for now
-//        menu: true,
-//        login: G.currentUser.guest,
-        rightMenu: true //!G.currentUser.guest,
-      };
+      if (this.hashParams.$indicator) {
+        this.headerButtons = {
+//          back: true,
+          save: true,
+          cancel: true
+        }
+      }
+      else {
+        this.headerButtons = {
+          back: true,
+          add: showAddButton,
+  //        aroundMe: isGeo,
+  //        mapIt: isGeo, // no maps for now
+  //        menu: true,
+  //        login: G.currentUser.guest,
+          rightMenu: true //!G.currentUser.guest,
+        };
+      }
 
       this.header = new Header(_.extend({
         buttons: this.headerButtons,
@@ -239,6 +248,16 @@ define('views/ListPage', [
       'submit'            : 'submit'
     },
     
+    myEvents: {
+      'userSaved': 'submit',
+      'userCanceled': 'cancelMulti'
+    },
+    
+    cancelMulti: function(e) {  
+      e && Events.stopEvent(e);
+      Events.trigger('back', 'canceled multi chooser');
+    },
+    
 //    windowEvents: {
 //      'orientationchange' : 'orientationchange',
 //      'resize'            : 'orientationchange'
@@ -256,14 +275,15 @@ define('views/ListPage', [
 //      Events.stopEvent(e);
 //      var isEdit = (this.action === 'edit');
 //      if (p && p.mode == G.LISTMODES.CHOOSER) {
-      Events.stopEvent(e);
-      var checked = this.$('input:checked');
-      var editList = this.$('input[data-formel]');
+      e && Events.stopEvent(e);
+      var checked = this.listView.$('input:checked');
       if (checked.length) {
         Events.trigger('choseMulti', this.hashParams.$multiValue, this.model, checked);
         return;
       }
-      Errors.errDialog({msg: 'Choose first and then submit', delay: 100});
+
+      U.alert("Please choose at least one");
+//      Errors.errDialog({msg: 'Choose first and then submit', delay: 100});
       return;
 /*
       if (!editList) { 

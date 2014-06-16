@@ -1423,7 +1423,7 @@ div {
   content:"."
 }
 
-.category {
+.subClass {
   cursor: pointer;
   padding: 3px;
   display: inline-block;
@@ -1431,13 +1431,13 @@ div {
   padding: 4px 10px;
 }
 
-label.category {
+label.subClass {
   -webkit-appearance: button;
      -moz-appearance: button;
           appearance: button;
 }
 
-.category input {
+.subClass input {
   display: none;
 }
 

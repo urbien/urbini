@@ -261,6 +261,11 @@ define('collections/ResourceList', [
     clone: function() {
       return new ResourceList(this.models.slice(), _.extend(_.pick(this, ['model', 'rUri', 'title', 'total'].concat(listParams)), {cache: false, params: _.clone(this.params)}));
     },
+
+    onResourceDelete: function(resource, options) {
+      this.remove(resource, options);
+    },
+
     onResourceChange: function(resource, options) {
       var removed;
       if (!this.belongsInCollection(resource)) {
@@ -354,6 +359,8 @@ define('collections/ResourceList', [
 
         this.stopListening(resource, 'change', this.onResourceChange);
         this.listenTo(resource, 'change', this.onResourceChange);
+        this.stopListening(resource, 'delete', this.onResourceDelete);
+        this.listenTo(resource, 'delete', this.onResourceDelete);
       }
 
       if (multiAdd && !this.resetting) {

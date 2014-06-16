@@ -1027,6 +1027,9 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
         for (var i = 0, len = items.length; i < len; i++) {
           store.put(items[i]);
         }
+//      }).done(function() {
+//        if (G.DEBUG && storeName == 'ref')
+//          console.debug('PUT:', items);
       }).fail(function() {
         debugger;
       })

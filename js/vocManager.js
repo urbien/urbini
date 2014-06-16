@@ -273,10 +273,14 @@ define('vocManager', [
     
     Voc.getModels(_.keys(actualTypes)).done(function() {
       for (var type in actualTypes) {
-        var actualModel = U.getModel(type);
-        var sadResources = actualTypes[type];
+        var actualModel = U.getModel(type),
+            sadResources = actualTypes[type],
+            sadRes;
+        
         for (var i = 0, len = sadResources.length; i < len; i++) {            
-          sadResources[i].setModel(actualModel);
+          sadRes = sadResources[i];
+          sadRes.setModel(actualModel);
+//          sadRes.fetch({forceFetch: true});
         }
       }
     });

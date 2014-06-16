@@ -454,15 +454,15 @@ define('router', [
 
     choose: function(path) { //, checked, props) {
       if (this.routePrereqsFulfilled('choose', arguments)) {
-        if (!Redirecter.getCurrentChooserBaseResource()) {
-          var params = U.getCurrentUrlInfo().params,
-              forResource = params.$forResource;
-          
-          if (!forResource && !params.$createInstance) {
-            Events.trigger('back', 'back from chooser route due to no current chooser, no $forResource and no $createInstance'); 
-            return;
-          }
-        }
+//        if (!Redirecter.getCurrentChooserBaseResource()) {
+//          var params = U.getCurrentUrlInfo().params,
+//              forResource = params.$forResource;
+//          
+//          if (!forResource && !params.$createInstance) {
+//            Events.trigger('back', 'back from chooser route due to no current chooser, no $forResource and no $createInstance'); 
+//            return;
+//          }
+//        }
           
         this.list(path, G.LISTMODES.CHOOSER); //, {checked: checked !== 'n', props: props ? props.slice(',') : []});
       }
@@ -940,18 +940,18 @@ define('router', [
       // the user is attempting to install the app, or at least pretending well
       isWriteRoute = U.isWriteRoute(route);
       if (!type || !type.endsWith(G.commonTypes.AppInstall)) {
-        if (G.currentApp.forceInstall || isWriteRoute) {
-          installationState = AppAuth.getAppInstallationState(); //hashInfo.type);
-          if (!installationState.allowed) {
-            if (G.currentUser.guest) {
-              this._requestLogin();
-              return false;
-            }
-  
-            Voc.getModels(hashInfo.type);
-            AppAuth.requestInstall(G.currentApp);
+//        if (G.currentApp.forceInstall || isWriteRoute) {
+//          installationState = AppAuth.getAppInstallationState(); //hashInfo.type);
+//          if (!installationState.allowed) {
+        if ((G.currentApp.forceInstall || isWriteRoute) && !G.currentUser.installedThisApp) {
+          if (G.currentUser.guest) {
+            this._requestLogin();
             return false;
           }
+
+          Voc.getModels(hashInfo.type);
+          AppAuth.requestInstall(G.currentApp);
+          return false;
         }
       }
 

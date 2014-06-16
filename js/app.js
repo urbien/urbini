@@ -564,9 +564,8 @@ define('app', [
       dfd.resolve();
     };
     
-    require(localeName).done(setLocale).fail(function() {
-      lang = 'en';
-      require('locale/en.json').done(setLocale);
+    require(localeName.format(lang)).done(setLocale).fail(function() {
+      require(localeName.format('en')).done(setLocale);
     });
         
     return dfd.promise();
@@ -663,6 +662,7 @@ define('app', [
     });
       
     setupWorkers();
+    Physics.init();
 //    buildLocalizationContext();
 //        getAppAccounts().always(loadModels);
     Voc.checkUser();
@@ -696,7 +696,6 @@ define('app', [
 //    if (G.browser.mobile)
 //      G.removeHoverStyles();
     
-    Physics.init();
     return $.whenAll(modelsViewsTemplatesAndDB.promise(), localized);
   };
   
