@@ -934,11 +934,33 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
 //    if (fastForwarded)
 //      return true;
     
-    var type = res.vocModel.type;
+    var type = res.vocModel.type,
+        urlInfo = U.getCurrentUrlInfo();
+    
     if (type == G.commonTypes.AppInstall)
       return false;
+    else if (type.endsWith('commerce/trading/TradleFeed')) {
+      if (!res.get('tradle') && urlInfo.params.$newTradle == 'y') {
+        Voc.getModels('commerce/trading/Tradle').done(function(tradleModel) {
+          var tradle = new tradleModel();
+          tradle.save(null, {
+            success: function() {
+              var params = _.clone(urlInfo.params);
+              delete params.$newTradle;
+              params.tradle = tradle.getUri();
+              Events.trigger('navigate', U.makeMobileUrl('make', 'commerce/trading/TradleFeed', params), { replace: true });
+            },
+            error: function() {
+              debugger;
+            }
+          });
+        });
         
-    var editableProps = res.getEditableProps(U.getCurrentUrlInfo()),
+        return true;
+      }
+    }
+        
+    var editableProps = res.getEditableProps(urlInfo),
         merged = getEditableProps(editableProps);
     
     if (!merged) {
