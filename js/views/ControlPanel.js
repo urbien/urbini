@@ -15,7 +15,7 @@ define('views/ControlPanel', [
     tagName: "tr",
     autoFinish: false,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'refresh', 'add', 'update', 'insertInlineScroller', 'removeInlineScroller', 'toggleInlineScroller'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'refresh', 'add', 'update', 'insertInlineScroller', 'removeInlineScroller', 'toggleInlineScroller', 'doRenderFT'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
@@ -716,6 +716,79 @@ define('views/ControlPanel', [
       });
     },
     
+    renderFT: function() {
+      this.fetchFTArticles().done(this.doRenderFT);
+    },
+    
+    fetchFTArticles: function() {
+//      return U.ajax(...);
+      return U.resolvedPromise([{
+          "summary":{
+          "excerpt":"If, like me, you think that the future for adventurous investors is to give up on share tips and star fund managers and"
+       },
+       "id":"b0be19f8-fc79-11de-bc51-00144feab49a",
+       "title":{
+          "title":"David Stevenson: A hedge against inflation, and a play on energy"
+       },
+       "aspectSet":"article",
+       "editorial":{
+          "byline":"By David Stevenson"
+       },
+       "location":{
+          "uri":"http://www.ft.com/cms/s/2/b0be19f8-fc79-11de-bc51-00144feab49a.html"
+       },
+       "lifecycle":{
+          "initialPublishDateTime":"2010-01-08T17:18:17Z",
+          "lastPublishDateTime":"2010-01-08T17:18:17Z"
+       },
+       "apiUrl":"http://api.ft.com/content/items/v1/b0be19f8-fc79-11de-bc51-00144feab49a",
+           "modelVersion":"1"
+         }, {
+           "summary":{
+           "excerpt":"If, like me, you think that the future for adventurous investors is to give up on share tips and star fund managers and"
+        },
+        "id":"b0be19f8-fc79-11de-bc51-00144feab49a",
+        "title":{
+           "title":"David Stevenson: A hedge against inflation, and a play on energy"
+        },
+        "aspectSet":"article",
+        "editorial":{
+           "byline":"By David Stevenson"
+        },
+        "location":{
+           "uri":"http://www.ft.com/cms/s/2/b0be19f8-fc79-11de-bc51-00144feab49a.html"
+        },
+        "lifecycle":{
+           "initialPublishDateTime":"2010-01-08T17:18:17Z",
+           "lastPublishDateTime":"2010-01-08T17:18:17Z"
+        },
+        "apiUrl":"http://api.ft.com/content/items/v1/b0be19f8-fc79-11de-bc51-00144feab49a",
+        "modelVersion":"1"
+      }]);
+    },
+    
+    doRenderFT: function(results) {
+      if (!results || !results.length)
+        return;
+      
+      if (!this.ftItemTemplate)
+        this.makeTemplate('ftItemTemplate', 'ftItemTemplate');
+        
+      this.el.$('.ftItem').$remove();
+      var frag = document.createDocumentFragment();
+      
+      U.addToFrag(frag, this.propGroupsDividerTemplate({
+        value: 'Related Financial Times Articles',
+        add: false
+      }));
+
+      for (var i = 0; i < results.length; i++) {
+        U.addToFrag(frag, this.ftItemTemplate(results[i]));
+      }
+      
+      this.el.appendChild(frag);
+    },
+    
     renderHelper: function(options) {
       var res = this.resource;
       var vocModel = this.vocModel;
@@ -1125,6 +1198,9 @@ define('views/ControlPanel', [
 
       Q.write(function() {
         this.el.$html(frag);
+        if (U.isAssignableFrom(this.vocModel, 'commerce/trading/Tradle'))
+          this.renderFT();
+        
 //        this.addToWorld(null, false);
 //        this.addToWorld({
 //          slidingWindow: true

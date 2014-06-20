@@ -366,7 +366,7 @@ define('app', [
       
       return data ? data : G.getRejectedPromise();
     });
-  }
+  };
   
   function adaptToPushState() {
     var tabs = G.tabs,
@@ -379,7 +379,7 @@ define('app', [
 //      if (~qIdx)
 //        tab.hash = decodeURIComponent(tab.hash.slice(0, qIdx)) + '?' + tab.hash.slice(qIdx + 1);
     }
-  }
+  };
   
   function prefetchResources() {
     var tabs = G.tabs,
@@ -417,50 +417,66 @@ define('app', [
     
 //    if (Voc.isDelayingModelsFetch())
 //      Voc.getModels(null, {go: true});    
-  }
+  };
   
   function askForEmail() {
-    Events.trigger('navigate', U.makeMobileUrl('edit', G.currentUser._uri, {
-      '-info': 'Complete your registration',
-      $editCols: 'firstName, lastName, email',
-      $returnUri: U.getHash()
-    }));
+//    Events.trigger('navigate', U.makeMobileUrl('edit', G.currentUser._uri, {
+//      '-info': 'Complete your registration',
+//      $editCols: 'firstName, lastName, email',
+//      $returnUri: U.getHash()
+//    }));
     
-//    U.modalDialog({
-//      id: 'completeRegistrationDialog',
-//      header: 'Complete your registration',
-////      title: 'Click <b>Activate</b> to activate your Tradle without a dry run',
-//      details: '<p style="width:100%; text-align:center; font-style:italic;">(A dry run tests how this Tradle <br /> would perform in the last 7 days)</p>',
-//      img: '/images/tradle/target-practice-orange.png',
-////      bgImg: 'http://mark.urbien.com/urbien/images/tradle/target-practice-orange.png',
-//      ok: 'Do a dry run',         // pass true to get default string 'Ok', or false to not have a button
-//      cancel: 'Activate immediately',    // pass true to get default string 'Cancel', or false to not have a button
-//      onok: function onok() {
-//        spinner = {
-//          name: 'backtestTradle',
-//          timeout: 10000,
-//          blockClick: true
-//        };
-//
-//        G.showSpinner(spinner);              
-//        tradle.save({
-//          backtest: true
-//        }, {
-//          sync: true,
-//          redirect: false,
-//          success: hide,
-//          error: function() {
-//            debugger;
-//            hide();
-//          }
-//        });
-//      },
-//      oncancel: function oncancel() {
-//        ModalDialog.hide();
-//        self.activate(null, true); // force
-//      }
-//    });
-  }
+    var getContactModel = Voc.getModels(U.getTypeUri(G.currentUser._uri)),
+        spinner,
+        hide = function() {
+          ModalDialog.hide();
+          if (spinner)
+            G.hideSpinner(spinner);
+        };
+    
+    U.modalDialog({
+      id: 'completeRegistrationDialog',
+      header: 'Complete your registration',
+//      title: 'Click <b>Activate</b> to activate your Tradle without a dry run',
+      details: _.template(Templates.get('emailFormTemplate'))(G.currentUser),
+//      bgImg: 'http://mark.urbien.com/urbien/images/tradle/target-practice-orange.png',
+      ok: 'Submit',
+      cancel: false,
+      onok: function onok() {
+        debugger;
+        var data = {};
+        document.$('.modal-popup form input').$forEach(function(input) { 
+          data[input.name] = data[input.value]; 
+        });
+        
+        spinner = {
+          name: 'saveEmail',
+          timeout: 10000,
+          blockClick: true
+        };
+
+        G.showSpinner(spinner);
+        getContactModel.done(function(model) {
+          var currentUser = new model(G.currentUser);
+          currentUser.save(data, {
+            sync: true,
+            redirect: false,
+            success: hide,
+            error: function() {
+              debugger;
+              hide();
+            }
+          });
+        }).fail(function() {
+          debugger;
+          hide();
+        });        
+      },
+      oncancel: function oncancel() {
+        hide();
+      }
+    });
+  };
   
   function doPostStartTasks() {    
     Voc.getModels();
@@ -794,21 +810,27 @@ define('app', [
       
       G.app = App;
       App.started = true;
-      if (window.location.hash == '#_=_' && !G.support.pushState) {
-        G.log(App.TAG, "info", "hash stripped");
-        if (G.support.pushState) {
-//          window.location.replace(window.location.href.slice(0, window.location.href.indexOf('#')));
-//          return;
+      
+      var root = G.appUrl.slice(G.appUrl.indexOf('/', 8));
+      if (window.location.hash == '#_=_') {
+        if (!G.support.pushState) {
+          G.log(App.TAG, "info", "hash stripped");
+          if (G.support.pushState) {
+  //          window.location.replace(window.location.href.slice(0, window.location.href.indexOf('#')));
+  //          return;
+          }
+          else
+            window.location.hash = '';
         }
-        else
-          window.location.hash = '';
+        else 
+          window.history.replaceState({}, document.title, window.location.href.slice(0, window.location.href.indexOf('#'))); // + this.fragment + loc.search);
       }
 
       App.router = new Router();
       if (G.support.pushState) {
         Backbone.history.start({
           pushState: true, 
-          root: G.appUrl.slice(G.appUrl.indexOf('/', 8))
+          root: root
         });
       }
       else
@@ -816,6 +838,8 @@ define('app', [
       
 //      if (!G.currentUser.guest && !G.currentUser.email && new Date().getTime() - G.currentUser.dateRegistered < 24 * 3600000)
 //        askForEmail();
+      
+      Events.on('askForEmail', askForEmail);
       
       dfd.resolve();
     }).promise();

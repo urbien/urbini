@@ -117,6 +117,22 @@
 <br/>
 </script>  
 
+<script type="text/template" id="ftItemTemplate">
+  <li class="ftItem icon-tradle">
+    <a href="{{= location.uri }}" target="_blank" style="padding:10px 0">
+      <span style="float:right;">
+        {{= U.toMDYString(Date.parse(lifecycle.lastPublishDateTime)) }}
+      </span>
+      <span style="display:block; font-size:1.6rem; font-weight:bold;">
+        {{= title.title }}
+      </span>
+      <span>
+        {{= editorial.byline }}
+      </span>
+    </a>
+  </li>
+</script>
+
 <script type="text/template" id="inlineListItemTemplate">
 <!-- one row of an inline backlink in view mode -->
 <li data-viewid="{{= viewId }}">
@@ -487,38 +503,6 @@
     </ul>
   </div>
 </script>
-
-<!--script type="text/template" id="genericDialogTemplate1">
-<div data-role="popup" id="{{= id }}" data-overlay-theme="a" data-theme="c" data-dismissible="{{= obj.ok === false && obj.cancel === false }}" class="ui-content">
-  {{ if (obj.header) { }}
-  <div data-role="header" id="header" data-theme="a" class="ui-corner-top">
-    <h1>{{= header }}</h1>
-  </div>
-  {{ }                 }}
-  
-  {{ if (obj.ok === false && obj.cancel === false) { }}
-    <a href="#" data-cancel="cancel" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
-  {{ }                 }}
-
-  <div data-role="content" data-theme="d" class="ui-corner-bottom ui-content">
-    {{= obj.title ? '<h3 class="ui-title">{0}</h3>'.format(title) : '' }}
-    {{ if (obj.img) { }}
-      <img src="{{= img }}" style="display:block" />    
-    {{ }              }}
-    {{= obj.details ? '<p style="display:block">{0}</p>'.format(details)                 : '' }}
-    
-    <div style="display:block">
-    {{ if (obj.cancel) { }}
-    <a href="#" data-role="button" data-cancel="" data-inline="true" data-rel="back" data-theme="d">{{= loc(typeof cancel === 'string' ? cancel : 'cancel') }}</a>
-    {{ }                 }}
-    
-    {{ if (obj.ok) { }}
-    <a href="#" data-role="button" data-ok="" data-inline="true" data-rel="back" data-transition="flow" data-theme="a">{{= loc(typeof ok === 'string' ? ok : 'ok') }}</a>
-    {{ }                 }}
-    </div>
-  </div>
-</div>
-</script-->
 
 <script type="text/template" id="chatViewTemplate1">
   <div id="chatHolder" class="chat-holder">
@@ -1082,6 +1066,17 @@
       <a data-mini="true" data-role="button"  data-inline="true" id="cancel" data-rel="back">{{= loc('cancel') }}</a> 
     </div>
   </div>
+</script>
+
+<script type="text/template" id="emailFormTemplate">
+<div style="padding: 1rem;">
+  <label for="firstName">First name</label>
+  <input type="text" placeholder="First name" name="firstName" value="{{= firstName }}">
+  <label for="lastName">Last name</label>
+  <input type="text" placeholder="Last name" name="lastName" value="{{= lastName }}">
+  <label for="email">Email</label>
+  <input type="text" placeholder="Email address" name="email" value="{{= email }}" required="">
+</div>
 </script>
 
 <script type="text/template" id="genericDialogTemplate">
