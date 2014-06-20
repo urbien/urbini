@@ -118,7 +118,7 @@
 </script>  
 
 <script type="text/template" id="ftItemTemplate">
-  <li class="ftItem icon-tradle">
+  <li class="ftItem">
     <a href="{{= location.uri }}" target="_blank" style="padding:10px 0">
       <span style="float:right;">
         {{= U.toMDYString(Date.parse(lifecycle.lastPublishDateTime)) }}
