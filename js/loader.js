@@ -1344,8 +1344,8 @@ define('globals', function() {
     },
 
     dbType: (function() {
-      if (browser.chrome) // testing how things work without indexeddb
-        return 'shim';
+//      if (browser.chrome) // testing how things work without indexeddb
+//        return 'shim';
 //      var using = (browser.chrome && !G.inWebview) || !window.indexedDB;
       var using = !window.indexedDB && !window.mozIndexedDB && !window.webkitIndexedDB && !window.msIndexedDB,
           type;
@@ -1958,7 +1958,7 @@ define('globals', function() {
       head.removeChild(script);
     },
     support: {
-      pushState: G.preferPushState && window.history && history.pushState// && !browser.chrome
+      pushState: !!(G.preferPushState && window.history && history.pushState)// && !browser.chrome
     },
     language: params['-lang'] || navigator.language.split('-')[0],
     tourGuideEnabled: false,

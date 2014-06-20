@@ -27,6 +27,9 @@ define('utils', [
       ModalDialog,
       $w,
       tempIdParam = '__tempId__';
+//      MONTHS = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ],
+//      MONTH_ABBRS = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
+
 
   window._setInterval(function() { // TODO: make this less stupid
     for (var templateName in compiledTemplates) {
@@ -1648,6 +1651,14 @@ define('utils', [
 //        day_diff < 7 && day_diff + " days ago" ||
 //        day_diff < 365 && Math.round( day_diff / 7 ) + " weeks ago" || 
 //        day_diff > 365 && (years = Math.round( day_diff / 365 )) + " years and " + U.getFormattedDate(now + (day_diff % 365));  
+    },
+    
+    toMDYString: function(millis) {
+      var date = new Date(millis),
+          month = date.getMonth() + 1,
+          day = date.getDate();
+          
+      return (month < 10 ? '0' + month : month) + '/' + (day < 10 ? '0' + day : day) + '/' + date.getFullYear();
     },
     
     getShortName: function(uri) {
@@ -3627,6 +3638,12 @@ define('utils', [
         oncancel: hide,
         dismissible: true
       }));
+    },
+    
+    hideModalDialog: function() {
+      U.require('views/ModalDialog').done(function(MD) {
+        MD.hide();
+      });
     },
     
     /**

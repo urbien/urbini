@@ -11,7 +11,9 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   var redirecter,
       interfaceImplementorType = 'system/designer/InterfaceImplementor',
       connectionType = G.commonTypes.Connection,
-      CHOOSE_INDICATOR_FOR = 'Choose an indicator for ';
+      CHOOSE_INDICATOR = 'Choose an indicator';
+      CHOOSE_INDICATOR_FOR = CHOOSE_INDICATOR + ' for',
+      CHOOSE_VALUES_FOR = 'Choose value(s) for';
   
   function makeWriteUrl(res) {
     var uri = res.get('_uri'),
@@ -577,11 +579,15 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
           }
         }
       
+        var title,
+            feedDisplayName = res.get('feed.displayName');
+        
+        title = feedDisplayName ? CHOOSE_INDICATOR_FOR + ' ' + feedDisplayName : CHOOSE_INDICATOR;
         Events.trigger('navigate', U.makeMobileUrl('chooser', 'system/designer/WebProperty', {
           domain: eventClassUri,
           $in: $in,
           $select: 'name,label,propertyType,range,rangeUri,davPropertyUri',
-          $title: CHOOSE_INDICATOR_FOR + res.get('feed.displayName'),
+          $title: title,
           $tradleFeedParams: _.param(
             {
               tradle: res.get('tradle'),
@@ -934,11 +940,54 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
 //    if (fastForwarded)
 //      return true;
     
-    var type = res.vocModel.type;
+    var type = res.vocModel.type,
+        urlInfo = U.getCurrentUrlInfo();
+    
     if (type == G.commonTypes.AppInstall)
       return false;
+    else if (type.endsWith('commerce/trading/TradleFeed')) {
+      if (!res.get('tradle') && urlInfo.params.$newTradle == 'y') {
+<<<<<<< Updated upstream
+        U.alert("We're making a Tradle based on the feed you chose...");
+        Voc.getModels(['commerce/trading/Tradle', 'commerce/trading/TradleFeed']).done(function(tradleModel) {
+=======
+        Voc.getModels('commerce/trading/Tradle').done(function(tradleModel) {
+>>>>>>> Stashed changes
+          var tradle = new tradleModel();
+          tradle.save(null, {
+            success: function() {
+              var params = _.clone(urlInfo.params);
+              delete params.$newTradle;
+              params.tradle = tradle.getUri();
+<<<<<<< Updated upstream
+              
+              Events.trigger('navigate', U.makeMobileUrl('make', 'commerce/trading/TradleFeed', params), { replace: true });
+              setTimeout(function() {                
+                U.hideModalDialog();              
+              }, 1000);
+=======
+              Events.trigger('navigate', U.makeMobileUrl('make', 'commerce/trading/TradleFeed', params), { replace: true });
+>>>>>>> Stashed changes
+            },
+            error: function() {
+              debugger;
+            }
+          });
+        });
+<<<<<<< Updated upstream
         
-    var editableProps = res.getEditableProps(U.getCurrentUrlInfo()),
+        return true;
+      }
+    }
+        
+=======
+        
+        return true;
+      }
+    }
+        
+>>>>>>> Stashed changes
+    var editableProps = res.getEditableProps(urlInfo),
         merged = getEditableProps(editableProps);
     
     if (!merged) {
@@ -1040,11 +1089,9 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     if (params.$createInstance == 'y') {
       var params = urlInfo.params.$props;
       params = params ? U.getQueryParams(params) : {};
-      var prevTitle = urlInfo.params.$title;
-      if (prevTitle.startsWith(CHOOSE_INDICATOR_FOR))
-        prevTitle = prevTitle.slice(CHOOSE_INDICATOR_FOR.length);
+      if (urlInfo.params.$title)
+        params.$title = urlInfo.params.$title + ' ' + valueRes.get('label');
       
-      params.$title = prevTitle + ' ' + valueRes.get('label');
       Events.trigger('navigate', U.makeMobileUrl('make', valueRes.get('davClassUri'), params));
       return;
     }
@@ -1064,13 +1111,20 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
   //            applicableToResource: tfParams.feed
             }),
             and2 = _.param({
-              parentFolder: G.currentApp._uri,
+//              parentFolder: G.currentApp._uri,
               $in: 'name,RawValue,PreviousValue'
-            });
+            }),
+            title = CHOOSE_VALUES_FOR;
       
+        var tradleFeed = C.getResource(tfParams.tradleFeed);
+        if (tradleFeed)
+          title += ' ' + U.getDisplayName(tradleFeed);
+        
+        title += ' ' + U.getDisplayName(valueRes);        
         Events.trigger('navigate', U.makeMobileUrl('chooser', G.commonTypes.WebClass, {
           $or: U.makeOrGroup(_.param({$and: and1}), _.param({$and: and2})),
-          $indicator: _.param(tfParams)
+          $indicator: _.param(tfParams),
+          $title: title
         }));
         
         return;

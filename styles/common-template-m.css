@@ -1280,7 +1280,6 @@ div {
 .modal-popup {
   position: relative;
   margin: auto;
-  font-family: Arial;
   width: 480px;
   height: 640px;
   visibility: hidden;

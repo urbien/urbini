@@ -117,6 +117,22 @@
 <br/>
 </script>  
 
+<script type="text/template" id="ftItemTemplate">
+  <li class="ftItem icon-tradle">
+    <a href="{{= location.uri }}" target="_blank" style="padding:10px 0">
+      <span style="float:right;">
+        {{= U.toMDYString(Date.parse(lifecycle.lastPublishDateTime)) }}
+      </span>
+      <span style="display:block; font-size:1.6rem; font-weight:bold;">
+        {{= title.title }}
+      </span>
+      <span>
+        {{= editorial.byline }}
+      </span>
+    </a>
+  </li>
+</script>
+
 <script type="text/template" id="inlineListItemTemplate">
 <!-- one row of an inline backlink in view mode -->
 <li data-viewid="{{= viewId }}">
@@ -154,9 +170,11 @@
 <script type="text/template" id="inlineCompareIndicatorsRuleTemplate">
 <li data-viewid="{{= viewId }}" style="background:white; padding:0;">
   {{ var byPercent = ~resource.getUri().indexOf('ByRule?') }}
-  <div style="font-size:1.6rem;font-weight:bold;text-align:center; height: 80px; padding:1rem 0;">
-    <div class="cf" style="float:left; width:40%; height:100%;">
-      <!--img src="{{= feedImage }}" /-->
+  <div class="cf" style="font-size:1.6rem;font-weight:bold;text-align:center; height: auto; padding:1rem 0;">
+    <div style="float:left; width:40%; height:100%;">
+      {{ if (resource.get('feedImage')) { }}
+        <img style="float:left" src="{{= resource.get('feedImage') }}" />
+      {{ }                               }}
       <div style="font-size:2.5rem;padding-bottom:1rem;">
         {{= resource.get('indicator.displayName') }}
       </div>
@@ -166,7 +184,7 @@
         </a>
       </div>
     </div>
-    <div class="cf" style="float:left; width:20%; height:100%; font-size:2.3rem;">
+    <div style="float:left; width:20%; height:100%; font-size:2.3rem;">
       <div style="font-size:4.5rem;" class="{{= byPercent ? '' : 'vcentered' }}">
       {{= U.getRuleOperator(resource) }}
       </div>
@@ -177,9 +195,11 @@
       </div>
       {{ }                        }}
     </div>
-    <div class="cf" style="float:left; width:40%; height:100%;">
+    <div style="float:left; width:40%; height:100%;">
     {{ if (resource.get('compareWith')) {   }}
-      <!--img src="{{= compareWith.feedImage }}" /-->
+      {{ if (resource.get('compareWithFeedImage')) { }}
+        <img style="float:right;" src="{{= resource.get('compareWithFeedImage') }}" />
+      {{ }                               }}
       <div style="font-size:2.5rem;padding-bottom:1rem;">
         {{= resource.get('compareWith.displayName') }}
       </div>
@@ -197,8 +217,8 @@
     </div>
   </div>
   {{ if (obj.Cancelable && !Cancelable.canceled) { }}
-    <a style="width: auto; height: auto; float: right; padding: 1rem; position: absolute; top: 0; right: 0;" href="#" data-uri="{{= resource.getUri() }}" data-cancel="true">
-      <i class="ui-icon-remove"></i>
+    <a style="width: 2%; height: 100%; position: absolute; top: 0; right: 0;" href="#" data-uri="{{= resource.getUri() }}" data-cancel="true">
+      <i class="vcentered ui-icon-remove" style="font-size: 2rem; position: absolute; color: #ddd;"></i>
     </a>
   {{ } }}
 </li>
@@ -483,38 +503,6 @@
     </ul>
   </div>
 </script>
-
-<!--script type="text/template" id="genericDialogTemplate1">
-<div data-role="popup" id="{{= id }}" data-overlay-theme="a" data-theme="c" data-dismissible="{{= obj.ok === false && obj.cancel === false }}" class="ui-content">
-  {{ if (obj.header) { }}
-  <div data-role="header" id="header" data-theme="a" class="ui-corner-top">
-    <h1>{{= header }}</h1>
-  </div>
-  {{ }                 }}
-  
-  {{ if (obj.ok === false && obj.cancel === false) { }}
-    <a href="#" data-cancel="cancel" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
-  {{ }                 }}
-
-  <div data-role="content" data-theme="d" class="ui-corner-bottom ui-content">
-    {{= obj.title ? '<h3 class="ui-title">{0}</h3>'.format(title) : '' }}
-    {{ if (obj.img) { }}
-      <img src="{{= img }}" style="display:block" />    
-    {{ }              }}
-    {{= obj.details ? '<p style="display:block">{0}</p>'.format(details)                 : '' }}
-    
-    <div style="display:block">
-    {{ if (obj.cancel) { }}
-    <a href="#" data-role="button" data-cancel="" data-inline="true" data-rel="back" data-theme="d">{{= loc(typeof cancel === 'string' ? cancel : 'cancel') }}</a>
-    {{ }                 }}
-    
-    {{ if (obj.ok) { }}
-    <a href="#" data-role="button" data-ok="" data-inline="true" data-rel="back" data-transition="flow" data-theme="a">{{= loc(typeof ok === 'string' ? ok : 'ok') }}</a>
-    {{ }                 }}
-    </div>
-  </div>
-</div>
-</script-->
 
 <script type="text/template" id="chatViewTemplate1">
   <div id="chatHolder" class="chat-holder">
@@ -1080,6 +1068,17 @@
   </div>
 </script>
 
+<script type="text/template" id="emailFormTemplate">
+<div style="padding: 1rem;">
+  <label for="firstName">First name</label>
+  <input type="text" placeholder="First name" name="firstName" value="{{= firstName }}">
+  <label for="lastName">Last name</label>
+  <input type="text" placeholder="Last name" name="lastName" value="{{= lastName }}">
+  <label for="email">Email</label>
+  <input type="text" placeholder="Email address" name="email" value="{{= email }}" required="">
+</div>
+</script>
+
 <script type="text/template" id="genericDialogTemplate">
   <!--div class="modal-popup" style="height: auto; background:{{= G.lightColor }}; color:{{= G.darkColor }};"-->
   <div class="modal-popup" style="height: auto; color: black; background: white;">
@@ -1280,7 +1279,7 @@
   </section>
   </div>
 </div>
-<div id="buttons" style="white-space: nowrap; position:relative; height: 48px; background:{{= G.darkColor }};color:{{= G.lightColor }}">
+<div id="buttons" style="white-space: nowrap; position:relative; height: 50px; background:{{= G.darkColor }};color:{{= G.lightColor }}">
   <div class="cf vcentered" style="z-index:1; width:20%;float:left;background:inherit;">
     <span class="placeholder"></span>
     {{ if (this.categories) { }}
@@ -1343,7 +1342,7 @@
   <div class="cf vcentered" style="z-index:1; width:20%;float:left;background:inherit;">
     {{ if (activatedProp) { }}
       <section class="activatable" style="float: right; display: none;">
-        <label class="pack-switch" style="float: right; right: 2rem; height: auto; vertical-align:inherit; color:{{= G.darkColor }};">
+        <label class="pack-switch" style="float: right; right: 2rem; vertical-align:inherit; color:{{= G.darkColor }};">
           <input type="checkbox" name="{{= activatedProp.shortName }}" class="formElement boolean" {{= this.resource.get(activatedProp.shortName) ? 'checked="checked"' : '' }} />
           <span></span>
         </label>
