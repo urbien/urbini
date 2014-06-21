@@ -126,6 +126,9 @@
       <span style="display:block; font-size:1.6rem; font-weight:bold;">
         {{= title.title }}
       </span>
+      <span style="display:block; font-size:1.4rem;color:#757575;">
+        {{= summary.excerpt }}
+      </span>
       <span>
         {{= editorial.byline }}
       </span>
@@ -784,7 +787,7 @@
 
 <script type="text/template" id="propGroupsDividerTemplate">
 <!-- row divider / property group header in resource view -->
-<header {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';"' : '' }}>
+<header {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';"' : '' }} class="{{= obj.class || '' }}">
   {{= value }}
   {{ if (obj.add) { }}
     <a href="#" class="add cf lightText" style="cursor:pointer; float:right" data-shortname="{{= shortName }}"><i class="ui-icon-plus-sign"></i></a>
