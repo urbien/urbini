@@ -717,57 +717,61 @@ define('views/ControlPanel', [
     },
     
     renderFT: function() {
-      this.fetchFTArticles().done(this.doRenderFT);
+      if (!this.isMainGroup)
+        this.fetchFTArticles().done(this.doRenderFT);
     },
     
     fetchFTArticles: function() {
-//      return U.ajax(...);
-      return U.resolvedPromise([{
-          "summary":{
-          "excerpt":"If, like me, you think that the future for adventurous investors is to give up on share tips and star fund managers and"
-       },
-       "id":"b0be19f8-fc79-11de-bc51-00144feab49a",
-       "title":{
-          "title":"David Stevenson: A hedge against inflation, and a play on energy"
-       },
-       "aspectSet":"article",
-       "editorial":{
-          "byline":"By David Stevenson"
-       },
-       "location":{
-          "uri":"http://www.ft.com/cms/s/2/b0be19f8-fc79-11de-bc51-00144feab49a.html"
-       },
-       "lifecycle":{
-          "initialPublishDateTime":"2010-01-08T17:18:17Z",
-          "lastPublishDateTime":"2010-01-08T17:18:17Z"
-       },
-       "apiUrl":"http://api.ft.com/content/items/v1/b0be19f8-fc79-11de-bc51-00144feab49a",
-           "modelVersion":"1"
-         }, {
-           "summary":{
-           "excerpt":"If, like me, you think that the future for adventurous investors is to give up on share tips and star fund managers and"
-        },
-        "id":"b0be19f8-fc79-11de-bc51-00144feab49a",
-        "title":{
-           "title":"David Stevenson: A hedge against inflation, and a play on energy"
-        },
-        "aspectSet":"article",
-        "editorial":{
-           "byline":"By David Stevenson"
-        },
-        "location":{
-           "uri":"http://www.ft.com/cms/s/2/b0be19f8-fc79-11de-bc51-00144feab49a.html"
-        },
-        "lifecycle":{
-           "initialPublishDateTime":"2010-01-08T17:18:17Z",
-           "lastPublishDateTime":"2010-01-08T17:18:17Z"
-        },
-        "apiUrl":"http://api.ft.com/content/items/v1/b0be19f8-fc79-11de-bc51-00144feab49a",
-        "modelVersion":"1"
-      }]);
+      return U.ajax({url: G.serverName + "/ftTradle?uri=" + encodeURIComponent(this.resource.getUri()), type: "GET"});
+//      return U.resolvedPromise([{
+//          "summary":{
+//          "excerpt":"If, like me, you think that the future for adventurous investors is to give up on share tips and star fund managers and"
+//       },
+//       "id":"b0be19f8-fc79-11de-bc51-00144feab49a",
+//       "title":{
+//          "title":"David Stevenson: A hedge against inflation, and a play on energy"
+//       },
+//       "aspectSet":"article",
+//       "editorial":{
+//          "byline":"By David Stevenson"
+//       },
+//       "location":{
+//          "uri":"http://www.ft.com/cms/s/2/b0be19f8-fc79-11de-bc51-00144feab49a.html"
+//       },
+//       "lifecycle":{
+//          "initialPublishDateTime":"2010-01-08T17:18:17Z",
+//          "lastPublishDateTime":"2010-01-08T17:18:17Z"
+//       },
+//       "apiUrl":"http://api.ft.com/content/items/v1/b0be19f8-fc79-11de-bc51-00144feab49a",
+//           "modelVersion":"1"
+//         }, {
+//           "summary":{
+//           "excerpt":"If, like me, you think that the future for adventurous investors is to give up on share tips and star fund managers and"
+//        },
+//        "id":"b0be19f8-fc79-11de-bc51-00144feab49a",
+//        "title":{
+//           "title":"David Stevenson: A hedge against inflation, and a play on energy"
+//        },
+//        "aspectSet":"article",
+//        "editorial":{
+//           "byline":"By David Stevenson"
+//        },
+//        "location":{
+//           "uri":"http://www.ft.com/cms/s/2/b0be19f8-fc79-11de-bc51-00144feab49a.html"
+//        },
+//        "lifecycle":{
+//           "initialPublishDateTime":"2010-01-08T17:18:17Z",
+//           "lastPublishDateTime":"2010-01-08T17:18:17Z"
+//        },
+//        "apiUrl":"http://api.ft.com/content/items/v1/b0be19f8-fc79-11de-bc51-00144feab49a",
+//        "modelVersion":"1"
+//      }]);
     },
     
-    doRenderFT: function(results) {
+    doRenderFT: function(resultsO) {
+      if (!resultsO)
+        return;
+      var results = resultsO['results'];
       if (!results || !results.length)
         return;
       
@@ -779,7 +783,8 @@ define('views/ControlPanel', [
       
       U.addToFrag(frag, this.propGroupsDividerTemplate({
         value: 'Related Financial Times Articles',
-        add: false
+        add: false,
+        'class': 'ftItem' 
       }));
 
       for (var i = 0; i < results.length; i++) {
@@ -787,6 +792,7 @@ define('views/ControlPanel', [
       }
       
       this.el.appendChild(frag);
+      this.getPageView().invalidateSize();
     },
     
     renderHelper: function(options) {
