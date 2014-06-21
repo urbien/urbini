@@ -561,3 +561,25 @@ video.remoteVideo:after {
 .dummy {
   visibility: hidden;
 }
+#cpView li.ftItem {
+  background: #FFF1E0;
+}
+
+#cpView li.ftItem  {
+  background: #FFF1E0;
+}
+#cpView .ftItem a > span:nth-child(2) {
+  padding-bottom: .5rem;
+}
+#cpView .ftItem a > span:nth-child(3) {
+  padding-bottom: .5rem;
+  font-weight: normal;
+}
+#cpView .ftItem a > span:nth-child(4) {
+  font-weight: bold;
+}
+#cpView header.ftItem {
+  background: #C2C0B7;
+  color: #fff;
+  font-weight: bold;
+}
