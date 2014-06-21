@@ -947,46 +947,30 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       return false;
     else if (type.endsWith('commerce/trading/TradleFeed')) {
       if (!res.get('tradle') && urlInfo.params.$newTradle == 'y') {
-<<<<<<< Updated upstream
         U.alert("We're making a Tradle based on the feed you chose...");
         Voc.getModels(['commerce/trading/Tradle', 'commerce/trading/TradleFeed']).done(function(tradleModel) {
-=======
-        Voc.getModels('commerce/trading/Tradle').done(function(tradleModel) {
->>>>>>> Stashed changes
           var tradle = new tradleModel();
           tradle.save(null, {
             success: function() {
               var params = _.clone(urlInfo.params);
               delete params.$newTradle;
               params.tradle = tradle.getUri();
-<<<<<<< Updated upstream
               
               Events.trigger('navigate', U.makeMobileUrl('make', 'commerce/trading/TradleFeed', params), { replace: true });
               setTimeout(function() {                
                 U.hideModalDialog();              
               }, 1000);
-=======
-              Events.trigger('navigate', U.makeMobileUrl('make', 'commerce/trading/TradleFeed', params), { replace: true });
->>>>>>> Stashed changes
             },
             error: function() {
               debugger;
             }
           });
         });
-<<<<<<< Updated upstream
         
         return true;
       }
     }
         
-=======
-        
-        return true;
-      }
-    }
-        
->>>>>>> Stashed changes
     var editableProps = res.getEditableProps(urlInfo),
         merged = getEditableProps(editableProps);
     
