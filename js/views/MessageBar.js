@@ -102,42 +102,27 @@ define('views/MessageBar', [
     },
     
     destroy: function() {
+      var self = this,
+          glued = U.filterObj(this.hashParams, function(p) { return /^\-glued/.test(p) }),
+          hash = this.hash;
+          
       this.$('.headerMessageBar').$forEach(function(bar) {
-        if (bar)
+        if (!bar)
+          return;
+        
+        var txt = bar.textContent.trim();
+        for (var p in glued) {
           bar.$remove();
+          if (txt == glued[p])
+            hash = U.replaceParam(hash, p, null);
+        }
       });
+      
+      if (hash != this.hash)
+        Events.trigger('navigate', hash, {trigger: false, replace: true});
       
       BasicView.prototype.destroy.apply(this, arguments);
     }
-//    ,
-//    _updateInfoErrorBar: function(options) {
-//      options = options || {};
-//      var res = options.resource, col = options.collection;
-//      if ((res && res !== this.model) || (col && col !== this.model))
-//        return;
-//
-//      var page = options.page;
-//      if (page && !this.isPageView(page))
-//        return;
-//      
-////      if (typeof options === 'string') {
-////        this.renderError({error: options});
-////        return;
-////      }
-//
-//      var error = options.error;
-//      if (options.errors) {
-//        error = this.errorListTemplate({
-//          errors: options.errors
-//        });
-//      }
-//      
-//      this.renderError(_.extend({
-//        error: error,
-//        info: options.info,
-//        withIcon: false
-//      }, _.omit(options, 'errors')));
-//    },    
   }, {
     displayName: 'MessageBar'
   });

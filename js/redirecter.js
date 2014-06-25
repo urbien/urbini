@@ -13,7 +13,8 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       connectionType = G.commonTypes.Connection,
       CHOOSE_INDICATOR = 'Choose an indicator';
       CHOOSE_INDICATOR_FOR = CHOOSE_INDICATOR + ' for',
-      CHOOSE_VALUES_FOR = 'Choose value(s) for';
+      CHOOSE_VALUES_FOR = 'Choose value(s) for',
+      CLICK_INDICATOR_TO_CREATE_RULE = 'Click an indicator to create a rule with it';
   
   function makeWriteUrl(res) {
     var uri = res.get('_uri'),
@@ -1009,21 +1010,25 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
         params = urlInfo.params;
     
     if (params.$indicator) {
-      Voc.getModels(['commerce/trading/TradleIndicator', 'commerce/trading/TradleFeed']).done(function(iModel, tfModel) {
-        var i = checked.length,
-            common = _.toQueryParams(params.$indicator);
-            
-        while (i--) {
-          var indicator = new iModel(_.extend({
-            variant: checked[i].value
-          }, common));
-          indicator.save();
-        }
+      Events.trigger('navigate', U.makeMobileUrl('view', _.toQueryParams(params.$indicator).tradle, {
+        '-gluedInfo': CLICK_INDICATOR_TO_CREATE_RULE
+      }));
       
-        U.getResourcePromise(common.tradleFeed).done(function(tf) {
-          Events.trigger('loadChooser', tf, tfModel.properties.feed);
-        });
-        
+//      Voc.getModels(['commerce/trading/TradleIndicator', 'commerce/trading/TradleFeed']).done(function(iModel, tfModel) {
+//        var i = checked.length,
+//            common = _.toQueryParams(params.$indicator);
+//            
+//        while (i--) {
+//          var indicator = new iModel(_.extend({
+//            variant: checked[i].value
+//          }, common));
+//          indicator.save();
+//        }
+//      
+//        U.getResourcePromise(common.tradleFeed).done(function(tf) {
+//          Events.trigger('loadChooser', tf, tfModel.properties.feed);
+//        });
+//        
 //        Events.trigger('navigate', U.makeMobileUrl('chooser', 'commerce/trading/Feed', _.extend({
 //          
 //        },
@@ -1034,7 +1039,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
 //          activated: true,
 //          eventClass: '!$this.null'
 //        }));
-      });
+//      });
       
       return;
     }
@@ -1123,8 +1128,12 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
         
         indicator.save();
       });
-      
-      Events.trigger('back', 'chose property for indicator, heading back');
+  
+      Events.trigger('navigate', U.makeMobileUrl('view', tfParams.tradle, {
+        '-gluedInfo': CLICK_INDICATOR_TO_CREATE_RULE
+      }));
+
+//      Events.trigger('back', 'chose property for indicator, heading back');
       return;
     }
     

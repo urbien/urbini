@@ -163,7 +163,7 @@
   {{ } }}
 
   {{ if (obj.Cancelable && !Cancelable.canceled) { }}
-    <a style="width: auto; height: auto; float: right; padding: 1rem; position: absolute; top: 0; right: 0;" href="#" data-uri="{{= resource.getUri() }}" data-cancel="true">
+    <a style="width: auto; height: auto; padding: 0 1rem; position:absolute; right: 0;" href="#" data-uri="{{= resource.getUri() }}" data-cancel="true" class="vcentered">
       <i class="ui-icon-remove"></i>
     </a>
   {{ } }}
@@ -1696,7 +1696,7 @@
   {{ if (!msg.link && msg.icon) {    }}
        <i class="ui-icon-{{= msg.icon }}"></i>
   {{ }                               }}
-       <i class="ui-icon-delete closeparent" style="position:absolute;top:5px;right:0px"></i>
+       <i class="ui-icon-remove closeparent" style="position:absolute;right:5px"></i>
      </div>
 {{  });                           }}
 </div>
