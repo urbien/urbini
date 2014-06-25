@@ -1028,14 +1028,14 @@ define('app', [
       
       var _onDismiss = onDismiss;
       onDismiss = function() {
-        document.$('.modal-popup-holder .headerMessageBar').$remove();
+        document.$('.modal-popups .headerMessageBar').$remove();
         if (_onDismiss)
           _onDismiss.apply(this, arguments);
       };
         
 //      existingPopup.remove();
       var popupHtml = U.template('loginPopupTemplate')({nets: nets, msg: options.online, dismissible: false});
-      document.$('.modal-popup-holder')[0].$html(popupHtml);
+      document.$('.modal-popups')[0].$html(popupHtml);
 //      $(document.body).append(popupHtml);
       var popup = document.getElementById('login_popup');
       if (onDismiss) {

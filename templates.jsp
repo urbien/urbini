@@ -172,8 +172,9 @@
 
 <script type="text/template" id="inlineCompareIndicatorsRuleTemplate">
 <li data-viewid="{{= viewId }}" style="background:white; padding:0;">
-  {{ var byPercent = ~resource.getUri().indexOf('ByRule?') }}
-  <div class="cf" style="font-size:1.6rem;font-weight:bold;text-align:center; height: auto; padding:1rem 0;">
+  {{ var byPercent = ~resource.getUri().indexOf('ByRule?'); }}
+  {{ var showCancel = obj.Cancelable && !Cancelable.canceled; }}
+  <div class="cf" style="font-size:1.6rem;font-weight:bold;text-align:center; height: auto; padding:1rem 0; width: {{= showCancel ? '97' : '100' }}%">
     <div style="float:left; width:40%; height:100%;">
       {{ if (resource.get('feedImage')) { }}
         <img style="float:left" src="{{= resource.get('feedImage') }}" />
@@ -219,8 +220,8 @@
     {{ }                        }}
     </div>
   </div>
-  {{ if (obj.Cancelable && !Cancelable.canceled) { }}
-    <a style="width: 2%; height: 100%; position: absolute; top: 0; right: 0;" href="#" data-uri="{{= resource.getUri() }}" data-cancel="true">
+  {{ if (showCancel) { }}
+    <a style="width: 2%; height: 100%; position: absolute; top: 0; right: 0; padding: 0 0.5%;" href="#" data-uri="{{= resource.getUri() }}" data-cancel="true">
       <i class="vcentered ui-icon-remove" style="font-size: 2rem; position: absolute; color: #ddd;"></i>
     </a>
   {{ } }}
@@ -981,22 +982,6 @@
  {{ } }}
 </script>
 
-<script type="text/template" id="cpTemplateNoAdd">
-<!-- readonly backlink in resource view -->
-<li data-propName="{{= shortName }}"
-  {{= obj.inline ? ' data-theme="a"' : '' }}
->
-     {{ var params = {}; }}
-     {{ params[backlink] = _uri; }}
-     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">{{= name }}
-       <span class="ui-li-count">{{= value }}</span>
-     </a>
-     <a target="#" data-theme="c" data-iconshadow="false" class="cp">
-       <i class="ui-icon-chevron-right"></i>
-     </a>
-   </li>
-</script>
-
 <script type="text/template" id="mapTemplate">
   <!-- map holder -->
   <div id="map" class="map" data-role="none"></div>
@@ -1036,7 +1021,7 @@
 
 <script type="text/template" id="addButtonTemplate">
 <!-- button used for creating new resources -->
-<a target="#"><i class="ui-icon-plus-sign" style="color: {{= G.darkColor }};"></i></a>
+<a target="#"><i class="ui-icon-plus" style="color: {{= G.darkColor }};"></i></a>
 </script>
 
 <script type="text/template" id="menuButtonTemplate">
@@ -1162,7 +1147,7 @@
     </td>
     <td class="live">
       <div class="encircled">
-        <i class="big_symbol ui-icon-th-large"></i>
+        <i class="big_symbol ui-icon-windows-live"></i>
       </div>
       <br />
       <span>Login with Live</span>
@@ -1352,7 +1337,7 @@
       </section>
     {{ }                     }}
     {{ if (this.filter) { }}
-      <div style="margin-right: 5px; display:inline-block; float: right;"><a class="filterToggle lightText" href="#"><i class="ui-icon-fasearch"></i></a></div> 
+      <div style="margin-right: 5px; display:inline-block; float: right;"><a class="filterToggle lightText" href="#"><i class="ui-icon-search"></i></a></div> 
     {{ }                  }}
     <div style="clear:both"></div>
   </div>
@@ -1374,7 +1359,7 @@
 <script type="text/template" id="searchTemplate">
   <!-- Filter conditions for complex queries -->
   <div class="searchBar">
-    <input type="text" class="searchInput" style="font-family: FontAwesome" placeholder="&#xf002; Search" />
+    <input type="text" class="searchInput" style="font-family: tradle" placeholder="&#xe090; Search" />
   </div>
 </script>  
 

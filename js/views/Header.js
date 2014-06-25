@@ -1002,6 +1002,9 @@ define('views/Header', [
             name: 'Indexes',
             type: U.getLongUri1('commerce/trading/Index')            
           }, {
+            name: 'Commodities',
+            type: U.getLongUri1('commerce/trading/Commodity')            
+          }, {
             name: 'Macro',
             type: U.getLongUri1('commerce/trading/AlphaFlashFeed')
           }

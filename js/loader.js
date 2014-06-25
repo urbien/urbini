@@ -1419,7 +1419,7 @@ define('globals', function() {
         options = {name: options};
       
       var id = getSpinnerId(options.name);
-      var cl = 'vcenter' + (options.nonBlockingOverlay ? '' : ' spinner_bg');
+      var cl = 'vcentered ' + (options.nonBlockingOverlay ? '' : ' spinner_bg');
       var color;
       if (G.tabs) {
         var t0 = G.tabs[0];
@@ -1427,8 +1427,8 @@ define('globals', function() {
           color = t0.color;
       }
       
-      var style = ' style="z-index:1000;' + (color ? color + ';' : '') + '"';
-      var innerHTML = '<div clasc="spinner-container"><div ' + style + ' class="spinner">' + (options.content || '<i class="ui-icon-spinner icon-spin" style="font-size: 64px;"></i>') + '</div></div>';
+      var style = ' style="' + (color ? 'color:' + color + ';' : '') + '"';
+      var innerHTML = '<div ' + style + ' class="spinner"></div>';
       var spinner = doc.createElement('div');
       spinner.id = id;
       spinner.className = cl;

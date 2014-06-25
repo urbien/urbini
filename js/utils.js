@@ -3690,7 +3690,7 @@ define('utils', [
         
         function oncancel(e) {
           Events.stopEvent(e);
-          $('.modal-popup-holder .headerMessageBar').$remove();
+          $('.modal-popups .headerMessageBar').$remove();
           if (options.oncancel)
             options.oncancel.apply(this, arguments);
           else
@@ -3711,7 +3711,7 @@ define('utils', [
               ok: true,
               cancel: true
             })),
-            holder = doc.getElementsByClassName('modal-popup-holder')[0],
+            holder = doc.getElementsByClassName('modal-popups')[0],
             dialog;
         
         existing && existing.$remove();

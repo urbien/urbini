@@ -399,7 +399,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       if (!isScrollable(e.target))
         return;
 
-//      log(e.type.toUpperCase(), U.getKeyEventCode(e));
+      switch (e.target.tagName) {
+        case 'TEXTAREA':
+        case 'INPUT':
+          return;
+      }
 
       switch (e.type) {
       case 'keydown':
@@ -543,9 +547,12 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   MouseWheelHandler = {
     _vector: [0, 0, 0],
     handleEvent: function(e) {
-      if (!isScrollable(e.target))
+      if (!isScrollable(e.target)) {
+        console.log("1. MOUSE WHEEL FAIL");
         return;
+      }
 
+      console.log("MOUSE WHEEL");
       var target = e.target,
           draggable,
           el,
@@ -577,21 +584,22 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         }        
       }
       
-      if (!dragEl)
+      if (!dragEl) {
+        console.debug("2. MOUSE WHEEL FAIL", e.target);
         return;
+      }
       
       axis = draggable.getAxis();
       v = MouseWheelHandler._vector;
       v[0] = v[1] = 0;
-      delta = PAGE_VECTOR_MAG * Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+      delta = ARROW_KEY_VECTOR_MAG * Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
       v[axis == 'x' ? 0 : 1] = delta || 0;
       drag(draggable, v);
       
-      if (!resetTimeout(this._endTimeout)) {
-        this._endTimeout = setTimeout(function() {
-          dragend(draggable, v, false); // if true, will prevent coast
-        }, 100);
-      }
+      clearTimeout(this._endTimeout);
+      this._endTimeout = setTimeout(function() {
+        dragend(draggable, v, false); // if true, will prevent coast
+      }, 100);
     }
   };
 

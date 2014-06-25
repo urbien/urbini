@@ -38,10 +38,6 @@
       "physicsTransitions.js",
       "lib/l10n.js",
       "widgetsLibAdapter.js",
-      {
-         "path":"lib/jqm-icon-pack-3.0.0-fa.css",
-         "priority":100
-      },
       "../styles/styles.css",
       "../styles/common-template-m.css",
       "xhrWorker.js",
@@ -138,8 +134,7 @@
          "lib/bb/style_unstable/lists.css",
          "lib/bb/style_unstable/drawer.css",
          "lib/bb/style/switches.css",
-         "../styles/bb_styles.css",
-         "../templates_bb.jsp"
+         "../styles/bb_styles.css"
       ],
       "topcoat":[
          "lib/topcoat/style/topcoat-mobile-dark.css",

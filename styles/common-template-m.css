@@ -329,7 +329,7 @@ div.nabBtn {
   color:#000;
 }
 
-.modal-popup-holder .headerMessageBar {
+.modal-popups .headerMessageBar {
   margin: 0 4% 2%;
 }
 
@@ -1121,13 +1121,6 @@ div {
 .col:first-child { margin-left: 0; } /* all browsers except IE6 and lower */
 
 
-/*  REMOVE MARGINS AS ALL GO FULL WIDTH AT 480 PIXELS */
-
-@media only screen and (max-width: 480px) {
-	.col { 
-		margin: 1% 0 1% 0%;
-	}
-}
 /*  GRID OF TWO   ============================================================================= */
 
 
@@ -1143,6 +1136,16 @@ div {
   color: #3777a1; 
 }
 
+/* GRID OF THREE   ============================================================================= */
+.span_3_of_3 {
+  width: 100%;
+}
+.span_2_of_3 {
+  width: 65.66%;
+}
+.span_1_of_3 {
+  width: 31.33%;
+}
 
 #resourceView .col:nth-child(2) span, #resourceView .col:nth-child(2) div, #resourceView .col:nth-child(2) a {
   float: right; 
@@ -1155,9 +1158,21 @@ div {
   color: #3777a1; 
 }
 
-/*  GO FULL WIDTH AT LESS THAN 480 PIXELS */
+/* REMOVE MARGINS AND GO FULL WIDTH AT LESS THAN 480 PIXELS */
 
 @media only screen and (max-width: 480px) {
+  .col { 
+    margin: 1% 0 1% 0%;
+  }
+  .span_3_of_3 {
+    width: 100%; 
+  }
+  .span_2_of_3 {
+    width: 100%; 
+  }
+  .span_1_of_3 {
+    width: 100%;
+  }
 	.span_2_of_2 {
 		width: 100%; 
 	}
@@ -1170,6 +1185,7 @@ div {
   }
   
 }
+
 #headerUl {
   margin: 0;
 }
@@ -1247,7 +1263,7 @@ div {
   height: 100%;
   top: 0;
   left: 0;
-  z-index: 1;
+  z-index: -1;
   visibility: hidden;
   opacity: 0;
   background: rgba( 0, 0, 0, 0.5 );
@@ -1310,6 +1326,14 @@ div {
   -webkit-transform: scale( 1 );
      -moz-transform: scale( 1 );
           transform: scale( 1 );
+}
+
+.modal-popups {
+  z-index: -1;
+}
+
+.modal-active .modal-popups {
+  z-index: 10005;
 }
 
 .modal-ready body,
@@ -1448,4 +1472,54 @@ label.subClass {
 
 .cf:after {
     clear: both;
+}
+
+.section-content {
+  padding: 70px 0;
+}
+
+@media only screen and (max-width: 991px) {
+  .section-content {
+    max-width: 728px;
+  }
+}
+
+@media only screen and (max-width: 2000px) {
+  .section-content {
+    max-width: 800px;
+  }
+}
+
+.title-block {
+  margin-top: 40px;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.section-title {
+  margin: 10px 0;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  font-family: Lato, sans-serif;
+  color: #3d424a;
+  font-size: 40px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.section-title._2 {
+  margin-top: 0px;
+  color: #20b36c;
+  font-size: 18px;
+  line-height: 25px;
+  font-weight: 400;
+  text-transform: none;
+}
+
+.link {
+  padding-bottom: 3px;
+  border-bottom: 2px solid #7aaac3;
+  color: #7aaac3;
+  font-size: 1.2rem;
+  text-decoration: none;
 }
