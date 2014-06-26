@@ -564,11 +564,13 @@ define('collections/ResourceList', [
     },
 
     disablePaging: function() {
+      console.log("disabling paging");
       this._outOfData = true;
       window._setTimeout(this.enablePaging, 3 * 60000);
     },
 
     enablePaging: function() {
+      console.log("enabling paging");
       this._outOfData = false;
     },
     

@@ -434,8 +434,11 @@ define('router', [
       var view = C.getCachedView();
       if (!view) {
         var hashInfo = G.currentHashInfo;
-        if (hashInfo.params.template)
-          view = new Modules.StaticPage();
+        if (hashInfo.params.template) {
+          view = new Modules.StaticPage({
+            template: hashInfo.params.template
+          });
+        }
         else if (hashInfo.params.selector) {
           var el = doc.body.$(hashInfo.params.selector)[0]; // + '[data-role="page"]')[0];
           if (!el) {

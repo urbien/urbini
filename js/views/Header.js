@@ -622,10 +622,19 @@ define('views/Header', [
     },
     
     search: _.debounce(function(e) {
-      if (e.target.value)
-        this.filterParams.$like = 'davDisplayName,' + e.target.value;
-      else
+      if (e.target.value) {
+        var newValue = 'davDisplayName,' + e.target.value;
+        if (this.filterParams.$like == newValue)
+          return;
+        
+        this.filterParams.$like = newValue;
+      }
+      else {
+        if (!this.filterParams.$like)
+          return;
+        
         delete this.filterParams.$like;
+      }
       
       this.doFilter();
     }, 20),

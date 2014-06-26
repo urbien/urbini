@@ -228,6 +228,118 @@
 </li>
 </script>
 
+<script type="text/template" id="pricingPageTemplate">
+  <div class="section" id="section_bg" style="text-align:center;width:100%;height:100%;">
+    <section id="viewHome" data-type="sidebar"></section>
+    <section id="viewHomer" data-type="sidebar"></section>
+    <div class="headerHP" style="position:absolute;top:0px;width: 100%;">
+      <section id="viewHome" class="menuLeft" data-type="sidebar" style="position:absolute;height:100%;opacity:0.95;background:#2d2d2d;visibility:hidden;z-index:10001"></section>
+      <div id="hpRightPanel" style="font-size:30px; cursor: pointer; float: right; margin-right: 5px;">
+        <span style="cursor:pointer; font-size: 30px;vertical-align:middle;"><i style="color:#7aaac3;padding:5px 0;" class="ui-icon-reorder"></i></span>
+      </div>
+    </div>
+    <div class="section-content" style="margin:0 auto;">
+      <div class="title-block">
+        <h1 class="section-title">Pricing</h1>
+        <h3 class="section-title _2">simple pricing</h3>
+      </div>
+      <div class="pricing-section group">
+        <div class="col span_1_of_3 pricing-1">
+          <h4 style="color:#000;font-weight:100;">
+            Pricing 1
+          </h4>
+          <div class="pricing-item-price-note">
+            Pricing 1 note
+          </div>
+          <div class="pricing-price">
+            <span class="pricing-amount">49</span>
+            <span class="pricing-unit">$</span>
+          </div>
+          <ul class="pricing-items">
+            <li class="pricing-item">
+              <i class="ui-icon-ok"></i>
+              <p class="pricing-title">Free Updates until we hit 1800 Icons</p>            
+            </li>
+    
+            <li class="pricing-item">
+              <i class="ui-icon-ok"></i>
+              <p class="pricing-title">Free Updates until we hit 1800 Icons</p>            
+            </li>
+    
+            <li class="pricing-item">
+              <i class="ui-icon-ok"></i>
+              <p class="pricing-title">Free Updates until we hit 1800 Icons</p>            
+            </li>  
+          </ul>
+          <a class="cta buy1" href="#">Buy Now - 49$</a>
+        </div>
+        <div class="col span_1_of_3 pricing-2">
+          <h4 style="color:#000;font-weight:100;">
+            Pricing 2
+          </h4>
+          <div class="pricing-item-price-note">
+            Pricing 2 note
+          </div>
+          
+          <div class="pricing-price">
+            <span class="pricing-amount">49</span>
+            <span class="pricing-unit">$</span>
+          </div>
+    
+          <ul class="pricing-items">
+            <li class="pricing-item">
+              <i class="ui-icon-ok"></i>
+              <p class="pricing-title">Free Updates until we hit 1800 Icons</p>            
+            </li>
+    
+            <li class="pricing-item">
+              <i class="ui-icon-ok"></i>
+              <p class="pricing-title">Free Updates until we hit 1800 Icons</p>            
+            </li>
+    
+            <li class="pricing-item">
+              <i class="ui-icon-ok"></i>
+              <p class="pricing-title">Free Updates until we hit 1800 Icons</p>            
+            </li>  
+          </ul>
+          <a class="cta buy2" href="#">Buy Now - 49$</a>
+        </div>
+        <div class="col span_1_of_3 pricing-3">
+          <h4 style="color:#000;font-weight:100;">
+            Pricing 3
+          </h4>
+          <div class="pricing-item-price-note">
+            Pricing 3 note
+          </div>
+          
+          <div class="pricing-price">
+            <span class="pricing-amount">49</span>
+            <span class="pricing-unit">$</span>
+          </div>
+    
+          <ul class="pricing-items">
+            <li class="pricing-item">
+              <i class="ui-icon-ok"></i>
+              <p class="pricing-title">Free Updates until we hit 1800 Icons</p>            
+            </li>
+    
+            <li class="pricing-item">
+              <i class="ui-icon-ok"></i>
+              <p class="pricing-title">Free Updates until we hit 1800 Icons</p>            
+            </li>
+    
+            <li class="pricing-item">
+              <i class="ui-icon-ok"></i>
+              <p class="pricing-title">Free Updates until we hit 1800 Icons</p>            
+            </li>  
+          </ul>
+          <a class="cta buy3" href="#">Buy Now - 49$</a>
+        </div>
+      </div>
+    </div>  
+  </div>
+</script>
+
 <script type="text/template" id="bookmarkletIphonePageTemplate">
 <style>
   .bookmarkletPage-tableview-grouped {
@@ -791,7 +903,7 @@
 <header {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';"' : '' }} class="{{= obj.class || '' }}">
   {{= value }}
   {{ if (obj.add) { }}
-    <a href="#" class="add cf lightText" style="cursor:pointer; float:right" data-shortname="{{= shortName }}"><i class="ui-icon-plus-sign"></i></a>
+    <a href="#" class="add cf lightText" style="cursor:pointer; position:absolute; right:5px;" data-shortname="{{= shortName }}"><i class="ui-icon-plus-sign"></i></a>
   {{ }              }}
 </header>
 </script>

@@ -4,8 +4,9 @@ define('views/StaticPage', [
   'utils',
   'events',
   'views/BasicPageView',
-  'views/Header'
-], function(G, U, Events, BasicPageView, Header) {
+  'views/Header',
+  'views/RightMenuButton'
+], function(G, U, Events, BasicPageView, Header, MenuButton) {
   return BasicPageView.extend({
     initialize: function(options) {
       options = options || {};
@@ -27,7 +28,7 @@ define('views/StaticPage', [
         this.addChild(this.header);
       }
 
-      if (this.el.dataset.role != 'page')
+      if (this.el.dataset.role != 'page' || options.template)
         this.makeTemplate(options.template || this.hashParams.template, 'template');
     },
     

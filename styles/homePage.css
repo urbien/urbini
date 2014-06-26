@@ -13,6 +13,7 @@ html {
 #homePage .section {
   position: relative;
   min-height: 100%;
+  display: inline-block;
   font-family: Lato, sans-serif;
 }
 
@@ -36,6 +37,7 @@ h2 {font-size: 28px; line-height: 34px; margin-top: 3px; font-weight:normal;}
 @media (max-width: 320px) {
   #homePage { max-width: 320px;}
 }
+
 @media only screen and (min-width: 321px) and (max-width: 480px) {
  #homePage {max-width: 480px;}
 }
@@ -241,7 +243,7 @@ body {
   font-style: normal;
 }
 
-.b1 span:first-child, .b1 i, #hpRightPanel i, #hpLeftPanel i, #homePage i {
+.b1 span:first-child, .b1 i, #hpRightPanel i, #hpLeftPanel i {
   font-family: 'customFont';
   speak: none;
   font-style: normal;
@@ -483,25 +485,84 @@ body > .section:not([data-role="page"]) {
   -webkit-box-sizing: border-box; 
      -moz-box-sizing: border-box; 
           box-sizing: border-box;
+
   cursor: pointer;
 	border: none; 
 	font-family: Lato; 
-	border-radius: 0.2rem;
   display:inline-block;
-}
 
-.cta > span {
+  color: #fff;
+  text-transform: uppercase;
+  text-align: center;
+/*  font-weight: bold !important;*/
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  padding: 25px 50px;
+/*  font-size: 16px;*/
+  border: none;
+  border-radius: 5px;
   background:#2892c6;
 }
 
-.cta > * {
-  padding:20px 40px;
+.section .cta {
+  margin-top: 100px;
+}
+
+@media only screen and (max-width: 640px) {
+  .col .cta {
+    padding: 25px 20px;
+  }
+}
+
+@media only screen and (max-width: 480px) {
+  .col .cta {
+    padding: 25px 50px;
+  }
 }
 
 #homePage .menuItems {
   -webkit-filter: brightness(0.8);
      -moz-filter: brightness(0.8);
           filter: brightness(0.8);
+}
+
+
+.section-content {
+  padding: 70px 0;
+  max-width: 1000px;
+}
+
+@media only screen and (max-width: 991px) {
+  .section-content {
+    max-width: 728px;
+  }
+}
+
+.title-block {
+  margin-top: 40px;
+  margin-bottom: 40px;
+  text-align: center;
+}
+
+.section-title {
+  margin: 10px 0;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  font-family: Lato, sans-serif;
+  color: #3d424a;
+  font-size: 40px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.section-title._2 {
+  margin-top: 0px;
+  color: #20b36c;
+  font-size: 18px;
+  line-height: 25px;
+  font-weight: 400;
+  text-transform: none;
 }
 
 .paging {
@@ -518,3 +579,180 @@ body > .section:not([data-role="page"]) {
 .pgUp {
   top: 0;
 }
+
+#homePage .col i { 
+  max-width: 100%; font-size: 32px;
+}
+
+#homePage .col {
+  padding: 0 10px;
+}
+
+.section .group {
+  margin-top: 100px;
+}
+
+#homePage .link {
+  padding-bottom: 3px;
+  border-bottom: 2px solid #7aaac3;
+  color: #7aaac3;
+  font-size: 1.2rem;
+  text-decoration: none;
+}
+
+.pricing-section {
+  height: 500px;
+}
+
+.pricing-section > * {
+  border: 1px solid #e3e9ec;
+  height: auto;
+  padding: 40px 15px;
+}
+
+.pricing-section.group {
+  margin-top: 50px;
+}
+
+.pricing-section li {
+  list-style: none;
+}
+
+.pricing-1 {
+  border-top: 8px solid #3b96d2;
+}
+
+.pricing-1 i {
+  color: #3b96d2;
+}
+
+.pricing-1 .cta {
+  background-color: #3b96d2;
+  border-color: #3b96d2;
+}
+
+.pricing-2.col {
+  border-top: 8px solid #D44937;
+}
+
+.pricing-2 i {
+  color: #D44937;
+}
+
+.pricing-2 .cta {
+  background-color: #D44937;
+  border-color: #D44937;
+}
+
+.pricing-3 {
+  border-top: 8px solid #1AC458;
+}
+
+.pricing-3 i {
+  color: #1AC458;
+}
+
+.pricing-3 .cta {
+  background-color: #1AC458;
+  border-color: #1AC458;
+}
+
+.pricing-price {
+  text-align: center;
+  padding-bottom: 20px;
+}
+
+.pricing-amount {
+  font-size: 76px;
+  line-height: 1;
+}
+
+.pricing-unit {
+  position: relative;
+  top: -36px;
+  font-size: 32px;
+  margin-left: 5px;
+}
+
+.pricing-title {
+  font-size: 14px;
+  font-weight: normal;
+  margin-bottom: 0;
+  margin-left: 40px;
+}
+
+.pricing-items {
+  margin: 0;
+  padding: 0;
+}
+
+.pricing-item {
+  list-style: none;
+  text-align: left;
+  margin: 20px 20px 0;
+  line-height: 1.5;
+  position: relative;
+}
+
+.pricing-item i {
+  font-size: 22px;
+  top: 4px;
+  left: 0;
+  position: absolute;
+}    
+
+.pricing-section .cta {
+  margin-top: 20px;
+  max-width: 100%;
+}
+
+.pricing-section h4 {
+  margin-bottom: 15px;
+}
+
+#homePage .pricing-item i.ui-icon-ok { 
+  font-size: 20px;
+}
+
+@media only screen and (max-width: 640px) {
+  .pricing-item {
+    margin-right: 10px;
+    margin-left: 10px;
+  }
+  
+  .pricing-section > * {
+    padding-left: 5px;
+    padding-right: 5px;
+  }
+}
+
+@media only screen and (max-width: 480px) {
+  .pricing-section.group {
+    margin-top: 0px;
+  }
+  
+  .pricing-section {
+    padding: 0 20px;
+  }
+
+  .pricing-section .cta {
+    margin-top: 40px;
+    margin-bottom: 20px;
+  }
+
+  .title-block {
+    margin-top: 0;
+  }
+
+  .section-content {
+    padding: 20px;
+  }
+  
+  .section .group {
+    margin-top: 20px;
+  }
+  
+  .section .cta {
+    margin-top: 20px;
+  }
+}  
