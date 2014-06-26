@@ -376,10 +376,6 @@ fieldset div {
   margin: 1rem -.5px 0 -.5rem;
 } 
 
-label.pack-switch input + span {
-  top: 60%;
-}
-
 fieldset#submitBtns {
   text-align:center;
   background:#d0d0d0;

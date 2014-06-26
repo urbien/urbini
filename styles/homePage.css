@@ -713,6 +713,28 @@ body > .section:not([data-role="page"]) {
   margin-bottom: 15px;
 }
 
+.col img {
+  border-radius: 200px;
+  border: 10px solid;
+  max-width: 100%;
+  box-sizing: border-box;
+  -webkit-box-sizing: border-box;
+}
+
+.col.span_1_of_3 img {
+  border-color: #C5E4FF;
+}
+
+/*
+.col.span_1_of_3 img {
+  border-color: #FCE8A1;
+}
+
+.col.span_1_of_3 img {
+  border-color: #E2FFE3;
+}
+*/
+
 #homePage .pricing-item i.ui-icon-ok { 
   font-size: 20px;
 }
