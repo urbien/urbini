@@ -505,8 +505,8 @@ body > .section:not([data-role="page"]) {
   background:#2892c6;
 }
 
-.section .cta {
-  margin-top: 30px;
+#homePage .cta {
+  width: 220px;
 }
 
 @media only screen and (max-width: 640px) {
@@ -530,6 +530,7 @@ body > .section:not([data-role="page"]) {
 
 .section-content {
   max-width: 1000px;
+  height: 100%;
 }
 
 @media only screen and (max-width: 991px) {
@@ -592,18 +593,32 @@ body > .section:not([data-role="page"]) {
   font-size: 14px;
 }
 
-@media only screen and (min-height: 800px) {
-  .section .group {
-    margin-top: 100px;
-  }
-  
-  .section .cta {
-    margin-top: 100px;
-  }
+.col h4 {
+  color: inherit;
+}
 
+@media only screen and (min-height: 720px) {
+  .section-content {
+    padding: 40px 0;
+  }
+}
+
+@media only screen and (min-height: 640px) {
   .section-content {
     padding: 70px 0;
   }
+
+  .title-block {
+    margin-top: 40px;
+  }
+  
+  .section .group {
+    margin-top: 100px;
+  }  
+
+  .section .cta {
+    margin-top: 100px;
+  }  
 }
 
 #homePage .link {
