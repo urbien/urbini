@@ -506,7 +506,7 @@ body > .section:not([data-role="page"]) {
 }
 
 .section .cta {
-  margin-top: 100px;
+  margin-top: 30px;
 }
 
 @media only screen and (max-width: 640px) {
@@ -529,7 +529,6 @@ body > .section:not([data-role="page"]) {
 
 
 .section-content {
-  padding: 70px 0;
   max-width: 1000px;
 }
 
@@ -540,8 +539,6 @@ body > .section:not([data-role="page"]) {
 }
 
 .title-block {
-  margin-top: 40px;
-  margin-bottom: 40px;
   text-align: center;
 }
 
@@ -591,8 +588,22 @@ body > .section:not([data-role="page"]) {
   padding: 0 10px;
 }
 
-.section .group {
-  margin-top: 100px;
+.section .col {
+  font-size: 14px;
+}
+
+@media only screen and (min-height: 800px) {
+  .section .group {
+    margin-top: 100px;
+  }
+  
+  .section .cta {
+    margin-top: 100px;
+  }
+
+  .section-content {
+    padding: 70px 0;
+  }
 }
 
 #homePage .link {
@@ -720,20 +731,6 @@ body > .section:not([data-role="page"]) {
   box-sizing: border-box;
   -webkit-box-sizing: border-box;
 }
-
-.col.span_1_of_3 img {
-  border-color: #C5E4FF;
-}
-
-/*
-.col.span_1_of_3 img {
-  border-color: #FCE8A1;
-}
-
-.col.span_1_of_3 img {
-  border-color: #E2FFE3;
-}
-*/
 
 #homePage .pricing-item i.ui-icon-ok { 
   font-size: 20px;
