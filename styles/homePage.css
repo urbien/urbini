@@ -17,7 +17,6 @@ html {
   font-family: Lato, sans-serif;
 }
 
-#homePage span {color: #ddd; }
 #homePage span.ui-li-count {color: #353535; }
 
 .p div {color: #ddd; }
@@ -492,6 +491,7 @@ body > .section:not([data-role="page"]) {
   display:inline-block;
 
   color: #fff;
+  font-weight: bold;
   text-transform: uppercase;
   text-align: center;
 /*  font-weight: bold !important;*/
@@ -546,7 +546,7 @@ body > .section:not([data-role="page"]) {
 }
 
 .section-title {
-  margin: 10px 0;
+  margin: 10px 0 0;
   padding-top: 5px;
   padding-bottom: 5px;
   font-family: Lato, sans-serif;
@@ -558,8 +558,10 @@ body > .section:not([data-role="page"]) {
 
 .section-title._2 {
   margin-top: 0px;
-  color: #20b36c;
-  font-size: 18px;
+/*  color: #20b36c;
+  color: #909DD3;*/
+  color: #757575;
+  font-size: 16px;
   line-height: 25px;
   font-weight: 400;
   text-transform: none;
@@ -581,7 +583,8 @@ body > .section:not([data-role="page"]) {
 }
 
 #homePage .col i { 
-  max-width: 100%; font-size: 32px;
+  max-width: 100%; 
+  font-size: 96px;
 }
 
 #homePage .col {

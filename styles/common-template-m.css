@@ -1466,6 +1466,7 @@ div {
 }
 
 label.subClass {
+  font-size: 1.5rem;
   -webkit-appearance: button;
      -moz-appearance: button;
           appearance: button;
