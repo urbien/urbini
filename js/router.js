@@ -433,23 +433,54 @@ define('router', [
       
       var view = C.getCachedView();
       if (!view) {
-        var hashInfo = G.currentHashInfo;
-        if (hashInfo.params.template) {
-          view = new Modules.StaticPage({
-            template: hashInfo.params.template
-          });
+        var hashInfo = G.currentHashInfo,
+            template = hashInfo.uri,
+            data;
+        
+        if (template == 'advisorsPageTemplate') {
+          // TODO: unhack, fetch actual backlink
+          data = {
+            advisors: [
+              {
+                davDisplayName: 'Dmitriy Katsnelson',
+                featured: G.currentUser.featured || G.currentUser.thumb,
+                title: 'Financial Awesome',
+                company: 'Awesome Company',
+                linkedin: 'https://www.linkedin.com/profile/view?id=56792021',
+                twitter: 'dvujade'
+              },
+              {
+                davDisplayName: 'David Raviv',
+                featured: G.currentUser.featured || G.currentUser.thumb,
+                title: 'Mr. Sales',
+                company: 'Salestopia',
+                linkedin: 'https://www.linkedin.com/profile/view?id=56792021',
+                twitter: 'dvujade'
+              }
+            ]
+          };
+          
+          data.advisors = [].concat.call([], data.advisors, data.advisors, data.advisors, data.advisors, data.advisors);
         }
-        else if (hashInfo.params.selector) {
-          var el = doc.body.$(hashInfo.params.selector)[0]; // + '[data-role="page"]')[0];
-          if (!el) {
-            Events.trigger('navigate', 'home/', { replace: true, trigger: true });
-            return;
-          }
-            
+        
+//        if (hashInfo.params.template) {
+        
           view = new Modules.StaticPage({
-            el: el
+            template: template,
+            data: data
           });
-        }
+//        }
+//        else if (hashInfo.params.selector) {
+//          var el = doc.body.$(hashInfo.params.selector)[0]; // + '[data-role="page"]')[0];
+//          if (!el) {
+//            Events.trigger('navigate', 'home/', { replace: true, trigger: true });
+//            return;
+//          }
+//            
+//          view = new Modules.StaticPage({
+//            el: el
+//          });
+//        }
       }
       
       this.changePage(view);
@@ -958,6 +989,11 @@ define('router', [
         }
       }
 
+      if (G.currentApp.isInPrivateBeta && !G.currentUser.isActivated && route != 'home' && route != 'static') {
+        Events.trigger('navigate', 'static/privateBetaPageTemplate');
+        return false;
+      }
+      
       switch (route) {
       case 'chat':        
         views = ['ChatPage'];

@@ -518,7 +518,8 @@ div.nabBtn {
     font-size: 16px;
     line-height: 12px;
     white-space: nowrap;
-    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3); }
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3); 
+}
 
 .hint--top:before {
   border-top-color: #383838; }
@@ -998,10 +999,6 @@ section[id^="view"] {
   font-size: 18px;
 }
 
-div {
-  font-family: Trebuchet MS, Helvetica, Ariel, sans-serif;
-}
-
 .triangle {
   position:absolute;  
   border-color: transparent transparent #2d2d2d transparent;
@@ -1115,8 +1112,11 @@ div {
   position: relative;
 }
 
-.col:first-child { margin-left: 0; } /* all browsers except IE6 and lower */
+.col.thin {
+  margin: 1% 0 1% 8%;
+}
 
+.col:first-child { margin-left: 0; } /* all browsers except IE6 and lower */
 
 /*  GRID OF TWO   ============================================================================= */
 
@@ -1144,6 +1144,36 @@ div {
   width: 32.26%;
 }
 
+/* GRID OF FOUR  ===============================================================================*/
+
+.span_4_of_4 {
+  width: 100%;
+}
+.span_3_of_4 {
+  width: 74.6%;
+}
+.span_2_of_4 {
+  width: 49.2%;
+}
+.span_1_of_4 {
+  width: 23.8%;
+}
+
+/* THIN GRID OF FOUR  ===============================================================================*/
+
+.span_4_of_4.thin {
+  width: 100%;
+}
+.span_3_of_4.thin {
+  width: 73%;
+}
+.span_2_of_4.thin {
+  width: 46%;
+}
+.span_1_of_4.thin {
+  width: 19%;
+}
+
 #resourceView .col:nth-child(2) span, #resourceView .col:nth-child(2) div, #resourceView .col:nth-child(2) a {
   float: right; 
 }
@@ -1158,28 +1188,16 @@ div {
 /* REMOVE MARGINS AND GO FULL WIDTH AT LESS THAN 480 PIXELS */
 
 @media only screen and (max-width: 480px) {
-  .col { 
+  .col, .col.thin { 
     margin: 1% 0 40px 0%;
     height: 100%;
   }
-  
+
   .group {
     margin: 0 20px;
   }
   
-  .span_3_of_3 {
-    width: 100%; 
-  }
-  .span_2_of_3 {
-    width: 100%; 
-  }
-  .span_1_of_3 {
-    width: 100%;
-  }
-	.span_2_of_2 {
-		width: 100%; 
-	}
-	.span_1_of_2 {
+  .col, .col.thin { 
 		width: 100%; 
 	}
 	
@@ -1375,7 +1393,6 @@ div {
 }
 
 .stockCharts h3, .stockCharts p {
-  font-family: Lato, Trebuchet MS;
   font-weight: 400;
   font-size: 1.5rem;
 }
@@ -1423,7 +1440,6 @@ div {
   text-align: center; 
   font-size: 2rem; 
   font-weight: bold;
-  font-family: 'Amaranth', sans-serif;
 }
 
 @media screen and (max-width: 480px) and (orientation: portrait) {
@@ -1475,4 +1491,8 @@ label.subClass {
 
 .cf:after {
     clear: both;
+}
+
+.centered {
+  text-align: center;
 }

@@ -46,10 +46,10 @@
 </script>  
 
 <script type="text/template" id="scrollbarTemplate">
-  <div id="{{= obj.id || 'scrollbar' + G.nextId() }}" class="scrollbar" style="position:absolute; {{= (obj.width ? 'width:' + width + 'px;' : '') + (obj.height ? 'height:' + height + 'px;' : '') }}">
+  <span id="{{= obj.id || 'scrollbar' + G.nextId() }}" class="scrollbar" style="position:absolute; {{= (obj.width ? 'width:' + width + 'px;' : '') + (obj.height ? 'height:' + height + 'px;' : '') }}">
     <div class="scrollbarinner">
     </div>
-  </div>
+  </span>
 </script>
 
 <script type="text/template" id="resource">
@@ -228,8 +228,67 @@
 </li>
 </script>
 
+<script type="text/template" id="privateBetaPageTemplate">
+  <div class="section" id="section_bg">
+  <div class="section-content">
+    <div class="title-block">
+      <span class="section-title">There are {{= G.currentUser.numberInLine }} users ahead of you</span>
+      <span class="section-title _2">But waiting is for suckers, cut them before they cut you!</span>
+    </div>
+    <div class="group">
+      <div class="col span_1_of_3">
+        <i class="ui-icon-users"></i>
+        <h4 style="font-weight:100;">Sign up 3 people</h4>
+        <p>
+          <strong>...and get instant access.</strong>
+          <div>
+            This is your personal link, post it anywhere online and we'll track registrations you facilitated.
+            <input type="text" style="width:80%; margin: 10px auto; display: block;" onfocus="Lablz.U.selectInputText(arguments[0]);" value="{{= U.getRefererLink() }}" readonly="readonly" />
+          </div>
+        </p>
+        <div class="footer1">
+          <a class="cta">
+            Contact us 1
+          </a>
+        </div>
+      </div>
+      <div class="col span_1_of_3">
+        <i class="ui-icon-cart" style="color:#9CF7A0;"></i>
+        <h4 style="font-weight:100;">Subscribe to paid services</h4>
+        <p>
+          <strong>Blah blah blah</strong>
+          <div>
+            oii there's a lot of a blah blah
+          </div>
+        </p>
+        <div class="footer1">
+          <a class="cta">
+            Contact us 2
+          </a>
+        </div>
+      </div>
+      <div class="col span_1_of_3">
+        <i class="ui-icon-comment" style="color:#6798F0;"></i>
+        <h4 style="font-weight:100;">Advise us</h4>
+        <p>
+          <strong>Use your blah blah</strong>
+          <div>
+            To make our blah blah betterer
+          </div>
+        </p>
+        <div class="footer1">
+          <a class="cta">
+            Contact us 3
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>  
+  </div>
+</script>
+
 <script type="text/template" id="pricingPageTemplate">
-  <div class="section" id="section_bg" style="text-align:center;width:100%;height:100%;">
+  <div class="section" id="section_bg">
     <section id="viewHome" data-type="sidebar"></section>
     <section id="viewHomer" data-type="sidebar"></section>
     <div class="headerHP" style="position:absolute;top:0px;width: 100%;">
@@ -342,6 +401,44 @@
           </div>
         </div>
       </div>
+    </div>  
+  </div>
+</script>
+
+<script type="text/template" id="advisorsPageTemplate">
+  <div class="section" id="section_bg">
+    <div class="section-content" style="margin:0 auto; padding-left:20px;padding-right:20px;">
+      <div class="title-block">
+        <h1 class="section-title">Our Advisors</h1>
+        <h3 class="section-title _2">We don't wipe our ass without these guys sneezing first</h3>
+      </div>
+      {{ for (var i = 0; i < advisors.length / 4; i++) { }}
+      <div class="pricing-section group">
+      {{   for (var j = 0; j < 4 && i * 4 + j < advisors.length; j++) {  }}
+      {{     var advisor = advisors[i * 4 + j];          }}
+        <div class="col span_1_of_4 thin contact">
+          <div class="headshot">
+            <img src="{{= U.getExternalFileUrl(advisor.featured) }}" />
+          </div>
+          <span class="contact-title _2">{{= advisor.davDisplayName }}</span>
+          <span class="contact-title _3">{{= advisor.title + '<br />@<br />' + advisor.company }}</span>
+          <ul class="footer1" style="padding:0;">
+            {{ if (advisor.linkedin) { }}
+            <li class="contact-endpoint">
+              <a class="link" href="{{= advisor.linkedin }}" target="_blank">profile</a>
+            </li>
+            {{ }                      }}
+
+            {{ if (advisor.twitter) { }}
+            <li class="contact-endpoint">
+              <a class="link" href="http://twitter.com/{{= advisor.twitter }}" target="_blank">@{{= advisor.twitter }}</a>
+            </li>
+            {{ }                      }}
+          </ul>
+        </div>
+      {{   }                                             }}
+      </div>
+      {{ }                                               }}
     </div>  
   </div>
 </script>

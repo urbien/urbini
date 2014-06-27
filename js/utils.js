@@ -761,17 +761,17 @@ define('utils', [
 //      return sIdx == -1 ? type : type.slice(sIdx + 1);
 //    },
     
+    _extractIDRegex: /www\.hudsonfog\.com\/[a-zA-Z\/]*\/([a-zA-Z]*)\?id=([0-9]*)/,
     getShortUri: function(uri, model) {
-      if (!uri || model.properties._shortUri == 'unsupported')
+      if (!uri || (model && model.properties._shortUri == 'unsupported'))
         return uri;
         
-      var regex = /www\.hudsonfog\.com\/[a-zA-Z\/]*\/([a-zA-Z]*)\?id=([0-9]*)/;
 //      if (!uri) {
 //        log('error', 'match undefined 3');
 //        console.trace();
 //      }
 
-      var nameAndId = uri.match(regex);
+      var nameAndId = uri.match(U._extractIDRegex);
       return nameAndId && nameAndId.length == 3 ? nameAndId[1] + '/' + nameAndId[2] : uri;
     },
 
@@ -3638,6 +3638,41 @@ define('utils', [
         oncancel: hide,
         dismissible: true
       }));
+    },
+    
+//    alertUnactivatedUser: function() {
+//      U.alert({
+//        header: 'We\'re currently in private beta. You will be among the first to know when this app launches into public beta. <br /><br />' + 
+//               '<a class="cta" href="mailto:gene.vayngrib@tradle.io?subject=I+can\'t+wait,+let+me+in!" target="_top">Bribe us</a>',
+//        dismissible: false
+////        ok: 'Contact us to partic!',
+////        cancel: 'OK, I\'ll wait...'
+//      });
+//    },
+    
+    getRefererLink: function(url) {
+      url = url || G.appUrl;
+      var refUri = U.getShortUri(G.currentUser._uri);
+      var ref = _.param({'-ref': refUri});
+      
+      if (url.indexOf('?') == -1) {
+        if (url == G.appUrl)
+          url += '/home/';
+        
+        return url + '?' + ref; 
+      }
+      else
+        url = U.replaceParam(url, '-ref', refUri);
+      
+      return url;
+    },
+    
+    selectInputText: function(e) {
+      e.preventDefault();
+      var input = e.target;
+      setTimeout(function() {
+        input.select();
+      }, 1);
     },
     
     hideModalDialog: function() {

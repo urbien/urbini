@@ -28,13 +28,17 @@ define('views/StaticPage', [
         this.addChild(this.header);
       }
 
-      if (this.el.dataset.role != 'page' || options.template)
-        this.makeTemplate(options.template || this.hashParams.template, 'template');
+      this.templateData = options.data;
+      this.makeTemplate(options.template, 'template');
     },
+    
+//    events: {
+//      'click action': 'performAction'
+//    },
     
     render: function() {
       if (this.template)
-        this.el.$html(this.template());
+        this.el.$html(this.template(this.templateData));
       
       if (!this.rendered) {
         var menuBtnEl = this.el.querySelector('#hpRightPanel');
