@@ -8,7 +8,7 @@ define('views/HomePage', [
 ], function(G, Events, U, BasicPageView, DOM) {
   return BasicPageView.extend({
     TAG: 'HomePage',
-    _paged: true,
+//    _paged: true,
     autoFinish: false,
     first: true,
     viewId: 'viewHome',

@@ -1088,14 +1088,6 @@ div {
 }
 
 
-/*  SECTIONS  ============================================================================= */
-
-.section {
-	clear: both;
-	padding: 0px;
-	margin: 0px;
-}
-
 /*  GROUPING  ============================================================================= */
 
 
@@ -1149,7 +1141,7 @@ div {
   width: 65.66%;
 }
 .span_1_of_3 {
-  width: 31.33%;
+  width: 32.26%;
 }
 
 #resourceView .col:nth-child(2) span, #resourceView .col:nth-child(2) div, #resourceView .col:nth-child(2) a {
@@ -1193,8 +1185,7 @@ div {
 	
   #resourceView .col:nth-child(2) span, #resourceView .col:nth-child(2) div, #resourceView .col:nth-child(2) a {
     float: inherit;
-  }
-  
+  }  
 }
 
 #headerUl {

@@ -189,7 +189,7 @@
       </div>
     </div>
     <div style="float:left; width:20%; height:100%; font-size:2.3rem;">
-      <div style="font-size:4.5rem;" class="{{= byPercent ? '' : 'vcentered' }}">
+      <div style="font-size:4.5rem;">
       {{= U.getRuleOperator(resource) }}
       </div>
       {{ if (byPercent) {   }}
@@ -214,7 +214,7 @@
       </div>
     {{ }                        }}
     {{ if (!resource.get('compareWith')) {  }}
-      <div class="vcentered" style="font-size:4rem;padding-bottom:1rem;">
+      <div style="font-size:4rem;padding-bottom:1rem;">
         {{= U.getRuleValue(resource) }}
       </div>
     {{ }                        }}
@@ -271,7 +271,9 @@
               <p class="pricing-title">Free Updates until we hit 1800 Icons</p>            
             </li>  
           </ul>
-          <a class="cta buy1" href="#">Buy Now - 49$</a>
+          <div class="footer1">
+            <a class="cta buy1" href="#">Buy Now</a>
+          </div>
         </div>
         <div class="col span_1_of_3 pricing-2">
           <h4 style="color:#000;font-weight:100;">
@@ -302,7 +304,9 @@
               <p class="pricing-title">Free Updates until we hit 1800 Icons</p>            
             </li>  
           </ul>
-          <a class="cta buy2" href="#">Buy Now - 49$</a>
+          <div class="footer1">
+            <a class="cta buy2" href="#">Buy Now</a>
+          </div>
         </div>
         <div class="col span_1_of_3 pricing-3">
           <h4 style="color:#000;font-weight:100;">
@@ -333,7 +337,9 @@
               <p class="pricing-title">Free Updates until we hit 1800 Icons</p>            
             </li>  
           </ul>
-          <a class="cta buy3" href="#">Buy Now - 49$</a>
+          <div class="footer1">
+            <a class="cta buy3" href="#">Buy Now</a>
+          </div>
         </div>
       </div>
     </div>  

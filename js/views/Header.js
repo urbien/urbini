@@ -1015,7 +1015,7 @@ define('views/Header', [
             type: U.getLongUri1('commerce/trading/Commodity')            
           }, {
             name: 'Macro',
-            type: U.getLongUri1('commerce/trading/AlphaFlashFeed')
+            type: U.getLongUri1('commerce/events/AlphaFlashFeed')                        
           }
           );
 //        }

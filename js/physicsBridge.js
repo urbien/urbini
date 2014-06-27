@@ -139,6 +139,22 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //    console.log.apply(console, arguments);
   };
 
+  function adjustForScreen(dragMag) {
+    var v = G.viewport;
+    if (v.height < 640)
+      dragMag /= 2;
+    
+    return dragMag;    
+  };
+  
+  function getPageDragMag() {
+    return adjustForScreen(PAGE_VECTOR_MAG);
+  };
+  
+  function getArrowDragMag() {
+    return adjustForScreen(ARROW_KEY_VECTOR_MAG);
+  };
+  
   function isDragAlongAxis(drag, axis) {
     switch (axis) {
     case null:
@@ -458,13 +474,13 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         if (this._keyHeld)
           return;
         
-        vector[0] = vector[1] = PAGE_VECTOR_MAG;
+        vector[0] = vector[1] = getPageDragMag();
         break;
       case 34: // page down
         if (this._keyHeld)
           return;
         
-        vector[0] = vector[1] = -PAGE_VECTOR_MAG;
+        vector[0] = vector[1] = -getPageDragMag();
         break;
       case 35: // end
         if (this._keyHeld)
@@ -492,19 +508,19 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         return; 
       case 37: // left arrow
         this._coast = true;
-        vector[0] = ARROW_KEY_VECTOR_MAG;
+        vector[0] = getArrowDragMag();
         break;
       case 38: // up arrow
         this._coast = true;
-        vector[1] = ARROW_KEY_VECTOR_MAG;
+        vector[1] = getArrowDragMag();
         break;
       case 39: // right arrow
         this._coast = true;
-        vector[0] = -ARROW_KEY_VECTOR_MAG;
+        vector[0] = -getArrowDragMag();
         break;
       case 40: // down arrow
         this._coast = true;
-        vector[1] = -ARROW_KEY_VECTOR_MAG;
+        vector[1] = -getArrowDragMag();
         break;
       default:
         return;
@@ -592,7 +608,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       axis = draggable.getAxis();
       v = MouseWheelHandler._vector;
       v[0] = v[1] = 0;
-      delta = ARROW_KEY_VECTOR_MAG * Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+      delta = getArrowDragMag() * Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
       v[axis == 'x' ? 0 : 1] = delta || 0;
       drag(draggable, v);
       
@@ -1067,9 +1083,9 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         Array.copy(this.touchPos, this.tmp);
 
         if (this.axis != 'y')
-          this.tmp[0] -= gesture.deltaX / 2;
+          this.tmp[0] -= adjustForScreen(gesture.deltaX / 2);
         if (this.axis != 'x')
-          this.tmp[1] -= gesture.deltaY / 2;
+          this.tmp[1] -= adjustForScreen(gesture.deltaY / 2);
         
         if (this.tmp[0] == this.tmp[1] && this.tmp[0] == 0)
           return false;
