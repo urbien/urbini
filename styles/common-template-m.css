@@ -318,7 +318,7 @@ div.nabBtn {
 #menuItems li {padding-bottom: 0px; cursor: pointer;}
 #rightMenuItems li[role="heading"], #menuItems li[role="heading"] {padding-bottom:10px;font-size:18px;font-weight:normal;font-family:Tahoma,Helvetica,Arial;}
 
-#menuItems, #rightMenuItems { display: table-cell; background: #394345; width:200px; }
+#menuItems, #rightMenuItems { text-align: left; display: table-cell; background: #394345; width:200px; }
 
 .headerMessageBar {
   margin: 0;
