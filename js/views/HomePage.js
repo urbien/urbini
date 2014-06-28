@@ -8,7 +8,7 @@ define('views/HomePage', [
 ], function(G, Events, U, BasicPageView, DOM) {
   return BasicPageView.extend({
     TAG: 'HomePage',
-//    _paged: true,
+    _paged: true,
     autoFinish: false,
     first: true,
     viewId: 'viewHome',
@@ -43,6 +43,12 @@ define('views/HomePage', [
     
     getStarted: function(e) {
       Events.stopEvent(e);
+      var t = e.currentTarget;
+      if (t.tagName == 'A' && t.href && t.href != '#') {
+        Events.trigger('navigate', t.href);
+        return;
+      }
+      
       if (G.currentApp.appPath == 'Tradle') {
         Events.trigger('navigate', U.makeMobileUrl('make', 'commerce/trading/Tradle'));
         return;

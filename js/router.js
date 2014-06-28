@@ -316,7 +316,7 @@ define('router', [
       if (G.inFirefoxOS)
         U.rpc('setUrl', window.location.href);
       
-      if (fragment.startsWith('http://')) {
+      if (/^(mailto:|https?:\/\/)/.test(fragment)) {
         var appPath = G.serverName + '/' + pageRoot;
         if (fragment.startsWith(appPath)) // link within app
           fragment = fragment.slice(appPath.length + 1); // cut off #
@@ -443,24 +443,47 @@ define('router', [
             advisors: [
               {
                 davDisplayName: 'Dmitriy Katsnelson',
-                featured: G.currentUser.featured || G.currentUser.thumb,
-                title: 'Financial Awesome',
-                company: 'Awesome Company',
-                linkedin: 'https://www.linkedin.com/profile/view?id=56792021',
-                twitter: 'dvujade'
+                featured: 'http://www.fortigent.com/wp-content/uploads/2013/08/DSC0686DimitriKatsnelson.jpg',
+                title: 'Senior Analyst',
+                company: 'Fortigent, LLC',
+                linkedin: 'https://www.linkedin.com/profile/view?id=56792021'
               },
               {
                 davDisplayName: 'David Raviv',
-                featured: G.currentUser.featured || G.currentUser.thumb,
-                title: 'Mr. Sales',
-                company: 'Salestopia',
-                linkedin: 'https://www.linkedin.com/profile/view?id=56792021',
-                twitter: 'dvujade'
+                featured: 'http://nyetm.com/wp-content/uploads/2013/03/david.png',
+                title: 'Advancing Information Security',
+                linkedin: 'https://www.linkedin.com/profile/view?id=3937988'
+              },
+              {
+                davDisplayName: 'Jeff Weisman',
+                featured: 'http://jfenetwork.com/wp-content/uploads/2014/04/jeff.jpg',
+                title: 'Account Executive',
+                company: 'Salesforce.com',
+                linkedin: 'https://www.linkedin.com/profile/view?id=2396844'
+              },
+              {
+                davDisplayName: 'David Miller',
+                featured: 'https://media.licdn.com/mpr/mpr/wc_240_240/p/4/000/152/0b0/33612c4.jpg',
+                title: 'Portfolio Manager & Co-founder',
+                company: 'Catalyst Mutual Funds',
+                linkedin: 'https://www.linkedin.com/profile/view?id=3115936'
+              },
+              {
+                davDisplayName: 'Michael Fox-Rabinovitz',
+                featured: 'https://media.licdn.com/media/p/1/000/001/0a6/0ffda3f.jpg',
+                title: 'Partner / Portfolio Manager',
+                company: 'Strategic Streams',
+                linkedin: 'https://www.linkedin.com/profile/view?id=70513'
+              },
+              {
+                davDisplayName: 'Greg Irwin',
+                title: 'Partner',
+                company: 'BWG Strategy LLC',
+                linkedin: 'https://www.linkedin.com/profile/view?id=10934599',
+                featured: 'https://media.licdn.com/mpr/mpr/wc_240_240/p/1/005/040/38f/08b3c9d.jpg'
               }
             ]
           };
-          
-          data.advisors = [].concat.call([], data.advisors, data.advisors, data.advisors, data.advisors, data.advisors);
         }
         
 //        if (hashInfo.params.template) {
@@ -989,7 +1012,7 @@ define('router', [
         }
       }
 
-      if (G.currentApp.isInPrivateBeta && !G.currentUser.isActivated && route != 'home' && route != 'static') {
+      if (false && G.currentApp.isInPrivateBeta && !G.currentUser.isActivated && route != 'home' && route != 'static') {
         Events.trigger('navigate', 'static/privateBetaPageTemplate');
         return false;
       }

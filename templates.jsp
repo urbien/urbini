@@ -410,7 +410,7 @@
     <div class="section-content" style="margin:0 auto; padding-left:20px;padding-right:20px;">
       <div class="title-block">
         <h1 class="section-title">Our Advisors</h1>
-        <h3 class="section-title _2">We don't wipe our ass without these guys sneezing first</h3>
+        <h3 class="section-title _2">We sneeze and they bless us</h3>
       </div>
       {{ for (var i = 0; i < advisors.length / 4; i++) { }}
       <div class="pricing-section group">
@@ -421,7 +421,10 @@
             <img src="{{= U.getExternalFileUrl(advisor.featured) }}" />
           </div>
           <span class="contact-title _2">{{= advisor.davDisplayName }}</span>
-          <span class="contact-title _3">{{= advisor.title + '<br />@<br />' + advisor.company }}</span>
+          <span class="contact-title _3">
+            {{= advisor.title }}
+            {{= advisor.company ? '<br />@<br />' + advisor.company : '' }}
+          </span>
           <ul class="footer1" style="padding:0;">
             {{ if (advisor.linkedin) { }}
             <li class="contact-endpoint">

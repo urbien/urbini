@@ -544,7 +544,7 @@ define('app', [
 
   function localize() {
     var lang = G.language,
-        localeName = '../locale/{0}.json'.format(lang),
+        localeName = '../locale/{0}.json',
         dfd = $.Deferred(),
         paramsRegex = /{{.+?}}/ig;
 //        paramsRegex = /{{\s*\$(.+?)\s*}}/ig;

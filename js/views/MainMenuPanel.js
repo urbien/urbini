@@ -233,7 +233,7 @@ define('views/MainMenuPanel', [
                 
         var user = G.currentUser;
         var installed = user.installedApps;
-        if (_.size(installed)) {
+        if (_.size(installed) > 1) {
 //          // get the _uri values of all the apps, cut out their primary key appId, make a small csv. Url hashes can be arbirarily long? 
 //          var $in = 'appId,' + _.map(_.pluck(_.toArray(installed), '_uri'), function(uri) {
 //            return uri.slice(uri.indexOf('=') + 1);
