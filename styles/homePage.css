@@ -25,7 +25,7 @@ html {
           box-sizing: border-box;
 }
 
-#homePage .section:nth-of-type(odd) {
+#homePage .section:nth-of-type(1) {
   height:100%;
 }
 
@@ -525,11 +525,17 @@ body > .section:not([data-role="page"]) {
 
 @media only screen and (min-height: 600px) {
   .section-content {
-    padding: 40px 0;
+    padding: 40px 0 0;
   }
   
   .group {
     margin-top: 40px;
+  }
+}
+
+@media only screen and (min-height: 800px) {
+  .section-content {
+    padding: 80px 0 0;
   }
 }
 
@@ -709,13 +715,21 @@ body > .section:not([data-role="page"]) {
 }
 
 .headshot img {
-  border: none;
-  border-radius: 0;
-  box-shadow: rgba(0, 0, 0, 0.49) 1px 1px 3px 0px;
+  /*border: none;
+  border-radius: 0;*/
+  border: 2px solid #C7C7FF;
+  /*box-shadow: rgba(0, 0, 0, 0.49) 1px 1px 3px 0px;*/
+  width: 100%;
 }
 
-.headshot {
+.headshot, .headshot1 {
   padding: 10px;
+}
+
+@media only screen and (min-width: 800px) {
+  .headshot1 {
+    padding: 30px;
+  }
 }
 
 .contact {
@@ -740,7 +754,7 @@ body > .section:not([data-role="page"]) {
 
 .contact-title._3 {
   font-weight: 100;
-  color: #ddd;
+  color: #aaa;
 }
 
 @media only screen and (max-width: 480px) {
