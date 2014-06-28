@@ -1010,21 +1010,22 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
         params = urlInfo.params;
     
     if (params.$indicator) {
-      Events.trigger('navigate', U.makeMobileUrl('view', _.toQueryParams(params.$indicator).tradle, {
-        '-gluedInfo': CLICK_INDICATOR_TO_CREATE_RULE
-      }));
-      
-//      Voc.getModels(['commerce/trading/TradleIndicator', 'commerce/trading/TradleFeed']).done(function(iModel, tfModel) {
-//        var i = checked.length,
-//            common = _.toQueryParams(params.$indicator);
-//            
-//        while (i--) {
-//          var indicator = new iModel(_.extend({
-//            variant: checked[i].value
-//          }, common));
-//          indicator.save();
-//        }
-//      
+      Voc.getModels('commerce/trading/TradleIndicator').done(function(iModel) {
+        var i = checked.length,
+            common = _.toQueryParams(params.$indicator);
+            
+        while (i--) {
+          var indicator = new iModel(_.extend({
+            variant: checked[i].value
+          }, common));
+          indicator.save();
+        }
+
+        Events.trigger('navigate', U.makeMobileUrl('view', common.tradle, {
+          '-gluedInfo': CLICK_INDICATOR_TO_CREATE_RULE
+        }));
+        
+
 //        U.getResourcePromise(common.tradleFeed).done(function(tf) {
 //          Events.trigger('loadChooser', tf, tfModel.properties.feed);
 //        });
@@ -1039,7 +1040,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
 //          activated: true,
 //          eventClass: '!$this.null'
 //        }));
-//      });
+      });
       
       return;
     }
