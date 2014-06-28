@@ -1009,7 +1009,7 @@
 <header {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';"' : '' }} class="{{= obj.class || '' }}">
   {{= value }}
   {{ if (obj.add) { }}
-    <a href="#" class="add cf lightText" style="cursor:pointer; position:absolute; right:5px;" data-shortname="{{= shortName }}"><i class="ui-icon-plus-sign"></i></a>
+    <a href="#" class="add cf lightText" style="cursor:pointer; position:absolute; right:5px;" data-shortname="{{= shortName }}"><i class="ui-icon-plus"></i></a>
   {{ }              }}
 </header>
 </script>

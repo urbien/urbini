@@ -1,27 +1,27 @@
 var ArrayProto = Array.prototype,
-		indexOf = ArrayProto.indexOf,
+    indexOf = ArrayProto.indexOf,
     concat = ArrayProto.concat,
-		slice = ArrayProto.slice,
-		benchedBodies = {},
-//		JUST_HIDDEN = [],
-		world,
-		integrator,
-		NUMBER_UNITS = ['px', 'em', '%'],
-		CONSTANTS,
-		LAST_STEP_TIME,
+    slice = ArrayProto.slice,
+    benchedBodies = {},
+//    JUST_HIDDEN = [],
+    world,
+    integrator,
+    NUMBER_UNITS = ['px', 'em', '%'],
+    CONSTANTS,
+    LAST_STEP_TIME,
     LAST_STEP_DT,
-//		DRAG_FINISH_PENDING = false,
-		IS_DRAGGING = false,
-		DRAG_ANCHOR,
+//    DRAG_FINISH_PENDING = false,
+    IS_DRAGGING = false,
+    DRAG_ANCHOR,
     DRAG_CONSTRAINTS = [],
 //    DRAG_TRACKERS = [],
     TRACKERS = [],
-		CancelType = {
+    CancelType = {
       unhandle: 'unhandle', // stop handling 'step' event for action
       stop: 'stop',         // stop handling 'step' event for action, and stop the body at its current location if it's moving
       revert: 'revert'      // stop handling 'step' event for action, and revert the body to its state before the action
     },
-		WORLD_CONFIG = {
+    WORLD_CONFIG = {
       positionRenderResolution: 1,
       angleRenderResolution: 0.001,
       timestep: 1000 / 60,
@@ -40,11 +40,11 @@ var ArrayProto = Array.prototype,
     // END Transfer protocol
     
 //    airDragBodies = [],
-		constrainer,
+    constrainer,
 //    boxer,
     railroad,
-		ZERO_ROTATION = [0, 0, 0],
-		UNSCALED = [1, 1, 1],
+    ZERO_ROTATION = [0, 0, 0],
+    UNSCALED = [1, 1, 1],
     MIN_SCALE = [0.0001, 0.0001, 1],
     IDENTITY_TRANSFORM,
     MIN_SCALE_TRANSFORM,
@@ -57,16 +57,16 @@ var ArrayProto = Array.prototype,
 //                           0, 0, 0.0001, 0, 
 //                           0, 0, 0, 0.0001],
     OPACITY_INC = 0.05,
-		LEFT,
-		RIGHT,
+    LEFT,
+    RIGHT,
     ORIGIN,
-		BOUNDS,
-		BOUNDS_AREA,
-		RENDERED_SINCE_BOUNDS_CHANGE = false,
+    BOUNDS,
+    BOUNDS_AREA,
+    RENDERED_SINCE_BOUNDS_CHANGE = false,
     PUBSUB_SNAP_CANCELED = 'snap-canceled',
-		proxiedObjects,
-		layoutManagers = {},
-		DEBUG,
+    proxiedObjects,
+    layoutManagers = {},
+    DEBUG,
     DIR_X_NEG,
     DIR_X_POS,
     DIR_Y_POS,
@@ -81,10 +81,10 @@ var ArrayProto = Array.prototype,
     },
     RERENDER = false,
     MAX_OPACITY = 0.999999,
-		HEAD_STR = "head (top / left)",
-		TAIL_STR = "tail (bottom / right)",
-		BUFFERS = [],
-		STYLE_ARRAY_CACHE = [];
+    HEAD_STR = "head (top / left)",
+    TAIL_STR = "tail (bottom / right)",
+    BUFFERS = [],
+    STYLE_ARRAY_CACHE = [];
 
 String.prototype.endsWith = function(str) {
   return this.slice(this.length - str.length) === str;
@@ -147,7 +147,7 @@ function toStyleArray(style, array) {
 };
 
 function index(obj, i) {
-	return obj[i];
+  return obj[i];
 };
 
 function getAxisIndex(axis) {
@@ -335,7 +335,7 @@ function noop() {};
 
 // resolve string path to object, e.g. 'Physics.util' to Physics.util
 function leaf(obj, path, separator) {
-	return path.split(separator||'.').reduce(index, obj);
+  return path.split(separator||'.').reduce(index, obj);
 };
 
 function sign(number) {
@@ -406,70 +406,70 @@ this.onmessage = function(e){
 };
 
 function _onmessage(e) {
-	if (!world) {
-	  var physicsJSUrl = e.data.physicsJSUrl,
-	      masonryUrl = e.data.masonryUrl;
-	  
-	  if (!physicsJSUrl)
-	    throw "Missing required imports: Physics";
+  if (!world) {
+    var physicsJSUrl = e.data.physicsJSUrl,
+        masonryUrl = e.data.masonryUrl;
+    
+    if (!physicsJSUrl)
+      throw "Missing required imports: Physics";
 
     if (!masonryUrl)
       throw "Missing required imports: Masonry";
 
-	  console.log("IMPORTING: " + physicsJSUrl);
-	  importScripts(physicsJSUrl);
+    console.log("IMPORTING: " + physicsJSUrl);
+    importScripts(physicsJSUrl);
     console.log("IMPORTING: " + masonryUrl);
-	  importScripts(masonryUrl);
-	  DEBUG = false;//e.data.debug;
-//	  with (e.data.styleInfo) {
-	    // Transfer protocol props
-//	  UNIT_MAP = e.data.styleInfo.units;
-	  STYLE_ORDER = e.data.styleInfo.order;
-	  STYLE_NUM_VALUES = e.data.styleInfo.values;
+    importScripts(masonryUrl);
+    DEBUG = false;//e.data.debug;
+//    with (e.data.styleInfo) {
+      // Transfer protocol props
+//    UNIT_MAP = e.data.styleInfo.units;
+    STYLE_ORDER = e.data.styleInfo.order;
+    STYLE_NUM_VALUES = e.data.styleInfo.values;
 //      PREFIX = prefix;
 //      SUFFIX = suffix;
 //      UNITS = units;
 //      SEPARATOR = separator;
-//	  }
-	  
-	  CONSTANTS = {};
-	  Object.keys(CONSTANTS).forEach(function(c) {
-	    if (c != 'degree') {
-	      CONSTANTS['_' + c] = CONSTANTS[c];
-  	    CONSTANTS.__defineGetter__(c, function() {
-  	      var deg = CONSTANTS.degree;
-  	      if (deg == 0)
-  	        deg = 1;
-  	      else if (deg < 0)
-  	        deg = -1 / deg;
-  	        
-	        return Math.pow(CONSTANTS['_' + c], deg);
-  	    });
-  	    
+//    }
+    
+    CONSTANTS = {};
+    Object.keys(CONSTANTS).forEach(function(c) {
+      if (c != 'degree') {
+        CONSTANTS['_' + c] = CONSTANTS[c];
+        CONSTANTS.__defineGetter__(c, function() {
+          var deg = CONSTANTS.degree;
+          if (deg == 0)
+            deg = 1;
+          else if (deg < 0)
+            deg = -1 / deg;
+            
+          return Math.pow(CONSTANTS['_' + c], deg);
+        });
+        
         CONSTANTS.__defineSetter__(c, function(val) {
           if (c == 'drag')
             val /= 4;
           
           CONSTANTS['_' + c] = val;
         });
-	    }
-	  });
-	  
-	  Physics.util.extend(WORLD_CONFIG, CONSTANTS.worldConfig);
-	  Physics.util.extend(CONSTANTS, e.data.constants);
-		world = Physics( WORLD_CONFIG, function(world, Physics) {
-			initWorld(world, e.data.stepSelf);
-		});
-		
-		proxiedObjects = {
-			world: world,
-			Physics: Physics
-		};
-		
-		return;
-	}
-	
-	executeRPC(e.data);
+      }
+    });
+    
+    Physics.util.extend(WORLD_CONFIG, CONSTANTS.worldConfig);
+    Physics.util.extend(CONSTANTS, e.data.constants);
+    world = Physics( WORLD_CONFIG, function(world, Physics) {
+      initWorld(world, e.data.stepSelf);
+    });
+    
+    proxiedObjects = {
+      world: world,
+      Physics: Physics
+    };
+    
+    return;
+  }
+  
+  executeRPC(e.data);
 };
 
 function executeRPC(rpc) {
@@ -548,13 +548,13 @@ function updateBounds(minX, minY, maxX, maxY) {
   RENDERED_SINCE_BOUNDS_CHANGE = false;
   BOUNDS = Physics.aabb.apply(Physics, arguments);
   BOUNDS_AREA = (maxX - minX) * (maxY - minY);
-	var leftX = minX - (maxX - minX),
-	    leftY = minY,
-	    rightX = maxX,
-	    rightY = minY,
-	    back = 10;
-	
-	if (!LEFT) {
+  var leftX = minX - (maxX - minX),
+      leftY = minY,
+      rightX = maxX,
+      rightY = minY,
+      back = 10;
+  
+  if (!LEFT) {
     LEFT = Physics.body('point', {
       _id: 'left',
       fixed: true,
@@ -588,16 +588,16 @@ function updateBounds(minX, minY, maxX, maxY) {
     world.addBody(LEFT);
     world.addBody(RIGHT);
     world.addBody(ORIGIN);
-	}
-	else {
+  }
+  else {
     ORIGIN.state.pos.set(minX, minY);
-	  LEFT.state.pos.set(leftX, leftY);
+    LEFT.state.pos.set(leftX, leftY);
     RIGHT.state.pos.set(rightX, rightY);
-	}
+  }
 };
 
 function addBehavior(behavior, options) {
-	world.addBehavior( Physics.behavior(behavior, options) );
+  world.addBehavior( Physics.behavior(behavior, options) );
 };
 
 function updateVector(v, x, y, z) {
@@ -863,24 +863,24 @@ function minify(/* body1, body2,..., or array of bodies */) {
 };
 
 function pluck(obj, prop1, prop2 /* etc. */) {
-	var subset = {};
-	for (var prop in obj) {
-		if (obj.hasOwnProperty(prop) && indexOf.call(arguments, prop) > 0) {
-			subset[prop] = obj[prop];
-		}
-	}
-	
-	return subset;
+  var subset = {};
+  for (var prop in obj) {
+    if (obj.hasOwnProperty(prop) && indexOf.call(arguments, prop) > 0) {
+      subset[prop] = obj[prop];
+    }
+  }
+  
+  return subset;
 }
 
 function toJSON(obj) {
-	var json = {};
-	for (var prop in obj) {
-		if (typeof obj[prop] != 'function')
-			json[prop] = obj[prop];
-	}
-	
-	return json;
+  var json = {};
+  for (var prop in obj) {
+    if (typeof obj[prop] != 'function')
+      json[prop] = obj[prop];
+  }
+  
+  return json;
 };
 
 ///**
@@ -1019,23 +1019,23 @@ function recycle(recycled) {
 };
 
 function render() {
-	var bodies,
-  		body,
-  		id,
-  		msg = {
-	      topic: 'render',
-	      bodies: {}
-	    },
-	    styles = msg.bodies,
-  		style;//,
-//  		update = false;
+  var bodies,
+      body,
+      id,
+      msg = {
+        topic: 'render',
+        bodies: {}
+      },
+      styles = msg.bodies,
+      style;//,
+//      update = false;
 
   bodies = world.getBodies();
-	BUFFERS.length = 0;
-	world.publish({
-	  topic: 'beforeRender'
-	});
-	
+  BUFFERS.length = 0;
+  world.publish({
+    topic: 'beforeRender'
+  });
+  
   for (var i = 0; i < bodies.length; i++) {
     body = bodies[i];
     if (!body.hidden && getId(body)) {
@@ -1044,44 +1044,44 @@ function render() {
     }
   };
   
-	for (var i = 0; i < bodies.length; i++) {
-		body = bodies[i];
-		id = getId(body);
-		if (id && !body.hidden) {
-//			style = renderBody(body);
-//			if (style) {
-//				update = true;
-//				styles[getId(body)] = style;
-//			}
-		  
-		  if (style = renderBody(body)) {
-		    styles[id] = style;
-		    BUFFERS.push(style.buffer);
-		  }
-		}
-	};
+  for (var i = 0; i < bodies.length; i++) {
+    body = bodies[i];
+    id = getId(body);
+    if (id && !body.hidden) {
+//      style = renderBody(body);
+//      if (style) {
+//        update = true;
+//        styles[getId(body)] = style;
+//      }
+      
+      if (style = renderBody(body)) {
+        styles[id] = style;
+        BUFFERS.push(style.buffer);
+      }
+    }
+  };
 
-	RENDERED_SINCE_BOUNDS_CHANGE = true;
-//	RERENDER = !update;
-	RERENDER = !BUFFERS.length;
-	if (!RERENDER) {
-//		postMessage({
-//			topic: 'render',
-//			bodies: styles
-//		});
-	  postMessage(msg, BUFFERS);
-	  if (BUFFERS[0].byteLength) {
-	    debugger; // transferables not supported
-	  }
-	  
-//	  bodies = getBodies.apply(null, Object.keys(msg.bodies));
-//	  var i = bodies.length;
-//	  while (i--) {
-//	    bodies[i].state.renderData.encoded = newStyleArray();
-//	  }
-	}
-	
-	world.publish({
+  RENDERED_SINCE_BOUNDS_CHANGE = true;
+//  RERENDER = !update;
+  RERENDER = !BUFFERS.length;
+  if (!RERENDER) {
+//    postMessage({
+//      topic: 'render',
+//      bodies: styles
+//    });
+    postMessage(msg, BUFFERS);
+    if (BUFFERS[0].byteLength) {
+      debugger; // transferables not supported
+    }
+    
+//    bodies = getBodies.apply(null, Object.keys(msg.bodies));
+//    var i = bodies.length;
+//    while (i--) {
+//      bodies[i].state.renderData.encoded = newStyleArray();
+//    }
+  }
+  
+  world.publish({
     topic: 'postRender',
     rendered: !RERENDER
   });
@@ -1172,42 +1172,42 @@ function arrayEquals(a, b) {
 }
 
 function renderBody(body) {
-	var state = body.state,
-  		rendered = state.rendered,
-  		wasRendered = body.rendered(),
-//  		rotation = body.state.renderData.get('rotate'),
-  		isTranslated = body.state.rendered.isTranslated,
+  var state = body.state,
+      rendered = state.rendered,
+      wasRendered = body.rendered(),
+//      rotation = body.state.renderData.get('rotate'),
+      isTranslated = body.state.rendered.isTranslated,
 //      isRotated = !arrayEquals(body.state.rotation, body.state.rendered.rotation)), // is only for rendering, so it will be reflected in styleChanged (until we get rotation into physics)
-	    opacityChanged = !wasRendered || body.state.renderData.isChanged('opacity'), 
-	    styleChanged = opacityChanged || body.state.renderData.isChanged(),
-  		style = styleChanged && body.state.renderData.getChanges(), //true),
-  		styleArrays = body.state.renderData.encoded,
-  		styleArray,
-  		transform,
-  		rx, ry, rz;
-				
-	if (!wasRendered || styleChanged || isTranslated) {
-	  if (!style)
-	    style = {};
-	  
+      opacityChanged = !wasRendered || body.state.renderData.isChanged('opacity'), 
+      styleChanged = opacityChanged || body.state.renderData.isChanged(),
+      style = styleChanged && body.state.renderData.getChanges(), //true),
+      styleArrays = body.state.renderData.encoded,
+      styleArray,
+      transform,
+      rx, ry, rz;
+        
+  if (!wasRendered || styleChanged || isTranslated) {
+    if (!style)
+      style = {};
+    
     styleArray = styleArrays.pop();
     if (!styleArray)
       styleArray = newStyleArray();
     
-		if (!wasRendered) {
-			body.rendered(true);
-		}
+    if (!wasRendered) {
+      body.rendered(true);
+    }
 
-		rendered.angular.pos = state.angular.pos;
-		rendered.pos.clone(state.pos);
-		
-//		transform.scale = body.state.renderData.get('scale');
-//		transform.transform = getTranslation(body);
-//		if (isRotated) {
-//		  transform.rotate = body.state.rendered.rotation = body.state.rotation;
+    rendered.angular.pos = state.angular.pos;
+    rendered.pos.clone(state.pos);
+    
+//    transform.scale = body.state.renderData.get('scale');
+//    transform.transform = getTranslation(body);
+//    if (isRotated) {
+//      transform.rotate = body.state.rendered.rotation = body.state.rotation;
 //      transform.rotate.unit = 'deg';
-//		}
-		
+//    }
+    
 //    style.transform = calcTransform(body);
     if (styleChanged) {
       Physics.util.extend(body.state.rendered.renderData, style);
@@ -1228,8 +1228,8 @@ function renderBody(body) {
 //    if (transform.translate || transform.scale || transform.rotate)
 //      style.transform = transform;
     
-		return toStyleArray(style, styleArray);
-	}
+    return toStyleArray(style, styleArray);
+  }
 };
 
 function isCurrentlyDragging() {
@@ -1285,10 +1285,10 @@ function initWorld(_world, stepSelf) {
   MIN_SCALE_TRANSFORM = Matrix.identity();
   MIN_SCALE_TRANSFORM[0] = MIN_SCALE_TRANSFORM[5] = 0.0001;
   
-	world = _world;
-	integrator = Physics.integrator('verlet', { drag: CONSTANTS.drag });
-	world.integrator(integrator);
-	
+  world = _world;
+  integrator = Physics.integrator('verlet', { drag: CONSTANTS.drag });
+  world.integrator(integrator);
+  
   constrainer = Physics.behavior('verlet-constraints');
   world.addBehavior(constrainer);
 
@@ -1298,11 +1298,11 @@ function initWorld(_world, stepSelf) {
 //  boxer = Physics.behavior('box-constraint-manager');
 //  world.addBehavior(boxer);
 
-	if (stepSelf)
-	  Physics.util.ticker.subscribe(API.step);
-	
-	Physics.util.extend(Physics.util, {
-	  once: function(func) { // from underscore
+  if (stepSelf)
+    Physics.util.ticker.subscribe(API.step);
+  
+  Physics.util.extend(Physics.util, {
+    once: function(func) { // from underscore
       var ran = false, memo;
       return function() {
         if (ran) return memo;
@@ -1311,13 +1311,13 @@ function initWorld(_world, stepSelf) {
         func = null;
         return memo;
       };
-	  },
-	  extendArray: function(target, source) {
-	    var i = source.length;
-	    while (i--) {
-	      target[i] = source[i];
-	    }
-	  },
+    },
+    extendArray: function(target, source) {
+      var i = source.length;
+      while (i--) {
+        target[i] = source[i];
+      }
+    },
     removeFromTo: function(array, fromIdx, toIdx) {
       var howMany = toIdx - fromIdx;
       for (var i = fromIdx, len = array.length - howMany; i < len; i++) {
@@ -1327,72 +1327,72 @@ function initWorld(_world, stepSelf) {
       array.length = len;
       return array;
     },
-	  pick: function(obj) {
-	    var copy = {};
-	    var keys = concat.apply(ArrayProto, slice.call(arguments, 1)),
-	        key,
-	        i = keys.length;
-	    
-	    while (i--) {
-	      key = keys[i];
-	      if (key in obj) 
-	        copy[key] = obj[key];
-	    }
-	    
-	    return copy;
-	  },
+    pick: function(obj) {
+      var copy = {};
+      var keys = concat.apply(ArrayProto, slice.call(arguments, 1)),
+          key,
+          i = keys.length;
+      
+      while (i--) {
+        key = keys[i];
+        if (key in obj) 
+          copy[key] = obj[key];
+      }
+      
+      return copy;
+    },
     negate: function(fn, context) {
       return function() {
         return !fn.apply(context || this, arguments);
       }
     },
-	  bindAll: function(context /*, fns */) {
-	    var fn;
-	    for (var i = 1; i < arguments.length; i++) {
-	      fn = arguments[i];
-	      context[fn] = context[fn].bind(context);
-	    }
-	  },
-	  clamp: function(val, low, high) {
-	    return Math.max(Math.min(val, high), low);
-	  },
-	  truncate: function(x, places) {
-	    var tmp = Math.pow(10, places);
-	    return (x * tmp | 0) / tmp;
-	  },
-	  now: Physics.util.now || (typeof performance == 'undefined' ? Date.now.bind(Date) : performance.now.bind(performance)),
-	  loop: function(arr, iterator, reverse) {
-	    if (reverse) {
-	      var i = arr.length;
-	      while (i--) {
-	        iterator(arr[i]);
-	      }
-	    }
-	    else {
-	      for (var i = 0, l = arr.length; i < l; i++) {
-	        iterator(arr[i]);
-	      }
-	    }
-	  },
-	  unique: function(arr) {
-	    var seen = [];
-	    arr.forEach(function(value, index) {
-	      if (seen.indexOf(value) == -1) {
-	        seen[seen.length] = value;
-	      }
-	    });
-	    
-	    return seen;
-	  }
-	});
+    bindAll: function(context /*, fns */) {
+      var fn;
+      for (var i = 1; i < arguments.length; i++) {
+        fn = arguments[i];
+        context[fn] = context[fn].bind(context);
+      }
+    },
+    clamp: function(val, low, high) {
+      return Math.max(Math.min(val, high), low);
+    },
+    truncate: function(x, places) {
+      var tmp = Math.pow(10, places);
+      return (x * tmp | 0) / tmp;
+    },
+    now: Physics.util.now || (typeof performance == 'undefined' ? Date.now.bind(Date) : performance.now.bind(performance)),
+    loop: function(arr, iterator, reverse) {
+      if (reverse) {
+        var i = arr.length;
+        while (i--) {
+          iterator(arr[i]);
+        }
+      }
+      else {
+        for (var i = 0, l = arr.length; i < l; i++) {
+          iterator(arr[i]);
+        }
+      }
+    },
+    unique: function(arr) {
+      var seen = [];
+      arr.forEach(function(value, index) {
+        if (seen.indexOf(value) == -1) {
+          seen[seen.length] = value;
+        }
+      });
+      
+      return seen;
+    }
+  });
 
-	DRAG_ANCHOR = Physics.body('point', {
-	  x: 0, 
-	  y: 0,
-	  mass: 100000
-	});
-	
-	world.subscribe('drag', function(data) {
+  DRAG_ANCHOR = Physics.body('point', {
+    x: 0, 
+    y: 0,
+    mass: 100000
+  });
+  
+  world.subscribe('drag', function(data) {
     var bodies = data.bodies,
         body,
         i = bodies.length;
@@ -1400,14 +1400,14 @@ function initWorld(_world, stepSelf) {
     while (i--) {
       body = bodies[i];
       if (!hasDragConstraint(body)) {
-        DRAG_CONSTRAINTS.push(constrainer.distanceConstraint(body, DRAG_ANCHOR, 0.03, body.state.pos.dist(DRAG_ANCHOR.state.pos)));
+        DRAG_CONSTRAINTS.push(constrainer.distanceConstraint(body, DRAG_ANCHOR, 0.06, body.state.pos.dist(DRAG_ANCHOR.state.pos)));
       }
     }
-	  
+    
     IS_DRAGGING = true;
     DRAG_ANCHOR.fixed = true;
-	  DRAG_ANCHOR.state.pos.vadd(data.vector);
-	});
+    DRAG_ANCHOR.state.pos.vadd(data.vector);
+  });
 
   world.subscribe('dragend', function(data) {
     IS_DRAGGING = false;
@@ -1428,7 +1428,7 @@ function initWorld(_world, stepSelf) {
     DRAG_ANCHOR.fixed = false;
     scratch.done();
 //    world.subscribe('integrate:positions', killDrag, this, 1000);
-	});
+  });
 
 //  function killDrag() {
 //    IS_DRAGGING = false;
@@ -1443,22 +1443,22 @@ function initWorld(_world, stepSelf) {
 //    DRAG_CONSTRAINTS.length = 0;
 //  };
   
-//	world.subscribe('drag', function(data) {
-//		var bodies = data.bodies,
-//  			body,
-//  			tracker,
-//  			i = bodies.length;
-//	
-////		log('DRAG ' + data.vector.toString());
-//		while (i--) {
-//			body = bodies[i];
-//			body.fixed = true;
-//			body.state.pos.vadd(data.vector);
-//			body.stop();
-//		}
-//		
-//		i = DRAG_TRACKERS.length;
-//		while (i--) {
+//  world.subscribe('drag', function(data) {
+//    var bodies = data.bodies,
+//        body,
+//        tracker,
+//        i = bodies.length;
+//  
+////    log('DRAG ' + data.vector.toString());
+//    while (i--) {
+//      body = bodies[i];
+//      body.fixed = true;
+//      body.state.pos.vadd(data.vector);
+//      body.stop();
+//    }
+//    
+//    i = DRAG_TRACKERS.length;
+//    while (i--) {
 //      tracker = DRAG_TRACKERS[i];
 //      if (tracker.canTrack(data)) {
 //        tracker.body.state.pos.vadd(data.vector);
@@ -1467,28 +1467,28 @@ function initWorld(_world, stepSelf) {
 //          tracker.body.stop();
 //        }
 //      }
-//		}
-//	}, null, 100);
+//    }
+//  }, null, 100);
 //
-//	world.subscribe('dragend', function(data) {
-//		var stop = data.stop,
-//		    bodies = data.bodies,
-//  			body,
-//  			tracker,
-//  			scratch = Physics.scratchpad(),
-//  			v = scratch.vector().clone(data.vector).mult( 1 / 10 ),
-//  			i = bodies.length;
-//			
-////		log('DRAGEND ' + data.vector.toString());
-//		while (i--) {
-//			body = bodies[i];
+//  world.subscribe('dragend', function(data) {
+//    var stop = data.stop,
+//        bodies = data.bodies,
+//        body,
+//        tracker,
+//        scratch = Physics.scratchpad(),
+//        v = scratch.vector().clone(data.vector).mult( 1 / 10 ),
+//        i = bodies.length;
+//      
+////    log('DRAGEND ' + data.vector.toString());
+//    while (i--) {
+//      body = bodies[i];
 //      body.fixed = false;
 //      if (stop)
 //        body.stop();
 //      else
-//			  body.state.vel.clone(v);
-//		}
-//		
+//        body.state.vel.clone(v);
+//    }
+//    
 //    i = DRAG_TRACKERS.length;
 //    while (i--) {
 //      tracker = DRAG_TRACKERS[i];
@@ -1505,72 +1505,72 @@ function initWorld(_world, stepSelf) {
 //    }
 //    
 //    scratch.done();
-//	}, null, 100);
-	
-//	world.subscribe('integrate:velocities', function(data) {
-//	  var i = airDragBodies.length,
-//	      body;
-//	  
-//	  while (i--) {
-//	    body = airDragBodies[i];
-//	    if (!body.fixed) {
-//  	    body.state.vel.mult(body.options.drag);
+//  }, null, 100);
+  
+//  world.subscribe('integrate:velocities', function(data) {
+//    var i = airDragBodies.length,
+//        body;
+//    
+//    while (i--) {
+//      body = airDragBodies[i];
+//      if (!body.fixed) {
+//        body.state.vel.mult(body.options.drag);
 //        body.state.old.vel.clone(body.state.vel);
-//	    }
-//	  }	  
-//	});
-//	
-//	world.subscribe('remove:body', function(data) {
+//      }
+//    }   
+//  });
+//  
+//  world.subscribe('remove:body', function(data) {
 //    removeTrackers(data.body);
 //    removeDragTracker(data.body);
-//	});
-	
-	world.subscribe('add:body', function(data) {
-	  var body = data.body,
-	      renderData = body.options.renderData,
-	      id = getId(body),
-	      prop;
-	  
-//	  if (id) {
-//	    body._id = getId(body);
-//	    if (world.getBodies().filter(function(b) {return getId(b) == id}).length > 1)
-//	      debugger;
-//	  }
+//  });
+  
+  world.subscribe('add:body', function(data) {
+    var body = data.body,
+        renderData = body.options.renderData,
+        id = getId(body),
+        prop;
+    
+//    if (id) {
+//      body._id = getId(body);
+//      if (world.getBodies().filter(function(b) {return getId(b) == id}).length > 1)
+//        debugger;
+//    }
 
-	  if (renderData) {
+    if (renderData) {
       for (prop in renderData) {
         body.state.renderData.set(prop, renderData[prop], null, true); // silent
       }          
-	  }
-	  
-	  if (body.options.style) {
-	    API.style(body, body.options.style);
-	    Physics.util.extend(body.state.rendered.renderData, body.options.style); // this is initial style, already set
-	    body.state.renderData.clearChanges(); // this is initial style, already set
-	  }
+    }
+    
+    if (body.options.style) {
+      API.style(body, body.options.style);
+      Physics.util.extend(body.state.rendered.renderData, body.options.style); // this is initial style, already set
+      body.state.renderData.clearChanges(); // this is initial style, already set
+    }
 
-//	  if (body.options.drag)
-//	    airDragBodies.push(body);
-	  
-//	  if (body.geometry.name == 'point' && body.options.render)
-//	    body.state.renderData.set('opacity', 1);
-//	  
-//	  body.state.beforeAction = {};
+//    if (body.options.drag)
+//      airDragBodies.push(body);
+    
+//    if (body.geometry.name == 'point' && body.options.render)
+//      body.state.renderData.set('opacity', 1);
+//    
+//    body.state.beforeAction = {};
 //    body.state.renderDataBeforeAction = {};
-	});
+  });
 
-//	world.subscribe('remove:body', function(data) {
-//	  var idx = airDragBodies.indexOf(data.body);
+//  world.subscribe('remove:body', function(data) {
+//    var idx = airDragBodies.indexOf(data.body);
 //    if (~idx)
 //      airDragBodies.splice(idx, 1);
 //  });
 
-	Physics.util.ticker.start();
-	DIR_MAP.up = DIR_Y_POS = Physics.vector(0, -1);
-	DIR_MAP.down = DIR_Y_NEG = Physics.vector(0, 1);
-	DIR_MAP.left = DIR_X_NEG = Physics.vector(-1, 0);
-	DIR_MAP.right = DIR_X_POS = Physics.vector(1, 0);
-	DIR_MAP['in'] = DIR_Z_POS = Physics.vector(0, 0, 1);
+  Physics.util.ticker.start();
+  DIR_MAP.up = DIR_Y_POS = Physics.vector(0, -1);
+  DIR_MAP.down = DIR_Y_NEG = Physics.vector(0, 1);
+  DIR_MAP.left = DIR_X_NEG = Physics.vector(-1, 0);
+  DIR_MAP.right = DIR_X_POS = Physics.vector(1, 0);
+  DIR_MAP['in'] = DIR_Z_POS = Physics.vector(0, 0, 1);
   DIR_MAP.out = DIR_Z_NEG = Physics.vector(0, 0, -1);
 };
 
@@ -1606,16 +1606,16 @@ function getBody(bodyId) {
  * @param map - if true, returns a map from id to body, otherwise an array 
  */
 function getBodies(/* ids, map */) {
-	var args = arguments,
-	    makeMap = typeof arguments[arguments.length - 1] == 'boolean' && arguments[arguments.length - 1] == true,
-	    layoutManager,
-	    bodies,
-	    bodiesArrays = [world.getBodies()],
-  		body,
-  		id,
-  		filtered = makeMap ? {} : [],
-  		i;
-		
+  var args = arguments,
+      makeMap = typeof arguments[arguments.length - 1] == 'boolean' && arguments[arguments.length - 1] == true,
+      layoutManager,
+      bodies,
+      bodiesArrays = [world.getBodies()],
+      body,
+      id,
+      filtered = makeMap ? {} : [],
+      i;
+    
   if (args[0] instanceof Array)
     args = args[0];
   
@@ -1628,18 +1628,18 @@ function getBodies(/* ids, map */) {
   for (var j = 0; j < bodiesArrays.length; j++) {
     bodies = bodiesArrays[j];
     i = bodies.length;
-  	while (i--) {
-  		body = bodies[i];
-  		if ((id = getId(body)) && ~indexOf.call(args, id)) {
-  		  if (makeMap)
-  		    filtered[id] = body;
-  		  else
-  		    filtered.push(body);
-  		}
-  	}
+    while (i--) {
+      body = bodies[i];
+      if ((id = getId(body)) && ~indexOf.call(args, id)) {
+        if (makeMap)
+          filtered[id] = body;
+        else
+          filtered.push(body);
+      }
+    }
   }
-		
-	return filtered;
+    
+  return filtered;
 };
 
 
@@ -1649,49 +1649,49 @@ function getBodies(/* ids, map */) {
 **/
 
 function subscribe(topic, handlerName, scope, priority) {
-	var _subscribe = this.subscribe,
-			_unsubscribe = this.unsubscribe;
-		
-	if (Physics.util.isObject(topic)) {
-		for ( var t in topic ){                    
-			this.subscribe( t, topic[ t ], handlerName, scope );
-		}
-		
-		return;
-	};
-	
-	function proxy(data) {
-		postMessage({
-			topic: topic,
-			handler: handlerName,
-			data: data
-		});
-	};
+  var _subscribe = this.subscribe,
+      _unsubscribe = this.unsubscribe;
+    
+  if (Physics.util.isObject(topic)) {
+    for ( var t in topic ){                    
+      this.subscribe( t, topic[ t ], handlerName, scope );
+    }
+    
+    return;
+  };
+  
+  function proxy(data) {
+    postMessage({
+      topic: topic,
+      handler: handlerName,
+      data: data
+    });
+  };
 
-	if (!this._workerSubscribers)
-		this._workerSubscribers = {};
-		
-	if (!this._workerSubscribers[topic])
-		this._workerSubscribers[topic] = [];
-	
-	this._workerSubscribers[topic].push(handlerName); // store by name
-	_subscribe.call(this, topic, proxy, scope, priority);
+  if (!this._workerSubscribers)
+    this._workerSubscribers = {};
+    
+  if (!this._workerSubscribers[topic])
+    this._workerSubscribers[topic] = [];
+  
+  this._workerSubscribers[topic].push(handlerName); // store by name
+  _subscribe.call(this, topic, proxy, scope, priority);
 };
 
 function unsubscribe(topic, handlerName) {
-	var _unsubscribe = this.unsubscribe;
-	if (!this._workerSubscribers)
-		throw "I never subscribed to events";
-		
-	var subscribed = this._workerSubscribers[topic],
-		idx;
-		
-	if (!subscribed)
-		throw "I never subscribed to this topic";
-		
-	idx = subscribed.indexOf(handlerName);
-	if (~idx)
-		_unsubscribed.call(this, subscribed.splice(idx, 1));
+  var _unsubscribe = this.unsubscribe;
+  if (!this._workerSubscribers)
+    throw "I never subscribed to events";
+    
+  var subscribed = this._workerSubscribers[topic],
+    idx;
+    
+  if (!subscribed)
+    throw "I never subscribed to this topic";
+    
+  idx = subscribed.indexOf(handlerName);
+  if (~idx)
+    _unsubscribed.call(this, subscribed.splice(idx, 1));
 };
 
 function getRectVertices(width, height) {
@@ -4649,13 +4649,13 @@ var API = {
     return snapAction;
   },
   
-	removeBodies: function(/* ids */) {
-		getBodies.apply(null, arguments).map(world.removeBody.bind(world));
-	},
-	
-	removeBody: function(id) {
-		this.removeBodies.call(this, id);
-	},
+  removeBodies: function(/* ids */) {
+    getBodies.apply(null, arguments).map(world.removeBody.bind(world));
+  },
+  
+  removeBody: function(id) {
+    this.removeBodies.call(this, id);
+  },
 
 //  benchBodies: function(/* ids */) {
 //    Physics.util.extend(benchedBodies, getBodiesMap.apply(null, arguments));
@@ -4674,50 +4674,50 @@ var API = {
 //    }
 //  },
 
-	addBody: function(type, options) {
-		var body = Physics.body(type, options);
-		world.addBody(body);
-		return body;
-	},
+  addBody: function(type, options) {
+    var body = Physics.body(type, options);
+    world.addBody(body);
+    return body;
+  },
 
-	drag: function drag(dragVector, ids) {
-		var v,
-			  bodies = typeof ids == 'string' ? getBodies(ids) : getBodies.apply(null, ids);
-
-		if (bodies.length) {
-      v = Physics.vector(dragVector[0], dragVector[1]);
-//			log("DRAG: " + v.toString());
-			world.publish({
-				topic: 'drag', 
-				vector: v,
-				bodies: bodies
-			});
-		}
-	},
-
-	dragend: function dragend(dragVector, ids, stop) {
-		var v,
+  drag: function drag(dragVector, ids) {
+    var v,
         bodies = typeof ids == 'string' ? getBodies(ids) : getBodies.apply(null, ids);
-		
-		if (bodies.length) {
+
+    if (bodies.length) {
+      v = Physics.vector(dragVector[0], dragVector[1]);
+//      log("DRAG: " + v.toString());
+      world.publish({
+        topic: 'drag', 
+        vector: v,
+        bodies: bodies
+      });
+    }
+  },
+
+  dragend: function dragend(dragVector, ids, stop) {
+    var v,
+        bodies = typeof ids == 'string' ? getBodies(ids) : getBodies.apply(null, ids);
+    
+    if (bodies.length) {
       v = Physics.vector(dragVector[0], dragVector[1]);
 //      log("DRAG END: " + v.toString());
-			world.publish({
-				topic: 'dragend', 
-				stop: stop,
-				vector: v,
-				bodies: bodies
-			});
-		}
-	},
+      world.publish({
+        topic: 'dragend', 
+        stop: stop,
+        vector: v,
+        bodies: bodies
+      });
+    }
+  },
 
-//	squashAndStretch: function(movingBody, squeezeBody) {
-//	  movingBody = getBody(movingBody);
+//  squashAndStretch: function(movingBody, squeezeBody) {
+//    movingBody = getBody(movingBody);
 //    squeezeBody = getBody(squeezeBody);
-//	  var scale = [1, 1, 1],
-//	      vel,
-//	      velMag;
-//	  
+//    var scale = [1, 1, 1],
+//        vel,
+//        velMag;
+//    
 //    world.subscribe('integrate:positions', function scale() {
 ////      scale[0] = scale[1] = scale[2] = 1;
 //      for (var i = 0; i < 3; i++) {
@@ -4740,9 +4740,9 @@ var API = {
 //        world.unsubscribe('integrate:positions', scale);
 //      }
 //    });
-//	},
+//  },
 
-	 squashAndStretch: function(movingBody, squeezeBody, multiplier) {
+   squashAndStretch: function(movingBody, squeezeBody, multiplier) {
      movingBody = getBody(movingBody);
      squeezeBody = getBody(squeezeBody);
      multiplier = multiplier || 1;
@@ -4799,95 +4799,95 @@ var API = {
     });
   },
 
-	rotateWhenMoving: function(movingBody, rotateBody, moveAxis, rotateAxis, direction, doGradient) {
+  rotateWhenMoving: function(movingBody, rotateBody, moveAxis, rotateAxis, direction, doGradient) {
     movingBody = getBody(movingBody);
     rotateBody = getBody(rotateBody);
-	  var minIncDelta = 0.001,
-	      minDecDelta = 0.0001,
-	      maxIncDelta = 0.005, // don't need it yet
+    var minIncDelta = 0.001,
+        minDecDelta = 0.0001,
+        maxIncDelta = 0.005, // don't need it yet
         maxDecDelta = 0.0003,
         decDelta,
-//	      minAngle = -Math.PI / 4
-//	      maxAngle = Math.PI / 4,
-	      angles = [0, 0, 0],
-	      coeff,
-	      v,
-	      rotation,
-	      r,
-	      newR,
-	      bgPosition = [],
-	      _parseFloat = parseFloat.bind(self),
-	      thresh = 1,
-	      paused = false;
-	  
-	  world.subscribe('integrate:positions', function rotate() {
-	    if (IS_DRAGGING || movingBody.fixed || paused)
-	      return;
-	    
-	    coeff = CONSTANTS.tilt;
-	    v = Physics.util.truncate(movingBody.state.vel.get(moveAxis), 3);
-	    switch (direction) {
-	    case 'both':
-	      break;
-	    case 'backward':
+//        minAngle = -Math.PI / 4
+//        maxAngle = Math.PI / 4,
+        angles = [0, 0, 0],
+        coeff,
+        v,
+        rotation,
+        r,
+        newR,
+        bgPosition = [],
+        _parseFloat = parseFloat.bind(self),
+        thresh = 1,
+        paused = false;
+    
+    world.subscribe('integrate:positions', function rotate() {
+      if (IS_DRAGGING || movingBody.fixed || paused)
+        return;
+      
+      coeff = CONSTANTS.tilt;
+      v = Physics.util.truncate(movingBody.state.vel.get(moveAxis), 3);
+      switch (direction) {
+      case 'both':
+        break;
+      case 'backward':
         coeff *= -1;
-  	    /* fall through */
-	    case 'forward':
-	      v = Math.abs(v);
-	      break;
-	    }
-	    
-	    rotation = rotateBody.state.renderData.get('rotate');
-	    r = rotation[rotateAxis];
-	    if (Math.abs(v) < thresh || hasDistanceConstraint(movingBody, true)) {
-	      decDelta = Math.max(Math.abs(r) / 30, maxDecDelta) * sign(r);
-	      newR = r < 0 ? Math.min(r - decDelta, 0) : Math.max(r - decDelta, 0); // gradually kill tilt. If it's being pulled by a constraint, we don't want the tilt to go nuts first one way then the other
-	    }
-	    else {
-	      newR = -sign(v) * coeff * Math.log(Math.abs(v + sign(v)) - thresh) / 10;
-//	      if (Math.abs(newR) < Math.abs(r))
+        /* fall through */
+      case 'forward':
+        v = Math.abs(v);
+        break;
+      }
+      
+      rotation = rotateBody.state.renderData.get('rotate');
+      r = rotation[rotateAxis];
+      if (Math.abs(v) < thresh || hasDistanceConstraint(movingBody, true)) {
+        decDelta = Math.max(Math.abs(r) / 30, maxDecDelta) * sign(r);
+        newR = r < 0 ? Math.min(r - decDelta, 0) : Math.max(r - decDelta, 0); // gradually kill tilt. If it's being pulled by a constraint, we don't want the tilt to go nuts first one way then the other
+      }
+      else {
+        newR = -sign(v) * coeff * Math.log(Math.abs(v + sign(v)) - thresh) / 10;
+//        if (Math.abs(newR) < Math.abs(r))
         newR = getNextValue(r, newR, maxDecDelta, maxIncDelta, minDecDelta, minIncDelta);
-	    }
-	    
-	    if (Math.abs(newR) < minDecDelta) {
-	      if (r == 0)
-	        return;
-	      else
-	        newR = 0;
-	    }
+      }
+      
+      if (Math.abs(newR) < minDecDelta) {
+        if (r == 0)
+          return;
+        else
+          newR = 0;
+      }
 
-	    if (doGradient) {
-  	    Physics.util.extend(bgPosition, rotateBody.state.renderData.get('background-position').match(/\d+/ig));
-  	    bgPosition[rotateAxis ^ 1] = Physics.util.clamp(50 + 10 * 100 * newR | 0, 0, 100) + '%';
-  	    rotateBody.state.renderData.set('background-position', bgPosition.join(' '));
-	    }
-	    
-	    Physics.util.extend(angles, rotation);
-	    angles[rotateAxis] = newR;
+      if (doGradient) {
+        Physics.util.extend(bgPosition, rotateBody.state.renderData.get('background-position').match(/\d+/ig));
+        bgPosition[rotateAxis ^ 1] = Physics.util.clamp(50 + 10 * 100 * newR | 0, 0, 100) + '%';
+        rotateBody.state.renderData.set('background-position', bgPosition.join(' '));
+      }
+      
+      Physics.util.extend(angles, rotation);
+      angles[rotateAxis] = newR;
       rotateBody.state.renderData.set('rotate', angles);
-	  });
-	  
-	  world.subscribe('remove:body', function unsub(data) {
-	    if (data.body == movingBody || data.body == rotateBody) {
+    });
+    
+    world.subscribe('remove:body', function unsub(data) {
+      if (data.body == movingBody || data.body == rotateBody) {
         world.unsubscribe('remove:body', unsub);
         world.unsubscribe('integrate:positions', rotate);
-	    }
-	  });
-	  
-//	  return {
-//	    pause: function() {
-//	      pause = true;
-//	    },	    
+      }
+    });
+    
+//    return {
+//      pause: function() {
+//        pause = true;
+//      },      
 //      unpause: function() {
 //        pause = false;
 //      }
-//	  };
-	},
+//    };
+  },
   
-//	skewWhenMoving: function(movingBody, skewBody, axis) {
+//  skewWhenMoving: function(movingBody, skewBody, axis) {
 //    movingBody = getBody(movingBody);
 //    skewBody = getBody(skewBody);
-//	  
+//    
 ////    var minDelta = 0.0001,
 ////        maxDelta = 0.001,
 //    var minVel = 1,
@@ -4969,30 +4969,30 @@ var API = {
 //    });
 //  },
 //
-//	trackDrag: function(body, type, bodies) {
-//	  body = getBody(body);
-//	  if (bodies)
-//	    bodies = getBodies(bodies);
-//	  
+//  trackDrag: function(body, type, bodies) {
+//    body = getBody(body);
+//    if (bodies)
+//      bodies = getBodies(bodies);
+//    
 //    getDragTracker(body) || new DragTracker(body, type, bodies);
-//	},
+//  },
 //
-//	untrackDrag: function(body) {
+//  untrackDrag: function(body) {
 //    removeDragTracker(getBody(body));
 //  },
 //
-//	track: function(bodyA, bodyB, props) {
+//  track: function(bodyA, bodyB, props) {
 //    bodyA = getBody(bodyA);
 //    bodyB = getBody(bodyB);
-//	  var tracker = getTracker(bodyA, bodyB) || new Tracker(bodyA, bodyB),
-//	      i = props.length;
-//	  
-//	  while (i--) {
-//	    tracker.track(props[i]);
-//	  }
-//	},
+//    var tracker = getTracker(bodyA, bodyB) || new Tracker(bodyA, bodyB),
+//        i = props.length;
+//    
+//    while (i--) {
+//      tracker.track(props[i]);
+//    }
+//  },
 //
-//	untrack: function(bodyA, bodyB, props) {
+//  untrack: function(bodyA, bodyB, props) {
 //    bodyA = getBody(bodyA);
 //    bodyB = getBody(bodyB);
 //    var tracker = getTracker(bodyA, bodyB),
@@ -5006,19 +5006,19 @@ var API = {
 //  },
 
   removeRail: function(railId) {
-	  railroad.remove(railId);
-	},
+    railroad.remove(railId);
+  },
 
-	addRail: function(body, x1, y1, x2, y2) {
-	  body = getBody(body);
-	  z = body.state.pos.get(2);
-	  if (typeof x2 != 'undefined')
-	    return railroad.rail(body, Physics.vector(x1, y1, z), Physics.vector(x2, y2, z));
-	  else
-	    return railroad.rail(body, Physics.vector(x1, y1, z));
-	},
-	
-//	box: function(body, width, height, x, y) {
+  addRail: function(body, x1, y1, x2, y2) {
+    body = getBody(body);
+    z = body.state.pos.get(2);
+    if (typeof x2 != 'undefined')
+      return railroad.rail(body, Physics.vector(x1, y1, z), Physics.vector(x2, y2, z));
+    else
+      return railroad.rail(body, Physics.vector(x1, y1, z));
+  },
+  
+//  box: function(body, width, height, x, y) {
 //    body = getBody(body);
 //    if (!body)
 //      throw "No body found to box in";
@@ -5034,29 +5034,29 @@ var API = {
 //    else
 //      boxer.box(body, width, height);
 //  },
-	
-	removeConstraint: function(cstOrId) {
+  
+  removeConstraint: function(cstOrId) {
     log("Removing constraint");
-	  var numConstraints = constrainer._distanceConstraints.length;
-	  constrainer.remove(cstOrId);
-	  if (numConstraints != constrainer._distanceConstraints.length + 1)
-	    log("Failed to remove constraint");
-	},
-	
-	distanceConstraint: function(bodyA, bodyB, stiffness, targetLength, dir) {
-		bodyA = getBody(bodyA);
+    var numConstraints = constrainer._distanceConstraints.length;
+    constrainer.remove(cstOrId);
+    if (numConstraints != constrainer._distanceConstraints.length + 1)
+      log("Failed to remove constraint");
+  },
+  
+  distanceConstraint: function(bodyA, bodyB, stiffness, targetLength, dir) {
+    bodyA = getBody(bodyA);
     bodyB = getBody(bodyB);
-		return constrainer.distanceConstraint(bodyA, bodyB, stiffness, typeof targetLength == 'number' ? targetLength : bodyA.state.pos.dist(bodyB.state.pos), dir);
-	},
-	
-	updateBounds: updateBounds,
-	
-	layout: {
+    return constrainer.distanceConstraint(bodyA, bodyB, stiffness, typeof targetLength == 'number' ? targetLength : bodyA.state.pos.dist(bodyB.state.pos), dir);
+  },
+  
+  updateBounds: updateBounds,
+  
+  layout: {
     init: function(id, options, callbackId) {
       if (typeof Mason == 'undefined')
         importScripts('lib/jquery.masonry.js');
     
-	    proxiedObjects[id] = layoutManagers[id] = new LayoutManager(id, options, callbackId);
+      proxiedObjects[id] = layoutManagers[id] = new LayoutManager(id, options, callbackId);
     }
   },
   
