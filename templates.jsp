@@ -1451,9 +1451,9 @@
 
 <script type="text/template" id="loginPopupTemplate">
 {{ if (obj.msg) { }}
-<div class="headerMessageBar" style="z-index: 100000; background: yellow;">
+<span class="headerMessageBar" style="z-index: 100000; background: yellow;">
   {{= msg }}
-</div>
+</span>
 {{ }              }}
 <table id="login_popup" class="social-login modal-popup">
   <!--h2>LOGIN</h2-->
@@ -1770,18 +1770,6 @@
 {{ }                            }}
 </script>
 
-<!--script type="text/template" id="messageBarTemplate">
-  <div class="headerMessageBar {{= obj['class'] || '' }}">
-    <h3 id="{{= obj.id || 'messageBar' + G.nextId() }}">
-      {{ if (obj.icon) { }}
-        <i class="{{= 'ui-icon-' + icon}}"></i>
-      {{ }               }}
-      
-      {{= message }}      
-    </h3>
-  </div>
-</script-->
-
 <script type="text/template" id="headerErrorBar">
   <div style="{{= obj.style || '' }}">
   {{= obj.info ? '<h3 id="headerInfo"><i class="ui-icon-' + (obj.icon || 'warning-sign') + '"></i> ' + info + '</h3>' : '' }}
@@ -2022,9 +2010,9 @@
 <script type="text/template" id="messageListTemplate">
 <!-- collapsible error list -->
 
-<div id="messageList">
+<span id="messageList">
 {{  _.each(messages, function(msg) {  }}
-     <div style="display:block;position:relative;" id="{{= msg.id }}" class="headerMessageBar {{= msg['class'] || obj['class'] || '' }}">
+     <span style="display:block;position:relative;" id="{{= msg.id }}" class="headerMessageBar {{= msg['class'] || obj['class'] || '' }}">
   {{ if (msg.link) {            }}
        <a href="{{= msg.link }}">
   {{ }                        }}
@@ -2042,9 +2030,9 @@
        <i class="ui-icon-{{= msg.icon }}"></i>
   {{ }                               }}
        <i class="ui-icon-remove closeparent" style="position:absolute;right:5px"></i>
-     </div>
+     </span>
 {{  });                           }}
-</div>
+</span>
 
 </script>
 

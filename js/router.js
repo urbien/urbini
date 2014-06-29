@@ -392,8 +392,15 @@ define('router', [
       if (!this.routePrereqsFulfilled('home', arguments))
         return;
       
-      var homePage = C.getCachedView();
+      var homePage = C.getCachedView(),
+          currentView = this.currentView;
+      
       if (!homePage) {
+        if (currentView && currentView.getHashInfo().route == 'home') {
+          currentView.destroy(true); // don't nuke contents
+          this._previousView = this.currentView = null; 
+        }
+        
         var homePageEl = doc.$('#homePage')[0];
         if (!homePageEl) {
           if (G.homePage) {

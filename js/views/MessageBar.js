@@ -6,6 +6,7 @@ define('views/MessageBar', [
   'views/BasicView'
 ], function(G, Events, U, Voc, BasicView) {
   return BasicView.extend({
+    tagName: 'span',
     initialize: function(options) {
       _.bindAll(this, 'render', 'checkMessageList');
       BasicView.prototype.initialize.apply(this, arguments);
