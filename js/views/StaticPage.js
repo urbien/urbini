@@ -33,9 +33,18 @@ define('views/StaticPage', [
     },
     
     events: {
-      'click .videoLauncher': U.launchVideo
+      'click .cta': 'cta'
     },
 
+    cta: function(e) {
+      var t = e.currentTarget;
+      if (t.tagName == 'A' && U.getYoutubeId(t.href)) {
+        Events.stopEvent(e);
+        U.launchVideo(t.href);
+        return;
+      }
+    },
+    
     render: function() {
       if (this.template)
         this.el.$html(this.template(this.templateData));

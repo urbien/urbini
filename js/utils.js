@@ -3985,19 +3985,53 @@ define('utils', [
       }).promise();
     },
 
-    launchVideo: function(e) {
-      debugger;
-      Events.stopEvent(e);
-      var data = e.currentTarget.dataset,
-          src = data.src,
-          atts = U.filterObj(data, function(k) {
-            return ~VIDEO_ATTS.indexOf(k);
-          }),
-          vidEl = DOM.tag('video', '<source src="{0}" />'.format(src), atts);
+    getYoutubeId: function(url) {
+      var regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+      var match = url.match(regExp);
 
+      if (match && match[2].length == 11) {
+        return match[2];
+      } else {
+        return null;
+      }
+    },
+
+    genYoutubeEmbed: function(options) {
+      return '<div class="video-container"><iframe width="{0}" height="{1}" src="//www.youtube.com/embed/{2}" frameborder="0" allowfullscreen></iframe></div>'.format(
+          options.width || '100%', 
+          options.height || '100%',
+          U.getYoutubeId(options.url)
+      );
+    },
+    
+    genYoutubeEmbed1: function(options) {
+//      return '<object type="application/x-shockwave-flash" style="width:{0}px; height:{1}px;" data="{2}?autoplay={3}&amp;showsearch=0&amp;version=3&amp;modestbranding=1">'.format(
+//          options.width || 640, 
+//          options.height || 480,
+//          U.toYoutubeEmbedUrl(options.url),
+//          _.has(options.autoplay) ? options.autoplay : 1) +
+//          
+//      '<param name="movie" value="http://www.youtube.com/v/YSpmaC5v3Ns?color2=FBE9EC&amp;autoplay=1&amp;showsearch=0&amp;version=3&amp;modestbranding=1" />
+//      <param name="allowFullScreen" value="true" />
+//      <param name="allowscriptaccess" value="always" />
+//      </object><div style="font-size: 0.8em"><a href="http://www.tools4noobs.com/online_tools/youtube_xhtml/">Get your own valid XHTML YouTube embed code</a></div>
+    },
+    
+    launchVideo: function(url) {
       U.alert({
-        media: DOM.toHTML(vidEl) //'<video class="video" loop="1" preload="1" controls autoplay></video>'
-      })
+        media: U.genYoutubeEmbed({url: url})
+      });
+      
+//      var data = e.currentTarget.dataset,
+//          src = data.src,
+//          atts = U.filterObj(data, function(k) {
+//            return ~VIDEO_ATTS.indexOf(k);
+//          }),
+//          vidEl = DOM.tag('video', '<source src="{0}" />'.format(src), atts);
+//
+//      U.alert({
+//        media: DOM.toHTML(vidEl) //'<video class="video" loop="1" preload="1" controls autoplay></video>'
+//      })
     },
     
     createAudio: function(options) {

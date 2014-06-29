@@ -46,6 +46,11 @@ define('views/HomePage', [
       Events.stopEvent(e);
       var t = e.currentTarget;
       if (t.tagName == 'A' && t.href && t.href != '#') {
+        if (U.getYoutubeId(t.href)) {
+          U.launchVideo(t.href);
+          return;
+        }
+      
         Events.trigger('navigate', t.href);
         return;
       }

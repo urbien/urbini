@@ -1424,6 +1424,7 @@ section[id^="view"] {
   width: 24px;
   border-radius: 20px;
   border: 3px solid white;
+  z-index: 10005;
 }
 
 .closeDialogBtn > * {
