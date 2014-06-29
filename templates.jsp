@@ -304,67 +304,68 @@
     <div class="section-content" style="margin:0 auto;">
       <div class="title-block">
         <h1 class="section-title">Pricing</h1>
-        <h3 class="section-title _2">simple pricing</h3>
+        <h3 class="section-title _2">Creating and running tradles</h3>
+        <h3 class="section-title _2"><a href="app/Tradle/static/pricing1PageTemplate" class="link" style="font-size: 20px">Pricing for PR, idea harvesting is separate</a></h3>
       </div>
       <div class="pricing-section group">
         <div class="col span_1_of_3 pricing-1">
           <h4 style="color:#000;font-weight:100;">
-            Pricing 1
+            Free
           </h4>
-          <div class="pricing-item-price-note">
-            Pricing 1 note
+          <div class="pricing-note">
+            Sign up now, no credit card needed 
           </div>
           <div class="pricing-price">
-            <span class="pricing-amount">49</span>
+            <span class="pricing-amount">0</span>
             <span class="pricing-unit">$</span>
           </div>
           <ul class="pricing-items">
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">Free Updates until we hit 1800 Icons</p>            
+              <p class="pricing-title">Unlimited public tradles</p>            
             </li>
     
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">Free Updates until we hit 1800 Icons</p>            
+              <p class="pricing-title">Free 5-day backtesting</p>            
             </li>
     
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">Free Updates until we hit 1800 Icons</p>            
+              <p class="pricing-title">Free historical data</p>            
             </li>  
           </ul>
           <div class="footer1">
-            <a class="cta buy1" href="#">Buy Now</a>
+            <a class="cta buy1" href="#">Get Now</a>
           </div>
         </div>
         <div class="col span_1_of_3 pricing-2">
           <h4 style="color:#000;font-weight:100;">
-            Pricing 2
+            Small
           </h4>
-          <div class="pricing-item-price-note">
-            Pricing 2 note
+          <div class="pricing-note">
+            Start making some money 
           </div>
           
           <div class="pricing-price">
-            <span class="pricing-amount">49</span>
-            <span class="pricing-unit">$</span>
+            <span class="pricing-amount">19</span>
+            <span class="pricing-unit">$/mo</span>
           </div>
     
           <ul class="pricing-items">
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">Free Updates until we hit 1800 Icons</p>            
+              <p class="pricing-title">5 private tradles</p>            
             </li>
     
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">Free Updates until we hit 1800 Icons</p>            
+              <p class="pricing-title">A month of backtesting</p>            
             </li>
     
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">Free Updates until we hit 1800 Icons</p>            
+              <p class="pricing-title">1 tradle listed for sale</p>            
             </li>  
           </ul>
           <div class="footer1">
@@ -373,35 +374,153 @@
         </div>
         <div class="col span_1_of_3 pricing-3">
           <h4 style="color:#000;font-weight:100;">
-            Pricing 3
+            Medium
           </h4>
-          <div class="pricing-item-price-note">
-            Pricing 3 note
+          <div class="pricing-note">
+            For emerging money managers
           </div>
           
           <div class="pricing-price">
-            <span class="pricing-amount">49</span>
-            <span class="pricing-unit">$</span>
+            <span class="pricing-amount">99</span>
+            <span class="pricing-unit">$/mo</span>
           </div>
     
           <ul class="pricing-items">
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">Free Updates until we hit 1800 Icons</p>            
+              <p class="pricing-title">25 private tradles</p>            
             </li>
     
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">Free Updates until we hit 1800 Icons</p>            
+              <p class="pricing-title">A year of backtesting</p>            
             </li>
     
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">Free Updates until we hit 1800 Icons</p>            
+              <p class="pricing-title">5 tradles listed for sale</p>            
             </li>  
           </ul>
           <div class="footer1">
             <a class="cta buy3" href="#">Buy Now</a>
+          </div>
+        </div>
+      </div>
+    </div>  
+  </div>
+</script>
+
+<script type="text/template" id="pricing1PageTemplate">
+  <div class="section" id="section_bg">
+    <section id="viewHome" data-type="sidebar"></section>
+    <section id="viewHomer" data-type="sidebar"></section>
+    <div class="headerHP" style="position:absolute;top:0px;width: 100%;">
+      <section id="viewHome" class="menuLeft" data-type="sidebar" style="position:absolute;height:100%;opacity:0.95;background:#2d2d2d;visibility:hidden;z-index:10001"></section>
+      <div id="hpRightPanel" style="font-size:30px; cursor: pointer; float: right; margin-right: 5px;">
+        <span style="cursor:pointer; font-size: 30px;vertical-align:middle;"><i style="color:#7aaac3;padding:5px 0;" class="ui-icon-reorder"></i></span>
+      </div>
+    </div>
+    <div class="section-content" style="margin:0 auto;">
+      <div class="title-block">
+        <h1 class="section-title">Pricing</h1>
+        <h3 class="section-title _2">Idea havesting, PR. fundraising</h3>
+      </div>
+      <div class="pricing-section group">
+        <div class="col span_1_of_3 pricing-1">
+          <h4 style="color:#000;font-weight:100;">
+            Silver
+          </h4>
+          <div class="pricing-item-price-note">
+            What you get here is an absolute steal 
+          </div>
+          <div class="pricing-price">
+            <span class="pricing-amount">1K</span>
+            <span class="pricing-unit">$</span>
+          </div>
+          <ul class="pricing-items">
+            <li class="pricing-item">
+              <i class="ui-icon-ok"></i>
+              <p class="pricing-title">Monitor clones of your tradle</p>            
+            </li>
+    
+            <li class="pricing-item">
+              <i class="ui-icon-ok"></i>
+              <p class="pricing-title">Top the sale of any clone you seeded</p>            
+            </li>
+    
+            <li class="pricing-item">
+              <i class="ui-icon-ok"></i>
+              <p class="pricing-title">Access to leaderboard of clones you seeded</p>            
+            </li>  
+          </ul>
+          <div class="footer1">
+            <a class="cta buy1" href="#">Get Now</a>
+          </div>
+        </div>
+        <div class="col span_1_of_3 pricing-2">
+          <h4 style="color:#000;font-weight:100;">
+            Gold
+          </h4>
+          <div class="pricing-item-price-note">
+            Decrease fundraising costs, it is about time 
+          </div>
+          
+          <div class="pricing-price">
+            <span class="pricing-amount">10K</span>
+            <span class="pricing-unit">$/mo</span>
+          </div>
+    
+          <ul class="pricing-items">
+            <li class="pricing-item">
+              <i class="ui-icon-ok"></i>
+              <p class="pricing-title">Your logo in tradle embeds</p>            
+            </li>
+    
+            <li class="pricing-item">
+              <i class="ui-icon-ok"></i>
+              <p class="pricing-title">Affiliate sales</p>            
+            </li>
+    
+            <li class="pricing-item">
+              <i class="ui-icon-ok"></i>
+              <p class="pricing-title">Feed packages</p>            
+            </li>  
+          </ul>
+          <div class="footer1">
+            <a class="cta buy2" href="#">Buy Now</a>
+          </div>
+        </div>
+        <div class="col span_1_of_3 pricing-3">
+          <h4 style="color:#000;font-weight:100;">
+            Platinum
+          </h4>
+          <div class="pricing-item-price-note">
+            For emerging quant funds
+          </div>
+          
+          <div class="pricing-price">
+            <span class="pricing-amount">Call</span>
+            <span class="pricing-unit"></span>
+          </div>
+    
+          <ul class="pricing-items">
+            <li class="pricing-item">
+              <i class="ui-icon-ok"></i>
+              <p class="pricing-title">Full</p>            
+            </li>
+    
+            <li class="pricing-item">
+              <i class="ui-icon-ok"></i>
+              <p class="pricing-title">Algo trading</p>            
+            </li>
+    
+            <li class="pricing-item">
+              <i class="ui-icon-ok"></i>
+              <p class="pricing-title">Services</p>            
+            </li>  
+          </ul>
+          <div class="footer1">
+            <a class="cta buy3" href="#">Get a callback</a>
           </div>
         </div>
       </div>

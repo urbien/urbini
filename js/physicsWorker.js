@@ -654,6 +654,10 @@ function removeAction(body, action) {
 //    options.track = getAction(body._actions, options.trackAction);
 //};
 
+function hasActionsPending(body) {
+  return body && body._actions && body._actions.length;
+}
+
 function getAction(trackInfo) {
   if (typeof trackInfo == 'function')
     return trackInfo;
@@ -2153,7 +2157,19 @@ function getRectVertices(width, height) {
         body.state.renderData.set('opacity', opacity);
     },
 
+    hasActionsPending: function() {
+      return hasActionsPending(this.container) || hasActionsPending(this.offsetBody);
+    },
+    
+    cancelPendingActions: function() {
+      if (this.container) API.cancelPendingActions(this.container);
+      if (this.offsetBody) API.cancelPendingActions(this.offsetBody);
+    },
+    
     shouldArmHead: function(self) {
+      if (self.hasActionsPending())
+        return false;
+      
       if (self.range.from == 0) {
         var scratchpad = Physics.scratchpad(),
             dist = scratchpad.vector().clone(this.bodyB.state.pos).vsub(this.bodyA.state.pos).proj(self.dirHead);
@@ -2169,6 +2185,9 @@ function getRectVertices(width, height) {
     },
     
     shouldArmTail: function(self) {
+      if (self.hasActionsPending())
+        return false;
+            
       if (self.range.to == self.getKnownLimit()) {
         var scratchpad = Physics.scratchpad(),
             dist = scratchpad.vector().clone(this.bodyB.state.pos).vsub(this.bodyA.state.pos).proj(self.dirTail);
@@ -3797,6 +3816,7 @@ function getRectVertices(width, height) {
       
       log(this.containerId + ": Disabling edge constraints (temporarily) on jump to HOME");
       this.disableEdgeConstraints();
+      this.cancelPendingActions();
       this.offsetBody.stop(this.headEdge.state.pos);
       log(this.containerId + ": Enabling edge constraints on jump to HOME");
       this.enableEdgeConstraints();
@@ -3812,6 +3832,7 @@ function getRectVertices(width, height) {
       
       log(this.containerId + ": Disabling edge constraints (temporarily) on jump to END");
       this.disableEdgeConstraints();
+      this.cancelPendingActions();
       this.offsetBody.stop(coords[0], coords[1]);
       this.enableEdgeConstraints();
       log(this.containerId + ": Enabling edge constraints on jump to END");

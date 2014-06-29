@@ -503,7 +503,7 @@ body > .section:not([data-role="page"]) {
 .section .span_1_of_3, .section .span_1_of_4 {
   padding: 0 10px;
   font-size: 14px;
-  min-height: 400px;
+/*  min-height: 400px;*/
 }
 
 .col h4 {
@@ -651,8 +651,15 @@ body > .section:not([data-role="page"]) {
 .pricing-unit {
   position: relative;
   top: -36px;
-  font-size: 32px;
+  font-size: 20px;
   margin-left: 5px;
+}
+
+@media only screen and (min-width: 480px) and (max-width: 520px) {
+  .pricing-unit {
+    top: inherit;
+    display: block;
+  }
 }
 
 .pricing-title {
@@ -660,6 +667,11 @@ body > .section:not([data-role="page"]) {
   font-weight: normal;
   margin-bottom: 0;
   margin-left: 40px;
+}
+
+.pricing-note {
+  height: 40px;
+  padding: 10px;
 }
 
 .pricing-items {
@@ -699,7 +711,7 @@ body > .section:not([data-role="page"]) {
 }  
 
 #homePage .section .span_1_of_4 {
-  min-height: 500px;
+  /*min-height: 500px;*/
 }
 
 #homePage .section .span_1_of_4.thin {
@@ -782,6 +794,10 @@ body > .section:not([data-role="page"]) {
 @media only screen and (min-width: 480px) {
   .section .span_1_of_4, .section .span_1_of_3 {
     min-height: 450px;
+  }
+  
+  .pricing-section .span_1_of_3 {
+    min-height: 550px;
   }
 }
 
