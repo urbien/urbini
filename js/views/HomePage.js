@@ -26,6 +26,7 @@ define('views/HomePage', [
 //      'tap #hpRightPanel'   : 'leftMenu',
 //      'hold #hpRightPanel'  : 'rightMenu',
 //      'tap #installApp'    : 'installApp'
+      'click .videoLauncher': U.launchVideo,
       'click .cta': 'getStarted',
       'click .pgDown': 'pageDown',
       'click .pgUp': 'pageUp'

@@ -6,7 +6,7 @@ define('views/StaticPage', [
   'views/BasicPageView',
   'views/Header',
   'views/RightMenuButton'
-], function(G, U, Events, BasicPageView, Header, MenuButton) {
+], function(G, U, Events, BasicPageView, Header, MenuButton) {  
   return BasicPageView.extend({
     initialize: function(options) {
       options = options || {};
@@ -32,10 +32,10 @@ define('views/StaticPage', [
       this.makeTemplate(options.template, 'template');
     },
     
-//    events: {
-//      'click action': 'performAction'
-//    },
-    
+    events: {
+      'click .videoLauncher': U.launchVideo
+    },
+
     render: function() {
       if (this.template)
         this.el.$html(this.template(this.templateData));

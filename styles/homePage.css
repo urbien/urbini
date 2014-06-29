@@ -699,7 +699,7 @@ body > .section:not([data-role="page"]) {
 }  
 
 #homePage .section .span_1_of_4 {
-  min-height: 550px;
+  min-height: 500px;
 }
 
 #homePage .section .span_1_of_4.thin {
@@ -760,6 +760,13 @@ body > .section:not([data-role="page"]) {
   color: #aaa;
 }
 
+.videoHolder {
+  width:100%; 
+  box-sizing:border-box; 
+  overflow:hidden; 
+  position:absolute;
+}
+
 @media only screen and (max-width: 480px) {
   .section .col {
     height: auto;
@@ -772,8 +779,8 @@ body > .section:not([data-role="page"]) {
   }
 }
 
-@media only screen and (min-width: 550px) {
-  .section .span_1_of_4 {
+@media only screen and (min-width: 480px) {
+  .section .span_1_of_4, .section .span_1_of_3 {
     min-height: 450px;
   }
 }

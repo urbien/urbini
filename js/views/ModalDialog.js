@@ -61,8 +61,14 @@ define('views/ModalDialog', ['domUtils', 'events'], function(DOM, Events) {
 
     if (container)
       container.$removeClass('modal-active');
-    if (popup)
+    if (popup) {
       popup.$removeClass('modal-popup-animate');
+      popup.$('audio,video').$forEach(function(a) {
+        a.pause();
+        delete(a); // @sparkey reports that this did the trick!
+        a.$remove();
+      });
+    }
   }
 
 //  function addClass( element, name ) {

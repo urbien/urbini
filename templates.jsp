@@ -242,14 +242,14 @@
         <p>
           <strong>...and get instant access.</strong>
           <div>
-            This is your personal link, post it anywhere online and we'll track registrations you facilitated.
+            {{ var n = G.currentUser.referredInstalls || 0; }}
+            This is your personal link, post it anywhere online and we'll track registrations you facilitated. You've signed up 
+            <span style="color:#00B608;font-size:16px">{{= n }}</span> {{= n == 1 ? 'person' : 'people' }} so far.
             <input type="text" style="width:80%; margin: 10px auto; display: block;" onfocus="Lablz.U.selectInputText(arguments[0]);" value="{{= U.getRefererLink() }}" readonly="readonly" />
           </div>
         </p>
-        <div class="footer1">
-          <a class="cta">
-            Contact us 1
-          </a>
+        <div>
+          <a href="app/Tradle/list/commerce/trading/Feed?-info=Plug+any+of+these+feeds+into+your+tradle" class="link">learn more</a>
         </div>
       </div>
       <div class="col span_1_of_3">
@@ -261,10 +261,8 @@
             oii there's a lot of a blah blah
           </div>
         </p>
-        <div class="footer1">
-          <a class="cta">
-            Contact us 2
-          </a>
+        <div>
+          <a href="app/Tradle/list/commerce/trading/Feed?-info=Plug+any+of+these+feeds+into+your+tradle" class="link">learn more</a>
         </div>
       </div>
       <div class="col span_1_of_3">
@@ -276,14 +274,20 @@
             To make our blah blah betterer
           </div>
         </p>
-        <div class="footer1">
-          <a class="cta">
-            Contact us 3
-          </a>
+        <div>
+          <a href="app/Tradle/static/toBeCreated" class="link">learn more</a>
         </div>
       </div>
     </div>
   </div>  
+  </div>
+</script>
+
+<script type="text/template" id="videoPageTemplate">
+  <div class="videoHolder" style="background:url('https://brokerage-static.s3.amazonaws.com/assets/marketing/video/HomepageVideoPlaceholder.png'); ">
+    <video class="video" loop="1" preload="1" controls autoplay>
+      <source src="http://mark.urbien.com/urbien/first%20rule1.mp4" />
+    </video>
   </div>
 </script>
 
@@ -1287,13 +1291,17 @@
 
 <script type="text/template" id="genericDialogTemplate">
   <!--div class="modal-popup" style="height: auto; background:{{= G.lightColor }}; color:{{= G.darkColor }};"-->
-  <div class="modal-popup" style="height: auto; color: black; background: white;">
+  <div class="modal-popup" style="height: auto; color: black; background: white;{{= obj.media ? 'margin:0;padding:0;width:100%;' : '' }}">
     {{ if (obj.header) { }}
       <h2 style="margin-bottom: 0; padding: 1rem 1rem; background:#eee; text-align:center;">{{= header }}</h2>
     {{ }                 }}
     
+    {{ if (obj.media) { }}
+    {{=  obj.media       }}
+    {{ }                 }}
+    
     {{ if (obj.ok === false && obj.cancel === false) { }}
-      <i class="closeDialogBtn ui-icon-remove-sign"></i>
+      <div class="closeDialogBtn"><span></span></div>
     {{ }                 }}
   
     {{ if (obj.ok || obj.cancel)                     { }}

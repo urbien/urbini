@@ -24,6 +24,7 @@ define('utils', [
       RECYCLED_ARRAYS = [],
       FRAGMENT_SEPARATOR = HAS_PUSH_STATE ? '/' : '#',
       LAZY_DATA_ATTR = G.lazyImgSrcAttr,
+      VIDEO_ATTS = ['loop', 'preload', 'controls', 'autoplay', 'class', 'style'],
       ModalDialog,
       $w,
       tempIdParam = '__tempId__';
@@ -3984,6 +3985,21 @@ define('utils', [
       }).promise();
     },
 
+    launchVideo: function(e) {
+      debugger;
+      Events.stopEvent(e);
+      var data = e.currentTarget.dataset,
+          src = data.src,
+          atts = U.filterObj(data, function(k) {
+            return ~VIDEO_ATTS.indexOf(k);
+          }),
+          vidEl = DOM.tag('video', '<source src="{0}" />'.format(src), atts);
+
+      U.alert({
+        media: DOM.toHTML(vidEl) //'<video class="video" loop="1" preload="1" controls autoplay></video>'
+      })
+    },
+    
     createAudio: function(options) {
       var audio = doc.createElement('audio');
       

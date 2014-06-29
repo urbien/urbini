@@ -7,9 +7,8 @@ define('views/ViewPage', [
   'views/Header',
   'views/ResourceView',
   'views/ControlPanel',
-  'lib/fastdom',
-  'physicsBridge'
-], function(G, U, Events, BasicPageView, Header, ResourceView, ControlPanel, Q, Physics) {
+  'lib/fastdom'
+], function(G, U, Events, BasicPageView, Header, ResourceView, ControlPanel, Q) {
   return BasicPageView.extend({
     clicked: false,
     className: 'scrollable',

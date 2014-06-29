@@ -1394,7 +1394,7 @@ define('models/Resource', [
           return false;
         
         var prop = props[key];
-        return prop && !U.isSystemProp(key); 
+        return prop && !prop.backLink && !U.isSystemProp(key); 
       }); 
       
 //      return U.flattenModelJson(filtered, vocModel, preserve);

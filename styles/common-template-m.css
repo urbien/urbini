@@ -1289,7 +1289,7 @@ section[id^="view"] {
   background: rgba( 0, 0, 0, 0.5 );
 }
 
-.modal-active .modal-cover {
+.modal-active .modal-cover, .modal-active .modal-popups {
   visibility: visible;
   /*opacity: 0.2;*/
   z-index: 10004;
@@ -1417,10 +1417,25 @@ section[id^="view"] {
 
 .closeDialogBtn {
   position: absolute;
-  top: -1.25rem;
-  right: -1.25rem;
-  font-size: 2.5rem;
-/* content: "\f057"; */
+  top: -14px;
+  right: -14px;
+  background: black;
+  height: 24px;
+  width: 24px;
+  border-radius: 20px;
+  border: 3px solid white;
+}
+
+.closeDialogBtn > * {
+  position: absolute;
+  top: -3px;
+  left: 4px;
+  font-size: 20px;
+  color: white;
+}
+
+.closeDialogBtn > *:after {  
+  content: "\2716";
 }
 
 .gauges {

@@ -447,18 +447,31 @@ define('resourceSynchronizer', [
   }
   
   function syncResources(refs) {
-    var self = this;
     syncQueue = syncQueue || new TaskQueue('syncing some refs');
+    refs = refs.filter(function(ref) { return ref._dirty });
+    var i = 0,
+        ref,
+        queueNext = function() {
+          ref = refs[i++];
+          var promise = syncQueue.queueTask('sync ref: ' + ref._uri, function() {
+            return syncResource(ref, refs);
+          }, null, null, true);
+          
+          return i < refs.length ? promise.then(queueNext) : promise;
+        };
     
-    return $.whenAll.apply($, _.map(refs, function(ref) {
-      if (ref._dirty) {
-        return syncQueue.queueTask('sync ref: ' + ref._uri, function() {
-          return syncResource(ref, refs);
-        });
-      }          
-      else
-        return RESOLVED_PROMISE;
-    }));
+        
+    return queueNext();
+    
+//    return $.whenAll.apply($, _.map(refs, function(ref) {
+//      if (ref._dirty) {
+//        return syncQueue.queueTask('sync ref: ' + ref._uri, function() {
+//          return syncResource(ref, refs);
+//        }, null, null, true); // prevent timeout
+//      }          
+//      else
+//        return RESOLVED_PROMISE;
+//    }));
   }
 
   function saveToServer(updateInfo) {

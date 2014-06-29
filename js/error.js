@@ -73,7 +73,7 @@ define('error', [
         type = resp.type || resp.statusText,
         keepGoing;
     
-    if (options.sync)
+    if (options && options.sync)
       keepGoing = (BackboneSyncErrHandlers[code + ""] || BackboneSyncErrHandlers["default"]).call(null, model, resp, options);
     
     if (errorHandler && keepGoing !== false)
