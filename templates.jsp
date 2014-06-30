@@ -323,7 +323,7 @@
     {{   var col = cols[i];                                          }}
       <div class="col span_1_of_{{= l }}" style="{{= (l < 3 ? 'text-align:center;' : '') + (l == 1 ? 'float:none;width:100%;' : '') }}">
       {{ if (col.icon) {                                             }} 
-        <i class="{{= col.icon }}" style="color:#fd865a"></i>
+        <i class="{{= col.icon['class'] }}" style="color:{{= col.icon.color }}"></i>
       {{ }                                                           }}
       {{ if (col.img) {                                              }}
         <div class="headshot1">

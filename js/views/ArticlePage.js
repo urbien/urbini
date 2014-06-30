@@ -4,6 +4,8 @@ define('views/ArticlePage', [
   'views/BackButton',
   'views/RightMenuButton'
 ], function(U, BasicPageView, BackButton, MenuButton) {
+  var ICON_COLORS = ['#fd865a', '#77FFAE', '#6798F0', '#C703A7'];
+  
   return BasicPageView.extend({
     autoFinish: false,
     style: {
@@ -104,7 +106,10 @@ define('views/ArticlePage', [
         
         link = section.get('item' + i + 'Link');
         cols.push({
-          icon: section.get('fontIcon' + i),
+          icon: {
+            'class': section.get('fontIcon' + i),
+            color: ICON_COLORS[i-1]
+          },
           title: title,
           subTitle: section.get('subtitle' + i) + '<br />(' + U.toMDYString(this.resource.get('Submission.dateSubmitted')) + ')',
           body: section.get('paragraph' + i),
@@ -131,7 +136,10 @@ define('views/ArticlePage', [
         title: this.resource.get('Submission.subject'),
         subTitle: 'by ' + this.resource.get(submitter + '.displayName') + '<br />(' + U.toMDYString(this.resource.get('Submission.dateSubmitted')) + ')',
         cols: [{
-          icon: 'ui-icon-tradle',
+          icon: {
+            'class': 'ui-icon-tradle',
+            color: ICON_COLORS[0]
+          },
           body: this.resource.get('Submission.description'),
           link: {
             text: moreByText,
