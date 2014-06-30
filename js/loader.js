@@ -380,7 +380,7 @@ define('globals', function() {
       hostName: getDomain().split('.')[0],
       modelsUrl: G.serverName + '/backboneModel',
       storeFilesInFileSystem: G.hasBlobs && G.hasFileSystem && G.browser.chrome,
-      useInlineWorkers: G.hasBlobs && G.hasWebWorkers,
+      useInlineWorkers: G.hasBlobs && G.hasWebWorkers && !G.browser.msie,
       apiUrl: G.serverName + '/api/v1/',
       timeOffset: G.localTime - G.serverTime,
       firefoxManifestPath: G.serverName + '/wf/' + G.currentApp.attachmentsUrl + '/firefoxManifest.webapp',

@@ -44,7 +44,7 @@ define('views/IntersectionListView', [
     postRender: function() {
       if (!this._visible) {
         this._visible = true;
-        this.el.dataset.viewid = this.cid;
+        this.el.$data('viewid', this.cid);
         this.el.classList.remove("hidden");
         this.el.$trigger("create");
       }

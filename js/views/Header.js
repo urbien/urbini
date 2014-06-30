@@ -1056,7 +1056,7 @@ define('views/Header', [
            
       this._lastSubClass = input;
       if (sClName != 'All') {
-        var type = input.dataset.type;
+        var type = input.$data('type');
         if (!U.getModel(type)) {
           if (e instanceof Event)
             Events.stopEvent(e);
@@ -1165,8 +1165,7 @@ define('views/Header', [
       this.refreshFolder();
 //      this.$el.prevObject.attr('data-title', this.pageTitle);
 //      this.$el.prevObject.attr('data-theme', G.theme.list);
-      var pageData = this.pageView.el.dataset;
-      pageData.title = this.pageTitle;
+      this.getPageView().el.$data('title', this.pageTitle);
 //      pageData.theme = G.theme.list;
       var frag = document.createDocumentFragment();
       var btns = this.buttonViews;

@@ -79,7 +79,7 @@ define('views/SocialNetworkPage', [
     click: function(e) {
       Events.stopEvent(e);
       var btn = e.currentTarget,
-          net = btn.dataset.net,
+          net = btn.$data('net'),
           access = this.socialAccesses.where({
             socialNet: net
           }, true);

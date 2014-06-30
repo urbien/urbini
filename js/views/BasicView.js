@@ -1519,7 +1519,7 @@ define('views/BasicView', [
     },
     
     clickDataHref: function(e) {
-      Events.trigger('navigate', e.currentTarget.dataset.href);
+      Events.trigger('navigate', e.currentTarget.$data('href'));
     }    
   });
 

@@ -34,7 +34,7 @@ define('router', [
   
 //  function newPageElement() {
 //    var page = document.createElement('div');
-//    page.dataset.role = "page";
+//    page.$data('role') = "page";
 //  };
 
   var lastViewportWidth = G.viewport.width,
@@ -71,7 +71,7 @@ define('router', [
   
 //  $doc.on('click', '[data-href]', function(e) {
 //    e.preventDefault();
-//    Events.trigger('navigate', this.dataset.href);
+//    Events.trigger('navigate', this.$data('href'));
 //  });
 
   var Router = Backbone.Router.extend({

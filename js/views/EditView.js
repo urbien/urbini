@@ -252,7 +252,7 @@ define('views/EditView', [
     cameraCapture: function(e) {
       var self = this,
           target = e.currentTarget,
-          propName = target.dataset.prop,
+          propName = target.$data('prop'),
           prop = self.vocModel.properties[propName],
           isImage = prop.range.endsWith('model/portal/Image');
             
@@ -358,7 +358,7 @@ define('views/EditView', [
       };
       
       scrollerType = settings.__type = _.find(['date', 'duration'], function(type) {
-        return _.has(input.dataset, type);
+        return !!input.$data(type);
       });
 
       var scroller;
@@ -395,7 +395,7 @@ define('views/EditView', [
       var meta = this.vocModel.properties;
 //      var scrollerModules = ['mobiscroll', 'mobiscroll-datetime', 'mobiscroll-duration'];
       var scrollers = self.getScrollers();
-//      if (_.any(scrollers, function(s) { return s.dataset.duration }))
+//      if (_.any(scrollers, function(s) { return s.$data('duration') }))
 //        modules.push('mobiscroll-duration');
       
       U.require('mobiscroll', function() {
@@ -801,7 +801,7 @@ define('views/EditView', [
     
     submitInputs: function() {
       var allGood = true;
-      var changed = _.filter(this.inputs, function(input) {return input.dataset.modified === true});
+      var changed = _.filter(this.inputs, function(input) {return input.$data('modified') === true});
       for (var i = 0; i < changed.length; i++) {
         var input = changed[i];
         allGood = this.setValues(input.name, this.getValue(input), {onValidationError: this.fieldError});
@@ -854,7 +854,7 @@ define('views/EditView', [
       var inputs = this.getInputs();
       inputs.$attr('disabled', true).$filter(function(input) { 
 //        return !input.classList.contains(scrollerClass) && 
-        return !input.classList.contains(switchClass) && input.dataset.name != 'interfaceProperties'; 
+        return !input.classList.contains(switchClass) && input.$data('name') != 'interfaceProperties'; 
       });
       
 //      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceProperties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case 
@@ -892,7 +892,7 @@ define('views/EditView', [
 //          }
 //          v.push(val);
         }
-        else if (input.dataset.code) {
+        else if (input.$data('code')) {
           atts[name] = $(input).data('codemirror').getValue();
         }
         else if (input.type.startsWith('select'))
@@ -1264,11 +1264,11 @@ define('views/EditView', [
 //    },
     getResourceInputValue: function(input) {
 //      input = input instanceof $ ? input : $(input);
-      return input.dataset.uri;
+      return input.$data('uri');
     },
     setResourceInputValue: function(input, value) {
 //      input = input instanceof $ ? input : $(input);
-      input.dataset.uri = value;
+      input.$data('uri', value);
     },
     isCameraRequired: function() {
       var res = this.resource, 
@@ -1517,10 +1517,10 @@ define('views/EditView', [
           }, 500);
 
           input.addEventListener('input', function() {
-            if (input.dataset.codemirror)
+            if (input.$data('codemirror'))
               return;
             
-            input.dataset.modified = true;
+            input.$data('modified', true);
             setValues.apply(this, arguments);
           });
           
@@ -1646,7 +1646,7 @@ define('views/EditView', [
       var textareas = this.$('textarea[data-code]');
       
       _.each(textareas, function(textarea) {
-        var code = textarea.dataset.code;
+        var code = textarea.$data('code');
         var propName = textarea.name;
         var mode;
         switch (code) {

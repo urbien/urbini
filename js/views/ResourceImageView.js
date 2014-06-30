@@ -519,7 +519,7 @@ define('views/ResourceImageView', [
       var canvases = this.el.$('canvas');
       for (var i = 0; i < canvases.length; i++) {
         var canvas = canvases[i];
-        var pName = canvas.dataset.shortname;
+        var pName = canvas.$data('shortname');
         var value = this.resource.get(pName);
 //        var refresh = false;
         if (value === undefined)

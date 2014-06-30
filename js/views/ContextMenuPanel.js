@@ -70,7 +70,7 @@ define('views/ContextMenuPanel', [
 //      
 //      $t = $(t).closest('[data-href]');
 //      if ($t.length)
-//        Events.trigger('navigate', $t[0].dataset.href);
+//        Events.trigger('navigate', $t[0].$data('href'));
 //      
 ////      if (!t)
 ////        return;
@@ -101,7 +101,7 @@ define('views/ContextMenuPanel', [
 //        return;
 //      
 //      li.parentNode.removeChild(li);
-      var uri = target.dataset.release;
+      var uri = target.$data('release');
       var grabbed = G.currentUser.grabbed;
       var item = U.isTempUri(uri) ? grabbed.where({_oldUri: uri})[0] : grabbed.get(uri);
       item && item.cancel();
@@ -114,7 +114,7 @@ define('views/ContextMenuPanel', [
       Events.stopEvent(e);
       var self = this,
           target = e.target,
-          grabParams = target.dataset.grab,
+          grabParams = target.$data('grab'),
           grabType = G.commonTypes.Grab;
       
       Voc.getModels(grabType).done(function(grabModel) {
@@ -182,7 +182,7 @@ define('views/ContextMenuPanel', [
     chat: function(e) {
       Events.stopEvent(e);
       var userid = $(e.currentTarget).find('[data-userid]').data('userid');
-      var chatPageUrl = e.currentTarget.dataset.href;
+      var chatPageUrl = e.currentTarget.$data('href');
       var qIdx = chatPageUrl.indexOf('?');
       if (userid) {
         this.pageView.sendMessage({

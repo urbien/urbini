@@ -172,9 +172,6 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         this.removeEventListener(event, handler, capture);
         return this;
       },
-      $data: function(name) {
-        return this.getAttribute('data-' + name) || {};
-      },
       $once: function(event, handler, capture) {
         var self = this; 
         return this.$on(event, function proxy() {
@@ -534,15 +531,15 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
       $data: function(/* key, val or properties object */) {
         var arg0 = arguments[0];
         if (arguments.length == 2) {
-          this.dataset[arg0] = arguments[1];
+          this.setAttribute('data-' + arg0, arguments[1]);
         }
         else {
           if (typeof arg0 == 'string')
-            return this.dataset[arg0];
+            return this.getAttribute('data-' + arg0);
           else {
             for (var key in arg0) {
               if (arg0.hasOwnProperty(key))
-                this.dataset[key] = arg0[key];
+                this.setAttribute(key, arg0[key]);
             }
           }
         }
@@ -1082,13 +1079,13 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
     },
     
     getCachedWidth: function(el) {
-      var width = el.dataset.width;
+      var width = el.$data('width');
       if (width)
         return parseInt(width);
     },
 
     getCachedHeight: function(el) {
-      var height = el.dataset.height;
+      var height = el.$data('height');
       if (height)
         return parseInt(height);
     },

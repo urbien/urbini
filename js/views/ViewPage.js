@@ -275,7 +275,7 @@ define('views/ViewPage', [
           direction = 'left';
         
         elm.classList.add('hint--' + direction + ' hint--always');
-        elm.dataset.hint = this.hashParams.$tourM;
+        elm.$data('hint', this.hashParams.$tourM);
       }
     },
 
@@ -376,7 +376,7 @@ define('views/ViewPage', [
         }
       }       
       
-//      this.el.dataset.theme = G.theme.swatch;
+//      this.el.$data('theme', G.theme.swatch);
 //      if (G.theme.backgroundImage) 
 //        this.$('#resourceViewHolder').$css('background-image', 'url(' + G.theme.backgroundImage +')');
 

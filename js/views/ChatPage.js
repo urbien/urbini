@@ -356,7 +356,7 @@ define('views/ChatPage', [
       if (!this.isActive())
         return;
       
-      var role = e.target.dataset.role;
+      var role = e.target.$data('role');
     }, 100),
     switchToApp: function(e) {
       return !this._switchToApp(e);
@@ -463,7 +463,7 @@ define('views/ChatPage', [
       this.videoChat         = this.$('#videoChat')[0];
       this.textChat          = this.$('#textChat')[0];
       
-      this.remoteMedia.dataset.blah = 'blah' + G.nextId();
+      this.remoteMedia.$data('blah', 'blah' + G.nextId());
       if (this.textOnly)
         this.videoChat.$remove();
       
@@ -1545,7 +1545,7 @@ define('views/ChatPage', [
           snapshots = [];
       this.$('canvas').$forEach(function(canvas) {
 //        var $this = $(this);
-        var video = self.$('video#' + canvas.dataset['for']);
+        var video = self.$('video#' + canvas.$data('for'));
         if (!video.length)
           return;
         

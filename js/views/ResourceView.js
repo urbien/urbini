@@ -461,7 +461,7 @@ define('views/ResourceView', [
 //          if (!text.length)
 //            return;
 //          
-//          var numbers = this.$('div#{0}_numbers'.format(codeNode.dataset.shortname))[0];
+//          var numbers = this.$('div#{0}_numbers'.format(codeNode.$data('shortname')))[0];
 //          output.innerHTML = numbers.innerHTML = '';
 //          function highlight(line) {
 //            numbers.appendChild(doc.createTextNode(String(lineNo++)));
@@ -483,7 +483,7 @@ define('views/ResourceView', [
         
         while (i--) {
           textarea = textareas[i];
-          var mode = textarea.dataset.code;
+          var mode = textarea.$data('code');
           switch (mode) {
             case 'html':
               mode = 'text/html';

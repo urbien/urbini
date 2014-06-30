@@ -55,7 +55,7 @@ define('views/CommentListItemView', [
       var prop = this.vocModel.properties['replies'];
       var params = {
         '$backLink': prop.backLink,
-        '$title': e.target.dataset.title,
+        '$title': e.target.$data('title'),
         '-makeId': G.nextId(),
         'forum': this.resource.get('forum')
       };

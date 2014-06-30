@@ -253,7 +253,7 @@ define('views/ResourceMasonryItemView', [
       this._prevGalleryItemStyle = newStyle;
       
       gItemA.href = obj.rUri || 'about:blank';
-      gItemImg.dataset['for'] = U.getImageAttribute(this.resource, obj.imageProperty);
+      gItemImg.$data('for', U.getImageAttribute(this.resource, obj.imageProperty));
       if (imgSrc && G.lazifyImages) {
         gItemImg.setAttribute(G.lazyImgSrcAttr, imgSrc);
         gItemImg.$removeClass('wasLazyImage');

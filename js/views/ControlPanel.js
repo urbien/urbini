@@ -55,8 +55,7 @@ define('views/ControlPanel', [
     cancel: function(e) {
       Events.stopEvent(e);
       var el = e.currentTarget;
-      var data = el.dataset;
-      var uri = data.uri;
+      var uri = el.$data('uri');
       var getRes;
       var res = C.getResource(uri);
       if (res)
@@ -70,7 +69,7 @@ define('views/ControlPanel', [
         if (!li)
           return;
         
-        getRes = Voc.getModels(this.vocModel.properties[li.dataset.backlink].range).done(function(listModel) {
+        getRes = Voc.getModels(this.vocModel.properties[li.$data('backlink')].range).done(function(listModel) {
           res = new listModel({
             _uri: uri
           });
@@ -92,9 +91,9 @@ define('views/ControlPanel', [
 //      
 //      if (!t)
 //        return;
-//      this.prop = this.vocModel.properties[t.dataset.propname];
+//      this.prop = this.vocModel.properties[t.$data('propname')];
 //      if (prop)
-//        G.log(this.TAG, "Recording step for tour: selector = 'propName'; " + " value = '" + t.dataset.propname + "'");
+//        G.log(this.TAG, "Recording step for tour: selector = 'propName'; " + " value = '" + t.$data('propname') + "'");
 //    },
     
     cpTemplate: function(data) {
@@ -118,7 +117,7 @@ define('views/ControlPanel', [
       var params = {
         '$backLink': prop.backLink,
         '-makeId': G.nextId(),
-        '$title': target.dataset.title
+        '$title': target.$data('title')
       };
 
       params[prop.backLink] = this.resource.getUri();
@@ -177,16 +176,16 @@ define('views/ControlPanel', [
     
     clickInlined: function(e) {
       var link = e.currentTarget,
-          data = link.dataset;
+          dataBL = link.$data('backlink');
       
-      if (data.backlink == 'tradleRules') {
+      if (dataBL == 'tradleRules') {
         Events.stopEvent(e);
 //        U.alert("Click one of your indicators to create a rule with it");
         return;
       }
       
-      if (data.backlink != 'indicators' || !this.vocModel.type.endsWith('commerce/trading/Tradle')) {
-        var href = data.href || link.href;
+      if (dataBL != 'indicators' || !this.vocModel.type.endsWith('commerce/trading/Tradle')) {
+        var href = link.$data('href') || link.href;
         if (href)
           Events.trigger('navigate', href);
         else
@@ -196,7 +195,7 @@ define('views/ControlPanel', [
       }
 
       Events.stopEvent(e);
-      var indicator = this.resource.getInlineList('indicators').get(data.uri),
+      var indicator = this.resource.getInlineList('indicators').get(link.$data('uri')),
           propRange = U.getTypeUri(indicator.get('eventProperty')),
           isEnum = /\/EnumProperty$/.test(propRange),
           propType = indicator.get('propertyType'),
@@ -272,7 +271,7 @@ define('views/ControlPanel', [
 //        return;
       
       var self = this,       
-          shortName = t.dataset.shortname,
+          shortName = t.$data('shortname'),
           prop = this.vocModel.properties[shortName],
           setLinkTo = prop.setLinkTo;
 //      ,
@@ -343,7 +342,7 @@ define('views/ControlPanel', [
 //        var params = {
 //          '$backLink': prop.backLink,
 //          '-makeId': G.nextId(),
-//          '$title': t.dataset.title
+//          '$title': t.$data('title')
 //        };
 //  
 //        params[prop.backLink] = self.resource.getUri();
@@ -560,9 +559,9 @@ define('views/ControlPanel', [
 //    },
     
     toggleInlineScroller: function(e) {
-      var pName = e.currentTarget.dataset.propname;
+      var pName = e.currentTarget.$data('propname');
       var li = e.currentTarget,
-          pName = li.dataset.propname,
+          pName = li.$data('propname'),
           info = this._backlinkInfo[pName];
       
       if (info && info.scroller)
@@ -579,7 +578,7 @@ define('views/ControlPanel', [
       
       var self = this,
           li = e.currentTarget,
-          pName = li.dataset.propname,
+          pName = li.$data('propname'),
           info = this._backlinkInfo[pName];
       
       if (info.scroller) {
@@ -604,7 +603,7 @@ define('views/ControlPanel', [
       e.gesture.stopDetect();
       e.stopPropagation();
       var li = e.currentTarget,
-          pName = li.dataset.propname,
+          pName = li.$data('propname'),
           info = this._backlinkInfo[pName];
       
       if (!info || !info.scroller) {
@@ -1217,7 +1216,7 @@ define('views/ControlPanel', [
 //              id;
 //          
 //          this.propBricks = this.$('[data-propname],header').$map(function(el) {
-//            id = el.dataset.propname || el.innerText;
+//            id = el.$data('propname') || el.innerText;
 //            Physics.here.addBody(el, id);
 //            return self.buildBrick({
 //              _id: id,
