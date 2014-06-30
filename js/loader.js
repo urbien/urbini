@@ -1960,7 +1960,7 @@ define('globals', function() {
     support: {
       pushState: !!(G.preferPushState && window.history && history.pushState)// && !browser.chrome
     },
-    language: params['-lang'] || navigator.language.split('-')[0],
+    language: params['-lang'] || (navigator.language || 'en-US').split('-')[0],
     tourGuideEnabled: false,
     Errors: {      
       Login: {

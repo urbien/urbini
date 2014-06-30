@@ -10,6 +10,9 @@ html {
   overflow: visible;
 }
 
+/* IE Hack */
+@-ms-viewport { width:device-width; zoom:1.0; }
+
 .section {
   position: relative;
   /*border-bottom: 3px solid #eee;*/
@@ -491,12 +494,12 @@ body > .section:not([data-role="page"]) {
   top: 0;
 }
 
-.span_1_of_3 i { 
+.section .col i { 
   max-width: 100%; 
   font-size: 96px;
 }
 
-.span_1_of_4 i {
+.section .span_1_of_4 i {
   font-size: 72px;
 }
 

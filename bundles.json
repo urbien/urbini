@@ -62,6 +62,7 @@
       "views/SaveButton.js",
       "views/CancelButton.js",
       "views/ToggleButton1.js",
+      "views/ArticlePage.js",
       "chrome.js",
       "firefox.js"
    ],

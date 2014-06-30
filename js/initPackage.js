@@ -1146,12 +1146,12 @@
       "print=function(){__p+=__j.call(arguments,'');};\n" +
       source + "return __p;\n";
 
-//    try {
+    try {
       var render = new Function(settings.variable || 'obj', '_', source);
-//    } catch (e) {
-//      e.source = source;
-//      throw e;
-//    }
+    } catch (e) {
+      e.source = source;
+      throw e;
+    }
 
     if (data) return render(data, _);
     var template = function(data) {
@@ -2330,7 +2330,7 @@
   root.define = define;
   var main = doc.querySelector('[data-main]');
   if (main) {
-    main = main.dataset.main + '.js';
+    main = main.getAttribute('data-main') + '.js';
     var idx = main.lastIndexOf('/');
     if (idx>=0) {
       config.baseUrl = main.slice(0, idx + 1);

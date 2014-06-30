@@ -88,6 +88,7 @@ define('router', [
       "view/*path"                                             : "view",
       "templates/*path"                                        : "templates",
 //      "views/*path"                                            : "views",
+      "article/*path"                                          : "article", 
       "edit/*path"                                             : "edit", 
       "make/*path"                                             : "make", 
       "chooser/*path"                                          : "choose", 
@@ -944,7 +945,19 @@ define('router', [
       fragment = fragment || U.getHash();
       return this.fragmentToOptions[fragment] || (this.fragmentToOptions[fragment] = {});
     },
-    
+
+    article: function(path) {
+      if (!this.routePrereqsFulfilled('article', arguments))
+        return;
+      
+      try {
+        this.view(path, 'article');
+      } finally {
+        if (G.currentUser.guest)
+          this._requestLogin();
+      }
+    },
+
     edit: function(path) {
       if (!this.routePrereqsFulfilled('edit', arguments))
         return;
@@ -1036,6 +1049,9 @@ define('router', [
         break;
       case 'view':
         views = ['ViewPage'];
+        break;
+      case 'article':
+        views = ['ArticlePage', 'ArticleView'];
         break;
       case 'edit':
       case 'make':
@@ -1178,6 +1194,9 @@ define('router', [
       switch (action) {
         case 'chat':
           viewPageCl = Modules.ChatPage;
+          break;
+        case 'article':
+          viewPageCl = Modules.ArticlePage;
           break;
         case 'edit':
           viewPageCl = Modules.EditPage;

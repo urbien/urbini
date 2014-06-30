@@ -328,6 +328,7 @@ div.nabBtn {
   font-size: 2rem;
   border: 1px solid black;
   color:#000;
+  display: block;
 }
 
 .modal-popups .headerMessageBar {
@@ -969,10 +970,14 @@ section[id^="view"] {
   width:100%;
 }
 
-#headerDiv {
+#headerDiv, .headerDiv {
   z-index:10001;
   position: relative;
   opacity: 0.8;
+}
+
+.menuLeft, .menuRight {
+  visibility: hidden;
 }
 
 #pageTitle {
@@ -1209,6 +1214,7 @@ section[id^="view"] {
 #headerUl {
   margin: 0;
 }
+
 .section div.intro { font-size: 18px; line-height: 26px; color: #aaaaaa;}
 
 /* MODAL DIALOG */

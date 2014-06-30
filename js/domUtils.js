@@ -172,6 +172,9 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         this.removeEventListener(event, handler, capture);
         return this;
       },
+      $data: function(name) {
+        return this.getAttribute('data-' + name) || {};
+      },
       $once: function(event, handler, capture) {
         var self = this; 
         return this.$on(event, function proxy() {

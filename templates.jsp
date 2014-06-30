@@ -291,6 +291,68 @@
   </div>
 </script>
 
+<script type="text/template" id="articlePageTemplate">
+  <section class="menuLeft" data-type="sidebar"></section>
+  <section class="menuRight" data-type="sidebar"></section> 
+  <div id="headerDiv">
+    <ul id="headerUl">
+    </ul>
+  </div>
+  <div class="section"></div>
+</script>
+
+<script type="text/template" id="articleViewTemplate">
+  <div class="section-content">
+    <div class="title-block">
+      <span class="section-title">{{= title }}</span>  
+    </div>
+    <div style="text-align: left;padding: 30px;">
+      {{= body }}
+    </div>
+  </div>
+</script>
+
+<script type="text/template" id="colTemplate">
+  <div class="section-content">
+    <div class="title-block">
+      <span class="section-title" style="color:#83C2E0">{{= obj.title || '' }}</span>
+      <span class="section-title _2">{{= obj.subTitle || '' }}</span>
+    </div>
+    <div class="group">
+    {{ for (var i = 0, l = cols.length; i < l; i++)  {               }}
+    {{   var col = cols[i];                                          }}
+      <div class="col span_1_of_{{= l }}" style="{{= (l < 3 ? 'text-align:center;' : '') + (l == 1 ? 'float:none;width:100%;' : '') }}">
+      {{ if (col.icon) {                                             }} 
+        <i class="{{= col.icon }}" style="color:#fd865a"></i>
+      {{ }                                                           }}
+      {{ if (col.img) {                                              }}
+        <div class="headshot1">
+          <img src="{{= col.img }}" style="border-color: #C5E4FF;" />
+        </div>
+      {{ }                                                           }}
+        <h4 style="font-weight:100;">{{= col.title }}</h4>
+        <p>
+        {{ if (col.subTitle) {                                       }} 
+          <strong>{{= col.subTitle }}</strong>
+        {{ }                                                         }}
+        {{ if (col.body) {                                           }} 
+          <div style="{{= l < 3 ? 'text-align:left;padding: 30px;' : '' }}">{{= col.body }}</div>
+        {{ }                                                         }}
+        </p>
+        {{ if (col.link) {                                           }} 
+          <a href="{{= col.link.href }}" class="{{= col.link.className || 'link' }}">{{= col.link.text }}</a>
+        {{ }                                                         }}
+      </div>
+    {{ }                                                             }}
+    </div>
+    {{ if (obj.action) {                                             }} 
+    <div style="text-align:center;">
+      <a href="{{= action.href }}" class="cta">{{= action.text }}</a>
+    </div>
+    {{ }                                                             }}
+  </div>  
+</script>
+
 <script type="text/template" id="pricingPageTemplate">
   <div class="section" id="section_bg">
     <section id="viewHome" data-type="sidebar"></section>
