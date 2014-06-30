@@ -4,31 +4,6 @@ define('views/ArticlePage', [
   'views/BackButton',
   'views/RightMenuButton'
 ], function(U, BasicPageView, BackButton, MenuButton) {
-  function sectionToCols(section) {
-    var cols = [];
-    for (var i = 1; i < 5; i++) {
-      var title = section.get('title' + i),
-          link;
-      
-      if (!title)
-        break;
-      
-      link = section.get('item' + i + 'Link');
-      cols.push({
-        icon: section.get('fontIcon' + i),
-        title: title,
-        subTitle: section.get('subtitle' + i),
-        body: section.get('paragraph' + i),
-        link: link && {
-          text: 'learn more',
-          href: link
-        }
-      })
-    }
-    
-    return cols;
-  };
-  
   return BasicPageView.extend({
     autoFinish: false,
     style: {
@@ -89,40 +64,81 @@ define('views/ArticlePage', [
       
       this.btns.$html(frag);
       
-      var colsData = options.data || {};
-      if (!colsData.cols)
-        colsData.cols = this.getCols();
-
-//      colsData.action = {
-//        text: 'BLAAAH!',
-//        link: '#'
-//      }
-      
-      this.body.$html(this.colTemplate(_.extend(this.getBaseTemplateData(), colsData)));
+      var data = options.data || this.getData();
+      this.body.$html(this.colTemplate(_.extend(this.getBaseTemplateData(), data)));
     },
     
-    getCols: function() {
+    getData: function() {
       var cols = [];
       if (!this.resource)
         throw "unsupported";
         
       if (U.isAssignableFrom(this.vocModel, 'model/portal/Section'))
-        return sectionToCols(this.resource);
-      else if (this.resource.isA('Submission')) {
-        var submitter = U.getCloneOf(this.vocModel, 'Submission.submittedBy')[0];
-        return [{
-          icon: 'ui-icon-tradle',
-          title: this.resource.get('Submission.subject'),
-          subTitle: 'by ' + this.resource.get(submitter + '.displayName') + '<br />(' + U.toMDYString(this.resource.get('Submission.dateSubmitted')) + ')',
-          body: this.resource.get('Submission.description'),
-          link: {
-            text: 'more {0} by {1}'.format(U.getPlural(this.vocModel.displayName), this.resource.get(submitter + '.displayName')),
-            href: this.resource.get(submitter)
-          }
-        }];
-      }
+        return this.getSectionData(this.resource);
+      else if (this.resource.isA('Submission'))
+        return this.getSubmissionData();
       else
         throw "unsupported";
+    },
+    
+    getSectionData: function() {
+      var section = this.resource,
+          cols = [],
+          action = section.get('actionButtonText'),
+          data = {
+            cols: cols,
+            title: section.get('title'),
+            subTitle: section.get('subTitle'),
+            action: action && {
+              text: action,
+              link: section.get('actionButtonLink')
+            }
+          };
+      
+      for (var i = 1; i < 5; i++) {
+        var title = section.get('title' + i),
+            link;
+        
+        if (!title)
+          break;
+        
+        link = section.get('item' + i + 'Link');
+        cols.push({
+          icon: section.get('fontIcon' + i),
+          title: title,
+          subTitle: section.get('subtitle' + i) + '<br />(' + U.toMDYString(this.resource.get('Submission.dateSubmitted')) + ')',
+          body: section.get('paragraph' + i),
+          link: link && {
+            text: 'learn more',
+            href: link
+          }
+        })
+      }
+      
+      return data;
+    },
+    
+    getSubmissionData: function() {
+      var submitter = U.getCloneOf(this.vocModel, 'Submission.submittedBy')[0],
+          moreByText = 'more {0} by {1}'.format(
+            U.getPlural(this.vocModel.displayName), 
+            this.resource.get(submitter + '.displayName')
+          ),
+          moreOfType = {};
+      
+      moreOfType[submitter] = this.resource.get(submitter);
+      return {
+        title: this.resource.get('Submission.subject'),
+        subTitle: 'by ' + this.resource.get(submitter + '.displayName') + '<br />(' + U.toMDYString(this.resource.get('Submission.dateSubmitted')) + ')',
+        cols: [{
+          icon: 'ui-icon-tradle',
+          body: this.resource.get('Submission.description'),
+          link: {
+            text: moreByText,
+            href: U.makePageUrl('list', this.vocModel.type, _.param(moreOfType))
+          }
+        }]
+      };
     }
   }, {
     displayName: 'ArticlePage'
