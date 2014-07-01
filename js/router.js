@@ -1051,7 +1051,7 @@ define('router', [
         views = ['ViewPage'];
         break;
       case 'article':
-        views = ['ArticlePage', 'ArticleView'];
+        views = ['ArticlePage'];
         break;
       case 'edit':
       case 'make':
