@@ -301,6 +301,9 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
       },
       
       $html: function(htmlOrFrag) {
+        if (!arguments.length)
+          return this.innerHTML;
+        
         if (typeof htmlOrFrag == 'string')
           return this.$html(DOM.parseHTML(htmlOrFrag));
         

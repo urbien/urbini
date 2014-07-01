@@ -1020,13 +1020,7 @@ define('app', [
       
       nets = _.compact(nets);
       
-      if (options.dismissible == false) {
-        onDismiss = options.onDismiss || function() { 
-//          Events.trigger('back');
-        };
-      }
-      
-      var _onDismiss = onDismiss;
+      var _onDismiss = options.dismissible && options.onDismiss;
       onDismiss = function() {
         document.$('.modal-popups .headerMessageBar').$remove();
         if (_onDismiss)

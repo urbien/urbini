@@ -158,6 +158,24 @@ define('utils', [
 //      
 //      return promise;
 //    },
+//    jsonp: function(url, callback) {
+//      var _callback = _.randomString();
+//      window[_callback] = function() {
+//        delete window[_callback];
+//        callback.apply(null, arguments);
+//      };
+// 
+//      var separator = ~url.indexOf('?') ? '&' : '?';
+//      url += separator + _.param({ callback : _callback });
+//        
+//      var script = doc.createElement("script");
+//      script.type = "text/javascript";
+//      script.charset = "utf-8";
+//      script.async = true;
+//      script.src = url;
+//      doc.head.appendChild(script);
+//    },
+    
     /**
      * success handler is passed (resp, status, xhr)
      * error handler is passed (xhr, errObj, options), where errObj.code is the HTTP status code, and options is the original 'options' parameter passed to the ajax function
@@ -168,7 +186,7 @@ define('utils', [
           useWorker = hasWebWorkers && options.async !== false, // && !opts.sync,
           worker;
           
-      opts.crossDomain = true;
+//      opts.cors = (/(https?:)?\/\//.test(options.url) && options.url.indexOf();
       opts.type = opts.method || opts.type;
       opts.dataType = opts.dataType || 'JSON';
       opts.headers = opts.headers || {};
@@ -763,15 +781,24 @@ define('utils', [
 //    },
     
     _extractIDRegex: /www\.hudsonfog\.com\/[a-zA-Z\/]*\/([a-zA-Z]*)\?id=([0-9]*)/,
+    getShorterUri: function(uri, model) {
+      if (!uri || (model && model.properties._shortUri == 'unsupported'))
+        return uri;
+        
+      if (uri.startsWith(G.serverName))
+        uri = uri.slice(G.serverName.length);
+      
+      var hfIdx = uri.indexOf('/www.hudsonfog.com/voc/');
+      if (~hfIdx)
+        uri = uri.slice(hfIdx + 23);
+        
+      return uri;
+    },
+
     getShortUri: function(uri, model) {
       if (!uri || (model && model.properties._shortUri == 'unsupported'))
         return uri;
         
-//      if (!uri) {
-//        log('error', 'match undefined 3');
-//        console.trace();
-//      }
-
       var nameAndId = uri.match(U._extractIDRegex);
       return nameAndId && nameAndId.length == 3 ? nameAndId[1] + '/' + nameAndId[2] : uri;
     },
@@ -2211,6 +2238,7 @@ define('utils', [
         params = _.extend({}, col.params, params);
       }
         
+      typeOrUri = U.getShorterUri(typeOrUri);
       var url = '';
 //      switch (action) {
 //        case 'list':
@@ -3998,10 +4026,11 @@ define('utils', [
     },
 
     genYoutubeEmbed: function(options) {
-      return '<div class="video-container"><iframe width="{0}" height="{1}" src="//www.youtube.com/embed/{2}" frameborder="0" allowfullscreen></iframe></div>'.format(
+      return '<div class="video-container"><iframe width="{0}" height="{1}" src="//www.youtube.com/embed/{2}?autoplay={3}&amp;showsearch=0&amp;version=3&amp;modestbranding=1" frameborder="0" allowfullscreen></iframe></div>'.format(
           options.width || '100%', 
           options.height || '100%',
-          U.getYoutubeId(options.url)
+          U.getYoutubeId(options.url),
+          options.autoplay ? 1 : 0
       );
     },
     
@@ -4028,7 +4057,10 @@ define('utils', [
         url = e;
         
       U.alert({
-        media: U.genYoutubeEmbed({url: url})
+        media: U.genYoutubeEmbed({
+          url: url,
+          autoplay: true
+        })
       });
       
 //      var data = e.currentTarget.dataset,

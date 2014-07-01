@@ -5,7 +5,7 @@ onmessage = function(e){
 };
 
 var canBlob = typeof Blob !== 'undefined',
-    originUrl = 'http://mark.obval.com/urbien';
+    originUrl;
 
 function sendXhr(options) {
   var url = options.url,
@@ -128,6 +128,7 @@ var commands = {
       xhr = sendXhr(options);
     } catch (err) {
       debugger;
+      console && console.debug(err);
       postMessage({
         responseHeaders: [],
         status: err.code, 

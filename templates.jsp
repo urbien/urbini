@@ -283,14 +283,6 @@
   </div>
 </script>
 
-<script type="text/template" id="videoPageTemplate">
-  <div class="videoHolder" style="background:url('https://brokerage-static.s3.amazonaws.com/assets/marketing/video/HomepageVideoPlaceholder.png'); ">
-    <video class="video" loop="1" preload="1" controls autoplay>
-      <source src="http://mark.urbien.com/urbien/first%20rule1.mp4" />
-    </video>
-  </div>
-</script>
-
 <script type="text/template" id="articlePageTemplate">
   <section class="menuLeft" data-type="sidebar"></section>
   <section class="menuRight" data-type="sidebar"></section> 
@@ -330,7 +322,10 @@
           <img src="{{= col.img }}" style="border-color: #C5E4FF;" />
         </div>
       {{ }                                                           }}
+      {{ if (col.title) {                                            }} 
         <h4 style="font-weight:100;">{{= col.title }}</h4>
+      {{ }                                                         }}
+      {{ if (col.subTitle || col.body) {                           }} 
         <p>
         {{ if (col.subTitle) {                                       }} 
           <strong>{{= col.subTitle }}</strong>
@@ -339,9 +334,10 @@
           <div style="{{= l < 3 ? 'text-align:left;padding: 30px;' : '' }}">{{= col.body }}</div>
         {{ }                                                         }}
         </p>
-        {{ if (col.link) {                                           }} 
-          <a href="{{= col.link.href }}" class="{{= col.link.className || 'link' }}">{{= col.link.text }}</a>
-        {{ }                                                         }}
+      {{ }                                                         }}
+      {{ if (col.link) {                                           }} 
+        <a href="{{= col.link.href }}" class="{{= col.link.className || 'link' }}">{{= col.link.text }}</a>
+      {{ }                                                         }}
       </div>
     {{ }                                                             }}
     </div>
@@ -431,7 +427,7 @@
             </li>  
           </ul>
           <div class="footer1">
-            <a class="cta buy2" href="#">Buy Now</a>
+            <a class="cta buy" data-buyitem="basic" href="#">Buy Now</a>
           </div>
         </div>
         <div class="col span_1_of_3 pricing-3">
@@ -464,7 +460,7 @@
             </li>  
           </ul>
           <div class="footer1">
-            <a class="cta buy3" href="#">Buy Now</a>
+            <a class="cta buy" data-buyitem="pro" href="#">Buy Now</a>
           </div>
         </div>
       </div>
@@ -1446,6 +1442,24 @@
 <a target="#"><i class="ui-icon-signin"></i></a>
 </script>
 
+<script type="text/template" id="blockchainInfoButtonTemplate">
+  <div class="blockchainInfoBtn">
+    <div class="blockchain stage-begin" style="display:none;">
+      <a class="cta">Send us Bitcoin</a>
+    </div>
+    <div class="blockchain stage-ready" style="display:none;">
+      <p align="center">Please send [[price_in_btc]] to Bitcoin Address: <b>[[address]]</b></p>
+      <p align="center" class="qr-code"></p>
+    </div>
+    <div class="blockchain stage-paid" style="display:none;">
+      <b>[[value]] BTC</b> Received. Thank You.
+    </div>
+    <div class="blockchain stage-error" style="display:none;">
+      <font color="red">[[error]]</font>
+    </div>
+  </div>
+</script>
+
 <script type="text/template" id="buyPopupTemplate">
   <!-- popup for trial / purchase -->
   <div id="buy_popup" style="text-align: center; background: #eeeeee;" data-role="popup" data-transition="slidedown" data-overlay-theme="a" class="ui-content">
@@ -2072,7 +2086,6 @@
 <script type="text/template" id="messageListTemplate">
 <!-- collapsible error list -->
 
-<span id="messageList">
 {{  _.each(messages, function(msg) {  }}
      <span style="display:block;position:relative;" id="{{= msg.id }}" class="headerMessageBar {{= msg['class'] || obj['class'] || '' }}">
   {{ if (msg.link) {            }}
@@ -2094,7 +2107,6 @@
        <i class="ui-icon-remove closeparent" style="position:absolute;right:5px"></i>
      </span>
 {{  });                           }}
-</span>
 
 </script>
 

@@ -570,6 +570,8 @@ define('views/BasicPageView', [
     },
 
     _checkMessageBar: function() {
+      this.$('.messageList').$remove();
+      
       var self = this,
           hash = this.hash,
           events = {};

@@ -26,7 +26,7 @@ define('views/ModalDialog', ['domUtils', 'events'], function(DOM, Events) {
   // Deactivate on click outside
   function onDocumentClick( event ) {
     if (dismissible) {
-      if (!cover || event.target === cover || event.target.contains(cover) ) {
+      if (!cover || event.target === cover || event.target.contains(cover) || (popup != event.target && !popup.contains(event.target))) {
         hide();
       }
     }
@@ -63,11 +63,13 @@ define('views/ModalDialog', ['domUtils', 'events'], function(DOM, Events) {
       container.$removeClass('modal-active');
     if (popup) {
       popup.$removeClass('modal-popup-animate');
-      popup.$('audio,video').$forEach(function(a) {
-        a.pause();
+      popup.$('audio,video,iframe,object,embed').$forEach(function(a) {
+        a.pause && a.pause();
         delete(a); // @sparkey reports that this did the trick!
         a.$remove();
       });
+      
+      popup.$empty();
     }
   }
 

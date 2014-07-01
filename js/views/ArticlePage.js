@@ -24,6 +24,10 @@ define('views/ArticlePage', [
         this.collection.on('reset', this.render, this);      
     },
     
+    events: {
+      'click .videoLauncher': U.launchVideo
+    },
+    
     render: function() {
       var self = this,
           args = arguments;
@@ -51,9 +55,17 @@ define('views/ArticlePage', [
         this.menuBtn = new MenuButton(common);
             
         this.addChild(this.backBtn);
-        this.addChild(this.menuBtn);
+        this.addChild(this.menuBtn);        
         this.body = this.$('.section')[0];
         this.btns = this.$('#headerUl')[0];
+        
+        if (options.theme == 'dark') {
+          this.el.style.backgroundColor = '#2e3b4e';
+          this.body.$addClass('dark');
+        }
+        else {
+          this.el.style.backgroundColor = '#fff';          
+        }
       }
         
       this.btns.$empty();      
@@ -90,7 +102,7 @@ define('views/ArticlePage', [
           data = {
             cols: cols,
             title: section.get('title'),
-            subTitle: section.get('subTitle'),
+            subTitle: section.get('subTitle') + '<br />(' + U.toMDYString(this.resource.get('Submission.dateSubmitted')) + ')',
             action: action && {
               text: action,
               link: section.get('actionButtonLink')
@@ -111,7 +123,7 @@ define('views/ArticlePage', [
             color: ICON_COLORS[i-1]
           },
           title: title,
-          subTitle: section.get('subtitle' + i) + '<br />(' + U.toMDYString(this.resource.get('Submission.dateSubmitted')) + ')',
+          subTitle: section.get('subtitle' + i),
           body: section.get('paragraph' + i),
           link: link && {
             text: 'learn more',

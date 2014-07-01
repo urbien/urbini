@@ -9,6 +9,9 @@ define('events', [
 //    LOGOUT: 'logout',
     TAG: 'Events.js',
     stopEvent: function(e) {
+      if (!e)
+        return;
+      
       e.preventDefault();
       e.stopImmediatePropagation();
       if (e.type == 'tap')

@@ -7,6 +7,7 @@ define('views/MessageBar', [
 ], function(G, Events, U, Voc, BasicView) {
   return BasicView.extend({
     tagName: 'span',
+    className: 'messageList',
     initialize: function(options) {
       _.bindAll(this, 'render', 'checkMessageList');
       BasicView.prototype.initialize.apply(this, arguments);
@@ -24,7 +25,7 @@ define('views/MessageBar', [
     },
     
     checkMessageList: function(e) {
-      var $messageList = this.$('#messageList');
+      var $messageList = this.$('.messageList');
       var messageList = $messageList[0];
       if (messageList && messageList.children.length <= 1)
         this.destroy();

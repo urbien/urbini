@@ -32,8 +32,8 @@ html {
 }
 
 .span_1_of_1 h1, .span_1_of_1 h2, .span_1_of_1 h3, .span_1_of_1 h4, .span_1_of_1 h5, .span_1_of_1 h6 {
-  text-align:center;
-  padding: 30px;
+  text-align: left;
+  padding: 30px 0;
 }
 
 .span_1_of_1 {
@@ -48,12 +48,16 @@ html {
   background-color: white;
 }
 
-#homePage .section:nth-of-type(odd), #homePage .section:nth-of-type(odd) .section-title, .section.dark, .section.dark .section-title {
+#homePage .section.light {
+  background-color: white;
+}
+
+#homePage .section.dark, #homePage .section.dark .section-title {
   background-color: #2e3b4e;
   color: #ffddcc;
 }
 
-#homePage .section:nth-of-type(odd) h4, .section.dark h4 {
+.section.dark h4 {
   color: #fff;
 }
 
@@ -591,10 +595,19 @@ body > .section:not([data-role="page"]) {
 
 .section .link {
   padding-bottom: 3px;
-  border-bottom: 2px solid #7aaac3;
+/*  border-bottom: 2px solid #7aaac3;*/
   color: #7aaac3;
-  font-size: 1.2rem;
+  font-size: 12px;
   text-decoration: none;
+}
+
+.section.light .link {
+  color: #7aaac3;
+}
+
+.section.dark .link {
+  /*color: #fd865a;*/
+  color: #FFA989;
 }
 
 .pricing-section > * {
