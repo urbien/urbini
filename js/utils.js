@@ -1806,7 +1806,8 @@ define('utils', [
             cloneOfTmp = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0]  ||  U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
 //            cloneOfTmp = U.getCloneOf(vocModel, 'ImageResource.smallImage')[0] || U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];
           else
-            cloneOfTmp = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0] || U.getCloneOf(vocModel, 'ImageResource.bigImage')[0];
+            cloneOfTmp = U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0]  ||  U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0];
+//            cloneOfTmp = U.getCloneOf(vocModel, 'ImageResource.bigMediumImage')[0] || U.getCloneOf(vocModel, 'ImageResource.bigImage')[0];
         }
         else
           cloneOfTmp = U.getCloneOf(vocModel, 'ImageResource.smallImage')[0] || U.getCloneOf(vocModel, 'ImageResource.mediumImage')[0];          
@@ -4017,7 +4018,15 @@ define('utils', [
 //      </object><div style="font-size: 0.8em"><a href="http://www.tools4noobs.com/online_tools/youtube_xhtml/">Get your own valid XHTML YouTube embed code</a></div>
     },
     
-    launchVideo: function(url) {
+    launchVideo: function(e) {
+      var url;
+      if (e instanceof Event) {
+        Events.stopEvent(e);
+        url = e.currentTarget.href;
+      }
+      else
+        url = e;
+        
       U.alert({
         media: U.genYoutubeEmbed({url: url})
       });
