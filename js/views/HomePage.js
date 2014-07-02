@@ -26,19 +26,7 @@ define('views/HomePage', [
 //      'tap #hpRightPanel'   : 'leftMenu',
 //      'hold #hpRightPanel'  : 'rightMenu',
 //      'tap #installApp'    : 'installApp'
-      'click .cta': 'getStarted',
-      'click .pgDown': 'pageDown',
-      'click .pgUp': 'pageUp'
-    },
-    
-    pageUp: function(e) {
-      Events.stopEvent(e);
-      Events.trigger('pageUp');
-    },
-    
-    pageDown: function(e) {
-      Events.stopEvent(e);
-      Events.trigger('pageDown');
+      'click .cta': 'getStarted'
     },
     
     getStarted: function(e) {

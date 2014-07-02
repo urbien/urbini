@@ -497,14 +497,31 @@ body > .section:not([data-role="page"]) {
   text-align:center; 
   position: absolute; 
   cursor: pointer;
+  display: block;
+}
+
+.section:last-child .pgDown, .section:first-child .pgUp {
+  display: none;
+}
+
+.paging i {
+  font-size: 30px;
 }
 
 .pgDown {
-  bottom: 0;
+  bottom: 10px;
 }
 
 .pgUp {
-  top: 0;
+  top: 10px;
+}
+
+.dark .paging i {
+  color: #FFA989;
+}
+
+.light .paging i {
+  color: #2e3b4e;
 }
 
 .section .col i { 
@@ -743,11 +760,18 @@ body > .section:not([data-role="page"]) {
   min-height: 400px;
 }
 
-.footer1 {
+.section-content {
+  padding-bottom: 50px; /*space for footer*/
+}
+
+.section-footer {
   position: absolute;
+  height: 40px;
   width: 100%;
+  text-align: center;
   left: 0;
-  bottom: 10px;
+  bottom: 0px;
+  padding-bottom: 10px;
 }
 
 .pricing-item i.ui-icon-ok { 
@@ -824,11 +848,6 @@ body > .section:not([data-role="page"]) {
   .section .col {
     height: auto;
     min-height: 0;
-  }
-  
-  .footer1 {
-    position: static;
-    margin-top: 50px;
   }
 }
 

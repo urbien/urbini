@@ -393,7 +393,7 @@
               <p class="pricing-title">Free historical data</p>            
             </li>  
           </ul>
-          <div class="footer1">
+          <div class="section-footer">
             <a class="cta buy1" href="#">Get Now</a>
           </div>
         </div>
@@ -426,7 +426,7 @@
               <p class="pricing-title">1 tradle listed for sale</p>            
             </li>  
           </ul>
-          <div class="footer1">
+          <div class="section-footer">
             <a class="cta buy" data-buyitem="basic" href="#">Buy Now</a>
           </div>
         </div>
@@ -459,7 +459,7 @@
               <p class="pricing-title">5 tradles listed for sale</p>            
             </li>  
           </ul>
-          <div class="footer1">
+          <div class="section-footer">
             <a class="cta buy" data-buyitem="pro" href="#">Buy Now</a>
           </div>
         </div>
@@ -511,7 +511,7 @@
               <p class="pricing-title">Access to leaderboard of clones you seeded</p>            
             </li>  
           </ul>
-          <div class="footer1">
+          <div class="section-footer">
             <a class="cta buy1" href="#">Get Now</a>
           </div>
         </div>
@@ -544,7 +544,7 @@
               <p class="pricing-title">Feed packages</p>            
             </li>  
           </ul>
-          <div class="footer1">
+          <div class="section-footer">
             <a class="cta buy2" href="#">Buy Now</a>
           </div>
         </div>
@@ -577,7 +577,7 @@
               <p class="pricing-title">Services</p>            
             </li>  
           </ul>
-          <div class="footer1">
+          <div class="section-footer">
             <a class="cta buy3" href="#">Get a callback</a>
           </div>
         </div>
@@ -606,7 +606,7 @@
             {{= advisor.title }}
             {{= advisor.company ? '<br />@<br />' + advisor.company : '' }}
           </span>
-          <ul class="footer1" style="padding:0;">
+          <ul class="section-footer" style="padding:0;">
             {{ if (advisor.linkedin) { }}
             <li class="contact-endpoint">
               <a class="link" href="{{= advisor.linkedin }}" target="_blank">profile</a>

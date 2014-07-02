@@ -159,9 +159,21 @@ define('views/BasicPageView', [
       'page_beforeshow.page': 'onpageevent',
       'swiperight.page': 'swiperight',
       'swipeleft.page': 'swipeleft',
-      'click .videoLauncher': U.launchVideo
+      'click .videoLauncher': U.launchVideo,
+      'click .pgDown': 'pageDown',
+      'click .pgUp': 'pageUp'
     },
-
+    
+    pageUp: function(e) {
+      Events.stopEvent(e);
+      Events.trigger('pageUp');
+    },
+    
+    pageDown: function(e) {
+      Events.stopEvent(e);
+      Events.trigger('pageDown');
+    },
+    
     globalEvents: {
       'newRTCCall': 'createCallInProgressHeader',
       'activeView': '_onActiveView',
