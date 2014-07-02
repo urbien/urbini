@@ -24,7 +24,15 @@ define('router', [
 ], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth, Redirecter, Transitioner, DOM, Q, Physics /*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
   var Modules = {},
-      doc = document;
+      doc = document,
+      publicTypes = [
+        'software/crm/Feature', 
+        'media/publishing/Article', 
+        'media/publishing/Blog',
+        'commerce/trading/Lead',
+        'aspects/tags/Vote',
+        'model/portal/Comment'
+      ].map(U.getTypeUri);
   
   function log() {
     var args = [].slice.call(arguments);
@@ -1019,18 +1027,21 @@ define('router', [
           type = hashInfo.type,
           params = hashInfo.params,
           current = hashInfo.url,
-          replaceWith;
+          replaceWith = current;
 
-      if (current.endsWith('/home'))
-        replaceWith = current + '/';
-      else if (current.endsWith(G.appUrl))
+      if (replaceWith.length < G.appUrl.length)
+        replaceWith = G.appUrl;
+      
+      if (replaceWith.endsWith('/home'))
+        replaceWith += '/';
+      else if (replaceWith.endsWith(G.appUrl))
         replaceWith = G.appUrl + "/home/";
       
       if (!G.currentUser.guest && !params['-ref']) {
-        replaceWith = U.replaceParam(replaceWith || current, '-ref', U.getUserReferralParam());
+        replaceWith = U.replaceParam(replaceWith, '-ref', U.getUserReferralParam());
       }
       
-      if (replaceWith) {
+      if (replaceWith != current) {
         Events.trigger('navigate', replaceWith, { trigger: false, replace: true });
         return this.routePrereqsFulfilled.apply(this, arguments);
       }
@@ -1058,9 +1069,12 @@ define('router', [
         }
       }
 
-      if (false && G.currentApp.isInPrivateBeta && !G.currentUser.isActivated && route != 'home' && route != 'static') {
-        Events.trigger('navigate', 'static/privateBetaPageTemplate');
-        return false;
+      if (G.currentApp.isInPrivateBeta && !G.currentUser.isActivated) {
+        // obviously not meant as security, if someone really wants to browse the site, let them 
+        if (route != 'home' && route != 'static' && publicTypes.indexOf(type) == -1) {
+          Events.trigger('navigate', 'static/privateBetaPageTemplate', {replace: true});
+          return false;
+        }
       }
       
       switch (route) {

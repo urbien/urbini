@@ -460,7 +460,7 @@ define('utils', [
       
       if (hash.startsWith('templates'))
         return G.commonTypes.Jst;
-      else if (hash.startsWith('home'))
+      else if (hash.startsWith('home'))// || hash.startsWith('http'))
         return null;
       
       var route = U.getRoute(hash),
@@ -857,7 +857,7 @@ define('utils', [
       else
         icon = net.toLowerCase();
       
-      return icon + '-sign';
+      return icon;
     },
     
     countdown: function(seconds) {
@@ -3710,8 +3710,9 @@ define('utils', [
     
     getReferrerLink: function(url) {
       url = url || G.appUrl;
-      var refUri = U.getShortUri(G.currentUser._uri);
-      var ref = _.param({'-ref': refUri});
+      var ref = _.param({
+        '-ref': U.getUserReferralParam()
+      });
       
       if (url.indexOf('?') == -1) {
         if (url == G.appUrl)
@@ -3726,9 +3727,11 @@ define('utils', [
     },
     
     selectInputText: function(e) {
+      console.log("1. select input text");
       e.preventDefault();
       var input = e.target;
       setTimeout(function() {
+        console.log("2. select input text");
         input.select();
       }, 1);
     },
@@ -4605,7 +4608,7 @@ define('utils', [
   };
   
   UrlInfo.prototype.initWithUrl = function(url) {
-    url = url || (HAS_PUSH_STATE ? window.location.href : window.location.hash);
+    //url = url || (HAS_PUSH_STATE ? window.location.href : window.location.hash);
     var params = U.getHashParams(url),
         qIdx = url.indexOf("?"),
         route = U.getRoute(url),
@@ -4657,7 +4660,8 @@ define('utils', [
     this.type = type;
     this.query = query;
     this.params = params;
-    this.url = this.fragment = url;
+    this.fragment = "";
+    this.url = window.location.href;
   };
   
   for (var p in U.systemProps) {

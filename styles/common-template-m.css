@@ -1435,6 +1435,10 @@ section[id^="view"] {
 
 .closeDialogBtn > * {
   position: absolute;
+<<<<<<< Updated upstream
+=======
+/*  top: -3px; */
+>>>>>>> Stashed changes
   left: 4px;
   font-size: 20px;
   color: white;

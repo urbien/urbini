@@ -56,11 +56,12 @@ define('views/ArticlePage', [
         this.btns = this.$('#headerUl')[0];
         
         if (options.theme == 'dark') {
-          this.el.style.backgroundColor = '#2e3b4e';
+          //this.el.style.backgroundColor = '#2e3b4e';
           this.body.$addClass('dark');
         }
         else {
-          this.el.style.backgroundColor = '#fff';          
+          //this.el.style.backgroundColor = '#fff';          
+          this.body.$addClass('light');
         }
       }
         

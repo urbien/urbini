@@ -27,7 +27,7 @@ html {
           box-sizing: border-box;
 }
 
-.section .span_1_of_3, .section .span_1_of_4 {
+.section .span_1_of_3, .section .span_1_of_4, .span_1_of_1 h1, .span_1_of_1 h2, .span_1_of_1 h3, .span_1_of_1 h4, .span_1_of_1 h5, .span_1_of_1 h6 {
   text-align: center;
 }
 
@@ -57,7 +57,7 @@ html {
   color: #ffddcc;
 }
 
-.section.dark h4 {
+.section.dark h4, .section.dark a {
   color: #fff;
 }
 
@@ -417,7 +417,7 @@ body > .section:not([data-role="page"]) {
 
 /* END FONT */
 
-.cta {
+.cta, .section.dark a.cta, .section.light a.cta {
   -webkit-box-sizing: border-box; 
      -moz-box-sizing: border-box; 
           box-sizing: border-box;
@@ -593,19 +593,19 @@ body > .section:not([data-role="page"]) {
   }
 }
 
-.section .link {
+.section a {
   padding-bottom: 3px;
-/*  border-bottom: 2px solid #7aaac3;*/
   color: #7aaac3;
-  font-size: 12px;
+/*  border-bottom: 2px solid #7aaac3;
+  font-size: 12px;*/
   text-decoration: none;
 }
 
-.section.light .link {
+.section.light a {
   color: #7aaac3;
 }
 
-.section.dark .link {
+.section.dark a {
   /*color: #fd865a;*/
   color: #FFA989;
 }

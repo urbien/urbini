@@ -233,49 +233,49 @@
   <div class="section-content">
     <div class="title-block">
       <span class="section-title">There are {{= G.currentUser.numberInLine }} users ahead of you</span>
-      <span class="section-title _2">But waiting is for suckers, cut them before they cut you!</span>
+      <span class="section-title _2">But don't wait, get involved now!</span>
     </div>
     <div class="group">
       <div class="col span_1_of_3">
         <i class="ui-icon-users"></i>
         <h4 style="font-weight:100;">Sign up 3 people</h4>
         <p>
-          <strong>...and get instant access.</strong>
+          <strong>Get access & the invites to give away</strong>
           <div>
             {{ var n = G.currentUser.referredInstalls || 0; }}
-            This is your personal link, post it anywhere online and we'll track registrations you facilitated. You've signed up 
-            <span style="color:#00B608;font-size:16px">{{= n }}</span> {{= n == 1 ? 'person' : 'people' }} so far.
+            Any URL on Tradle contains a personal tracker. Post it anywhere online and earn rewards on signups and sales you facilitated. You've signed up 
+            <span style="color:#00B608;font-size:16px">{{= n }}</span> {{= n == 1 ? 'person' : 'people' }} so far. Link below is an example link you can use.
             <input type="text" style="width:80%; margin: 10px auto; display: block;" onfocus="Lablz.U.selectInputText(arguments[0]);" value="{{= U.getReferrerLink() }}" readonly="readonly" />
           </div>
         </p>
         <div>
-          <a href="app/Tradle/list/commerce/trading/Feed?-info=Plug+any+of+these+feeds+into+your+tradle" class="link">learn more</a>
+          <a href="app/Tradle/article/sql/www.hudsonfog.com/voc/media/publishing/Article?articleId=32005" class="link">learn more</a>
         </div>
       </div>
       <div class="col span_1_of_3">
         <i class="ui-icon-cart" style="color:#9CF7A0;"></i>
         <h4 style="font-weight:100;">Subscribe to paid services</h4>
         <p>
-          <strong>Blah blah blah</strong>
+          <strong>Gain influence over priority features</strong>
           <div>
-            oii there's a lot of a blah blah
+            Get instant access. Gain right to upvote/downvote <a href="app/Tradle/list/software/crm/Feature">features in our pipeline</a> and suggest new features.  
           </div>
         </p>
         <div>
-          <a href="app/Tradle/list/commerce/trading/Feed?-info=Plug+any+of+these+feeds+into+your+tradle" class="link">learn more</a>
+          <a href="app/Tradle/article/sql/www.hudsonfog.com/voc/media/publishing/Article?articleId=32005" class="link">learn more</a>
         </div>
       </div>
       <div class="col span_1_of_3">
         <i class="ui-icon-comments" style="color:#6798F0;"></i>
         <h4 style="font-weight:100;">Advise us</h4>
         <p>
-          <strong>Use your blah blah</strong>
+          <strong>Help us grow our business fast</strong>
           <div>
-            To make our blah blah betterer
+            We pledge to make it worthwhile for you in the form of shares in Tradle. Please contact us to discuss the opportunity.
           </div>
         </p>
         <div>
-          <a href="app/Tradle/static/toBeCreated" class="link">learn more</a>
+          <a href="app/Tradle/article/sql/www.hudsonfog.com/voc/media/publishing/Article?articleId=32005" class="link">learn more</a>
         </div>
       </div>
     </div>
@@ -481,7 +481,7 @@
     <div class="section-content" style="margin:0 auto;">
       <div class="title-block">
         <h1 class="section-title">Pricing</h1>
-        <h3 class="section-title _2">Idea havesting, PR. fundraising</h3>
+        <h3 class="section-title _2">Idea harvesting, PR, fundraising</h3>
       </div>
       <div class="pricing-section group">
         <div class="col span_1_of_3 pricing-1">
@@ -1254,7 +1254,7 @@
 
 <script type="text/template" id="menuHeaderTemplate">
   <!-- menu {{= G.coverImage ? ' style="color:' + G.coverImage.darkColor + ';"' : '' }}header -->
-  <li {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} class="mi" style="margin: 15px 0 0 15px;"><i class="ui-icon-" + {{= icon }}"></i>
+  <li {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} class="mi" style="margin: 15px 0 0 15px;"><i class="ui-icon-{{= icon }}"></i>
     {{= title }}
   </li>
 </script>
@@ -1282,7 +1282,7 @@
 
 <script type="text/template" id="menuHeaderTemplate">
 <!-- menu {{= G.coverImage ? ' style="color:' + G.coverImage.darkColor + ';"' : '' }}header -->
-<li {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} class="mi" style="margin: 15px 0 0 15px;"><i class="ui-icon-" + {{= icon }}"></i>
+<li {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} class="mi" style="margin: 15px 0 0 15px;"><i class="ui-icon-{{= icon }}"></i>
   {{= title }}
 </li>
 </script>
@@ -1576,31 +1576,6 @@
   </tr>
 </table>
 </script>
-
-<!--script type="text/template" id="loginPopupTemplate">
-  <!-- login popup with various social network based logins -->
-  {{ var canDismiss = typeof dismissible === 'undefined' || dismissible == true; }}
-  <div id="login_popup" data-role="popup" data-transition="slidedown" data-overlay-theme="a" data-dismissible="false" class="ui-content">
-    <h4 style="color: #aaa" id="loginMsg">{{= msg }}</h4>
-    <a href="#" data-cancel="cancel" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a>
-    
-    {{ _.forEach(nets, function(net) { }} 
-
-    <a data-role="button" href="{{= net.url }}" {{= net.name == 'Facebook' ? ' target="_top"' : '' }}>
-        <span class="big_symbol 
-      {{ if(net.name == "Facebook") { }} ui-icon-facebook-sign {{ } }}
-      {{ if(net.name == "Google") { }} ui-icon-google-plus-sign {{ } }}
-      {{ if(net.name == "Twitter") { }} ui-icon-twitter-sign {{ } }}
-      {{ if(net.name == "LinkedIn") { }} ui-icon-linkedin-sign {{ } }}
-      {{ if(net.name == "Live") { }} ui-icon-live-sign {{ } }}
-        ">
-       </span>
-     {{= net.name }}
-    </a>
-
-    {{ }); }}
-  </div>
-</script-->
 
 <script type="text/template" id="socialConnectButtonTemplate">
   <li id="login">   
@@ -2258,15 +2233,15 @@
 </script>
 
 <script type="text/template" id="stringPET">
-<div class="_prim">
+<div class="_prim"
   {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 250; }}
-  {{ if (name) { }}
-    <label for="{{= id }}" class="ui-input-text" style="{{= isInput ? '' : 'vertical-align:top;' }}color:{{= G.darkColor }};">{{= name }}</label>
+  {{ if (obj.name) { }}
+    ><label for="{{= id }}" class="ui-input-text" style="{{= isInput ? '' : 'vertical-align:top;' }}color:{{= G.darkColor }};">{{= name }}</label>
     <{{= isInput ? 'input type="text"' : 'textarea rows="3" cols="20" ' }} name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}  class="ui-input-text">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   {{ } }} 
-  {{ if (!name) { }}
-  <div> 
-    <{{= isInput ? 'input type="text"' : 'textarea  rows="10"' }} name="{{= shortName }}" id="{{= id }}"  value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}>{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
+  {{ if (!obj.name) { }}
+  style="text-align:center;"><div> 
+    <{{= isInput ? 'input type="text"' : 'textarea  rows="10" style="width:95%;"' }} name="{{= shortName }}" id="{{= id }}"  value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}>{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   </div>
   {{ } }}
 </div>   

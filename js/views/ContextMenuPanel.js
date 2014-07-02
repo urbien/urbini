@@ -314,80 +314,76 @@ define('views/ContextMenuPanel', [
       else
         this.html(this.template({}));      
 
-      //      if (!model) {
-        var commentVerb = this.loc('commentVerb'),
-            likeVerb = this.loc('likeVerb');
-        
+      var commentVerb = this.loc('commentVerb'),
+          likeVerb = this.loc('likeVerb');
+      
 //        this.html(this.template({}));      
-        uri = U.makePageUrl('make', 'aspects/tags/Vote', {votable: G.currentApp._uri, '-makeId': G.nextId(), $title: U.makeHeaderTitle(likeVerb, G.currentApp.davDisplayName)});
-        html += this.menuItemTemplate({title: likeVerb, pageUrl: uri, icon: 'heart', homePage: 'y'});
+      uri = U.makePageUrl('make', 'aspects/tags/Vote', {votable: G.currentApp._uri, '-makeId': G.nextId(), $title: U.makeHeaderTitle(likeVerb, G.currentApp.davDisplayName)});
+      html += this.menuItemTemplate({title: likeVerb, pageUrl: uri, icon: 'heart', homePage: 'y'});
 
-        if (!G.currentUser.guest) {
-          var icons = _.map(['Facebook', 'Twitter', 'LinkedIn', 'Google'], function(n) { return '<i class="ui-icon-{0}"></i>'.format(U.getSocialNetFontIcon(n)) }).join(' ');
-          html += this.menuItemTemplate({title: icons, mobileUrl: U.makePageUrl('social', '', {}), homePage: 'y', social: true});
-        }
+//        if (!G.currentUser.guest) {
+//          var icons = _.map(['Facebook', 'Twitter', 'LinkedIn', 'Google'], function(n) { return '<i class="ui-icon-{0}"></i>'.format(U.getSocialNetFontIcon(n)) }).join(' ');
+//          html += this.menuItemTemplate({title: icons, mobileUrl: U.makePageUrl('social', '', {}), homePage: 'y', social: true});
+//        }
 
-        uri = U.makePageUrl('make', 'model/portal/Comment', {$editCols: 'description', forum: G.currentApp._uri, '-makeId': G.nextId(), $title: U.makeHeaderTitle(commentVerb, G.currentApp.davDisplayName)});
-        html += this.menuItemTemplate({title: commentVerb, pageUrl: uri, icon: 'comments', homePage: 'y'})
-        var isAllowedToEdit = G.currentUser != 'guest'  &&  (G.currentUser._uri == G.currentApp.creator  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'));
-        if (isAllowedToEdit) {
-          uri = U.makePageUrl('list', 'model/portal/Bookmark', {dashboard: U.getLongUri1(G.currentApp.dashboard), $edit: 'y', $title: U.makeHeaderTitle(this.loc('menu'), G.currentApp.davDisplayName)});
-          html += this.menuItemTemplate({title: this.loc('editMenu'), pageUrl: uri, icon: 'cog', homePage: 'y'});
-        }
-        if (isAllowedToEdit  ||  (G.currentApp.webClasses && G.currentApp.webClasses.count)) {
-          uri = U.makePageUrl('view', G.currentApp._uri);
-          var title = this.loc(isAllowedToEdit ? 'editApp' : 'forkMe');
-          var icon =  isAllowedToEdit ? 'wrench' : 'copy';
-          html += this.menuItemTemplate({title: title, pageUrl: uri, icon: icon, homePage: 'y'});
-        }
+      uri = U.makePageUrl('make', 'model/portal/Comment', {$editCols: 'description', forum: G.currentApp._uri, '-makeId': G.nextId(), $title: U.makeHeaderTitle(commentVerb, G.currentApp.davDisplayName)});
+      html += this.menuItemTemplate({title: commentVerb, pageUrl: uri, icon: 'comments', homePage: 'y'})
+      var isAllowedToEdit = G.currentUser != 'guest'  &&  (G.currentUser._uri == G.currentApp.creator  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'));
+      if (isAllowedToEdit) {
+        uri = U.makePageUrl('list', 'model/portal/Bookmark', {dashboard: U.getLongUri1(G.currentApp.dashboard), $edit: 'y', $title: U.makeHeaderTitle(this.loc('menu'), G.currentApp.davDisplayName)});
+        html += this.menuItemTemplate({title: this.loc('editMenu'), pageUrl: uri, icon: 'gear', homePage: 'y'});
+      }
+      if (isAllowedToEdit  ||  (G.currentApp.webClasses && G.currentApp.webClasses.count)) {
+        uri = U.makePageUrl('view', G.currentApp._uri);
+        var title = this.loc(isAllowedToEdit ? 'editApp' : 'forkMe');
+        var icon =  isAllowedToEdit ? 'wrench' : 'copy';
+        html += this.menuItemTemplate({title: title, pageUrl: uri, icon: icon, homePage: 'y'});
+      }
 //        else
 //          U.addToFrag(frag, this.menuItemTemplate({title: 'Profile', icon: 'user', mobileUrl: uri, image: G.currentUser.thumb, cssClass: 'menu_image_fitted', homePage: 'y'}));
-        
+      
 //        if (G.pageRoot != 'app/UrbienApp') {
 //          html += this.menuItemTemplate({title: this.loc("urbienHome"), icon: 'repeat', id: 'urbien123', mobileUrl: '#', homePage: 'y'});
 //        }        
 //      }
 //      else {
 //      if (model) {
-        var json = this.resource && res.toJSON();
-  //      var isSuperUser = isCreatorOrAdmin(res);
-        this.html(this.template(json));      
+//      var isSuperUser = isCreatorOrAdmin(res);
 
-        var title = '<div class="gradientEllipsis">' + this.loc(this.resource ? 'objProps' : 'listProps') + '</div>';
-        html += this.headerTemplate({title: title, icon: 'gear'});
-        var isItemListing = res.isA("ItemListing");
-        var isBuyable = res.isA("Buyable");
-        if (isItemListing || isBuyable) {
-          var licenseProp = U.getCloneOf(model, isItemListing ? 'ItemListing.license' : 'Buyable.license')[0];
-          var license = res.get(licenseProp);
-          if (license) {
-            var ccEnum = U.getEnumModel('CCLicense');
-            var licenseMeta = _.filter(ccEnum.values, function(val) {
-              return val.displayName === license;
-            })[0];
-            
-            if (licenceMeta) {
-              html += this.menuItemTemplate({title: this.loc('license'), image: licenseMeta.icon});
-            }
+//      var title = '<div class="gradientEllipsis">' + this.loc(this.resource ? 'objProps' : 'listProps') + '</div>';
+//      html += this.headerTemplate({title: title, icon: 'gear'});
+      var isItemListing = res.isA("ItemListing");
+      var isBuyable = res.isA("Buyable");
+      if (isItemListing || isBuyable) {
+        var licenseProp = U.getCloneOf(model, isItemListing ? 'ItemListing.license' : 'Buyable.license')[0];
+        var license = res.get(licenseProp);
+        if (license) {
+          var ccEnum = U.getEnumModel('CCLicense');
+          var licenseMeta = _.filter(ccEnum.values, function(val) {
+            return val.displayName === license;
+          })[0];
+          
+          if (licenceMeta) {
+            html += this.menuItemTemplate({title: this.loc('license'), image: licenseMeta.icon});
           }
         }
-        
+      }
+      
 //        this.buildGrabbed(frag);
 //        this.buildGrab(frag);
-        html += this.buildActionsMenu();
-        html += this.menuItemTemplate({title: this.loc("physics"), id: 'physics123'});
-        if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory')) {
-          var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.allowedChangeHistory');
-          if (!ch  ||  !ch.length)
-            ch = U.getCloneOf(this.vocModel, 'ModificationHistory.changeHistory');
-          if (ch  &&  ch.length  && !this.vocModel.properties[ch[0]].hidden) { 
-            var cnt = res.get(ch[0]) && res.get(ch[0]).count;
-            if (cnt  &&  cnt > 0) { 
-              html += this.menuItemTemplate({title: this.loc("activity"), pageUrl: U.makePageUrl('list', 'system/changeHistory/Modification', {forResource: this.resource.getUri()})});
-            }
+      html += this.buildActionsMenu();
+      html += this.menuItemTemplate({title: this.loc("physics"), id: 'physics123'});
+      if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory')) {
+        var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.allowedChangeHistory');
+        if (!ch  ||  !ch.length)
+          ch = U.getCloneOf(this.vocModel, 'ModificationHistory.changeHistory');
+        if (ch  &&  ch.length  && !this.vocModel.properties[ch[0]].hidden) { 
+          var cnt = res.get(ch[0]) && res.get(ch[0]).count;
+          if (cnt  &&  cnt > 0) { 
+            html += this.menuItemTemplate({title: this.loc("activity"), pageUrl: U.makePageUrl('list', 'system/changeHistory/Modification', {forResource: this.resource.getUri()})});
           }
         }
-//      }
+      }
       
       if (G.pageRoot == 'app/Aha') {
         var browser = G.browser,
@@ -601,12 +597,14 @@ define('views/ContextMenuPanel', [
       }
 
       var model = this.vocModel;
-      html += this.groupHeaderTemplate({value: this.loc('pageAssets')});
-      var wHash = U.getHash();
-      var params = {};
-      params.modelName = model.displayName;
-      html += this.menuItemTemplate({title: this.loc('templates'), pageUrl: U.makePageUrl('templates', wHash, params)});
-      html += this.menuItemTemplate({title: this.loc('plugs'), pageUrl: U.makePageUrl('list', G.commonTypes.Handler, {effectDavClassUri: model.type})});      
+      if (U.isUserInRole('siteOwner')) {
+        html += this.groupHeaderTemplate({value: this.loc('pageAssets')});
+        var wHash = U.getHash();
+        var params = {};
+        params.modelName = model.displayName;
+        html += this.menuItemTemplate({title: this.loc('templates'), pageUrl: U.makePageUrl('templates', wHash, params)});
+        html += this.menuItemTemplate({title: this.loc('plugs'), pageUrl: U.makePageUrl('list', G.commonTypes.Handler, {effectDavClassUri: model.type})});
+      }
 
       if (!this.resource)
         return html;
