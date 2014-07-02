@@ -32,19 +32,6 @@ define('views/StaticPage', [
       this.makeTemplate(options.template, 'template');
     },
     
-    events: {
-      'click .cta': 'cta'
-    },
-
-    cta: function(e) {
-      var t = e.currentTarget;
-      if (t.tagName == 'A' && U.getYoutubeId(t.href)) {
-        Events.stopEvent(e);
-        U.launchVideo(t.href);
-        return;
-      }
-    },
-    
     render: function() {
       if (this.template)
         this.el.$html(this.template(this.templateData));
@@ -64,12 +51,6 @@ define('views/StaticPage', [
         
         this.addToWorld(null, true);
       }
-      
-      if (!this.el.parentNode) 
-        $('body').append(this.$el);
-      
-      if (!this.rendered)
-        this.addToWorld(null, true);
     }    
   }, {
     displayName: 'StaticPage'

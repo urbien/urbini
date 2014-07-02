@@ -2107,7 +2107,7 @@
 
 (function(_) {
   /* TODO remove after jQuery removal migration -- START */
-  window.jQuery = window.$ = function(selector, context) {
+  window.$ = function(selector, context) {
     if (selector == document || selector == window || selector instanceof HTMLElement || selector instanceof HTMLCollection || selector instanceof Node || selector instanceof NodeList)
       return selector;
     

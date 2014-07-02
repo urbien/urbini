@@ -245,7 +245,7 @@
             {{ var n = G.currentUser.referredInstalls || 0; }}
             This is your personal link, post it anywhere online and we'll track registrations you facilitated. You've signed up 
             <span style="color:#00B608;font-size:16px">{{= n }}</span> {{= n == 1 ? 'person' : 'people' }} so far.
-            <input type="text" style="width:80%; margin: 10px auto; display: block;" onfocus="Lablz.U.selectInputText(arguments[0]);" value="{{= U.getRefererLink() }}" readonly="readonly" />
+            <input type="text" style="width:80%; margin: 10px auto; display: block;" onfocus="Lablz.U.selectInputText(arguments[0]);" value="{{= U.getReferrerLink() }}" readonly="readonly" />
           </div>
         </p>
         <div>
@@ -266,7 +266,7 @@
         </div>
       </div>
       <div class="col span_1_of_3">
-        <i class="ui-icon-comment" style="color:#6798F0;"></i>
+        <i class="ui-icon-comments" style="color:#6798F0;"></i>
         <h4 style="font-weight:100;">Advise us</h4>
         <p>
           <strong>Use your blah blah</strong>

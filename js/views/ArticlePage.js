@@ -24,10 +24,6 @@ define('views/ArticlePage', [
         this.collection.on('reset', this.render, this);      
     },
     
-    events: {
-      'click .videoLauncher': U.launchVideo
-    },
-    
     render: function() {
       var self = this,
           args = arguments;

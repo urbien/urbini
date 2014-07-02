@@ -26,7 +26,6 @@ define('views/HomePage', [
 //      'tap #hpRightPanel'   : 'leftMenu',
 //      'hold #hpRightPanel'  : 'rightMenu',
 //      'tap #installApp'    : 'installApp'
-      'click .videoLauncher': U.launchVideo,
       'click .cta': 'getStarted',
       'click .pgDown': 'pageDown',
       'click .pgUp': 'pageUp'
@@ -46,11 +45,6 @@ define('views/HomePage', [
       Events.stopEvent(e);
       var t = e.currentTarget;
       if (t.tagName == 'A' && t.href && t.href != '#') {
-        if (U.getYoutubeId(t.href)) {
-          U.launchVideo(t.href);
-          return;
-        }
-      
         Events.trigger('navigate', t.href);
         return;
       }

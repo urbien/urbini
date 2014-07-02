@@ -811,8 +811,10 @@ define('app', [
       G.app = App;
       App.started = true;
       
-      var root = G.appUrl.slice(G.appUrl.indexOf('/', 8));
-      if (window.location.hash == '#_=_') {
+      var root = G.appUrl.slice(G.appUrl.indexOf('/', 8)),
+          hash = window.location.hash;
+      
+      if (hash == '#_=_') {
         if (!G.support.pushState) {
           G.log(App.TAG, "info", "hash stripped");
           if (G.support.pushState) {
@@ -822,8 +824,10 @@ define('app', [
           else
             window.location.hash = '';
         }
-        else 
-          window.history.replaceState({}, document.title, window.location.href.slice(0, window.location.href.indexOf('#'))); // + this.fragment + loc.search);
+        else {
+          var href = window.location.href;
+          window.history.replaceState({}, document.title, href.slice(0, href.indexOf('#'))); // + this.fragment + loc.search);
+        }
       }
 
       App.router = new Router();

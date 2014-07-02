@@ -158,7 +158,8 @@ define('views/BasicPageView', [
       'page_show.page': 'onpageevent',
       'page_beforeshow.page': 'onpageevent',
       'swiperight.page': 'swiperight',
-      'swipeleft.page': 'swipeleft'
+      'swipeleft.page': 'swipeleft',
+      'click .videoLauncher': U.launchVideo
     },
 
     globalEvents: {

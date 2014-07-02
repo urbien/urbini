@@ -82,6 +82,7 @@ define('router', [
 //      "install/*path"                                          : "install",
       "social/*path"                                           : "social",
       "static/*path"                                           : "static",
+      "buy/*path"                                              : "buy",
 //      "tour/*path"                                             : "tour",
       ":type"                                                  : "list", 
       "list/*path"                                             : "list", 
@@ -302,6 +303,7 @@ define('router', [
 //        return;
 //      }
       if (_.has(arguments[0], 'toFragment')) {
+        debugger;
         // hash info object
         var hashInfo = arguments[0];
         fragment = hashInfo.toFragment();
@@ -434,7 +436,15 @@ define('router', [
       
       this.changePage(view);
     },
-    
+
+    buy: function() {
+      if (!this.routePrereqsFulfilled('buy', arguments))
+        return;
+      
+      var page = new Modules.PaymentPage({});
+      this.changePage(page);
+    },
+
     'static': function() {
       if (!this.routePrereqsFulfilled('static', arguments))
         return;
@@ -1007,8 +1017,24 @@ define('router', [
           isWriteRoute,
           hashInfo = U.getCurrentUrlInfo(),
           type = hashInfo.type,
-          params = hashInfo.params;
+          params = hashInfo.params,
+          current = hashInfo.url,
+          replaceWith;
+
+      if (current.endsWith('/home'))
+        replaceWith = current + '/';
+      else if (current.endsWith(G.appUrl))
+        replaceWith = G.appUrl + "/home/";
       
+      if (!G.currentUser.guest && !params['-ref']) {
+        replaceWith = U.replaceParam(replaceWith || current, '-ref', U.getUserReferralParam());
+      }
+      
+      if (replaceWith) {
+        Events.trigger('navigate', replaceWith, { trigger: false, replace: true });
+        return this.routePrereqsFulfilled.apply(this, arguments);
+      }
+        
       if (G.currentUser.guest && /^(chat|edit|make|social)/.test(route)) {
         this._requestLogin();
         return false;
@@ -1051,7 +1077,10 @@ define('router', [
         views = ['ViewPage'];
         break;
       case 'article':
-        views = ['ArticlePage', 'ArticleView'];
+        views = ['ArticlePage'];
+        break;
+      case 'buy':
+        views = ['PaymentPage'];
         break;
       case 'edit':
       case 'make':

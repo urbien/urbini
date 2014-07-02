@@ -1194,6 +1194,7 @@ define('utils', [
             params = name,
             sort = value;
         
+        debugger;
         for (var p in params) {
           if (_.has(params, p)) {
             newUrl = U.replaceParam(newUrl, p, params[p], value);
@@ -1202,20 +1203,37 @@ define('utils', [
         
         return newUrl;
       }
-        
-      url = url.split('?');
-      var qs = url.length > 1 ? url[1] : url[0];
-      var q = U.getQueryParams(qs);
+      
+      var qIdx = url.indexOf('?'),
+          path,
+          qs;
+      
+      if (qIdx == -1) {
+        if (url.indexOf('=') == -1) {
+          path = url;
+          qs = '';
+        }
+        else {
+          path = '';
+          qs = url;
+        }
+      }
+      else {
+        path = url.slice(0, qIdx);
+        qs = url.slice(qIdx + 1);
+      }
+
+      var q = qs ? U.getQueryParams(qs) : {};
       if (value)
         q[name] = value;
       else
         delete q[name];
       
       if (_.isEmpty(q))
-        return url[0];
+        return path;
       
-      q = sort ? U.getQueryString(q, {sort: sort}) : _.param(q);
-      return url.length == 1 ? q : [url[0], q].join('?');
+      qs = sort ? U.getQueryString(q, {sort: sort}) : _.param(q);
+      return (path ? path + '?' : '') + qs;
     },
    
     /**
@@ -2249,17 +2267,23 @@ define('utils', [
 //      }
       
 //      var encOptions = {delimiter: '&amp;'};
+      params = params || {};
+      if (!G.currentUser.guest)
+        params['-ref'] = U.getUserReferralParam();
+      
       url = action + '/' + (HAS_PUSH_STATE ? typeOrUri : encodeURIComponent(typeOrUri));
-      if (_.size(params)) {
-        if (HAS_PUSH_STATE) {
-          url += ~url.indexOf('?') ? '&' : '?';
-          url += U.getQueryString(params);
-        }
-        else
-          url += '?' + U.getQueryString(params); //, encOptions);
+      if (HAS_PUSH_STATE) {
+        url += ~url.indexOf('?') ? '&' : '?';
+        url += U.getQueryString(params);
       }
+      else
+        url += '?' + U.getQueryString(params); //, encOptions);
       
       return url;
+    },
+    
+    getUserReferralParam: function() {
+      return (G.currentUser._ref || (G.currentUser._ref = G.currentUser._uri.split('=')[1]));
     },
     
     makeEditProp: function(res, prop, val, formId) {
@@ -3680,7 +3704,11 @@ define('utils', [
 //      });
 //    },
     
-    getRefererLink: function(url) {
+    getReferrerParam: function() {
+      return '-ref';
+    },
+    
+    getReferrerLink: function(url) {
       url = url || G.appUrl;
       var refUri = U.getShortUri(G.currentUser._uri);
       var ref = _.param({'-ref': refUri});
@@ -4536,7 +4564,7 @@ define('utils', [
   
   function UrlInfo(hash) {
     if (typeof hash == 'string')
-      this.initWithHash(hash);
+      this.initWithUrl(hash);
     else {
       if (typeof hash === 'object')
         _.extend(this, hash || {});
@@ -4576,14 +4604,15 @@ define('utils', [
     });
   };
   
-  UrlInfo.prototype.initWithHash = function(hash) {
-    var params = U.getHashParams(hash),
-        qIdx = hash.indexOf("?"),
-        route = U.getRoute(hash),
+  UrlInfo.prototype.initWithUrl = function(url) {
+    url = url || (HAS_PUSH_STATE ? window.location.href : window.location.hash);
+    var params = U.getHashParams(url),
+        qIdx = url.indexOf("?"),
+        route = U.getRoute(url),
         subRoute,
-        hashParts = hash.split('?'),
-        type = U.getModelType(hash),
-        query = hashParts[1] || '',
+        urlParts = url.split('?'),
+        type = U.getModelType(url),
+        query = urlParts[1] || '',
         uri,
         info,
         subInfo;
@@ -4597,7 +4626,7 @@ define('utils', [
         }
       }
       
-      uri = hashParts[0];
+      uri = urlParts[0];
       if (route.length)
         uri = uri.slice(route.length + 1);
       
@@ -4605,7 +4634,7 @@ define('utils', [
         uri += '?' + _.param(uriParams);
     }
     else {
-      uri = decodeURIComponent(route.length ? hashParts[0].slice(route.length + 1) : hashParts[0]);        
+      uri = decodeURIComponent(route.length ? urlParts[0].slice(route.length + 1) : urlParts[0]);        
     }
 
     if (uri == 'profile') {
@@ -4614,7 +4643,7 @@ define('utils', [
     }
 
     if (!route)
-      route = hash ? 'list' : 'home';
+      route = url ? 'list' : 'home';
     
     if (route == 'templates') // template is a proxy route, it has another url as part of its url
       subInfo = new UrlInfo(uri);
@@ -4628,7 +4657,7 @@ define('utils', [
     this.type = type;
     this.query = query;
     this.params = params;
-    this.fragment = hash;
+    this.url = this.fragment = url;
   };
   
   for (var p in U.systemProps) {

@@ -266,7 +266,7 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
     if (/&$/.test(qs))
       qs = qs.slice(0, qs.length - 1);
     
-    return base + '?' + qs;
+    return base + (qs ? '?' + qs : '');
   };
   
   function ViewCache() {
