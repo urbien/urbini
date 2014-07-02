@@ -48,11 +48,11 @@ html {
   background-color: white;
 }
 
-#homePage .section.light {
+.section.light {
   background-color: white;
 }
 
-#homePage .section.dark, #homePage .section.dark .section-title {
+.section.dark, .section.dark .section-title {
   background-color: #2e3b4e;
   color: #ffddcc;
 }
@@ -505,7 +505,13 @@ body > .section:not([data-role="page"]) {
 }
 
 .paging i {
-  font-size: 30px;
+  font-size: 20px;
+}
+
+@media only screen and (min-height: 600px) {
+  .paging i {
+    font-size: 30px;
+  }
 }
 
 .pgDown {
@@ -611,9 +617,9 @@ body > .section:not([data-role="page"]) {
 }
 
 .section a {
-  padding-bottom: 3px;
+/*  padding-bottom: 3px;
   color: #7aaac3;
-/*  border-bottom: 2px solid #7aaac3;
+  border-bottom: 2px solid #7aaac3;
   font-size: 12px;*/
   text-decoration: none;
 }
@@ -766,7 +772,7 @@ body > .section:not([data-role="page"]) {
 
 .section-footer {
   position: absolute;
-  height: 40px;
+  /*height: 40px;*/
   width: 100%;
   text-align: center;
   left: 0;
@@ -853,7 +859,7 @@ body > .section:not([data-role="page"]) {
 
 @media only screen and (min-width: 480px) {
   .section .span_1_of_4, .section .span_1_of_3 {
-    min-height: 450px;
+    min-height: 400px;
   }
   
   .pricing-section .span_1_of_3 {
