@@ -715,12 +715,13 @@ define('views/ControlPanel', [
       });
     },
     
-    renderFT: function() {
+    renderFT: _.debounce(function() {
       if (!this.isMainGroup)
         this.fetchFTArticles().done(this.doRenderFT);
-    },
+    }, 500),
     
     fetchFTArticles: function() {
+      console.log("FETCHING FINANCIAL TIMES ARTICLES");
       return U.ajax({url: G.serverName + "/ftTradle?uri=" + encodeURIComponent(this.resource.getUri()), type: "GET"});
 //      return U.resolvedPromise([{
 //          "summary":{
