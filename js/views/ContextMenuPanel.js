@@ -597,7 +597,8 @@ define('views/ContextMenuPanel', [
       }
 
       var model = this.vocModel;
-      if (U.isUserInRole('siteOwner')) {
+      var isSuperUser = isCreatorOrAdmin(res);
+      if (isSuperUser) {
         html += this.groupHeaderTemplate({value: this.loc('pageAssets')});
         var wHash = U.getHash();
         var params = {};
@@ -610,7 +611,6 @@ define('views/ContextMenuPanel', [
         return html;
       
       var res = this.resource;
-      var isSuperUser = isCreatorOrAdmin(res);
       if (!isSuperUser)
         return html;
             
