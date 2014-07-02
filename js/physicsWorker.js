@@ -1404,7 +1404,7 @@ function initWorld(_world, stepSelf) {
     while (i--) {
       body = bodies[i];
       if (!hasDragConstraint(body)) {
-        DRAG_CONSTRAINTS.push(constrainer.distanceConstraint(body, DRAG_ANCHOR, 0.06, body.state.pos.dist(DRAG_ANCHOR.state.pos)));
+        DRAG_CONSTRAINTS.push(constrainer.distanceConstraint(body, DRAG_ANCHOR, 0.1, body.state.pos.dist(DRAG_ANCHOR.state.pos)));
       }
     }
     
@@ -1416,7 +1416,7 @@ function initWorld(_world, stepSelf) {
   world.subscribe('dragend', function(data) {
     IS_DRAGGING = false;
     var scratch = Physics.scratchpad(),
-        v = scratch.vector().clone(data.vector).mult( 1 / 100 ),
+        v = scratch.vector().clone(data.vector).mult( 1 / 500 ),
         i = DRAG_CONSTRAINTS.length,
         cst;
     
@@ -3847,6 +3847,8 @@ function getRectVertices(width, height) {
           newPage = Math.max(currentPage + numPages, 0),
           newY = Math.min(pageHeight * newPage, -coords[1]);
       
+      this.breakHeadEdgeConstraint();
+      this.breakTailEdgeConstraint();
       API.cancelPendingActions(body);
       console.log("New Page: " + newPage);
       console.log("New Y: " + newY);
@@ -4549,9 +4551,9 @@ var API = {
         snapAction.complete();
       }
       else {
-        if (drag) {
+//        if (drag) {
           body.state.vel.mult(1 - drag);
-        }
+//        }
       }
     };
   

@@ -770,6 +770,16 @@ body > .section:not([data-role="page"]) {
   padding-bottom: 50px; /*space for footer*/
 }
 
+.section-header {
+  position: absolute;
+  height: 40px;
+  width: 100%;
+  text-align: center;
+  left: 0;
+  top: 0px;
+  padding-top: 10px;
+}
+
 .section-footer {
   position: absolute;
   /*height: 40px;*/

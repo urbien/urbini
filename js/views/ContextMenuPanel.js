@@ -352,35 +352,37 @@ define('views/ContextMenuPanel', [
 
 //      var title = '<div class="gradientEllipsis">' + this.loc(this.resource ? 'objProps' : 'listProps') + '</div>';
 //      html += this.headerTemplate({title: title, icon: 'gear'});
-      var isItemListing = res.isA("ItemListing");
-      var isBuyable = res.isA("Buyable");
-      if (isItemListing || isBuyable) {
-        var licenseProp = U.getCloneOf(model, isItemListing ? 'ItemListing.license' : 'Buyable.license')[0];
-        var license = res.get(licenseProp);
-        if (license) {
-          var ccEnum = U.getEnumModel('CCLicense');
-          var licenseMeta = _.filter(ccEnum.values, function(val) {
-            return val.displayName === license;
-          })[0];
-          
-          if (licenceMeta) {
-            html += this.menuItemTemplate({title: this.loc('license'), image: licenseMeta.icon});
+      if (this.model) {
+        var isItemListing = res.isA("ItemListing");
+        var isBuyable = res.isA("Buyable");
+        if (isItemListing || isBuyable) {
+          var licenseProp = U.getCloneOf(model, isItemListing ? 'ItemListing.license' : 'Buyable.license')[0];
+          var license = res.get(licenseProp);
+          if (license) {
+            var ccEnum = U.getEnumModel('CCLicense');
+            var licenseMeta = _.filter(ccEnum.values, function(val) {
+              return val.displayName === license;
+            })[0];
+            
+            if (licenceMeta) {
+              html += this.menuItemTemplate({title: this.loc('license'), image: licenseMeta.icon});
+            }
           }
         }
-      }
       
 //        this.buildGrabbed(frag);
 //        this.buildGrab(frag);
-      html += this.buildActionsMenu();
-      html += this.menuItemTemplate({title: this.loc("physics"), id: 'physics123'});
-      if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory')) {
-        var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.allowedChangeHistory');
-        if (!ch  ||  !ch.length)
-          ch = U.getCloneOf(this.vocModel, 'ModificationHistory.changeHistory');
-        if (ch  &&  ch.length  && !this.vocModel.properties[ch[0]].hidden) { 
-          var cnt = res.get(ch[0]) && res.get(ch[0]).count;
-          if (cnt  &&  cnt > 0) { 
-            html += this.menuItemTemplate({title: this.loc("activity"), pageUrl: U.makePageUrl('list', 'system/changeHistory/Modification', {forResource: this.resource.getUri()})});
+        html += this.buildActionsMenu();
+        html += this.menuItemTemplate({title: this.loc("physics"), id: 'physics123'});
+        if (this.resource  &&  U.isA(this.vocModel, 'ModificationHistory')) {
+          var ch = U.getCloneOf(this.vocModel, 'ModificationHistory.allowedChangeHistory');
+          if (!ch  ||  !ch.length)
+            ch = U.getCloneOf(this.vocModel, 'ModificationHistory.changeHistory');
+          if (ch  &&  ch.length  && !this.vocModel.properties[ch[0]].hidden) { 
+            var cnt = res.get(ch[0]) && res.get(ch[0]).count;
+            if (cnt  &&  cnt > 0) { 
+              html += this.menuItemTemplate({title: this.loc("activity"), pageUrl: U.makePageUrl('list', 'system/changeHistory/Modification', {forResource: this.resource.getUri()})});
+            }
           }
         }
       }

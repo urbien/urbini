@@ -18,8 +18,9 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       MouseWheelHandler,
       MOUSE_WHEEL_TIMEOUT,
       KeyHandler,
-      PAGE_VECTOR_MAG = 30,
-      ARROW_KEY_VECTOR_MAG = 10,
+      MAX_DRAG_VECTOR = 200,
+      PAGE_VECTOR_MAG = 80,
+      ARROW_KEY_VECTOR_MAG = 40,
       ID_TO_LAYOUT_MANAGER = {},
       ID_TO_EL = {},
       ID_TO_LAST_TRANSFORM = {},
@@ -139,6 +140,10 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //    console.log.apply(console, arguments);
   };
 
+  function isPageKey(keyCode) {
+    return keyCode == 33 || keyCode == 34;
+  }
+  
   function adjustForScreen(dragMag) {
     var v = G.viewport;
     if (v.height < 640)
@@ -357,12 +362,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   };
   
   function dragend(draggable, v, coast) {
-    if (!draggable.isPaged())
-      THERE.dragend(v, draggable.getId(), !coast);
+    THERE.dragend(v, draggable.getId(), !coast);
   };
   
-  function drag(draggable, v) {
-    if (draggable.isPaged()) {
+  function drag(draggable, v, doPage) {
+    if (doPage && draggable.isPaged()) {
       getLayoutManagers(draggable.getId()).map(function(l) {
         l.page(v[1] > 0 ? -1 : 1);
       });
@@ -464,7 +468,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //          axisIdx = 1, // generalize to X, Y
 //          dimProp = axisIdx == 0 ? 'width' : 'height',
           dir,
-          draggable;
+          draggable,
+          isPage = isPageKey(keyCode);
           
       if (this._keyHeld && this._keyHeld != keyCode)
         return;
@@ -473,7 +478,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       case 33: // page up
         if (this._keyHeld)
           return;
-        
+      
         vector[0] = vector[1] = getPageDragMag();
         break;
       case 34: // page down
@@ -531,20 +536,22 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       for (var id in DRAGGABLES) {
         draggable = DRAGGABLES[id];
         if (draggable.isOn() && isDragAlongAxis(dir, draggable.axis))
-          drag(draggable, this._dragged);
+          drag(draggable, this._dragged, isPage);
       }
     },
     
     _onKeyUp: function(e) {
       var keyCode = U.getKeyEventCode(e);
       if (this._keyHeld && keyCode == this._keyHeld) {
-        var draggable,
-            dir = this.getDragDirection(keyCode);
-        
-        for (var id in DRAGGABLES) {
-          draggable = DRAGGABLES[id];
-          if (draggable.isOn() && isDragAlongAxis(dir, draggable.axis))
-            dragend(draggable, this._dragged, !this._coast);
+        if (!isPageKey(keyCode)) {
+          var draggable,
+              dir = this.getDragDirection(keyCode);
+          
+          for (var id in DRAGGABLES) {
+            draggable = DRAGGABLES[id];
+            if (draggable.isOn() && isDragAlongAxis(dir, draggable.axis))
+              dragend(draggable, this._dragged, !this._coast);
+          }
         }
 
         this._coast = false;
@@ -691,6 +698,17 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     v1[1] += v2[1];
     v1[2] += v2[2];
     return v1;
+  };
+
+  function ceil(v, ceil) {
+    for (var i = 0; i < v.length; i++) {
+      var sign = v[i] < 0 ? -1 : 1,
+          mag = Math.abs(v[i]);
+      
+      v[i] = sign * Math.min(mag, typeof ceil == 'object' ? ceil[i] : ceil);
+    }
+
+    return v;
   };
 
   function mult(v1, c) {
@@ -1096,6 +1114,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       Array.copy(this.touchPos, this.tmp);
       sub(this.tmp, this.touchPosOld);
       add(this.dragVector, this.tmp);
+      ceil(this.dragVector, MAX_DRAG_VECTOR);
       Array.copy(this.dragVector, this.lastDragVector);
       return false;
 //      add(this.dragVector, mult(this.tmp, 0.5)); // do we need this?
