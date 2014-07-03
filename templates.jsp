@@ -229,7 +229,7 @@
 </script>
 
 <script type="text/template" id="privateBetaPageTemplate">
-  <div class="section" id="section_bg">
+  <div class="section light" id="section_bg">
   <div class="section-content">
     <div class="title-block">
       <span class="section-title">There are {{= G.currentUser.numberInLine }} users ahead of you</span>
@@ -243,9 +243,15 @@
           <strong>Get access & the invites to give away</strong>
           <div>
             {{ var n = G.currentUser.referredInstalls || 0; }}
-            Any URL on Tradle contains a personal tracker. Post it anywhere online and earn rewards on signups and sales you facilitated. You've signed up 
-            <span style="color:#00B608;font-size:16px">{{= n }}</span> {{= n == 1 ? 'person' : 'people' }} so far. Link below is an example link you can use.
-            <input type="text" style="width:80%; margin: 10px auto; display: block;" onfocus="Lablz.U.selectInputText(arguments[0]);" value="{{= U.getReferrerLink() }}" readonly="readonly" />
+            Any URL on Tradle contains a personal tracker. Post it anywhere online and earn rewards on signups and sales you facilitated.
+            {{ if (G.currentUser.guest ) { }}
+              You must <a href="#" class="link reqLogin">login</a> to get a personal link.
+            {{ }                            }}
+            {{ if (!G.currentUser.guest ) { }}
+            You've signed up 
+              <span style="color:#00B608;font-size:16px">{{= n }}</span> {{= n == 1 ? 'person' : 'people' }} so far. Link below is an example link you can use.
+              <input type="text" style="width:80%; margin: 10px auto; display: block;" onfocus="Lablz.U.selectInputText(arguments[0]);" value="{{= U.getReferrerLink() }}" readonly="readonly" />
+            {{ }                            }}
           </div>
         </p>
         <div>
@@ -350,7 +356,7 @@
 </script>
 
 <script type="text/template" id="pricingPageTemplate">
-  <div class="section" id="section_bg">
+  <div class="section light" id="section_bg">
     <section id="viewHome" data-type="sidebar"></section>
     <section id="viewHomer" data-type="sidebar"></section>
     <div class="headerHP" style="position:absolute;top:0px;width: 100%;">
@@ -469,7 +475,7 @@
 </script>
 
 <script type="text/template" id="pricing1PageTemplate">
-  <div class="section" id="section_bg">
+  <div class="section light" id="section_bg">
     <section id="viewHome" data-type="sidebar"></section>
     <section id="viewHomer" data-type="sidebar"></section>
     <div class="headerHP" style="position:absolute;top:0px;width: 100%;">
@@ -493,7 +499,7 @@
           </div>
           <div class="pricing-price">
             <span class="pricing-amount">1K</span>
-            <span class="pricing-unit">$</span>
+            <span class="pricing-unit">$/mo</span>
           </div>
           <ul class="pricing-items">
             <li class="pricing-item">
@@ -520,7 +526,7 @@
             Gold
           </h4>
           <div class="pricing-item-price-note">
-            Decrease fundraising costs, it is about time 
+            Decrease fundraising costs 
           </div>
           
           <div class="pricing-price">
