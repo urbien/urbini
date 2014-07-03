@@ -590,7 +590,12 @@ define('router', [
 //        return;
       
       var model = U.getModel(typeUri),
-          className = model.displayName;
+          className = model && model.displayName;
+      
+      if (!model) {
+        U.alert404();
+        return;
+      }
       
       if (params['-aroundMe'] == 'y') {
         // auto load location-based results

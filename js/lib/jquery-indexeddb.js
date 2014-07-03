@@ -38,8 +38,8 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 //  var pendingReqs = {},
 //      pendingTrans = {},
   var pendingTransactions = [],
-      pendingTransDfd = $.Deferred().resolve(),
-      readyForVersionChange = pendingTransDfd.promise();
+      pendingTransDfd,
+      readyForVersionChange = G.getDBReadyPromise();
   
   function startedTransaction(idbTransaction) {
     pendingTransactions.push(idbTransaction);

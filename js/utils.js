@@ -1811,7 +1811,8 @@ define('utils', [
       case '[object Object]':
         return arg0.vocModel; //U.isCollection(arg0) ? arg0.model : arg0.constructor;
       default:
-        throw new Error("invalid argument, please provide a model shortName, type uri, or an instance of Resource or ResourceList");
+        return null;
+//        throw new Error("invalid argument, please provide a model shortName, type uri, or an instance of Resource or ResourceList");
       }
     },
     
@@ -3694,6 +3695,22 @@ define('utils', [
       }));
     },
     
+    alert404: function(msg) {
+      U.alert({
+        header: msg || "This page doesn't exist!",
+        dismissible: false
+//        ,
+//        oncancel: function() {
+//          console.log("MODAL - canceled");
+//          U.hideModalDialog();
+//          setTimeout(function() {
+//            console.log("MODAL - not helping");
+//            U.alert404("You're not helping...");
+//          }, 500);
+//        }
+      });
+    },
+    
 //    alertUnactivatedUser: function() {
 //      U.alert({
 //        header: 'We\'re currently in private beta. You will be among the first to know when this app launches into public beta. <br /><br />' + 
@@ -4490,6 +4507,18 @@ define('utils', [
       return ruleTypeUri.match(/(Rose|Fell)?(More|Less)(?:Than)[^\/]*(?:Rule)/);
     },
     
+//    getRuleOperatorIcon: function(op) {
+//      var icon = 'ui-icon-';
+//      switch (op) {
+//      case 'Rose':
+//        return 'arrow-up';
+//      case 'Fell':
+//        return 'arrow-down';
+//      case 'More':
+//        return 'arrow-up';
+//      }
+//    },
+    
     getRuleOperator: function(rule) {
       var op = rule.get('operator');
       if (op)
@@ -4502,7 +4531,7 @@ define('utils', [
         if (numeric[1])
           return numeric[1];
         else 
-          return numeric[2] == 'More' ? '>' : '<';
+          return numeric[2];// == 'More' ? '>' : '<';
       }
       else if (type.endsWith('StringContainsRule'))
         return "CONTAINS";

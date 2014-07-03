@@ -13,6 +13,8 @@ define('views/ModalDialog', ['domUtils', 'events'], function(DOM, Events) {
       currentState = null,
       dismissible = true,
       hideCallbacks = [];
+//          ,
+//      emptyTimeout;
 
   container.className = container.className.replace( /\s+$/gi, '' ) + ' modal-ready';
 
@@ -33,6 +35,7 @@ define('views/ModalDialog', ['domUtils', 'events'], function(DOM, Events) {
   }
 
   function activate( state ) {
+//    clearTimeout(emptyTimeout);
     document.addEventListener( 'keyup', onDocumentKeyUp, false );
     document.addEventListener( 'click', onDocumentClick, false );
     document.addEventListener( 'touchstart', onDocumentClick, false );
@@ -44,12 +47,12 @@ define('views/ModalDialog', ['domUtils', 'events'], function(DOM, Events) {
     if (state)
       popup.$addClass(popup, state);
 
-    window._setTimeout( function() {
+    setTimeout( function() {
 //      removeClass( popup, 'no-transition' );
 //      addClass( container, 'modal-active' );
       popup.$removeClass('no-transition');
       container.$addClass('modal-active');
-    }, 0 );
+    }, 1);
 
     currentState = state;
   }
@@ -61,6 +64,7 @@ define('views/ModalDialog', ['domUtils', 'events'], function(DOM, Events) {
 
     if (container)
       container.$removeClass('modal-active');
+    
     if (popup) {
       popup.$removeClass('modal-popup-animate');
       popup.$('audio,video,iframe,object,embed').$forEach(function(a) {
@@ -69,10 +73,15 @@ define('views/ModalDialog', ['domUtils', 'events'], function(DOM, Events) {
         a.$remove();
       });
       
-      popup.$empty();
+//      emptyTimeout = setTimeout(emptyPopup, 300);
     }
   }
 
+//  function emptyPopup() {
+//    clearTimeout(emptyTimeout);
+//    popup.$empty();
+//  }
+//  
 //  function addClass( element, name ) {
 //    element.className = element.className.replace( /\s+$/gi, '' ) + ' ' + name;
 //  }

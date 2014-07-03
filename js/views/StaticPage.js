@@ -11,24 +11,7 @@ define('views/StaticPage', [
     initialize: function(options) {
       options = options || {};
       BasicPageView.prototype.initialize.call(this, options);
-
-      if (options.header) {
-        this.headerButtons = {
-          back: true,
-          menu: true,
-          rightMenu: !G.currentUser.guest
-        };
-        
-        this.header = new Header({
-          viewId: this.cid,
-          parentView: this,
-          model: this.model
-        });
-        
-        this.addChild(this.header);
-      }
-
-      this.templateData = options.data;
+      this.templateData = _.extend(this.getBaseTemplateData(), options.data);
       this.makeTemplate(options.template, 'template');
     },
     

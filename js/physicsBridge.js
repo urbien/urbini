@@ -543,13 +543,14 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     _onKeyUp: function(e) {
       var keyCode = U.getKeyEventCode(e);
       if (this._keyHeld && keyCode == this._keyHeld) {
-        if (!isPageKey(keyCode)) {
-          var draggable,
-              dir = this.getDragDirection(keyCode);
-          
-          for (var id in DRAGGABLES) {
-            draggable = DRAGGABLES[id];
-            if (draggable.isOn() && isDragAlongAxis(dir, draggable.axis))
+        var isPage = isPageKey(keyCode);
+        var draggable,
+            dir = this.getDragDirection(keyCode);
+        
+        for (var id in DRAGGABLES) {
+          draggable = DRAGGABLES[id];
+          if (draggable.isOn() && isDragAlongAxis(dir, draggable.axis)) {
+            if (!isPage || !draggable.isPaged())
               dragend(draggable, this._dragged, !this._coast);
           }
         }

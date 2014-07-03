@@ -1295,10 +1295,15 @@ section[id^="view"] {
   background: rgba( 0, 0, 0, 0.5 );
 }
 
+.modal-popups {
+  text-align: center;
+}
+
 .modal-active .modal-cover, .modal-active .modal-popups {
   visibility: visible;
   /*opacity: 0.2;*/
-  z-index: 10004;
+  z-index: 10005;
+  width: 100%;
 }
 
 .modal-active [data-role="page"] {
@@ -1354,13 +1359,11 @@ section[id^="view"] {
           transform: scale( 1 );
 }
 
+/*
 .modal-popups {
   z-index: -1;
 }
-
-.modal-active .modal-popups {
-  z-index: 10005;
-}
+*/
 
 .modal-ready body,
 .modal-ready .modal-popup,
@@ -1433,18 +1436,12 @@ section[id^="view"] {
   z-index: 10005;
 }
 
-.closeDialogBtn > * {
+.closeDialogBtn:after {  
   position: absolute;
-<<<<<<< Updated upstream
-=======
-/*  top: -3px; */
->>>>>>> Stashed changes
-  left: 4px;
-  font-size: 20px;
+  top: 1px;
+  left: 5px;
+  font-size: 16px;
   color: white;
-}
-
-.closeDialogBtn > *:after {  
   content: "\2716";
 }
 

@@ -163,7 +163,7 @@
   {{ } }}
 
   {{ if (obj.Cancelable && !Cancelable.canceled) { }}
-    <a style="width: auto; height: auto; padding: 0 1rem; position:absolute; right: 0;" href="#" data-uri="{{= resource.getUri() }}" data-cancel="true" class="vcentered">
+    <a style="width: auto; height: auto; padding: 0 1rem; position:absolute; right: 0;" href="#" data-uri="{{= resource.getUri() }}" data-cancel="true" class="vcenteredR">
       <i class="ui-icon-remove"></i>
     </a>
   {{ } }}
@@ -189,8 +189,10 @@
       </div>
     </div>
     <div style="float:left; width:20%; height:100%; font-size:2.3rem;">
-      <div style="font-size:4.5rem;">
-      {{= U.getRuleOperator(resource) }}
+    {{ var op = U.getRuleOperator(resource), lop = op.toLowerCase(); }}
+    {{ var cl = lop == 'rose' ? 'ui-icon-arrow-up' : lop == 'fell' ? 'ui-icon-arrow-down' : ''; }}
+      <div style="font-size:4.5rem;" class="{{= cl }}">
+        {{= cl ? '' : op }}
       </div>
       {{ if (byPercent) {   }}
       <div>
@@ -222,7 +224,7 @@
   </div>
   {{ if (showCancel) { }}
     <a style="width: 2%; height: 100%; position: absolute; top: 0; right: 0; padding: 0 0.5%;" href="#" data-uri="{{= resource.getUri() }}" data-cancel="true">
-      <i class="vcentered ui-icon-remove" style="font-size: 2rem; position: absolute; color: #ddd;"></i>
+      <i class="vcenteredR ui-icon-remove" style="font-size: 2rem; position: absolute; color: #ddd;"></i>
     </a>
   {{ } }}
 </li>
@@ -1501,8 +1503,8 @@
     {{=  obj.media       }}
     {{ }                 }}
     
-    {{ if (obj.ok === false && obj.cancel === false) { }}
-      <div class="closeDialogBtn"><span></span></div>
+    {{ if (obj.ok === false && obj.cancel === false && obj.dismissible) { }}
+      <div class="closeDialogBtn"></div>
     {{ }                 }}
   
     {{ if (obj.ok || obj.cancel)                     { }}
@@ -1670,7 +1672,7 @@
   </div>
 </div>
 <div id="buttons" style="white-space: nowrap; position:relative; height: 50px; background:{{= G.darkColor }};color:{{= G.lightColor }}">
-  <div class="cf vcentered" style="z-index:1; width:20%;float:left;background:inherit;">
+  <div class="cf vcenteredR" style="z-index:1; width:20%;float:left;background:inherit;">
     <span class="placeholder"></span>
     {{ if (this.categories) { }}
        <div style="display:inline-block; margin-left: 5px; font-size: 1.5rem;">
@@ -1687,7 +1689,7 @@
       </a>
     {{ }                     }}
   </div>
-  <div id="name" class="cf vcentered resTitle" style="z-index:0; width:60%;float:left;background:inherit;" align="center">
+  <div id="name" class="cf vcenteredR resTitle" style="z-index:0; width:60%;float:left;background:inherit;" align="center">
     <h4 id="pageTitle" style="text-overflow: ellipsis; font-weight:normal;color:{{= G.lightColor }};">{{= this.title }}</h4>
     {{= this.filter ? "<div class='filter'></div>" : "" }}
     <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
@@ -1729,7 +1731,7 @@
     </div>
     <div style="clear:both"></div>
   </div>
-  <div class="cf vcentered" style="z-index:1; width:20%;float:left;background:inherit;">
+  <div class="cf vcenteredR" style="z-index:1; width:20%;float:left;background:inherit;">
     {{ if (activatedProp) { }}
       <section class="activatable" style="float: right; display: none;">
         <label class="pack-switch" style="float: right; right: 2rem; vertical-align:inherit; color:{{= G.darkColor }};">

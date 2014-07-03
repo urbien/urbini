@@ -350,6 +350,7 @@ define('app', [
             data = null;
           
           break;
+        case "article":
         case "view":
         case "edit":
         case "chat": 

@@ -11,7 +11,7 @@ DOMReady.add( function () {
   
   d.title = l.currentApp.title;
   mc.className = 'modal-cover';
-  mp.className = 'modal-popups vcentered';
+  mp.className = 'modal-popups vcenteredA';
 
   d.body.appendChild(mc);
   d.body.appendChild(mp);

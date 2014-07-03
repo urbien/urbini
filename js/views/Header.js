@@ -249,7 +249,7 @@ define('views/Header', [
     },
     
     activate: function(e, force) {
-      e && e.preventDefault();
+      e && Events.stopEvent(e);
       var self = this;
       U.require('views/ModalDialog').done(function(MD) {
         ModalDialog = MD;
@@ -277,16 +277,16 @@ define('views/Header', [
             dateRulesChanged = tradle.get('dateRulesChanged') || 0,
             dateOrdersChanged = tradle.get('dateOrdersChanged') || 0,
             dateBacktested = tradle.get('dateBacktested') || 0,
-            spinner;
+            spinner,
+            undoMsg;
         
-        if (!numRules) {
-          U.alert("Your Tradle doesn't have any rules yet!");
-          undo();
-          return;
-        }
-        
-        if (!numOrders) {// && !numNotifications) {
-          U.alert("To do a dry run, add at least one trade to your Tradle");
+        if (!numRules)
+          undoMsg = "Your Tradle doesn't have any rules yet!";
+        else if (!numOrders)// && !numNotifications) {
+          undoMsg = "To do a dry run, add at least one trade to your Tradle";
+          
+        if (undoMsg) {
+          U.alert(undoMsg);
           undo();
           return;
         }

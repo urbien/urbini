@@ -106,7 +106,38 @@ define('globals', function() {
     } catch(e) {}
     
     return supported;
+  };
+
+  function getFullName(module) {
+    return require.toUrl(module).slice(require.getConfig().baseUrl.length);
+  };
+  
+  function getBundleForFile(fileName) {
+    var fullName = getFullName(fileName);
+    for (var bName in G.bundles) {
+      var bundle = G.bundles[bName];
+      if (_.any(bundle, function(info) { return info.name == fullName; }))
+        return bundle;
+    }
   }
+  
+  function getFileStorageType(fileName) {
+    return getBundleStorageType(getBundleForFile(fileName)._name);
+  }
+
+  function getBundleStorageType(bundleName) {
+    if (G.dbType == 'none')
+      return 'localStorage';
+    
+    switch (bundleName) {
+    case 'pre':
+    case 'post':
+    case 'widgetsFramework':
+      return 'localStorage';
+    default:
+      return 'indexedDB';
+    }
+  };
   
   function saveBootInfo() {
     var ls = G.localStorage,
@@ -278,7 +309,7 @@ define('globals', function() {
       }
       
       /// use 'sendXhr' instead of 'req' so we can store to localStorage
-      Bundler.loadBundle(name).done(function() {
+      Bundler.loadBundle(name, {source: getFileStorageType(name)}).done(function() {
         if (G.modules[url])
           loadModule(name, url, G.modules[url]).done(defer.resolve);
         else {
@@ -346,6 +377,16 @@ define('globals', function() {
       if (G.dbType === 'none')
         return REJECTED_PROMISE;
             
+      if (DB_OPEN_DFD.state() == 'pending') {
+        debugger;
+        var self = this, 
+            args = arguments;
+        
+        return DB_OPEN_DFD.promise().then(function() {
+          return putCached.apply(self, args);
+        });
+      }
+
 //      if (!G.prunedIndexedDB)
 //        G.pruneIndexedDB();
       
@@ -724,7 +765,7 @@ define('globals', function() {
   }
   
   function loadRegular() {
-    Bundler.loadBundle(preBundle.concat(widgetsBundle)).then(function() {
+    Bundler.loadBundle(preBundle.concat(widgetsBundle), {source: getBundleStorageType('pre')}).then(function() {
       preBundle._deferred.resolve();
       G.finishedTask("loading pre-bundle and widgets-bundle");
       G.startedTask("loading modules");
@@ -740,7 +781,7 @@ define('globals', function() {
       G.finishedTask("loading modules");
       App.initialize();
       G.startedTask('loading post-bundle');
-      return Bundler.loadBundle(postBundle, {async: true}).done(function() {
+      return Bundler.loadBundle(postBundle, {async: true, source: getBundleStorageType('post')}).done(function() {
         G.finishedTask('loading post-bundle');
         postBundle._deferred.resolve();
       });
@@ -748,7 +789,7 @@ define('globals', function() {
 
     G.onAppStart(function() {            
       G.startedTask('loading extras-bundle');
-      Bundler.loadBundle(extrasBundle, {async: true}).done(function() {
+      Bundler.loadBundle(extrasBundle, {async: true, source: getBundleStorageType('extras')}).done(function() {
         G.startedTask('loading extras-bundle');
         extrasBundle._deferred.resolve();
       });
@@ -915,7 +956,7 @@ define('globals', function() {
       var bundleDfd = $.Deferred(),
           bundlePromise = bundleDfd.promise(),
           options = options || {},
-          source = options.source = options.source || G.getPreferredStorage(),
+          source = options.source,
           useWorker = G.hasWebWorkers && options.async,
           worker;
 
@@ -1012,6 +1053,7 @@ define('globals', function() {
       for (var when in bundles) {
         var bundle = bundles[when];
         bundle._deferred = $.Deferred();
+        bundle._name = when;
         for (var type in bundle) {
           var info = bundle[type];
           G.files[info.name] = info;
@@ -1344,8 +1386,6 @@ define('globals', function() {
     },
 
     dbType: (function() {
-//      if (browser.chrome) // testing how things work without indexeddb
-//        return 'shim';
 //      var using = (browser.chrome && !G.inWebview) || !window.indexedDB;
       var using = !window.indexedDB && !window.mozIndexedDB && !window.webkitIndexedDB && !window.msIndexedDB,
           type;
@@ -1370,11 +1410,27 @@ define('globals', function() {
         type = 'idb';
       }
 
+//      if (browser.chrome) // testing how things work without indexeddb
+//        type = 'shim';
+
+      var dfd = $.Deferred(),
+          promise = dfd.promise();
+      
+      G.getDBReadyPromise = function() {
+        return promise;
+      };
+      
+      if (type == 'shim')
+        window.addEventListener('IndexedDBShimInit', dfd.resolve);
+      else
+        dfd.resolve();
+        
       return type;
     })(),
     
     _preferredStorageMedium: 'indexedDB',
     getPreferredStorage: function() {
+      debugger;
       var type = this._preferredStorageMedium;
       if (type == 'indexedDB') {
         if (this.dbType == 'none' || DB_OPEN_DFD.state() != 'resolved') {
@@ -1384,6 +1440,7 @@ define('globals', function() {
       
       return type;
     },
+    
     media_events: ["loadstart", "progress", "suspend", "abort", "error", "emptied", "stalled", 
                     "loadedmetadata", "loadeddata", "canplay", "canplaythrough", "playing", "waiting", 
                     "seeking", "seeked", "ended", "durationchange", "timeupdate", "play", "pause", "ratechange", "volumechange"],
@@ -1419,7 +1476,7 @@ define('globals', function() {
         options = {name: options};
       
       var id = getSpinnerId(options.name);
-      var cl = 'vcentered ' + (options.nonBlockingOverlay ? '' : ' spinner_bg');
+      var cl = 'vcenteredR ' + (options.nonBlockingOverlay ? '' : ' spinner_bg');
       var color;
       if (G.tabs) {
         var t0 = G.tabs[0];
@@ -1543,23 +1600,13 @@ define('globals', function() {
       for (var i = 0, len = modules.length; i < len; i++) {
         var module = modules[i],
             found = false,
-            fullName = require.toUrl(module).slice(baseUrlLength);
-        
-//        if (/\.js$/.test(fullName))
-//          fullName = fullName.slice(0, fullName.length - 3);
-        
-        for (var bName in G.bundles) {
-          var bundle = G.bundles[bName];
-          if (_.any(bundle, function(info) { return info.name == fullName; })) {
-            found = true;
-            if (bName !== 'pre')
-              bundlePromises.push(bundle._deferred.promise());
-            
-            break;
-          }
+            bundle = getBundleForFile(module);
+
+        if (bundle) {
+          if (bundle._name != 'pre')
+            bundlePromises.push(bundle._deferred.promise());
         }
-        
-        if (!found)
+        else
           missing.push(fullName);
       }
       

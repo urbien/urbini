@@ -415,6 +415,11 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
                 
                 data.handler = listeners[ l ];
                 data.handler( data );
+                if (!listeners.length)
+                  break;
+                
+                if (listeners.length < l)
+                  l = listeners.length;
             }
 
             return this;
@@ -4712,7 +4717,7 @@ Physics.behavior('verlet-constraints', function( parent ){
                 corr = coef * con.stiffness * ( len - con.targetLengthSq ) / len;
                 
                 BA.mult( corr );
-        BA.mult(1 - con.damping);
+                BA.mult(1 - con.damping);
                 proportion = (con.bodyA.fixed || con.bodyB.fixed) ? 1 : con.bodyB.mass / (con.bodyA.mass + con.bodyB.mass);
 
                 if ( !con.bodyA.fixed ){

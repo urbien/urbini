@@ -392,7 +392,7 @@ self.log = function() {
     console.log.apply(console, arguments);
 };
 
-self.log = function() {
+self.debug = function() {
   if (DEBUG)
     console.debug.apply(console, arguments);
 };
@@ -416,11 +416,11 @@ function _onmessage(e) {
     if (!masonryUrl)
       throw "Missing required imports: Masonry";
 
-    console.log("IMPORTING: " + physicsJSUrl);
+    log("IMPORTING: " + physicsJSUrl);
     importScripts(physicsJSUrl);
-    console.log("IMPORTING: " + masonryUrl);
+    log("IMPORTING: " + masonryUrl);
     importScripts(masonryUrl);
-    DEBUG = false;//e.data.debug;
+    DEBUG = e.data.debug;
 //    with (e.data.styleInfo) {
       // Transfer protocol props
 //    UNIT_MAP = e.data.styleInfo.units;
@@ -1275,6 +1275,9 @@ function hasDistanceConstraint(body, armed) {
 };
 
 function hasDragConstraint(body) {
+  if (!body)
+    return false;
+  
   var i = DRAG_CONSTRAINTS.length;
   while (i--) {
     if (DRAG_CONSTRAINTS[i].bodyA == body)
@@ -1788,8 +1791,6 @@ function getRectVertices(width, height) {
           doSlidingWindow = this.slidingWindow,
           constantsEvent;
       
-//      Physics.util.bindAll(this);
-      
       this.reset();
       this._listeners = {};
       this.scrollbarId = this.scrollbar;
@@ -1868,7 +1869,6 @@ function getRectVertices(width, height) {
       this.log("SET HEAD EDGE TO " + this.headEdge.state.pos.get(this.axisIdx));
       this.headEdgeConstraint = API.distanceConstraint(this.offsetBody, this.headEdge, this.getSpringStiffness(), 0, this.dirHead);
       this.headEdgeConstraint.damp(this.getSpringDamping());
-      this.headEdgeConstraint.armOn(this.shouldArmHead.bind(this.headEdgeConstraint, this)); // pass in self as first param
 //      this.headEdgeConstraint.breakOn(Physics.util.negate(this.shouldArmHead.bind(this.headEdgeConstraint, this))); // pass in self as first param
 //      this.headEdgeConstraint.breakOn(function() {
 //        return self.offsetBody.state.pos.dist(self.headEdge.state.pos) < 1 && self.offsetBody.state.vel.norm() < 0.1;
@@ -1914,8 +1914,6 @@ function getRectVertices(width, height) {
 //      
 //      resetConstraint();
       // TODO: subscribe/unsubscribe on arm/break
-      this._subscribe('drag', this.breakHeadEdgeConstraint, 10);
-      this._subscribe('dragend', this.breakHeadEdgeConstraint, 10);
 
 //      world.subscribe('constants.springDamping', function() {
 //        this.headEdgeConstraint.damp(CONSTANTS.springDamping);
@@ -1944,6 +1942,7 @@ function getRectVertices(width, height) {
         API.rotateWhenMoving(this.offsetBody, getContainer(this.offsetBody), this.axisIdx, this.orthoAxisIdx, this.tilt, this.gradient);
       
       this._initialized = true;
+      this.enableEdgeConstraints();
       this['continue']();
     },
     
@@ -2054,6 +2053,7 @@ function getRectVertices(width, height) {
       var orig = handler,
           handlers = this._listeners[event] = this._listeners[event] || [];
       
+      this.log("SUBSCRIBE: " + event);
       handler = handler.bind(this);
       handler._orig = orig;
       world.subscribe(event, handler, null, priority);      
@@ -2064,6 +2064,7 @@ function getRectVertices(width, height) {
       var self = this;
       var proxy = Physics.util.once(function() {
         handler.apply(this, arguments);
+        log("1. UNSUBSCRIBE");
         self._unsubscribe(event, proxy);
       });
       
@@ -2073,9 +2074,10 @@ function getRectVertices(width, height) {
     _unsubscribe: function(event, handler) {
 //      if (onNextTick) {
         var self = this;
-        setTimeout(function() {
+//        setTimeout(function() {
+//          self.log("UNSUBSCRIBE: " + event);
           self._doUnsubscribe(event, handler);
-        }, 1);
+//        }, 1);
 //      }
 //      else
 //        self._doUnsubscribe(event, handler);
@@ -2083,8 +2085,11 @@ function getRectVertices(width, height) {
     
     _doUnsubscribe: function(event, handler) {
       var handlers = this._listeners[event],
-          i = handlers.length,
-          unsubscribed = false;
+          unsubscribed = false,
+          i = handlers && handlers.length;
+      
+      if (!i)
+        return;
       
       while (i--) {
         var hi = handlers[i];
@@ -2100,23 +2105,28 @@ function getRectVertices(width, height) {
           unsubscribed = true;
         }
       }
-      
-      if (!unsubscribed)
-        debugger;
     },
     
     breakHeadEdgeConstraint: function(data) {
   //    resetConstraint();
   //    if (~data.bodies.indexOf(this.offsetBody) && this.offsetBody.state.pos.get(this.axisIdx) < this.headEdge.state.pos.get(this.axisIdx))
-//        console.log("BREAKING HEAD EDGE CONSTRAINT");
-      this.headEdgeConstraint['break']();
+//      if (!this.shouldArmHead()) {
+        var scratchpad = Physics.scratchpad(),
+            dist = scratchpad.vector().clone(this.headEdgeConstraint.bodyB.state.pos).vsub(this.headEdgeConstraint.bodyA.state.pos).proj(this.dirHead);
+        
+        scratchpad.done();
+//        this.log("BREAKING HEAD EDGE CONSTRAINT, dist: " + dist);
+        this.headEdgeConstraint['break']();
+//      }
     },
 
     breakTailEdgeConstraint: function(data) {
   //    resetConstraint();
   //    if (~data.bodies.indexOf(this.offsetBody) && this.offsetBody.state.pos.get(this.axisIdx) < this.headEdge.state.pos.get(this.axisIdx))
-//        console.log("BREAKING TAIL EDGE CONSTRAINT");
-      this.tailEdgeConstraint['break']();
+//      if (!this.shouldArmTail()) {
+//        this.log("BREAKING TAIL EDGE CONSTRAINT");
+        this.tailEdgeConstraint['break']();
+//      }
     },
 
     getScrollVelocity: function() {
@@ -2166,40 +2176,36 @@ function getRectVertices(width, height) {
       if (this.offsetBody) API.cancelPendingActions(this.offsetBody);
     },
     
-    shouldArmHead: function(self) {
-      if (self.hasActionsPending())
-        return false;
-      
-      if (self.range.from == 0) {
-        var scratchpad = Physics.scratchpad(),
-            dist = scratchpad.vector().clone(this.bodyB.state.pos).vsub(this.bodyA.state.pos).proj(self.dirHead);
-        
-        scratchpad.done();
-//        if (dist > 0)
-//          log("ARMED Head constraint: " + this.bodyA.state.pos.toString() + " to " + this.bodyB.state.pos.toString() + ", dist = " + dist);
-        
-        return dist > 0;
-      }
-      else
-        return false;
+    checkEdgeConstraints: function() {
+      if (this.hasActionsPending() || hasDragConstraint(this.container) || hasDragConstraint(this.offsetBody))
+        return;
+
+      this.checkHeadConstraint();
+      this.checkTailConstraint();
     },
     
-    shouldArmTail: function(self) {
-      if (self.hasActionsPending())
-        return false;
-            
-      if (self.range.to == self.getKnownLimit()) {
-        var scratchpad = Physics.scratchpad(),
-            dist = scratchpad.vector().clone(this.bodyB.state.pos).vsub(this.bodyA.state.pos).proj(self.dirTail);
+    checkHeadConstraint: function() {
+      if (!this.headEdgeConstraint || this.range.from != 0)
+        return;
+      
+      var scratchpad = Physics.scratchpad(),
+          c = this.headEdgeConstraint,
+          dist = scratchpad.vector().clone(c.bodyB.state.pos).vsub(c.bodyA.state.pos).proj(this.dirHead);
+      
+      scratchpad.done();
+      c[dist > 0 ? 'arm' : 'break']();
+    },
+    
+    checkTailConstraint: function() {
+      if (!this.tailEdgeConstraint || this.range.to != this.getKnownLimit())
+        return;
         
-        scratchpad.done();
-//        if (dist > 0)
-//          log("ARMED Tail constraint: " + this.bodyA.state.pos.toString() + " to " + this.bodyB.state.pos.toString() + ", dist = " + dist);
-//        return self.flexigroup ? dist > self.flexigroupOffset : dist > 0;
-        return dist > 0;
-      }
-      else
-        return false;
+      var scratchpad = Physics.scratchpad(),
+          c = this.tailEdgeConstraint,
+          dist = scratchpad.vector().clone(c.bodyB.state.pos).vsub(c.bodyA.state.pos).proj(this.dirTail);
+      
+      scratchpad.done();
+      c[dist > 0 ? 'arm' : 'break']();
     },
 
     getKnownLimit: function() {
@@ -2555,12 +2561,14 @@ function getRectVertices(width, height) {
       
       function doDestroy() {
         if (!destroyed) {
+          log("DESTROYING: " + self.id);
           destroyed = true;
           delete layoutManagers[self.id];
           if (l)
             world.remove(bricks);
           
           for (var event in self._listeners) {
+            log("2. UNSUBSCRIBE");
             self._unsubscribe(event);
           }
 
@@ -2914,7 +2922,8 @@ function getRectVertices(width, height) {
     _onIntegratePositions: function() {
       if (this._sleeping || this._transitioning)
         return;
-      
+
+      this.checkEdgeConstraints();
       if (this.scrollbar) 
         this._updateScrollbar();
       
@@ -2944,21 +2953,56 @@ function getRectVertices(width, height) {
     },
   
     enableEdgeConstraints: function() {
-//      log("Enabling edge constraints for " + this.containerId);
-      if (this.headEdgeConstraint)
+      log("Enabling edge constraints for " + this.id);
+      this.enableHeadConstraint();
+      this.enableTailConstraint();
+    },
+    
+    enableHeadConstraint: function() {
+      this.disableHeadConstraint(); // clean up any listeners we have attached
+      if (this.headEdgeConstraint) {
+        log("Enabling head edge constraint for " + this.id);
+//        this.headEdgeConstraint.armOn(this.shouldArmHead); // pass in self as first param
         this.headEdgeConstraint.enable();
-      if (this.tailEdgeConstraint)
+//        this._subscribe('drag', this.breakHeadEdgeConstraint, 10);
+//        this._subscribe('dragend', this.breakHeadEdgeConstraint, 10);
+      }
+    },
+    
+    enableTailConstraint: function() {
+      this.disableTailConstraint(); // clean up any listeners we have attached
+      if (this.tailEdgeConstraint) {
+        log("Enabling tail edge constraint for " + this.id);
+//        this.tailEdgeConstraint.armOn(this.shouldArmTail); // pass in self as first param
         this.tailEdgeConstraint.enable();
+//        this._subscribe('drag', this.breakTailEdgeConstraint, 10);          
+//        this._subscribe('dragend', this.breakTailEdgeConstraint, 10);          
+      }
     },
   
     disableEdgeConstraints: function() {
-//      log("Disabling edge constraints for " + this.containerId);
+      log("Disabling edge constraints for " + this.id);
+      this.disableHeadConstraint();
+      this.disableTailConstraint();
+    },
+    
+    disableHeadConstraint: function() {
       if (this.headEdgeConstraint) {
+        log("Disabling head edge constraint for " + this.id);
+        log("3. UNSUBSCRIBE");
+        this._unsubscribe('drag', this.breakHeadEdgeConstraint);
+        this._unsubscribe('dragend', this.breakHeadEdgeConstraint);
         this.headEdgeConstraint['break']();
         this.headEdgeConstraint.disable();
-      }
-      
+      }      
+    },
+    
+    disableTailConstraint: function() {
       if (this.tailEdgeConstraint) {
+        log("Disabling tail edge constraint for " + this.id);
+        log("4. UNSUBSCRIBE");
+        this._unsubscribe('drag', this.breakTailEdgeConstraint);
+        this._unsubscribe('dragend', this.breakTailEdgeConstraint);
         this.tailEdgeConstraint['break']();
         this.tailEdgeConstraint.disable();
       }
@@ -3018,15 +3062,13 @@ function getRectVertices(width, height) {
           
           this.tailEdgeConstraint = API.distanceConstraint(this.offsetBody, this.tailEdge, this.getSpringStiffness(), 0, this.dirTail);
           this.tailEdgeConstraint.damp(this.getSpringDamping());
+          this.enableTailConstraint();
           this.tailEdgeConstraint['break']();
-          this.tailEdgeConstraint.armOn(this.shouldArmTail.bind(this.tailEdgeConstraint, this)); // pass in self as first param
 //          this.tailEdgeConstraint.breakOn(Physics.util.negate(this.shouldArmTail.bind(this.tailEdgeConstraint, this))); // pass in self as first param
 
           // this one doesn't work because if we're not at range X-LastIndex, we don't know where the tail edge should be yet
 //          this.tailEdgeConstraint.armOnDistance(Infinity, this.dirTail); // no matter how far out of bounds we are, we should snap back
 //          this.tailEdgeConstraint.breakOnDistance(50, DIR_Y_POS);
-          this._subscribe('drag', this.breakTailEdgeConstraint, 10);          
-          this._subscribe('dragend', this.breakTailEdgeConstraint, 10);          
         }
         else
           this.tailEdge.state.pos.set(coords[0], coords[1]);
@@ -3097,9 +3139,7 @@ function getRectVertices(width, height) {
     unsetLimit: function() {
       this.brickLimit = Infinity;
       if (this.tailEdge) {
-        debugger;
-        this._unsubscribe('drag', this.breakTailEdgeConstraint);          
-        this._unsubscribe('dragend', this.breakTailEdgeConstraint);          
+        this.disableTailConstraint();
         API.removeConstraint(this.tailEdgeConstraint);
         world.removeBody(this.tailEdge);
         delete this.tailEdgeConstraint;
@@ -3850,9 +3890,9 @@ function getRectVertices(width, height) {
       this.breakHeadEdgeConstraint();
       this.breakTailEdgeConstraint();
       API.cancelPendingActions(body);
-      console.log("New Page: " + newPage);
-      console.log("New Y: " + newY);
-      console.log("Tail edge: " + coords[1]);
+      log("New Page: " + newPage);
+      log("New Y: " + newY);
+      log("Tail edge: " + coords[1]);
       API.snapTo({
         body: body,
         stiffness: 0.03,
@@ -4498,8 +4538,8 @@ var API = {
 //        newPage = Math.max(currentPage + options.pages, 0),
 //        newY = pageHeight * newPage;
 //    
-//    console.log("New Page: " + newPage);
-//    console.log("New Y: " + newY);
+//    log("New Page: " + newPage);
+//    log("New Y: " + newY);
 //    API.snapTo({
 //      body: body,
 ////      a: options.a || 0.02,
