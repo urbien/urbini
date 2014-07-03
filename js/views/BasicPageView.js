@@ -160,6 +160,7 @@ define('views/BasicPageView', [
       'swiperight.page': 'swiperight',
       'swipeleft.page': 'swipeleft',
       'click .videoLauncher': U.launchVideo,
+      'click .reqLogin': function(e) { Events.stopEvent(e); Events.trigger('req-login', {dismissible: true}) },
       'click .pgDown': 'pageDown',
       'click .pgUp': 'pageUp'
     },
