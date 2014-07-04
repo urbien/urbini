@@ -21,6 +21,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       MAX_DRAG_VECTOR = 200,
       PAGE_VECTOR_MAG = 80,
       ARROW_KEY_VECTOR_MAG = 40,
+      WHEEL_VECTOR_MAG = 10,
       ID_TO_LAYOUT_MANAGER = {},
       ID_TO_EL = {},
       ID_TO_LAST_TRANSFORM = {},
@@ -159,7 +160,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   function getArrowDragMag() {
     return adjustForScreen(ARROW_KEY_VECTOR_MAG);
   };
-  
+
+  function getWheelDragMag() {
+    return adjustForScreen(WHEEL_VECTOR_MAG);
+  };
+
   function isDragAlongAxis(drag, axis) {
     switch (axis) {
     case null:
@@ -568,6 +573,46 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   document.addEventListener('keydown', KeyHandler);
   document.addEventListener('keyup', KeyHandler)
   
+  // from Sly.js
+  var scrolling = {
+    last: 0,
+    delta: 0,
+    resetTime: 200
+  };
+  
+  function normalizeWheelDelta(event) {
+    scrolling.curDelta = event.wheelDelta ? -event.wheelDelta / 120 : event.detail / 3;
+    time = +new Date();
+    if (scrolling.last < time - scrolling.resetTime) {
+      scrolling.delta = 0;
+    }
+    
+    scrolling.last = time;
+    scrolling.delta += scrolling.curDelta;
+    if (Math.abs(scrolling.delta) < 1) {
+      scrolling.finalDelta = 0;
+    } else {
+      scrolling.finalDelta = Math.round(scrolling.delta / 1);
+      scrolling.delta %= 1;
+    }
+    
+    return scrolling.finalDelta;
+  };
+  
+//  function normalizeWheelDelta(e) {
+//    var d = e.detail, 
+//        w = e.wheelDelta,
+//        n = 225, 
+//        n1 = n-1;
+//
+//    // Normalize delta
+//    d = d ? w && (f = w/d) ? d/f : -d/1.35 : w/120;
+//    // Quadratic scale if |d| > 1
+//    d = d < 1 ? d < -1 ? (-Math.pow(d, 2) - n1) / n : d : (Math.pow(d, 2) + n1) / n;
+//    // Delta *should* not be greater than 2...
+//    return Math.min(Math.max(d / 2, -1), 1);
+//  }
+  
   MouseWheelHandler = {
     _vector: [0, 0, 0],
     handleEvent: function(e) {
@@ -616,14 +661,16 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       axis = draggable.getAxis();
       v = MouseWheelHandler._vector;
       v[0] = v[1] = 0;
-      delta = getArrowDragMag() * Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
-      v[axis == 'x' ? 0 : 1] = delta || 0;
+//      delta = getArrowDragMag() * Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
+      delta = normalizeWheelDelta(e);
+      v[axis == 'x' ? 0 : 1] = 0.1 * getWheelDragMag() * delta;
       drag(draggable, v);
-      
-      clearTimeout(this._endTimeout);
-      this._endTimeout = setTimeout(function() {
-        dragend(draggable, v, false); // if true, will prevent coast
-      }, 100);
+//      if (Math.abs(e.delta) < 1) {
+//        console.log("ENDING DRAG", delta);
+        dragend(draggable, mult(v, 10), false); // if true, will prevent coast
+//      }
+//      else
+//        console.log("1. NOT ENDING DRAG");        
     }
   };
 
