@@ -1423,7 +1423,7 @@ function initWorld(_world, stepSelf) {
         i = DRAG_CONSTRAINTS.length,
         cst;
     
-    log("DRAG END: " + v.norm());
+//    log("DRAG END: " + v.norm());
     while (i--) {
       cst = DRAG_CONSTRAINTS[i];
       constrainer.remove(cst);
@@ -2177,14 +2177,19 @@ function getRectVertices(width, height) {
     },
     
     checkEdgeConstraints: function() {
-      if (this.hasActionsPending() || hasDragConstraint(this.container) || hasDragConstraint(this.offsetBody))
+//      this.log("Checking edge constraints");
+      if (this.hasActionsPending())
         return;
+      
+//      if (hasDragConstraint(this.container) || hasDragConstraint(this.offsetBody))
+//        return;
 
       this.checkHeadConstraint();
       this.checkTailConstraint();
     },
     
     checkHeadConstraint: function() {
+//      this.log("Checking head edge constraints");
       if (!this.headEdgeConstraint || this.range.from != 0)
         return;
       
@@ -2990,9 +2995,9 @@ function getRectVertices(width, height) {
       if (this.headEdgeConstraint) {
         log("Disabling head edge constraint for " + this.id);
         log("3. UNSUBSCRIBE");
-        this._unsubscribe('drag', this.breakHeadEdgeConstraint);
-        this._unsubscribe('dragend', this.breakHeadEdgeConstraint);
-        this.headEdgeConstraint['break']();
+//        this._unsubscribe('drag', this.breakHeadEdgeConstraint);
+//        this._unsubscribe('dragend', this.breakHeadEdgeConstraint);
+//        this.headEdgeConstraint['break']();
         this.headEdgeConstraint.disable();
       }      
     },
@@ -3001,9 +3006,9 @@ function getRectVertices(width, height) {
       if (this.tailEdgeConstraint) {
         log("Disabling tail edge constraint for " + this.id);
         log("4. UNSUBSCRIBE");
-        this._unsubscribe('drag', this.breakTailEdgeConstraint);
-        this._unsubscribe('dragend', this.breakTailEdgeConstraint);
-        this.tailEdgeConstraint['break']();
+//        this._unsubscribe('drag', this.breakTailEdgeConstraint);
+//        this._unsubscribe('dragend', this.breakTailEdgeConstraint);
+//        this.tailEdgeConstraint['break']();
         this.tailEdgeConstraint.disable();
       }
     },

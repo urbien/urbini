@@ -21,7 +21,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       MAX_DRAG_VECTOR = 200,
       PAGE_VECTOR_MAG = 80,
       ARROW_KEY_VECTOR_MAG = 40,
-      WHEEL_VECTOR_MAG = 10,
+      WHEEL_VECTOR_MAG = 7,
       ID_TO_LAYOUT_MANAGER = {},
       ID_TO_EL = {},
       ID_TO_LAST_TRANSFORM = {},
@@ -540,25 +540,27 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       this._keyHeld = keyCode;
       for (var id in DRAGGABLES) {
         draggable = DRAGGABLES[id];
-        if (draggable.isOn() && isDragAlongAxis(dir, draggable.axis))
+        if (draggable.isOn() && isDragAlongAxis(dir, draggable.axis)) {
           drag(draggable, this._dragged, isPage);
+          dragend(draggable, this._dragged, false); // smoother
+        }
       }
     },
     
     _onKeyUp: function(e) {
       var keyCode = U.getKeyEventCode(e);
       if (this._keyHeld && keyCode == this._keyHeld) {
-        var isPage = isPageKey(keyCode);
-        var draggable,
-            dir = this.getDragDirection(keyCode);
-        
-        for (var id in DRAGGABLES) {
-          draggable = DRAGGABLES[id];
-          if (draggable.isOn() && isDragAlongAxis(dir, draggable.axis)) {
-            if (!isPage || !draggable.isPaged())
-              dragend(draggable, this._dragged, !this._coast);
-          }
-        }
+//        var isPage = isPageKey(keyCode);
+//        var draggable,
+//            dir = this.getDragDirection(keyCode);
+//        
+//        for (var id in DRAGGABLES) {
+//          draggable = DRAGGABLES[id];
+//          if (draggable.isOn() && isDragAlongAxis(dir, draggable.axis)) {
+//            if (!isPage || !draggable.isPaged())
+//              dragend(draggable, this._dragged, !this._coast);
+//          }
+//        }
 
         this._coast = false;
         this._keyHeld = null;
@@ -620,8 +622,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         console.log("1. MOUSE WHEEL FAIL");
         return;
       }
-
-      console.log("MOUSE WHEEL");
+      
       var target = e.target,
           draggable,
           el,
@@ -662,7 +663,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       v = MouseWheelHandler._vector;
       v[0] = v[1] = 0;
 //      delta = getArrowDragMag() * Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
-      delta = normalizeWheelDelta(e);
+      delta = absCeil(normalizeWheelDelta(e), 3);
       v[axis == 'x' ? 0 : 1] = 0.1 * getWheelDragMag() * delta;
       drag(draggable, v);
 //      if (Math.abs(e.delta) < 1) {
@@ -748,6 +749,10 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     return v1;
   };
 
+  function absCeil(n, ceil) {
+    return (n < 0 ? -1 : 1) * Math.min(Math.abs(n), ceil);
+  };
+  
   function ceil(v, ceil) {
     for (var i = 0; i < v.length; i++) {
       var sign = v[i] < 0 ? -1 : 1,
