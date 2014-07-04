@@ -238,7 +238,7 @@ define('fileSystem', ['globals', 'utils'], function(G, U) {
   }
 
   var formats = ['DataURL', 'Blob', 'Text', 'ArrayBuffer', 'BinaryString', 'File'];
-  $.each(formats, function(idx, format) {
+  _.each(formats, function(format, idx) {
     // provide convenient handles, FileSystem.readFileAsDataURL, FileSystem.readFileAsText, etc.
     FileSystem['readAs' + format] = function(filePath, contentType) {
       var info = {
