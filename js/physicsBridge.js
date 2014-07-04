@@ -542,7 +542,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         draggable = DRAGGABLES[id];
         if (draggable.isOn() && isDragAlongAxis(dir, draggable.axis)) {
           drag(draggable, this._dragged, isPage);
-          dragend(draggable, this._dragged, false); // smoother
+          dragend(draggable, mult(this._dragged.slice(), 0.5), false); // smoother
         }
       }
     },
@@ -601,25 +601,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     return scrolling.finalDelta;
   };
   
-//  function normalizeWheelDelta(e) {
-//    var d = e.detail, 
-//        w = e.wheelDelta,
-//        n = 225, 
-//        n1 = n-1;
-//
-//    // Normalize delta
-//    d = d ? w && (f = w/d) ? d/f : -d/1.35 : w/120;
-//    // Quadratic scale if |d| > 1
-//    d = d < 1 ? d < -1 ? (-Math.pow(d, 2) - n1) / n : d : (Math.pow(d, 2) + n1) / n;
-//    // Delta *should* not be greater than 2...
-//    return Math.min(Math.max(d / 2, -1), 1);
-//  }
-  
   MouseWheelHandler = {
     _vector: [0, 0, 0],
     handleEvent: function(e) {
       if (!isScrollable(e.target)) {
-        console.log("1. MOUSE WHEEL FAIL");
+//        console.log("1. MOUSE WHEEL FAIL");
         return;
       }
       
@@ -655,7 +641,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       }
       
       if (!dragEl) {
-        console.debug("2. MOUSE WHEEL FAIL", e.target);
+//        console.debug("2. MOUSE WHEEL FAIL", e.target);
         return;
       }
       
