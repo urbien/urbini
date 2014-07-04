@@ -649,7 +649,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       v = MouseWheelHandler._vector;
       v[0] = v[1] = 0;
 //      delta = getArrowDragMag() * Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
-      delta = absCeil(normalizeWheelDelta(e), 3);
+      delta = -absCeil(normalizeWheelDelta(e), 3);
       v[axis == 'x' ? 0 : 1] = 0.1 * getWheelDragMag() * delta;
       drag(draggable, v);
 //      if (Math.abs(e.delta) < 1) {
