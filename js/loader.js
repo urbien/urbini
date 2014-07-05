@@ -911,7 +911,7 @@ define('globals', function() {
             }
 
             if (!fetch) {
-              return G.getCached(getFilePathInStorage(url), source).then(function(text) {                
+              return G.getCached(getFilePathInStorage(url), source).then(function(text) {
                 G.modules[url] = text;
               }).fail(function() {
                 pruned.push(url);
@@ -1607,7 +1607,7 @@ define('globals', function() {
             bundlePromises.push(bundle._deferred.promise());
         }
         else
-          missing.push(fullName);
+          missing.push(getFullName(module));
       }
       
       if (missing.length) {
@@ -1920,7 +1920,9 @@ define('globals', function() {
       var worker;
       if (G.useInlineWorkers) {
         var blob = new Blob([G.modules[relUrl]], { type: "text/javascript" });
-        worker = new Worker(window.URL.createObjectURL(blob));
+        var url = window.URL.createObjectURL(blob);
+        worker = new Worker(url);
+        window.URL.revokeObjectURL(url);
       }
       else {
         var xw = G.files[relUrl.slice(relUrl.lastIndexOf('/') + 1)];

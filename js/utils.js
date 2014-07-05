@@ -361,7 +361,7 @@ define('utils', [
         visible = prop._visible;
       else {
         // cache it
-        visible = prop._visible = !(prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.virtual || prop.parameter || prop.propertyGroupList || U.isSystemProp(prop));
+        visible = prop._visible = !(prop.avoidDisplaying || prop.avoidDisplayingInView || prop.avoidDisplayingInControlPanel || prop.virtual || prop.parameter || prop.propertyGroupList || U.isSystemProp(prop));
       }
       
       if (!visible)
@@ -4531,7 +4531,7 @@ define('utils', [
         if (numeric[1])
           return numeric[1];
         else 
-          return numeric[2];// == 'More' ? '>' : '<';
+          return numeric[2] == 'More' ? '>' : '<';
       }
       else if (type.endsWith('StringContainsRule'))
         return "CONTAINS";

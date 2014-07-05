@@ -538,11 +538,12 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       
       dir = this.getDragDirection(keyCode);
       this._keyHeld = keyCode;
+      var endV = isPage ? mult(vector, 2) : mult(vector.slice(), 0.5);
       for (var id in DRAGGABLES) {
         draggable = DRAGGABLES[id];
         if (draggable.isOn() && isDragAlongAxis(dir, draggable.axis)) {
-          drag(draggable, this._dragged, isPage);
-          dragend(draggable, mult(this._dragged.slice(), 0.5), false); // smoother
+          drag(draggable, vector, isPage);
+          dragend(draggable, endV, false); // smoother
         }
       }
     },
