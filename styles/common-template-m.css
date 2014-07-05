@@ -1518,3 +1518,11 @@ label.subClass {
 .centered {
   text-align: center;
 }
+.trades span {
+  font-size:2rem;font-weight:bold;color:#7AAAC3;
+
+}
+.tradleRules .rule1 {
+  font-size:1.5rem;
+  padding-bottom:1rem;
+}
