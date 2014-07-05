@@ -363,22 +363,28 @@ define('views/ControlPanel', [
           propDisplayName = U.getPropDisplayName(prop),
           canceledProp,
           isRule = U.isAssignableFrom(listVocModel, 'commerce/trading/Rule'),
+          isTrade = U.isAssignableFrom(listVocModel, 'commerce/trading/Order'),
           canAdd = !isRule && U.isPropEditable(this.resource, prop), // don't allow add other than by clicking individual indicators 
           linkToEdit = U.isAssignableFrom(listVocModel, G.commonTypes.WebProperty, 'commerce/trading/Notification'),
           action = linkToEdit ? 'edit' : 'view';
       
       if (isRule && !this.compareIndicatorsTemplate)
         this.makeTemplate('inlineCompareIndicatorsRuleTemplate', 'compareIndicatorsTemplate', listVocModel.type);
+      if (isTrade)
+        this.makeTemplate('inlineTradesTemplate', 'inlineTradesTemplate', listVocModel.type);
       
       if (list.length && isCancelable) {
         canceledProp = listMeta[U.getCloneOf(listVocModel, 'Cancellable.cancelled')[0]];
         isCancelable = canceledProp && U.isPropEditable(list.models[0], canceledProp);
       }
 
+      if (!list.length  &&  isTrade  &&  this.resource.inlineLists['tradleRules'].length == 0)
+        return;
       if (list.length || canAdd) {
         U.addToFrag(frag, this.propGroupsDividerTemplate({
           value: propDisplayName,
           add: canAdd,
+          style: prop.propertyStyle,
           shortName: (vocModel.shortName == 'Tradle' && name == 'indicators') ? 'feeds' : name
         }));
       }
@@ -409,6 +415,13 @@ define('views/ControlPanel', [
             
             template = this.compareIndicatorsTemplate;
 //          }
+        }
+        else if (isTrade) { 
+          template = this.inlineTradesTemplate;
+          
+          params.action = iRes.get('action');
+          params.securityName = iRes.get('security.davDisplayName');
+          
         }
         else if (U.isA(listVocModel, 'Intersection')) {
           var oH, oW, ab;
@@ -536,6 +549,11 @@ define('views/ControlPanel', [
         this.stopListening(iRes, 'change', this.update);
         this.listenTo(iRes, 'change', this.update);
       }
+      if (!isTrade || !canAdd) 
+        return;
+      this.makeTemplate('socialLinksTemplate', 'socialTemplate', listVocModel.type);
+      template = this.socialTemplate;
+      U.addToFrag(frag, template.call(this, {uri: iRes.get('triggeredBy')}));
     },
     
 //    addInlineList: function(list) {
@@ -1001,7 +1019,7 @@ define('views/ControlPanel', [
               continue;
             }
             if (!this.isMainGroup  &&  !groupNameDisplayed) {
-              U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
+              U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName, style: prop.propertyStyle}));
               groupNameDisplayed = true;
             }
             
@@ -1031,6 +1049,8 @@ define('views/ControlPanel', [
             tmpl_data.borderColor = isTradle ? "#000" : borderColor[colorIdx];
             tmpl_data.color = isTradle ? "rgba(64, 64, 64, 0.7);" : color[colorIdx];
             tmpl_data.chat = isChat;
+            if (prop.propertyStyle)
+              tmpl_data.style = prop.propertyStyle;
             var bl = prop.backLinkSortDescending;
             if (bl) {
               tmpl_data['$order'] = bl;
@@ -1166,6 +1186,8 @@ define('views/ControlPanel', [
             tmpl_data.comment = prop.comment;
             tmpl_data.name = n;
             tmpl_data.prop = prop;
+            if (prop.propertyStyle)
+              tmpl_data.style = prop.propertyStyle;
               
             var bl = prop.backLinkSortDescending;
             if (bl) {
