@@ -673,6 +673,9 @@ define('views/Header', [
     },
     
     refreshFolder: function() {
+      if (true)
+        return; // for now
+      
       if (!this.folder)
         return;
       
