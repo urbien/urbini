@@ -459,11 +459,15 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
   };
 
   IDB.prototype.start = function() {
-    if (this.isOpen() && !this.storesToMake.length && !this.storesToKill.length)
+    var upgradeNeeded = this.storesToMake.length || this.storesToKill.length;
+    if (this.isOpen() && !upgradeNeeded)
       return RESOLVED_PROMISE;
     else {
       var version = this.getVersion();
-      return this.restart(version && version + 1);
+      if (version && upgradeNeeded)
+        version++;
+      
+      return this.restart(version);
     }    
   };
 
@@ -518,11 +522,10 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
 
     this._openDfd = $.Deferred();
     this._openPromise = this._openDfd.promise();
-    
-    console.log("1. opening indexedDB");
+    log("1. opening indexedDB");
     this.$idb = $.indexedDB(this.name, settings);
     this.$idb.done(function onopen(db, event) {
-      console.log("opened indexedDB");
+      log("opened indexedDB");
       self.db = db;
       self.dbVersion = db.version;
       if (!self.storesToMake.length) { // first open is special
@@ -564,6 +567,27 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     return alreadyQueued || this._queueTask(name, restart.bind(this, version), true, false, true /* doesn't time out */);
   };
 
+  IDB.prototype.close = function() {
+    if (this.db) {
+      this.db.close();
+      delete this.db;
+    }
+
+    if (this._openDfd.state() == 'pending')
+      this._openDfd.reject();
+    
+    delete this._openDfd;
+    delete this._openPromise;
+//    this._resetOpenPromise();
+  };
+
+//  IDB.prototype._resetOpenPromise = function() {
+//    if (!this._openDfd || this._openDfd.state() != 'pending') {
+//      this._openDfd = $.Deferred();
+//      this._openPromise = this._openDfd.promise();
+//    }
+//  };
+  
   function get(storeName, primaryKey) {
     if (!this.hasStore(storeName))
       return REJECTED_PROMISE;
@@ -607,6 +631,22 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
 
   IDB.prototype.getAllKeys = function(storeName) {
     return this._queueTask('get all keys from store {0}'.format(storeName), getAllKeys.bind(this, storeName));    
+  };
+
+  function getAll(storeName) {
+    if (!this.hasStore(storeName))
+      return REJECTED_PROMISE;
+
+    var resultDfd = $.Deferred(),
+        transPromise = this.$idb.transaction([storeName], READ_ONLY).progress(function(trans) {
+          trans.objectStore(storeName).getAll().then(resultDfd.resolve, resultDfd.reject);
+        });
+    
+    return resultDfd.promise();
+  };
+
+  IDB.prototype.getAll = function(storeName) {
+    return this._queueTask('get all rows from store {0}'.format(storeName), getAll.bind(this, storeName));    
   };
 
   var queryRunMethods = ['getAll', 'getAllKeys'];
@@ -1046,6 +1086,31 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     return this._queueTask('saving items to object store {0}'.format(storeName), put.bind(this, storeName, items));
   };
 
+  /** 
+   * only update, don't insert
+   */
+  IDB.prototype.updateOnly = function(storeName, items) {
+    debugger;
+    var self = this;
+    items = _.isArray(items) ? items : [items];
+    return this.queryByIndex('_uri').oneof(_.pluck(items, '_uri')).getAll(storeName).then(function(results) {
+      debugger;
+      if (!results.length)
+        return;
+      
+      return results.map(function(result) {
+        var res = _.find(resources, function(r) {
+          return r._uri == result._uri;
+        });
+        
+        if (res)
+          return self.put(res);
+        else
+          return RESOLVED_PROMISE;
+      });
+    });
+  };
+
   function del(storeName, primaryKeys) {
     log('db', 'deleting items', primaryKeys.join(', '));
     return this.$idb.transaction([storeName], READ_WRITE).progress(function(trans) {
@@ -1055,6 +1120,10 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
           log('db', 'deleted', primaryKey);
         });
       });      
+    }).done(function() {
+      primaryKeys.forEach(function(key) {
+        Events.trigger('deleted', key);
+      });
     });
   }
 
@@ -1099,7 +1168,21 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
     var wrapper = wrap(this.$idb, 'objectStore', arguments);
     return this._queueTask('open object store {0}'.format(storeName), wrapper);
   };
-  
+    
+  Events.on('visibility:hidden', function() {
+    if (instance.isOpen()) {
+      log('closing due to page being hidden');
+      instance.close();
+    }
+  });
+
+  Events.on('visibility:visible', function() {
+    if (!instance.isOpen()) {
+      log('opening on page becoming visible');
+      instance.open(); // don't specify version as db may have been upgraded in another tab
+    }
+  });
+
 //  _.toTimedFunction(IDB.prototype, 'search');
 //  search = _.toTimedFunction(search);
 //  _parse = _.toTimedFunction(_parse);

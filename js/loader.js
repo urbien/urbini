@@ -775,6 +775,14 @@ define('globals', function() {
         return require(essential);
       });
     }).then(function(Events, App) {
+      Events.on('visibility:hidden', function() {
+        G._pageIsVisible = false;
+      });
+
+      Events.on('visibility:visible', function() {
+        G._pageIsVisible = true;
+      });
+
       Events.once('dbOpen', DB_OPEN_DFD.resolve);
       Events.once('appStart', APP_START_DFD.resolve);
       G.log(G.TAG, 'info', "Loaded pre-bundle: " + (new Date().getTime() - __started) + ' millis');
@@ -1248,6 +1256,10 @@ define('globals', function() {
 
   _.extend(G, {
     _widgetLibrary: G.currentApp.widgetLibrary || 'topcoat',
+    _pageIsVisible: true,
+    isVisible: function() {
+      return G._pageIsVisible;
+    },
     isJQM: function() {
       return G.getWidgetLibrary().toLowerCase() == 'jquery mobile';
     },

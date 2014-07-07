@@ -38,6 +38,31 @@ define('events', [
     }
   }, Backbone.Events);
 
+
+  (function(doc) {
+    //Set the name of the hidden property and the change event for visibility
+    var hidden, visibilityChange; 
+    if (typeof doc.hidden !== "undefined") { // Opera 12.10 and Firefox 18 and later support 
+      hidden = "hidden";
+      visibilityChange = "visibilitychange";
+    } else if (typeof doc.mozHidden !== "undefined") {
+      hidden = "mozHidden";
+      visibilityChange = "mozvisibilitychange";
+    } else if (typeof doc.msHidden !== "undefined") {
+      hidden = "msHidden";
+      visibilityChange = "msvisibilitychange";
+    } else if (typeof doc.webkitHidden !== "undefined") {
+      hidden = "webkitHidden";
+      visibilityChange = "webkitvisibilitychange";
+    } else {
+      return;
+    }
+  
+    doc.addEventListener(visibilityChange, function() {
+      Events.trigger('visibility:' + (doc[hidden] ? 'hidden' : 'visible'));
+    }, false);
+  })(document);
+
   G.Events = Events;
   return Events;
 });
