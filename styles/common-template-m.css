@@ -1518,3 +1518,40 @@ label.subClass {
 .centered {
   text-align: center;
 }
+
+.anim-overlay {
+  display: block;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  margin: 0; 
+  padding: 0; 
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #2e3b4e;
+  color: #7aaac3;
+  -webkit-transform: translateX(100%);
+     -moz-transform: translateX(100%);
+          transform: translateX(100%);
+
+  -webkit-transition: 0.3s ease;
+     -moz-transition: 0.3s ease;
+          transition: 0.3s ease;
+}
+
+.anim-overlay.anim-overlay-active {
+  -webkit-transform: translateX(0);
+     -moz-transform: translateX(0);
+          transform: translateX(0);
+}
+
+.anim-overlay i {
+  font-size: 40px;
+  padding: 0 20px; 
+}
+
+.anim-overlay .span_1_of_4, .anim-overlay .span_1_of_3, .anim-overlay .span_1_of_2, .anim-overlay .span_1_of_1 {
+  display:inline-block;
+  cursor:pointer;
+}
