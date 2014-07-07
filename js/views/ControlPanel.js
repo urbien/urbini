@@ -11,6 +11,19 @@ define('views/ControlPanel', [
   'lib/fastdom',
   'physicsBridge'
 ], function(G, _, Events, U, BasicView, Voc, ResourceList, C, Q, Physics) {
+  function getLi(el) {
+    return el.tagName == 'LI' ? el : el.$closest('li');
+  };
+
+  function getBacklinkSub(vocModel, bl) {
+    if (vocModel.shortName == 'Tradle' && bl == 'indicators')
+      return 'feeds';
+    
+    return bl;
+  };
+  
+  var CLICK_INDICATOR = 'Click one of your chosen indicators to create a rule for it';
+  
   return BasicView.extend({
     tagName: "tr",
     autoFinish: false,
@@ -44,31 +57,137 @@ define('views/ControlPanel', [
       'click #mainGroup a[data-shortName]': 'add',
       'click .add': 'add',
       'click [data-backlink]': 'clickInlined',
+      'swipeleft [data-backlink]': 'onswipeleft',
+      'swiperight [data-backlink]': 'onswiperight',
 //      'click a[data-shortName]': 'lookupFrom',
 //      'pinchout li[data-propname]': 'insertInlineScroller',
 //      'pinchin li[data-propname]': 'removeInlineScroller',
-      'hold li[data-propname]': 'toggleInlineScroller'
+      'hold li[data-propname]': 'toggleInlineScroller',
+      'click [data-action="cancel"]': 'actionCancel',
+      'click [data-action="add"]': 'actionAdd',
+      'click [data-action="edit"]': 'actionEdit',
+      'click [data-action="comment"]': 'actionComment'
 //        ,
 //      'click': 'click'
     },
     
+    myEvents: {
+      'inactive': 'delayedHideOverlays'
+    },
+    
+    delayedHideOverlays: function() {
+      var self = this;
+      setTimeout(function() {          
+        self.hideOverlays();
+      }, 100);
+    },
+
+    hideOverlays: function() {
+      this.$('.anim-overlay').$removeClass('anim-overlay-active');
+      this.redelegateEvents();
+    },
+    
+    onswiperight: function(e) {
+      this.hideOverlays();
+    },
+
+    onswipeleft: function(e) {
+      this.hideOverlays();
+      var li = getLi(e.currentTarget),
+          blProp = this.vocModel.properties[li.$data('backlink')],
+          vocModel = U.getModel(blProp.range),
+          uri = li.$data('uri'),
+          res = C.getResource(uri),
+          overlay = li.$('.anim-overlay')[0];
+      
+      if (!overlay) {
+        var actions = {
+          cancel: res.isA('Cancellable') && !res.get('Cancellable.cancelled'),
+          edit: !U.isAssignableFrom(vocModel, 'commerce/trading/Rule', 'commerce/trading/TradleIndicator'),
+          add: U.isPropEditable(res, blProp),
+          comment: res.isA('CollaborationPoint') || this.resource.isA('CollaborationPoint')
+        };
+        
+        if (!_.any(actions, function(v, k) { return v }))
+          return;
+        
+        if (!this.actionsOverlayTemplate)
+          this.makeTemplate('actionsOverlayTemplate', 'actionsOverlayTemplate', this.vocModel.type);
+        
+        overlay = this.actionsOverlayTemplate({
+          _uri: uri,
+          actions: actions
+        });
+        
+        li.$prepend(overlay);
+        overlay = li.$('.anim-overlay')[0];
+      }
+        
+      setTimeout(function() {  
+        overlay.$addClass('anim-overlay-active');
+      }, 1);
+      
+      this.redelegateEvents();
+    },
+    
+    actionCancel: function(e) {
+      this.cancel(e);
+    },
+
+    actionAdd: function(e) {
+      Events.stopEvent(e);
+      var li = getLi(e.target),
+          backlink = li.$data('backlink'),
+          isTradle = this.vocModel.shortName == 'Tradle';
+      
+      if (isTradle && backlink == 'tradleRules') {
+        U.alert(CLICK_INDICATOR);
+        return;
+      }
+      else {
+        var self = this;
+        this.addToBacklink(this.vocModel.properties[getBacklinkSub(this.vocModel, backlink)]);
+      }
+    },
+
+    actionEdit: function(e) {
+      Events.stopEvent(e);
+      this.hideOverlays();
+      debugger;
+    },
+
+    actionComment: function(e) {
+      Events.stopEvent(e);
+      var li = getLi(e.target),
+          res = C.getResource(li.$data('uri')),
+          vocModel;
+      
+      if (!res.isA('CollaborationPoint'))
+        res = this.resource;
+
+      vocModel = res.vocModel;
+      if (!res.isA('CollaborationPoint')) {
+        U.alert("Sorry, no comments allowed here!");
+        return;
+      }
+
+      this.addToBacklink(this.vocModel.properties[U.getCloneOf(vocModel, 'CollaborationPoint.comments')]);
+    },
+    
     cancel: function(e) {
       Events.stopEvent(e);
-      var el = e.currentTarget;
-      var uri = el.$data('uri');
+      var li = getLi(e.currentTarget);
+      if (!li) {
+        debugger;
+        return;
+      }
+      
+      var uri = li.$data('uri');
       var getRes;
       var res = C.getResource(uri);
       if (res)
         getRes = G.getResolvedPromise();
       else {
-        var li = el;
-        while (li && li.tagName != 'LI') {
-          li = li.parentElement;
-        }
-        
-        if (!li)
-          return;
-        
         getRes = Voc.getModels(this.vocModel.properties[li.$data('backlink')].range).done(function(listModel) {
           res = new listModel({
             _uri: uri
@@ -113,15 +232,17 @@ define('views/ControlPanel', [
       return this._cpTemplate(data);
     },
     
-    _addNoIntersection: function(target, prop) {
+    _addNoIntersection: function(prop, target) {
       var params = {
-        '$backLink': prop.backLink,
-        '-makeId': G.nextId(),
-        '$title': target.$data('title')
-      };
+          '$backLink': prop.backLink,
+          '-makeId': G.nextId()
+        },
+        title = target && target.$data('title');
 
-      params[prop.backLink] = this.resource.getUri();
+      if (title)
+        params.$title = title;
       
+      params[prop.backLink] = this.resource.getUri();
       if (U.isAssignableFrom(this.vocModel, 'commerce/trading/TradleFeed') && prop.range.endsWith('commerce/trading/Rule')) {
         _.extend(params, this.resource.pick('eventClass', 'eventClassRangeUri', 'feed', 'tradle', 'feed.displayName'));
       }
@@ -180,7 +301,7 @@ define('views/ControlPanel', [
       
       if (dataBL == 'tradleRules') {
         Events.stopEvent(e);
-//        U.alert("Click one of your indicators to create a rule with it");
+        U.alert(CLICK_INDICATOR);
         return;
       }
       
@@ -270,9 +391,12 @@ define('views/ControlPanel', [
 //      if ($(t).parents('.__dragged__').length)
 //        return;
       
-      var self = this,       
-          shortName = t.$data('shortname'),
-          prop = this.vocModel.properties[shortName],
+      var shortName = t.$data('shortname');
+      this.addToBacklink(this.vocModel.properties[shortName], t);
+    },
+    
+    addToBacklink: function(prop, t) {
+      var self = this,
           setLinkTo = prop.setLinkTo;
 //      ,
 //          count = U.getBacklinkCount(this.resource, shortName);
@@ -293,14 +417,14 @@ define('views/ControlPanel', [
       Voc.getModels(prop.range).done(function() {
         var pModel = U.getModel(prop.range);
         if (!U.isAssignableFrom(pModel, 'Intersection')) { 
-          self._addNoIntersection(t, prop);
+          self._addNoIntersection(prop, t);
           return;
         }
         
         var a = U.getCloneOf(pModel, 'Intersection.a')[0];
         var b = U.getCloneOf(pModel, 'Intersection.b')[0];
         if (!a  &&  !b) {
-          self._addNoIntersection(t, prop);
+          self._addNoIntersection(prop, t);
           return;
         }
         
@@ -315,12 +439,12 @@ define('views/ControlPanel', [
           title = U.makeHeaderTitle(self.resource.get('davDisplayName'), pModel.displayName);
         
         if (!aUri  &&  !bUri) {
-          self._addNoIntersection(t, prop);
+          self._addNoIntersection(prop, t);
           return;
         }
         
         if (!aUri && propA.readOnly || !bUri && propB.readOnly) {
-          self._addNoIntersection(t, prop);
+          self._addNoIntersection(prop, t);
           return;
         }
         
@@ -379,7 +503,7 @@ define('views/ControlPanel', [
         U.addToFrag(frag, this.propGroupsDividerTemplate({
           value: propDisplayName,
           add: canAdd,
-          shortName: (vocModel.shortName == 'Tradle' && name == 'indicators') ? 'feeds' : name
+          shortName: getBacklinkSub(vocModel, name)
         }));
       }
 

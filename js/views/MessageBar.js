@@ -25,9 +25,7 @@ define('views/MessageBar', [
     },
     
     checkMessageList: function(e) {
-      var $messageList = this.$('.messageList');
-      var messageList = $messageList[0];
-      if (messageList && messageList.children.length <= 1)
+      if (this.el.children.length <= 1)
         this.destroy();
     },
     
