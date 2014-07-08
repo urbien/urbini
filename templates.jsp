@@ -269,8 +269,8 @@
 <li style="text-align: center;background: aliceblue; border-top: 2px solid #7AAAC3; border-bottom: 2px solid #7aaac3; font-weight: bold;">
   <ul style="display: inline-block;margin: 0; border: none; height: 25px; padding-top: 5px;">
     <li style="float:left;font-size:2rem;" class="share" data-url="{{= uri }}">Share this Tradle</li>
-    <li style="float:left;font-size:2rem;" class="clone" data-url="{{= uri }}"><a style="color:#77ffae;" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Tradle', {basedOnTemplate: uri, '-makeId': G.nextId()}) }}">Copy</a></li>
-    <li style="float:left;font-size:2rem;" class="embed" data-url="{{= uri }}">Embed</li>
+    <li style="float:left;font-size:2rem;" class="clone" data-url="{{= uri }}"><a style="color:cornflowerblue;" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Tradle', {basedOnTemplate: uri, '-makeId': G.nextId()}) }}">Copy</a></li>
+    <li style="float:left;font-size:2rem;" class="embed" data-url="{{= uri }}"><a style="color:cornflowerblue;" href="{{= G.serverName }}/widget/embed.html?uri={{= encodeURIComponent(uri) }}">Embed</a></li>
     <li style="float:left;font-size:2rem;" class="email" data-url="{{= uri }}">Email</li>
   </ul>
 </li>
