@@ -77,7 +77,7 @@
 .ui-icon-cart:before {
   content: "\e04e";
 }
-.ui-icon-network-effect:before {
+.ui-icon-network-effect:before, .ui-icon-share:before {
   content: "\e05b";
 }
 .ui-icon-help:before {
