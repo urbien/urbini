@@ -316,6 +316,10 @@ define('views/ResourceView', [
           }
         }
       }
+      if (U.isAssignableFrom(this.vocModel, 'Tradle')  &&  this.resource.get('activated')) { 
+        this.makeTemplate('socialLinksTemplate', 'socialTemplate', this.vocModel.type);
+        U.addToFrag(frag, this.socialTemplate.call(this, {uri: this.resource.getUri()}));
+      }
       var displayedProps = {};
       var idx = 0;
       var groupNameDisplayed;

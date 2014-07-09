@@ -266,13 +266,10 @@
 
 <script type="text/template" id="socialLinksTemplate">
 <!-- Social Links -->
-<li style="text-align: center;background: aliceblue; border-top: 2px solid #7AAAC3; border-bottom: 2px solid #7aaac3; font-weight: bold;">
-  <ul style="display: inline-block;margin: 0; border: none; height: 25px; padding-top: 5px;">
-    <li style="float:left;font-size:2rem;" class="share" data-url="{{= uri }}">Share this Tradle</li>
-    <li style="float:left;font-size:2rem;" class="clone" data-url="{{= uri }}"><a style="color:cornflowerblue;" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Tradle', {basedOnTemplate: uri, '-makeId': G.nextId()}) }}">Copy</a></li>
-    <li style="float:left;font-size:2rem;" class="embed" data-url="{{= uri }}"><a style="color:cornflowerblue;" href="{{= G.serverName }}/widget/embed.html?uri={{= encodeURIComponent(uri) }}">Embed</a></li>
-    <li style="float:left;font-size:2rem;" class="email" data-url="{{= uri }}">Email</li>
-  </ul>
+<li class="socialLinks">
+  <div class="share" data-url="{{= uri }}"><i style="background:#3777a1;color:#fff;padding:.5rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-share"></i></div>
+  <div class="clone" data-url="{{= uri }}"><a style="color:#fff;border-radius:.8rem;margin:-.2rem;padding:.5rem 1.5rem;background:#3777a1;" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Tradle', {basedOnTemplate: uri, '-makeId': G.nextId()}) }}">Use it</a></div>
+  <div class="embed" data-url="{{= uri }}"><a style="background:#3777a1;color:#fff;padding:.5rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-embed" href="{{= G.serverName }}/widget/embed.html?uri={{= encodeURIComponent(uri) }}"></a></div>
 </li>
 </script>
 

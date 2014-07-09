@@ -380,6 +380,7 @@ define('views/ControlPanel', [
 
       if (!list.length  &&  isTrade  &&  this.resource.inlineLists['tradleRules'].length == 0)
         return;
+
       if (list.length || canAdd) {
         U.addToFrag(frag, this.propGroupsDividerTemplate({
           value: propDisplayName,
@@ -549,11 +550,6 @@ define('views/ControlPanel', [
         this.stopListening(iRes, 'change', this.update);
         this.listenTo(iRes, 'change', this.update);
       }
-      if (!isTrade || !canAdd) 
-        return;
-      this.makeTemplate('socialLinksTemplate', 'socialTemplate', listVocModel.type);
-      template = this.socialTemplate;
-      U.addToFrag(frag, template.call(this, {uri: iRes.get('triggeredBy')}));
     },
     
 //    addInlineList: function(list) {
