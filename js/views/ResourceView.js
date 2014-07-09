@@ -316,7 +316,8 @@ define('views/ResourceView', [
           }
         }
       }
-      if (U.isAssignableFrom(this.vocModel, 'Tradle')  &&  this.resource.get('activated')) { 
+      var hasSocialLinks = U.isAssignableFrom(this.vocModel, 'Tradle')  &&  this.resource.get('activated');
+      if (hasSocialLinks) { 
         this.makeTemplate('socialLinksTemplate', 'socialTemplate', this.vocModel.type);
         U.addToFrag(frag, this.socialTemplate.call(this, {uri: this.resource.getUri()}));
       }
@@ -440,6 +441,9 @@ define('views/ResourceView', [
   //    var j = {"props": json};
   //    this.$el.html(html);
       this.el.$html(frag);
+      if (hasSocialLinks) {
+        this.el.style.marginTop = '-6rem';
+      }
       /*
       if (G.isJQM()) {
         if (this.el.$hasClass('ui-listview')) {

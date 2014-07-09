@@ -163,7 +163,7 @@
   {{ } }}
 
   {{ if (obj.Cancelable && !Cancelable.canceled) { }}
-    <a style="width: auto; height: auto; padding: 0 1rem; position:absolute; right: 0;" href="#" data-uri="{{= resource.getUri() }}" data-cancel="true" class="vcenteredR">
+    <a style="width: auto; height: auto; padding: 0 1rem; position:absolute; right: 0;font-size:2rem;" href="#" data-uri="{{= resource.getUri() }}" data-cancel="true" class="vcenteredR">
       <i class="ui-icon-remove"></i>
     </a>
   {{ } }}
@@ -223,8 +223,8 @@
     </div>
   </div>
   {{ if (showCancel) { }}
-    <a style="width: 2%; height: 100%; position: absolute; top: 0; right: 0; " href="#" data-uri="{{= resource.getUri() }}" data-cancel="true">
-      <i class="vcenteredR ui-icon-remove" style="font-size: 2rem; position: absolute; color: #ddd;"></i>
+    <a style="width: 2%; height: 100%; position: absolute; top: 0; right: 10px; " href="#" data-uri="{{= resource.getUri() }}" data-cancel="true">
+      <i class="vcenteredR ui-icon-remove" style="font-size: 2rem; position: absolute;"></i>
     </a>
   {{ } }}
 </li>
@@ -257,7 +257,7 @@
   {{ } }}
 
   {{ if (obj.Cancelable && !Cancelable.canceled) { }}
-    <a style="width: auto; height: auto; padding: 0 1rem; position:absolute; right: 0;" href="#" data-uri="{{= resource.getUri() }}" data-cancel="true" class="vcentered">
+    <a style="width: auto; height: auto; padding: 0 1rem; position:absolute; right: 0;font-size:2rem;" href="#" data-uri="{{= resource.getUri() }}" data-cancel="true" class="vcentered">
       <i class="ui-icon-remove"></i>
     </a>
   {{ } }}
@@ -268,7 +268,7 @@
 <!-- Social Links -->
 <li class="socialLinks">
   <div class="share" data-url="{{= uri }}"><i style="background:#3777a1;color:#fff;padding:.5rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-share"></i></div>
-  <div class="clone" data-url="{{= uri }}"><a style="color:#fff;border-radius:.8rem;margin:-.2rem;padding:.5rem 1.5rem;background:#3777a1;" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Tradle', {basedOnTemplate: uri, '-makeId': G.nextId()}) }}">Use it</a></div>
+  <div class="clone" data-url="{{= uri }}"><a style="color:#fff;border-radius:.8rem;margin:-.2rem;padding:.5rem 1.5rem;white-space:nowrap;background:#3777a1;" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Tradle', {basedOnTemplate: uri, '-makeId': G.nextId()}) }}">Use it</a></div>
   <div class="embed" data-url="{{= uri }}"><a style="background:#3777a1;color:#fff;padding:.5rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-embed" href="{{= G.serverName }}/widget/embed.html?uri={{= encodeURIComponent(uri) }}"></a></div>
 </li>
 </script>
