@@ -1451,8 +1451,9 @@ section[id^="view"] {
 }
 
 .gauge {
-  width: 140px;
+  width: 100px;
   display: inline-block;
+  margin-top: -.5rem;
 }
 
 .gauge > * {
@@ -1460,7 +1461,7 @@ section[id^="view"] {
   width: 100%;
   color: white;
   text-align: center; 
-  font-size: 2rem; 
+  font-size: 1.5rem;
   font-weight: bold;
 }
 
