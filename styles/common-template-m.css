@@ -1519,10 +1519,16 @@ label.subClass {
   text-align: center;
 }
 .trades span {
-  font-size:2rem;font-weight:bold;color:#7AAAC3;
+  font-size:2rem;font-weight:bold;color:#3777a1;
 
 }
 .tradleRules .rule1 {
   font-size:1.5rem;
   padding-bottom:1rem;
+}
+.socialLinks {
+  text-align: center;background: aliceblue; font-weight: bold;min-height:3rem;
+}
+.socialLinks div {
+  display:inline-block;font-size:2rem;padding:1rem .5rem;
 }
