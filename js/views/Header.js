@@ -138,6 +138,14 @@ define('views/Header', [
       var buttons = this.buttons;
       if (!this.hash.startsWith('chat') && res && _.any(_.values(_.pick(commonTypes, 'App', 'Handler', 'Jst')), function(type) { return U.isAssignableFrom(res.vocModel, type); }))
         buttons.publish = true;
+//      else if (res  &&  U.isA(this.vocModel, 'Templatable')) {
+//        var cOf = U.getCloneOf(this.vocModel, 'Templatable.isTemplate');
+//        if (cOf.length  &&  res.get(cOf[0])) {
+//          var cOf = U.getCloneOf(this.vocModel, 'Templatable.clones');
+//          if (cOf.length) 
+//            buttons.publish = true;
+//        }
+//      }
       else if (vocModel && this.hash.startsWith('chooser')  &&  U.isAssignableFrom(this.vocModel, G.commonTypes.WebClass))
         buttons.publish = true;
       
@@ -263,7 +271,31 @@ define('views/Header', [
           pName = this.activatedProp.shortName,
           activated = !this.resource.get(pName);
 
-      
+      if (U.isAssignableFrom(this.vocModel, "commerce/trading/Tradle")) {
+        var msg;        
+        
+        var defaultTitle = "";
+        
+        if (G.currentUser.firstName)
+          defaultTitle += G.currentUser.firstName.substring(0, 1);
+        if (G.currentUser.lastName)
+          defaultTitle += G.currentUser.lastName.substring(0, 1);
+        
+        defaultTitle += "'s Tradle"; 
+        if (this.resource.get('title') == defaultTitle)
+          msg = 'Please give your Tradle a title';
+        else if (!this.resource.get('description'))
+          msg = 'Please give your Tradle a description';
+        
+        if (msg) {
+          Events.trigger('navigate', U.makeMobileUrl('edit', this.resource.getUri(), {
+            '-info': msg,
+            '$editCols': 'title,description'
+          }));
+          
+          return;
+        }
+      }
       if (!force && activated && U.isAssignableFrom(this.vocModel, "commerce/trading/Tradle")) {
         function undo() {
           e.currentTarget.checked = false;
@@ -823,20 +855,29 @@ define('views/Header', [
 //        }
       
         var user = G.currentUser._uri;
-        if (U.isAssignableFrom(this.vocModel, commonTypes.App)) {
+        var isApp = U.isAssignableFrom(this.vocModel, commonTypes.App);
+        if (isApp) {
           var appOwner = U.getLongUri1(res.get('creator') || user);
           var lastPublished = res.get('lastPublished');
           if ((user == appOwner || U.isUserInRole(U.getUserRole(), 'admin', res))  &&  (!lastPublished || (lastPublished  &&  res.get('lastModifiedWebClass') > lastPublished)))
             this.publish = true;
-          
+
           var noWebClasses = !res.get('lastModifiedWebClass')  &&  res.get('dashboard') != null  &&  res.get('dashboard').indexOf('http') == 0;
           var wasPublished = res.get('lastModifiedWebClass') < res.get('lastPublished');
           if (/*res.getUri()  != G.currentApp._uri  &&  */ (noWebClasses ||  wasPublished)) {
             if (res.get('_uri') != G.currentApp._uri)
               this.doTry = true;
             this.forkMe = true;
-          }          
-        }
+          }
+        }          
+//        else if (U.isA(this.vocModel, "Templatable")) {
+//          var cOf = U.getCloneOf(this.vocModel, 'Templatable.isTemplate');
+//          if (cOf.length  &&  res.get(cOf[0])) {
+//            var cOf = U.getCloneOf(this.vocModel, 'Templatable.clones');
+//            if (cOf.length) 
+//              this.forkMe = true;
+//          }
+//        }
 
         else if (!G.currentUser.guest) {
           if (U.isAssignableFrom(this.vocModel, commonTypes.Handler)) {
