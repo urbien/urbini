@@ -223,7 +223,7 @@
     </div>
   </div>
   {{ if (showCancel) { }}
-    <a style="width: 2%; height: 100%; position: absolute; top: 0; right: 0; padding: 0 0.5%;" href="#" data-uri="{{= resource.getUri() }}" data-cancel="true">
+    <a style="width: 2%; height: 100%; position: absolute; top: 0; right: 0; " href="#" data-uri="{{= resource.getUri() }}" data-cancel="true">
       <i class="vcenteredR ui-icon-remove" style="font-size: 2rem; position: absolute; color: #ddd;"></i>
     </a>
   {{ } }}
@@ -1246,7 +1246,7 @@
   {{= value }}
 {{= obj.style ? '</div>' : '' }}
   {{ if (obj.add) { }}
-    <a href="#" class="add cf lightText" style="cursor:pointer; position:absolute; right:5px;font-size:1.6rem;{{= obj.style ? 'top:2rem;' : '' }}" data-shortname="{{= shortName }}"><i class="ui-icon-plus"></i></a>
+    <a href="#" class="add cf lightText" style="cursor:pointer; position:absolute; right:10px;color:red;font-weight:bold;font-size:2rem;{{= obj.style ? 'top:2rem;' : '' }}" data-shortname="{{= shortName }}"><i class="ui-icon-plus"></i></a>
   {{ }              }}
 </header>
 </script>
