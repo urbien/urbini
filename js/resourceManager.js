@@ -225,20 +225,45 @@ define('resourceManager', [
           REF_STORE = G.getRefStoreInfo();
       
       G.log(RM.TAG, 'db', 'deleting item', uri);
-      while (i--) {
-        type = types[i];
-        if (IDB.hasStore(type))
-          IDB['delete'](type, uri);
-      }
-      
-      IDB.queryByIndex('_uri').eq(uri).getAll(REF_STORE.name).done(function(results) {
-        if (results && results.length)
-          IDB['delete'](REF_STORE.name, _.pluck(results, REF_STORE.options.keyPath));
-      });            
+      return IDB._queueTask({
+        name: 'delete from all stores: ' + uri,
+        task: function() {
+          var inRef,
+              dfd = $.Deferred(),
+              stores = types.filter(IDB.hasStore.bind(IDB));
+          
+          IDB.queryByIndex('_uri').eq(uri).getAll(REF_STORE.name).done(function(results) {
+            if (results && results.length)
+              inRef = _.pluck(results, REF_STORE.options.keyPath);
+//              IDB['delete'](REF_STORE.name, );
+          }).always(function() {
+            IDB.$idb.transaction(stores.concat(REF_STORE.name), 1).progress(function(trans) {
+              var i = stores.length;
+              while (i--) {
+                trans.objectStore(stores[i])['delete'](uri);
+              }
+              
+              if (!inRef)
+                return;
+              
+              i = inRef.length;
+              refStore = trans.objectStore(REF_STORE.name);
+              while (i--) {
+                refStore['delete'](inRef[i]);
+              }              
+            }).done(dfd.resolve).fail(function() {
+              debugger;
+              dfd.reject();
+            });
+          });
+          
+          return dfd.promise();
+        }
+      });
     },
 
-    deleteItem: function(item) {
-      RM.deleteUri(item.get('_uri'), item.vocModel);
+    deleteItem: function(item, vocModel) {
+      return RM.deleteUri(typeof item == 'string' ? item : item.get('_uri'), vocModel || item.vocModel);
     },
     
     getItem: function(type, uri) {
@@ -437,20 +462,31 @@ define('resourceManager', [
     });
   });
   
-  Events.on('delete', function(res) {
-    RM.deleteItem(res);
+  Events.on('delete', function() {
+    RM.deleteItem.apply(RM, arguments);
   });
 
-  Events.on('findAndDelete', function(uris) {
+  Events.on('findAndDelete', function(uris, cb) {
     debugger;
     uris = typeof uris == 'string' ? [uris] : uris;
     var modelTypes = _.uniq(uris.map(U.getTypeUri));
+    var promises = [];
     Voc.getModels(modelTypes).done(function() {
       uris.forEach(function(uri) {
         var model = U.getModel(U.getTypeUri(uri));
         if (model)
-          RM.deleteUri(uri, model);
+          promises.push(RM.deleteUri(uri, model));
       });      
+    });
+    
+    if (!cb)
+      return;
+      
+    $.when.apply(promises).done(function() {
+      if (typeof cb.promise == 'function')
+        cb.resolve();
+      else
+        cb();
     });
   });
 
@@ -545,7 +581,9 @@ define('resourceManager', [
 //  });
 
   Events.on('createObjectStores', function(stores, cb) {
-    RM.upgrade(stores).done(cb);
+    RM.upgrade(stores).done(function() {
+      cb && cb();
+    });
   });
   
   /**

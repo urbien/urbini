@@ -2092,7 +2092,14 @@
       return true;
     },
     
-    now: window.performance ? window.performance.now.bind(window.performance) : Date.now.bind(Date)
+    now: window.performance ? window.performance.now.bind(window.performance) : Date.now.bind(Date),
+    
+    copyInto: function(to, from /*props list*/) {
+      for (var i = 2, l = arguments.length; i < l; i++) {
+        var p = arguments[i];
+        to[p] = from[p];
+      }
+    }
   });
               
   // AMD define happens at the end for compatibility with AMD loaders

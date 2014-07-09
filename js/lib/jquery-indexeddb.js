@@ -185,7 +185,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 					
 					result._getAll = function(range, direction, keysOnly) {
 					  var now = _.now();
-					  console.log("Start getAll: " + now);
+					  log("Start getAll: " + now);
             return $.Deferred(function(dfd) {
               var results = [];
               var callback = keysOnly ? function(result) {
@@ -203,10 +203,10 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
                   return idbObjectStore[op](wrap.range(range));
                 }
               }, callback).done(function() {
-                console.log("End getAll (success): " + now);
+                log("End getAll (success): " + now);
                 dfd.resolve(results);
               }).fail(function() {
-                console.log("End getAll (fail): " + now);
+                log("End getAll (fail): " + now);
                 dfd.rejectWith(this, arguments);
               });
               
@@ -423,21 +423,21 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
 				//console.log("Trying to open DB with", version);
 //				return version ? openReqShim(dbName, version) : openReqShim(dbName);
 			    if (version) {
-			      console.log("2. opening indexedDB with version " + version);
+			      log("2. opening indexedDB with version " + version);
 			      return indexedDB.open(dbName, parseInt(version));
 			    }
 			    else { 
-            console.log("2. opening indexedDB without version");
+            log("2. opening indexedDB without version");
 			      return indexedDB.open(dbName);
 			    }
         });
 			});
       dbPromise.then(function(db, e) {
         
-        console.log("3. opening indexedDB");
+        log("3. opening indexedDB");
         db.onversionchange = function() {
           // Try to automatically close the database if there is a version change request
-          console.log("4. opening indexedDB: onversionchange");
+          log("4. opening indexedDB: onversionchange");
           if (!(config && config.onversionchange && config.onversionchange() !== false)) {
             db.close();
           }
@@ -448,16 +448,16 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
       }, function(db, e) {
         console.log("5. opening indexedDB");
         if (e && e.type === "upgradeneeded") {
-          console.log("6. opening indexedDB: upgradeneeded");
+          log("6. opening indexedDB: upgradeneeded");
           if (config && config.schema) {
             // Assuming that version is always an integer 
-						console.log("Upgrading DB to ", db.version);
+						log("Upgrading DB to ", db.version);
             for (var i = e.oldVersion + 1; i <= e.newVersion; i++) {
               typeof config.schema[i] === "function" && config.schema[i].call(this, wrap.transaction(this.transaction));
             }
           }
           if (config && typeof config.upgrade === "function") {
-            console.log("7. opening indexedDB: upgrading");
+            log("7. opening indexedDB: upgrading");
             config.upgrade.call(this, wrap.transaction(this.transaction));
           }
         }
@@ -510,7 +510,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
                   dfd.resolveWith(idbTransaction, [e]);
                 };
               } catch (err) {
-								console.log("Creating a transaction failed", err, storeNames, mode, this);
+								log("Creating a transaction failed", err, storeNames, mode, this);
                 err.type = "exception";
                 dfd.rejectWith(this, [err]);
                 return;
@@ -601,7 +601,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
                   });
                 } else {
 								  debugger;
-									console.log("Error in transaction inside object store", err);
+									log("Error in transaction inside object store", err);
                   dfd.rejectWith(this, [err, e]);
                 }
               }, function(trans) {

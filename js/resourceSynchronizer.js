@@ -29,6 +29,12 @@ define('resourceSynchronizer', [
     return G.currentServerTime();
   }
 
+  function stripRefItem(ref) {
+    var stripped = _.omit(ref, REF_STORE_PROPS);
+    stripped._uri = ref._uri;
+    return stripped;
+  }
+  
   ////////////// SYNCHRONIZER /////////////////
   
   function ResourceSynchronizer(data) {
@@ -157,8 +163,38 @@ define('resourceSynchronizer', [
 //        item.set({'_uri': tempUri});
 //      }
 //    var IDB = IndexedDBModule.getIDB();
+    var IDB = IndexedDBModule.getIDB(),
+        $idb = IDB.$idb,
+        stores = [REF_STORE.name],
+        andTypeStore = IDB.hasStore(type);
+        
+    if (andTypeStore)
+      stores.push(type);
+      
     itemRef._dirty = 1;
     itemRef._problematic = 0;
+    
+    IDB._queueTask({
+      name: 'saving user changes', 
+      task: function() {
+        // to ensure atomicity
+        return $idb.transaction(stores, 1).progress(function(trans) {
+          if (andTypeStore)
+            trans.objectStore(type).put(stripRefItem(itemRef));
+          
+          trans.objectStore(REF_STORE.name).put(itemRef);
+        })
+      }
+    }).done(function() {
+      dfd.resolve();
+      syncWithServer(100);
+    }).fail(function() {
+      debugger;
+      dfd.reject();
+    });
+    
+//    itemRef._dirty = 1;
+//    itemRef._problematic = 0;
 //    return $.whenAll(
 //      IDB.put(REF_STORE.name, itemRef), 
 //      Synchronizer.addItems(type, [item])
@@ -168,20 +204,21 @@ define('resourceSynchronizer', [
 //    }, function() {
 //      debugger;
 //    });
-    put(REF_STORE.name, itemRef).done(function() {
-      console.log("4. SAVE ITEM");
-      Synchronizer.addItems(type, [item]).done(function() {
-        console.log("5. SAVE ITEM");
-        dfd.resolve();
-        syncWithServer();
-      }).fail(function() {
-        debugger;
-        dfd.reject();
-      });
-    }).fail(function() {
-      debugger;
-      dfd.reject();
-    });
+//    
+//    put(REF_STORE.name, itemRef).done(function() {
+//      console.log("4. SAVE ITEM");
+//      Synchronizer.addItems(type, [item]).done(function() {
+//        console.log("5. SAVE ITEM");
+//        dfd.resolve();
+//        syncWithServer();
+//      }).fail(function() {
+//        debugger;
+//        dfd.reject();
+//      });
+//    }).fail(function() {
+//      debugger;
+//      dfd.reject();
+//    });
     
     return dfd.promise();
   };
@@ -343,13 +380,14 @@ define('resourceSynchronizer', [
         props = vocModel.properties;
 
     if (!IDB.hasStore(type)) {
-      Voc.getModels(type);
-//      Events.trigger('modelsChanged', type);
-//      if (vocModel.superClasses.length)
-//        type = vocModel.superClasses[0];
-//      
-//      if (!IDB.hasStore(type))
-        return REJECTED_PROMISE;
+      // TODO figure out why it doesn't exist, queue create store
+//      return IDB.createObjectStore(type).start();
+      return Voc.getModels(type).done(function() {
+        Events.trigger('createObjectStores', [type]);
+      });
+      
+//      dfd.done(syncResource.bind(ref, refs));
+//      return dfd.promise();
     }
     
     if (!U.isTempUri(uri) && _.isEmpty(_.omit(ref, REF_STORE_PROPS))) {
@@ -406,18 +444,33 @@ define('resourceSynchronizer', [
       promise = RESOLVED_PROMISE;
       
     return promise.then(function() {
-      var after = !_.isEmpty(tempUriRefs) ? REJECTED_PROMISE : RESOLVED_PROMISE;
+      var after = (!_.isEmpty(tempUriRefs) ? G.getRejectedPromise : G.getResolvedPromise).bind(G);
       if (updated) {
-        return put(REF_STORE.name, ref).then(function() {
-          return IDB.get(type, uri);
-        }).then(function(item) {
-          return put(type, _.extend(item, ref));
-        }).then(function() {
-          return after;
-        });
+        function update(item) {
+          var stores = [REF_STORE.name];
+          if (item)
+            stores.push(type);
+            
+          return IDB.$idb.transaction(stores, 1).progress(function(trans) {
+            if (item)
+              trans.objectStore(type).put(_.extend(item, stripRefItem(ref)));
+            
+            trans.objectStore(REF_STORE.name).put(ref);
+          }).then(after, after);
+        };
+        
+        return IDB.get(type, uri).then(update, update);
+//        
+//        return put(REF_STORE.name, ref).then(function() {
+//          return IDB.get(type, uri);
+//        }).then(function(item) {
+//          return put(type, _.extend(item, ref));
+//        }).then(function() {
+//          return after;
+//        });
       }
       else
-        return after;
+        return after();
     }).then(function() {
       var resource = C.getResource(uri) || new vocModel(ref),
           info = {
@@ -447,31 +500,38 @@ define('resourceSynchronizer', [
   }
   
   function syncResources(refs) {
-    syncQueue = syncQueue || new TaskQueue('syncing some refs');
+//    syncQueue = syncQueue || new TaskQueue('syncing some refs');
     refs = refs.filter(function(ref) { return ref._dirty });
-    var i = 0,
-        ref,
-        queueNext = function() {
-          ref = refs[i++];
-          var promise = syncQueue.queueTask('sync ref: ' + ref._uri, function() {
-            return syncResource(ref, refs);
-          }, null, null, true);
-          
-          return i < refs.length ? promise.then(queueNext) : promise;
-        };
+//    var i = 0,
+//        ref,
+//        queueNext = function() {
+//          ref = refs[i++];
+//          if (!ref)
+//            return RESOLVED_PROMISE;
+//          
+//          var promise = syncQueue.queueTask({
+//            name: 'sync ref: ' + ref._uri,
+//            timeout: false,
+//            task: function() {
+//              return syncResource(ref, refs);
+//            }
+//          });
+//          
+//          return i < refs.length ? promise.then(queueNext) : promise;
+//        };
+//    
+//        
+//    return queueNext();
     
-        
-    return queueNext();
-    
-//    return $.whenAll.apply($, _.map(refs, function(ref) {
-//      if (ref._dirty) {
-//        return syncQueue.queueTask('sync ref: ' + ref._uri, function() {
-//          return syncResource(ref, refs);
-//        }, null, null, true); // prevent timeout
-//      }          
-//      else
-//        return RESOLVED_PROMISE;
-//    }));
+    return $.whenAll.apply($, _.map(refs, function(ref) {
+      return IndexedDBModule.getIDB()._queueTask({
+        name: 'sync ref: ' + ref._uri,
+//        timeout: false,
+        task: function() {
+          return syncResource(ref, refs);
+        }
+      });
+    }));
   }
 
   function saveToServer(updateInfo) {
@@ -523,8 +583,10 @@ define('resourceSynchronizer', [
           _dirty: 0, 
           _id: ref._id
         };
+
+        if (!tempUri && oldUri != newUri)
+          tempUri = oldUri;
         
-        tempUri = tempUri || (oldUri !== newUri && oldUri);
         if (tempUri)
           ref._tempUri = tempUri;
         
@@ -540,24 +602,71 @@ define('resourceSynchronizer', [
           }
         }
 
-        $.whenAll(IDB.put(type, data), IDB.put(REF_STORE.name, ref)).then(function() {          
-          if (newUri !== oldUri) {
-            data._oldUri = oldUri;
-            return IDB['delete'](type, oldUri);
+        dfd.resolve(ref);
+        var $idb = IDB.$idb;
+        IDB._queueTask({
+          name: 'update after sync', 
+          task: function() {
+            // to ensure atomicity
+            return $idb.transaction([type, REF_STORE.name], 1).progress(function(trans) {
+              var typeStore = trans.objectStore(type),
+                  refStore = trans.objectStore(REF_STORE.name);
+              
+              typeStore.put(data);
+              if (tempUri) {
+                data._oldUri = tempUri;
+                typeStore['delete'](tempUri);
+              }
+              
+              refStore.put(ref);
+              if (!tempUri)
+                return;
+              
+              refStore.each(function(item) {
+                var val = item.value;
+                if (!val._dirty)
+                  return;
+                
+                for (var p in val) {
+                  if (/^_/.test(p))
+                    continue;
+                  
+                  if (val[p] == tempUri) {
+                    val[p] = newUri;
+                    item.update(val);
+                  }
+                }
+              });
+            });
           }
-        }).then(function() {
-          dfd.resolve(ref);
-        }, dfd.reject);
+        }).done(function() {
+          debugger;
+        }).fail(function() {
+          debugger;
+          dfd.reject();
+        });
+        
+//        $.whenAll(IDB.put(type, data), IDB.put(REF_STORE.name, ref)).then(function() {          
+//          if (newUri !== oldUri) {
+//            data._oldUri = oldUri;
+//            return IDB['delete'](type, oldUri);
+//          }
+//        }).then(function() {
+//          dfd.resolve(ref);
+//        }, dfd.reject);
       },
       error: function(model, xhr, options) {
         var code = xhr.status || xhr.code; 
         if (code < 200) { // timeout probably
           resource.clearErrors();
+          dfd.resolve();
           return syncWithServer();
         }
         
         // for now
+        console.debug("1. DELETING ITEM ON ERROR: ", xhr.responseJson);
         resource['delete']();
+        dfd.resolve();
         
 //        var problem = U.getJSON(xhr.responseText);
 //        if (problem)

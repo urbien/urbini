@@ -6,6 +6,7 @@ var ArrayProto = Array.prototype,
 //    JUST_HIDDEN = [],
     world,
     integrator,
+    TRANSFERRABLES_SUPPORTED = true,
     NUMBER_UNITS = ['px', 'em', '%'],
     CONSTANTS,
     LAST_STEP_TIME,
@@ -1073,8 +1074,20 @@ function render() {
 //      topic: 'render',
 //      bodies: styles
 //    });
-    postMessage(msg, BUFFERS);
-    if (BUFFERS[0].byteLength) {
+    if (TRANSFERRABLES_SUPPORTED) {
+      try {
+        postMessage(msg, BUFFERS);
+      } catch (err) {
+        TRANSFERRABLES_SUPPORTED = false;
+      }
+    }
+    
+    if (!TRANSFERRABLES_SUPPORTED)
+      postMessage(msg);
+    
+    if (TRANSFERRABLES_SUPPORTED && BUFFERS[0].byteLength) {
+      TRANSFERRABLES_SUPPORTED = false;
+      log("TRANSFERABLES NOT SUPPORTED");
       debugger; // transferables not supported
     }
     

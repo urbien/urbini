@@ -779,11 +779,14 @@ var cleanInterface = false;
     
     IDBIndex.prototype.__createIndex = function(indexName, keyPath, optionalParameters){
 //      console.debug("createIndex", arguments);
-        var me = this;
-        var transaction = me.__idbObjectStore.transaction;
-      transaction.tq.queueTask("create index " + indexName, function() {
-        var defer = this;
-        transaction.db.__db.transaction(function(tx){
+      var me = this;
+      var transaction = me.__idbObjectStore.transaction;
+      transaction.tq.queueTask({
+        name: "create index " + indexName,
+        priority: 100,
+        task: function() {
+          var defer = this;
+          transaction.db.__db.transaction(function(tx){
             me.__idbObjectStore.__getStoreProps(tx, function(){
                 function error(){
                     idbModules.util.throwDOMException(0, "Could not create new index", arguments);
@@ -836,8 +839,9 @@ var cleanInterface = false;
                     }, error);
                 }, error);
             }, "createObjectStore");
-        });
-      }, false, 100);
+          });
+        }
+      });
     };
     
     IDBIndex.prototype.openCursor = function(range, direction){
@@ -1424,32 +1428,36 @@ var cleanInterface = false;
         var result = new idbModules.IDBObjectStore(storeName, me.__versionTransaction, false);
         
         var transaction = me.__versionTransaction;
-      transaction.tq.queueTask("create object store " + storeName, function() {
-        var defer = this;
-        transaction.__addToTransactionQueue(function(tx, args, success, failure){
-//        transaction.db.__db.transaction(function(tx){
-            function error(){
-                defer.reject();
-                idbModules.util.throwDOMException(0, "Could not create new object store", arguments);
-            }
-            
-            if (!me.__versionTransaction) {
-                defer.reject();
-                idbModules.util.throwDOMException(0, "Invalid State error", me.transaction);
-            }
-            //key INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE
-            var sql = ["CREATE TABLE", idbModules.util.quote(storeName), "(key BLOB", createOptions.autoIncrement ? ", inc INTEGER PRIMARY KEY AUTOINCREMENT" : "PRIMARY KEY", ", value BLOB)"].join(" ");
-            idbModules.DEBUG && console.log(sql);
-            tx.executeSql(sql, [], function(tx, data){
-                tx.executeSql("INSERT INTO __sys__ VALUES (?,?,?,?)", [storeName, createOptions.keyPath, createOptions.autoIncrement ? true : false, "{}"], function(){
-//                  console.debug("finished createObjectStore", storeName, arguments);
-                    result.__setReadyState("createObjectStore", true);
-                    success(result);
-                    defer.resolve(result);
-                }, error);
-            }, error);
-        });
-        }, false, 100);
+      transaction.tq.queueTask({
+        name: "create object store " + storeName,
+        priority: 100,
+        task: function() {
+          var defer = this;
+          transaction.__addToTransactionQueue(function(tx, args, success, failure){
+  //        transaction.db.__db.transaction(function(tx){
+              function error(){
+                  defer.reject();
+                  idbModules.util.throwDOMException(0, "Could not create new object store", arguments);
+              }
+              
+              if (!me.__versionTransaction) {
+                  defer.reject();
+                  idbModules.util.throwDOMException(0, "Invalid State error", me.transaction);
+              }
+              //key INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE
+              var sql = ["CREATE TABLE", idbModules.util.quote(storeName), "(key BLOB", createOptions.autoIncrement ? ", inc INTEGER PRIMARY KEY AUTOINCREMENT" : "PRIMARY KEY", ", value BLOB)"].join(" ");
+              idbModules.DEBUG && console.log(sql);
+              tx.executeSql(sql, [], function(tx, data){
+                  tx.executeSql("INSERT INTO __sys__ VALUES (?,?,?,?)", [storeName, createOptions.keyPath, createOptions.autoIncrement ? true : false, "{}"], function(){
+  //                  console.debug("finished createObjectStore", storeName, arguments);
+                      result.__setReadyState("createObjectStore", true);
+                      success(result);
+                      defer.resolve(result);
+                  }, error);
+              }, error);
+          });
+        }
+      });
         
         // The IndexedDB Specification needs us to return an Object Store immediatly, but WebSQL does not create and return the store immediatly
         // Hence, this can technically be unusable, and we hack around it, by setting the ready value to false
@@ -1461,32 +1469,36 @@ var cleanInterface = false;
       debugger;
       var me = this;
       var transaction = me.__versionTransaction;
-      transaction.tq.queueTask("delete object store " + storeName, function() {
-        var defer = this;
-//        return $.Deferred(function (defer) {
-        var error = function(){
-          defer.reject();
-            idbModules.util.throwDOMException(0, "Could not delete ObjectStore", arguments);
-        };
-        !me.objectStoreNames.contains(storeName) && error("Object Store does not exist");
-        me.objectStoreNames.splice(me.objectStoreNames.indexOf(storeName), 1);
-        
-        var transaction = me.__versionTransaction;
-        transaction.__addToTransactionQueue(function(tx, args, success, failure){
-            if (!me.__versionTransaction) {
-                idbModules.util.throwDOMException(0, "Invalid State error", me.transaction);
-            }
-            me.__db.transaction(function(tx){
-                tx.executeSql("SELECT * FROM __sys__ where name = ?", [storeName], function(tx, data){
-                    if (data.rows.length > 0) {
-                        tx.executeSql("DROP TABLE " + idbModules.util.quote(storeName), [], function(){
-                            tx.executeSql("DELETE FROM __sys__ WHERE name = ?", [storeName], defer.resolve, error);
-                        }, error);
-                    }
-                });
-            });
-        });
-      }, false, 100);
+      transaction.tq.queueTask({
+        name: "delete object store " + storeName,
+        priority: 100,
+        task: function() {
+          var defer = this;
+  //        return $.Deferred(function (defer) {
+          var error = function(){
+            defer.reject();
+              idbModules.util.throwDOMException(0, "Could not delete ObjectStore", arguments);
+          };
+          !me.objectStoreNames.contains(storeName) && error("Object Store does not exist");
+          me.objectStoreNames.splice(me.objectStoreNames.indexOf(storeName), 1);
+          
+          var transaction = me.__versionTransaction;
+          transaction.__addToTransactionQueue(function(tx, args, success, failure){
+              if (!me.__versionTransaction) {
+                  idbModules.util.throwDOMException(0, "Invalid State error", me.transaction);
+              }
+              me.__db.transaction(function(tx){
+                  tx.executeSql("SELECT * FROM __sys__ where name = ?", [storeName], function(tx, data){
+                      if (data.rows.length > 0) {
+                          tx.executeSql("DROP TABLE " + idbModules.util.quote(storeName), [], function(){
+                              tx.executeSql("DELETE FROM __sys__ WHERE name = ?", [storeName], defer.resolve, error);
+                          }, error);
+                      }
+                  });
+              });
+          });
+        }
+      });
     };
     
     IDBDatabase.prototype.close = function(){
@@ -1580,11 +1592,16 @@ var cleanInterface = false;
 //                                        trans.tq = new TaskQueue("IDBShim upgrade to " + version);
                                         trans.tq = taskQueue;
                                         idbModules.util.callback("onupgradeneeded", req, e, function(){
-                                          trans.tq.queueTask("Complete upgrade transaction", function() {
-                                            var e = idbModules.Event("success");
-                                            idbModules.util.callback("onsuccess", req, e);
-                                            this.resolve();
-                                          }, true, 10);
+                                          trans.tq.queueTask({
+                                            name: "Complete upgrade transaction",
+                                            blocking: true,
+                                            priority: 10,
+                                            task: function() {
+                                              var e = idbModules.Event("success");
+                                              idbModules.util.callback("onsuccess", req, e);
+                                              this.resolve();
+                                            }
+                                          });
                                         });
                                     }, dbCreateError);
                                 }, dbCreateError);

@@ -123,7 +123,11 @@ define('models/Resource', [
       if (options.silent || options.partOfUpdate)
         return;
       
-      Events.trigger('newResource:' + this.type, this);
+      var self = this;
+      U.getTypes(this.vocModel).forEach(function(type) {
+        Events.trigger('newResource:' + type, self);
+      });
+      
       Events.trigger('newResource', this);
     },
     
@@ -331,9 +335,9 @@ define('models/Resource', [
           }
         }
         
-        if (self.vocModel.deleteOnCancel) {
-          self['delete']();
-        }
+//        if (self.vocModel.deleteOnCancel) {
+//          self['delete']();
+//        }
       };
       
       var error = options.error;
@@ -348,17 +352,17 @@ define('models/Resource', [
     remove: function() {
       this.collection && this.collection.remove(this);
     },
-    'delete': function() {
+    'delete': function(options) {
       var preventDelete = false;
       Events.on('preventDelete', function() {
         preventDelete = true;
       });
       
-      Events.trigger('delete', this);
+      Events.trigger('delete', this, options);
       if (preventDelete)
         return;
       
-      this.trigger('delete', this);
+      this.trigger('delete', this, options);
       this.remove();
     },
     getUrl: function() {
@@ -700,8 +704,12 @@ define('models/Resource', [
         if (!val)
           continue;
         
-        if (shortName == '_uri' && uri && val && val !== uri)
-          uriChanged = true;
+        if (shortName == '_uri') {
+          if (uri && val && val !== uri)
+            uriChanged = true;
+          else
+            continue;
+        }
         
         var prop = meta[shortName];
         if (!prop)

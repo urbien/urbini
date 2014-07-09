@@ -95,6 +95,11 @@ define('collections/ResourceList', [
 
       if (!this['final']) {
         var self = this;
+//        this.listenTo(Events, 'delete', function(r) {
+//          if (self.remove(r))
+//            log("Removed element from list: ", r.getUri(), self.getUrl());
+//        });
+        
         this.listenTo(Events, 'newResource:' + this.type, function(resource, fromList) {
           // we are adding this resource to this collection at the moment
           if (self == fromList)
@@ -465,10 +470,16 @@ define('collections/ResourceList', [
         }
         else if (!/^-/.test(name)) {
           modelParams[name] = val;
-          if (!/^\$/.test(name)) {
+          if (/^[a-zA-Z_]+/.test(name)) {
             prop = meta[name];
-            if (prop && val && U.isResourceProp(prop) && !/^http|sql/.test(val)) // ignore non-uri values for resource-ranged props
-              continue;
+            if (prop && val !== undefined) {
+              if (U.isResourceProp(prop) && !/^http|sql/.test(val)) { // ignore non-uri values for resource-ranged props
+                continue;
+              }
+              else if (prop.range != 'string' && /^<>!/.test(val)) { // ignore inequalities
+                continue;
+              }
+            }
             
             if (U.isTempUri(val)) {
               this._tempParams = this._tempParams || {};

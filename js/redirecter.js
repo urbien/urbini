@@ -546,11 +546,11 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     var feedUri = res.get('feed');
     
     U.getResourcePromise(feedUri).done(function(feed) {
-      var eventClassUri = feed.get('eventClass'),
-          eventClassRangeUri = feed.get('eventClassRangeUri'),
+//      var eventClassUri = feed.get('eventClass'),
+      var eventClassRangeUri = feed.get('eventClassRangeUri'),
           tradleUri = res.get('tradle');
     
-      if (!eventClassUri) {
+      if (!eventClassRangeUri) {
         U.getResourcePromise(feedUri, true).done(function() {
           Redirecter.prototype._forType['commerce/trading/TradleFeed'](res, options);
         });
@@ -585,7 +585,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
         
         title = feedDisplayName ? CHOOSE_INDICATOR_FOR + ' ' + feedDisplayName : CHOOSE_INDICATOR;
         Events.trigger('navigate', U.makeMobileUrl('chooser', 'system/designer/WebProperty', {
-          domain: eventClassUri,
+          domainUri: eventClassRangeUri,
           $in: $in,
           $select: 'name,label,propertyType,range,rangeUri,davPropertyUri',
           $title: title,
@@ -594,7 +594,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
               tradle: res.get('tradle'),
               tradleFeed: res.getUri(),
               feed: res.get('feed'),
-              eventClass: eventClassUri,
+//              eventClass: eventClassUri,
               eventClassRangeUri: eventClassRangeUri
             }
           )
@@ -704,7 +704,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
         isLinkRule = isRule && U.isAssignableFrom(vocModel, 'commerce/trading/LinkRule');
     
     if (range == 'Resource' && isLinkRule) {
-      range = res.get('resourceTypeRangeUri') || range;
+      range = res.get('eventPropertyRangeUri') || range;
     }
 
     if (range != 'Class') {
@@ -1096,7 +1096,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
         var eventPropertyUri = valueRes.get('davPropertyUri'),
             and1 = _.param({
               applicableToProperty: eventPropertyUri,
-              applicableToModel: tfParams.eventClass,
+//              applicableToModel: tfParams.eventClass,
               applicableToClass: tfParams.eventClassRangeUri
   //            applicableToResource: tfParams.feed
             }),

@@ -66,12 +66,16 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
     
     if (heightChanged || widthChanged) {
       saveViewportSize();
-      window.dispatchEvent(new Event('debouncedresize'));
-      window.dispatchEvent(new Event('viewportdimensions'));
+      G.triggerEvent(window, "debouncedresize");
+      G.triggerEvent(window, "viewportdimensions");
+//      window.dispatchEvent(new Event('debouncedresize'));
+//      window.dispatchEvent(new Event('viewportdimensions'));
       if (heightChanged)
-        window.dispatchEvent(new Event('viewportheightchanged'));
+        G.triggerEvent(window, "viewportheightchanged");
+//        window.dispatchEvent(new Event('viewportheightchanged'));
       if (widthChanged)
-        window.dispatchEvent(new Event('viewportwidthchanged'));
+        G.triggerEvent(window, "viewportwidthchanged");
+//        window.dispatchEvent(new Event('viewportwidthchanged'));
     }
 //    if (saveViewportSize()) {
 //      window.dispatchEvent(new Event('debouncedresize'));
@@ -89,8 +93,10 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
   });
 
   function fireOrientationchangeEvent() {
-    window.dispatchEvent(new Event('debouncedorientationchange'));
-    window.dispatchEvent(new Event('viewportdimensions'));
+//    window.dispatchEvent(new Event('debouncedorientationchange'));
+//    window.dispatchEvent(new Event('viewportdimensions'));
+    G.triggerEvent(window, "debouncedorientationchange");
+    G.triggerEvent(window, "viewportdimensions");
   }
 
   function saveViewportSize() {
@@ -160,16 +166,15 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
   var htmlCollectionProto = HTMLCollection.prototype;
   var elementProto = Element.prototype;
   var $matches = elementProto.matches || elementProto.webkitMatchesSelector || elementProto.mozMatchesSelector || elementProto.msMatchesSelector;
-  
   (function extendNodeAndNodeList(win, doc) {
     var NodeAndNodeListAug = {
       $matches: $matches,
       $on: function(event, handler, capture) {
-        this.addEventListener(event, handler, capture);
+        G.addEventListener(this, event, handler);
         return this;
       },
       $off: function(event, handler, capture) {
-        this.removeEventListener(event, handler, capture);
+        G.removeEventListener(this, event, handler);
         return this;
       },
       $once: function(event, handler, capture) {
@@ -180,10 +185,11 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         }, capture);
       },
       $trigger: function(event, data) {
-        if (typeof event == 'string')
-          event = data ? new Event(event, data) : new Event(event);
-        
-        this.dispatchEvent(event);
+        G.triggerEvent(this, event, data);
+//        if (typeof event == 'string')
+//          event = data ? new Event(event, data) : new Event(event);
+//        
+//        this.dispatchEvent(event);
         return this;
       },
       $css: function() {
