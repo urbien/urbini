@@ -36,9 +36,9 @@ define('views/ModalDialog', ['domUtils', 'events'], function(DOM, Events) {
 
   function activate( state ) {
 //    clearTimeout(emptyTimeout);
-    document.addEventListener( 'keyup', onDocumentKeyUp, false );
-    document.addEventListener( 'click', onDocumentClick, false );
-    document.addEventListener( 'touchstart', onDocumentClick, false );
+//    document.addEventListener( 'keyup', onDocumentKeyUp, false );
+    document.addEventListener( 'tap', onDocumentClick, false );
+//    document.addEventListener( 'touchstart', onDocumentClick, false );
 
     if (currentState)
       popup.$removeClass(currentState);
@@ -120,7 +120,7 @@ define('views/ModalDialog', ['domUtils', 'events'], function(DOM, Events) {
 
   Events.on('pageChange', hide);
   
-  return {
+  return window.ModalDialog = {
     activate: activate,
     deactivate: deactivate,
     show: show,

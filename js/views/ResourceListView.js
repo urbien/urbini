@@ -4,6 +4,7 @@ define('views/ResourceListView', [
   'utils',
   'domUtils',
   'events',
+  'error',
   'views/BasicView',
 //  'views/mixins/Scrollable',
   'views/ResourceMasonryItemView',
@@ -12,7 +13,7 @@ define('views/ResourceListView', [
   'lib/fastdom',
   'vocManager',
   'physicsBridge'
-], function(G, U, DOM, Events, BasicView, /*Scrollable, */ ResourceMasonryItemView, ResourceListItemView, ResourceList, Q, Voc, Physics) {
+], function(G, U, DOM, Events, Errors, BasicView, /*Scrollable, */ ResourceMasonryItemView, ResourceListItemView, ResourceList, Q, Voc, Physics) {
   var doc = document,
       MASONRY_FN = 'masonry', // in case we decide to switch to Packery or some other plugin
       ITEM_SELECTOR = '.masonry-brick';
@@ -217,88 +218,20 @@ define('views/ResourceListView', [
     globalEvents: {
       'filterList': 'doFilter'
     },
-    
-//    _searchDebounce: 100,
-//    search: function(page, value) {
-//      console.log("SEARCH", value);
-//      if (this.getPageView() != page)
-//        return;
-//
-//      var self = this,
-//          now = _.now(),
-//          lastSearchTime = this._lastSearchTime || now; // debounce first too
-//      
-//      this._lastSearchTime = now;
-//      if (now - lastSearchTime < this._searchDebounce || this.mason.isLocked()) {
-//        clearTimeout(this._searchTimeout);
-//        this._searchTimeout = setTimeout(function() {
-//          self.doSearch(value);
-//        }, this._searchDebounce);
-//        
-//        return;
-//      }
-//      else
-//        this.doSearch(value);
-//    },
-//    
-//    doSearch: _.debounce(function(page, value) {
-//      console.log("DO SEARCH", value);
-//      if (this.getPageView() != page || this._searchValue == value) {
-//        console.log("ALREADY SEARCHED", value);
-//        return;
-//      }
-//      
-//      if (this.mason.isLocked()) {
-//        console.log("SEARCH LOCKED", value);
-//        return this.doSearch(this.getPageView(), value);
-//      }
-//        
-//      console.log("SEARCHING", value);
-//      this._searchValue = value;
-//      var pageView = this.getPageView(),
-//          col = pageView.collection,
-//          filtered = pageView.filteredCollection,
-//          value = this._searchValue,
-//          valueLowerCase,
-//          resourceMatches,
-//          numResults,
-//          indicatorId,
-//          hideIndicator;
-//      
-//      if (!value) {
-//        filtered.reset(col.models, {
-//          params: this.originalParams
-//        });
-//        
-//        return;
-//      }
-//      
-//      valueLowerCase = value.toLowerCase();
-//      resourceMatches = col.models.filter(function(res) {
-//        var dn = U.getDisplayName(res);
-//        return dn && ~dn.toLowerCase().indexOf(valueLowerCase);
-//      });
-//  
-//      filtered.reset(resourceMatches, {
-//        params: _.defaults({
-//          '$like': 'davDisplayName,' + value
-//        }, this.originalParams)
-//      });      
-//    }, 300),
-    
+        
     doFilter: function(filterParams) {
       // TODO: filter similar to search, except per property instead of for displayName, maybe generalize it so it works for search too
-      console.log("DO FILTER", value);
+      console.log("1. FILTER", value);
       if (!this._filterParams)
         this._filterParams = _.clone(this.originalParams);
       
       if (_.isEqual(this._filterParams, filterParams)) {
-        console.log("ALREADY FILTERED " + JSON.stringify(filterParams));
+        console.log("2. FILTER - ALREADY FILTERED " + JSON.stringify(filterParams));
         return;
       }
       
       if (this.mason.isLocked()) {
-        console.log("FILTER LOCKED", value);
+        console.log("3. FILTER LOCKED", value);
         var self = this;
         clearTimeout(this._delayTimeout);
         this._delayTimeout = setTimeout(function() {
@@ -323,6 +256,7 @@ define('views/ResourceListView', [
 //        this.setDisplayModel(U.getModel(this._filterParams.type));
 
       if (_.isEmpty(filterParams)) {
+        console.log("4. FILTER - resetting to original collection", value);
         indicatorId = this.showLoadingIndicator(3000); // 3 second timeout
         hideIndicator = this.hideLoadingIndicator.bind(this, indicatorId);
 
@@ -342,6 +276,7 @@ define('views/ResourceListView', [
 //        return dn && ~dn.toLowerCase().indexOf(valueLowerCase);
 //      });
 
+      console.log("5. FILTER - resetting", value);
       filtered.reset([], {
         params: _.defaults(this._filterParams, this.originalParams)        
       });
@@ -371,7 +306,7 @@ define('views/ResourceListView', [
 //          result;
 //      
 //      function report() {
-//        self.log("STATE: " + self._childEls.map(function(b) { return parseInt(b.dataset.viewid.match(/\d+/)[0])})/*.sort(function(a, b) {return a - b})*/.join(","));
+//        self.log("STATE: " + self._childEls.map(function(b) { return parseInt(b.$data('viewid').match(/\d+/)[0])})/*.sort(function(a, b) {return a - b})*/.join(","));
 //      };
 //      
 //      try {
@@ -488,8 +423,8 @@ define('views/ResourceListView', [
           viewId,
           dataUri;
 
-      while (top && top != this.el && !(viewId = top.dataset.viewid)) {
-//        dataUri = top.dataset.uri;
+      while (top && top != this.el && !(viewId = top.$data('viewid'))) {
+//        dataUri = top.$data('uri');
 //        if (dataUri) {
 //          Events.trigger('navigate', dataUri);
 //          return;
@@ -952,7 +887,7 @@ define('views/ResourceListView', [
             childView;
 
         if (childEl) {
-          childView = this.children[childEl.dataset.viewid];
+          childView = this.children[childEl.$data('viewid')];
           if (childView)
             removedViews.push(childView);
           else
@@ -1153,7 +1088,7 @@ define('views/ResourceListView', [
           firstFetchDfd = this.getPageView()._fetchDfd, // HACK
           nextPagePromise,
           nextPageUrl,
-          limit = Math.max(to - from, this.options.minPagesInSlidingWindow * this.options.bricksPerPage, 10),
+          limit = Math.min(Math.max(to - from, this.options.minPagesInSlidingWindow * this.options.bricksPerPage, 10), 50),
           pagingPromise = this._pagingPromise = defer.promise(),
           spinner = this.spinner || {
             name: 'listLoading' + G.nextId(),
@@ -1173,8 +1108,9 @@ define('views/ResourceListView', [
           $limit: limit
         },
         success: function() {
-          if (col.length > before)
+          if (col.length > before) {
             defer.resolve();
+          }
           else {
             if (!nextPageUrl || !col.isFetching(nextPageUrl)) { // we've failed to fetch anything from the db, wait for the 2nd call to success/error after pinging the server
               // TODO: maybe we got results, but we happen to have already had them, because we had this list stored in a diff order. Complex case, because this means that we don't actually have the resources prior to this $offset
@@ -1218,8 +1154,9 @@ define('views/ResourceListView', [
       this._pagingPromise = pagingPromise;
       pagingPromise.always(function() {
         G.hideSpinner(spinner);
-        if (pagingPromise._canceled)
+        if (pagingPromise._canceled) {
           return;
+        }
         
         if (!self._loadedFirstPage && !self.isStillLoading()) {
           self._loadedFirstPage = true;

@@ -138,7 +138,7 @@
 
 <script type="text/template" id="inlineListItemTemplate">
 <!-- one row of an inline backlink in view mode -->
-<li data-viewid="{{= viewId }}">
+<li data-viewid="{{= viewId }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}">
   <a href="{{= href }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="{{= obj.img || obj.needsAlignment ? '' : 'padding:1rem 0;'}} {{= obj.noclick ? 'cursor:default;' : 'cursor:pointer;' }}">
     {{ if (obj.img) { }}
       <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
@@ -161,20 +161,41 @@
   {{ if (typeof comment != 'undefined') { }}
     <p>{{= comment }}</p>
   {{ } }}
-
-  {{ if (obj.Cancelable && !Cancelable.canceled) { }}
-    <a style="width: auto; height: auto; padding: 0 1rem; position:absolute; right: 0;font-size:2rem;" href="#" data-uri="{{= resource.getUri() }}" data-cancel="true" class="vcenteredR">
-      <i class="ui-icon-remove"></i>
-    </a>
-  {{ } }}
 </li>
 </script>
 
+<script type="text/template" id="actionsOverlayTemplate">
+  <div class="anim-overlay centered" data-uri="{{= _uri }}">
+    <div class="anim-overlay-content vcenteredR" style="width:100%;">
+      {{ var cols = _.compact(_.values(actions)).length; }}
+      {{ if (actions.cancel) {     }}
+        <div class="span_1_of_{{= cols }}" style="color:#f00;">
+          <i class="ui-icon-remove" data-action="cancel"></i>
+        </div>
+      {{  }                       }}
+      {{ if (actions.add) {     }}
+        <div class="span_1_of_{{= cols }}">
+          <i class="ui-icon-plus" data-action="add"></i>
+        </div>
+      {{  }                       }}
+      {{ if (actions.edit) {     }}
+        <div class="span_1_of_{{= cols }}">
+          <i class="ui-icon-edit" data-action="edit"></i>
+        </div>
+      {{  }                       }}
+      {{ if (actions.comment) {      }}
+        <div class="span_1_of_{{= cols }}">
+          <i class="ui-icon-comments" data-action="comment"></i>
+        </div>
+  {{ } }}
+    </div>
+  </div>
+</script>
+
 <script type="text/template" id="inlineCompareIndicatorsRuleTemplate">
-<li data-viewid="{{= viewId }}" style="background:white; padding:0;" class="tradleRules">
+<li data-viewid="{{= viewId }}" data-backlink="{{= backlink }}" data-uri="{{= resource.getUri() }}" style="background:white; padding:0;" class="tradleRules">
   {{ var byPercent = ~resource.getUri().indexOf('ByRule?'); }}
-  {{ var showCancel = obj.Cancelable && !Cancelable.canceled; }}
-  <div class="cf" style="font-size:1.6rem;font-weight:bold;text-align:center; height: auto; padding:1rem 0; width: {{= showCancel ? '97' : '100' }}%">
+  <div class="cf" style="font-size:1.6rem;font-weight:bold;text-align:center; height: auto; padding:1rem 0; width: 100%">
     <div style="float:left; width:40%; height:100%;">
       {{ if (resource.get('feedImage')) { }}
         <img style="float:left;padding-left:1rem;" src="{{= resource.get('feedImage') }}" />
@@ -222,11 +243,6 @@
     {{ }                        }}
     </div>
   </div>
-  {{ if (showCancel) { }}
-    <a style="width: 2%; height: 100%; position: absolute; top: 0; right: 10px; " href="#" data-uri="{{= resource.getUri() }}" data-cancel="true">
-      <i class="vcenteredR ui-icon-remove" style="font-size: 2rem; position: absolute;"></i>
-    </a>
-  {{ } }}
 </li>
 </script>
 
@@ -288,9 +304,9 @@
           <strong>Get access & the invites to give away</strong>
           <div>
             {{ var n = G.currentUser.referredInstalls || 0; }}
-            Any URL on Tradle contains a personal tracker. Post it anywhere online and earn rewards on signups and sales you facilitated.
+            Post any Tradle URL anywhere online and earn rewards on signups and sales you facilitate.
             {{ if (G.currentUser.guest ) { }}
-              You must <a href="#" class="link reqLogin">login</a> to get a personal link.
+              <a href="#" class="link reqLogin">Login</a> and all links in your address bar become personalized.
             {{ }                            }}
             {{ if (!G.currentUser.guest ) { }}
             You've signed up 
@@ -1561,10 +1577,10 @@
         <img src="{{= img }}" style="display:block; width: 100%;" />    
       {{ }              }}
       {{ if (obj.details) { }}
-      <div style="padding:1rem 1rem; width:100%;">{{= details }}</div>
+      <div style="padding:1rem 1rem; width:100%;box-sizing: border-box;">{{= details }}</div>
       {{ }                }}
       
-      <div style="text-align:center; padding-bottom:2rem;">
+      <div style="text-align:center;">
       {{ if (obj.cancel) { }}
       <a href="#" class="dialogBtn" data-cancel="true">{{= loc(typeof cancel === 'string' ? cancel : 'cancel') }}</a>
       {{ }                 }}

@@ -77,7 +77,7 @@
 .ui-icon-cart:before {
   content: "\e04e";
 }
-.ui-icon-network-effect:before, .ui-icon-share:before {
+.ui-icon-network-effect:before {
   content: "\e05b";
 }
 .ui-icon-help:before {
@@ -164,4 +164,9 @@
   line-height: 1;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+// ALIASES
+.ui-icon-share:before {
+  content: "\e05b";
 }
