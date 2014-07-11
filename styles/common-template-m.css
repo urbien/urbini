@@ -1451,8 +1451,9 @@ section[id^="view"] {
 }
 
 .gauge {
-  width: 140px;
+  width: 100px;
   display: inline-block;
+  margin-top: -.5rem;
 }
 
 .gauge > * {
@@ -1460,7 +1461,7 @@ section[id^="view"] {
   width: 100%;
   color: white;
   text-align: center; 
-  font-size: 2rem; 
+  font-size: 1.5rem;
   font-weight: bold;
 }
 
@@ -1471,6 +1472,7 @@ section[id^="view"] {
   
   .gauges {
     padding: 3rem 1rem;
+    margin-top: -1.5rem;
   }
   
   .gauge {
@@ -1554,4 +1556,19 @@ label.subClass {
 .anim-overlay .span_1_of_4, .anim-overlay .span_1_of_3, .anim-overlay .span_1_of_2, .anim-overlay .span_1_of_1 {
   display:inline-block;
   cursor:pointer;
+}
+
+.trades span {
+  font-size:2rem;font-weight:bold;color:#3777a1;
+
+}
+.tradleRules .rule1 {
+  font-size:1.5rem;
+  padding-bottom:1rem;
+}
+.socialLinks {
+  text-align: center;background: aliceblue; font-weight: bold;min-height:3rem;
+}
+.socialLinks div {
+  display:inline-block;font-size:2rem;padding:1rem .5rem;
 }

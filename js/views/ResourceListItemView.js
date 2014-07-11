@@ -968,9 +968,9 @@ define('views/ResourceListItemView', [
           preinit = BasicView.preinitialize.apply(this, arguments),
           cloned = preinit.prototype.clonedProperties,
           imageProperty = U.getImageProperty(vocModel),
-          gridCols = U.getColsMeta(vocModel, 'grid').slice(),
-          commonBlockProps = [],
           params = U.getCurrentUrlInfo().params,
+          gridCols = params.$gridCols ? params.$gridCols.split(",") : U.getColsMeta(vocModel, 'grid').slice(),
+          commonBlockProps = [],
           additional = {        
             gridCols: gridCols,
             commonBlockProps: commonBlockProps,

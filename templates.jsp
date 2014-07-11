@@ -193,14 +193,14 @@
 </script>
 
 <script type="text/template" id="inlineCompareIndicatorsRuleTemplate">
-<li data-viewid="{{= viewId }}" data-backlink="{{= backlink }}" data-uri="{{= resource.getUri() }}" style="background:white; padding:0;">
+<li data-viewid="{{= viewId }}" data-backlink="{{= backlink }}" data-uri="{{= resource.getUri() }}" style="background:white; padding:0;" class="tradleRules">
   {{ var byPercent = ~resource.getUri().indexOf('ByRule?'); }}
   <div class="cf" style="font-size:1.6rem;font-weight:bold;text-align:center; height: auto; padding:1rem 0; width: 100%">
     <div style="float:left; width:40%; height:100%;">
       {{ if (resource.get('feedImage')) { }}
-        <img style="float:left" src="{{= resource.get('feedImage') }}" />
+        <img style="float:left;padding-left:1rem;" src="{{= resource.get('feedImage') }}" />
       {{ }                               }}
-      <div style="font-size:2.5rem;padding-bottom:1rem;">
+      <div class="rule1">
         {{= resource.get('indicator.displayName') }}
       </div>
       <div>
@@ -227,7 +227,7 @@
       {{ if (resource.get('compareWithFeedImage')) { }}
         <img style="float:right;" src="{{= resource.get('compareWithFeedImage') }}" />
       {{ }                               }}
-      <div style="font-size:2.5rem;padding-bottom:1rem;">
+      <div class="rule1">
         {{= resource.get('compareWith.displayName') }}
       </div>
       <div>
@@ -243,6 +243,49 @@
     {{ }                        }}
     </div>
   </div>
+</li>
+</script>
+
+<script type="text/template" id="inlineTradesTemplate">
+<!-- one row of an inline backlink in view mode -->
+<li data-viewid="{{= viewId }}" style="text-align:center;padding:0;border:none;" class="trades">
+  <a href="{{= href }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="{{= obj.img || obj.needsAlignment ? '' : 'padding:1rem 0;'}} {{= obj.noclick ? 'cursor:default;' : 'cursor:pointer;' }}">
+    {{ if (obj.img) { }}
+      <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
+      {{ if (obj.top) { }}  
+      style="max-height:none;max-width:none;
+        left:-{{= left }}px; top:-{{= top }}px;
+        clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
+      {{ } }}
+      {{ if (!obj.top) { }}  
+        style="max-height:80px;max-width:80px;"
+      {{ } }}
+      data-for="{{= U.getImageAttribute(resource, imageProperty) }}"
+      class="lazyImage" />
+    {{ } }}
+    {{ if (!obj.img  &&  obj.needsAlignment) { }}
+      <img src="{{= G.getBlankImgSrc() }}" height="80" style="vertical-align:middle;"/> 
+    {{ } }}
+    <span style="{{= obj.img || obj.needsAlignment ? 'position:absolute;padding:10px;' : ''}}">{{= obj.gridCols  ? (obj.gridCols.indexOf(name) == -1 ? name + '<br/>' + gridCols : gridCols) : name }}</span>
+  </a>
+  {{ if (typeof comment != 'undefined') { }}
+    <p>{{= comment }}</p>
+  {{ } }}
+
+  {{ if (obj.Cancelable && !Cancelable.canceled) { }}
+    <a style="width: auto; height: auto; padding: 0 1rem; position:absolute; right: 0;font-size:2rem;" href="#" data-uri="{{= resource.getUri() }}" data-cancel="true" class="vcentered">
+      <i class="ui-icon-remove"></i>
+    </a>
+  {{ } }}
+</li>
+</script>
+
+<script type="text/template" id="socialLinksTemplate">
+<!-- Social Links -->
+<li class="socialLinks">
+  <div class="share" data-url="{{= uri }}"><i style="background:#3777a1;color:#fff;padding:.5rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-share"></i></div>
+  <div class="clone" data-url="{{= uri }}"><a style="color:#fff;border-radius:.8rem;margin:-.2rem;padding:.5rem 1.5rem;white-space:nowrap;background:#3777a1;" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Tradle', {basedOnTemplate: uri, '-makeId': G.nextId()}) }}">Use it</a></div>
+  <div class="embed" data-url="{{= uri }}"><a style="background:#3777a1;color:#fff;padding:.5rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-embed" href="{{= G.serverName }}/widget/embed.html?uri={{= encodeURIComponent(uri) }}"></a></div>
 </li>
 </script>
 
@@ -1211,10 +1254,12 @@
 
 <script type="text/template" id="propGroupsDividerTemplate">
 <!-- row divider / property group header in resource view -->
-<header {{= G.coverImage ? 'style="color:' + G.coverImage.background + ';"' : '' }} class="{{= obj.class || '' }}">
+<header style="position:relative;{{= obj.style ? obj.style : G.coverImage ? 'color:' + G.coverImage.background + ';' : '' }}" class="{{= obj.class || '' }}">
+{{= obj.style ? '<div style="padding:1rem;display:inline-block;">' : '' }}
   {{= value }}
+{{= obj.style ? '</div>' : '' }}
   {{ if (obj.add) { }}
-    <a href="#" class="add cf lightText" style="cursor:pointer; position:absolute; right:5px;" data-shortname="{{= shortName }}"><i class="ui-icon-plus"></i></a>
+    <a href="#" class="add cf lightText" style="cursor:pointer; position:absolute; right:10px;color:red;font-weight:bold;font-size:2rem;{{= obj.style ? 'top:2rem;' : '' }}" data-shortname="{{= shortName }}"><i class="ui-icon-plus"></i></a>
   {{ }              }}
 </header>
 </script>
@@ -2219,10 +2264,10 @@
 <!-- a multivalue input for edit forms -->
 {{ var id = G.nextId() }}
 <label class="pack-checkbox">
-  <input type="checkbox" name="{{= davDisplayName }}" id="{{= id }}" value="{{= _uri }}" {{= obj._checked ? 'checked="checked"' : '' }} />
+  <input type="checkbox" name="davDisplayName" id="{{= id }}" value="{{= _uri }}" {{= obj._checked ? 'checked="checked"' : '' }} />
   <span></span>
 </label>
-<label for="{{= id }}">{{= davDisplayName }}<!-- {{= obj._thumb ? '<img src="' + _thumb + '" style="float:right;max-height:40px;" />' : '' }}--></label>
+<label for="{{= id }}">{{= this.hashParams.$gridCols && viewCols ? viewCols : davDisplayName }}<!-- {{= obj._thumb ? '<img src="' + _thumb + '" style="float:right;max-height:40px;" />' : '' }}--></label>
 </script>
 
 <script type="text/template" id="interfacePropTemplate">

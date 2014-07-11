@@ -1114,6 +1114,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
         Events.trigger('navigate', U.makeMobileUrl('chooser', G.commonTypes.WebClass, {
           $or: U.makeOrGroup(_.param({$and: and1}), _.param({$and: and2})),
           $indicator: _.param(tfParams),
+          $gridCols: 'label',
           $title: title
         }));
         
