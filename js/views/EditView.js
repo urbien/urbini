@@ -1576,11 +1576,16 @@ define('views/EditView', [
             
             while (i--) {
               match = matched[i];
-              match.dispatchEvent(new Event('click', {
+              match.$trigger('click',  {
                 view: match,
                 bubbles: true,
                 cancelable: true
-              }));
+              });
+//              match.dispatchEvent(new Event('click', {
+//                view: match,
+//                bubbles: true,
+//                cancelable: true
+//              }));
             }
           });
         }

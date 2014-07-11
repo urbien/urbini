@@ -823,11 +823,13 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       renderBody(id, UNRENDERED[id], buffers);
     }
 
-    invokeListeners(renderListeners.render['']);    
-    worker.postMessage({
-      method: 'recycle',
-      args: [UNRENDERED]
-    }, buffers);
+    invokeListeners(renderListeners.render['']);
+    if (!G.browser.msie) {
+      worker.postMessage({
+        method: 'recycle',
+        args: [UNRENDERED]
+      }, buffers);
+    }
   };
   
   function renderBody(id, style, buffers) {

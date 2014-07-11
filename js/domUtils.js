@@ -66,12 +66,16 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
     
     if (heightChanged || widthChanged) {
       saveViewportSize();
-      window.dispatchEvent(new Event('debouncedresize'));
-      window.dispatchEvent(new Event('viewportdimensions'));
+      G.triggerEvent(window, "debouncedresize");
+      G.triggerEvent(window, "viewportdimensions");
+//      window.dispatchEvent(new Event('debouncedresize'));
+//      window.dispatchEvent(new Event('viewportdimensions'));
       if (heightChanged)
-        window.dispatchEvent(new Event('viewportheightchanged'));
+        G.triggerEvent(window, "viewportheightchanged");
+//        window.dispatchEvent(new Event('viewportheightchanged'));
       if (widthChanged)
-        window.dispatchEvent(new Event('viewportwidthchanged'));
+        G.triggerEvent(window, "viewportwidthchanged");
+//        window.dispatchEvent(new Event('viewportwidthchanged'));
     }
 //    if (saveViewportSize()) {
 //      window.dispatchEvent(new Event('debouncedresize'));
@@ -89,8 +93,10 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
   });
 
   function fireOrientationchangeEvent() {
-    window.dispatchEvent(new Event('debouncedorientationchange'));
-    window.dispatchEvent(new Event('viewportdimensions'));
+//    window.dispatchEvent(new Event('debouncedorientationchange'));
+//    window.dispatchEvent(new Event('viewportdimensions'));
+    G.triggerEvent(window, "debouncedorientationchange");
+    G.triggerEvent(window, "viewportdimensions");
   }
 
   function saveViewportSize() {
@@ -179,14 +185,14 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
       listener = listeners[i];
       if (_listener) {
         if (listener.listener == _listener) {
-          el.removeEventListener(event, listener.proxy);
+          G.removeEventListener(el, event, listener.proxy);
           Array.removeFromTo(listeners, i, i + 1);
 //          removed = true;
           break;
         }
       }
       else {
-        el.removeEventListener(event, listener.proxy);
+        G.removeEventListener(el, event, listener.proxy);
 //        removed = true;
       }
       
@@ -261,8 +267,8 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
           listener: listener,
           proxy: proxy
         });
-        
-        this.addEventListener(event, proxy, capture);
+
+        G.addEventListener(this, event, proxy, capture);
         return this;
       },
       $off: function(event, selector, handler, capture) {
@@ -292,11 +298,12 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
           handler();
         }, capture);
       },
-      $trigger: function(event, data) {
-        if (typeof event == 'string')
-          event = data ? new Event(event, data) : new Event(event);
-        
-        this.dispatchEvent(event);
+      $trigger: function(eventType, data) {
+        G.triggerEvent(this, eventType, data);
+//        if (typeof event == 'string')
+//          event = data ? new Event(event, data) : new Event(event);
+//        
+//        this.dispatchEvent(event);
         return this;
       },
       $css: function() {

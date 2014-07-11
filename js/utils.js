@@ -607,7 +607,7 @@ define('utils', [
     },   
     
     isResourceProp: function(prop) {
-      return prop && !prop.backLink && prop.range && (prop.range == 'Resource' || 
+      return prop && !prop.backLink && prop.range && (prop.range == 'Resource' || prop.range == 'Class' || prop.range == 'Property' ||  
                                                      (!prop.range.endsWith('/Percent')  &&  prop.range.indexOf('/') != -1 && !U.isInlined(prop)));
     },
 //    getSortProps: function(model) {
@@ -2533,6 +2533,7 @@ define('utils', [
     
     primitiveTypes: {
 //      uri: 'system/primitiveTypes',
+      strings: ['String', 'longString'],
       dates: ['date', 'dateTime', 'ComplexDate'],
       floats: ['float', 'double', 'Percent', 'm', 'm2', 'km', 'km2', 'g', 'kg'], 
       ints: ['int', 'long', 'Duration', 'ComplexDate', 'dateTime', 'date']
@@ -4503,7 +4504,7 @@ define('utils', [
       return /Numeric|Fraction|Percent|Money|Duration/.test(propertyType);
     },
 
-    isNumeric: function(ruleTypeUri) {
+    isNumericRuleType: function(ruleTypeUri) {
       return ruleTypeUri.match(/(Rose|Fell)?(More|Less)(?:Than)[^\/]*(?:Rule)/);
     },
     
@@ -4526,7 +4527,7 @@ define('utils', [
       
       var vocModel = rule.vocModel;
       var type = U.getTypeUri(rule.getUri());
-      var numeric = U.isNumeric(type);
+      var numeric = U.isNumericRuleType(type);
       if (numeric) {
         if (numeric[1])
           return numeric[1];
@@ -4542,7 +4543,7 @@ define('utils', [
     getRuleValue: function(rule) {
       var vocModel = rule.vocModel;
       var type = U.getTypeUri(rule.getUri());
-      if (U.isNumeric(type)) {
+      if (U.isNumericRuleType(type)) {
         var val = rule.get('doubleValue');
         if (val !== undefined)
           return val;

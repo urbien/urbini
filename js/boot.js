@@ -76,9 +76,11 @@ DOMReady.add( function () {
       head.appendChild(s);
 /*  }, 0); */
   
-    l.serverName = (function() {     
-      var s = d.getElementsByTagName('base')[0].href;
-      return s.match("/$") ? s.slice(0, s.length - 1) : s;
+    l.serverName = (function() {
+      var h = window.location.href;
+      return h.slice(0, h.indexOf(l.serverName)) + l.serverName;
+/*      var s = d.getElementsByTagName('base')[0].href;
+        return s.match("/$") ? s.slice(0, s.length - 1) : s; */
     })();
     
     for (var i = 0, r = l.X_CSS; i < r.length; i++) {

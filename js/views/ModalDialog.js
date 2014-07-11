@@ -36,10 +36,7 @@ define('views/ModalDialog', ['domUtils', 'events'], function(DOM, Events) {
 
   function activate( state ) {
 //    clearTimeout(emptyTimeout);
-//    document.addEventListener( 'keyup', onDocumentKeyUp, false );
-    document.addEventListener( 'tap', onDocumentClick, false );
-//    document.addEventListener( 'touchstart', onDocumentClick, false );
-
+    listen(true);
     if (currentState)
       popup.$removeClass(currentState);
     
@@ -57,11 +54,16 @@ define('views/ModalDialog', ['domUtils', 'events'], function(DOM, Events) {
     currentState = state;
   }
 
+  function listen(attach) {
+    var method = attach ? 'addEventListener' : 'removeEventListener';
+    document[method]( 'tap', onDocumentKeyUp, false );
+//    document[method]( 'keyup', onDocumentKeyUp, false );
+//    document[method]( 'click', onDocumentClick, false );
+//    document[method]( 'touchstart', onDocumentClick, false );
+  };
+  
   function deactivate() {
-    document.removeEventListener( 'keyup', onDocumentKeyUp, false );
-    document.removeEventListener( 'click', onDocumentClick, false );
-    document.removeEventListener( 'touchstart', onDocumentClick, false );
-
+    listen(true);
     if (container)
       container.$removeClass('modal-active');
     

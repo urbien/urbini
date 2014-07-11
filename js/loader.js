@@ -439,6 +439,19 @@ define('globals', function() {
   };
   
   function adjustForVendor() {
+    (function () {
+      function CustomEvent ( event, params ) {
+        params = params || { bubbles: false, cancelable: false, detail: undefined };
+        var evt = document.createEvent( 'CustomEvent' );
+        evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
+        return evt;
+       };
+
+      CustomEvent.prototype = window.Event.prototype;
+
+      window.CustomEvent = CustomEvent;
+    })();
+    
     // requestAnimationFrame polyfill by Erik Miller & Paul Irish et. al., adjusted by David DeSandro https://gist.github.com/desandro/1866474
     window.AudioContext = window.AudioContext || window.webkitAudioContext; // keep in mind, firefox doesn't have AudioContext.createMediaStreamSource
     window.MediaStream = window.webkitMediaStream || window.MediaStream;
@@ -851,32 +864,18 @@ define('globals', function() {
             name = info, timestamp = G.files[name];
           else {
             name = info.name;
-            timestamp = info.timestamp;
-            
-            // for some files, like xhrWorker, we need the full name (e.g. xhrWorker.min_en_18908809988.js)
-//              if (timestamp.timestamp) { 
-//                name = timestamp.name;
-//                timestamp = timestamp.timestamp;
-//              }
+            timestamp = info.timestamp;            
           }
           
-          if (!name || appcache[name])
+          if (!name || (appcache[name] && (!name.endsWith('Worker.js') || !G.useInlineWorkers)))
             continue;
           
-//            var inAppcache = !!appcache[name];
-
           info = {};
           var path = G.getCanonicalPath(require.toUrl(name));
-//            var ext = name.match(/\.[a-zA-Z]+$/g);
-//            if (!ext || ['.css', '.html', '.js', '.jsp'].indexOf(ext[0]) == -1)
-//              path += '.js';
-          
           if (G.modules[path])
             continue;
           
           info[path] = timestamp; // || G.modules(G.bundles, path)[path];
-//            if (inAppcache)
-//              info.appcache = true;
           modules.push(info);
         }
       }
@@ -1113,7 +1112,7 @@ define('globals', function() {
         bg: '#000'
       },
       taskQueue: {
-        on: false,
+        on: true,
         color: '#88FFFF',
         bg: '#000'
       },
@@ -1895,6 +1894,7 @@ define('globals', function() {
     maxXhrWorkers: 1,
     numXhrWorkers: 0,
     workers: [],
+    runningWorkers: [],
     workerDeferreds: [],
 //    isWorkerAvailable: function(worker) {
 //      return !worker.__lablzTaken;
@@ -1934,10 +1934,11 @@ define('globals', function() {
         var blob = new Blob([G.modules[relUrl]], { type: "text/javascript" });
         var url = window.URL.createObjectURL(blob);
         worker = new Worker(url);
-        window.URL.revokeObjectURL(url);
+//        window.URL.revokeObjectURL(url);
       }
       else {
-        var xw = G.files[relUrl.slice(relUrl.lastIndexOf('/') + 1)];
+        var url = relUrl.slice(relUrl.lastIndexOf('/') + 1);
+        var xw = G.files.appcache[url] || G.files[url];
         worker = new Worker(G.serverName + '/js/' + (xw.fullName || xw.name));
       }
       
@@ -1961,13 +1962,21 @@ define('globals', function() {
         }
         
         dfd.resolve(worker);
-      }).promise();
+      }).promise().done(function(worker) {
+        G.runningWorkers.push(worker);
+      });
     },
 
     /**
      * when you're done with a worker, let it go with this method so that others can use it
      */
     recycleXhrWorker: function(worker) {
+      var idx = G.runningWorkers.indexOf(worker);
+      if (idx == -1)
+        debugger; // should never happen
+      else
+        G.runningWorkers.splice(idx, 1);
+      
       worker.onerror = null;
       worker.onmessage = null;
       if (G.workerDeferreds.length)
@@ -2021,6 +2030,84 @@ define('globals', function() {
     support: {
       pushState: !!(G.preferPushState && window.history && history.pushState)// && !browser.chrome
     },
+    
+    // http://stackoverflow.com/questions/5342917/custom-events-in-ie-without-using-libraries
+    _htmlEvents: [ 
+      // list of real events
+      // <body> and <frameset> events
+      'onload', 'onunload', 
+      //Form Events
+      'onblur', 'onchange', 'onfocus', 'onreset', 'onselect', 'onsubmit', //Image Events
+      'onabort', //Keyboard Events
+      'onkeydown', 'onkeypress', 'onkeyup', //Mouse Events
+      'onclick', 'ondblclick', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup'
+    ],
+    
+    triggerEvent: function triggerEvent(el, eventName){
+        var event;
+        if(document.createEvent){
+            event = document.createEvent('HTMLEvents');
+            event.initEvent(eventName,true,true);
+        }else if(document.createEventObject){// IE < 9
+            event = document.createEventObject();
+            event.eventType = eventName;
+        }
+        event.eventName = eventName;
+        if(el.dispatchEvent){
+            el.dispatchEvent(event);
+        }else if(el.fireEvent && G._htmlEvents['on'+eventName]){// IE < 9
+            el.fireEvent('on'+event.eventType,event);// can trigger only real event (e.g. 'click')
+        }else if(el[eventName]){
+            el[eventName]();
+        }else if(el['on'+eventName]){
+            el['on'+eventName]();
+        }
+    },
+    
+    addEventListener: function addEvent(el,type,handler){
+      if(el.addEventListener){
+        el.addEventListener(type,handler,false);
+      }else if(el.attachEvent && G._htmlEvents['on'+type]){// IE < 9
+        el.attachEvent('on'+type,handler);
+      }else{
+        debugger;
+        var name = 'on' + type;
+        if (el[name])
+          el[name].handlers.push(handler);
+        else {
+          el[name] = function() {
+            var self = this,
+                args = arguments;
+            
+            el[name].handlers.forEach(function(h) {
+              h.apply(self, arguments);
+            });
+          };
+        }
+      }
+    },
+
+    removeEventListener: function removeEvent(el,type,handler){
+      if(el.removEventListener){
+        el.removeEventListener(type,handler,false);
+      }else if(el.detachEvent && G._htmlEvents['on'+type]){// IE < 9
+        el.detachEvent('on'+type,handler);
+      }else{
+        var name = 'on' + type;
+        var handler = el[name];
+        if (!handler)
+          return;
+        
+        debugger;
+        var idx = handler.handlers.indexOf(handler);
+        if (~idx)
+          handler.handlers.splice(idx, 1);
+        
+        if (!handler.handlers.length)
+          el[name] = null;
+      }
+    },
+        
     language: params['-lang'] || (navigator.language || 'en-US').split('-')[0],
     tourGuideEnabled: false,
     Errors: {      

@@ -430,11 +430,11 @@ define('views/ListPage', [
       this.filter = this.$('.filter')[0];
       if (this.filter) {
         this.filter.$on('keydown', function(e) {
-          self.filter.dispatchEvent(new Event('change', {
+          self.filter.$trigger('change', {
             view: self.filter,
             bubbles: false,
             cancelable: true
-          }));
+          });
         });
       }
       
