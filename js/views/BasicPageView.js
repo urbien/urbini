@@ -162,7 +162,15 @@ define('views/BasicPageView', [
       'click .videoLauncher': U.launchVideo,
       'click .reqLogin': function(e) { Events.stopEvent(e); Events.trigger('req-login', {dismissible: true}) },
       'click .pgDown': 'pageDown',
-      'click .pgUp': 'pageUp'
+      'click .pgUp': 'pageUp',
+      'click [data-anchor]': 'scrollToAnchor'
+    },
+    
+    scrollToAnchor: function(e) {
+      var link = e.selectorTarget,
+          offset = link.$offset();
+      
+      this.mason.snapBy(0, -offset.top);
     },
     
     pageUp: function(e) {

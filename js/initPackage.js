@@ -2350,6 +2350,4 @@
     s.src = main; 
     head.appendChild(s);
   }
-  
-  window.moduleMap = moduleMap;
 })(_, undefined);

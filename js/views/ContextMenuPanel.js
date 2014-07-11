@@ -181,8 +181,8 @@ define('views/ContextMenuPanel', [
     
     chat: function(e) {
       Events.stopEvent(e);
-      var userid = $(e.currentTarget).find('[data-userid]').data('userid');
-      var chatPageUrl = e.currentTarget.$data('href');
+      var userid = $(e.selectorTarget).find('[data-userid]').data('userid');
+      var chatPageUrl = e.selectorTarget.$data('href');
       var qIdx = chatPageUrl.indexOf('?');
       if (userid) {
         this.pageView.sendMessage({

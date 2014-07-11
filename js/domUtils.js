@@ -154,6 +154,16 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
   function getElementArray(els) {
     return isElementCollection(els) ? els : els && [els];
   };
+
+//  function getUniqueElementID(element) {
+//    if (element === window) return 0;
+//
+//    // Need to use actual `typeof` operator to prevent errors in some
+//    // environments when accessing node expandos.
+//    if (typeof element._prototypeUID === 'undefined')
+//      element._prototypeUID = Element.Storage.UID++;
+//    return element._prototypeUID;
+//  };
   
   // Bezier functions
   function B1(t) { return t*t*t }
@@ -166,15 +176,112 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
   var htmlCollectionProto = HTMLCollection.prototype;
   var elementProto = Element.prototype;
   var $matches = elementProto.matches || elementProto.webkitMatchesSelector || elementProto.mozMatchesSelector || elementProto.msMatchesSelector;
+  
+  function removeEventListeners(el, event, listeners, _listener) {
+    var i = listeners.length,
+        listener;
+    
+    while (i--) {
+      listener = listeners[i];
+      if (_listener) {
+        if (listener.listener == _listener) {
+          G.removeEventListener(el, event, listener.proxy);
+          Array.removeFromTo(listeners, i, i + 1);
+          break;
+        }
+      }
+      else {
+        G.removeEventListener(el, event, listener.proxy);
+      }
+      
+    }
+    
+    if (!_listener)
+      listeners.length = 0;
+  };
+  
   (function extendNodeAndNodeList(win, doc) {
     var NodeAndNodeListAug = {
       $matches: $matches,
-      $on: function(event, handler, capture) {
-        G.addEventListener(this, event, handler);
+      $on: function(event, selector, listener, capture) {
+        var self = this,
+            proxy;
+        
+        if (typeof selector == 'function') {
+          capture = listener;
+          listener = selector;
+          selector = '';
+        }
+        
+        if (!this._$handlers)
+          this._$handlers = {};
+        
+        if (!this._$handlers[selector])
+          this._$handlers[selector] = [];
+        
+        if (selector) {
+          proxy = function(e) {
+//            var matches = self.$(selector),
+//                match,
+//                i = matches.length;
+//            
+//            while (i--) {
+//              match = matches[i];
+//              e.selectorTarget = match;
+//              listener(e);
+//            }
+
+            if (e._stoppedPropagation || e._stoppedImmediatePropagation)
+              return;
+
+            var el = e.target,
+                closest;
+            
+            if (el.$matches(selector)) {
+              e.selectorTarget = el;
+              listener(e);
+            }
+            
+            while (!e._stoppedImmediatePropagation && (el = el.$closest(selector))) { // bubble
+              e.selectorTarget = el;
+              listener(e);
+            }
+          };
+        }
+        else {
+          proxy = function(e) {
+            e.selectorTarget = e.selectorTarget;
+            return listener(e);
+          };
+        }
+        
+//        listener._listenerId = proxy._listenerId = G.nextId();
+        this._$handlers[selector].push({
+          listener: listener,
+          proxy: proxy
+        });
+
+        G.addEventListener(this, event, proxy, capture);
         return this;
       },
-      $off: function(event, handler, capture) {
-        G.removeEventListener(this, event, handler);
+      $off: function(event, selector, handler, capture) {
+        if (!this._$handlers)
+          return this;
+          
+        if (typeof arguments[1] == 'function') {
+          capture = handler;
+          handler = selector;
+          selector = null;
+        }
+
+        if (selector)
+          removeEventListeners(this, event, this._$handlers[selector], handler);
+        else {
+          for (var selector in this._$handlers) {
+            removeEventListeners(this, event, this._$handlers[selector], handler);
+          }
+        }
+        
         return this;
       },
       $once: function(event, handler, capture) {
@@ -260,6 +367,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
           delete this._removeListeners;
         }
           
+        delete this._$handlers; // listeners should auto-unbind in modern browsers
         if (this.parentNode)
           this.parentNode.removeChild(this);
         
@@ -345,12 +453,12 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
     
       $closest: function(selector) {
         var parent = this;
-        while ((parent = parent.parentNode)) {
+        while ((parent = parent.parentNode) && parent != doc) {
           if (parent.$matches(selector))
             return parent;
         }
         
-        return DOM.emptyNodeList();
+        return null;
       },
       
       $offset: function() {

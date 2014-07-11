@@ -4100,7 +4100,7 @@ define('utils', [
       var url;
       if (e instanceof Event) {
         Events.stopEvent(e);
-        url = e.currentTarget.href;
+        url = e.selectorTarget.href;
       }
       else
         url = e;
@@ -4112,7 +4112,7 @@ define('utils', [
         })
       });
       
-//      var data = e.currentTarget.dataset,
+//      var data = e.selectorTarget.dataset,
 //          src = data.src,
 //          atts = U.filterObj(data, function(k) {
 //            return ~VIDEO_ATTS.indexOf(k);

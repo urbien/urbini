@@ -298,7 +298,7 @@ define('views/Header', [
       }
       if (!force && activated && U.isAssignableFrom(this.vocModel, "commerce/trading/Tradle")) {
         function undo() {
-          e.currentTarget.checked = false;
+          e.selectorTarget.checked = false;
         };
         
         var self = this,
@@ -490,13 +490,13 @@ define('views/Header', [
       case undefined:
         this.filterType = 'simple';
         this.showSearch();
-        this.redelegateEvents();
+//        this.redelegateEvents();
         break;
       case 'simple':
         if (showFilter) {
           this.filterType = 'complex';
           this.showFilter();
-          this.redelegateEvents();
+//          this.redelegateEvents();
           break;
         }
         else {
@@ -515,7 +515,7 @@ define('views/Header', [
       this.titleContainer.classList.remove('hidden');
       this.filterIcon.className = this.searchIconClass;
       this.filterContainer.classList.add('hidden');
-      this.redelegateEvents();
+//      this.redelegateEvents();
     },
 
     doFilter: _.debounce(function() {
@@ -534,7 +534,7 @@ define('views/Header', [
       this.filterContainer.$html(this.searchTemplate(this.getBaseTemplateData()));
       this.filterContainer.classList.remove('hidden');
       this.filterContainer.$('.searchBar input')[0].focus();
-      this.redelegateEvents();
+//      this.redelegateEvents();
     },
     
     showFilter: function() {      
@@ -567,11 +567,11 @@ define('views/Header', [
       this.filterContainer.$html(this.filterTemplate());
       this.filterContainer.classList.remove('hidden');
       this.filterContainer.$('ul')[0].$html(this.filterConditionTemplate(tmpl_data));
-      this.redelegateEvents();
+//      this.redelegateEvents();
     },
     
     removeFilterCondition: function(e) {
-      var icon = e.currentTarget,
+      var icon = e.selectorTarget,
           parent,
           select;
       
@@ -592,7 +592,7 @@ define('views/Header', [
         this.toggleFilter(e);
         
       this.onFilter();
-      this.redelegateEvents();
+//      this.redelegateEvents();
     },
     
     addFilterCondition: function(e) {
@@ -617,15 +617,15 @@ define('views/Header', [
       
       condition = ul.lastChild;
       this.doChangeFilterConditionProperty(condition.$('select')[0], condition.$('.filterConditionInput')[0]);
-      this.redelegateEvents();
+//      this.redelegateEvents();
     },
 
     changeFilterConditionProperty: function(e) {
-      var select = e.currentTarget,
+      var select = e.selectorTarget,
           input = select.parentNode.$('.filterConditionInput')[0];
       
       this.doChangeFilterConditionProperty(select, input);
-      this.redelegateEvents();
+//      this.redelegateEvents();
     },
     
     doChangeFilterConditionProperty: function(select, input) {
@@ -1081,7 +1081,7 @@ define('views/Header', [
 
     onChoseSubClass: function(e) {
       var self = this,
-          input = e.currentTarget,
+          input = e.selectorTarget,
           sClName = input.value,
           sCls = this.subClassesEl.$('input[type="radio"]'),
           filter = this.filterParams,

@@ -46,7 +46,7 @@ define('views/PublishButton', [
     
 //    resetTemplate: function(e) {
 //      // toggle from "Reset to default" to "Undo Reset"
-//      var btn = e.currentTarget;
+//      var btn = e.selectorTarget;
 //      var $btn = $(btn);
 //      var newTitle;
 //      if (!this.oldTitle) {

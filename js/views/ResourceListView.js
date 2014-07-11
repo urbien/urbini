@@ -1319,7 +1319,7 @@ define('views/ResourceListView', [
       
       if (!this._initializeItemOptions) {
         this._initializeItemOptions = {
-          delegateEvents: false
+//          delegateEvents: false
         };
       }
       

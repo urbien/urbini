@@ -77,6 +77,14 @@ define('views/BasicView', [
 //        }
 //      }
       
+      if (this.events) {
+        for (var key in this.events) {
+          var fn = this.events[key];
+          if (typeof fn == 'string')
+            this[fn] = this[fn].bind(this);
+        }
+      }
+      
       options = options || {};
       this._updateHashInfo();
       this._loadingDfd = new $.Deferred();
@@ -325,8 +333,8 @@ define('views/BasicView', [
 //      this._queueTask(this._doRefresh, this, arguments);
       if (this.isActive()) {
         this._doRefresh.apply(this, arguments);
-        if (rOptions.delegateEvents !== false)
-          this.redelegateEvents();
+//        if (rOptions.delegateEvents !== false)
+//          this.redelegateEvents();
         
         this._checkScrollbar();
       }
@@ -384,8 +392,8 @@ define('views/BasicView', [
         var result = this._doRender.apply(this, arguments);
         if (this.autoFinish !== false)
           this.finish(rOptions);
-        else if (rOptions.delegateEvents !== false)
-          this.redelegateEvents(); // bind what events we can at the moment
+//        else if (rOptions.delegateEvents !== false)
+//          this.redelegateEvents(); // bind what events we can at the moment
         
         if (this.el && G.browser.mobile) // TODO disable hover when el appears
           disableHover(this.el);
@@ -516,8 +524,14 @@ define('views/BasicView', [
     
     finish: function(options) {      
       this._loadingDfd.resolve();
-      if (!options || options.delegateEvents !== false)
-        this.redelegateEvents();
+//      if (!options || options.delegateEvents !== false) {
+//        this.redelegateEvents();
+//        
+//        var parent = this;
+//        while ((parent = parent.parentView)) {
+//          parent.redelegateEvents();
+//        }
+//      }
 
       var self = this;
       setTimeout(function() {
@@ -1125,7 +1139,7 @@ define('views/BasicView', [
     },
 
     addDraggable: function() {
-      Physics.addDraggable(this.hammer(), this._flexigroup ? this.getFlexigroupId() : this.getContainerBodyId(), this._dragAxis, this._paged);
+      Physics.addDraggable(this.el, this._flexigroup ? this.getFlexigroupId() : this.getContainerBodyId(), this._dragAxis, this._paged);
     },
 
     _updateSize: function(el) {
@@ -1519,7 +1533,7 @@ define('views/BasicView', [
     },
     
     clickDataHref: function(e) {
-      Events.trigger('navigate', e.currentTarget.$data('href'));
+      Events.trigger('navigate', e.selectorTarget.$data('href'));
     }    
   });
 
