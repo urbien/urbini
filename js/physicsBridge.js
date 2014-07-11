@@ -11,7 +11,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       UNRENDERED = {},
 //      UNRENDERED,
       hammerOptions = {},
-      hammer = new Hammer(document, hammerOptions),
+      hammer = new Hammer(document.body, hammerOptions),
       Physics,
       HERE,
       THERE,

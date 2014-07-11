@@ -135,10 +135,10 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
     var self = this,
         tName = 'sync ' + this.options.url;
     
-    G.startedTask(tName);
-    this.options.success = function() {
-      G.finishedTask(tName);
-    }
+//    G.startedTask(tName);
+//    this.options.success = function() {
+//      G.finishedTask(tName);
+//    }
     
     return Backbone.defaultSync(this.method, this.data, this.options);
   };

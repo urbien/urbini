@@ -43,6 +43,8 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         }
       },
       isMoz = G.browser.mozilla;
+//      ,
+//      HAMMER_EVENTS = 'touch release hold tap doubletap dragstart drag dragend dragleft dragright dragup dragdown swipe swipeleft swiperight swipeup swipedown transformstart transform transformend rotate pinch pinchin pinchout'.split(' ');
 
   window.addEventListener('resize', function(e) {
     clearTimeout(resizeTimeout);
@@ -213,6 +215,14 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
       $on: function(event, selector, listener, capture) {
         var self = this,
             proxy;
+      
+        if (~event.indexOf(' ')) {
+          event.split(' ').map(function(event) {
+            self.$on(event, selector, listener, capture);
+          });
+          
+          return this;
+        }
         
         if (typeof selector == 'function') {
           capture = listener;
@@ -228,16 +238,6 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         
         if (selector) {
           proxy = function(e) {
-//            var matches = self.$(selector),
-//                match,
-//                i = matches.length;
-//            
-//            while (i--) {
-//              match = matches[i];
-//              e.selectorTarget = match;
-//              listener(e);
-//            }
-
             if (e._stoppedPropagation || e._stoppedImmediatePropagation)
               return;
 
@@ -257,7 +257,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         }
         else {
           proxy = function(e) {
-            e.selectorTarget = e.selectorTarget;
+            e.selectorTarget = e.currentTarget;
             return listener(e);
           };
         }
@@ -271,21 +271,30 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         G.addEventListener(this, event, proxy, capture);
         return this;
       },
-      $off: function(event, selector, handler, capture) {
+      $off: function(event, selector, listener, capture) {
         if (!this._$handlers)
           return this;
           
+        if (~event.indexOf(' ')) {
+          var self = this;
+          event.split(' ').map(function(event) {
+            self.$off(event, selector, listener, capture);
+          });
+          
+          return this;
+        }
+
         if (typeof arguments[1] == 'function') {
-          capture = handler;
-          handler = selector;
+          capture = listener;
+          listener = selector;
           selector = null;
         }
 
         if (selector)
-          removeEventListeners(this, event, this._$handlers[selector], handler);
+          removeEventListeners(this, event, this._$handlers[selector], listener);
         else {
           for (var selector in this._$handlers) {
-            removeEventListeners(this, event, this._$handlers[selector], handler);
+            removeEventListeners(this, event, this._$handlers[selector], listener);
           }
         }
         

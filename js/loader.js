@@ -719,7 +719,7 @@ define('globals', function() {
         },
         priorityModules = [];
 
-    G.startedTask("loading pre-bundle");
+//    G.startedTask("loading pre-bundle");
     G.showSpinner(spinner);
     APP_START_PROMISE.done(function() {
       G.hideSpinner(spinner);
@@ -778,10 +778,15 @@ define('globals', function() {
   }
   
   function loadRegular() {
+    G.log(G.TAG, 'bundles', 'loaded app cache bundle');
+    G.bundles.appcache._deferred.resolve();
+    G.log(G.TAG, 'bundles', 'loading bundles pre, widgetsFramework');
     Bundler.loadBundle(preBundle.concat(widgetsBundle), {source: getBundleStorageType('pre')}).then(function() {
       preBundle._deferred.resolve();
-      G.finishedTask("loading pre-bundle and widgets-bundle");
-      G.startedTask("loading modules");
+      G.bundles.widgetsFramework._deferred.resolve();
+      G.log(G.TAG, 'bundles', 'loaded pre,widgetsFramework bundles');
+//      G.finishedTask("loading pre-bundle and widgets-bundle");
+//      G.startedTask("loading modules");
       var essential = getCSS(preBundle, widgetsBundle);
       essential.unshift.call(essential, 'events', 'app', 'lib/l10n');
       return require('__domReady__').then(function() {
@@ -798,20 +803,24 @@ define('globals', function() {
 
       Events.once('dbOpen', DB_OPEN_DFD.resolve);
       Events.once('appStart', APP_START_DFD.resolve);
-      G.log(G.TAG, 'info', "Loaded pre-bundle: " + (new Date().getTime() - __started) + ' millis');
-      G.finishedTask("loading modules");
+//      G.log(G.TAG, 'info', "Loaded pre-bundle: " + (new Date().getTime() - __started) + ' millis');
+//      G.finishedTask("loading modules");
       App.initialize();
-      G.startedTask('loading post-bundle');
+//      G.startedTask('loading post-bundle');
+      G.log(G.TAG, 'bundles', 'loading post bundle');
       return Bundler.loadBundle(postBundle, {async: true, source: getBundleStorageType('post')}).done(function() {
-        G.finishedTask('loading post-bundle');
+//        G.finishedTask('loading post-bundle');
+        G.log(G.TAG, 'bundles', 'loaded post bundle');
         postBundle._deferred.resolve();
       });
     });
 
     G.onAppStart(function() {            
-      G.startedTask('loading extras-bundle');
+//      G.startedTask('loading extras-bundle');
+      G.log(G.TAG, 'bundles', 'loading extras bundle');
       Bundler.loadBundle(extrasBundle, {async: true, source: getBundleStorageType('extras')}).done(function() {
-        G.startedTask('loading extras-bundle');
+        G.log(G.TAG, 'bundles', 'loaded extras bundle');
+//        G.startedTask('loading extras-bundle');
         extrasBundle._deferred.resolve();
       });
     });    
@@ -968,8 +977,9 @@ define('globals', function() {
           worker;
 
       // recycling the worker needs to be the first order of business when this promise if resolved/rejected 
-      if (worker) {
+      if (useWorker) {
         bundlePromise.always(function() {
+          if (worker)
             G.recycleXhrWorker(worker);
         });
       }
@@ -1038,7 +1048,11 @@ define('globals', function() {
               onResponse(event.data);
             };
             
-            worker.onerror = bundleDfd.reject;
+            worker.onerror = function(e) {
+              debugger;
+              bundleDfd.reject();
+            };
+            
             worker.postMessage({
               command: 'xhr',
               config: getBundleReq
@@ -1106,11 +1120,16 @@ define('globals', function() {
         color: '#2288FF',
         bg: '#000'
       },
-      tasks: {
-        on: false,
+      bundles: {
+        on: true,
         color: '#88FFFF',
         bg: '#000'
       },
+//      tasks: {
+//        on: true,
+//        color: '#88FFFF',
+//        bg: '#000'
+//      },
       taskQueue: {
         on: true,
         color: '#88FFFF',
@@ -1698,48 +1717,48 @@ define('globals', function() {
     hasBlobs: typeof window.Blob !== 'undefined',
     hasWebWorkers: typeof window.Worker !== 'undefined',
     TAG: 'globals',
-    checkpoints: [],
-    tasks: {},
-    recordCheckpoint: function(name, dontPrint) {
-      G.checkpoints.push({name: name, time: new Date()});
-      if (!dontPrint)
-        G.printCheckpoint(G.checkpoints.length - 1);
-    },
-    startedTask: function(name) {
-      G.tasks[name] = {start: new Date()};
-    },
-    finishedTask: function(name, dontPrint) {
-      var task = G.tasks[name];
-      if (!task) {
-        G.log(G.TAG, 'tasks', name, 'finished but starting point was not recorded');        
-        return;
-      }
-      
-      task.end = new Date();
-      if (!dontPrint)
-        G.printTask(name);
-    },
-    printCheckpoint: function(i) {
-      var c = G.checkpoints[i];
-      var time = c.time.getTime();
-      var passed = i ? time - G.checkpoints[i - 1].time.getTime() : 0;
-      G.log(G.TAG, 'checkpoints', c.name, c.time.getTime(), 'time since last checkpoint: ' + passed);
-    },
-    printCheckpoints: function() {
-      for (var i = 0; i < G.checkpoints.length; i++) {
-        G.printCheckpoint(G.checkpoints[i]);
-      }
-    },
-    printTask: function(name) {
-      var t = G.tasks[name];
-      var time = t.end - t.start;
-      G.log(G.TAG, 'tasks', name + ' took ' + time + 'ms');
-    },
-    printTasks: function() {
-      for (var name in G.tasks) {
-        G.printTask(name);
-      }
-    },
+//    checkpoints: [],
+//    tasks: {},
+//    recordCheckpoint: function(name, dontPrint) {
+//      G.checkpoints.push({name: name, time: new Date()});
+//      if (!dontPrint)
+//        G.printCheckpoint(G.checkpoints.length - 1);
+//    },
+//    startedTask: function(name) {
+//      G.tasks[name] = {start: new Date()};
+//    },
+//    finishedTask: function(name, dontPrint) {
+//      var task = G.tasks[name];
+//      if (!task) {
+//        G.log(G.TAG, 'tasks', name, 'finished but starting point was not recorded');        
+//        return;
+//      }
+//      
+//      task.end = new Date();
+//      if (!dontPrint)
+//        G.printTask(name);
+//    },
+//    printCheckpoint: function(i) {
+//      var c = G.checkpoints[i];
+//      var time = c.time.getTime();
+//      var passed = i ? time - G.checkpoints[i - 1].time.getTime() : 0;
+//      G.log(G.TAG, 'checkpoints', c.name, c.time.getTime(), 'time since last checkpoint: ' + passed);
+//    },
+//    printCheckpoints: function() {
+//      for (var i = 0; i < G.checkpoints.length; i++) {
+//        G.printCheckpoint(G.checkpoints[i]);
+//      }
+//    },
+//    printTask: function(name) {
+//      var t = G.tasks[name];
+//      var time = t.end - t.start;
+//      G.log(G.TAG, 'tasks', name + ' took ' + time + 'ms');
+//    },
+//    printTasks: function() {
+//      for (var name in G.tasks) {
+//        G.printTask(name);
+//      }
+//    },
     sqlUri: 'sql',
     modules: {},
     id: 0,
@@ -1891,7 +1910,7 @@ define('globals', function() {
     },
 
 //    mainWorkerName: 'main',
-    maxXhrWorkers: 1,
+    maxXhrWorkers: 4,
     numXhrWorkers: 0,
     workers: [],
     runningWorkers: [],

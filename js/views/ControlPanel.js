@@ -318,7 +318,7 @@ define('views/ControlPanel', [
 
       Events.stopEvent(e);
       var indicator = this.resource.getInlineList('indicators').get(link.$data('uri')),
-          propRange = U.getTypeUri(indicator.get('eventProperty')),
+          propRange = indicator.get('eventPropertyRangeUri'),
           isEnum = /\/EnumProperty$/.test(propRange),
           propType = indicator.get('propertyType'),
           params = {
@@ -353,15 +353,7 @@ define('views/ControlPanel', [
       if (isEnum || propType == 'Link' || propType == 'YesNo') { // no subclasses
 //        var params = _.extend(U.filterObj(this.resource.attributes, U.isNativeModelParameter), props);
         params.$title = indicator.get('feed.displayName') + ' ' + U.getDisplayName(indicator) + ' IS...';
-        if (isEnum) {
-          params.enumeration = indicator.get('eventPropertyRange');
-          params.enumerationRangeUri = indicator.get('eventPropertyRangeUri');
-        }
-        else if (propType == 'Link') {
-          params.resourceType = indicator.get('eventPropertyRange');
-          params.resourceTypeRangeUri = indicator.get('eventPropertyRangeUri');          
-        }
-          
+        params.eventPropertyRangeUri = propRange;
         Events.trigger('navigate', U.makeMobileUrl('make', subClassOf, params));
         return;
       }
