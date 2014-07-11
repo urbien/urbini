@@ -670,7 +670,7 @@ define('views/ResourceView', [
       this.stockCharts = StockCharts(data, this.chartHolder);
       this.chartHolder.classList.remove('hidden');
       this.getPageView().invalidateSize();
-      this.redelegateEvents();
+//      this.redelegateEvents();
     },
 
     _maxChars: 30,

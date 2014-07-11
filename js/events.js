@@ -14,6 +14,8 @@ define('events', [
       
       e.preventDefault();
       e.stopImmediatePropagation();
+      e._stoppedImmediatePropagation = true;
+      e._stoppedPropagation = true;
       if (e.type == 'tap')
         G.disableClick();
     },

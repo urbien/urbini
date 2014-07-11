@@ -799,7 +799,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     }
   
     params.$title = U.makeHeaderTitle(vocModel.displayName, prName);
-    var mvList = (e.currentTarget.text || e.target.textContent).trim(); //e.target.innerText;
+    var mvList = (e.selectorTarget.text || e.target.textContent).trim(); //e.target.innerText;
     mvList = mvList.slice(U.getPropDisplayName(prop).length + 1);
     params['$' + p] = mvList;
     var typeUri = U.getTypeUri(prop.lookupFromType);

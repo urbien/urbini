@@ -657,6 +657,7 @@ define('app', [
   function doPreStartTasks() {
 //    setupHashMonitor();
 //    setupScrollMonitor();
+    monitorAppCache();
     if (G.support.pushState && G.tabs)
       adaptToPushState();
     
@@ -1075,6 +1076,30 @@ define('app', [
         }
       });        
     });
+  }
+  
+  function monitorAppCache() {
+    var ac = window.applicationCache;
+    if (!ac)
+      return;
+    
+    function logEvent(e) {
+//      if (e.type == 'progress')
+//        debugger;
+      
+      G.log("appCache", "APP CACHE EVENT: " + e.type);
+    };
+    
+    ['checking', 'progress', 'noupdate', 'downloading', 'cached', 'updateready', 'obsolete', 'error'].forEach(function(event) {
+      ac.addEventListener(event, logEvent);
+      ac['on' + event] = function(e) {
+//        if (e.type == 'progress')
+//          debugger;
+        
+        G.log("appCache", "APP CACHE ONEVENT: " + e.type);
+      };
+    });
+
   }
   
   var App = {

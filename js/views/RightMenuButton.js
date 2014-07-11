@@ -43,7 +43,7 @@ define('views/RightMenuButton', [
 //    },
 //    
 //    hidePanels: function(e) {
-////      if (e && e.currentTarget == this.el)
+////      if (e && e.selectorTarget == this.el)
 ////        return;
 //      
 //      Events.stopEvent(e);

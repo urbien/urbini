@@ -1577,10 +1577,10 @@
         <img src="{{= img }}" style="display:block; width: 100%;" />    
       {{ }              }}
       {{ if (obj.details) { }}
-      <div style="padding:1rem 1rem; width:100%;">{{= details }}</div>
+      <div style="padding:1rem 1rem; width:100%;box-sizing: border-box;">{{= details }}</div>
       {{ }                }}
       
-      <div style="text-align:center; padding-bottom:2rem;">
+      <div style="text-align:center;">
       {{ if (obj.cancel) { }}
       <a href="#" class="dialogBtn" data-cancel="true">{{= loc(typeof cancel === 'string' ? cancel : 'cancel') }}</a>
       {{ }                 }}

@@ -84,7 +84,7 @@ define('views/ControlPanel', [
 
     hideOverlays: function() {
       this.$('.anim-overlay').$removeClass('anim-overlay-active');
-      this.redelegateEvents();
+//      this.redelegateEvents();
     },
     
     onswiperight: function(e) {
@@ -93,7 +93,7 @@ define('views/ControlPanel', [
 
     onswipeleft: function(e) {
       this.hideOverlays();
-      var li = getLi(e.currentTarget),
+      var li = getLi(e.selectorTarget),
           blProp = this.vocModel.properties[li.$data('backlink')],
           vocModel = U.getModel(blProp.range),
           uri = li.$data('uri'),
@@ -127,7 +127,7 @@ define('views/ControlPanel', [
         overlay.$addClass('anim-overlay-active');
       }, 1);
       
-      this.redelegateEvents();
+//      this.redelegateEvents();
     },
     
     actionCancel: function(e) {
@@ -176,7 +176,7 @@ define('views/ControlPanel', [
     
     cancel: function(e) {
       Events.stopEvent(e);
-      var li = getLi(e.currentTarget);
+      var li = getLi(e.selectorTarget);
       if (!li) {
         debugger;
         return;
@@ -252,7 +252,7 @@ define('views/ControlPanel', [
     },
     
 //    lookupFrom: function(e) {
-//      var data = e.currentTarget.dataset,
+//      var data = e.selectorTarget.dataset,
 //          res = this.resource,
 //          meta = this.vocModel.properties,
 //          lookupFrom = data.lookupfrom.split('.'),
@@ -296,7 +296,7 @@ define('views/ControlPanel', [
 //    },
     
     clickInlined: function(e) {
-      var link = e.currentTarget,
+      var link = e.selectorTarget,
           dataBL = link.$data('backlink');
       
       if (dataBL == 'tradleRules') {
@@ -383,7 +383,7 @@ define('views/ControlPanel', [
 //        return;
 //      
 //      Events.stopEvent(e);
-      var t = e.currentTarget;
+      var t = e.selectorTarget;
       if (t.tagName != 'A')
         return;
       
@@ -697,8 +697,8 @@ define('views/ControlPanel', [
 //    },
     
     toggleInlineScroller: function(e) {
-      var pName = e.currentTarget.$data('propname');
-      var li = e.currentTarget,
+      var pName = e.selectorTarget.$data('propname');
+      var li = e.selectorTarget,
           pName = li.$data('propname'),
           info = this._backlinkInfo[pName];
       
@@ -715,7 +715,7 @@ define('views/ControlPanel', [
       e.stopPropagation();
       
       var self = this,
-          li = e.currentTarget,
+          li = e.selectorTarget,
           pName = li.$data('propname'),
           info = this._backlinkInfo[pName];
       
@@ -740,7 +740,7 @@ define('views/ControlPanel', [
       e.gesture.stopPropagation();
       e.gesture.stopDetect();
       e.stopPropagation();
-      var li = e.currentTarget,
+      var li = e.selectorTarget,
           pName = li.$data('propname'),
           info = this._backlinkInfo[pName];
       

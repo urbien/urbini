@@ -121,7 +121,7 @@ define('views/EditView', [
         
         promises.push(dfd.promise());
         fetchPromise.done(function() {
-          var enumRangeUri = res.get('enumerationRangeUri');
+          var enumRangeUri = res.get('eventPropertyRangeUri');
           var enumModel = U.getEnumModel(enumRangeUri);
           if (enumModel == null)
             Voc.getModels(enumRangeUri).done(dfd.resolve).fail(dfd.reject);
@@ -251,7 +251,7 @@ define('views/EditView', [
 
     cameraCapture: function(e) {
       var self = this,
-          target = e.currentTarget,
+          target = e.selectorTarget,
           propName = target.$data('prop'),
           prop = self.vocModel.properties[propName],
           isImage = prop.range.endsWith('model/portal/Image');
@@ -328,7 +328,7 @@ define('views/EditView', [
       }
       
       // not using camera popup, using <input type="file" /> possibly with accept="image/*|audio/*|video/*;capture=camera;"
-      if (e.type === 'click' && e.currentTarget.tagName == 'A') {
+      if (e.type === 'click' && e.selectorTarget.tagName == 'A') {
         // trigger native file dialog or camera capture 
         Events.stopEvent(e);
         var input = $(target).parent().children().find('input[type="file"]');
@@ -511,11 +511,11 @@ define('views/EditView', [
 
     chooser: function(e) {
       Events.stopEvent(e);
-      var el = e.currentTarget;
+      var el = e.selectorTarget;
       var prop = el.name;
       // could be <span> or <label>
       if (!prop) {
-        prop = e.currentTarget.parentElement.name;
+        prop = e.selectorTarget.parentElement.name;
       }
 
 //      Events.off('chose:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
@@ -571,7 +571,7 @@ define('views/EditView', [
 //          params.$forResource = uri;
 //        
 //        params.$title = U.makeHeaderTitle(vocModel.displayName, prName);
-//        var mvList = (e.currentTarget.text || e.target.textContent).trim(); //e.target.innerText;
+//        var mvList = (e.selectorTarget.text || e.target.textContent).trim(); //e.target.innerText;
 //        mvList = mvList.slice(U.getPropDisplayName(pr).length + 1);
 //        params['$' + prop] = mvList;
 //        var typeUri = U.getTypeUri(pr.lookupFromType);
@@ -1196,7 +1196,7 @@ define('views/EditView', [
           p = prop.shortName;
       
       if (p == 'value' && U.isAssignableFrom(this.vocModel, 'commerce/trading/EnumRule')) {
-        var enumModel = U.getEnumModel(this.resource.get('enumerationRangeUri'));
+        var enumModel = U.getEnumModel(this.resource.get('eventPropertyRangeUri'));
         prop = info.prop = _.extend({}, prop, {
           "facet": enumModel.type,
           "range": "enum"
@@ -1487,7 +1487,7 @@ define('views/EditView', [
 //                $(self.ul1).trigger('create');
 //            }
           
-            self.redelegateEvents();
+//            self.redelegateEvents();
 //            var checkboxes = self.form.querySelectorAll('input[type="checkbox"]'),
 //                checkbox,
 //                i = checkboxes.length;

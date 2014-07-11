@@ -3882,7 +3882,41 @@ function getRectVertices(width, height) {
       this.enableEdgeConstraints();
       log(this.containerId + ": Enabling edge constraints on jump to END");
     },
-    
+
+    snapBy: function(x, y) {
+      var body =  this.offsetBody, 
+          pos = body.state.pos;
+      
+      x = x || 0;
+      y = y || 0;
+      return this.snapTo(pos.get(0) + x, pos.get(1) + y);
+    },
+
+    snapTo: function(x, y) {
+      var body =  this.offsetBody, 
+          pos = body.state.pos;
+      
+      x = typeof x == 'undefined' ? pos.get(0) : x;
+      y = typeof y == 'undefined' ? pos.get(1) : y;
+      
+      y = Math.min(y, this.headEdge.state.pos.get(1));
+      if (this.tailEdge)
+        y = Math.max(y, this.tailEdge.state.pos.get(1));
+      
+      this.breakHeadEdgeConstraint();
+      this.breakTailEdgeConstraint();
+      API.cancelPendingActions(body);
+      API.snapTo({
+        body: body,
+        stiffness: 0.03,
+        damping: 0.5,
+        drag: 0.1,
+        x: x, 
+        y: y, 
+        z: pos.get(2)
+      });
+    },
+
     page: function(numPages) {
       var coords = this.getTailEdgeCoords(),
           body = this.offsetBody,

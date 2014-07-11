@@ -31,7 +31,7 @@ define('views/HomePage', [
     
     getStarted: function(e) {
       Events.stopEvent(e);
-      var t = e.currentTarget;
+      var t = e.selectorTarget;
       if (t.tagName == 'A' && t.href && t.href != '#') {
         Events.trigger('navigate', t.href);
         return;

@@ -14,6 +14,77 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
     var delegateEvents = View.prototype.delegateEvents;
     var undelegateEvents = View.prototype.undelegateEvents;
     var hammer_events = 'touch release hold tap doubletap dragstart drag dragend dragleft dragright dragup dragdown swipe swipeleft swiperight swipeup swipedown transformstart transform transformend rotate pinch pinchin pinchout';
+//    var hammer_events_arr = hammer_events.split(' ');
+//
+//    function hammerOn(el, hammer, event, selector, method) {
+//      if (hammer_events.indexOf(event) == -1)
+//        return el.$on(event, selector, method);
+//      
+//      var args = [event];
+//      if (!method) {
+//        method = selector;
+//        selector = '';
+//      }
+//      else
+//        args.push(selector);
+//      
+//      args.push(method);
+//      if (!el._hammerProxies)
+//        el._hammerProxies = {};
+//      
+//      if (!el._hammerProxies[selector])
+//        el._hammerProxies[selector] = [];
+//        
+//      function proxy(e) {
+//        el.dispatchEvent(e);
+//      };
+//      
+//      proxy._original = method;
+//      el._hammerProxies[selector].push(proxy);
+//      hammer.on(event, proxy);
+//      return el.$on.apply(el, args);
+//    };
+//    
+//    function hammerOff(el, hammer, event, selector, method) {
+//      if (!el._hammerProxies || hammer_events_arr.indexOf(event) == -1)
+//        return;
+//      
+//      var args = [event],
+//          proxies,
+//          proxy,
+//          i;
+//      
+//      if (!method) {
+//        method = selector;
+//        selector = '';
+//      }
+//      else
+//        args.push(selector);
+//      
+//      proxies = el._hammerProxies[selector];
+//      if (!proxies)
+//        return;
+//      
+//      args.push(method);
+//      i = proxies.length;
+//      while (i--) {
+//        proxy = proxies[i];
+//        if (method) {
+//          if (proxy._original == method) {
+//            hammer.off(event, proxy);
+//            Array.removeFromTo(proxies, i, i + 1);
+//            break;
+//          }
+//        }
+//        else
+//          hammer.off(event, proxy);          
+//      }
+//      
+//      if (!method)
+//        proxies.length = 0;
+//        
+//      el.$off.apply(el, args);
+//    }
     
     /**
      * @return obj[name] or this[obj[name]] depending on which is a function 
@@ -47,7 +118,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
     Backbone.View = View.extend({
       tagName: null,
       defaultTagName: 'div',
-      viaHammer: false,
+//      viaHammer: false,
       constructor: function(options){
         options = options || {};
 //        if (!_.has(options, 'delegateEvents') && this.autoFinish !== false)
@@ -55,6 +126,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         
         _.extend(this, _.pick(options, viewOptions));
 
+        this._delegatedEventsFor = [];
         this.autocreate = !!( !this.parentView || this.tagName || options.createElement );
         // don't autocreate elements for subviews unless:
         //   this view has the tagName property OR
@@ -140,7 +212,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
 //        element = $element[0];
 //        this.$el = $element; // may not be set yet even if this.el is
         if (this.el) {
-          if (this.el == element && this._delegatedEvents) // events have been delegated
+          if (this.el == element && ~this._delegatedEventsFor.indexOf(this)) // events have been delegated
             return this;
         
           this.undelegateEvents();
@@ -169,8 +241,8 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
           renderData.attributes.add = attrs;
           
         DOM.render(this.el, renderData);
-        if (this.viaHammer)
-          this.hammer();
+//        if (this.viaHammer)
+//          this.hammer();
         
         if (delegate !== false) 
           this.delegateEvents();
@@ -201,7 +273,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       },
       
       empty: function() {
-        this.undelegateEvents();
+//        this.undelegateEvents(); // modern browsers will auto-unbind
         this.el.innerHTML = "";
       },
       
@@ -220,8 +292,51 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
 //          return hammer;
 //        }
 //      },
+//
+//      _delegateDOMEvents1: function(events, view, delegated) {
+//        var el = view.el,
+//            hammer = view._hammer,
+//            options = this.hammerOptions,
+//            gutless = !el.childNodes.length,
+//            method,
+//            eventInfo,
+//            eventName;
+//            
+//        for(var key in events) {
+//          if (delegated[key])
+//            continue;
+//          
+//          eventInfo = getEventInfo(key);
+//          if (gutless && eventInfo.selector)
+//            continue;
+//          
+//          eventName = eventInfo.eventName;
+//          method = getFunction.call(this, events, key);
+//          method = _.bind(method, this);
+//          delegated[key] = method;
+//
+//          if (eventInfo.selector) {
+//            var els = el.$(eventInfo.selector),
+//                i = els.length;
+//            
+//            while (i--) {
+//              els[i].$on(eventName, method);
+//            }
+//            
+//          }
+//          else {
+//            if (hammer)
+//              hammer.on(eventName, method); // use view's hammer (for view element)
+//            else
+//              el.$on(eventName, method);
+//          }
+//        }
+//      },
 
-      _delegateDOMEvents: function(events, view, delegated) {
+      _delegateDOMEvents: function(events, view) {
+        if (~this._delegatedEventsFor.indexOf(view))
+          return;
+        
         var el = view.el,
             hammer = view._hammer,
             options = this.hammerOptions,
@@ -231,34 +346,31 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
             eventName;
             
         for(var key in events) {
-          if (delegated[key])
-            continue;
+//          if (delegated[key])
+//            continue;
           
           eventInfo = getEventInfo(key);
-          if (gutless && eventInfo.selector)
-            continue;
+//          if (gutless && eventInfo.selector)
+//            continue;
           
           eventName = eventInfo.eventName;
           method = getFunction.call(this, events, key);
-          method = _.bind(method, this);
-          delegated[key] = method;
-
+//          method = _.bind(method, this);
           if (eventInfo.selector) {
-            var els = el.$(eventInfo.selector),
-                i = els.length;
-            
-            while (i--) {
-              els[i].$on(eventName, method);
-            }
-            
+//            if (hammer)
+//              hammerOn(el, hammer, eventName, eventInfo.selector, method);
+//            else
+              el.$on(eventName, eventInfo.selector, method);
           }
           else {
-            if (hammer)
-              hammer.on(eventName, method); // use view's hammer (for view element)
-            else
+//            if (hammer)
+//              hammerOn(el, hammer, eventName, method);
+//            else
               el.$on(eventName, method);
           }
         }
+        
+        this._delegatedEventsFor.push(view);
       },
 
       delegateNonDOMEvents: function() {
@@ -333,40 +445,71 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
         return this;        
       },
       
-      _undelegateDOMEvents: function(delegated, view) {
-        if (!delegated || !view.el)
+//      _undelegateDOMEvents: function(delegated, view) {
+//        if (!delegated || !view.el)
+//          return;
+//        
+//        var el = view.el,
+//            hammer = view._hammer,
+//            gutless = !el.childNodes.length,
+//            eventInfo,
+//            eventName,
+//            method;
+//        
+//        for (var key in delegated) {
+//          eventInfo = getEventInfo(key);
+//          if (gutless && eventInfo.selector)
+//            continue;
+//          
+//          eventName = eventInfo.eventName;
+//          method = delegated[key];
+//          if (eventInfo.selector) {
+//            els = el.$(eventInfo.selector);
+//            i = els.length;
+//            while (i--) {
+//              els[i].$off(eventName, method);
+//            }
+//          }
+//          else {
+//            if (hammer)
+//              hammer.off(eventName, method);
+//            else
+//              el.$off(eventName, method);
+//          }
+//          
+//          delete delegated[key];
+//        }
+//      },
+      
+      _undelegateDOMEvents: function(view) {
+        view = view || this;
+        if (this._delegatedEventsFor.indexOf(view) == -1)
           return;
         
         var el = view.el,
-            hammer = view._hammer,
-            gutless = !el.childNodes.length,
+            events = view.events,
             eventInfo,
-            eventName,
+            event,
+            selector,
             method;
         
-        for (var key in delegated) {
-          eventInfo = getEventInfo(key);
-          if (gutless && eventInfo.selector)
-            continue;
-          
-          eventName = eventInfo.eventName;
-          method = delegated[key];
-          if (eventInfo.selector) {
-            els = el.querySelectorAll(eventInfo.selector);
-            i = els.length;
-            while (i--) {
-              els[i].$off(eventName, method);
-            }
-          }
-          else {
-            if (hammer)
-              hammer.off(eventName, method);
+        if (events) {
+          for (var key in events) {
+            method = events[key];
+            if (typeof method == 'string')
+              method = view[method];
+            
+            eventInfo = getEventInfo(key);
+            selector = eventInfo.selector;
+            event = eventInfo.eventName;
+            if (selector)
+              el.$off(event, selector, method);
             else
-              el.$off(eventName, method);
+              el.$off(event, method);
           }
-          
-          delete delegated[key];
         }
+        
+        Array.remove(this._delegatedEventsFor, view);
       },
 
       undelegateNonDOMEvents: function() {        
@@ -426,9 +569,9 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
   //          return;
           
           if (this.events)
-            this._delegateDOMEvents(this.events, this, this._delegatedEvents = this._delegatedEvents || {});
+            this._delegateDOMEvents(this.events, this); //, this._delegatedEvents = this._delegatedEvents || {});
           if (this.pageEvents && this.pageView)
-            this._delegateDOMEvents(this.pageEvents, this.pageView, this._delegatedPageEvents = this._delegatedPageEvents || {});
+            this._delegateDOMEvents(this.pageEvents, this.pageView); //, this._delegatedPageEvents = this._delegatedPageEvents || {});
         }
         
         return this;
@@ -440,12 +583,12 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       undelegateEvents: function() {
         if (this.el) {
           if (this.events) {
-            this._undelegateDOMEvents(this._delegatedEvents, this);
-            delete this._delegatedEvents;
+            this._undelegateDOMEvents(); ///*this._delegatedEvents, */this);
+//            delete this._delegatedEvents;
           }
           if (this.pageEvents && this.pageView) {
-            this._undelegateDOMEvents(this._delegatedPageEvents, this.pageView);
-            delete this._delegatedPageEvents;
+            this._undelegateDOMEvents(/*this._delegatedPageEvents, */this.pageView);
+//            delete this._delegatedPageEvents;
           }
         }
         
@@ -453,20 +596,20 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       },
       
       redelegateEvents: function() {
-        this.undelegateEvents();
-        this.delegateEvents();
+//        this.undelegateEvents();
+//        this.delegateEvents();
       },
       
-      hammer: function(options) {
-        if ((!this._hammered && this.el) || 
-            (this._hammered && this.el !== this._hammer.element)) {
-          this._hammered = true;
-          this._hammer = new Hammer(this.el, this.hammerOptions || {}, Backbone.hammerOptions);
-//          this._hammer.on(hammer_events, this._debug.bind(this));
-        }
-        
-        return this._hammer;
-      },
+//      hammer: function(options) {
+//        if ((!this._hammered && this.el) || 
+//            (this._hammered && this.el !== this._hammer.element)) {
+//          this._hammered = true;
+//          this._hammer = new Hammer(this.el, this.hammerOptions || {}, Backbone.hammerOptions);
+////          this._hammer.on(hammer_events, this._debug.bind(this));
+//        }
+//        
+//        return this._hammer;
+//      },
 
       _debug: function(e) {
         var args = _.toArray(arguments);
