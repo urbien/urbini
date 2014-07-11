@@ -1237,7 +1237,7 @@ section[id^="view"] {
 }
 
 .social-login i {
-  font-size: 29px; /*50px;*/
+  font-size: 27px; /*50px;*/
 }
 
 .social-login .encircled {
@@ -1292,26 +1292,35 @@ section[id^="view"] {
   z-index: -1;
   visibility: hidden;
   opacity: 0;
-  background: rgba( 0, 0, 0, 0.5 );
+  /*background: rgba( 0, 0, 0, 0.5 );
+  background: rgba( 122, 170, 195, 0.5 );*/
+  background: rgba( 47, 70, 150, 0.3 );
 }
 
 .modal-popups {
+  visibility: hidden;
   text-align: center;
-}
-
-.modal-active .modal-cover, .modal-active .modal-popups {
-  visibility: visible;
-  /*opacity: 0.2;*/
   z-index: 10005;
   width: 100%;
 }
 
+.modal-active .modal-cover, .modal-active .modal-popups {
+  visibility: visible;
+}
+
+.modal-active .modal-cover {
+  z-index: 10004;
+  opacity: 1;
+}
+
 .modal-active [data-role="page"] {
   z-index:0;
-  -webkit-filter: blur(2px) contrast(0.4) brightness(1.4);
+/*  -webkit-filter: blur(2px) contrast(0.4) brightness(1.4);
      -moz-filter: blur(2px) contrast(0.4) brightness(1.4);          
-          filter: url(data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+DQoJPGZpbHRlciBpZD0iYmx1ciI+DQoJCTxmZUdhdXNzaWFuQmx1ciBzdGREZXZpYXRpb249IjIiIC8+DQoJPC9maWx0ZXI+DQo8L3N2Zz4=#blur);          
+          filter: url(data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+DQoJPGZpbHRlciBpZD0iYmx1ciI+DQoJCTxmZUdhdXNzaWFuQmx1ciBzdGREZXZpYXRpb249IjIiIC8+DQoJPC9maWx0ZXI+DQo8L3N2Zz4=#blur);
+          */          
 }
+
 .section-header:after {
    content: '';
    position: absolute; 
@@ -1374,6 +1383,7 @@ section[id^="view"] {
 
   -webkit-transition: 0.3s all cubic-bezier(0.250, 0.460, 0.450, 0.940);
      -moz-transition: 0.3s all cubic-bezier(0.250, 0.460, 0.450, 0.940);
+      -ms-transition: 0.3s all cubic-bezier(0.250, 0.460, 0.450, 0.940);
           transition: 0.3s all cubic-bezier(0.250, 0.460, 0.450, 0.940);
 }
 
@@ -1385,9 +1395,9 @@ section[id^="view"] {
 
 .encircled {
   border-radius: 50%;
-  padding: 8px 8px 8px 8px;
-  width: 30px;
-  height: 30px;
+  padding: 9px 9px 9px 9px;
+  width: 34px;
+  height: 34px;
   border: 3px solid #fff;
 }
 
@@ -1416,7 +1426,7 @@ section[id^="view"] {
 }
 
 .dialogBtn {
-  display: inline;
+  display: inline-block;
   border: 1px solid black;
   border-radius: 0.4rem;
   font-size: 2rem;
@@ -1535,16 +1545,19 @@ label.subClass {
   color: #7aaac3;
   -webkit-transform: translateX(100%);
      -moz-transform: translateX(100%);
+      -ms-transform: translateX(100%);
           transform: translateX(100%);
 
   -webkit-transition: 0.3s ease;
      -moz-transition: 0.3s ease;
+      -ms-transition: 0.3s ease;
           transition: 0.3s ease;
 }
 
 .anim-overlay.anim-overlay-active {
   -webkit-transform: translateX(0);
      -moz-transform: translateX(0);
+      -ms-transform: translateX(0);
           transform: translateX(0);
 }
 

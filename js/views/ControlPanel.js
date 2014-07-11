@@ -22,7 +22,7 @@ define('views/ControlPanel', [
     return bl;
   };
   
-  var CLICK_INDICATOR = 'Click one of your chosen indicators to create a rule for it';
+  var CLICK_INDICATOR = 'Click an indicator to create a rule. <br /><br /> Swipe from right to left on rules or indicators for a list of actions.';
   
   return BasicView.extend({
     tagName: "tr",
@@ -66,7 +66,8 @@ define('views/ControlPanel', [
       'click [data-action="cancel"]': 'actionCancel',
       'click [data-action="add"]': 'actionAdd',
       'click [data-action="edit"]': 'actionEdit',
-      'click [data-action="comment"]': 'actionComment'
+      'click [data-action="comment"]': 'actionComment',
+      'click .anim-overlay': Events.stopEvent
 //        ,
 //      'click': 'click'
     },
@@ -84,7 +85,6 @@ define('views/ControlPanel', [
 
     hideOverlays: function() {
       this.$('.anim-overlay').$removeClass('anim-overlay-active');
-//      this.redelegateEvents();
     },
     
     onswiperight: function(e) {
@@ -125,9 +125,7 @@ define('views/ControlPanel', [
         
       setTimeout(function() {  
         overlay.$addClass('anim-overlay-active');
-      }, 1);
-      
-//      this.redelegateEvents();
+      }, 1);      
     },
     
     actionCancel: function(e) {
@@ -234,10 +232,13 @@ define('views/ControlPanel', [
     
     _addNoIntersection: function(prop, target) {
       var params = {
-          '$backLink': prop.backLink,
+        '$backLink': prop.backLink,
           '-makeId': G.nextId()
         },
         title = target && target.$data('title');
+
+      if (title)
+        params.$title = title;
 
       if (title)
         params.$title = title;
@@ -396,7 +397,7 @@ define('views/ControlPanel', [
     },
     
     addToBacklink: function(prop, t) {
-      var self = this,
+      var self = this,       
           setLinkTo = prop.setLinkTo;
 //      ,
 //          count = U.getBacklinkCount(this.resource, shortName);
@@ -509,7 +510,7 @@ define('views/ControlPanel', [
         U.addToFrag(frag, this.propGroupsDividerTemplate({
           value: propDisplayName,
           add: canAdd,
-          shortName: getBacklinkSub(vocModel, name)
+          shortName: getBacklinkSub(vocModel, name),
           style: prop.propertyStyle
         }));
       }

@@ -187,6 +187,34 @@
         <div class="span_1_of_{{= cols }}">
           <i class="ui-icon-comments" data-action="comment"></i>
         </div>
+  {{ } }}
+    </div>
+  </div>
+</script>
+
+<script type="text/template" id="actionsOverlayTemplate">
+  <div class="anim-overlay centered" data-uri="{{= _uri }}">
+    <div class="anim-overlay-content vcenteredR" style="width:100%;">
+      {{ var cols = _.compact(_.values(actions)).length; }}
+      {{ if (actions.cancel) {     }}
+        <div class="span_1_of_{{= cols }}" style="color:#f00;">
+          <i class="ui-icon-remove" data-action="cancel"></i>
+        </div>
+      {{  }                       }}
+      {{ if (actions.add) {     }}
+        <div class="span_1_of_{{= cols }}">
+          <i class="ui-icon-plus" data-action="add"></i>
+        </div>
+      {{  }                       }}
+      {{ if (actions.edit) {     }}
+        <div class="span_1_of_{{= cols }}">
+          <i class="ui-icon-edit" data-action="edit"></i>
+        </div>
+      {{  }                       }}
+      {{ if (actions.comment) {      }}
+        <div class="span_1_of_{{= cols }}">
+          <i class="ui-icon-comments" data-action="comment"></i>
+        </div>
       {{  }                       }}
     </div>
   </div>
@@ -304,9 +332,9 @@
           <strong>Get access & the invites to give away</strong>
           <div>
             {{ var n = G.currentUser.referredInstalls || 0; }}
-            Any URL on Tradle contains a personal tracker. Post it anywhere online and earn rewards on signups and sales you facilitated.
+            Post any Tradle URL anywhere online and earn rewards on signups and sales you facilitate.
             {{ if (G.currentUser.guest ) { }}
-              You must <a href="#" class="link reqLogin">login</a> to get a personal link.
+              <a href="#" class="link reqLogin">Login</a> and all links in your address bar become personalized.
             {{ }                            }}
             {{ if (!G.currentUser.guest ) { }}
             You've signed up 

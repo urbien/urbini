@@ -70,50 +70,50 @@ define('views/Header', [
       if (this.resource && /^view/.test(this.hash) && this.resource.isA('Activatable'))
         this.activatedProp = vocModel.properties[U.getCloneOf(vocModel, 'Activatable.activated')[0]];
 
-      if (this.collection) {
-        var self = this,
-            params = this.hashParams,
-            forRes = params.$forResource,
-            forResType = forRes && U.getTypeUri(forRes),
-            forResModel = forRes && U.getModel(forResType),
-            $params = params.$indicator || params.$params,
-            forTradle = $params ? _.toQueryParams($params).tradle : params.tradle,
-            name, 
-            uri;
-            
-        if (forTradle) {
-          this.folder = {
-            name: 'Tradle',
-            uri: forTradle
-          }
-        }
-        else if (forRes) {
-          this.folder = {
-            name: forResModel ? forResModel.displayName : forResType.slice(forResType.lastIndexOf('/') + 1).uncamelize(true),
-            uri: forRes
-          }
-          
-          if (U.getTypeUri(forRes).endsWith('commerce/trading/TradleIndicator')) {
-            U.getResourcePromise(forRes).done(function(indicator) {
-              self.folder = {
-                name: 'Tradle',
-                uri: indicator.get('tradle')
-              }
-              
-              self.refreshFolder();
-            });
-          }
-        }
-      }
-      else if (this.resource && U.isA(vocModel, 'FolderItem')) {
-        var pName = this.hashParams.$rootFolderProp || U.getCloneOf(vocModel, 'FolderItem.rootFolder')[0] || U.getCloneOf(vocModel, 'FolderItem.folder')[0];
-        if (pName) {
-          this.folder = {
-            shortName: pName,
-            name: U.getPropDisplayName(vocModel.properties[pName])
-          };
-        }
-      }
+//      if (this.collection) {
+//        var self = this,
+//            params = this.hashParams,
+//            forRes = params.$forResource,
+//            forResType = forRes && U.getTypeUri(forRes),
+//            forResModel = forRes && U.getModel(forResType),
+//            $params = params.$indicator || params.$params,
+//            forTradle = $params ? _.toQueryParams($params).tradle : params.tradle,
+//            name, 
+//            uri;
+//            
+//        if (forTradle) {
+//          this.folder = {
+//            name: 'Tradle',
+//            uri: forTradle
+//          }
+//        }
+//        else if (forRes) {
+//          this.folder = {
+//            name: forResModel ? forResModel.displayName : forResType.slice(forResType.lastIndexOf('/') + 1).uncamelize(true),
+//            uri: forRes
+//          }
+//          
+//          if (U.getTypeUri(forRes).endsWith('commerce/trading/TradleIndicator')) {
+//            U.getResourcePromise(forRes).done(function(indicator) {
+//              self.folder = {
+//                name: 'Tradle',
+//                uri: indicator.get('tradle')
+//              }
+//              
+//              self.refreshFolder();
+//            });
+//          }
+//        }
+//      }
+//      else if (this.resource && U.isA(vocModel, 'FolderItem')) {
+//        var pName = this.hashParams.$rootFolderProp || U.getCloneOf(vocModel, 'FolderItem.rootFolder')[0] || U.getCloneOf(vocModel, 'FolderItem.folder')[0];
+//        if (pName) {
+//          this.folder = {
+//            shortName: pName,
+//            name: U.getPropDisplayName(vocModel.properties[pName])
+//          };
+//        }
+//      }
 
       return this;
     },
@@ -258,6 +258,24 @@ define('views/Header', [
     
     activate: function(e, force) {
       e && Events.stopEvent(e);
+      
+      if (U.isAssignableFrom(this.vocModel, "commerce/trading/Tradle")) {
+        var msg;        
+        if (this.resource.get('title') == '')
+          msg = 'Please give your Tradle a title';
+        else if (!this.resource.get('description'))
+          msg = 'Please give your Tradle a description';
+        
+        if (msg) {
+          Events.trigger('navigate', U.makeMobileUrl('edit', this.resource.getUri(), {
+            '-info': msg,
+            '$editCols': 'title,description'
+          }));
+          
+          return;
+        }
+      }
+
       var self = this;
       U.require('views/ModalDialog').done(function(MD) {
         ModalDialog = MD;
@@ -296,6 +314,7 @@ define('views/Header', [
           return;
         }
       }
+      
       if (!force && activated && U.isAssignableFrom(this.vocModel, "commerce/trading/Tradle")) {
         function undo() {
           e.selectorTarget.checked = false;
@@ -705,33 +724,26 @@ define('views/Header', [
     },
     
     refreshFolder: function() {
-      if (true)
-        return; // for now
-      
-      if (!this.folder)
-        return;
-      
-      if (!this.folder.uri) {
-        this.folder.uri = (this.resource && this.resource.get(this.folder.shortName)) || 
-                          this.hashParams[this.folder.shortName] || 
-                          this.hashParams.$rootFolder ||
-                          this.hashParams.$forResource;
-      }
-          
-      if (!this.folder.uri)
-        return;
-      
-      var rootFolderEl = this.$('.rootFolder')[0];
-      if (!rootFolderEl)
-        return;
-      
-      rootFolderEl.style.display = 'initial';
-      rootFolderEl.$('span')[0].textContent = this.folder.name;
-      rootFolderEl.href = U.makePageUrl('view', this.folder.uri);
-//        else {
-//          rootFolderEl.classList.add('back');
-//          this.redelegateEvents();
-//        }
+//      if (!this.folder)
+//        return;
+//      
+//      if (!this.folder.uri) {
+//        this.folder.uri = (this.resource && this.resource.get(this.folder.shortName)) || 
+//                          this.hashParams[this.folder.shortName] || 
+//                          this.hashParams.$rootFolder ||
+//                          this.hashParams.$forResource;
+//      }
+//          
+//      if (!this.folder.uri)
+//        return;
+//      
+//      var rootFolderEl = this.$('.rootFolder')[0];
+//      if (!rootFolderEl)
+//        return;
+//      
+//      rootFolderEl.style.display = 'initial';
+//      rootFolderEl.$('span')[0].textContent = this.folder.name;
+//      rootFolderEl.href = U.makePageUrl('view', this.folder.uri);
     },
     
 //    _getRootFolderHref: function() {
