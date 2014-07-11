@@ -1472,6 +1472,7 @@ section[id^="view"] {
   
   .gauges {
     padding: 3rem 1rem;
+    margin-top: -1.5rem;
   }
   
   .gauge {
