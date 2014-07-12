@@ -75,7 +75,7 @@
       <div id="mainGroup" style="padding-right:5px;"></div>
     {{ } }}
 
-
+    <div class="quickstart"></div>
     <!--div id="resourceImage" style="width:50%;float:left;margin:0; padding:0;"--><!-- style="width:auto" --></div>
     <!--div id="buyGroup" class="ui-block-b" style="width:50%; min-width: 130px"></div-->
   </div>
@@ -116,6 +116,55 @@
 </div-->
 <br/>
 </script>  
+
+<script type="text/template" id="quickstartTemplate">
+{{ if (G.currentApp.appPath == 'Tradle') { }}
+<div class="quickstart-content">
+<i class="ui-icon-remove closeQuickstart" style="position:absolute; top: 0; right: 12px; font-size: 20px; color: {{= G.lightColor }}"></i>
+<h2>Quickstart</h2>
+<ol class="quickstart-options">
+  {{ var desc = this.resource.get('description'); }}
+  <li>
+    <a href="#" data-href="{{= U.makePageUrl('edit', this.resource.getUri(), { $editCols: 'title,description' }) }}">
+      {{ if (!desc) { }}
+        Name your Tradle and describe what it does
+      {{ }           }}
+      {{ if (desc) { }}
+        Edit your Tradle's description
+      {{ }           }}
+    </a>
+  </li>
+  {{ if (desc) { }}
+    <li>
+      <a href="#" data-selector="header [data-shortname=&quot;feeds&quot;] i" data-tooltip="Click here to add indicators" data-direction="left">
+        Add indicators to your Tradle.
+      </a>
+    </li>          
+    {{ var il = this.resource.inlineLists; }}
+    {{ if (il && il.indicators && il.indicators.length) { }}
+      <li>
+        <a href="#" data-selector="li[data-backlink=&quot;indicators&quot;]" data-tooltip="Click an indicator to make a rule with it" data-direction="top">
+          Make rules out of the indicators you've chosen
+        </a>
+      </li>
+      {{ if (il.tradleRules.length) { }}
+        <li>
+          <a href="#" data-selector="header [data-shortname=&quot;notifications&quot;] i" data-tooltip="Click here to setup notifications" data-direction="left">
+            Get notified when your Tradle fires
+          </a>
+        </li>
+        <li>
+          <a href="#" data-selector="header [data-shortname=&quot;orders&quot;] i" data-tooltip="Click here to add trades" data-direction="left">
+            Add trades to be executed when your Tradle fires
+          </a>
+        </li>
+      {{ }                                        }}
+    {{ }                                        }}
+  {{ }                                        }}
+</ol>
+</div>
+{{ }                                       }}
+</script>
 
 <script type="text/template" id="ftItemTemplate">
   <li class="ftItem">
@@ -165,7 +214,7 @@
 </script>
 
 <script type="text/template" id="actionsOverlayTemplate">
-  <div class="anim-overlay centered" data-uri="{{= _uri }}">
+  <div class="anim-overlay anim-overlay-active centered" data-uri="{{= _uri }}">
     <div class="anim-overlay-content vcenteredR" style="width:100%;">
       {{ var cols = _.compact(_.values(actions)).length; }}
       {{ if (actions.cancel) {     }}
@@ -321,8 +370,15 @@
   <div class="section light" id="section_bg">
   <div class="section-content">
     <div class="title-block">
+    {{ var activated = G.currentUser.isActivated; }}
+    {{ if (activated) { }} 
+      <span class="section-title">You got early access!</span>
+      <span class="section-title _2">See how to make the most of your Tradle membership below</span>
+    {{ }                                 }}
+    {{ if (!activated) { }} 
       <span class="section-title">There are {{= G.currentUser.numberInLine }} users ahead of you</span>
       <span class="section-title _2">But don't wait, get involved now!</span>
+    {{ }                                 }}
     </div>
     <div class="group">
       <div class="col span_1_of_3">
@@ -1593,7 +1649,7 @@
     {{ }                 }}
     
     {{ if (obj.ok === false && obj.cancel === false && obj.dismissible) { }}
-      <div class="closeDialogBtn"></div>
+      <div class="closeBtn"></div>
     {{ }                 }}
   
     {{ if (obj.ok || obj.cancel)                     { }}
@@ -1821,14 +1877,9 @@
     <div style="clear:both"></div>
   </div>
   <div class="cf vcenteredR" style="z-index:1; width:20%;float:left;background:inherit;">
-    {{ if (activatedProp) { }}
-      <section class="activatable" style="float: right; display: none;">
-        <label class="pack-switch" style="float: right; right: 2rem; vertical-align:inherit; color:{{= G.darkColor }};">
-          <input type="checkbox" name="{{= activatedProp.shortName }}" class="formElement boolean" {{= this.resource.get(activatedProp.shortName) ? 'checked="checked"' : '' }} />
-          <span></span>
-        </label>
-      </section>
-    {{ }                     }}
+    {{ if (this._hashInfo.route == 'view') { }}    
+    <i class="help ui-icon-help" style="float:right; font-size:32px; margin-right: 10px; cursor: pointer;"></i>
+    {{ }                  }}
     {{ if (this.filter) { }}
       <div style="margin-right: 5px; display:inline-block; float: right;"><a class="filterToggle lightText" href="#"><i class="ui-icon-search"></i></a></div> 
     {{ }                  }}

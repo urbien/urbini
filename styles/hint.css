@@ -1,0 +1,226 @@
+.play {
+  z-index: 10005;
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  opacity: 1;
+  -webkit-transition: opacity .5s ease;
+     -moz-transition: opacity .5s ease;
+      -ms-transition: opacity .5s ease;
+          transition: opacity .5s ease;
+
+  pointer-events: none;
+  background: transparent;
+}
+
+.play .glow {
+  position: absolute;
+  top: -22px;
+  left: -22px;
+  width: 60px;
+  height: 60px;
+  -webkit-border-radius: 40px;
+     -moz-border-radius: 40px;
+      -ms-border-radius: 40px;
+          border-radius: 40px;
+
+  border: 1em solid rgba(255,0,0,1);
+  opacity: 0;
+  -webkit-animation: 2s blip infinite ease-in-out;
+     -moz-animation: 2s blip infinite ease-in-out;
+      -ms-animation: 2s blip infinite ease-in-out;
+          animation: 2s blip infinite ease-in-out;
+}
+
+.play.yellow .glow {
+  border: 1em solid rgba(255,255,50,1);
+}
+
+.play .shape {
+  position: absolute;
+  top: 7px;
+  left: 7px;
+  width: 26px;
+  height: 26px;
+  opacity: 0.5;
+  -webkit-border-radius: 40px;
+     -moz-border-radius: 40px;
+      -ms-border-radius: 40px;
+          border-radius: 40px;
+  background: rgba(255,0,0,0.8);
+  box-shadow: 0 0 1px rgba(255,0,0,1);
+  -webkit-box-shadow: 0 0 1px rgba(255,0,0,1);
+}
+
+.play.yellow .shape {
+  background: rgba(255,255,50,0.9);
+  box-shadow: 0 0 1px rgba(255,255,50,1);
+  -webkit-box-shadow: 0 0 1px rgba(255,255,50,1);
+}
+
+.play.hide {
+  display: none;
+}
+
+@keyframes blip {   
+  0% {
+    transform: scale(.1); 
+    opacity: 0;
+  }
+  1% {
+    transform: scale(.35); 
+    opacity: .8;
+  }
+  60% {
+    opacity: 0;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1);
+  }
+}
+@-webkit-keyframes blip {   
+  0% {
+    -webkit-transform: scale(.1);
+    opacity: 0;
+  }
+  1% {
+    -webkit-transform: scale(.35); 
+    opacity: .8;
+  }
+  60% {
+    opacity: 0;
+    -webkit-transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    -webkit-transform: scale(1);
+  }
+}
+
+.hint--always .content {
+  -webkit-transform: translate3d(0, 0, 0);
+  -moz-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  pointer-events: all;
+  position: absolute;
+  color: white;
+  padding: 8px 15px;
+  font-size: 16px;
+  /*white-space: nowrap;*/
+  min-width: 200px;
+  box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.hint--rounded .content {
+  border-radius: 4px; 
+}
+
+.hint--always .content:after {
+  content: '';
+  position: absolute;
+  background: transparent;
+  border: 6px solid transparent;
+  z-index: 1000001;
+}
+
+.hint--left .content {
+  right: 100%;
+  bottom: 50%;
+  margin-bottom: -23px;
+  margin-right: 8px;
+}
+
+.hint--left .content:after {
+  left: 100%;
+}
+
+.hint--right .content {
+  left: 100%;
+  bottom: 50%;
+  margin-bottom: -23px;
+  margin-left: 8px;
+}
+
+.hint--right .content:after {
+  left: 0%;
+  margin-left: -12px;
+}
+
+.hint--top .content {
+  margin-bottom: 8px;
+  bottom: 100%;
+}
+
+.hint--top .content:after {
+  margin-left: 15px;
+  left: 0%;
+  top: 100%;
+}
+
+.hint--bottom .content {
+  margin-top: 8px;
+  top: 100%;
+}
+
+.hint--bottom-left .content {
+  margin-top: 8px;
+  top: 100%;
+  right: 100%;
+  margin-right: -34px;
+}
+
+.hint--bottom-left .content:after {
+  margin-left: -20px;
+  margin-top: -12px;
+  left: 100%;
+  top: 0%;
+}
+
+.hint--bottom .content:after {
+  margin-left: 15px;
+  margin-top: -12px;
+  left: 0%;
+  top: 0%;
+}
+
+.hint--info .content {
+  background-color: #2892c6;
+  text-shadow: 0 -1px 0px #193b4d;
+}
+
+.hint--info .closeBtn {
+  background: #8A5DFF;
+}
+
+.hint--left.hint--info .content:after {
+  border-left-color: #3986ac;
+}
+
+.hint--top.hint--info .content:after {
+  border-top-color: #3986ac;
+}
+
+.hint--right.hint--info .content:after {
+  border-right-color: #3986ac;
+}
+
+.hint--bottom.hint--info .content:after, .hint--bottom-left.hint--info .content:after, .hint--bottom-right.hint--info .content:after {
+  border-bottom-color: #3986ac;
+}
+
+.hint--success .content {
+  background-color: #458746;
+  text-shadow: 0 -1px 0px #1a321a; 
+}
+
+.hint--warning .content {
+  background-color: #c09854;
+  text-shadow: 0 -1px 0px #6c5328; 
+}
+
+.hint-error .content {
+  background-color: #b34e4d;
+  text-shadow: 0 -1px 0px #592726;
+}

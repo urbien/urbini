@@ -2239,6 +2239,13 @@ define('utils', [
       return G.hostName + '/voc/dev' + type.slice(type.lastIndexOf('/'));
     },
 
+//    _appUrlRegex: new RegExp("^(https?:\/\/" + G.serverName.slice(G.serverName.indexOf('//') + 2) + "\/)?(" + G.pageRoot + ")?")
+    isExternalUrl: function(url) {
+      return url.startsWith(G.pageRoot) || 
+             (url.startsWith('http') && url.slice(url.indexOf('//') + 2).startsWith(G._serverName)) ||
+             !url.startsWith('http');
+    },
+    
     makeMobileUrl: function(action, typeOrUri, params) {
       if (arguments.length == 1) {
         typeOrUri = action;
@@ -3831,7 +3838,7 @@ define('utils', [
         existing && existing.$remove();
         holder.$html(popupHtml);
         if (options.dismissible)
-          holder.$('.closeDialogBtn').$on('tap', oncancel);
+          holder.$('.closeBtn').$on('tap', oncancel);
         
         dialog = holder.firstChild;
         dialog.style['zIndex'] = 1000000;

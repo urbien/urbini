@@ -713,7 +713,6 @@ define('views/Header', [
     refresh: function() {
 //      this.refreshCallInProgressHeader();
       this.refreshTitle();
-      this.refreshActivated();
       this.refreshFolder();
       this.calcSpecialButtons();
       this.renderSpecialButtons();
@@ -749,17 +748,6 @@ define('views/Header', [
 //    _getRootFolderHref: function() {
 //      return U.makePageUrl('view', this.rootFolder, rootFolder.params);
 //    },
-    
-    refreshActivated: function() {
-      this._checkActivatable();
-      if (this._activatable) {
-        var activatable = this.$('.activatable')[0];
-        if (activatable) {
-          activatable.style.display = 'inline-block';
-          activatable.$('input')[0].checked = this.resource.get(this.activatedProp.shortName) ? 'checked' : '';
-        }
-      }
-    },
     
     _isGeo: function() {
       return !_.isEmpty(_.pick(this.buttons, 'mapIt', 'aroundMe'));
@@ -914,7 +902,7 @@ define('views/Header', [
       SPECIAL_BUTTONS.forEach(function(btn) {
         var el = self.$('#{0}Btn'.format(btn));
         if (el) {
-          el.innerHTML = "";
+          el.$empty();
           el.$hide();
         }
       });
@@ -1217,7 +1205,6 @@ define('views/Header', [
       }
       this.renderPhysics();
       this.refreshTitle();
-      this.refreshActivated();
       this.refreshFolder();
 //      this.$el.prevObject.attr('data-title', this.pageTitle);
 //      this.$el.prevObject.attr('data-theme', G.theme.list);

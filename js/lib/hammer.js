@@ -416,7 +416,6 @@ Hammer.Instance.prototype = {
    * @returns {Hammer.Instance}
    */
   trigger: function triggerEvent(gesture, eventData) {
-    console.log("HAMMER: " + gesture);
     // optional
     if(!eventData) {
       eventData = {};

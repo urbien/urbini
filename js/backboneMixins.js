@@ -274,7 +274,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       
       empty: function() {
 //        this.undelegateEvents(); // modern browsers will auto-unbind
-        this.el.innerHTML = "";
+        this.el.$empty();
       },
       
       _hammered: false,

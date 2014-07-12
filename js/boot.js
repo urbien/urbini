@@ -78,6 +78,7 @@ DOMReady.add( function () {
   
     l.serverName = (function() {
       var h = window.location.href;
+      l._serverName = l.serverName;
       return h.slice(0, h.indexOf(l.serverName)) + l.serverName;
 /*      var s = d.getElementsByTagName('base')[0].href;
         return s.match("/$") ? s.slice(0, s.length - 1) : s; */
