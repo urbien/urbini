@@ -131,7 +131,10 @@
 .ui-icon-embed:before {
   content: "\e60f";
 }
-
+/* ALIASES */
+.ui-icon-share:before {
+  content: "\e05b";
+}
 [class^="ui-icon-"]:before,
 [class*=" ui-icon-"]:before {
   font-family: "tradle" !important;
@@ -145,7 +148,3 @@
   -moz-osx-font-smoothing: grayscale;
 }
 
-// ALIASES
-.ui-icon-share:before {
-  content: "\e05b";
-}
