@@ -973,12 +973,7 @@ define('router', [
       if (!this.routePrereqsFulfilled('article', arguments))
         return;
       
-      try {
-        this.view(path, 'article');
-      } finally {
-        if (G.currentUser.guest)
-          this._requestLogin();
-      }
+      this.view(path, 'article');
     },
 
     edit: function(path) {
@@ -1077,6 +1072,11 @@ define('router', [
       if (G.currentApp.isInPrivateBeta && !G.currentUser.isActivated) {
         // obviously not meant as security, if someone really wants to browse the site, let them 
         if (route != 'home' && route != 'static' && publicTypes.indexOf(type) == -1) {
+          if (G.currentUser.guest) {
+            this._requestLogin();
+            return false;  
+          }
+          
           Events.trigger('navigate', 'static/privateBetaPageTemplate', {replace: true});
           return false;
         }
@@ -1330,27 +1330,50 @@ define('router', [
       
       this.changePage(view);
       
-//      function success() {
-//        if (wasTemp)
-//          self._checkUri(res, uri, action);
-//        
-//        self.changePage(view);
-//        Events.trigger('navigateToResource:' + res.cid, res);
-//      };
-//      
-//      if (chat) {
-//        res.fetch();
-//        success();
-//      }
-//      else {
-//        res.fetch({
-////          sync: true, 
-//          forceFetch: forceFetch, 
-//          success: _.once(success)
-//        });
-//      }
+      // see if we want to clone
+      var params = hashInfo.params,
+          vocModel = model,
+          name = params.$title,
+          clone = params.$clone;
+    
+      if (!clone)
+        return this;
       
-      return true;
+      U.modalDialog({
+        id: 'cloneDialog',
+        header: 'Would you like to copy this {0} to your profile for free?'.format(vocModel.displayName),
+        ok: 'Copy',
+        cancel: 'Cancel',
+        onok: function onok() {
+          debugger;
+          U.alert("Please be patient while we copy this {0} to your profile...".format(vocModel.displayName));
+          var cloneParams = {};
+          cloneParams[U.getCloneOf(vocModel, 'Templatable.basedOnTemplate')[0]] = uri;
+          var tradle = new vocModel(cloneParams);
+          tradle.save(null, {
+            sync: true,
+            success: function() {
+              debugger;
+              U.hideModalDialog();
+              Events.trigger('navigate', U.makeMobileUrl('view', tradle.getUri(), {
+                '-info': 'Feel free to edit this {0} in any way'.format(vocModel.displayName)
+              }), {
+                replace: true
+              });
+            },
+            error: function() {
+              debugger;
+              U.alert('There was a problem cloning the {0}...'.format(vocModel.displayName));
+            }
+          });
+        },
+        oncancel: function oncancel() {
+          U.hideModalDialog();
+          Events.trigger('navigate', U.replaceParam(window.location.href, '$clone', null), {trigger: false, replace: true});
+        }
+      });
+        
+      return this;
     },
     
 //    tour: function(path) {
