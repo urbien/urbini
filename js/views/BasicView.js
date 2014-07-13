@@ -1533,6 +1533,7 @@ define('views/BasicView', [
     },
     
     clickDataHref: function(e) {
+      debugger;
       Events.trigger('navigate', e.selectorTarget.$data('href'));
     }    
   });

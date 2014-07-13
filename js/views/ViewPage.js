@@ -261,10 +261,28 @@ define('views/ViewPage', [
 //      'click': 'click',
       'click #homeBtn': 'home',
       'swiperight.viewPage': 'swiperight',
-      'swipeleft.viewPage': 'swipeleft'
+      'swipeleft.viewPage': 'swipeleft',
+      'click .closeQuickstart': 'hideQuickstart'
 //        ,
 //      'pagechange': 'pageChange'
     },
+    
+    modelEvents: {
+      'change': 'updateQuickstart',
+      'inlineList': 'updateQuickstart'
+    },
+    
+    updateQuickstart: function() {
+      if (G.currentApp.appPath != 'Tradle')
+        return;
+      
+      if (!this.quickstartTemplate)
+        this.makeTemplate('quickstartTemplate', 'quickstartTemplate', this.vocModel.type);
+      
+      this.$('.quickstart')[0].$html(this.quickstartTemplate());
+      this.showQuickstart();
+    },
+    
     pageChange: function(e) {
       if (this.hashParams.$tour) {
         var selector = '[' + this.hashParams.$tourSelector + ']';

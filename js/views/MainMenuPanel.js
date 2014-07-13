@@ -37,6 +37,7 @@ define('views/MainMenuPanel', [
       'click #home123'   : 'home',
       'click #urbien123' : 'home',
       'click'            : 'click',
+      'click .launchQuickstart': 'launchQuickstart',
       'click [data-href]': BasicView.clickDataHref
     },
         
@@ -77,6 +78,12 @@ define('views/MainMenuPanel', [
       this.hide();
       return this;
     },
+    
+    launchQuickstart: function(e) {
+      Events.stopEvent(e);
+      this.getPageView().showQuickstart();
+    },
+    
     click: function(e) {
       var t = e.target,
           $t,

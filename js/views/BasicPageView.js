@@ -29,19 +29,6 @@ define('views/BasicPageView', [
     return !!$(element).parents('[draggable=true]').length;
   };
   
-  function getTooltipPos(el) {
-    var position = el.$offset();
-    var t = position.top + el.offsetHeight / 2 - 20;
-    var l = position.left + el.offsetWidth /2 - 20;
-    if (l + 40 > viewport.width) 
-      l = viewport.width - 40;
-    
-    return {
-      top: t,
-      left: l
-    };
-  }
-  
   var PageView = BasicView.extend({
 //    mixins: [Scrollable],
     _autoFetch: true,
@@ -159,18 +146,40 @@ define('views/BasicPageView', [
       'page_beforeshow.page': 'onpageevent',
       'swiperight.page': 'swiperight',
       'swipeleft.page': 'swipeleft',
+      'click i.help': 'showQuickstart',
       'click .videoLauncher': U.launchVideo,
       'click .reqLogin': function(e) { Events.stopEvent(e); Events.trigger('req-login', {dismissible: true}) },
       'click .pgDown': 'pageDown',
       'click .pgUp': 'pageUp',
-      'click [data-anchor]': 'scrollToAnchor'
+      'click [data-selector]': 'scrollToTarget',
+      'click .closeBtn': 'closeDialog'
     },
     
-    scrollToAnchor: function(e) {
+    closeDialog: function(e) {
+      var tooltip = e.target.$closest('.play');
+      if (tooltip)
+        tooltip.$remove();
+    },
+    
+    scrollToTarget: function(e) {
       var link = e.selectorTarget,
-          offset = link.$offset();
+          selector = link.$data('selector'),
+          target = this.$(selector)[0],
+          offset,
+          tooltip,
+          direction;
+      
+      if (!target)
+        return;
+      
+      Events.stopEvent(e);
+      offset = target.$offset();
+      tooltip = link.$data('tooltip');
+      direction = link.$data('direction');
       
       this.mason.snapBy(0, -offset.top);
+      if (tooltip)
+        this.addTooltip(target, tooltip, direction, 'info', 'square');
     },
     
     pageUp: function(e) {
@@ -236,7 +245,8 @@ define('views/BasicPageView', [
 //      this.trigger('inactive');
 //      this.disconnectFromWorld();
       BasicView.prototype._onInactive.apply(this, arguments);
-      this._clearMessageBar();        
+      this._clearMessageBar();   
+      this.removeTooltips();
     },
     
 //    _restoreScroll: function() {
@@ -363,64 +373,81 @@ define('views/BasicPageView', [
     },
     
     _fixTooltips: function() {
-      var tooltipOn = this._tooltipOn,
-          tooltip,
-          el,
-          pos;
+      var self = this,
+          remove = [];
       
-      if (!tooltipOn)
-        return;
-      
-      tooltip = this._getTooltip();
-      if (tooltip) {
-        pos = getTooltipPos(tooltipOn);
+      this.getTooltips().$forEach(function(tooltip) {
+        var el = self._getTooltipBaseElement(tooltip);
+        if (!el)
+          remove.push(tooltip);
+        
+        pos = self.getTooltipPos(el);
         tooltip.$css({
           top: pos.top + 'px',
           left: pos.left + 'px'
         });
-      }
-    },
-    
-    removeTooltip: function(el) {
-      var i = el.classList.length;
-      while (i--) {
-        var cl = el.classList[i];
-        if (cl.startsWith('hint--'))
-          el.classList.remove(cl);
-      }
+      });
       
-      if (this._tooltipOn == el)
-        this._tooltipOn = null;
+      if (remove.length)
+        remove.forEach(function(tooltip) { tooltip.$remove() });
     },
     
-    _getTooltip: function() {
-      return doc.getElementsByClassName('play')[0];
+    getTooltipPos: function(el) {
+      var cPos = this.el.$offset();
+      var pos = el.$offset();
+      var t = -cPos.top + pos.top + el.offsetHeight / 2 - 20;
+      var l = -cPos.left + pos.left + el.offsetWidth /2 - 20;
+      if (l + 40 > viewport.width) 
+        l = viewport.width - 40;
+      
+      return {
+        top: t,
+        left: l
+      };
+    },
+    
+    getTooltips: function() {
+      return this.el.$('.play');
+    },
+    
+    removeTooltips: function() {
+      this.getTooltips().$remove();
+      delete this._tooltipMap;
     },
     
     addTooltip: function(el, tooltip, direction, type, style) {
 //      el = el instanceof $ ? el : $(el);
-      this._tooltipOn = el;
+      this.removeTooltips();
       var classes = ['always', 
                      direction || 'left', 
                      type      || 'info', 
-                     style     || 'rounded'];
+                     style     || 'square'];
      
       classes = _.map(classes, function(cl) {
         return 'hint--' + cl;
       });
      
-      var self = this;
-      var pos = getTooltipPos(el);
-      var page = doc.getElementById('page');
+      var self = this,
+          pos = this.getTooltipPos(el),
+          posStyle = 'top:' + pos.top + 'px;left:' + pos.left + 'px;',
+          page = this.el,
+          tooltipEl;
+      
       if (tooltip)
-        page.$prepend('<div class="play ' + classes.join(' ') + '" style="top:' + pos.top + 'px; left:' + pos.left + 'px" data-hint="' + tooltip + '"><div class="glow"></div><div class="shape"></div></div>');
-      else
-        page.$prepend('<div class="play" style="top:' + t + 'px; left:' + l + 'px;"><div class="glow"></div><div class="shape"></div></div>');
-
-      this.once('inactive', function() {
-        self.removeTooltip(el);
-        self._getTooltip().remove();
-      });
+        tooltipEl = DOM.parseHTML('<div class="play ' + classes.join(' ') + '" style="' + posStyle + '"><div class="glow"></div><div class="shape"></div><div class="content"><i class="closeBtn ' + direction.replace('-', ' ') + '"></i>' + tooltip + '</div></div>');
+      else {
+        debugger;
+        tooltipEl = DOM.parseHTML('<div class="play" style="' + posStyle + '"><div class="glow"></div><div class="shape"></div></div>');
+      }
+      
+      tooltipEl = tooltipEl[0];
+      this._tooltipMap = this._tooltipMap || {};
+      this._tooltipMap[tooltipEl.$getUniqueId()] = el;
+      page.$prepend(tooltipEl);
+    },
+    
+    _getTooltipBaseElement: function(tooltipEl) {
+      return this._tooltipMap && this._tooltipMap[tooltipEl.$getUniqueId()];
     },
 
     _updateTitle: function(title) {
@@ -665,6 +692,19 @@ define('views/BasicPageView', [
     
     isListPage: function() {
       return this.model == this.collection;
+    },
+    
+    showQuickstart: function() {
+      this.$('.quickstart').$addClass('quickstart-active');
+    },
+    
+    hideQuickstart: function() {
+      this.$('.quickstart-active').$removeClass('quickstart-active');
+      var helpIcon = this.$('i.help')[0];
+      if (!helpIcon)
+        return;
+      
+      this.addTooltip(helpIcon, 'You can always launch Quickstart again by clicking here', 'bottom-left');
     }
   }, {
     displayName: 'BasicPageView'

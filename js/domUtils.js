@@ -42,7 +42,8 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
           }
         }
       },
-      isMoz = G.browser.mozilla;
+      isMoz = G.browser.mozilla,
+      elId = 1;
 //      ,
 //      HAMMER_EVENTS = 'touch release hold tap doubletap dragstart drag dragend dragleft dragright dragup dragdown swipe swipeleft swiperight swipeup swipedown transformstart transform transformend rotate pinch pinchin pinchout'.split(' ');
 
@@ -678,6 +679,13 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         }
         
         return this;
+      },
+      
+      $getUniqueId: function() {
+        if (!this._urbiniId)
+          this._urbiniId = elId++;
+        
+        return this._urbiniId;
       }
     };
     
@@ -931,7 +939,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
 //        node.removeChild(node.lastChild);
 //      }
         while (i--) {
-          els[i].innerHTML = '';
+          els[i].$empty();
         }
       }
     },

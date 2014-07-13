@@ -28,7 +28,7 @@ define('views/ControlPanel', [
     tagName: "tr",
     autoFinish: false,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'refresh', 'add', 'update', 'insertInlineScroller', 'removeInlineScroller', 'toggleInlineScroller', 'doRenderFT'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'refresh', 'add', 'update', 'insertInlineScroller', 'removeInlineScroller', 'toggleInlineScroller', 'doRenderFT', 'paintOverlay', 'showOverlay', 'hideOverlays'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
@@ -84,7 +84,39 @@ define('views/ControlPanel', [
     },
 
     hideOverlays: function() {
-      this.$('.anim-overlay').$removeClass('anim-overlay-active');
+      this.$('.anim-overlay-active').$removeClass('anim-overlay-active');
+    },
+    
+    paintOverlay: function(li) {
+      var blProp = this.vocModel.properties[li.$data('backlink')],
+          vocModel = U.getModel(blProp.range),
+          uri = li.$data('uri'),
+          res = C.getResource(uri),
+          overlay = li.$('.anim-overlay')[0];
+      
+      if (overlay)
+        return;
+      
+      var actions = {
+        cancel: res.isA('Cancellable') && !res.get('Cancellable.cancelled'),
+        edit: !U.isAssignableFrom(vocModel, 'commerce/trading/Rule', 'commerce/trading/TradleIndicator'),
+        add: U.isPropEditable(res, blProp),
+        comment: res.isA('CollaborationPoint') || this.resource.isA('CollaborationPoint')
+      };
+      
+      if (!_.any(actions, function(v, k) { return v }))
+        return;
+      
+      if (!this.actionsOverlayTemplate)
+        this.makeTemplate('actionsOverlayTemplate', 'actionsOverlayTemplate', this.vocModel.type);
+      
+      overlay = this.actionsOverlayTemplate({
+        _uri: uri,
+        actions: actions
+      });
+      
+      li.$prepend(overlay);
+      overlay = li.$('.anim-overlay')[0];
     },
     
     onswiperight: function(e) {
@@ -92,40 +124,18 @@ define('views/ControlPanel', [
     },
 
     onswipeleft: function(e) {
-      this.hideOverlays();
-      var li = getLi(e.selectorTarget),
-          blProp = this.vocModel.properties[li.$data('backlink')],
-          vocModel = U.getModel(blProp.range),
-          uri = li.$data('uri'),
-          res = C.getResource(uri),
-          overlay = li.$('.anim-overlay')[0];
+      var self = this,
+          li = getLi(e.selectorTarget);
       
-      if (!overlay) {
-        var actions = {
-          cancel: res.isA('Cancellable') && !res.get('Cancellable.cancelled'),
-          edit: !U.isAssignableFrom(vocModel, 'commerce/trading/Rule', 'commerce/trading/TradleIndicator'),
-          add: U.isPropEditable(res, blProp),
-          comment: res.isA('CollaborationPoint') || this.resource.isA('CollaborationPoint')
-        };
-        
-        if (!_.any(actions, function(v, k) { return v }))
-          return;
-        
-        if (!this.actionsOverlayTemplate)
-          this.makeTemplate('actionsOverlayTemplate', 'actionsOverlayTemplate', this.vocModel.type);
-        
-        overlay = this.actionsOverlayTemplate({
-          _uri: uri,
-          actions: actions
-        });
-        
-        li.$prepend(overlay);
-        overlay = li.$('.anim-overlay')[0];
-      }
-        
-      setTimeout(function() {  
-        overlay.$addClass('anim-overlay-active');
+      this.hideOverlays();
+      this.paintOverlay(li);
+      setTimeout(function() {
+        self.showOverlay(li);
       }, 1);      
+    },
+    
+    showOverlay: function(li) {
+      li.$('.anim-overlay').$addClass('anim-overlay-active');
     },
     
     actionCancel: function(e) {
@@ -927,6 +937,7 @@ define('views/ControlPanel', [
     },
     
     renderHelper: function(options) {
+      var self = this;
       var res = this.resource;
       var vocModel = this.vocModel;
       var type = res.type;
@@ -1339,6 +1350,14 @@ define('views/ControlPanel', [
 
       Q.write(function() {
         this.el.$html(frag);
+        if (!this.isMainGroup) {
+          this.$('li[data-backlink]').$forEach(this.paintOverlay);
+//          var bls = this.$('li[data-backlink]');
+//          bls.$forEach(this.paintOverlay);
+//          bls.$forEach(this.showOverlay);
+//          setTimeout(this.hideOverlays, 1000);
+        }
+
         if (U.isAssignableFrom(this.vocModel, 'commerce/trading/Tradle'))
           this.renderFT();
         
