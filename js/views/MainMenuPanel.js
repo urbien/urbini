@@ -268,7 +268,7 @@ define('views/MainMenuPanel', [
 //      U.addToFrag(frag, this.homeMenuItemTemplate({title: "App Home", icon: 'repeat', id: 'home123'}));
       if (G.currentHashInfo.route != 'home') {
 //        U.addToFrag(frag, this.menuItemTemplate({title: this.loc("appHome"), icon: 'repeat', id: 'home123'}));
-        html += this.menuItemTemplate({title: this.loc("appHome"), icon: 'repeat', id: 'home123'});
+        html += this.menuItemTemplate({title: this.loc("appHome"), icon: 'home', id: 'home123'});
       }
       
       ul.innerHTML = html;
