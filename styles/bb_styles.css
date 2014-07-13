@@ -222,7 +222,7 @@ section[data-type="sidebar"] >  ul > header {
 .acounter {
   float: right;
   position: relative;
-  right: 20px;
+  right: 15px;
   border-radius: 1rem;
   height: 50%;
   border: 1px solid #fff;
