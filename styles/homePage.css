@@ -765,6 +765,7 @@ body > .section:not([data-role="page"]) {
 }
 
 .section-content {
+  padding-top: 50px; /*space for footer*/
   padding-bottom: 50px; /*space for footer*/
 }
 
