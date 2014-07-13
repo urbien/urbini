@@ -240,7 +240,7 @@
     <div style="float:left; width:20%; height:100%; font-size:2.3rem;">
     {{ var op = U.getRuleOperator(resource), lop = op.toLowerCase(); }}
     {{ var cl = lop == 'rose' ? 'ui-icon-arrow-up' : lop == 'fell' ? 'ui-icon-arrow-down' : ''; }}
-      <div style="font-size:4.5rem;" class="{{= cl }}">
+      <div style="font-size:4.5rem;color:#2c94c5;" class="{{= cl }}">
         {{= cl ? '' : op }}
       </div>
       {{ if (byPercent) {   }}
@@ -311,9 +311,14 @@
 <script type="text/template" id="socialLinksTemplate">
 <!-- Social Links -->
 <li class="socialLinks">
-  <div class="share" data-url="{{= uri }}"><i style="background:#3777a1;color:#fff;padding:.5rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-share"></i></div>
-  <div class="clone" data-url="{{= uri }}"><a style="color:#fff;border-radius:.8rem;margin:-.2rem;padding:.5rem 1.5rem;white-space:nowrap;background:#3777a1;" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Tradle', {basedOnTemplate: uri, '-makeId': G.nextId()}) }}">Use it</a></div>
-  <div class="embed" data-url="{{= uri }}"><a style="background:#3777a1;color:#fff;padding:.5rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-embed" href="{{= G.serverName }}/widget/embed.html?uri={{= encodeURIComponent(uri) }}"></a></div>
+  {{ if (!G.currentUser.guest  &&  this.resource.get('owner') == G.currentUser._uri) { }}
+    <div class="share" data-url="{{= uri }}"><a style="background:#3777a1;color:#fff;padding:.5rem 2rem .55rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-edit" href="{{= U.makePageUrl('edit', this.resource.getUri(), {$editCols: 'activated,title,description,isPublic'}) }}"></a></div>
+  {{ } }}
+  {{ if (this.resource.get('activated')) { }}
+    <div class="share" data-url="{{= uri }}"><i style="background:#3777a1;color:#fff;padding:.5rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-share"></i></div>
+    <div class="clone" data-url="{{= uri }}"><a style="color:#fff;border-radius:.8rem;margin:-.2rem;padding:.5rem 1.5rem;white-space:nowrap;background:#3777a1;font-weight:normal;" href="{{= U.makePageUrl('view', uri + '&$clone=y') }}">Use it</a></div>
+    <div class="embed" data-url="{{= uri }}"><a style="background:#3777a1;color:#fff;padding:.5rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-embed" href="{{= G.serverName }}/widget/embed.html?uri={{= encodeURIComponent(uri) }}"></a></div>
+  {{ } }}
 </li>
 </script>
 
@@ -1408,7 +1413,8 @@
 <p>
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
-     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title, '$orderBy': obj.$order, '$asc': obj.$asc})) }}" class="cpA">{{= name }}
+     {{ if (obj.$order) { params.$orderBy = $order; params.$asc = $asc;} }}
+     <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
      
      <!--span class="ui-li-count">{{= value }}</span></a><a target="#" data-icon="chevron-right" data-iconshadow="false" class="cp" -->
      </a>
@@ -1485,12 +1491,12 @@
 
 <script type="text/template" id="saveButtonTemplate">
 <!-- header button for saving changes -->
-<a target="#"><i class="ui-icon-ok"></i></a>
+<a target="#"><i class="ui-icon-ok"></i><span style="position:absolute;top:7px;">Save</span></a>
 </script>
 
 <script type="text/template" id="cancelButtonTemplate">
 <!-- header button for canceling changes -->
-<a target="#"><i class="ui-icon-remove"></i></a>
+<a target="#"><i class="ui-icon-remove"></i><span style="position:absolute;top:7px;">Cancel</span></a>
 </script>
 
 <script type="text/template" id="mapItButtonTemplate">
@@ -1754,7 +1760,7 @@
   <div class="hdr">
   <section role="region">
     <header style="background: none;height:inherit;">
-    <ul id="headerUl">
+    <ul id="headerUl" style="position:relative;">
     </ul>
     </header>
   </section>
@@ -2347,7 +2353,8 @@
 <script type="text/template" id="percentPET">
 <div class="_prim">
   <label for="{{= id }}"  class="ui-input-text" >{{= name }}</label>
-  <input type="range" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '0' }}" {{= rules }} data-mini="true" max="100" min="0" style="width:75%" />
+  <input type="range" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '0' }}" {{= rules }} data-mini="true" max="100" min="0" style="width:65%;vertical-align:middle;" onchange="document.getElementById(event.target.id + '_text').innerHTML = event.target.value + '%';"/>
+  <div id="{{= id }}_text" style="display:inline-block;vertical-align:middle;padding-left:.5rem;font-size:2rem;color:#7aaac3;font-weight:bold;"></div>
 </div>
 </script>
 
@@ -2504,4 +2511,5 @@
   </div>
 {{ }                                         }}
 </script>
+
 </div>
