@@ -316,10 +316,12 @@ define('views/ResourceView', [
           }
         }
       }
-      var hasSocialLinks = U.isAssignableFrom(this.vocModel, 'Tradle')  &&  this.resource.get('activated');
-      if (hasSocialLinks) { 
-        this.makeTemplate('socialLinksTemplate', 'socialTemplate', this.vocModel.type);
-        U.addToFrag(frag, this.socialTemplate.call(this, {uri: this.resource.getUri()}));
+
+      if (U.isAssignableFrom(this.vocModel, 'Tradle')) {
+        if (this.resource.get('activated') || (!G.currentUser.guest  &&  this.resource.get('owner') == G.currentUser._uri)) {
+          this.makeTemplate('socialLinksTemplate', 'socialTemplate', this.vocModel.type);
+          U.addToFrag(frag, this.socialTemplate.call(this, {uri: this.resource.getUri()}));
+        }
       }
       var displayedProps = {};
       var idx = 0;
@@ -350,7 +352,8 @@ define('views/ResourceView', [
             displayedProps[p] = true;
             var val = U.makeProp(res, prop, res.get(p));
             if (!groupNameDisplayed) {
-              U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
+              if (!grMeta.skipLabelInGroup)
+                U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
               groupNameDisplayed = true;
             }
   
@@ -441,9 +444,10 @@ define('views/ResourceView', [
   //    var j = {"props": json};
   //    this.$el.html(html);
       this.el.$html(frag);
-      if (hasSocialLinks) {
-        this.el.style.marginTop = '-6rem';
-      }
+      
+//      if (hasSocialLinks) {
+//        this.el.style.marginTop = '-6rem';
+//      }
       /*
       if (G.isJQM()) {
         if (this.el.$hasClass('ui-listview')) {
