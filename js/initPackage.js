@@ -2135,8 +2135,8 @@
   var ArrayProto = Array.prototype,
     slice = ArrayProto.slice,
     root = this,
-    moduleMap = {}, 
-    defineMap = {}, 
+    moduleMap = window.moduleMap = {}, 
+    defineMap = window.defineMap = {}, 
     require,
     domReady = $.Deferred(function(defer) {
       DOMReady.add(defer.resolve);

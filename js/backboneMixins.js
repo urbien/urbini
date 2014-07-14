@@ -13,7 +13,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
     var View = Backbone.View;
     var delegateEvents = View.prototype.delegateEvents;
     var undelegateEvents = View.prototype.undelegateEvents;
-    var hammer_events = 'touch release hold tap doubletap dragstart drag dragend dragleft dragright dragup dragdown swipe swipeleft swiperight swipeup swipedown transformstart transform transformend rotate pinch pinchin pinchout';
+//    var hammer_events = 'touch release hold tap doubletap dragstart drag dragend dragleft dragright dragup dragdown swipe swipeleft swiperight swipeup swipedown transformstart transform transformend rotate pinch pinchin pinchout';
 //    var hammer_events_arr = hammer_events.split(' ');
 //
 //    function hammerOn(el, hammer, event, selector, method) {
@@ -274,7 +274,7 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
       
       empty: function() {
 //        this.undelegateEvents(); // modern browsers will auto-unbind
-        this.el.innerHTML = "";
+        this.el.$empty();
       },
       
       _hammered: false,

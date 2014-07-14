@@ -64,13 +64,6 @@ html {
   padding: 6px 0;
 }
 
-#categories, .filterToggle {
-  font-size:20px;
-/*  background: #eee;
-  border-radius: 1.5rem; */
-  padding: .2rem;
-}
-
 #headerUl  {
   display:block;
   max-width:100%;

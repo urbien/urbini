@@ -88,7 +88,6 @@ define('views/MessageBar', [
             onremove = events.remove;
         
         bar.$onremove(function(e) {
-//          window.dispatchEvent(new Event("resize"));
           self.trigger('messageBarRemoved', e);
           if (onremove)
             onremove.apply(this, arguments);

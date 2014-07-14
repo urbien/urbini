@@ -42,7 +42,10 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
           }
         }
       },
-      isMoz = G.browser.mozilla;
+      isMoz = G.browser.mozilla,
+      elId = 1;
+//      ,
+//      HAMMER_EVENTS = 'touch release hold tap doubletap dragstart drag dragend dragleft dragright dragup dragdown swipe swipeleft swiperight swipeup swipedown transformstart transform transformend rotate pinch pinchin pinchout'.split(' ');
 
   window.addEventListener('resize', function(e) {
     clearTimeout(resizeTimeout);
@@ -187,17 +190,24 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         if (listener.listener == _listener) {
           G.removeEventListener(el, event, listener.proxy);
           Array.removeFromTo(listeners, i, i + 1);
+//          removed = true;
           break;
         }
       }
       else {
         G.removeEventListener(el, event, listener.proxy);
+//        removed = true;
       }
       
     }
     
     if (!_listener)
       listeners.length = 0;
+    
+//    if (!removed)
+//      console.log("FAILED TO REMOVE EVENT LISTENER", event, _listener._listenerId, listeners.map(function(l) { return l.listener._listenerId }).join(','));
+//    else
+//      console.log("REMOVED EVENT LISTENER", event, _listener._listenerId);
   };
   
   (function extendNodeAndNodeList(win, doc) {
@@ -206,6 +216,14 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
       $on: function(event, selector, listener, capture) {
         var self = this,
             proxy;
+      
+        if (~event.indexOf(' ')) {
+          event.split(' ').map(function(event) {
+            self.$on(event, selector, listener, capture);
+          });
+          
+          return this;
+        }
         
         if (typeof selector == 'function') {
           capture = listener;
@@ -216,69 +234,77 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         if (!this._$handlers)
           this._$handlers = {};
         
-        if (!this._$handlers[selector])
-          this._$handlers[selector] = [];
-        
-        if (selector) {
-          proxy = function(e) {
-//            var matches = self.$(selector),
-//                match,
-//                i = matches.length;
-//            
-//            while (i--) {
-//              match = matches[i];
-//              e.selectorTarget = match;
-//              listener(e);
-//            }
-
-            if (e._stoppedPropagation || e._stoppedImmediatePropagation)
-              return;
-
-            var el = e.target,
-                closest;
-            
-            if (el.$matches(selector)) {
-              e.selectorTarget = el;
-              listener(e);
+        var proxyInfo = this._$handlers[event];
+        if (!proxyInfo) {
+          proxyInfo = this._$handlers[event] = {
+            selectors: {},
+            // artificial bubbling
+            proxy: function(e) {
+              var el = e.target,
+                  selectors = proxyInfo.selectors,
+                  handlers;
+              
+              // bubble up starting with event target till we reach document
+              while (el) {
+                // check all selectors for this event against next element in the bubbling phase
+                for (var selector in selectors) {
+                  if (selector == "" || (el != doc && el.$matches(selector))) {
+                    e.selectorTarget = el;
+                    handlers = selectors[selector];
+                    for (var i = 0; i < handlers.length; i++) {
+                      if (e._stoppedImmediatePropagation)
+                        return;
+                      
+                      handlers[i](e);
+                    }
+                  }
+                }            
+    
+                if (e._stoppedPropagation)
+                  return;
+                
+                el = el.parentElement;
+              }
             }
-            
-            while (!e._stoppedImmediatePropagation && (el = el.$closest(selector))) { // bubble
-              e.selectorTarget = el;
-              listener(e);
-            }
-          };
-        }
-        else {
-          proxy = function(e) {
-            e.selectorTarget = e.selectorTarget;
-            return listener(e);
-          };
+          }
+          
+          G.addEventListener(this, event, proxyInfo.proxy, capture);
         }
         
-//        listener._listenerId = proxy._listenerId = G.nextId();
-        this._$handlers[selector].push({
-          listener: listener,
-          proxy: proxy
-        });
-
-        G.addEventListener(this, event, proxy, capture);
+        if (!proxyInfo.selectors[selector])
+          proxyInfo.selectors[selector] = [];
+        
+        proxyInfo.selectors[selector].push(listener);
         return this;
       },
-      $off: function(event, selector, handler, capture) {
+      $off: function(event, selector, listener, capture) {
         if (!this._$handlers)
           return this;
           
+        if (~event.indexOf(' ')) {
+          var self = this;
+          event.split(' ').map(function(event) {
+            self.$off(event, selector, listener, capture);
+          });
+          
+          return this;
+        }
+
         if (typeof arguments[1] == 'function') {
-          capture = handler;
-          handler = selector;
+          capture = listener;
+          listener = selector;
           selector = null;
         }
 
-        if (selector)
-          removeEventListeners(this, event, this._$handlers[selector], handler);
-        else {
-          for (var selector in this._$handlers) {
-            removeEventListeners(this, event, this._$handlers[selector], handler);
+        var proxyInfo = this._$handlers[event];
+        if (proxyInfo) {
+          if (selector)
+            removeEventListeners(this, event, proxyInfo.selectors[selector], listener);
+          else {
+            var selectors = proxyInfo.selectors;
+            for (var selector in selectors) {
+              removeEventListeners(this, event, selectors[selector], listener);
+            }
           }
         }
         
@@ -287,12 +313,12 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
       $once: function(event, handler, capture) {
         var self = this; 
         return this.$on(event, function proxy() {
-          self.$off(proxy);
+          self.$off(event, proxy);
           handler();
         }, capture);
       },
-      $trigger: function(event, data) {
-        G.triggerEvent(this, event, data);
+      $trigger: function(eventType, data) {
+        G.triggerEvent(this, eventType, data);
 //        if (typeof event == 'string')
 //          event = data ? new Event(event, data) : new Event(event);
 //        
@@ -662,6 +688,13 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         }
         
         return this;
+      },
+      
+      $getUniqueId: function() {
+        if (!this._urbiniId)
+          this._urbiniId = elId++;
+        
+        return this._urbiniId;
       }
     };
     
@@ -915,7 +948,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
 //        node.removeChild(node.lastChild);
 //      }
         while (i--) {
-          els[i].innerHTML = '';
+          els[i].$empty();
         }
       }
     },

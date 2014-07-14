@@ -11,7 +11,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       UNRENDERED = {},
 //      UNRENDERED,
       hammerOptions = {},
-      hammer = new Hammer(document, hammerOptions),
+      hammer = new Hammer(document.body, hammerOptions),
       Physics,
       HERE,
       THERE,
@@ -190,7 +190,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //  };
 
   // prevent click on capture phase
-  document.$on('click', function(e) {
+  document.addEventListener('click', function(e) {
     if (!G.canClick()) {
       log('events', 'PREVENTING CLICK', _.now());
       e.preventDefault();
@@ -214,6 +214,36 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       log('events', 'ALLOWING CLICK', _.now());
     }
   }, true);
+
+  document.addEventListener('click', function(e) {
+    if (e.defaultPrevented)
+      return;
+    
+    var a = e.target,
+        tagName = a.tagName,
+        href = a.$attr('href'),
+        dataHref = a.$data('href');
+    
+    if (href == '#' && dataHref) {
+      Events.stopEvent(e);
+      Events.trigger('navigate', dataHref);
+      return;
+    }
+    
+    if (tagName == 'A') {
+      if (href == '#') {
+        Events.stopEvent(e);
+        return;
+      }
+      else if (href && U.isExternalUrl(href)) {
+        return;
+      }
+      else {
+        debugger;
+        return;
+      }
+    }
+  }, false);
 
 //  // re-enable click on bubble phase
 //  document.addEventListener('click', enableClick);

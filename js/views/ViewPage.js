@@ -166,7 +166,7 @@ define('views/ViewPage', [
           friendProp = isMovie ? 'movie' : 'impression';
         }
 
-        this.onload(function() {          
+        this.onload(function() {
           U.require(['collections/ResourceList', 'vocManager', 'views/HorizontalListView'], function(ResourceList, Voc, HorizontalListView) {
             Voc.getModels(friendType).done(function(friendModel) {
               var friendProps = {};
@@ -265,6 +265,7 @@ define('views/ViewPage', [
 //        ,
 //      'pagechange': 'pageChange'
     },
+    
     pageChange: function(e) {
       if (this.hashParams.$tour) {
         var selector = '[' + this.hashParams.$tourSelector + ']';

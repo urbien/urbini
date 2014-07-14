@@ -136,6 +136,7 @@ font-family: "Segoe UI", Candara, "Bitstream Vera Sans", "DejaVu Sans", "Bitstre
   top: 50%;
   -webkit-transform: translateY(-50%);
      -moz-transform: translateY(-50%);
+      -ms-transform: translateY(-50%);
                      translateY(-50%);
 }
 
@@ -447,6 +448,18 @@ body > .section:not([data-role="page"]) {
   border: none;
   border-radius: 5px;
   background:#2892c6;
+}
+
+.mini-cta {
+  background: #2892c6;
+  white-space: nowrap;
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: white;
+  font-weight: bold;
+  text-transform: uppercase;
+  box-sizing: border-box;
+  display:inline-block;
 }
 
 .section .cta {

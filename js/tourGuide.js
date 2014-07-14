@@ -41,7 +41,9 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
         // going back a step, that's fine, not everyone's a genius
       }
       else {
-        var params = _.getParamMap(step.get('urlQuery')) || {};
+        var q = step.get('urlQuery'),
+            params = q ? _.toQueryParams(q) : {};
+            
         params[TOUR_PARAM] = getTourId(tour);
         params[TOUR_STEP_PARAM] = step.get('number');
         var prev = U.makePageUrl(step.get('route'), step.get('typeUri') || '', params);
@@ -83,7 +85,8 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
   function hashInfoCompliesWithTourStep(hashInfo, step) {
     var isModelParam = _.negate(U.isMetaParameter),
         hashInfoModelParams = U.filterObj(hashInfo.params, isModelParam),
-        stepParams = _.getParamMap(step.get('urlQuery')),
+        q = step.get('urlQuery'),
+        stepParams = q ? _.toQueryParams(q) : {},
         stepModelParams = U.filterObj(stepParams, isModelParam),
         stepType = step.get('typeUri'),
         stepRoute = step.get('route'),

@@ -121,6 +121,8 @@
       "../styles/codemirror.css"
    ],
    "appcache":[
+      "xhrWorker.js",
+      "physicsWorker.js",
       "lib/physicsjs-custom.js",
       "lib/jquery.masonry.js",
       "loader.js",

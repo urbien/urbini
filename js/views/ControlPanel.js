@@ -22,13 +22,13 @@ define('views/ControlPanel', [
     return bl;
   };
   
-  var CLICK_INDICATOR = 'Click one of your chosen indicators to create a rule for it';
+  var CLICK_INDICATOR = 'Click an indicator to create a rule. <br /><br /> Swipe from right to left on rules or indicators for a list of actions.';
   
   return BasicView.extend({
     tagName: "tr",
     autoFinish: false,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'refresh', 'add', 'update', 'insertInlineScroller', 'removeInlineScroller', 'toggleInlineScroller', 'doRenderFT'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'refresh', 'add', 'update', 'insertInlineScroller', 'removeInlineScroller', 'toggleInlineScroller', 'doRenderFT', 'paintOverlay', 'showOverlay', 'hideOverlays'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
@@ -66,7 +66,8 @@ define('views/ControlPanel', [
       'click [data-action="cancel"]': 'actionCancel',
       'click [data-action="add"]': 'actionAdd',
       'click [data-action="edit"]': 'actionEdit',
-      'click [data-action="comment"]': 'actionComment'
+      'click [data-action="comment"]': 'actionComment',
+      'click .anim-overlay': Events.stopEvent
 //        ,
 //      'click': 'click'
     },
@@ -83,8 +84,39 @@ define('views/ControlPanel', [
     },
 
     hideOverlays: function() {
-      this.$('.anim-overlay').$removeClass('anim-overlay-active');
-//      this.redelegateEvents();
+      this.$('.anim-overlay-active').$removeClass('anim-overlay-active');
+    },
+    
+    paintOverlay: function(li) {
+      var blProp = this.vocModel.properties[li.$data('backlink')],
+          vocModel = U.getModel(blProp.range),
+          uri = li.$data('uri'),
+          res = C.getResource(uri),
+          overlay = li.$('.anim-overlay')[0];
+      
+      if (overlay)
+        return;
+      
+      var actions = {
+        cancel: res.isA('Cancellable') && !res.get('Cancellable.cancelled'),
+        edit: !U.isAssignableFrom(vocModel, 'commerce/trading/Rule', 'commerce/trading/TradleIndicator'),
+        add: U.isPropEditable(res, blProp),
+        comment: res.isA('CollaborationPoint') || this.resource.isA('CollaborationPoint')
+      };
+      
+      if (!_.any(actions, function(v, k) { return v }))
+        return;
+      
+      if (!this.actionsOverlayTemplate)
+        this.makeTemplate('actionsOverlayTemplate', 'actionsOverlayTemplate', this.vocModel.type);
+      
+      overlay = this.actionsOverlayTemplate({
+        _uri: uri,
+        actions: actions
+      });
+      
+      li.$prepend(overlay);
+      overlay = li.$('.anim-overlay')[0];
     },
     
     onswiperight: function(e) {
@@ -92,42 +124,18 @@ define('views/ControlPanel', [
     },
 
     onswipeleft: function(e) {
+      var self = this,
+          li = getLi(e.selectorTarget);
+      
       this.hideOverlays();
-      var li = getLi(e.selectorTarget),
-          blProp = this.vocModel.properties[li.$data('backlink')],
-          vocModel = U.getModel(blProp.range),
-          uri = li.$data('uri'),
-          res = C.getResource(uri),
-          overlay = li.$('.anim-overlay')[0];
-      
-      if (!overlay) {
-        var actions = {
-          cancel: res.isA('Cancellable') && !res.get('Cancellable.cancelled'),
-          edit: !U.isAssignableFrom(vocModel, 'commerce/trading/Rule', 'commerce/trading/TradleIndicator'),
-          add: U.isPropEditable(res, blProp),
-          comment: res.isA('CollaborationPoint') || this.resource.isA('CollaborationPoint')
-        };
-        
-        if (!_.any(actions, function(v, k) { return v }))
-          return;
-        
-        if (!this.actionsOverlayTemplate)
-          this.makeTemplate('actionsOverlayTemplate', 'actionsOverlayTemplate', this.vocModel.type);
-        
-        overlay = this.actionsOverlayTemplate({
-          _uri: uri,
-          actions: actions
-        });
-        
-        li.$prepend(overlay);
-        overlay = li.$('.anim-overlay')[0];
-      }
-        
-      setTimeout(function() {  
-        overlay.$addClass('anim-overlay-active');
-      }, 1);
-      
-//      this.redelegateEvents();
+      this.paintOverlay(li);
+      setTimeout(function() {
+        self.showOverlay(li);
+      }, 1);      
+    },
+    
+    showOverlay: function(li) {
+      li.$('.anim-overlay').$addClass('anim-overlay-active');
     },
     
     actionCancel: function(e) {
@@ -234,10 +242,13 @@ define('views/ControlPanel', [
     
     _addNoIntersection: function(prop, target) {
       var params = {
-          '$backLink': prop.backLink,
+        '$backLink': prop.backLink,
           '-makeId': G.nextId()
         },
         title = target && target.$data('title');
+
+      if (title)
+        params.$title = title;
 
       if (title)
         params.$title = title;
@@ -317,7 +328,7 @@ define('views/ControlPanel', [
 
       Events.stopEvent(e);
       var indicator = this.resource.getInlineList('indicators').get(link.$data('uri')),
-          propRange = U.getTypeUri(indicator.get('eventProperty')),
+          propRange = indicator.get('eventPropertyRangeUri'),
           isEnum = /\/EnumProperty$/.test(propRange),
           propType = indicator.get('propertyType'),
           params = {
@@ -352,15 +363,7 @@ define('views/ControlPanel', [
       if (isEnum || propType == 'Link' || propType == 'YesNo') { // no subclasses
 //        var params = _.extend(U.filterObj(this.resource.attributes, U.isNativeModelParameter), props);
         params.$title = indicator.get('feed.displayName') + ' ' + U.getDisplayName(indicator) + ' IS...';
-        if (isEnum) {
-          params.enumeration = indicator.get('eventPropertyRange');
-          params.enumerationRangeUri = indicator.get('eventPropertyRangeUri');
-        }
-        else if (propType == 'Link') {
-          params.resourceType = indicator.get('eventPropertyRange');
-          params.resourceTypeRangeUri = indicator.get('eventPropertyRangeUri');          
-        }
-          
+        params.eventPropertyRangeUri = propRange;
         Events.trigger('navigate', U.makeMobileUrl('make', subClassOf, params));
         return;
       }
@@ -396,7 +399,7 @@ define('views/ControlPanel', [
     },
     
     addToBacklink: function(prop, t) {
-      var self = this,
+      var self = this,       
           setLinkTo = prop.setLinkTo;
 //      ,
 //          count = U.getBacklinkCount(this.resource, shortName);
@@ -509,7 +512,7 @@ define('views/ControlPanel', [
         U.addToFrag(frag, this.propGroupsDividerTemplate({
           value: propDisplayName,
           add: canAdd,
-          shortName: getBacklinkSub(vocModel, name)
+          shortName: getBacklinkSub(vocModel, name),
           style: prop.propertyStyle
         }));
       }
@@ -934,6 +937,7 @@ define('views/ControlPanel', [
     },
     
     renderHelper: function(options) {
+      var self = this;
       var res = this.resource;
       var vocModel = this.vocModel;
       var type = res.type;
@@ -1346,6 +1350,14 @@ define('views/ControlPanel', [
 
       Q.write(function() {
         this.el.$html(frag);
+        if (!this.isMainGroup) {
+          this.$('li[data-backlink]').$forEach(this.paintOverlay);
+//          var bls = this.$('li[data-backlink]');
+//          bls.$forEach(this.paintOverlay);
+//          bls.$forEach(this.showOverlay);
+//          setTimeout(this.hideOverlays, 1000);
+        }
+
         if (U.isAssignableFrom(this.vocModel, 'commerce/trading/Tradle'))
           this.renderFT();
         

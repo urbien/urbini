@@ -1532,7 +1532,11 @@ define('utils', [
       }
       
       var qs = '';
-      keys.sort();
+      if (typeof options.sort == 'function')
+        keys.sort(options.sort);
+      else
+        keys.sort();
+        
       for (i = 0; i < keys.length; i++) {
         keys[i] = keys[i] + '=' + _.encode(paramMap[keys[i]]);
       }
@@ -2239,6 +2243,13 @@ define('utils', [
       return G.hostName + '/voc/dev' + type.slice(type.lastIndexOf('/'));
     },
 
+//    _appUrlRegex: new RegExp("^(https?:\/\/" + G.serverName.slice(G.serverName.indexOf('//') + 2) + "\/)?(" + G.pageRoot + ")?")
+    isExternalUrl: function(url) {
+      return url.startsWith(G.pageRoot) || 
+             (url.startsWith('http') && url.slice(url.indexOf('//') + 2).startsWith(G._serverName)) ||
+             !url.startsWith('http');
+    },
+    
     makeMobileUrl: function(action, typeOrUri, params) {
       if (arguments.length == 1) {
         typeOrUri = action;
@@ -2275,12 +2286,16 @@ define('utils', [
       url = action + '/' + (HAS_PUSH_STATE ? typeOrUri : encodeURIComponent(typeOrUri));
       if (HAS_PUSH_STATE) {
         url += ~url.indexOf('?') ? '&' : '?';
-        url += U.getQueryString(params);
+        url += U.getQueryString(params, {sort: U.modelParamsFirst});
       }
       else
-        url += '?' + U.getQueryString(params); //, encOptions);
+        url += '?' + U.getQueryString(params, {sort: U.modelParamsFirst}); //, encOptions);
       
       return url;
+    },
+    
+    modelParamsFirst: function(a, b) {
+      return /^[a-zA-Z_]/.test(a) ? -1 : 1;
     },
     
     getUserReferralParam: function() {
@@ -3831,7 +3846,7 @@ define('utils', [
         existing && existing.$remove();
         holder.$html(popupHtml);
         if (options.dismissible)
-          holder.$('.closeDialogBtn').$on('tap', oncancel);
+          holder.$('.closeBtn').$on('tap', oncancel);
         
         dialog = holder.firstChild;
         dialog.style['zIndex'] = 1000000;
