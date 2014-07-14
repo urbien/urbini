@@ -1056,6 +1056,7 @@ define('views/EditView', [
         sync: sync,
         redirect: true,
         userEdit: true,
+        redirect: true,
         success: function(resource, response, options) {
           self.getInputs().$attr('disabled', false);
           res._setLastFetchOrigin(null);

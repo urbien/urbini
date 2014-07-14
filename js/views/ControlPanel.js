@@ -912,6 +912,7 @@ define('views/ControlPanel', [
     doRenderFT: function(resultsO) {
       if (!resultsO)
         return;
+      
       var results = resultsO['results'];
       if (!results || !results.length)
         return;
@@ -919,7 +920,6 @@ define('views/ControlPanel', [
       if (!this.ftItemTemplate)
         this.makeTemplate('ftItemTemplate', 'ftItemTemplate');
         
-      this.el.$('.ftItem').$remove();
       var frag = document.createDocumentFragment();
       
       U.addToFrag(frag, this.propGroupsDividerTemplate({
@@ -932,6 +932,7 @@ define('views/ControlPanel', [
         U.addToFrag(frag, this.ftItemTemplate(results[i]));
       }
       
+      this.el.$('.ftItem').$remove();
       this.el.appendChild(frag);
       this.getPageView().invalidateSize();
     },

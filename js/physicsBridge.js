@@ -207,7 +207,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         
         if (t) {
           e.preventDefault();
-          Events.trigger('navigate', t.href);
+          if (!t.href.startsWith('javascript:'))
+            Events.trigger('navigate', t.href);
         }
       }
       

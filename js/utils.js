@@ -2269,6 +2269,8 @@ define('utils', [
       }
         
       typeOrUri = U.getShorterUri(typeOrUri);
+      var typeOrUriParts = typeOrUri.split('?');
+      typeOrUri = typeOrUriParts[0];
       var url = '';
 //      switch (action) {
 //        case 'list':
@@ -2280,6 +2282,9 @@ define('utils', [
       
 //      var encOptions = {delimiter: '&amp;'};
       params = params || {};
+      if (typeOrUriParts[1]) 
+        _.extend(params, _.toQueryParams(typeOrUriParts[1]));
+        
       if (!G.currentUser.guest)
         params['-ref'] = U.getUserReferralParam();
       
@@ -2467,7 +2472,6 @@ define('utils', [
     getPageUrl: function(mobileUrl) {
       return G.pageRoot + '#' + mobileUrl;
     },
-    
     _apiMetaParams: [    
       "$select", "$omit", "$orderBy", "$groupBy", "$limit", "$backlinks", "$callback", "$asc", "$page", "$offset", "$strict", "$map", "$and", "$or", "$like", "$in", "$blCounts", 
       "$minify", "$mobile", "$where",  "$prettyPrint",  "$returnMade", "$grab", "$multiValue", "$request", "$oauth1", "$oauth2", "$prop", "$type", "$forResource", "$filter", "$interfaceClass", 
