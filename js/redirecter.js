@@ -1021,9 +1021,10 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
           indicator.save();
         }
 
-        Events.trigger('navigate', U.makeMobileUrl('view', common.tradle, {
-          '-gluedInfo': CLICK_INDICATOR_TO_CREATE_RULE
-        }));
+        Events.trigger('navigate', U.makeMobileUrl('view', common.tradle));
+//        , {
+//          '-gluedInfo': CLICK_INDICATOR_TO_CREATE_RULE
+//        }));
         
 
 //        U.getResourcePromise(common.tradleFeed).done(function(tf) {
@@ -1131,9 +1132,10 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
         indicator.save();
       });
   
-      Events.trigger('navigate', U.makeMobileUrl('view', tfParams.tradle, {
-        '-gluedInfo': CLICK_INDICATOR_TO_CREATE_RULE
-      }));
+      Events.trigger('navigate', U.makeMobileUrl('view', tfParams.tradle));
+//      , {
+//        '-gluedInfo': CLICK_INDICATOR_TO_CREATE_RULE
+//      }));
 
 //      Events.trigger('back', 'chose property for indicator, heading back');
       return;

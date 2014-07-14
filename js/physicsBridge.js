@@ -190,7 +190,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //  };
 
   // prevent click on capture phase
-  document.$on('click', function(e) {
+  document.addEventListener('click', function(e) {
     if (!G.canClick()) {
       log('events', 'PREVENTING CLICK', _.now());
       e.preventDefault();
@@ -215,7 +215,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     }
   }, true);
 
-  document.$on('click', function(e) {
+  document.addEventListener('click', function(e) {
     if (e.defaultPrevented)
       return;
     

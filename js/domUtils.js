@@ -234,42 +234,47 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         if (!this._$handlers)
           this._$handlers = {};
         
-        if (!this._$handlers[selector])
-          this._$handlers[selector] = [];
-        
-        if (selector) {
-          proxy = function(e) {
-            if (e._stoppedPropagation || e._stoppedImmediatePropagation)
-              return;
-
-            var el = e.target,
-                closest;
-            
-            if (el.$matches(selector)) {
-              e.selectorTarget = el;
-              listener(e);
+        var proxyInfo = this._$handlers[event];
+        if (!proxyInfo) {
+          proxyInfo = this._$handlers[event] = {
+            selectors: {},
+            // artificial bubbling
+            proxy: function(e) {
+              var el = e.target,
+                  selectors = proxyInfo.selectors,
+                  handlers;
+              
+              // bubble up starting with event target till we reach document
+              while (el) {
+                // check all selectors for this event against next element in the bubbling phase
+                for (var selector in selectors) {
+                  if (selector == "" || (el != doc && el.$matches(selector))) {
+                    e.selectorTarget = el;
+                    handlers = selectors[selector];
+                    for (var i = 0; i < handlers.length; i++) {
+                      if (e._stoppedImmediatePropagation)
+                        return;
+                      
+                      handlers[i](e);
+                    }
+                  }
+                }            
+    
+                if (e._stoppedPropagation)
+                  return;
+                
+                el = el.parentElement;
+              }
             }
-            
-            while (!e._stoppedImmediatePropagation && (el = el.$closest(selector))) { // bubble
-              e.selectorTarget = el;
-              listener(e);
-            }
-          };
-        }
-        else {
-          proxy = function(e) {
-            e.selectorTarget = e.currentTarget;
-            return listener(e);
-          };
+          }
+          
+          G.addEventListener(this, event, proxyInfo.proxy, capture);
         }
         
-//        listener._listenerId = proxy._listenerId = G.nextId();
-        this._$handlers[selector].push({
-          listener: listener,
-          proxy: proxy
-        });
-
-        G.addEventListener(this, event, proxy, capture);
+        if (!proxyInfo.selectors[selector])
+          proxyInfo.selectors[selector] = [];
+        
+        proxyInfo.selectors[selector].push(listener);
         return this;
       },
       $off: function(event, selector, listener, capture) {
@@ -291,11 +296,15 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
           selector = null;
         }
 
-        if (selector)
-          removeEventListeners(this, event, this._$handlers[selector], listener);
-        else {
-          for (var selector in this._$handlers) {
-            removeEventListeners(this, event, this._$handlers[selector], listener);
+        var proxyInfo = this._$handlers[event];
+        if (proxyInfo) {
+          if (selector)
+            removeEventListeners(this, event, proxyInfo.selectors[selector], listener);
+          else {
+            var selectors = proxyInfo.selectors;
+            for (var selector in selectors) {
+              removeEventListeners(this, event, selectors[selector], listener);
+            }
           }
         }
         
@@ -304,7 +313,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
       $once: function(event, handler, capture) {
         var self = this; 
         return this.$on(event, function proxy() {
-          self.$off(proxy);
+          self.$off(event, proxy);
           handler();
         }, capture);
       },
