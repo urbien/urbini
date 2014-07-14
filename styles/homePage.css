@@ -450,6 +450,18 @@ body > .section:not([data-role="page"]) {
   background:#2892c6;
 }
 
+.mini-cta {
+  background: #2892c6;
+  white-space: nowrap;
+  padding: 5px 10px;
+  border-radius: 5px;
+  color: white;
+  font-weight: bold;
+  text-transform: uppercase;
+  box-sizing: border-box;
+  display:inline-block;
+}
+
 .section .cta {
   width: 220px;
   max-width: 90%;

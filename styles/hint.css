@@ -26,10 +26,10 @@
 
   border: 1em solid rgba(255,0,0,1);
   opacity: 0;
-  -webkit-animation: 2s blip infinite ease-in-out;
-     -moz-animation: 2s blip infinite ease-in-out;
-      -ms-animation: 2s blip infinite ease-in-out;
-          animation: 2s blip infinite ease-in-out;
+  -webkit-animation: 2s blip 3 ease-in-out;
+     -moz-animation: 2s blip 3 ease-in-out;
+      -ms-animation: 2s blip 3 ease-in-out;
+          animation: 2s blip 3 ease-in-out;
 }
 
 .play.yellow .glow {
@@ -101,8 +101,10 @@
 
 .hint--always .content {
   -webkit-transform: translate3d(0, 0, 0);
-  -moz-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
+     -moz-transform: translate3d(0, 0, 0);
+       ms-transform: translate3d(0, 0, 0);
+          transform: translate3d(0, 0, 0);
+
   pointer-events: all;
   position: absolute;
   color: white;
@@ -162,6 +164,13 @@
 .hint--bottom .content {
   margin-top: 8px;
   top: 100%;
+}
+
+@media screen and (max-width: 480px) {
+  .hint--top .content, .hint--bottom .content {
+    min-width: 75px;
+    max-width: 150px;
+  }
 }
 
 .hint--bottom-left .content {

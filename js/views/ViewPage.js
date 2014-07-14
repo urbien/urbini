@@ -166,7 +166,7 @@ define('views/ViewPage', [
           friendProp = isMovie ? 'movie' : 'impression';
         }
 
-        this.onload(function() {          
+        this.onload(function() {
           U.require(['collections/ResourceList', 'vocManager', 'views/HorizontalListView'], function(ResourceList, Voc, HorizontalListView) {
             Voc.getModels(friendType).done(function(friendModel) {
               var friendProps = {};
@@ -261,26 +261,9 @@ define('views/ViewPage', [
 //      'click': 'click',
       'click #homeBtn': 'home',
       'swiperight.viewPage': 'swiperight',
-      'swipeleft.viewPage': 'swipeleft',
-      'click .closeQuickstart': 'hideQuickstart'
+      'swipeleft.viewPage': 'swipeleft'
 //        ,
 //      'pagechange': 'pageChange'
-    },
-    
-    modelEvents: {
-      'change': 'updateQuickstart',
-      'inlineList': 'updateQuickstart'
-    },
-    
-    updateQuickstart: function() {
-      if (G.currentApp.appPath != 'Tradle')
-        return;
-      
-      if (!this.quickstartTemplate)
-        this.makeTemplate('quickstartTemplate', 'quickstartTemplate', this.vocModel.type);
-      
-      this.$('.quickstart')[0].$html(this.quickstartTemplate());
-      this.showQuickstart();
     },
     
     pageChange: function(e) {

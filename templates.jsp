@@ -75,7 +75,6 @@
       <div id="mainGroup" style="padding-right:5px;"></div>
     {{ } }}
 
-    <div class="quickstart"></div>
     <!--div id="resourceImage" style="width:50%;float:left;margin:0; padding:0;"--><!-- style="width:auto" --></div>
     <!--div id="buyGroup" class="ui-block-b" style="width:50%; min-width: 130px"></div-->
   </div>
@@ -117,53 +116,88 @@
 <br/>
 </script>  
 
-<script type="text/template" id="quickstartTemplate">
-{{ if (G.currentApp.appPath == 'Tradle') { }}
+<script type="text/template" id="feedChooserQuickstartTemplate">
 <div class="quickstart-content">
-<i class="ui-icon-remove closeQuickstart" style="position:absolute; top: 0; right: 12px; font-size: 20px; color: {{= G.lightColor }}"></i>
-<h2>Quickstart</h2>
-<ol class="quickstart-options">
-  {{ var desc = this.resource.get('description'); }}
-  <li>
-    <a href="#" data-href="{{= U.makePageUrl('edit', this.resource.getUri(), { $editCols: 'title,description' }) }}">
-      {{ if (!desc) { }}
-        Name your Tradle and describe what it does
-      {{ }           }}
-      {{ if (desc) { }}
-        Edit your Tradle's description
-      {{ }           }}
-    </a>
-  </li>
-  {{ if (desc) { }}
+  <i class="ui-icon-remove"></i>
+  <h2>Quickstart</h2>
+  <h3>There are a TON of feeds on Tradle. Here's how to find the one you need</h3>
+  <ol class="quickstart-options">
     <li>
-      <a href="#" data-selector="header [data-shortname=&quot;feeds&quot;] i" data-tooltip="Click here to add indicators" data-direction="left">
-        Add indicators to your Tradle.
-      </a>
+      <a href="#" class="mini-cta" data-selector=".subClass:nth-child(2)" data-tooltip="Choose one of these feed categories" data-direction="bottom">Choose a category</a>
+      OR
+      <a href="#" class="mini-cta" data-selector=".ui-icon-search" data-tooltip="Click here to search for a feed by name" data-direction="left">Search by name</a>
+    </li>
+    <li>
+      <a href="#" class="mini-cta" data-selector="section[data-type=&quot;list&quot;]" data-tooltip="Click any of the feeds shown below to see the indicators it provides" data-direction="top">Choose a feed</a> from the filtered down list
     </li>          
-    {{ var il = this.resource.inlineLists; }}
-    {{ if (il && il.indicators && il.indicators.length) { }}
+  </ol>
+</div>
+</script>
+
+<script type="text/template" id="indicatorChooserQuickstartTemplate">
+<div class="quickstart-content">
+  <i class="ui-icon-remove"></i>
+  <h2>Quickstart</h2>
+  <h3>This feed provides the following indicators. Choose one to add to your Tradle (you can choose more later)</h3>
+  <ol class="quickstart-options">
+    <li>
+      <a href="#" class="mini-cta" data-selector="section[data-type=&quot;list&quot;]" data-tooltip="Click on a row to choose an indicator" data-direction="top">Choose an indicator</a>
+    </li>          
+  </ol>
+</div>
+</script>
+
+<script type="text/template" id="indicatorVariantChooserQuickstartTemplate">
+<div class="quickstart-content">
+  <i class="ui-icon-remove"></i>
+  <h2>Quickstart</h2>
+  <h3>You're almost done! This indicator has technicals. Choose one or more to add to your Tradle, then click the <i style="font-size: 20px; border: 1px solid; padding: 0 4px; margin: 5px;" class="ui-icon-ok" style="font-size:20px;"></i>icon at the top of the page</h3>
+</div>
+</script>
+
+<script type="text/template" id="tradleViewQuickstartTemplate">
+<div class="quickstart-content">
+  {{ var desc = this.resource.get('description'); }}
+  <i class="ui-icon-remove"></i>
+  <h2>Quickstart</h2>
+  {{ if (!desc) { }}
+  <h3>Welcome to your new Tradle! If this is your first time, follow the steps below:</h3>
+  {{ }            }}
+  <ol class="quickstart-options">
+    <li>
+      <a class="mini-cta" href="#" data-href="{{= U.makePageUrl('edit', this.resource.getUri(), { $editCols: 'title,description' }) }}">
+        {{ if (!desc) { }}
+          Name and describe your Tradle
+        {{ }           }}
+        {{ if (desc) { }}
+          Edit your Tradle's description
+        {{ }           }}
+      </a>
+    </li>
+    {{ if (desc) { }}
       <li>
-        <a href="#" data-selector="li[data-backlink=&quot;indicators&quot;]" data-tooltip="Click an indicator to make a rule with it" data-direction="top">
-          Make rules out of the indicators you've chosen
-        </a>
-      </li>
-      {{ if (il.tradleRules.length) { }}
+        <a class="mini-cta" href="#" data-selector="header [data-shortname=&quot;feeds&quot;] i" data-tooltip="Click here to add indicators" data-direction="left">Add indicators</a> to your Tradle.
+      </li>          
+      {{ var il = this.resource.inlineLists; }}
+      {{ if (il && il.indicators && il.indicators.length) { }}
         <li>
-          <a href="#" data-selector="header [data-shortname=&quot;notifications&quot;] i" data-tooltip="Click here to setup notifications" data-direction="left">
-            Get notified when your Tradle fires
-          </a>
+          <a class="mini-cta" href="#" data-selector="li[data-backlink=&quot;indicators&quot;]" data-tooltip="Click an indicator to make a rule with it" data-direction="top">Create rules</a> out of the indicators you've chosen
         </li>
-        <li>
-          <a href="#" data-selector="header [data-shortname=&quot;orders&quot;] i" data-tooltip="Click here to add trades" data-direction="left">
-            Add trades to be executed when your Tradle fires
-          </a>
-        </li>
+        {{ if (il.tradleRules && il.tradleRules.length) { }}
+          <li>
+            <a class="mini-cta" href="#" data-selector="[data-backlink]" data-tooltip="Swipe left on any row to pull out an actions bar" data-direction="top" data-removeonclick="y">Delete</a> rules/indicators you don't need
+          </li>
+          <li>
+            <a class="mini-cta" href="#" data-selector="header [data-shortname=&quot;notifications&quot;] i" data-tooltip="Click here to setup notifications" data-direction="left">Get notified</a> when your Tradle fires
+          </li>
+          <li>
+            <a class="mini-cta" href="#" data-selector="header [data-shortname=&quot;orders&quot;] i" data-tooltip="Click here to add trades" data-direction="left">Add trades</a> to be executed when your Tradle fires
+          </li>
+        {{ }                                        }}
       {{ }                                        }}
     {{ }                                        }}
-  {{ }                                        }}
-</ol>
+  </ol>
 </div>
-{{ }                                       }}
 </script>
 
 <script type="text/template" id="ftItemTemplate">
@@ -370,12 +404,16 @@
   <div class="section light" id="section_bg">
   <div class="section-content">
     <div class="title-block">
-    {{ var activated = G.currentUser.isActivated; }}
+    {{ var guest = G.currentUser.guest, activated = G.currentUser.isActivated; }}
+    {{ if (guest) { }} 
+      <span class="section-title">Sign up for early access</span>
+      <span class="section-title _2">Get involved now!</span>
+    {{ }                                 }}
     {{ if (activated) { }} 
       <span class="section-title">You got early access!</span>
       <span class="section-title _2">See how to make the most of your Tradle membership below</span>
     {{ }                                 }}
-    {{ if (!activated) { }} 
+    {{ if (!guest && !activated) { }} 
       <span class="section-title">There are {{= G.currentUser.numberInLine }} users ahead of you</span>
       <span class="section-title _2">But don't wait, get involved now!</span>
     {{ }                                 }}
@@ -1821,7 +1859,7 @@
     <span class="placeholder"></span>
     {{ if (this.categories) { }}
        <div style="display:inline-block; margin-left: 5px; font-size: 1.5rem;">
-         <a id="categories" class="lightDark" href="#">
+         <a class="categories lightText" href="#">
            <i class="ui-icon-tags"></i>
          </a>
        </div> 
@@ -1877,17 +1915,18 @@
     <div style="clear:both"></div>
   </div>
   <div class="cf vcenteredR" style="z-index:1; width:20%;float:left;background:inherit;">
-    {{ if (this._hashInfo.route == 'view') { }}    
-    <i class="help ui-icon-help" style="float:right; font-size:32px; margin-right: 10px; cursor: pointer;"></i>
-    {{ }                  }}
     {{ if (this.filter) { }}
       <div style="margin-right: 5px; display:inline-block; float: right;"><a class="filterToggle lightText" href="#"><i class="ui-icon-search"></i></a></div> 
+    {{ }                  }}
+    {{ if (this.hasQuickstart()) { }}    
+      <i class="help ui-icon-help"></i>
     {{ }                  }}
     <div style="clear:both"></div>
   </div>
 </div>
 <div class="physicsConstants" style="display:none; background-color: #606060; color:#FFFFFF; display:none;"></div>
 <div class="subClasses" style="display:none; padding: 5px; background-color:#ddd; display:none;"></div>
+<div class="quickstart"></div>
 </script>
 
 <script type="text/template" id="subClassesTemplate">

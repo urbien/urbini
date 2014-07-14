@@ -12,7 +12,8 @@ define('views/ListPage', [
   'domUtils'
 ], function(G, Events, U, Errors, Voc, BasicPageView, ResourceListView, Header, Q, DOM) {
   var MapView,
-      SPECIAL_INTERSECTIONS = [G.commonTypes.Handler, G.commonTypes.Friend, U.getLongUri1('model/social/NominationForConnection') /*, commonTypes.FriendApp*/];
+      SPECIAL_INTERSECTIONS = [G.commonTypes.Handler, G.commonTypes.Friend, U.getLongUri1('model/social/NominationForConnection') /*, commonTypes.FriendApp*/],
+      CAN_SHOW_ADD_BUTTON = true;
   
   function getLinearGradient(r, g, b) {
     var rgb = r + ',' + g + ',' + b;
@@ -42,7 +43,7 @@ define('views/ListPage', [
 //      'background-position': '0 50%'
     },
     initialize: function(options) {
-      _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'setMode', /*'orientationchange',*/ '_buildMockViewPage', '_getViewPageImageInfo');
+      _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'setMode'/*, 'orientationchange', '_buildMockViewPage', '_getViewPageImageInfo'*/);
       BasicPageView.prototype.initialize.apply(this, arguments);
       this.mode = options.mode || G.LISTMODES.DEFAULT;
 //      this.options = _.pick(options, 'checked', 'props');
@@ -83,7 +84,7 @@ define('views/ListPage', [
       var meta = vocModel.properties;
 
       var showAddButton;
-      if (!this.vocModel.adapter  &&  !isChooser  &&  !isMV  &&  !U.isA(this.vocModel, 'GenericMessage')) {
+      if (CAN_SHOW_ADD_BUTTON && !this.vocModel.adapter  &&  !isChooser  &&  !isMV  &&  !U.isA(this.vocModel, 'GenericMessage')) {
         if (this.vocModel['skipAccessControl']) {
           showAddButton = type.endsWith('/App')                      || 
                           U.isAnAppClass(vocModel)                       ||
@@ -443,61 +444,62 @@ define('views/ListPage', [
       return this;
     },
     
-    buildMockViewPage: function() {
-      var self = this,
-          imgRes;
-          
-      if (!this.mockViewPage && U.isA(this.vocModel, 'ImageResource'))
-        $.when(U.require('views/ViewPage'), this.getFetchPromise()).done(function(ViewPage) {
-          if (imgRes = self.collection.find(function(res) { return !!res.get('ImageResource.mediumImage') }))
-            self._buildMockViewPage(ViewPage, imgRes);
-        });
-    },
-    
-    _buildMockViewPage: function(ViewPage, imgRes) {
-      var self = this,
-          img,
-          vpInfo;
-      
-      this.mockViewPage = new ViewPage({
-        style: {
-          opacity: DOM.maxOpacity
-        },
-        mock: true,
-        model: imgRes
-      });
-      
-      this.mockViewPage.render({
-        mock: true,
-        force: true
-      });
-      
-      this.mockViewPage.onLoadedImage(function() {        
-        img = this.mockViewPage.$('#resourceImage img')[0];
-        this._viewPageImg = img;
-        if (img)
-          this._getViewPageImageInfo();
-        else
-          debugger; // should never happen
-      }, this);
-    },
-    
-    _getViewPageImageInfo: function() {
-      var offset = this._viewPageImg.$offset();
-      if (!offset.top)
-        return setTimeout(this._getViewPageImageInfo, 50);
-        
-      this.viewPageInfo = {
-        imageTop: offset.top,
-        imageLeft: offset.left
-      };
-      
-      this.mockViewPage.destroy();
-    },
-    
-    getViewPageInfo: function() {
-      return this.viewPageInfo;
-    }
+//    ,
+//    buildMockViewPage: function() {
+//      var self = this,
+//          imgRes;
+//          
+//      if (!this.mockViewPage && U.isA(this.vocModel, 'ImageResource'))
+//        $.when(U.require('views/ViewPage'), this.getFetchPromise()).done(function(ViewPage) {
+//          if (imgRes = self.collection.find(function(res) { return !!res.get('ImageResource.mediumImage') }))
+//            self._buildMockViewPage(ViewPage, imgRes);
+//        });
+//    },
+//    
+//    _buildMockViewPage: function(ViewPage, imgRes) {
+//      var self = this,
+//          img,
+//          vpInfo;
+//      
+//      this.mockViewPage = new ViewPage({
+//        style: {
+//          opacity: DOM.maxOpacity
+//        },
+//        mock: true,
+//        model: imgRes
+//      });
+//      
+//      this.mockViewPage.render({
+//        mock: true,
+//        force: true
+//      });
+//      
+//      this.mockViewPage.onLoadedImage(function() {        
+//        img = this.mockViewPage.$('#resourceImage img')[0];
+//        this._viewPageImg = img;
+//        if (img)
+//          this._getViewPageImageInfo();
+//        else
+//          debugger; // should never happen
+//      }, this);
+//    },
+//    
+//    _getViewPageImageInfo: function() {
+//      var offset = this._viewPageImg.$offset();
+//      if (!offset.top)
+//        return setTimeout(this._getViewPageImageInfo, 50);
+//        
+//      this.viewPageInfo = {
+//        imageTop: offset.top,
+//        imageLeft: offset.left
+//      };
+//      
+//      this.mockViewPage.destroy();
+//    },
+//    
+//    getViewPageInfo: function() {
+//      return this.viewPageInfo;
+//    }
   }, {
     displayName: 'ListPage'
   });

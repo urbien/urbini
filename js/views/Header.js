@@ -13,6 +13,7 @@ define('views/Header', [
   var REGULAR_BUTTONS = ['back', 'cancel', 'save', 'mapIt', 'add', 'video', 'chat', 'login', 'rightMenu'];
   var commonTypes = G.commonTypes;
   var friendlyTypes = [G.commonTypes.Urbien, 'http://urbien.com/voc/dev/ImpressBackup/Movie', 'http://urbien.com/voc/dev/ImpressBackup/Artist', 'model/social/App'];
+  var searchModeTypes = ['commerce/trading/Feed', 'commerce/trading/Event'].map(U.getTypeUri);
   var editablePhysicsConstants = ['drag', 'springStiffness', 'springDamping', 'tilt'];
   var NO_PROP = '_NO_PROP_';
   var ModalDialog;
@@ -232,12 +233,13 @@ define('views/Header', [
 
       return this;
     },
+
     events: {
       'change .activatable input'                  : 'activate',
       'change #fileUpload'                         : 'fileUpload',
       'change .physicsConstants input'             : 'changePhysics',
       'click .filterToggle'                        : 'toggleFilter',
-      'click #categories'                          : 'showCategories',
+      'click .categories'                          : 'showCategories',
       'click .back'                                : 'back',
 //      'click #installApp'         : 'installApp',
       'click #moreRanges'                          : 'showMoreRanges',
@@ -249,9 +251,17 @@ define('views/Header', [
       'keyup .filterConditionInput input'          : 'onFilter',
       'change .filterConditionInput select'        : 'onFilter',
       'change .filterConditionInput input'         : 'onFilter',
-      'change .subClass input'                     : 'onChoseSubClass'
+      'change .subClass input'                     : 'onChoseSubClass',
+      'click.header .quickstart .ui-icon-remove'   : 'hideQuickstart',
+//      'click.header'                                 : 'checkHideQuickstart',
+      'click.header i.help'                        : 'showQuickstart'
     },
     
+    modelEvents: {
+      'change': 'updateQuickstart',
+      'inlineList': 'updateQuickstart'
+    },
+
     back: function() {
       Events.trigger('back', 'Back clicked from header');
     },
@@ -763,6 +773,11 @@ define('views/Header', [
           if (self.pageView.TAG == 'ListPage') {
             self._updateSize();
             self._rail = [self.getContainerBodyId(), 0, 0, 0, -self._outerHeight];
+//            self.on('resized', function() {
+//              self._rail[4] = -self._outerHeight;
+//              self.updateMason();
+//            });
+            
             self.addToWorld(null, false);
 //            Physics.there.trackDrag(self.getContainerBodyId(), 'vel'); // 'pos' for exact tracking, 'vel' for parallax 
             self.getPageView().listView.onload(function() {              
@@ -771,6 +786,7 @@ define('views/Header', [
             });
           }
           
+          self.updateQuickstart();
 //          if (self.pageView.TAG == 'ListPage') {
 //            self.pageView.listView.onload(function() {              
 //              Physics.there.track(self.getContainerBodyId(), self.pageView.listView.getContainerBodyId(), 'vel');
@@ -1308,6 +1324,91 @@ define('views/Header', [
       
       this.finish();      
       return this;
+    },
+
+    getQuickstartTemplate: function() {
+      if (_.has(this, 'quickstartTemplate'))
+        return this.quickstartTemplate;
+      
+      var urlInfo = U.getCurrentUrlInfo(),
+          params = urlInfo.params,
+          forRes = params.$forResource,
+          template;
+      
+      if (this.resource && this.resource.isAssignableFrom('commerce/trading/Tradle'))
+        template = 'tradleViewQuickstartTemplate';
+      else if (urlInfo.route == 'chooser') {
+        if (params.$propA == 'tradle' && params.$propB == 'feed')
+          template = 'feedChooserQuickstartTemplate';
+        else if (U.isAssignableFrom(this.vocModel, 'system/designer/WebProperty'))
+          template = 'indicatorChooserQuickstartTemplate';
+        else if (urlInfo.params.$createInstance != 'y' && U.isAssignableFrom(this.vocModel, 'system/designer/WebClass'))
+          template = 'indicatorVariantChooserQuickstartTemplate';
+      }
+      
+      if (!template)
+        this.quickstartTemplate = null;
+      else
+        this.makeTemplate(template, 'quickstartTemplate', this.vocModel.type);
+      
+      return this.quickstartTemplate;
+    },
+    
+    hasQuickstart: function() {
+      if (G.currentApp.appPath != 'Tradle')
+        return false;
+      
+      var route = this._hashInfo.route;
+      return (route == 'view' || route == 'chooser') && this.getQuickstartTemplate();
+    },
+
+    updateQuickstart: function() {
+      if (!this.hasQuickstart() || !this.rendered)
+        return;
+      
+      var qst = this.getQuickstartTemplate();
+      if (qst) {
+        this.quickstart = this.$('.quickstart')[0];
+//      this.helpIcon = this.$('i.help')[0];
+        this.quickstart.$html(this.quickstartTemplate());
+        this.showQuickstart();
+      }      
+    },    
+    
+    showQuickstart: function(e) {
+      this.getPageView().removeTooltips();
+      this.quickstart = this.quickstart || this.$('.quickstart')[0];
+      this.el.$addClass('quickstart-active');
+      this.header && this.header.invalidateSize();
+      if (e)
+        e._showedQuickstart = true;
+    },
+    
+//    checkHideQuickstart: function(e) {
+//      if (!this.hasQuickstart() || !this.quickstart || !this.quickstart.$hasClass('quickstart-active') || (e && e._showedQuickstart))
+//        return;
+//      
+//      if (e.target.$closest('.quickstart-active') == null)
+//        this.hideQuickstart(e, true);
+//    },
+    
+    hideQuickstart: function(e) {
+      if (!this.quickstart || !this.el.$hasClass('quickstart-active'))
+        return;
+      
+      if (this.getPageView().TAG == 'ListPage' && arguments.length == 1)
+        noTooltip = true;
+        
+      this.el.$removeClass('quickstart-active');
+      this.header && this.header.invalidateSize();
+      
+//      if (noTooltip)
+//        return;
+//      
+//      var self = this;
+//      setTimeout(function() {
+//        self.getPageView().addTooltip(helpIcon, 'You can always launch Quickstart again by clicking here', 'bottom-left');
+//      }, 300);
     }
 //    ,
 //    getContainerBodyOptions: function() {
