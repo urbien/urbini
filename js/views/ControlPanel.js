@@ -498,7 +498,7 @@ define('views/ControlPanel', [
       if (isRule && !this.compareIndicatorsTemplate)
         this.makeTemplate('inlineCompareIndicatorsRuleTemplate', 'compareIndicatorsTemplate', listVocModel.type);
       if (isTrade)
-        this.makeTemplate('inlineTradesTemplate', 'inlineTradesTemplate', listVocModel.type);
+        this.makeTemplate('inlineListItemTemplate', 'inlineTradesTemplate', listVocModel.type);
       
       if (list.length && isCancelable) {
         canceledProp = listMeta[U.getCloneOf(listVocModel, 'Cancellable.cancelled')[0]];
