@@ -187,7 +187,16 @@
 
 <script type="text/template" id="inlineListItemTemplate">
 <!-- one row of an inline backlink in view mode -->
-<li data-viewid="{{= viewId }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}">
+
+
+<li data-viewid="{{= viewId }}" 
+
+{{ if (U.isAssignableFrom(obj.resource.vocModel, 'commerce/trading/Order')) { }}
+  style="text-align:center;padding:0;border:none;" class="trades">
+{{ } }}
+{{ if (!U.isAssignableFrom(obj.resource.vocModel, 'commerce/trading/Order')) { }}
+  data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}">
+{{ } }}
   <a href="{{= href }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="{{= obj.img || obj.needsAlignment ? '' : 'padding:1rem 0;'}} {{= obj.noclick ? 'cursor:default;' : 'cursor:pointer;' }}">
     {{ if (obj.img) { }}
       <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
@@ -275,13 +284,13 @@
   <div class="cf" style="font-size:1.6rem;font-weight:bold;text-align:center; height: auto; padding:1rem 0; width: 100%">
     <div style="float:left; width:40%; height:100%;">
       {{ if (resource.get('feedImage')) { }}
-        <img style="float:left;padding-left:1rem;" src="{{= resource.get('feedImage') }}" />
+        <img style="padding-left:1rem;" src="{{= resource.get('feedImage') }}" />
       {{ }                               }}
       <div class="rule1">
         {{= resource.get('indicator.displayName') }}
       </div>
       <div>
-        <a style="text-decoration:none; font-weight: 100;" href="{{= U.makeMobileUrl('view', resource.get('tradleFeed')) }}">
+        <a style="text-decoration:none; font-weight: 100;font-size:1.4rem;" href="{{= U.makeMobileUrl('view', resource.get('tradleFeed')) }}">
           {{= resource.get('tradleFeed.displayName') }}
         </a>
       </div>
@@ -323,8 +332,8 @@
 </li>
 </script>
 
-<script type="text/template" id="inlineTradesTemplate">
 <!-- one row of an inline backlink in view mode -->
+<!--script type="text/template" id="inlineTradesTemplate">
 <li data-viewid="{{= viewId }}" style="text-align:center;padding:0;border:none;" class="trades">
   <a href="{{= href }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="{{= obj.img || obj.needsAlignment ? '' : 'padding:1rem 0;'}} {{= obj.noclick ? 'cursor:default;' : 'cursor:pointer;' }}">
     {{ if (obj.img) { }}
@@ -355,7 +364,7 @@
     </a>
   {{ } }}
 </li>
-</script>
+</script-->
 
 <script type="text/template" id="socialLinksTemplate">
 <!-- Social Links -->
@@ -1547,12 +1556,12 @@
 
 <script type="text/template" id="saveButtonTemplate">
 <!-- header button for saving changes -->
-<a target="#"><i class="ui-icon-ok"></i><span style="position:absolute;top:7px;">Save</span></a>
+<a target="#"><i class="ui-icon-ok"style="margin-left:-.7rem;padding-right:.7rem;color:#666;"></i><span style="position:absolute;top:7px;">Save</span></a>
 </script>
 
 <script type="text/template" id="cancelButtonTemplate">
 <!-- header button for canceling changes -->
-<a target="#"><i class="ui-icon-remove"></i><span style="position:absolute;top:7px;">Cancel</span></a>
+<a target="#"><i class="ui-icon-remove" style="margin-left:-.7rem;padding-right:.7rem;color:#666;"></i><span style="position:absolute;top:7px;">Cancel</span></a>
 </script>
 
 <script type="text/template" id="mapItButtonTemplate">
@@ -1812,7 +1821,7 @@
 <script type="text/template" id="headerTemplate">
 <!-- the page header, including buttons and the page title, used for all pages except the home page -->
 <div id="callInProgress"></div>
-<div id="header" {{= obj.style ? style : 'style="background:' + G.lightColor + ';color:' + G.darkColor + '"' }} {{= obj.more || '' }} >
+<div id="header" {{= obj.style ? style : 'style="background:#fff;color:' + G.darkColor + '"' }} {{= obj.more || '' }} >
   <div class="hdr">
   <section role="region">
     <header style="background: none;height:inherit;">
@@ -1822,7 +1831,7 @@
   </section>
   </div>
 </div>
-<div id="buttons" style="white-space: nowrap; position:relative; height: 50px; background:{{= G.darkColor }};color:{{= G.lightColor }}">
+<div id="buttons" style="white-space: nowrap; position:relative; height: 50px; background:#efefef;">
   <div class="cf vcenteredR" style="z-index:1; width:20%;float:left;background:inherit;">
     <span class="placeholder"></span>
     {{ if (this.categories) { }}
@@ -1841,7 +1850,7 @@
     {{ }                     }}
   </div>
   <div id="name" class="cf vcenteredR resTitle" style="z-index:0; width:60%;float:left;background:inherit;" align="center">
-    <h4 id="pageTitle" style="text-overflow: ellipsis; font-weight:normal;color:{{= G.lightColor }};">{{= this.title }}</h4>
+    <h4 id="pageTitle" style="text-overflow: ellipsis; font-weight:normal;color:{{= G.darkColor }};">{{= this.title }}</h4>
     {{= this.filter ? "<div class='filter'></div>" : "" }}
     <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
       <button style="max-width:200px; display: inline-block;" id="doTryBtn">
