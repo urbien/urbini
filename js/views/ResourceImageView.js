@@ -569,6 +569,7 @@ define('views/ResourceImageView', [
                type;
       if (ic)
         coverPhoto = this.resource.get(ic);
+
       if (!coverPhoto) {
         this.renderCoverImage(G.coverImage);
         return this;
@@ -615,7 +616,7 @@ define('views/ResourceImageView', [
       }
       else
         coverDiv = '<div id="coverImage" style="height:';
-      coverDiv += '160px;'; //this.isTradle ? '160px;' : '290px;'; //!G.isBB() ? '350px;' : '290px;';
+      coverDiv += this.isTradle ? '100px;' : '160px;'; //this.isTradle ? '160px;' : '290px;'; //!G.isBB() ? '350px;' : '290px;';
       coverDiv += 'z-index:100;"></div>';
       var pe = this.el.parentElement;
       if (!pe)
