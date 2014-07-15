@@ -453,10 +453,16 @@ define('views/BasicPageView', [
       this._tooltipMap[tooltipEl.$getUniqueId()] = el;
       page.$prepend(tooltipEl);
       
-      document.addEventListener('tap', function removeTooltips() {
-        document.removeEventListener('tap', removeTooltips, true);
-        self.removeTooltips();
-      }, true);
+      var events = ['tap', 'drag'];
+      events.map(function(event) {
+        document.addEventListener(event, function removeTooltips() {
+          events.map(function(event) {
+            document.removeEventListener(event, removeTooltips, true);
+          });
+          
+          self.removeTooltips();
+        }, true);
+      });
     },
     
     _getTooltipBaseElement: function(tooltipEl) {

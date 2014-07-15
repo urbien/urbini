@@ -789,8 +789,12 @@ define('views/EditView', [
       }
       else if (p && p.multiValue)
         val = this.getResourceInputValue(input); //input.innerHTML;
-      else if (p && U.isDateProp(p))
-        val = Date.parse(input.value);
+      else if (p && U.isDateProp(p)) {
+        if (/[^\d]/.test(input.value))
+          val = Date.parse(input.value);
+        else
+          val = parseInt(input.value);
+      }
 //      else if (p && U.isTimeProp(p))
 //        val = parseTime(input.value);        
       else
@@ -897,8 +901,8 @@ define('views/EditView', [
         }
         else if (input.type.startsWith('select'))
           atts[name] = val;
-//        else if (!_.has(unsaved, name) && val)
-//          atts[name] = val;
+        else //if (!_.has(unsaved, name) && val)
+          atts[name] = val;
       }
       
       switch (action) {
@@ -1505,7 +1509,7 @@ define('views/EditView', [
 //        this.$ul.listview('refresh');
       var inputs = this.inputs = this.getInputs(); //form.find('input');
       var initInputs = function(inputs) {
-        _.each(inputs, function(input) {
+        inputs.$forEach(function(input) {
 //          if (input.$hasClass(scrollerClass))
 //            return;
           
@@ -1515,9 +1519,9 @@ define('views/EditView', [
               onValidated: validated, 
               onValidationError: self.fieldError
             });
-          }, 500);
+          }, 200);
 
-          input.addEventListener('input', function() {
+          input.$on('input', function() {
             if (input.$data('codemirror'))
               return;
             
@@ -1525,7 +1529,7 @@ define('views/EditView', [
             setValues.apply(this, arguments);
           });
           
-          input.addEventListener('blur', setValues);
+          input.$on('blur', setValues);
         });
 //        $in.keyup(onFocusout);
       };

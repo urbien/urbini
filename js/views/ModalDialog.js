@@ -56,8 +56,8 @@ define('views/ModalDialog', ['domUtils', 'events'], function(DOM, Events) {
 
   function listen(attach) {
     var method = attach ? 'addEventListener' : 'removeEventListener';
-    document[method]( 'tap', onDocumentKeyUp, false );
-//    document[method]( 'keyup', onDocumentKeyUp, false );
+    document[method]( 'tap', onDocumentClick, false );
+    document[method]( 'keyup', onDocumentKeyUp, false );
 //    document[method]( 'click', onDocumentClick, false );
 //    document[method]( 'touchstart', onDocumentClick, false );
   };

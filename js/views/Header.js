@@ -17,6 +17,7 @@ define('views/Header', [
   var editablePhysicsConstants = ['drag', 'springStiffness', 'springDamping', 'tilt'];
   var NO_PROP = '_NO_PROP_';
   var ModalDialog;
+  var CLOSED_QUICKSTART = [];
   var showFilter = (function() {
 //    return U.isUserInRole(U.getUserRole(), 'siteOwner');
     return false;
@@ -1380,8 +1381,8 @@ define('views/Header', [
       this.quickstart = this.quickstart || this.$('.quickstart')[0];
       this.el.$addClass('quickstart-active');
       this.header && this.header.invalidateSize();
-      if (e)
-        e._showedQuickstart = true;
+//      if (e)
+//        e._showedQuickstart = true;
     },
     
 //    checkHideQuickstart: function(e) {

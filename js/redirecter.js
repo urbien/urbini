@@ -589,15 +589,14 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
           $in: $in,
           $select: 'name,label,propertyType,range,rangeUri,davPropertyUri',
           $title: title,
-          $tradleFeedParams: _.param(
-            {
-              tradle: res.get('tradle'),
-              tradleFeed: res.getUri(),
-              feed: res.get('feed'),
-//              eventClass: eventClassUri,
-              eventClassRangeUri: eventClassRangeUri
-            }
-          )
+          $tradleFeedParams: _.param({
+            tradle: res.get('tradle'),
+            tradleFeed: res.getUri(),
+//            'tradleFeed.displayName': U.getDisplayName(res),
+            feed: res.get('feed'),
+//            'feed.displayName': res.get('feed.displayName'),
+            eventClassRangeUri: eventClassRangeUri
+          })
         }), options);
       });
     });
@@ -1015,9 +1014,15 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
             common = _.toQueryParams(params.$indicator);
             
         while (i--) {
-          var indicator = new iModel(_.extend({
-            variant: checked[i].value
-          }, common));
+          var variant = checked[i].value,
+              vRes = list.get(variant),
+              indicator = new iModel(_.extend({
+                variant: variant,
+                variantUri: vRes.get('davClassUri')
+//                ,
+//                'variant.displayName': U.getDisplayName(vRes)
+              }, common));
+          
           indicator.save();
         }
 
@@ -1088,13 +1093,15 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     }
     else if (params.$tradleFeedParams) {
       var eventProperty = valueRes.getUri(),
+          eventPropertyUri = valueRes.get('davPropertyUri'),
           propertyType = valueRes.get('propertyType'),
           isNumeric = U.isNumericType(propertyType),
           tfParams = _.toQueryParams(params.$tradleFeedParams);
       
-      tfParams.eventProperty = valueRes.getUri();
+      tfParams.eventProperty = eventProperty;
+      tfParams.eventPropertyUri = eventPropertyUri;
+//      tfParams['eventProperty.displayName'] = U.getDisplayName(valueRes);
       if (isNumeric) {
-        var eventPropertyUri = valueRes.get('davPropertyUri'),
             and1 = _.param({
               applicableToProperty: eventPropertyUri,
 //              applicableToModel: tfParams.eventClass,
@@ -1123,13 +1130,9 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
       }
       
       Voc.getModels('commerce/trading/TradleIndicator').done(function(iModel) {
-        var indicator = new iModel({
-          tradleFeed: tfParams.tradleFeed,
-          tradle: tfParams.tradle,
-          eventProperty: eventProperty
-        });
-        
-        indicator.save();
+        debugger;
+        tfParams.variantUri = 'http://tradle.io/voc/dev/Technicals/RawValue';
+        new iModel(tfParams).save();
       });
   
       Events.trigger('navigate', U.makeMobileUrl('view', tfParams.tradle));

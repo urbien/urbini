@@ -92,11 +92,12 @@ define('views/ControlPanel', [
           vocModel = U.getModel(blProp.range),
           uri = li.$data('uri'),
           res = C.getResource(uri),
-          overlay = li.$('.anim-overlay')[0];
+          overlay = li.$('.anim-overlay')[0],
+          overlayHTML;
       
-      if (overlay)
+      if (!res)
         return;
-      
+        
       var actions = {
         cancel: res.isA('Cancellable') && !res.get('Cancellable.cancelled'),
         edit: !U.isAssignableFrom(vocModel, 'commerce/trading/Rule', 'commerce/trading/TradleIndicator'),
@@ -110,12 +111,15 @@ define('views/ControlPanel', [
       if (!this.actionsOverlayTemplate)
         this.makeTemplate('actionsOverlayTemplate', 'actionsOverlayTemplate', this.vocModel.type);
       
-      overlay = this.actionsOverlayTemplate({
+      overlayHTML = this.actionsOverlayTemplate({
         _uri: uri,
         actions: actions
       });
       
-      li.$prepend(overlay);
+      if (overlay)
+        overlay.$remove();
+      
+      li.$prepend(overlayHTML);
       overlay = li.$('.anim-overlay')[0];
     },
     
@@ -161,7 +165,10 @@ define('views/ControlPanel', [
     actionEdit: function(e) {
       Events.stopEvent(e);
       this.hideOverlays();
-      debugger;
+      var li = getLi(e.target),
+          uri = C.getResource(li.$data('uri'));
+      
+      Events.trigger('navigate', U.makeMobileUrl('edit', uri));
     },
 
     actionComment: function(e) {
@@ -190,9 +197,16 @@ define('views/ControlPanel', [
         return;
       }
       
-      var uri = li.$data('uri');
-      var getRes;
-      var res = C.getResource(uri);
+      var uri = li.$data('uri'),
+          res,
+          getRes;
+      
+      if (!uri) {
+        debugger;
+        return;
+      }
+      
+      res = C.getResource(uri);
       if (res)
         getRes = G.getResolvedPromise();
       else {
@@ -333,7 +347,9 @@ define('views/ControlPanel', [
           propType = indicator.get('propertyType'),
           params = {
             indicator: indicator.getUri(),
-            tradle: indicator.get('tradle')
+            tradle: indicator.get('tradle'),
+            tradleFeed: indicator.get('tradleFeed'),
+            'tradleFeed.displayName': indicator.get('tradleFeed.displayName')
           },
           subClassOf;
 
@@ -497,7 +513,8 @@ define('views/ControlPanel', [
       
       if (isRule && !this.compareIndicatorsTemplate)
         this.makeTemplate('inlineCompareIndicatorsRuleTemplate', 'compareIndicatorsTemplate', listVocModel.type);
-      if (isTrade)
+      
+      if (isTrade && !this.inlineTradesTemplate)
         this.makeTemplate('inlineTradesTemplate', 'inlineTradesTemplate', listVocModel.type);
       
       if (list.length && isCancelable) {

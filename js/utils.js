@@ -361,7 +361,7 @@ define('utils', [
         visible = prop._visible;
       else {
         // cache it
-        visible = prop._visible = !(prop.avoidDisplaying || prop.avoidDisplayingInView || prop.avoidDisplayingInControlPanel || prop.virtual || prop.parameter || prop.propertyGroupList || U.isSystemProp(prop));
+        visible = prop._visible = !(prop.facet == 'uuid' || prop.avoidDisplaying || prop.avoidDisplayingInView || prop.avoidDisplayingInControlPanel || prop.virtual || prop.parameter || prop.propertyGroupList || U.isSystemProp(prop));
       }
       
       if (!visible)
@@ -578,7 +578,7 @@ define('utils', [
     },
     
     isPropEditable: function(res, prop, userRole) {
-      if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly || prop.virtual || prop.propertyGroupList || prop.autoincrement || prop.formula || U.isSystemProp(prop))
+      if (prop.avoidDisplaying || prop.avoidDisplayingInControlPanel || prop.readOnly || prop.virtual || prop.propertyGroupList || prop.autoincrement || prop.facet == 'uuid' || prop.formula || U.isSystemProp(prop))
         return false;
       
       var isEdit = !!res.get('_uri');
@@ -1913,7 +1913,7 @@ define('utils', [
       var pmeta = pModel.properties;
       for (var p in pmeta) {
         var pr = pmeta[p];
-        if (!pr.cloneOf  &&  (!pr.primary  ||  !pr.autoincrement)) 
+        if (!pr.cloneOf  &&  (!pr.primary  ||  !(pr.autoincrement || prop.facet == 'uuid'))) 
           return true;
       }
       return false;
@@ -2243,11 +2243,15 @@ define('utils', [
       return G.hostName + '/voc/dev' + type.slice(type.lastIndexOf('/'));
     },
 
-//    _appUrlRegex: new RegExp("^(https?:\/\/" + G.serverName.slice(G.serverName.indexOf('//') + 2) + "\/)?(" + G.pageRoot + ")?")
+    _appUrlRegex: new RegExp("^(https?://)?(" + G._serverName + ")?/?(" + G.pageRoot + ")?(^http)"),
     isExternalUrl: function(url) {
-      return url.startsWith(G.pageRoot) || 
-             (url.startsWith('http') && url.slice(url.indexOf('//') + 2).startsWith(G._serverName)) ||
-             !url.startsWith('http');
+      if (!url.startsWith('http'))
+        return false;
+      
+      if (!G.domainRegExp.test(url))
+        return false;
+      
+      return url.slice(url.indexOf(G._serverName), G._serverName.length + 1).startsWith(G.pageRoot);
     },
     
     makeMobileUrl: function(action, typeOrUri, params) {
@@ -3067,6 +3071,22 @@ define('utils', [
     getTempIdParameterName: function() {
       return tempIdParam;
     },
+    
+    hasStablePrimaryKeys: function(vocModel) {
+      var pks = U.getPrimaryKeys(vocModel),
+          i = pks.length,
+          props = vocModel.properties,
+          prop;
+      
+      while (i--) {
+        prop = props[pks[i]];
+        if (prop.facet == 'uuid' || prop.autoincrement)
+          return false;
+      }
+      
+      return true;
+    },
+
     buildUri: function(atts, model) {
       if (U.isModel(atts)) {
         model = atts.vocModel;
@@ -3074,17 +3094,29 @@ define('utils', [
       }
 
       var primaryKeys = U.getPrimaryKeys(model),
-          keyVals = _.pick(atts, primaryKeys);
+          keyVals = _.pick(atts, primaryKeys),
+          val,
+          props = model.properties,
+          qs = '';
       
       if (_.size(keyVals) != primaryKeys.length)
         return null;
-      
+            
       for (var key in keyVals) {
-        if (typeof keyVals[key] == 'undefined')
+        var val = keyVals[key];
+        if (val == null)
           return null;
+        
+        var prop = props[key];
+        if (U.isResourceProp(prop))
+          qs += val.slice(val.indexOf('?') + 1);
+        else
+          qs += key + '=' + _.encode('' + val);
+        
+        qs += '&';
       }
       
-      return U.makeUri(U.getActualModelType(model), keyVals);
+      return U.makeUri(U.getActualModelType(model), qs.slice(0, qs.length - 1));
     },
     
     getActualModelType: function(vocModel) {

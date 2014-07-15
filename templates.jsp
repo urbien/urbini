@@ -315,9 +315,11 @@
         {{= resource.get('indicator.displayName') }}
       </div>
       <div>
+        {{ if (resource.get('tradleFeed')) { }}
         <a style="text-decoration:none; font-weight: 100;" href="{{= U.makeMobileUrl('view', resource.get('tradleFeed')) }}">
           {{= resource.get('tradleFeed.displayName') }}
         </a>
+        {{ }                               }}
       </div>
     </div>
     <div style="float:left; width:20%; height:100%; font-size:2.3rem;">
@@ -342,9 +344,11 @@
         {{= resource.get('compareWith.displayName') }}
       </div>
       <div>
+        {{ if (resource.get('compareWithTradleFeed')) { }}
         <a href="{{= U.makeMobileUrl('view', resource.get('compareWithTradleFeed')) }}" style="text-decoration:none; font-weight: 100;">
           {{= resource.get('compareWithTradleFeed.displayName') }}
         </a>
+        {{ }                               }}
       </div>
     {{ }                        }}
     {{ if (!resource.get('compareWith')) {  }}
@@ -359,7 +363,7 @@
 
 <script type="text/template" id="inlineTradesTemplate">
 <!-- one row of an inline backlink in view mode -->
-<li data-viewid="{{= viewId }}" style="text-align:center;padding:0;border:none;" class="trades">
+<li data-viewid="{{= viewId }}" style="text-align:center;padding:0;border:none;" class="trades" data-backlink="{{= backlink }}" data-uri="{{= resource.getUri() }}">
   <a href="{{= href }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="{{= obj.img || obj.needsAlignment ? '' : 'padding:1rem 0;'}} {{= obj.noclick ? 'cursor:default;' : 'cursor:pointer;' }}">
     {{ if (obj.img) { }}
       <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
@@ -1394,7 +1398,7 @@
 <script type="text/template" id="menuItemTemplate">
 <!-- one item on the left-side slide-out menu panel -->
 <li style="position:relative;{{= obj.image ? 'padding-top: 0;padding-right:0px;' : 'padding-bottom:0px;' }}"  id="{{= obj.id ? obj.id : G.nextId() }}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
-    {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + '#' + mobileUrl : pageUrl) + '"' : '' }} >
+    {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + "/" + mobileUrl : pageUrl) + '"' : '' }} >
   
   <!-- {{ if (!obj.homePage) { }} -->   
   <img src="{{= obj.image || 'icons/blank.png'}}" class="thumb" 

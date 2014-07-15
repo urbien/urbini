@@ -223,6 +223,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     var a = e.target,
         tagName = a.tagName,
         href = a.$attr('href'),
+        absoluteHref = a.href,
         dataHref = a.$data('href');
     
     if (href == '#' && dataHref) {
@@ -236,13 +237,15 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         Events.stopEvent(e);
         return;
       }
-      else if (href && U.isExternalUrl(href)) {
-        return;
+      else if (href) {
+        if (!U.isExternalUrl(absoluteHref)) {
+          Events.stopEvent(e);
+          Events.trigger('navigate', href);
+          return;
+        }
       }
-      else {
-        debugger;
-        return;
-      }
+      
+      debugger;
     }
   }, false);
 
