@@ -230,31 +230,19 @@ define('resourceManager', [
         task: function() {
           var inRef,
               dfd = $.Deferred(),
-              stores = types.filter(IDB.hasStore.bind(IDB));
+              stores = types.filter(IDB.hasStore.bind(IDB)).concat(REF_STORE.name);
           
-          IDB.queryByIndex('_uri').eq(uri).getAll(REF_STORE.name).done(function(results) {
-            if (results && results.length)
-              inRef = _.pluck(results, REF_STORE.options.keyPath);
-//              IDB['delete'](REF_STORE.name, );
-          }).always(function() {
-            IDB.$idb.transaction(stores.concat(REF_STORE.name), 1).progress(function(trans) {
-              var i = stores.length;
-              while (i--) {
-                trans.objectStore(stores[i])['delete'](uri);
-              }
-              
-              if (!inRef)
-                return;
-              
-              i = inRef.length;
-              refStore = trans.objectStore(REF_STORE.name);
-              while (i--) {
-                refStore['delete'](inRef[i]);
-              }              
-            }).done(dfd.resolve).fail(function() {
-              debugger;
-              dfd.reject();
-            });
+          IDB.$idb.transaction(stores, 1).progress(function(trans) {
+            var i = stores.length;
+            while (i--) {
+              trans.objectStore(stores[i])['delete'](uri);
+            }            
+          }).done(function() {
+            G.log(RM.TAG, 'db', 'deleted item', uri, 'from stores', stores.join(', '));
+            dfd.resolve();
+          }).fail(function() {
+            debugger;
+            dfd.reject();
           });
           
           return dfd.promise();

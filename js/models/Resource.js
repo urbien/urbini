@@ -5,8 +5,9 @@ define('models/Resource', [
   'utils',
   'error',
   'events',
-  'cache'
-], function(G, _, U, Errors, Events, C) {
+  'cache',
+  'uuid'
+], function(G, _, U, Errors, Events, C, uuid) {
   var commonTypes = G.commonTypes,
       APP_TYPES = _.values(_.pick(commonTypes, 'WebProperty', 'WebClass'));
   
@@ -35,9 +36,9 @@ define('models/Resource', [
     });
   };
  
-  Events.on('uriChanged', function(tempUri, data) {
-    Events.trigger('synced:' + tempUri, data);
-  });
+//  Events.on('uriChanged', function(tempUri, data) {
+//    Events.trigger('synced:' + tempUri, data);
+//  });
   
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
@@ -96,6 +97,9 @@ define('models/Resource', [
 //      });
 //
 //      this.checkIfLoaded();
+      
+      if (this.isNew())
+        this.set({ _new: true }, { silent: true });      
     },
     
     selfDestruct: function() {
@@ -392,7 +396,7 @@ define('models/Resource', [
       return retUri;
     },
     isNew: function() {
-      return Backbone.Model.prototype.isNew.apply(this) || U.isTempUri(this.getUri()); // || !this._previousAttributes._uri || U.isTempUri(this._previousAttributes._uri);
+      return Backbone.Model.prototype.isNew.apply(this) || this.get('_new'); // || U.isTempUri(this.getUri()); // || !this._previousAttributes._uri || U.isTempUri(this._previousAttributes._uri);
     },
     saveUrl: function(attrs) {
       var type = this.vocModel.type;
@@ -424,6 +428,10 @@ define('models/Resource', [
 //      }
       
       return this.get('_uri');
+    },
+    
+    hasStablePrimaryKeys: function() {
+      return U.hasStablePrimaryKeys(this.vocModel);
     },
     
     _setLastFetchOrigin: function(lfo) {
@@ -610,7 +618,7 @@ define('models/Resource', [
       });
       
 //      list.on("all", onChange);
-      _.each(['updated', 'added', 'reset', 'removed'], function(event) {
+      ['updated', 'added', 'reset', 'removed'].forEach(function(event) {
         self.stopListening(list, event);
         self.listenTo(list, event, onChange);
       });
@@ -634,17 +642,17 @@ define('models/Resource', [
                                   // for some reason we wanted to keep all the props that haven't been propagated to the server, not just props unsaved (to db) 
     },
     
-    _watchTemp: function(shortName, tempUri) {
-      var self = this;
-      Events.once('synced:' + tempUri, function updateUri(data) {
-        var newVal = U.getValue(data, '_uri');
-        if (newVal != self.get(shortName)) {
-          self.set(shortName, newVal);
-          if (self.getUri())
-            self.save();
-        }
-      });
-    },
+//    _watchTemp: function(shortName, tempUri) {
+//      var self = this;
+//      Events.once('synced:' + tempUri, function updateUri(data) {
+//        var newVal = U.getValue(data, '_uri');
+//        if (newVal != self.get(shortName)) {
+//          self.set(shortName, newVal);
+//          if (self.getUri())
+//            self.save();
+//        }
+//      });
+//    },
     
     clear: function() {
       this.resetUnsavedChanges();
@@ -654,7 +662,7 @@ define('models/Resource', [
     set: function(key, val, options) {
       var self = this,
           uri = this.get('_uri'),
-          uriChanged,
+//          uriChanged,
           props,
           vocModel,
           meta,
@@ -704,12 +712,12 @@ define('models/Resource', [
         if (!val)
           continue;
         
-        if (shortName == '_uri') {
-          if (uri && val && val !== uri)
-            uriChanged = true;
-          else
-            continue;
-        }
+//        if (shortName == '_uri') {
+//          if (uri && val && val !== uri)
+//            uriChanged = true;
+//          else
+//            continue;
+//        }
         
         var prop = meta[shortName];
         if (!prop)
@@ -725,15 +733,15 @@ define('models/Resource', [
             delete self.attributes[shortName + '.uri'];
           }
           
-          if (U.isNativeModelParameter(shortName) && U.isTempUri(val)) {
-            var link = C.getResource(val),
-                latestUri = (link && link.getUri()) || val;
-            
-            if (latestUri && !U.isTempUri(latestUri))
-              props[shortName] = latestUri;
-            else
-              this._watchTemp(shortName, latestUri);
-          }
+//          if (U.isNativeModelParameter(shortName) && U.isTempUri(val)) {
+//            var link = C.getResource(val),
+//                latestUri = (link && link.getUri()) || val;
+//            
+//            if (latestUri && !U.isTempUri(latestUri))
+//              props[shortName] = latestUri;
+//            else
+//              this._watchTemp(shortName, latestUri);
+//          }
         }
         
         
@@ -778,8 +786,8 @@ define('models/Resource', [
 //      if (uriChanged)
 //        props._uri = uri;
       var result = Backbone.Model.prototype.set.call(this, props, options);
-      if (uriChanged)
-        Events.trigger('uriChanged', uri, this);
+//      if (uriChanged)
+//        Events.trigger('uriChanged', uri, this);
 
       if (result) {
 //        this._resetEditableProps();
@@ -1166,7 +1174,6 @@ define('models/Resource', [
 
     _save: function(data, options) {
       var self = this,
-          uri = this.getUri(),
           vocModel = this.vocModel,
           isAppInstall = U.isAssignableFrom(vocModel, commonTypes.AppInstall),
           isTemplate = U.isAssignableFrom(vocModel, commonTypes.Jst),
@@ -1185,10 +1192,10 @@ define('models/Resource', [
       options.success = function() {
         success && success.apply(self, arguments);        
         self.trigger('saved', self, options);
-        if (uri)
-          Events.trigger('savedEdit', self, options);
-        else
+        if (isNew)
           Events.trigger('savedMake', self, options);
+        else
+          Events.trigger('savedEdit', self, options);
         
         self.triggerPlugs(options);
         self.notifyContainers();      
@@ -1207,7 +1214,6 @@ define('models/Resource', [
           isTemplate = U.isAssignableFrom(vocModel, commonTypes.Jst),
           isApp = U.isAssignableFrom(vocModel, commonTypes.App),
           isNew = this.isNew(),
-          tempUri = isNew && this.getUri(),
           success = options.success, 
           error = options.error;
 
@@ -1236,7 +1242,7 @@ define('models/Resource', [
       });
       
       options.success = function(resource, response, opts) {
-//        Events.trigger('synced:' + (tempUri || self.getUri()), self);
+        self.unset('_new', { silent: true });
         if (!opts.fromDB)
           self.resetUnsavedChanges(); // if we're performing a synchronized save (for example for a money transaction), without going through the database. Otherwise we want to keep accumulating unsavedChanges
 
@@ -1267,11 +1273,10 @@ define('models/Resource', [
           self.notifyContainers();
         
         self.trigger('syncedWithServer', self);
-        if (tempUri) {
-          self.subscribedToUpdates = false;
-          self.subscribeToUpdates();
-        }
-        
+//        if (tempUri) {
+//          self.subscribedToUpdates = false;
+//          self.subscribeToUpdates();
+//        }        
       };
       
       options.error = function(originalModel, xhr, opts) {
@@ -1279,39 +1284,59 @@ define('models/Resource', [
             errorObj = xhr.responseJson;
         
         switch (code) {
-        case 409: 
-          if (self._getLastFetchOrigin() != 'server')
-            debugger;
-            
+          case 409:
+//            Events.trigger('substitute', self.getUri(), U.getLongUri1(errorObj.conflict._uri, self.vocModel));
+          debugger;
+//          self['delete']();
           var conflict = errorObj.conflict;
-          if (!isNew) {
-//            self._setLastFetchOrigin('server');
+          if (self.hasStablePrimaryKeys()) {
             self.set(self.parse(conflict, {overwriteUserChanges: true}));
-            Events.trigger('messageBar', 'error', {
-              message: errorObj.details || "Uh oh. Seems someone (maybe you) has made edits that trump yours. We've loaded theirs so you're good to go. Please re-edit and re-submit.",
-              persist: false
-            });
+            return options.success(self, self.toJSON(), options);  
           }
-          else {
-            if (self.isA('Intersection')) {
-//              self._setLastFetchOrigin('server');
-              if (options.redirect)
-                debugger;
-              
-              self.set(self.parse(conflict, {overwriteUserChanges: true}));
-              return options.success(self, self.toJSON(), options);
-            }
-            else {
-  //            Events.trigger('navigate', new self.vocModel(conflict));
-              Events.trigger('cacheResource', new self.vocModel(conflict));
-              Events.trigger('messageBar', 'error', {
-                message: errorObj.details || "Uh oh. Seems whatever you're making <a href='{0}'>already exists</a>.".format(U.makePageUrl('view', conflict._uri)),
-                persist: false
-              });
-            }
-          }
+          else
+            debugger;
+          
           break;
+          
+//          self.set(self.parse(conflict, {overwriteUserChanges: true}));
+//          return options.success(self, self.toJSON(), options);
+//          return U.getResourcePromise(U.getLongUri1(errorObj.conflict._uri, self.vocModel)).done(function(conflict) {
+//            conflict.set(conflict.parse(errorObj.conflict, {overwriteUserChanges: true}));
+//            options.success(conflict, conflict.toJSON(), options);
+//          }).fail(function() {
+//            if (error)
+//              error.apply(self, arguments);
+//          });
+//          
+//          if (!isNew) {
+////            self._setLastFetchOrigin('server');
+//            self.set(self.parse(conflict, {overwriteUserChanges: true}));
+//            Events.trigger('messageBar', 'error', {
+//              message: errorObj.details || "Uh oh. Seems someone (maybe you) has made edits that trump yours. We've loaded theirs so you're good to go. Please re-edit and re-submit.",
+//              persist: false
+//            });
+//          }
+//          else {
+//            if (self.isA('Intersection')) {
+////              self._setLastFetchOrigin('server');
+//              if (options.redirect)
+//                debugger;
+//              
+//              self.set(self.parse(conflict, {overwriteUserChanges: true}));
+//              return options.success(self, self.toJSON(), options);
+//            }
+//            else {
+//  //            Events.trigger('navigate', new self.vocModel(conflict));
+//              Events.trigger('cacheResource', new self.vocModel(conflict));
+//              Events.trigger('messageBar', 'error', {
+//                message: errorObj.details || "Uh oh. Seems whatever you're making <a href='{0}'>already exists</a>.".format(U.makePageUrl('view', conflict._uri)),
+//                persist: false
+//              });
+//            }
+//          }
+//          break;
         case 404:
+          debugger;
           self['delete']();
           break;
         }
@@ -1336,6 +1361,31 @@ define('models/Resource', [
           data,
           saved;
       
+      if (!this.get('_uri')) {
+        var uri = U.buildUri(this);
+        if (!uri) {
+          var pks = U.getPrimaryKeys(this.vocModel),
+              props = this.vocModel.properties,
+              modified = false;
+          
+          for (var i = 0; i < pks.length; i++) {
+            var prop = props[pks[i]];
+            if (prop.facet == 'uuid' && !this.get(prop.shortName)) {
+              this.set(prop.shortName, uuid.v4(), { silent: true });
+              modified = true;
+            }
+          }
+          
+          if (modified)
+            uri = U.buildUri(this);
+        }
+          
+        if (uri)
+          this.set('_uri', U.buildUri(this), { silent: true });
+        else
+          debugger;
+      }
+
       if (isNew)
         data = _.extend({}, this.attributes, attrs);
       else

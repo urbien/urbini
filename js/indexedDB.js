@@ -593,7 +593,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       name: name, 
       task: restart.bind(this, version), 
       blocking: true, 
-      timeout: false
+      timeout: 15000
     });
   };
 

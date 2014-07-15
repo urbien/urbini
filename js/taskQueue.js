@@ -143,7 +143,11 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
         if (task.isBlocking() || _.find(running, function(t) { return t.isBlocking() }))
           debugger;
       }
+      
+      if (_.find(running, function(t) { return t.isBlocking() }))
+        debugger;
 
+      running.push(task);
       try {
         if (task.queuedAt) {
           task.waited = _.now() - task.queuedAt;
@@ -157,14 +161,15 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
       }
       
       var promise = task.promise();
-      running.push(task);
       promise.always(function() {
-        var resolved = promise.state() === 'resolved';
+        var resolved = promise.state() === 'resolved',
+            idx = running.indexOf(task);
+        
         log(resolved? 'taskQueue' : 'error', 'Task {0}: {1}'.format(resolved ? 'completed' : 'failed', task.getName()));
-        if (running.indexOf(task) == -1)
+        if (idx == -1)
           debugger;
         else
-          running.splice(running.indexOf(task), 1);
+          running.splice(idx, 1);
         
         if (isBlocked()) {
           if (running.length)
@@ -207,8 +212,12 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
         else
           runTask(task);
       }
-      else
+      else {
+        if (_.find(running, function(t) { return t.isBlocking() }))
+          debugger;
+        
         runTask(task);
+      }
       
       return task.promise();
     }

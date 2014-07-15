@@ -512,12 +512,13 @@ define('app', [
       ref: {
         name: 'ref',
         options: {
-          keyPath: '_id'
+          keyPath: '_uri'
         },
         indices: {
           _uri: {unique: false, multiEntry: false}, // hack to make 409s easier to manage
-          _dirty: {unique: false, multiEntry: false},
-          _tempUri: {unique: false, multiEntry: false}, // unique false because it might not be set at all
+          _new: {unique: false, multiEntry: false},
+//          _dirty: {unique: false, multiEntry: false},
+//          _tempUri: {unique: false, multiEntry: false}, // unique false because it might not be set at all
           _problematic: {unique: false, multiEntry: false}
 //          ,
 //          davGetLastModified: {unique: false, multiEntry: false}

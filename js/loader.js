@@ -5,7 +5,7 @@ var __started = new Date(),
 _.extend($, {
   RESOLVED_PROMISE: $.Deferred().resolve().promise(),
   whenAll: function() {
-    var args = [].slice.call(arguments),
+    var args = ArrayProto.slice.call(arguments),
         len = args.length;
     
     if (!len)
@@ -37,9 +37,10 @@ _.extend($, {
             }            
           };
     
-      args.forEach(function(item, idx) {
+      for (var i = 0, l = args.length; i < l; i++) {        
+        var item = args[i];
         item.always(resolveOrReject.bind(item)); 
-      });
+      }
     }).promise();
   }
 });
@@ -1146,7 +1147,7 @@ define('globals', function() {
         bg: '#000'
       },
       db: {
-        on: false,
+        on: true,
         color: '#FFFFFF',
         bg: '#000'
       },
@@ -1191,6 +1192,7 @@ define('globals', function() {
       indexedDBShim: 'lib/IndexedDBShim',
       jqueryIndexedDB: 'lib/jquery-indexeddb',
       queryIndexedDB: 'lib/queryIndexedDB',
+      uuid: 'lib/uuid',
       codemirror: 'lib/codemirror',
       codemirrorCss: '../styles/codemirror.css',
       codemirrorJSMode: 'lib/codemirrorJSMode',

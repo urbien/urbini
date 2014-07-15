@@ -241,11 +241,11 @@ define('router', [
 //          });
 //        });
 //      }
-
-      Events.on('uriChanged', function(tempUri, data) {
-        self.checkUpdateHash(tempUri, U.getValue(data, '_uri'));
-      });
-
+//
+//      Events.on('uriChanged', function(tempUri, data) {
+//        self.checkUpdateHash(tempUri, U.getValue(data, '_uri'));
+//      });
+//
 //      var popped = ('state' in window.history);
 //      var initialURL = window.location.href;
 //      $(window).bind('popstate', function(e) {
@@ -648,7 +648,7 @@ define('router', [
           });
 //        });
         
-        this.monitorCollection(list);
+//        this.monitorCollection(list);
 //        setTimeout(function() {c.fetch({page: page, forceFetch: forceFetch})}, 100);
         return this;
       }
@@ -699,7 +699,7 @@ define('router', [
 //      });
       
       this.changePage(listView);
-      this.monitorCollection(list);
+//      this.monitorCollection(list);
       return this;
     },
     
@@ -863,22 +863,22 @@ define('router', [
 //      var lPage = this.CollectionViews[tName] = new this.ListPage({model: vList});
 //      this.changePage(lPage);
 //    },
-
-    monitorCollection: function(collection) {
-      var self = this;
-      collection.on('queryChanged', function() {
-        var updateHash = function() {
-          self.navigate(U.makeMobileUrl(U.getCurrentUrlInfo().route, collection.vocModel.type, collection.params), {trigger: false, replace: true}); // maybe trigger should be true? Otherwise it can't fetch resources from the server
-        }
-        
-        var currentView = self.currentView;
-        if (currentView && currentView.collection === collection)
-          updateHash();
-        else
-          Events.once('navigateToList.' + collection.listId, updateHash);
-      });
-    },
-    
+//
+//    monitorCollection: function(collection) {
+//      var self = this;
+//      collection.on('queryChanged', function() {
+//        var updateHash = function() {
+//          self.navigate(U.makeMobileUrl(U.getCurrentUrlInfo().route, collection.vocModel.type, collection.params), {trigger: false, replace: true}); // maybe trigger should be true? Otherwise it can't fetch resources from the server
+//        }
+//        
+//        var currentView = self.currentView;
+//        if (currentView && currentView.collection === collection)
+//          updateHash();
+//        else
+//          Events.once('navigateToList.' + collection.listId, updateHash);
+//      });
+//    },
+//    
 //    loadViews: function(views, caller, args) {
 //      views = $.isArray(views) ? views : [views];
 //      var self = this;
@@ -1165,40 +1165,40 @@ define('router', [
       return true;
     },
     
-    checkUpdateHash: function(tempUri, uri) {
-      var replaceHash = false,
-          hashInfo = U.getCurrentUrlInfo(),
-          params = hashInfo.params,
-          redirectOptions = {
-            trigger: false,
-            replace: true
-          };
-
-      if (U.isResourceRoute()) {
-        if (hashInfo.uri == tempUri) {
-          delete params[U.getTempIdParameterName()];
-          Events.trigger('navigate', U.makeMobileUrl(hashInfo.route, uri, params), redirectOptions);
-          this.updateHashInfo();
-        }
-        
-        return;
-      }      
-
-      for (var p in params) {
-        var val = params[p];
-        if (val == tempUri) {
-          params[p] = uri;
-          replaceHash = true;
-        }
-      }
-      
-      if (replaceHash)
-        Events.trigger('navigate', U.makeMobileUrl(hashInfo.route, hashInfo.type, hashInfo.params), redirectOptions);
-    },
-    
-    updateHash: function(hashInfo) {
-      debugger;
-    },
+//    checkUpdateHash: function(tempUri, uri) {
+//      var replaceHash = false,
+//          hashInfo = U.getCurrentUrlInfo(),
+//          params = hashInfo.params,
+//          redirectOptions = {
+//            trigger: false,
+//            replace: true
+//          };
+//
+//      if (U.isResourceRoute()) {
+//        if (hashInfo.uri == tempUri) {
+//          delete params[U.getTempIdParameterName()];
+//          Events.trigger('navigate', U.makeMobileUrl(hashInfo.route, uri, params), redirectOptions);
+//          this.updateHashInfo();
+//        }
+//        
+//        return;
+//      }      
+//
+//      for (var p in params) {
+//        var val = params[p];
+//        if (val == tempUri) {
+//          params[p] = uri;
+//          replaceHash = true;
+//        }
+//      }
+//      
+//      if (replaceHash)
+//        Events.trigger('navigate', U.makeMobileUrl(hashInfo.route, hashInfo.type, hashInfo.params), redirectOptions);
+//    },
+//    
+//    updateHash: function(hashInfo) {
+//      debugger;
+//    },
         
     login: function(path) {
       if (!this.routePrereqsFulfilled('login', arguments))
@@ -1278,9 +1278,9 @@ define('router', [
       if (res && !res.loaded)
         res = null;
 
-      var newUri = res && res.getUri();
-      var wasTemp = U.isTempUri(uri);
-      var isTemp = newUri && U.isTempUri(newUri);
+//      var newUri = res && res.getUri();
+//      var wasTemp = U.isTempUri(uri);
+//      var isTemp = newUri && U.isTempUri(newUri);
 //      if (wasTemp) {
 //        function updateHash(resource) {
 //          self.navigate(U.makeMobileUrl(action, resource.getUri()), {trigger: false, replace: true});
@@ -1313,13 +1313,13 @@ define('router', [
           res.fetch({forceFetch: forceFetch});
 //        });
         
-        if (wasTemp && !isTemp)
-          this.navigate(U.makeMobileUrl(action, newUri), {trigger: false, replace: true});
+//        if (wasTemp && !isTemp)
+//          this.navigate(U.makeMobileUrl(action, newUri), {trigger: false, replace: true});
         
         return this;
       }
       
-      res = this.currentModel = new model({_uri: uri});
+      res = this.currentModel = new model({ _uri: uri });
       view = new viewPageCl({
         model: res, 
         source: this.previousHash,
@@ -1429,14 +1429,14 @@ define('router', [
 //          getSteps(tourUri, stepModel)
 //      ).then(success, fail);
 //    },
-    
-    _checkUri: function(res, uri, action) {
-      if (U.isTempUri(uri)) {
-        var newUri = res.getUri();
-        if (!U.isTempUri(newUri))
-          this.navigate(U.makeMobileUrl(action, newUri), {trigger: false, replace: true});            
-      }
-    },
+//    
+//    _checkUri: function(res, uri, action) {
+//      if (U.isTempUri(uri)) {
+//        var newUri = res.getUri();
+//        if (!U.isTempUri(newUri))
+//          this.navigate(U.makeMobileUrl(action, newUri), {trigger: false, replace: true});            
+//      }
+//    },
     
 /*    
     login: function() {

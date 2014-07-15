@@ -560,11 +560,11 @@ define('cache', ['globals', 'underscore', 'events'], function(G, _, Events) {
   
   Events.on('savedMake', function(resource) {
     resourceCache.cacheResource(resource);
-    var tempUri = resource.getUri();
-    resource.on('syncedWithServer', function() {
-//      resourceCache.uncacheResource(tempUri);
-      resourceCache.cacheResource(resource);
-    });
+//    var tempUri = resource.getUri();
+//    resource.on('syncedWithServer', function() {
+////      resourceCache.uncacheResource(tempUri);
+//      resourceCache.cacheResource(resource);
+//    });
   });
 //  Events.on('newPlugs', C.cachePlugs);
   
