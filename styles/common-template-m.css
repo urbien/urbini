@@ -274,12 +274,20 @@ div.nabBtn {
   padding: 5px 5px;
   line-height: 2rem;
 }
-
+/*
+.cf > div img:first-child {
+  float: left;
+}
+*/
 @media screen and (max-width: 480px) and (orientation: portrait) {
   .searchInput {
     width: 75%;
   }
-  
+  /*
+  .cf > div img:first-child {
+    clear: both;
+  }
+  */
   .nab a { font-size: 16px; }
 
   .nab { 

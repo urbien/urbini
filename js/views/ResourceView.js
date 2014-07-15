@@ -4,8 +4,9 @@ define('views/ResourceView', [
   'underscore', 
   'events', 
   'utils',
-  'views/BasicView'
-], function(G, _, Events, U, BasicView) {
+  'views/BasicView',
+  'lib/gauge'
+], function(G, _, Events, U, BasicView, Gauges) {
 //  var D3, DC, Crossfilter, 
   var StockCharts;
   var willShow = function(res, prop, role) {
@@ -15,6 +16,16 @@ define('views/ResourceView', [
     return doShow ? (!prop.displayNameElm  ||  prop.setLinkTo  ||  prop.range.indexOf("/") != -1) : doShow;
       
   };
+  var BIGGER_BETTER_PERCENT = [[0.0, "#00ff00" ], [1.0, "#00aa00"]],
+      BIGGER_WORSE_PERCENT = [[0.0, "#00ff00" ], [0.50, "#ffff00"], [1.0, "#ff0000"]];
+
+  function theBiggerTheBetter(prop) {
+    var pName = prop.shortName;
+    if (pName == 'risk' || pName == 'maxDrawdown')
+      return false;
+    else
+      return true;
+  }
 
   return BasicView.extend({
     autoFinish: false,
@@ -59,14 +70,17 @@ define('views/ResourceView', [
 //        else
         this.purchasesBacklinkProp = this.vocModel.properties[options.purchasesBLProp];
       }
-    
+      this.isTradle = U.isAssignableFrom(this.vocModel, 'commerce/trading/Tradle');
+      if (this.isTradle)
+        this.makeTemplate('gaugesTemplate', 'gaugesTemplate', this.vocModel.type)
+
       this.toggleVisibility(true); // set to invisible until it's rendered
       return this;
     },
     
     events: {
       'click': 'click',
-      'click #other': 'showOther'
+      'click [data-display="collapsed"]': 'showOther'
     },
     
     pageEvents: {
@@ -316,8 +330,7 @@ define('views/ResourceView', [
           }
         }
       }
-
-      if (U.isAssignableFrom(this.vocModel, 'Tradle')) {
+      if (this.isTradle) {
         if (this.resource.get('activated') || (!G.currentUser.guest  &&  this.resource.get('owner') == G.currentUser._uri)) {
           this.makeTemplate('socialLinksTemplate', 'socialTemplate', this.vocModel.type);
           U.addToFrag(frag, this.socialTemplate.call(this, {uri: this.resource.getUri()}));
@@ -326,9 +339,21 @@ define('views/ResourceView', [
       var displayedProps = {};
       var idx = 0;
       var groupNameDisplayed;
+      var isJQM = G.isJQM();
+      var isBB = G.isBB();
+      var drawGauges;
 
       if (propGroups.length) {
+        var grCollapsed, gr;
         for (var i = 0; i < propGroups.length; i++) {
+          if (i != 0  &&  grCollapsed) {
+            if (!isBB)
+              gr += "</ul></li>";
+            else
+              gr += "</ul></section>";
+            U.addToFrag(frag, gr);
+            gr = null;
+          }
           var grMeta = propGroups[i];
           var pgName = U.getPropDisplayName(grMeta);
           var props = grMeta.propertyGroupList.split(",");
@@ -351,9 +376,38 @@ define('views/ResourceView', [
               continue;
             displayedProps[p] = true;
             var val = U.makeProp(res, prop, res.get(p));
+            grCollapsed = grMeta.displayCollapsed;
             if (!groupNameDisplayed) {
-              if (!grMeta.skipLabelInGroup)
-                U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
+              if (!grMeta.skipLabelInGroup) {
+                if (grCollapsed) {
+                  if (isJQM)
+                    gr = '<li id="' + grMeta.shortName + '" data-display="collapsed" style="border:0px;' + (G.theme.backgroundImage ? 'background-image: url(' + G.theme.backgroundImage + ')' : '') + '" data-content-theme="' + G.theme.list + '"  data-theme="' + G.theme.list + '"><h3 style="margin:0px;"><i class="ui-icon-plus-sign"></i>&#160;' + grMeta.displayName + '</h3><ul class="hidden"">';
+                  else if (isBB)
+                    gr = '<section id="' + grMeta.shortName + '" data-display="collapsed"><header style="margin:0px;cursor:pointer;' + (G.coverImage ? 'color:' + G.coverImage.background + ';border-bottom:0.1rem solid ' + G.coverImage.background + ';"' : '') + '"><i class="ui-icon-plus-sign"></i>&#160;' + grMeta.displayName + '</header><ul class="other hidden">';
+                  else if (G.isTopcoat())
+                    gr = '<li id="' + grMeta.shortName + '" data-display="collapsed topcoat-list__item" ' +  (G.coverImage ? 'style="text-shadow:none;background:' + G.coverImage.color + ';color: ' + G.coverImage.background + ';"' : '') + '><h3><i class="ui-icon-plus-sign"></i>&#160;' + grMeta.displayName + '</h3><ul class="topcoat-list__container hidden">';
+                  else if (G.isBootstrap())
+                    gr = '<li id="' + grMeta.shortName + '" data-display="collapsed"><h3 style="font-size:18px;"><i class="ui-icon-plus-sign"></i>&#160;' + grMeta.displayName + '</h3><ul class="list-group-container hidden">';
+                  if (this.isTradle  &&  grMeta.shortName == 'expectedPerformance') {
+                    if (this.resource.get('maxDrawdown') || this.resource.get('profit')) {
+                      gr += '<li style="background:#2e3b4e;"><div class="gauges">' + this.gaugesTemplate({
+                        gauges: [{
+                          shortName: 'profit',
+                          name: 'Profit'
+                        }, {
+                          shortName: 'maxDrawdown',
+                          name: 'Risk'
+                        }]
+                      }) + '<div></li>';
+                      drawGauges = true;
+//                      this.drawGauges();
+                    }
+                  }
+                }
+                
+                else
+                  U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName}));
+              }
               groupNameDisplayed = true;
             }
   
@@ -362,13 +416,22 @@ define('views/ResourceView', [
             if (prop.code) {
               val.value = this.__prependNumbersDiv(prop, val.value);          
             }
-            
-            U.addToFrag(frag, this.getPropRow(val, v));
+            if (grCollapsed)
+              gr += this.getPropRow(val, v);
+            else
+              U.addToFrag(frag, this.getPropRow(val, v));
 //            json[p] = val;
           }
         }
-      }
+        if (i != 0  &&  grCollapsed) {
+          if (!isBB)
+            gr += "</ul></li>";
+          else
+            gr += "</ul></section>";
+          U.addToFrag(frag, gr);
       
+        }
+      }
       var otherLi;
       groupNameDisplayed = false;
       var numDisplayed = _.size(displayedProps);
@@ -402,18 +465,17 @@ define('views/ResourceView', [
 //        var wl = G.currentApp.getWidgetLibrary();
 //        var isJQM = au!wl  ||  wl == 'Jquery Mobile';
 //        var isBB = !isJQM  &&  wl == 'Building Blocks';
-        var isJQM = G.isJQM();
-        var isBB = G.isBB();
         if (numDisplayed  &&  !groupNameDisplayed) {
 //          var wl = G.currentApp.widgetLibrary;
+          var otherTitle = "Other";
           if (isJQM)
-            otherLi = '<li id="other" style="border:0px;' + (G.theme.backgroundImage ? 'background-image: url(' + G.theme.backgroundImage + ')' : '') + '" data-content-theme="' + G.theme.list + '"  data-theme="' + G.theme.list + '"><h3 style="margin:0px;"><i class="ui-icon-plus-sign"></i>&#160;Other</h3><ul class="hidden"">';
+            otherLi = '<li id="other" data-display="collapsed" style="border:0px;' + (G.theme.backgroundImage ? 'background-image: url(' + G.theme.backgroundImage + ')' : '') + '" data-content-theme="' + G.theme.list + '"  data-theme="' + G.theme.list + '"><h3 style="margin:0px;"><i class="ui-icon-plus-sign"></i>&#160;' + otherTitle + '</h3><ul class="hidden"">';
           else if (isBB)
-            otherLi = '<section id="other"><header style="margin:0px;cursor:pointer;' + (G.coverImage ? 'color:' + G.coverImage.background + ';border-bottom:0.1rem solid ' + G.coverImage.background + ';"' : '') + '"><i class="ui-icon-plus-sign"></i>&#160;Other</header><ul class="other hidden">';
+            otherLi = '<section id="other" data-display="collapsed"><header style="margin:0px;cursor:pointer;' + (G.coverImage ? 'color:' + G.coverImage.background + ';border-bottom:0.1rem solid ' + G.coverImage.background + ';"' : '') + '"><i class="ui-icon-plus-sign"></i>&#160;' + otherTitle + '</header><ul class="other hidden">';
           else if (G.isTopcoat())
-            otherLi = '<li id="other" class="topcoat-list__item" ' +  (G.coverImage ? 'style="text-shadow:none;background:' + G.coverImage.color + ';color: ' + G.coverImage.background + ';"' : '') + '><h3><i class="ui-icon-plus-sign"></i>&#160;Other</h3><ul class="topcoat-list__container hidden">';
+            otherLi = '<li id="other" data-display="collapsed topcoat-list__item" ' +  (G.coverImage ? 'style="text-shadow:none;background:' + G.coverImage.color + ';color: ' + G.coverImage.background + ';"' : '') + '><h3><i class="ui-icon-plus-sign"></i>&#160;' + otherTitle + '</h3><ul class="topcoat-list__container hidden">';
           else if (G.isBootstrap())
-            otherLi = '<li id="other"><h3 style="font-size:18px;"><i class="ui-icon-plus-sign"></i>&#160;Other</h3><ul class="list-group-container hidden">';
+            otherLi = '<li id="other" data-display="collapsed"><h3 style="font-size:18px;"><i class="ui-icon-plus-sign"></i>&#160;' + otherTitle + '</h3><ul class="list-group-container hidden">';
   //        this.$el.append('<li data-role="collapsible" data-content-theme="c" id="other"><h2>Other</h2><ul data-role="listview">'); 
           groupNameDisplayed = true;
         }
@@ -444,7 +506,9 @@ define('views/ResourceView', [
   //    var j = {"props": json};
   //    this.$el.html(html);
       this.el.$html(frag);
-      
+      if (drawGauges)
+        this.drawGauges();
+
 //      if (hasSocialLinks) {
 //        this.el.style.marginTop = '-6rem';
 //      }
@@ -719,7 +783,60 @@ define('views/ResourceView', [
     __prependNumbersDiv: function(prop, html) {
 //      return '<div id="{0}_numbers" style="float: left; width: 2em; margin-right: .5em; text-align: right; font-family: monospace; color: #CCC;"></div>'.format(prop.shortName) + html;
       return html;
+    },
+    _gaugeValues: {},
+    drawGauges: function() {
+//      U.require('lib/gauge').done(this.doDrawGauges);
+//    },
+//
+//    doDrawGauges: function(Gauges) {
+      var meta = this.vocModel.properties;
+      var canvases = this.el.$('canvas');
+      for (var i = 0; i < canvases.length; i++) {
+        var canvas = canvases[i];
+        var pName = canvas.$data('shortname');
+        var value = this.resource.get(pName);
+//        var refresh = false;
+        if (value === undefined)
+          continue;
+        
+//        if (value === this._gaugeValues[pName])
+//          refresh = true;
+        
+        this._gaugeValues[pName] = value;
+        var prop = meta[pName];
+        var isPercent = prop.facet == 'Percent';
+        var isMoney = prop.range.endsWith('Money');
+        var gauge = new Gauges.Gauge(canvas);
+        gauge.setOptions({
+          textPrefix: isMoney ? '$' : '',
+          textSuffix: isPercent ? '%' : '',
+          lines: 12,
+          angle: 0,
+          lineWidth: 0.44,
+          fontSize: '1rem',
+          pointer: {
+            length: 0.9,
+            strokeWidth: 0.035,
+            color: '#000000'
+          },
+//          limitMax: 'false', 
+          percentColors: theBiggerTheBetter(prop) ? BIGGER_BETTER_PERCENT : BIGGER_WORSE_PERCENT, // !!!!
+          strokeColor: '#E0E0E0',
+          generateGradient: true
+        });
+      
+        gauge.setTextField(canvas.previousElementSibling);
+        gauge.maxValue = 100 * Math.ceil(value / 100);
+        gauge.animationSpeed = 10;
+        gauge.set(value);
+//        if (update) {
+//          gauge.ctx.clearRect(0, 0, gauge.ctx.canvas.width, gauge.ctx.canvas.height);
+//          gauge.render();
+//        }
+      }
     }
+    
 
   }, {
     displayName: 'ResourceView'
