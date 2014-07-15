@@ -29,7 +29,7 @@ html {
 }
 [data-type="list"] {
   padding: 0;
-  background: #eee;
+  background: #efefef;
 }
 [data-type="list"] li p:first-of-type {
   font-size:1.6rem;
@@ -323,6 +323,10 @@ fieldset {
   height: auto; 
   width:auto;
 }
+[data-display="collapsed"] li {
+  min-height: inherit;
+}
+
 [class="scrollable"] {
   background: #f9f9f9;
 }
