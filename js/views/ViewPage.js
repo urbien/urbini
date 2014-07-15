@@ -55,7 +55,8 @@ define('views/ViewPage', [
       
       this.addChild(this.header);
 
-      if (!this.isAbout) {
+      
+      if (!this.isAbout  &&  !U.isAssignableFrom(this.vocModel, 'Tradle')) {
         var viewType, viewDiv;
         if (res.isA('Intersection')) {
           var aFeatured = U.getCloneOf(this.vocModel, 'Intersection.aFeatured')[0];
