@@ -554,11 +554,11 @@ define('views/ResourceListItemView', [
         if (isSubmission) {
           var d = cloned['Submission']  &&  cloned['Submission'].submittedBy;
           if (d  &&  !this.hashParams[d]) {
-            var submittedBy = d  &&  d.length ? json[d[0]] : null;
+            var submittedBy = d  &&  d.length ? atts[d[0]] : null;
             if (submittedBy  &&  this.commonBlockProps.indexOf(d[0]) != -1) {
   //            vCols += '<p>' + propDn + '<a href="' + G.pageRoot + '#view/' + encodeURIComponent(submittedBy) + '">' + json[d[0] + '.displayName'] + '</p>';
               var thumb = json[d[0] + '.thumb'];
-              vCols += '<div class="submitter">';
+              vCols += '<div class="submitter" style="margin-top:-.5rem;">';
               if (thumb) {
                 var idx = thumb.indexOf('/Image?url=');
                 if (idx == -1)
@@ -567,9 +567,9 @@ define('views/ResourceListItemView', [
                   vCols += '<img src="' + thumb.slice(idx + 11) + '" />';
               }
   //            vCols += '<span style="color: #737373; font-weight: normal; font-size: 12px; text-align: center;">' + json[d[0] + '.displayName'] + '</span></div>';
-              var submitterName = json[d[0] + '.displayName'];
+              var submitterName = atts[d[0] + '.displayName'];
               if (submitterName) {
-                vCols += '<div>&#160;&#160;' + submitterName + '</div>'
+                vCols += '<div style="font-size:1.3rem;opacity:.7">' + submitterName + '</div>'
                 vCols += '</div>';
               }
               json['_hasSubmittedBy'] = true;
@@ -990,9 +990,10 @@ define('views/ResourceListItemView', [
         if (dateSubmitted)
           commonBlockProps.push(dateSubmitted[0]);   
           
-        var submittedBy = preinit['Submission.submittedBy'];
+        var submittedBy = cloned['Submission']  &&  cloned['Submission'].submittedBy;
+//        var submittedBy = preinit['Submission.submittedBy'];
         if (submittedBy)
-          commonBlockProps.push(submittedBy);
+          commonBlockProps.push(submittedBy[0]);
         
         for (var i = 0, len = commonBlockProps.length; i < len; i++) {
           var p = commonBlockProps[i];

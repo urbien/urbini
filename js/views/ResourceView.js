@@ -330,11 +330,9 @@ define('views/ResourceView', [
           }
         }
       }
-      if (this.isTradle) {
-        if (this.resource.get('activated') || (!G.currentUser.guest  &&  this.resource.get('owner') == G.currentUser._uri)) {
-          this.makeTemplate('socialLinksTemplate', 'socialTemplate', this.vocModel.type);
-          U.addToFrag(frag, this.socialTemplate.call(this, {uri: this.resource.getUri()}));
-        }
+      if (this.isTradle  &&  !G.currentUser.guest) {
+        this.makeTemplate('socialLinksTemplate', 'socialTemplate', this.vocModel.type);
+        U.addToFrag(frag, this.socialTemplate.call(this, {uri: this.resource.getUri()}));
       }
       var displayedProps = {};
       var idx = 0;
