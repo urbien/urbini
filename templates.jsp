@@ -1818,7 +1818,7 @@
   </section>
   </div>
 </div>
-<div id="buttons" style="white-space: nowrap; position:relative; height: 50px; background:{{= G.darkColor }};color:{{= G.lightColor }}">
+<div id="buttons" class="header2" style="white-space: nowrap; position:relative; height: 50px; background:{{= G.darkColor }};color:{{= G.lightColor }}">
   <div class="cf vcenteredR" style="z-index:1; width:20%;float:left;background:inherit;">
     <span class="placeholder"></span>
     {{ if (this.categories) { }}
@@ -1880,7 +1880,7 @@
   </div>
   <div class="cf vcenteredR" style="z-index:1; width:20%;float:left;background:inherit;">
     {{ if (this.filter) { }}
-      <div style="margin: 7px 5px 0 0; float: right;"><a class="filterToggle lightText" href="#"><i class="ui-icon-search"></i></a></div> 
+      <div style="margin-right: 5px; float: right;"><a class="filterToggle lightText" href="#"><i class="ui-icon-search"></i></a></div> 
     {{ }                  }}
     {{ if (this.hasQuickstart()) { }}    
       <i class="help ui-icon-help"></i>

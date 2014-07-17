@@ -731,10 +731,6 @@ section[id^="view"] {
 
 .filterConditions { list-style: none; }
 
-.filterToggle i {
-  font-size: 32px;
-}
-
 .propertySelector { display: inline-block; }
 
 .filterConditionInput { display: inline-block; }
@@ -784,8 +780,8 @@ section[id^="view"] {
   padding-top: 5px;
 }
 
-.categories i {
-  font-size:32px;
+.header2 i {
+  font-size:28px;
 }
 
 /*  GROUPING  ============================================================================= */
@@ -1297,10 +1293,12 @@ label.subClass {
   top: 0;
   left: 0;
   opacity: 0.5;
-  color: #7aaac3;
-  /*background-color: #fff;
-  */
+  color: #BDE8FF;
+  /*color: #7aaac3;
+  background-color: #fff;
   background-color: #2e3b4e;
+   */
+  background-color: #2B6BA5;
   -webkit-transform: translateX(97%);
      -moz-transform: translateX(97%);
       -ms-transform: translateX(97%);
