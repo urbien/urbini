@@ -6,7 +6,6 @@ define('router', [
   'error',
   'models/Resource', 
   'collections/ResourceList',
-  'cache',
   'vocManager',
   'views/HomePage',
   'templates',
@@ -21,7 +20,7 @@ define('router', [
 //  'views/ListPage', 
 //  'views/ViewPage'
 //  'views/EditPage' 
-], function(G, U, Events, Errors, Resource, ResourceList, C, Voc, HomePage, Templates, $m, AppAuth, Redirecter, Transitioner, DOM, Q, Physics /*, ListPage, ViewPage*/) {
+], function(G, U, Events, Errors, Resource, ResourceList, Voc, HomePage, Templates, $m, AppAuth, Redirecter, Transitioner, DOM, Q, Physics /*, ListPage, ViewPage*/) {
 //  var ListPage, ViewPage, MenuPage, EditPage; //, LoginView;
   var Modules = {},
       doc = document,
@@ -403,7 +402,7 @@ define('router', [
       if (!this.routePrereqsFulfilled('home', arguments))
         return;
       
-      var homePage = C.getCachedView(),
+      var homePage = U.getCachedView(),
           currentView = this.currentView;
       
       if (!homePage) {
@@ -438,7 +437,7 @@ define('router', [
       if (!this.routePrereqsFulfilled('social', arguments))
         return;
       
-      var view = C.getCachedView();
+      var view = U.getCachedView();
       if (!view)
         view = new Modules.SocialNetworkPage();
       
@@ -457,7 +456,7 @@ define('router', [
       if (!this.routePrereqsFulfilled('static', arguments))
         return;
       
-      var view = C.getCachedView();
+      var view = U.getCachedView();
       if (!view) {
         var hashInfo = G.currentHashInfo,
             template = hashInfo.uri,
@@ -561,7 +560,7 @@ define('router', [
       var self = this,
           ListPage = Modules.ListPage,
           hashInfo = G.currentHashInfo,
-          cachedView = C.getCachedView(),
+          cachedView = U.getCachedView(),
           typeUri = hashInfo.type,
           params = hashInfo.params,
           query = hashInfo.query;
@@ -625,7 +624,7 @@ define('router', [
           list = cachedView.collection;
         else {
           var filtered = U.filterObj(params, function(key) { return !/^-/.test(key) });
-          list = C.getResourceList(model, U.getQueryString(filtered, {sort: true}));
+          list = U.getResourceList(model, U.getQueryString(filtered, {sort: true}));
         }
       }
 //      if (list && !list._lastFetchedOn)
@@ -708,7 +707,7 @@ define('router', [
         return;
 
       var hashInfo = G.currentHashInfo,
-          cached = C.getCachedView();
+          cached = U.getCachedView();
       
       if (cached) {
         this.changePage(cached);
@@ -928,7 +927,7 @@ define('router', [
       }
       
       makeId = makeId ? parseInt(makeId) : G.nextId();
-      var mPage = C.getCachedView(); //this.MkResourceViews[makeId];
+      var mPage = U.getCachedView(); //this.MkResourceViews[makeId];
       if (mPage && !mPage.model.getUri()) {
         // all good, continue making ur mkresource
       }
@@ -1229,7 +1228,7 @@ define('router', [
       
       var self = this,
           hashInfo = G.currentHashInfo,
-          cachedView = C.getCachedView(),
+          cachedView = U.getCachedView(),
           uri = hashInfo.uri,
           typeUri = hashInfo.type,
           edit = hashInfo.action == 'edit',
@@ -1274,7 +1273,7 @@ define('router', [
       if (!model)
         return this;
 
-      res = cachedView ? cachedView.resource : C.getResource(uri);
+      res = cachedView ? cachedView.resource : U.getResource(uri);
       if (res && !res.loaded)
         res = null;
 

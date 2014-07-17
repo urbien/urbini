@@ -1,4 +1,4 @@
-define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB', 'taskQueue', 'cache'], function(G, _, Events, U, idbq, TaskQueue, C) {  
+define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB', 'taskQueue'], function(G, _, Events, U, idbq, TaskQueue) {  
   var instance,
       FileSystem,
       fileSystemPromise,
@@ -102,7 +102,7 @@ define('indexedDB', ['globals', 'underscore', 'events', 'utils', 'queryIndexedDB
       placeholder[filePropertyName] = filePath;
       placeholder[fileTypePropertyName] = contentType;
       
-      var resource = C.getResource(item._uri);
+      var resource = U.getResource(item._uri);
       if (resource)
         resource.set(prop, placeholder, {silent: true});
     }).fail(function() {

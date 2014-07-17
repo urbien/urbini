@@ -4,12 +4,11 @@ define('utils', [
   'underscore',
   'backbone',
   'templates',
-  'cache',
   'events',
   'domUtils',
 //  '@widgets',
   'lib/fastdom'
-], function(G, _, Backbone, Templates, C, Events, DOM, Q) {
+], function(G, _, Backbone, Templates, Events, DOM, Q) {
   var ArrayProto = Array.prototype,
       slice = ArrayProto.slice,
       concat = ArrayProto.concat,
@@ -27,7 +26,13 @@ define('utils', [
       VIDEO_ATTS = ['loop', 'preload', 'controls', 'autoplay', 'class', 'style'],
       ModalDialog,
       $w,
+      articleModeTypes = [
+       'software/crm/Feature', 
+       'media/publishing/Article', 
+       'media/publishing/Blog'
+      ],
       tempIdParam = '__tempId__';
+  
 //      MONTHS = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ],
 //      MONTH_ABBRS = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
 
@@ -605,9 +610,13 @@ define('utils', [
 
       return true;
     },   
-    
+
+    isTypeProp: function(prop) {
+      return prop.range == 'Class' || prop.range == 'Property';
+    },
+
     isResourceProp: function(prop) {
-      return prop && !prop.backLink && prop.range && (prop.range == 'Resource' || prop.range == 'Class' || prop.range == 'Property' ||  
+      return prop && !prop.backLink && prop.range && (prop.range == 'Resource' || 
                                                      (!prop.range.endsWith('/Percent')  &&  prop.range.indexOf('/') != -1 && !U.isInlined(prop)));
     },
 //    getSortProps: function(model) {
@@ -1731,18 +1740,6 @@ define('utils', [
       return res instanceof Backbone.Model;
     },
 
-    getInlineResourceModel: function(type) {
-      return C.getInlineResourceModel(type) || C.getInlineResourceModel(U.getTypeUri(type));      
-    },
-
-    getEnumModel: function(type) {
-      return C.getEnumModel(type) || C.getEnumModel(U.getTypeUri(type));      
-    },
-
-    getResource: function(uri) {
-      return C.getResource(uri);
-    },
-    
     getModels: function() {
       var args = arguments;
       return U.require('vocManager').then(function(Voc) {
@@ -1764,6 +1761,56 @@ define('utils', [
       return U.getResourcePromise(first).then(function(r) {
         return U.evalResourcePath(r, path.slice(1));
       });
+    },
+    
+    simplifyUrl: function(url) {
+      var qIdx = url.indexOf('?');
+      if (qIdx == -1)
+        return url;
+      
+      var base = url.slice(0, qIdx),
+          qs = url.slice(qIdx + 1),
+          match = qs.match(/&?-\w+=[^&]+&?/ig);
+      
+      if (!match)
+        return url;
+      
+      qs = qs.replace(/&?-\w+=[^&]+&?/ig, '&').replace(/&+/ig, '&');
+      if (/^&/.test(qs))
+        qs = qs.slice(1);
+      
+      if (/&$/.test(qs))
+        qs = qs.slice(0, qs.length - 1);
+      
+      return base + (qs ? '?' + qs : '');
+    },
+    
+    getResourceList: function(model, query) {
+      var list,
+          found = function(l) {
+            list = l;
+          };
+      
+      if (arguments.length == 1)
+        query = model;
+      
+      U.getTypes(model).forEach(function(type) {
+        if (!list)
+          Events.trigger('getResourceList:' + type, found);
+      });
+      
+      return list;
+    },
+    
+    getCachedView: function(url) {
+      url = U.simplifyUrl(url || window.location.href);
+      var obj,
+          found = function(match) {
+            obj = match;
+          };
+      
+      Events.trigger('getCachedView:' + url, found);
+      return obj;
     },
     
     getResourcePromise: function(uri, sync) {
@@ -1791,23 +1838,26 @@ define('utils', [
       return dfd.promise();
     },
 
-    getResourceList: function(model, query) {
-      return C.getResourceList(model, query);
-    },
-
     getModel: function(type) {
-      var arg0 = arguments[0];
-      var argType = Object.prototype.toString.call(arg0);
+      var arg0 = arguments[0],
+          argType = Object.prototype.toString.call(arg0),
+          model,
+          found = function(m) {
+            model = m;
+          };
+        
       switch (argType) {
       case '[object String]':
-        var model = C.getModel(arg0);
+        Events.trigger('getModel:' + arg0, found);
         if (model != null)
           return model;
         
         if (arg0.indexOf('/') != -1) {
           var longUri = U.getLongUri1(arg0);
-          if (longUri !== arg0)
-            return C.getModel(longUri);
+          if (longUri !== arg0) {
+            Events.trigger('getModel:' + longUri, found);
+            return model;
+          }
         }
         
         return null;
@@ -2254,6 +2304,29 @@ define('utils', [
       return url.slice(url.indexOf(G._serverName), G._serverName.length + 1).startsWith(G.pageRoot);
     },
     
+    _articleModeTypes: null,
+    
+    getDefaultViewMode: function(type) {
+      var model;
+      if (typeof type == 'string') {
+        type = U.getTypeUri(type);
+        model = U.getModel(type);
+      }
+      else
+        model = type.vocModel || type;
+
+      if (!U._articleModeTypes)
+        U._articleModeTypes = articleModeTypes.map(U.getTypeUri);
+        
+      var isArticleMode;
+      if (model)
+        isArticleMode = _.find(U._articleModeTypes, function(type) { return U.isAssignableFrom(model, type) });
+      else      
+        isArticleMode = ~U._articleModeTypes.indexOf(type);
+      
+      return isArticleMode ? 'article' : 'view';
+    },
+    
     makeMobileUrl: function(action, typeOrUri, params) {
       if (arguments.length == 1) {
         typeOrUri = action;
@@ -2262,7 +2335,7 @@ define('utils', [
       
       action = action || 'list';
       if (U.isModel(action))
-        return U.makeMobileUrl('view', action.getUri());
+        return U.makeMobileUrl(U.getDefaultViewMode(action.vocModel), action.getUri());
         
       if (U.isModel(typeOrUri))
         typeOrUri = typeOrUri.getUri();
@@ -2275,6 +2348,9 @@ define('utils', [
       typeOrUri = U.getShorterUri(typeOrUri);
       var typeOrUriParts = typeOrUri.split('?');
       typeOrUri = typeOrUriParts[0];
+      if (action == 'view')
+        action = U.getDefaultViewMode(typeOrUri);
+      
       var url = '';
 //      switch (action) {
 //        case 'list':
@@ -3413,15 +3489,13 @@ define('utils', [
           
           break;
         default:
-          if (param.startsWith('$'))
+          if (/^[\$-]/.test(param))
             break;
           
           var prop = meta[param];
           if (!prop || U.getObjectType(clause) !== '[object Object]') {
             log('info', 'couldnt find property {0} in class {1}'.format(param, vocModel.type));
-            return function() {
-              return true;
-            }
+            return G.trueFn;
           }
           
           rules.push(U.makeTest(meta[param], clause.op, clause.value));          
@@ -3749,7 +3823,7 @@ define('utils', [
     
     alert404: function(msg) {
       U.alert({
-        header: msg || "This page doesn't exist!",
+        header: msg || "This page doesn't exist! Can we take you <a href='{0}'>home</a>?".format(G.appUrl),
         dismissible: false
 //        ,
 //        oncancel: function() {
@@ -4616,6 +4690,18 @@ define('utils', [
     }
   };
   
+  ['getEnumModel', 'getInlineResourceModel', 'getResource'].forEach(function(method) {
+    U[method] = function(identifier) {
+      var obj,
+          found = function(match) {
+            obj = match;
+          };
+      
+      Events.trigger(method + ':' + identifier, found);
+      return obj;
+    };
+  });
+  
   // No need to recalculate these every time
   var cachedOnObj = {
     isMasonry: '_isMasonry', 
@@ -4626,6 +4712,7 @@ define('utils', [
     getGridColsMeta: '_gridCols',
     getViewColsMeta: '_viewCols',
     isResourceProp: '_isResourceProp',
+    getDefaultViewMode: '_defaultView',
     getPropCloneOf: '_clonedProperties',
     getPositionProps: '_positionProperties',
     isInlined: '_isInlined',
@@ -4638,7 +4725,11 @@ define('utils', [
       if (_.has(obj, propName))
         return obj[propName];
       
-      return obj[propName] = origFn.apply(this, arguments);
+      var result = origFn.apply(this, arguments);
+      if (typeof obj == 'object')
+        obj[propName] = result;
+      
+      return result;
     };
   });
 

@@ -7,10 +7,9 @@ define('views/ControlPanel', [
   'views/BasicView',
   'vocManager',
   'collections/ResourceList',
-  'cache',
   'lib/fastdom',
   'physicsBridge'
-], function(G, _, Events, U, BasicView, Voc, ResourceList, C, Q, Physics) {
+], function(G, _, Events, U, BasicView, Voc, ResourceList, Q, Physics) {
   function getLi(el) {
     return el.tagName == 'LI' ? el : el.$closest('li');
   };
@@ -59,7 +58,9 @@ define('views/ControlPanel', [
       'click .add': 'add',
       'click [data-backlink]': 'clickInlined',
       'swipeleft [data-backlink]': 'onswipeleft',
+      'click .drawer-tab-left': 'onswipeleft',
       'swiperight [data-backlink]': 'onswiperight',
+      'click .drawer-tab-right': 'onswiperight',
 //      'click a[data-shortName]': 'lookupFrom',
 //      'pinchout li[data-propname]': 'insertInlineScroller',
 //      'pinchin li[data-propname]': 'removeInlineScroller',
@@ -92,7 +93,7 @@ define('views/ControlPanel', [
       var blProp = this.vocModel.properties[li.$data('backlink')],
           vocModel = U.getModel(blProp.range),
           uri = li.$data('uri'),
-          res = C.getResource(uri),
+          res = U.getResource(uri),
           overlay = li.$('.anim-overlay')[0],
           overlayHTML;
       
@@ -114,7 +115,8 @@ define('views/ControlPanel', [
       
       overlayHTML = this.actionsOverlayTemplate({
         _uri: uri,
-        actions: actions
+        actions: actions,
+        active: li.$hasClass('anim-overlay-active')
       });
       
       if (overlay)
@@ -140,7 +142,8 @@ define('views/ControlPanel', [
     },
     
     showOverlay: function(li) {
-      li.$('.anim-overlay').$addClass('anim-overlay-active');
+//      li.$('.anim-overlay').$addClass('anim-overlay-active');
+      li.$addClass('anim-overlay-active');
     },
     
     actionCancel: function(e) {
@@ -167,7 +170,7 @@ define('views/ControlPanel', [
       Events.stopEvent(e);
       this.hideOverlays();
       var li = getLi(e.target),
-          uri = C.getResource(li.$data('uri'));
+          uri = U.getResource(li.$data('uri'));
       
       Events.trigger('navigate', U.makeMobileUrl('edit', uri));
     },
@@ -175,7 +178,7 @@ define('views/ControlPanel', [
     actionComment: function(e) {
       Events.stopEvent(e);
       var li = getLi(e.target),
-          res = C.getResource(li.$data('uri')),
+          res = U.getResource(li.$data('uri')),
           vocModel;
       
       if (!res.isA('CollaborationPoint'))
@@ -207,7 +210,7 @@ define('views/ControlPanel', [
         return;
       }
       
-      res = C.getResource(uri);
+      res = U.getResource(uri);
       if (res)
         getRes = G.getResolvedPromise();
       else {
@@ -531,14 +534,13 @@ define('views/ControlPanel', [
           isTrade = U.isAssignableFrom(listVocModel, 'commerce/trading/Order'),
           canAdd = !isRule && U.isPropEditable(this.resource, prop), // don't allow add other than by clicking individual indicators 
           linkToEdit = U.isAssignableFrom(listVocModel, G.commonTypes.WebProperty, 'commerce/trading/Notification'),
-          action = linkToEdit ? 'edit' : 'view';
+          action = linkToEdit ? 'edit' : 'view',
+          template;
       
       if (isRule && !this.compareIndicatorsTemplate)
         this.makeTemplate('inlineCompareIndicatorsRuleTemplate', 'compareIndicatorsTemplate', listVocModel.type);
       
-      if (isTrade && !this.inlineTradesTemplate)
-        this.makeTemplate('inlineTradesTemplate', 'inlineTradesTemplate', listVocModel.type);
-      
+      template = isRule ? this.compareIndicatorsTemplate : this.inlineListItemTemplate;
       if (list.length && isCancelable) {
         canceledProp = listMeta[U.getCloneOf(listVocModel, 'Cancellable.cancelled')[0]];
         isCancelable = canceledProp && U.isPropEditable(list.models[0], canceledProp);
@@ -594,26 +596,22 @@ define('views/ControlPanel', [
               name: U.getDisplayName(iRes),
               backlink: name
             },
-            template = this.inlineListItemTemplate,
             grid = U.getCols(iRes, 'grid', true);
             
-        if (isRule) {
-//          var uri = iRes.getUri(),
-//              type = U.getTypeUri(uri);
-//          
-//          if (/ThanIndicator/.test(type)) {
-//            if (!this.compareIndicatorsTemplate)
-//              this.makeTemplate('inlineCompareIndicatorsRuleTemplate', 'compareIndicatorsTemplate', listVocModel.type);
-            
-            template = this.compareIndicatorsTemplate;
-//          }
-        }
-        else if (isTrade) { 
-          template = this.inlineTradesTemplate;
-          
+//        if (isRule) {
+////          var uri = iRes.getUri(),
+////              type = U.getTypeUri(uri);
+////          
+////          if (/ThanIndicator/.test(type)) {
+////            if (!this.compareIndicatorsTemplate)
+////              this.makeTemplate('inlineCompareIndicatorsRuleTemplate', 'compareIndicatorsTemplate', listVocModel.type);
+//            
+//            template = this.compareIndicatorsTemplate;
+////          }
+//        }
+        if (isTrade) { 
           params.action = iRes.get('action');
           params.securityName = iRes.get('security.davDisplayName');
-          
         }
         else if (U.isA(listVocModel, 'Intersection')) {
           var oH, oW, ab;

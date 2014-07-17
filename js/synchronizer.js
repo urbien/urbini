@@ -159,7 +159,7 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
     this.data._dirty = 0;
     this.info = {
       isSyncRequest: this.options.sync || false,
-      isForceFetch: this.options.forceFetch || this.data._dirty,
+      isForceFetch: this.options.sync || this.options.forceFetch,
       now: G.currentServerTime(),
       vocModel: this.data.vocModel,
       key: this._getKey()

@@ -133,27 +133,31 @@ define('views/ArticlePage', [
     },
     
     getSubmissionData: function() {
-      var submitter = U.getCloneOf(this.vocModel, 'Submission.submittedBy')[0],
-          moreByText = 'more {0} by {1}'.format(
-            U.getPlural(this.vocModel.displayName), 
-            this.resource.get(submitter + '.displayName')
-          ),
-          moreOfType = {};
+      var submitterProp = U.getCloneOf(this.vocModel, 'Submission.submittedBy')[0],
+          submitter = this.resource.get(submitterProp),
+          submitterName = this.resource.get(submitterProp + '.displayName'),
+          moreByText = submitterName && 'more {0} by {1}'.format(U.getPlural(this.vocModel.displayName), submitterName),
+          moreOfType = {},
+          byLine = submitterName ? 'by ' + submitterName + '<br />' : '',
+          date = this.resource.get('Submission.dateSubmitted'),
+          dateLine = date ? '({0})'.format(U.toMDYString(date)) : '';
       
-      moreOfType[submitter] = this.resource.get(submitter);
+      if (submitter)
+        moreOfType[submitterProp] = submitter;
+      
       return {
         title: this.resource.get('Submission.subject'),
-        subTitle: 'by ' + this.resource.get(submitter + '.displayName') + '<br />(' + U.toMDYString(this.resource.get('Submission.dateSubmitted')) + ')',
+        subTitle: byLine + dateLine,
         cols: [{
           icon: {
             'class': 'ui-icon-tradle',
             color: ICON_COLORS[0]
           },
           body: this.resource.get('Submission.description'),
-          link: {
+          link: moreByText ? {
             text: moreByText,
             href: U.makePageUrl('list', this.vocModel.type, _.param(moreOfType))
-          }
+          } : null
         }]
       };
     }

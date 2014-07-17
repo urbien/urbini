@@ -8,7 +8,6 @@
       "lib/jquery-indexeddb.js",
       "lib/queryIndexedDB.js",
       "templates.js",
-      "cache.js",
       "utils.js",
       "domUtils.js",
       "error.js",

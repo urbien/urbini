@@ -8,7 +8,6 @@ define('app', [
  'utils', 
  'events',
  'error',
- 'cache',
  'modelLoader',
  'vocManager',
  'resourceManager',
@@ -16,7 +15,7 @@ define('app', [
  'physicsBridge',
  'router',
  '@widgets'
- ], function(G, _, Backbone, __bbMxns__, Templates, U, Events, Errors, C, ModelLoader, Voc, ResourceManager, ResourceList, Physics, Router, $m) {
+ ], function(G, _, Backbone, __bbMxns__, Templates, U, Events, Errors, ModelLoader, Voc, ResourceManager, ResourceList, Physics, Router, $m) {
 //  var Chrome;
   var Router;
   Backbone.emulateHTTP = true;

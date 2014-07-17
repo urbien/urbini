@@ -4,12 +4,11 @@ define('views/EditView', [
   'events', 
   'error', 
   'utils',
-  'cache',
   'vocManager',
   'views/BasicView',
   '@widgets',
   'lib/fastdom'
-], function(G, Events, Errors, U, C, Voc, BasicView, $m, Q) {
+], function(G, Events, Errors, U, Voc, BasicView, $m, Q) {
   var spinner = {
         name: 'loading edit view'
       },

@@ -5,7 +5,6 @@ define('views/EditPage', [
   'utils',
   'events',
   'vocManager',
-  'cache',
   'collections/ResourceList',
   'views/BasicPageView',
   'views/Header',
@@ -13,7 +12,7 @@ define('views/EditPage', [
   'views/ResourceImageView',
   'views/ResourceListView',
   'views/ControlPanel'
-], function(G, _, U, Events, Voc, C, ResourceList, BasicPageView, Header, EditView, ResourceImageView, ResourceListView, ControlPanel) {
+], function(G, _, U, Events, Voc, ResourceList, BasicPageView, Header, EditView, ResourceImageView, ResourceListView, ControlPanel) {
   var editParams = ['action', 'viewId'];
   return BasicPageView.extend({
     autoFinish: false,
@@ -165,7 +164,7 @@ define('views/EditPage', [
         var params = _.getParamMap(window.location.href);
         var type = self.vocModel.type;
         var listModel = U.getModel(type);
-        var inlineList = C.getResourceList(self.vocModel, U.getQueryString(params, true));
+        var inlineList = U.getResourceList(self.vocModel, U.getQueryString(params, true));
         if (!inlineList) {
           inlineList = new ResourceList(null, {model: self.vocModel, params: params});
           inlineList.fetch({

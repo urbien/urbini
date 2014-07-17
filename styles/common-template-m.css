@@ -1296,22 +1296,15 @@ label.subClass {
   position: absolute;
   top: 0;
   left: 0;
-  opacity: 0.2;
+  opacity: 0.5;
   color: #7aaac3;
   /*background-color: #fff;
   */
   background-color: #2e3b4e;
-/*
-  -webkit-transform: translateX(100%) skewX(-70deg);
-     -moz-transform: translateX(100%) skewX(-70deg);
-      -ms-transform: translateX(100%) skewX(-70deg);
-          transform: translateX(100%) skewX(-70deg);
- */
-
--webkit-transform: translateX(99%);
-   -moz-transform: translateX(99%);
-    -ms-transform: translateX(99%);
-        transform: translateX(99%);
+  -webkit-transform: translateX(97%);
+     -moz-transform: translateX(97%);
+      -ms-transform: translateX(97%);
+          transform: translateX(97%);
 
   -webkit-transition: 0.6s ease;
      -moz-transition: 0.6s ease;
@@ -1319,13 +1312,25 @@ label.subClass {
           transition: 0.6s ease;
 }
 
-.anim-overlay.anim-overlay-active {
+@media screen and (min-width: 480px) {
+  .anim-overlay {
+    -webkit-transform: translateX(98%);
+       -moz-transform: translateX(98%);
+        -ms-transform: translateX(98%);
+            transform: translateX(98%);
+  }  
+}
+
+.anim-overlay-active {
+  -webkit-transform: translateX(-98%);
+     -moz-transform: translateX(-98%);
+      -ms-transform: translateX(-98%);
+          transform: translateX(-98%);
+}
+
+.anim-overlay-active .anim-overlay {
   opacity: 1;
   background-color: #2e3b4e;
-  -webkit-transform: translateX(0);
-     -moz-transform: translateX(0);
-      -ms-transform: translateX(0);
-          transform: translateX(0);
 }
 
 .anim-overlay i {
@@ -1336,6 +1341,53 @@ label.subClass {
 .anim-overlay .span_1_of_4, .anim-overlay .span_1_of_3, .anim-overlay .span_1_of_2, .anim-overlay .span_1_of_1 {
   display:inline-block;
   cursor:pointer;
+}
+
+.anim-overlay .drawer-tab-right {
+  opacity: 0;
+}
+
+.anim-overlay-active .drawer-tab-right {
+  opacity: 1;
+}
+
+.drawer-tab-left, .drawer-tab-right {
+  cursor: pointer;
+  z-index:2; 
+  width: 2%;
+  height: 100%;
+  position:absolute;
+  top:0;
+}
+
+.drawer-tab-left {
+  left:0;
+}
+
+.drawer-tab-right {
+  right: 0px;
+}
+
+.drawer-tab-left i, .drawer-tab-right i {
+  font-size: 15px;
+  padding:0;
+  left:0;
+}
+
+.anim-overlay-active .drawer-tab-left {
+  opacity: 0;
+}
+
+@media screen and (min-width: 820px) {
+  .drawer-tab-left i, .drawer-tab-right i {
+    font-size: 20px;
+  }
+}
+
+@media screen and (min-width: 1200px) {
+  .drawer-tab-left {
+    left: 0.5%;
+  }  
 }
 
 .trades span {

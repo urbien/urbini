@@ -4,7 +4,6 @@ define('resourceManager', [
   'globals',
   'utils', 
   'events', 
-  'cache',
   'vocManager',
   'collections/ResourceList',
   'lib/fastdom',
@@ -14,7 +13,7 @@ define('resourceManager', [
   'synchronizer',
   'resourceSynchronizer', 
   'collectionSynchronizer'
-], function(__domReady__, G, U, Events, C, Voc, ResourceList, Q, TaskQueue, IndexedDBModule, QueryBuilder, Synchronizer, ResourceSynchronizer, CollectionSynchronizer) {
+], function(__domReady__, G, U, Events, Voc, ResourceList, Q, TaskQueue, IndexedDBModule, QueryBuilder, Synchronizer, ResourceSynchronizer, CollectionSynchronizer) {
       
   function getSynchronizer(method, data, options) {
     return U.isModel(data) ? new ResourceSynchronizer(method, data, options) : new CollectionSynchronizer(method, data, options);
@@ -585,16 +584,58 @@ define('resourceManager', [
     
 //    var types = [];
 //    var typeToUris = {};
-    var i = sideEffects.length;
-    while (i--) {
-      var uri = sideEffects[i],
-          sideEffect = C.getResource(uri);
-      
-      if (sideEffect)
-        sideEffect.fetch({ forceFetch: true });
+    
+    var made = sideEffects.MKRESOURCE,
+        modified = sideEffects.PROPPATCH,
+        deleted = sideEffects['DELETE'];
+
+    if (!_.isEmpty(made)) {
+      made.forEach(function(uri) {
+        G.log(RM.TAG, 'info', 'SIDE EFFECT MKRESOURCE: ' + uri);
+      });
     }
     
+    if (!_.isEmpty(modified)) {
+      modified.forEach(function(uri) {
+        G.log(RM.TAG, 'info', 'SIDE EFFECT PROPPATCH: ' + uri);
+        var sideEffect = U.getResource(uri);
+        if (sideEffect)
+          sideEffect.fetch({ forceFetch: true });
+        
+        // TODO: batch fetch
+      });      
+    }
     
+    if (!_.isEmpty(deleted)) {
+      deleted = deleted.filter(function(uri) {
+        var r = U.getResource(uri);
+        if (r) {
+          r['delete']();
+          return false;
+        }
+      });
+    }
+    
+    if (!_.isEmpty(deleted)) {
+      Voc.getModels(_.uniq(deleted.map(U.getTypeUri))).done(function() {        
+        deleted.forEach(function(uri) {
+          G.log(RM.TAG, 'info', 'SIDE EFFECT DELETE: ' + uri);
+          var model = U.getModel(U.getTypeUri(uri)); 
+          RM.deleteUri(uri, model);
+        });
+      });
+    }
+    
+//    var i = sideEffects.length;
+//    while (i--) {
+//      var uri = sideEffects[i],
+//          sideEffect = C.getResource(uri);
+//      
+//      if (sideEffect)
+//        sideEffect.fetch({ forceFetch: true });
+//    }
+//    
+//    
 //    while (i--) {
 //      var uri = sideEffects[i];
 //      if (isNew) {

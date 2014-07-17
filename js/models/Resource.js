@@ -5,9 +5,8 @@ define('models/Resource', [
   'utils',
   'error',
   'events',
-  'cache',
   'uuid'
-], function(G, _, U, Errors, Events, C, uuid) {
+], function(G, _, U, Errors, Events, uuid) {
   var commonTypes = G.commonTypes,
       APP_TYPES = _.values(_.pick(commonTypes, 'WebProperty', 'WebClass'));
   
@@ -43,7 +42,7 @@ define('models/Resource', [
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(atts, options) {
-      _.bindAll(this, 'get', 'parse', 'getUrl', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'cancel', 'updateCounts', 'fetchInlinedLists'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'get', 'parse', 'getUrl', 'validate', 'validateProperty', 'fetch', 'set', 'remove', 'cancel', 'updateCounts', 'fetchInlinedLists', 'addToList', 'onSearch'); // fixes loss of context for 'this' within methods
 //      if (options && options._query)
 //        this.urlRoot += "?" + options._query;
       
@@ -51,7 +50,6 @@ define('models/Resource', [
       var self = this;
       
       this.setModel(null, {silent: true});
-      this.subscribeToUpdates();
       this.resourceId = G.nextId();
       this.detached = options.detached; // if true, this resource will not be persisted to the database, nor will it be fetched from the server
 //      if (this.detached)
@@ -66,19 +64,19 @@ define('models/Resource', [
       if (this.loaded)
         this.announceNewResource(options);
       
-      if (commonTypes.App == this.type) {
-        this.listenTo(Events, 'saved', function(res) {
-          var types = U.getTypes(res.vocModel);
-          if (_.intersection(types, APP_TYPES).length) {
-//            debugger; // maybe check if the changes concern this app, or another
-            this.set({'lastModifiedWebClass': +new Date()});
-          }
-        }.bind(this));
-      }
-      
-      this.on('saved', function() {
-        Events.trigger.apply(Events, ['saved', this].concat(_.toArray(arguments)));
-      });
+//      if (commonTypes.App == this.type) {
+//        this.listenTo(Events, 'saved', function(res) {
+//          var types = U.getTypes(res.vocModel);
+//          if (_.intersection(types, APP_TYPES).length) {
+////            debugger; // maybe check if the changes concern this app, or another
+//            this.set({'lastModifiedWebClass': +new Date()});
+//          }
+//        }.bind(this));
+//      }
+//      
+//      this.on('saved', function() {
+//        Events.trigger.apply(Events, ['saved', this].concat(_.toArray(arguments)));
+//      });
       
       this.resetUnsavedChanges();
       this.on('cancel', this.remove);
@@ -99,7 +97,7 @@ define('models/Resource', [
 //      this.checkIfLoaded();
       
       if (this.isNew())
-        this.set({ _new: true }, { silent: true });      
+        this.set({ _new: true }, { silent: true });
     },
     
     selfDestruct: function() {
@@ -236,8 +234,8 @@ define('models/Resource', [
         var aProp = U.getCloneOf(vocModel, "Intersection.a")[0];
         var bProp = U.getCloneOf(vocModel, "Intersection.b")[0];
         
-        var resA = C.getResource(defaults[aProp]);
-        var resB = C.getResource(defaults[bProp]);
+        var resA = U.getResource(defaults[aProp]);
+        var resB = U.getResource(defaults[bProp]);
         if (resA != null  &&  resB != null) {
           var mA = resA.vocModel;
           var mB = resB.vocModel;
@@ -295,34 +293,43 @@ define('models/Resource', [
       if (this.subscribedToUpdates)
         return;
       
-      var resUri = this.getUri();
-      if (!resUri)
-        return;
+      var uri = this.getUri();
+      this.listenTo(Events, 'getResource:' + uri, this.onSearch);
+//      if (!this.collection) {
+//        var self = this;
+//        U.getTypes(this.vocModel).forEach(function(type) {
+//          self.stopListening(Events, 'newResourceList:' + type, this.addToList);
+//          self.listenTo(Events, 'newResourceList:' + type, this.addToList);
+//        });
+//      }
       
-      this.listenTo(Events, 'updateBacklinkCounts:' + resUri, this.updateCounts);
+      this.listenTo(Events, 'updateBacklinkCounts:' + uri, this.updateCounts);
       this.subscribedToUpdates = true;
+    },
+    
+    onSearch: function(cb) {
+      cb(this);
+    },
+    
+    addToList: function(list) {
+      list.filterAndAddResources([this]);
     },
     
     cancel: function(options) {
       options = options || {};
-      var props = this.vocModel.properties;
-      var canceled = U.getCloneOf(this.vocModel, 'Cancellable.cancelled')[0];
+      var self = this,
+          props = this.vocModel.properties,
+          canceled = U.getCloneOf(this.vocModel, 'Cancellable.cancelled')[0];
+      
       if (!canceled)
         throw new Error("{0} can not be canceled because it does not have a 'canceled' property".format(U.getDisplayName(this)));
       
-      this.set(canceled, true, {
-        userEdit: true
-      });
-      
-      var self = this;
+      var params = {};
+      params[canceled] = true;
 //      this.save(props, options);
       var success = options.success;
       options.success = function(resource, response, options) {
         if (!response || !response.error) {
-          var alsoDeleted = response && response._alsoDeleted;
-          if (alsoDeleted)
-            Events.trigger('findAndDelete', alsoDeleted);
-          
           log("info", "CANCELED: " + self.getUri());
           self.trigger('cancel');
         }
@@ -351,7 +358,8 @@ define('models/Resource', [
           error.apply(this, arguments);
       };
 
-      this.save(null, options);
+      options.userEdit = true;
+      this.save(params, options);
     },
     remove: function() {
       this.collection && this.collection.remove(this);
@@ -368,6 +376,7 @@ define('models/Resource', [
       
       this.trigger('delete', this, options);
       this.remove();
+      this.stopListening();
     },
     getUrl: function() {
       var adapter = this.vocModel.adapter;
@@ -482,6 +491,20 @@ define('models/Resource', [
     },
     
     parse: function(resp, options) {
+      var sideEffects = resp && resp._sideEffects,
+          parsed;
+      
+      if (sideEffects)
+        delete resp._sideEffects;
+
+      parsed = this.doParse(resp, options);
+      if (sideEffects)
+        Events.trigger('sideEffects', this, sideEffects);
+      
+      return parsed;
+    },
+    
+    doParse: function(resp, options) {
       options = options || {};
       if (!this.vocModel)
         this.setModel();
@@ -520,13 +543,7 @@ define('models/Resource', [
               delete resp[key];
             }
           }
-        }
-        
-        var sideEffects = resp._sideEffects;
-        if (sideEffects) {
-          delete resp._sideEffects;
-          Events.trigger('sideEffects', this, sideEffects);
-        }
+        }        
       }
       
       return resp;
@@ -629,7 +646,7 @@ define('models/Resource', [
     },
 
     getInlineLists: function() {
-      return _.values(this.inlineLists || {});
+      return this.inlineLists;
     },
 
     resetUnsavedChanges: function() {
@@ -662,16 +679,13 @@ define('models/Resource', [
     set: function(key, val, options) {
       var self = this,
           uri = this.get('_uri'),
-//          uriChanged,
+          uriChanged,
           props,
           vocModel,
           meta,
           displayNameChanged,
           imageType;
 
-      if (!this.subscribedToUpdates && uri)
-        this.subscribeToUpdates();
-      
       if (key == null)
         return true;
       
@@ -712,12 +726,8 @@ define('models/Resource', [
         if (!val)
           continue;
         
-//        if (shortName == '_uri') {
-//          if (uri && val && val !== uri)
-//            uriChanged = true;
-//          else
-//            continue;
-//        }
+        if (shortName == '_uri' && val !== uri)
+          uriChanged = true;
         
         var prop = meta[shortName];
         if (!prop)
@@ -731,19 +741,8 @@ define('models/Resource', [
           if (imageType.endsWith(prop.range)) {
             delete self.attributes[shortName + '.blob'];
             delete self.attributes[shortName + '.uri'];
-          }
-          
-//          if (U.isNativeModelParameter(shortName) && U.isTempUri(val)) {
-//            var link = C.getResource(val),
-//                latestUri = (link && link.getUri()) || val;
-//            
-//            if (latestUri && !U.isTempUri(latestUri))
-//              props[shortName] = latestUri;
-//            else
-//              this._watchTemp(shortName, latestUri);
-//          }
+          }          
         }
-        
         
         if (!options.sync) {
           if (/\./.test(shortName))
@@ -758,7 +757,7 @@ define('models/Resource', [
             continue;
           
           if (isResourceProp && U.isNativeModelParameter(shortName)) {
-            var res = C.getResource(val);
+            var res = U.getResource(val);
             if (res) {
               props[sndName] = U.getDisplayName(res);
             }            
@@ -790,6 +789,9 @@ define('models/Resource', [
 //        Events.trigger('uriChanged', uri, this);
 
       if (result) {
+        if (uriChanged)
+          this.subscribeToUpdates();
+
 //        this._resetEditableProps();
         if (options.userEdit)
           _.extend(this.unsavedChanges, props);
@@ -999,7 +1001,7 @@ define('models/Resource', [
 //        }
         
         // TODO: fix this hack, or move this to some place where we handle resources by type
-        var plugModel = C.getModel('Handler');
+        var plugModel = U.getModel('Handler');
         if (plugModel && this.vocModel.type === plugModel.type)
           Events.trigger("newPlug", this.toJSON());
       }
@@ -1242,6 +1244,11 @@ define('models/Resource', [
       });
       
       options.success = function(resource, response, opts) {
+        if (response && response._deleted) {            
+          success && success.apply(self, arguments);
+          return;
+        }
+        
         self.unset('_new', { silent: true });
         if (!opts.fromDB)
           self.resetUnsavedChanges(); // if we're performing a synchronized save (for example for a money transaction), without going through the database. Otherwise we want to keep accumulating unsavedChanges
@@ -1285,16 +1292,13 @@ define('models/Resource', [
         
         switch (code) {
           case 409:
-//            Events.trigger('substitute', self.getUri(), U.getLongUri1(errorObj.conflict._uri, self.vocModel));
-          debugger;
-//          self['delete']();
-          var conflict = errorObj.conflict;
-          if (self.hasStablePrimaryKeys()) {
-            self.set(self.parse(conflict, {overwriteUserChanges: true}));
-            return options.success(self, self.toJSON(), options);  
-          }
-          else
-            debugger;
+            var conflict = errorObj.conflict;
+            if (self.hasStablePrimaryKeys()) {
+              self.set(self.parse(conflict, {overwriteUserChanges: true}));
+              return options.success(self, self.toJSON(), options);  
+            }
+            else
+              debugger;
           
           break;
           
@@ -1335,10 +1339,10 @@ define('models/Resource', [
 //            }
 //          }
 //          break;
-        case 404:
-          debugger;
-          self['delete']();
-          break;
+//        case 404:
+//          debugger;
+//          self['delete']();
+//          break;
         }
         
         if (error)
@@ -1383,7 +1387,7 @@ define('models/Resource', [
         if (uri)
           this.set('_uri', U.buildUri(this), { silent: true });
         else
-          debugger;
+          debugger; // should never happen
       }
 
       if (isNew)
@@ -1399,15 +1403,15 @@ define('models/Resource', [
         saved = this._sync(data, options);
       }
    
-      // if fromDB is true, we are syncing this resource with the server, the resource has not actually changed
-      if (!options.fromDB && !options.silent) { 
-//        log('events', U.getDisplayName(this), 'changed');
-        this.trigger('change', this, options);
-      }
+//      // if fromDB is true, we are syncing this resource with the server, the resource has not actually changed
+//      if (!options.fromDB && !options.silent) { 
+////        log('events', U.getDisplayName(this), 'changed');
+//        this.trigger('change', this, options);
+//      }
       
       if (saved) {
         this.detached = false;
-        Events.trigger('cacheResource', this);
+//        Events.trigger('cacheResource', this);
       }
       
       return saved;

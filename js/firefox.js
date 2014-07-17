@@ -1,4 +1,4 @@
-define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceList', 'vocManager'], function(G, Events, U, C, ResourceList, Voc) {
+define('firefox', ['globals', 'events', 'utils', 'collections/ResourceList', 'vocManager'], function(G, Events, U, ResourceList, Voc) {
   var gManifestName = "/manifest.webapp",
       connectedDfd = $.Deferred(),
       connectedPromise = connectedDfd.promise(),
@@ -46,7 +46,7 @@ define('firefox', ['globals', 'events', 'utils', 'cache', 'collections/ResourceL
   function onpush(message) {
     debugger;
     log('got push message');
-    var endpoints = C.getResourceList(U.getModel(G.commonTypes.PushEndpoint)),
+    var endpoints = U.getResourceList(U.getModel(G.commonTypes.PushEndpoint)),
         endpoint = message.endpoint;
     
     if (!endpoints || !endpoints.length) {

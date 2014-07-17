@@ -123,7 +123,7 @@ define('views/ResourceListView', [
       var self = this,
           col = this.collection;
       
-      _.each(['reset'], function(event) {
+      ['reset'].forEach(function(event) {
         self.stopListening(col, event);
         self.listenTo(col, event, function(resources) {
           resources = U.isCollection(resources) ? resources.models : U.isModel(resources) ? [resources] : resources;
@@ -133,6 +133,7 @@ define('views/ResourceListView', [
           
           options[event] = true;
           if (event == 'reset') {
+            console.log("RESETTING LIST VIEW MASON");
             self._outOfData = false;
             self._isPaging = false;
             if (self.isPaging())
@@ -236,7 +237,7 @@ define('views/ResourceListView', [
         clearTimeout(this._delayTimeout);
         this._delayTimeout = setTimeout(function() {
           self.doFilter(filterParams);
-        }, this._timesDelayed++ * 100);
+        }, ++this._timesDelayed * 100);
       }
         
       clearTimeout(this._delayTimeout);
@@ -772,31 +773,21 @@ define('views/ResourceListView', [
       var self = this,
           col = this.collection,
           availableRange = col.getRange(),
+          total = col.getTotal() || availableRange[1],
           displayed = this._displayedRange,
           preRenderPromise;
       
       if (to > availableRange[1]) {
-        if (force) {
-          // settle for loading an incomplete page
-          to = availableRange[1];
-          if (from >= to) {
-            // we're out of candy, no need to continue
-            this.log("2. BRICK LIMIT");
-            this.setBrickLimit(availableRange[1]);
-            return;
-          }
-        }
-        else {
-//          if (this._outOfData) {
-//            this.mason.setLimit(this.collection.length);
-//            return;
-//          }
-          
-//          var numToFetch = to - col.length,
-//              fetchFrom = col.length, // + this._failedToRenderCount,
-//              fetchTo = fetchFrom + numToFetch;
-          
+        if (to < total || !force)
           return this.fetchResources(availableRange[1], to).then(this._addBricks.bind(this, from, to, force), this._addBricks.bind(this, from, to, true));
+        
+        // FORCING, settle for loading an incomplete page
+        to = total;
+        if (from >= to) {
+          // we're out of candy, no need to continue
+          this.log("2. BRICK LIMIT");
+          this.setBrickLimit(total);
+          return;
         }
       }
       else if (from < availableRange[0])
@@ -1164,7 +1155,7 @@ define('views/ResourceListView', [
         }
         
         self._isPaging = false;
-        if (defer.state() == 'rejected')
+        if (defer.state() == 'rejected' && col.isOutOfResources())
           self._outOfData = true;
         else {
           var time = _.now() - self._requestMoreTimePlaced | 0;

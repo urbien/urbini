@@ -134,7 +134,11 @@ define('views/BasicPageView', [
             error: self._fetchDfd.reject
           }, options.fetchOptions));
         }
-      }      
+      }
+      
+      this.listenTo(Events, 'getCachedView:' + U.simplifyUrl(window.location.href), function(cb) {
+        cb(self);
+      });
     },
     
     events: {

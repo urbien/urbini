@@ -4,12 +4,11 @@ define('views/ChatPage', [
   'underscore', 
   'utils',
   'events',
-  'cache',
   'vocManager',
   'views/BasicPageView',
   'views/Header',
   'domUtils'
-], function(G, _, U, Events, C, Voc, BasicPageView, Header, DOM) {
+], function(G, _, U, Events, Voc, BasicPageView, Header, DOM) {
   // To avoid shortest-path interpolation.
   var BTN_ACTIVE_CLASS = 'ui-btn-active',
       SIGNALING_SERVER = 'http://' + G.serverName.match(/^http[s]?\:\/\/([^\/]+)/)[1] + ':8889',

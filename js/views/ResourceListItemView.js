@@ -396,7 +396,7 @@ define('views/ResourceListItemView', [
       }
       var params = this.hashParams;
       var isEdit = this.isEdit; //(params  &&  params['$edit'])  ||  U.isAssignableFrom(vocModel, G.commonTypes.WebProperty);
-      var action = !isEdit ? 'view' : 'edit'; 
+      var action = !isEdit ? U.getDefaultViewMode(this.vocModel) : 'edit'; 
       if (this.doesModelSubclass(G.commonTypes.Jst)) {
         json.isJst = true;
         var text = atts.templateText;

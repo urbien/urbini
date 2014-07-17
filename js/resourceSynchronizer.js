@@ -7,9 +7,8 @@ define('resourceSynchronizer', [
   'synchronizer', 
   'vocManager', 
   'taskQueue', 
-  'indexedDB', 
-  'cache'
-], function(G, _, Backbone, U, Events, Synchronizer, Voc, TaskQueue, IndexedDBModule, C) {  
+  'indexedDB' 
+], function(G, _, Backbone, U, Events, Synchronizer, Voc, TaskQueue, IndexedDBModule) {  
   var NO_DB = G.dbType === 'none',
       RESOLVED_PROMISE = G.getResolvedPromise(),
       REJECTED_PROMISE = G.getRejectedPromise(),
@@ -334,7 +333,7 @@ define('resourceSynchronizer', [
         trans.objectStore(REF_STORE.name).put(ref);
       });
     }).then(function() {
-      var resource = C.getResource(uri) || new vocModel(ref);
+      var resource = U.getResource(uri) || new vocModel(ref);
       return saveToServer(ref, resource);
     }, function() {
       debugger;
@@ -545,8 +544,10 @@ define('resourceSynchronizer', [
   
   function checkDelete(res) {
     var canceled = U.getCloneOf(res.vocModel, 'Cancellable.cancelled')[0];
-    if (canceled && res.get(canceled))
+    if (canceled && res.get(canceled)) {
       res['delete']();
+      return true;
+    }
   }
 
   ResourceSynchronizer.init = function() {    

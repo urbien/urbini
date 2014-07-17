@@ -283,7 +283,7 @@ define('views/ListPage', [
       e && Events.stopEvent(e);
       var checked = this.listView.$('input:checked');
       if (checked.length) {
-        Events.trigger('choseMulti', this.hashParams.$multiValue, this.model, checked);
+        Events.trigger('choseMulti', this.hashParams.$multiValue, this.filteredCollection, checked);
         return;
       }
 

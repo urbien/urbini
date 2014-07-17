@@ -157,10 +157,11 @@
 
 <script type="text/template" id="tradleViewQuickstartTemplate">
 <div class="quickstart-content">
-  {{ var desc = this.resource.get('description'); }}
+  {{ var desc = this.resource.get('description'), ils = this.resource.getInlineLists() || {}, rules = ils.tradleRules, nRules = rules && rules.length, indicators = ils.indicators, nIndicators = indicators && indicators.length; }}
+  {{ var alerts = ils.notifications, nAlerts = alerts && alerts.length, orders = ils.orders, nOrders = orders && orders.length, nAnything = nIndicators || nRules || nOrders || nAlerts; }}
   <i class="ui-icon-remove"></i>
   <h2>Quickstart</h2>
-  {{ if (!desc) { }}
+  {{ if (!desc && !nAnything) { }}
   <h3>Welcome to your new Tradle! If this is your first time, follow the steps below:</h3>
   {{ }            }}
   <ol class="quickstart-options">
@@ -174,27 +175,30 @@
         {{ }           }}
       </a>
     </li>
-    {{ if (desc) { }}
+    {{ if (!nIndicators) { }}
       <li>
         <a class="mini-cta" href="#" data-selector="header [data-shortname=&quot;feeds&quot;] i" data-tooltip="Click here to add indicators" data-direction="left">Add indicators</a> to your Tradle.
       </li>          
-      {{ var il = this.resource.inlineLists; }}
-      {{ if (il && il.indicators && il.indicators.length) { }}
-        <li>
-          <a class="mini-cta" href="#" data-selector="li[data-backlink=&quot;indicators&quot;]" data-tooltip="Click an indicator to make a rule with it" data-direction="top">Create rules</a> out of the indicators you've chosen
-        </li>
-        {{ if (il.tradleRules && il.tradleRules.length) { }}
-          <li>
-            <a class="mini-cta" href="#" data-selector="[data-backlink]" data-tooltip="Swipe left on any row to pull out an actions bar" data-direction="top" data-removeonclick="y">Delete</a> rules/indicators you don't need
-          </li>
-          <li>
-            <a class="mini-cta" href="#" data-selector="header [data-shortname=&quot;notifications&quot;] i" data-tooltip="Click here to setup notifications" data-direction="left">Get notified</a> when your Tradle fires
-          </li>
-          <li>
-            <a class="mini-cta" href="#" data-selector="header [data-shortname=&quot;orders&quot;] i" data-tooltip="Click here to add trades" data-direction="left">Add trades</a> to be executed when your Tradle fires
-          </li>
-        {{ }                                        }}
-      {{ }                                        }}
+    {{ }                                        }}
+    {{ if (nIndicators && !nRules) { }}
+      <li>
+        <a class="mini-cta" href="#" data-selector="li[data-backlink=&quot;indicators&quot;]" data-tooltip="Click an indicator to make a rule with it" data-direction="top">Create rules</a> out of the indicators you've chosen
+      </li>
+    {{ }                                        }}
+    {{ if (nRules && !nAlerts) { }}
+      <li>
+        <a class="mini-cta" href="#" data-selector="header [data-shortname=&quot;notifications&quot;] i" data-tooltip="Click here to setup notifications" data-direction="left">Get notified</a> when your Tradle fires
+      </li>
+    {{ }                                        }}
+    {{ if (nRules && !nOrders) { }}
+      <li>
+        <a class="mini-cta" href="#" data-selector="header [data-shortname=&quot;orders&quot;] i" data-tooltip="Click here to add trades" data-direction="left">Add trades</a> to be executed when your Tradle fires
+      </li>
+    {{ }                                        }}
+    {{ if (nAnything) { }}
+      <li>
+        <a class="mini-cta" href="#" data-selector="[data-backlink]" data-tooltip="Swipe left on any row to pull out an actions bar" data-direction="top">Delete</a> anything you don't need
+      </li>
     {{ }                                        }}
   </ol>
 </div>
@@ -223,14 +227,12 @@
 <!-- one row of an inline backlink in view mode -->
 
 
-<li data-viewid="{{= viewId }}" 
+<li data-viewid="{{= viewId }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}"
 
-{{ if (U.isAssignableFrom(obj.resource.vocModel, 'commerce/trading/Order')) { }}
-  style="text-align:center;padding:0;border:none;" class="trades">
+{{ if (U.isAssignableFrom(resource.vocModel, 'commerce/trading/Order')) { }}
+  style="text-align:center;padding:0;border:none;" class="trades"
 {{ } }}
-{{ if (!U.isAssignableFrom(obj.resource.vocModel, 'commerce/trading/Order')) { }}
-  data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}">
-{{ } }}
+  >  
   <a href="{{= href }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="{{= obj.img || obj.needsAlignment ? '' : 'padding:1rem 0;'}} {{= obj.noclick ? 'cursor:default;' : 'cursor:pointer;' }}">
     {{ if (obj.img) { }}
       <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
@@ -257,36 +259,11 @@
 </script>
 
 <script type="text/template" id="actionsOverlayTemplate">
-  <div class="anim-overlay anim-overlay-active centered" data-uri="{{= _uri }}">
-    <div class="anim-overlay-content vcenteredR" style="width:100%;">
-      {{ var cols = _.compact(_.values(actions)).length; }}
-      {{ if (actions.cancel) {     }}
-        <div class="span_1_of_{{= cols }}" style="color:#f00;">
-          <i class="ui-icon-remove" data-action="cancel"></i>
-        </div>
-      {{  }                       }}
-      {{ if (actions.add) {     }}
-        <div class="span_1_of_{{= cols }}">
-          <i class="ui-icon-plus" data-action="add"></i>
-        </div>
-      {{  }                       }}
-      {{ if (actions.edit) {     }}
-        <div class="span_1_of_{{= cols }}">
-          <i class="ui-icon-edit" data-action="edit"></i>
-        </div>
-      {{  }                       }}
-      {{ if (actions.comment) {      }}
-        <div class="span_1_of_{{= cols }}">
-          <i class="ui-icon-comments" data-action="comment"></i>
-        </div>
-  {{ } }}
+  <div class="anim-overlay centered {{= active ? 'anim-overlay-active' : '' }}" data-uri="{{= _uri }}">
+    <div class="drawer-tab-left">
+      <i class="ui-icon-chevron-left vcenteredA"></i>
     </div>
-  </div>
-</script>
-
-<script type="text/template" id="actionsOverlayTemplate">
-  <div class="anim-overlay centered" data-uri="{{= _uri }}">
-    <div class="anim-overlay-content vcenteredR" style="width:100%;">
+    <div class="anim-overlay-content vcenteredR">
       {{ var cols = _.compact(_.values(actions)).length; }}
       {{ if (actions.cancel) {     }}
         <div class="span_1_of_{{= cols }}" style="color:#f00;">
@@ -308,6 +285,9 @@
           <i class="ui-icon-comments" data-action="comment"></i>
         </div>
       {{  }                       }}
+    </div>
+    <div class="drawer-tab-right">
+      <i class="ui-icon-chevron-right vcenteredA"></i>
     </div>
   </div>
 </script>

@@ -1,4 +1,4 @@
-define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', 'collections/ResourceList', 'cache'], function(G, _, U, Events, Voc, ResourceList, C) {
+define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', 'collections/ResourceList'], function(G, _, U, Events, Voc, ResourceList) {
   ////// BACKBONE HACKERY to intercept all url loads so we can see the person's status regarding the tour (on tour, abandoned, lost, dead, undead) /////////
   var SEQ_PROP = 'number',
       TOUR_PARAM = '$tour',
@@ -238,7 +238,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       params.$in = 'tour,' + _.map(tours, function(t) { return t.getUri(); }).join(',');
     
     return $.Deferred(function(defer) {
-      var myTours = C.getResourceList(MY_TOUR_MODEL, _.param(params));
+      var myTours = U.getResourceList(MY_TOUR_MODEL, _.param(params));
       
       if (!myTours) {
         myTours = new ResourceList(null, {
@@ -382,7 +382,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
           $and: U.$and.apply(null, ands),
           $select: 'app,route,modelType'
         },
-        tours = C.getResourceList(TOUR_MODEL, _.param(params)),
+        tours = U.getResourceList(TOUR_MODEL, _.param(params)),
         tour;
       
       if (!tours) {
@@ -547,7 +547,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
 
   function fetchTour(tourUri) {
     return $.Deferred(function(defer) {
-      var tourRes = C.getResource(tourUri);
+      var tourRes = U.getResource(tourUri);
       if (tourRes)
         return defer.resolve(tourRes);
       
@@ -570,7 +570,7 @@ define('tourGuide', ['globals', 'underscore', 'utils', 'events', 'vocManager', '
       var stepParams = {
             tour: tourUri
           },
-          steps = C.getResourceList(STEP_MODEL, _.param(stepParams));
+          steps = U.getResourceList(STEP_MODEL, _.param(stepParams));
       
       if (!steps) {
         steps = new ResourceList(null, {model: STEP_MODEL, params: stepParams});

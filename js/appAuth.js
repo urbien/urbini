@@ -1,4 +1,4 @@
-define('appAuth', ['globals', 'underscore', 'utils', 'events', 'error', 'vocManager', 'cache', 'collections/ResourceList'], function(G, _, U, Events, Errors, Voc, C, ResourceList) {
+define('appAuth', ['globals', 'underscore', 'utils', 'events', 'error', 'vocManager', 'collections/ResourceList'], function(G, _, U, Events, Errors, Voc, ResourceList) {
   var COMMON_TYPES = G.commonTypes,
       FRIEND_APP_TYPE = COMMON_TYPES.Friend,
       APP_TYPE = COMMON_TYPES.App;
@@ -71,7 +71,7 @@ define('appAuth', ['globals', 'underscore', 'utils', 'events', 'error', 'vocMana
       Voc.getModels([APP_TYPE, FRIEND_APP_TYPE], {sync: true}).then(function() {
         var appPromise = $.Deferred(function(defer) {
           var appModel = U.getModel(APP_TYPE);
-          app = C.getResource(appUri);
+          app = U.getResource(appUri);
           if (app) {
             defer.resolve(app);
             return;

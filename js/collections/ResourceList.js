@@ -38,10 +38,11 @@ define('collections/ResourceList', [
           this[o] = options[o];
       }
       
-      var vocModel = this.vocModel = this.model,
+      var self = this,
+          vocModel = this.vocModel = this.model,
           meta = vocModel.properties;
           
-      _.bindAll(this, 'fetch', 'parse', '_parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 
+      _.bindAll(this, 'fetch', 'parse', '_parseQuery', 'getNextPage', 'getPreviousPage', 'getPageAtOffset', 'onSearch',
           'setPerPage', 'pager', 'getUrl', 'onResourceChange', 'disablePaging', 'enablePaging'); // fixes loss of context for 'this' within methods
 //      this.on('add', this.onAdd, this);
       this.on('reset', this.onReset, this);
@@ -94,7 +95,6 @@ define('collections/ResourceList', [
 //      });
 
       if (!this['final']) {
-        var self = this;
 //        this.listenTo(Events, 'delete', function(r) {
 //          if (self.remove(r))
 //            log("Removed element from list: ", r.getUri(), self.getUrl());
@@ -130,12 +130,25 @@ define('collections/ResourceList', [
         });
       }
       
-      this.monitorQueryChanges();
       this.enablePaging();
       this.on('endOfList', this.disablePaging);
       this.resetRange();
       this._fetchDeferreds = {};
-      log("info", "init " + this.shortName + " resourceList");      
+      this.setupSearch();
+      log("info", "init " + this.shortName + " resourceList");
+      
+      this.on('change', this.onResourceChange, this);
+      this.on('delete', this.onResourceDelete, this);
+    },
+    
+    setupSearch: function() {
+      this.stopListening(Events, 'getResourceList:' + this.vocModel.type, this.onSearch); // just in case
+      this.listenTo(Events, 'getResourceList:' + this.vocModel.type, this.onSearch);
+    },
+    
+    onSearch: function(query, cb) {
+      if (this.query == query)
+        cb(this);
     },
     
     calcBelongsFunction: function() {
@@ -242,27 +255,6 @@ define('collections/ResourceList', [
       Events.trigger('newResourceList:' + this.type, this);
     },
     
-    monitorQueryChanges: function() {
-      if (!this.params)
-        return;
-      
-      var self = this,
-          meta = this.vocModel.properties,
-          params = this.params;
-      
-      _.each(params, function(uri, param) {
-        var prop = meta[param];
-        if (!prop || !U.isResourceProp(prop) || !U.isTempUri(uri))
-          return;
-        
-        Events.once('synced:' + uri, function(res) {
-          self.params[param] = self.modelParams[param] = self.modelParamsStrict[param] = res.get('_uri');
-          self.calcBelongsFunction();
-          self.trigger('queryChanged');
-        });
-      });
-    },
-    
     clone: function() {
       return new ResourceList(this.models.slice(), _.extend(_.pick(this, ['model', 'rUri', 'title', 'total'].concat(listParams)), {cache: false, params: _.clone(this.params)}));
     },
@@ -273,10 +265,8 @@ define('collections/ResourceList', [
 
     onResourceChange: function(resource, options) {
       var removed;
-      if (!this.belongsInCollection(resource)) {
-        this.remove(resource);
-        removed = true;
-      }
+      if (!this.belongsInCollection(resource))
+        removed = this.remove(resource);
       
       options = options || {};
       if (!removed && !options.partOfUpdate)
@@ -352,20 +342,10 @@ define('collections/ResourceList', [
         var resource = models[i],
             uri = resource.getUri();
         
-        if (U.isTempUri(uri)) {
-//          Events.once('synced:' + uri, this.onSyncedResource.bind(this, resource));
-          this.listenToOnce(resource, 'syncedWithServer', this.onSyncedResource);
-        }
-        
         if (setInitialParams) {
           // we may be end up requesting models with $select=..., or $omit=..., so we should set the provided ones right now, in case they're omitted from the fetch response
           resource.set(params, {silent: true});
         }
-
-        this.stopListening(resource, 'change', this.onResourceChange);
-        this.listenTo(resource, 'change', this.onResourceChange);
-        this.stopListening(resource, 'delete', this.onResourceDelete);
-        this.listenTo(resource, 'delete', this.onResourceDelete);
       }
 
       if (multiAdd && !this.resetting) {
@@ -393,7 +373,7 @@ define('collections/ResourceList', [
     
     getNextPage: function(options) {
       var params = options.params,
-          offset = params && params.$offset || this.length;
+          offset = params && _.has(params, '$offset') ? params.$offset : this.length;
       
       this.setOffset(offset);
       return this.pager(options);
@@ -427,7 +407,7 @@ define('collections/ResourceList', [
       params = params ? _.clone(params) : {};
       params.$minify = params.$mobile = 'y';
       for (var p in this.params) {
-        if (p == '_uri' || !U.isMetaParameter(p) || U.isApiMetaParameter(p)) {
+        if (p == '_uri' || !U.isMetaParameter(p) || (U.isApiMetaParameter(p) && p != '$offset' && p != '$limit')) {
           params[p] = this.params[p];
         }
       }
@@ -473,7 +453,7 @@ define('collections/ResourceList', [
           if (/^[a-zA-Z_]+/.test(name)) {
             prop = meta[name];
             if (prop && val !== undefined) {
-              if (U.isResourceProp(prop) && !/^http|sql/.test(val)) { // ignore non-uri values for resource-ranged props
+              if ((U.isResourceProp(prop) || U.isTypeProp(prop)) && !/^http|sql/.test(val)) { // ignore non-uri values for resource-ranged props
                 continue;
               }
               else if (prop.range != 'string' && /^<>!/.test(val)) { // ignore inequalities
@@ -481,11 +461,6 @@ define('collections/ResourceList', [
               }
             }
             
-            if (U.isTempUri(val)) {
-              this._tempParams = this._tempParams || {};
-              this._tempParams[name] = val;
-            }
-              
             strict[name] = val;
           }
         }
@@ -496,34 +471,7 @@ define('collections/ResourceList', [
       this.modelParamsStrict = strict;
       this.url = this.baseUrl + (_.size(this.params) ? "?" + _.param(this.params) : ''); //this.getUrl();
       this.query = U.getQueryString(modelParams, true); // sort params in alphabetical order for easier lookup
-//      if (_.size(this._tempParams))
-//        this._watchTempParams();
     },
-    
-//    _watchTempParams: function() {
-//      var self = this,
-//          temps = this._tempParams,
-//          tempUris = _.unique(_.values(temps));
-//
-//      _.each(tempUris, function(tempUri) {
-//        Events.once('synced:' + tempUri, function(res) {
-//          var updated = false;
-//          for (var p in temps) {
-//            if (temps[p] == tempUri) {
-//              temps[p] = res.getUri();
-//              updated = true;
-//            }
-//          }
-//          
-//          if (updated) {
-//            _.extend(self.params, temps);
-//            _.extend(self.modelParams, temps);
-//            _.extend(self.modelParamsStrict, temps);
-//            self.belongsInCollection = U.buildValueTester(self.params, self.vocModel) || G.trueFn;
-//          }
-//        });
-//      }); 
-//    },
     
     isAll: function(interfaceNames) {
       return U.isAll(this.vocModel, interfaceNames);
@@ -586,7 +534,7 @@ define('collections/ResourceList', [
     },
     
     isOutOfResources: function() {
-      return this._outOfData;
+      return this._outOfData || this.range[1] >= this.total;
     },
     
     reset: function(models, options) {
@@ -634,15 +582,19 @@ define('collections/ResourceList', [
         
         this._lastFetchedOn = null;
       }
+      
+      this.setupSearch();
     },
     
     remove: function() {
       var l = this.models.length;
-      var result = Backbone.Collection.prototype.remove.apply(this, arguments);
-      if (this.models.length < l)
+      Backbone.Collection.prototype.remove.apply(this, arguments);
+      if (this.models.length < l) {
         this.trigger('removed');
+        return true;
+      }
       
-      return result;
+      return false;
     },
     
     fetch: function(options) {
@@ -681,7 +633,7 @@ define('collections/ResourceList', [
         }
       }
 
-      if (this.offset)
+      if (!_.has(extraParams, '$offset') && this.offset)
         params.$offset = this.offset;
       
       this.rUri = options.rUri;

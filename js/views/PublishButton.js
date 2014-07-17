@@ -5,9 +5,8 @@ define('views/PublishButton', [
   'utils',
   'events',
   'vocManager',
-  'views/BasicView',
-  'cache'
-], function(G, _, U, Events, Voc, BasicView, C) {
+  'views/BasicView'
+], function(G, _, U, Events, Voc, BasicView) {
   var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'installApp']; //, 'resetTemplate'];
   return BasicView.extend({
     template: 'publishBtnTemplate',

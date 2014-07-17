@@ -7,7 +7,7 @@
  *  
  * directives. However, there are also a million special cases. Until they are standardized, there's the hackery below. 
  */
-define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocManager', 'collections/ResourceList', '@widgets'], function(G, _, U, C, Events, Voc, ResourceList, $m) {
+define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 'collections/ResourceList', '@widgets'], function(G, _, U, Events, Voc, ResourceList, $m) {
   var redirecter,
       interfaceImplementorType = 'system/designer/InterfaceImplementor',
       connectionType = G.commonTypes.Connection,
@@ -388,7 +388,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
             pName = parts[0],
             prop = meta[pName],
             range = U.getLongUri1(prop.range),
-            rangeCl = C.getModel(range);
+            rangeCl = U.getModel(range);
         
         if (rangeCl) {
           info.params[pName] = res.get(pName);
@@ -708,7 +708,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
 
     if (range != 'Class') {
       range = U.getLongUri1(range);
-      var prModel = C.getModel(range);
+      var prModel = U.getModel(range);
       var isImage = prModel  &&  U.isAssignableFrom(prModel, "Image");
       if (!isImage  &&  !prModel) {
         var idx = range.indexOf('model/portal/Image');
@@ -901,7 +901,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
     else {
       var forRes = U.getCurrentUrlInfo().params.$forResource;
       if (forRes)
-        return C.getResource(forRes);
+        return U.getResource(forRes);
     }
   };
 
@@ -1114,7 +1114,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'cache', 'events', 'vocM
             }),
             title = CHOOSE_VALUES_FOR;
       
-        var tradleFeed = C.getResource(tfParams.tradleFeed);
+        var tradleFeed = U.getResource(tfParams.tradleFeed);
         if (tradleFeed)
           title += ' ' + U.getDisplayName(tradleFeed);
         

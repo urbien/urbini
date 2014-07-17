@@ -8,10 +8,9 @@ define('vocManager', [
   'collections/ResourceList',
   'modelLoader',
 //  'plugManager',
-  'cache',
 //  'apiAdapter',
   'lib/fastdom'
-], function(G, U, Errors, Events, Resource, ResourceList, ModelLoader, /*PlugManager,*/ C, /*API,*/ Q) {
+], function(G, U, Errors, Events, Resource, ResourceList, ModelLoader, /*PlugManager, C, API,*/ Q) {
   Backbone.Model.prototype._super = function(funcName){
     return this.constructor.__super__[funcName].apply(this, _.rest(arguments));
   };
@@ -138,7 +137,7 @@ define('vocManager', [
           if (idx0 == -1) // could be S3 Image uri
             continue;
           var type = 'http://' + uri.substring(idx0 + G.sqlUri.length + 2, idx);
-          if (!_.contains(modelsToFetch, type)  &&  !C.getModel(type))
+          if (!_.contains(modelsToFetch, type)  &&  !U.getModel(type))
             modelsToFetch.push(type);
         }  
       }  

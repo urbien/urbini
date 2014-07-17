@@ -7,9 +7,8 @@ define('modelLoader', [
   'collections/ResourceList', 
 //  'apiAdapter', 
   'indexedDB',
-  'lib/fastdom',
-  'cache'
-], function(G, _, Events, U, Resource, ResourceList, /*API,*/ IndexedDBModule, Q, C) {
+  'lib/fastdom'
+], function(G, _, Events, U, Resource, ResourceList, /*API,*/ IndexedDBModule, Q) {
   var MODEL_CACHE = [],
       MODEL_PREFIX = 'model:',
       ENUMERATIONS_KEY = 'enumerations',
@@ -156,7 +155,19 @@ define('modelLoader', [
   }
 
   function gotModel(model) {
-    var promiseInfo = MODEL_PROMISES[model.type];
+    function found(cb) {
+      cb(model);
+    };
+    
+    var promiseInfo = MODEL_PROMISES[model.type],
+        prefix = model.alwaysInlined ? 'getInlineResourceModel:' : 
+                   model.enumeration ? 'getEnumModel:' : 'getModel:';
+    
+    Events.off(prefix + model.type);
+    Events.off(prefix + model.shortName);
+    Events.on(prefix + model.type, found);
+    Events.on(prefix + model.shortName, found);
+    
     if (!promiseInfo) {
       makeModelPromise(model.type);
       return gotModel(model);
@@ -302,8 +313,7 @@ define('modelLoader', [
       return modelRequestCollector.execute(options);
     else
       return modelRequestCollector.getModels(models, options);
-  }
-
+  };
 
   function _getModels(models, options) {
     options = options || {};
@@ -738,7 +748,7 @@ define('modelLoader', [
 //      G.localStorage.putAsync(getModelStorageURL(type), JSON.stringify(modelJson));
 //      _.pushUniq(G.storedModelTypes, type);
 //    }, 100);
-  }
+  };
 
   modelRequestCollector = new ModelRequestCollector();
   var ModelLoader = {
