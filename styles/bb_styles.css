@@ -1,7 +1,7 @@
 html {
   font-size: 10px;
 }
-#headerUl > li > a {
+.headerUl > li > a {
   line-height: inherit;
 }
 
@@ -48,7 +48,7 @@ html {
   color: #606060;
 }
 /*
-#headerDiv {
+.headerDiv {
   line-height: 32px; 
 }
 */
@@ -64,15 +64,15 @@ html {
   padding: 6px 0 3px 0;
 }
 
-#headerUl  {
+.headerUl  {
   display:block;
   max-width:100%;
   list-style:none;
   padding:0;
 }
 
-#headerUl s { color: #757575 }
-#headerUl li {
+.headerUl s { color: #757575 }
+.headerUl li {
   font-size:28px;
   float:left;
   text-align:center;
@@ -81,11 +81,11 @@ html {
   height:100%;
 }
 
-#headerUl li i {
+.headerUl li i {
   font-size:2.8rem; 
 }
 
-#headerUl li:last-child {
+.headerUl li:last-child {
   border-right: none;
 }
 
@@ -118,7 +118,7 @@ button {
   font-weight: bold;
 }
 
-#headerButtons a[role="button"] {
+.headerButtons a[role="button"] {
   width: auto;
   height: 2.3rem;
   background: #fafafa url(buttons/images/ui/default.png) repeat-x left bottom / auto 100%;
@@ -237,7 +237,7 @@ section[data-type="sidebar"] >  ul > header {
   margin-left:15px;
 }
 
-section[data-type="sidebar"]:after, #header section[role="region"] > header:first-child:after {
+section[data-type="sidebar"]:after, .header section[role="region"] > header:first-child:after {
   background: none;
 }
 #sidebar div {
@@ -503,7 +503,7 @@ section#login_popup {
   text-decoration:underline;
   color: #7aaac3;
 }
-#headerButtons button {
+.headerButtons button {
   font-weight: normal;
 }
 

@@ -389,7 +389,7 @@ define('views/ListPage', [
       var self = this,
           tmpl_data = this.getBaseTemplateData(),
           views = {
-            '#headerDiv': this.header
+            '.headerDiv': this.header
           },
           filter;
       

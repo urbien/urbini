@@ -447,7 +447,7 @@ define('views/ChatPage', [
 //      }, 3000, true));
       
       this.assign({
-        '#headerDiv' : this.header
+        '.headerDiv' : this.header
       });
 
 //      this.$ringtone          = this.$('div#ringtoneHolder');
@@ -500,7 +500,7 @@ define('views/ChatPage', [
         this.startChat();
       }
       
-      this.$('#header').$css({
+      this.$('.header').$css({
         'z-index': 1000,
         'opacity': 0.7
       });

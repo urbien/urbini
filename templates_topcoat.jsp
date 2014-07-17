@@ -9,7 +9,7 @@
   <section id="{{= viewId }}" data-type="sidebar" data-position="right" style="position:absolute;visibility:hidden;z-index:10001"></section>
   <section id="{{= viewId + 'r' }}" data-type="sidebar" data-position="right" style="position:absolute;visibility:hidden;z-index:10001"></section> 
   <!-- div id="headerMessageBar"></div -->
-  <div id="headerDiv"></div>
+  <div class="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" role="main">
   <!--
@@ -53,8 +53,8 @@
   <section id="{{= viewId }}" data-type="sidebar" style="position:absolute;visibility:hidden;z-index:10001"></section>
   <section id="{{= viewId + 'r' }}" data-type="sidebar" data-position="right" style="position:absolute;visibility:hidden;z-index:10001"></section> 
 
-  <!-- div id="headerMessageBar"></div -->
-  <div id="headerDiv"></div>
+  <!-- div class="headerMessageBar"></div -->
+  <div class="headerDiv"></div>
   <div id="resourceViewHolder">
     <div style="width: 100%;position:relative;min-height:40px;overflow:hidden">
       {{ if (this.isImageCover) { }} 
@@ -414,9 +414,9 @@
 <script type="text/template" id="headerTemplate">
   <!-- the page header, including buttons and the page title, used for all pages except the home page -->
   <div id="callInProgress"></div>
-  <div id="header" {{= obj.style ? style : '' }} {{= obj.more || '' }} >
+  <div class="header" {{= obj.style ? style : '' }} {{= obj.more || '' }} >
     <section class="component">
-      <ul  id="headerUl" class="topcoat-button-bar" style="width:100%">
+      <ul class="headerUl topcoat-button-bar" style="width:100%">
       </ul>
     </section>
   </div>
@@ -429,7 +429,7 @@
     <div id="name" class="resTitle" style="background:{{= G.darkColor }}; {{= this.categories ? 'width: 100%;' :  'min-height: 20px;' }}" align="center">
       <h4 id="pageTitle" style="font-weight:normal;color:{{= G.coverImage ? G.coverImage.color : '#eeeeee;'}}">{{= this.title }}</h4>
       {{= this.filter ? "<div class='filter'></div>" : "" }}
-      <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
+      <div align="center" class="headerButtons {{= obj.className || '' }}">
         <button style="max-width:200px; display: inline-block;{{= G.coverImage ? 'background-color:' + G.coverImage.color + ';color:' + G.coverImage.background : ''}}" id="doTryBtn" class="topcoat-button--cta">
           {{ if (obj.tryApp) { }}
               {{= tryApp }}
@@ -586,8 +586,8 @@
 <!-- the edit page for any particular resource -->
   <section id="{{= viewId }}" data-type="sidebar" style="position:absolute;visibility:hidden;z-index:10001"></section>
   <section id="{{= viewId + 'r' }}" data-type="sidebar" style="position:absolute;visibility:hidden;z-index:10001"></section> 
-<!--div id="headerMessageBar"></div-->
-  <div id="headerDiv"></div>
+<!--div class="headerMessageBar"></div-->
+  <div class="headerDiv"></div>
   <div id="resourceEditView">
   <!-- div id="resourceImage"></div -->
   <form data-ajax="false" id="{{= viewId + '_editForm'}}" action="#">

@@ -227,8 +227,8 @@
 <script type="text/template" id="headerTemplate">
   <!-- the page header, including buttons and the page title, used for all pages except the home page -->
   <div id="callInProgress"></div>
-  <div id="header" {{= obj.style ? style : 'style="background:' + G.lightColor + ';color:' + G.darkColor + '"' }} {{= obj.more || '' }} >
-    <nav  id="headerUl" class="navbar navbar-default" role="navigation">
+  <div class="header" {{= obj.style ? style : 'style="background:' + G.lightColor + ';color:' + G.darkColor + '"' }} {{= obj.more || '' }} >
+    <nav  class="headerUl navbar navbar-default" role="navigation">
     </nav>      
   </div>
   <div id="buttons" style="white-space: nowrap; position:relative; height: 48px; background:{{= G.darkColor }};color:{{= G.lightColor }}">

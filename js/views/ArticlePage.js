@@ -53,7 +53,7 @@ define('views/ArticlePage', [
         this.addChild(this.backBtn);
         this.addChild(this.menuBtn);        
         this.body = this.$('.section')[0];
-        this.btns = this.$('#headerUl')[0];
+        this.btns = this.$('.headerUl')[0];
         
         if (options.theme == 'dark') {
           //this.el.style.backgroundColor = '#2e3b4e';

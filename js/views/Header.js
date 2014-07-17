@@ -809,9 +809,9 @@ define('views/Header', [
         self.renderHelper.apply(self, args);
         self.finish();
         if (G.isBootstrap())
-          self.$('#headerUl div').$attr('class', 'navbar-header');
+          self.$('.headerUl div').$attr('class', 'navbar-header');
         if (G.coverImage) 
-          self.$('#headerUl a').$forEach(function(elm) {
+          self.$('.headerUl a').$forEach(function(elm) {
             elm.style.color = G.coverImage.background;
           });
       };
@@ -1262,7 +1262,7 @@ define('views/Header', [
         paintedBtns[i].$css('width', btnWidth + '%');
       }
       
-      this.$('#headerUl')[0].$html(frag);
+      this.$('.headerUl')[0].$html(frag);
       
 //      this.renderError();
       this.renderSpecialButtons();
@@ -1271,7 +1271,7 @@ define('views/Header', [
 //      if (G.isJQM())
 //        this.$el.trigger('create');
       if (this.isEdit  ||  this.isChat  ||  this.noButtons) {
-        this.$('#headerButtons').$addClass('hidden');
+        this.$('.headerButtons').$addClass('hidden');
       }
 //      if (isJQM) {
 //        if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges) {

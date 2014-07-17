@@ -141,7 +141,7 @@ define('views/EditPage', [
       this.el.$html(this.template(this.settings));
       var views = {
         '#resourceEditView': this.editView,
-        '#headerDiv'       : this.header
+        '.headerDiv'       : this.header
       };
       
 //      if (this.imageView)

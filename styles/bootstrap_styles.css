@@ -17,17 +17,17 @@ li {
 #sidebar .masonry-brick {
   cursor: pointer;
 }
-#headerUl div {
+.headerUl div {
   text-align:center;
   font-size:30px;
   cursor: pointer;
   float: left;
 }
-#headerDiv .navbar {
+.headerDiv .navbar {
   min-height: 0;
   margin-bottom: 0;
 }
-#headerButtons {
+.headerButtons {
   padding-bottom: 3px;
 }
 #_prim {

@@ -341,7 +341,7 @@ define('views/ViewPage', [
 //      this.headerButtons.aroundMe = isGeo;
       
       
-      this.assign('#headerDiv', this.header, _.extend({buttons: this.headerButtons}, options));
+      this.assign('.headerDiv', this.header, _.extend({buttons: this.headerButtons}, options));
       this.assign(views);
       this.imgReady.done(function() {
         self.assign(self.imgDiv, self.imageView, options);

@@ -20,20 +20,20 @@ li {
   position: relative;
 }
 
-#headerUl button {
+.headerUl button {
   cursor: pointer;
 }
-#headerUl .topcoat-button-bar__button--large {
+.headerUl .topcoat-button-bar__button--large {
   border-radius: 0;
 }
-#headerUl .topcoat-button-bar__button {
+.headerUl .topcoat-button-bar__button {
   border-radius: 0;
   font-size: 2.8rem;
   padding:2px;
   width: 100%;
 }
 
-#headerButtons {
+.headerButtons {
   padding-bottom: 7px;
 }
 #menuItems li, #rightMenuItems li {
@@ -155,7 +155,7 @@ a {
   background-color: #ccc;
   color: #2d2d2d;
 }
-#headerDiv .topcoat-button-bar__button  .topcoat-notification {
+.headerDiv .topcoat-button-bar__button  .topcoat-notification {
   font-size:10px;
   border-radius:10px;
 }
@@ -171,7 +171,7 @@ a {
   margin-left:15px;
 }
 */
-#headerDiv .topcoat-notification {
+.headerDiv .topcoat-notification {
   margin-left:-4.5rem;
   top:1.2rem;
   font-size:1.6rem;

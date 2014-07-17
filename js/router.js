@@ -1525,7 +1525,7 @@ define('router', [
 ////              glued: error === params['-gluedError']
 ////            }
 ////          });
-//          var errorBar = $.mobile.activePage.find('#headerMessageBar');
+//          var errorBar = $.mobile.activePage.find('.headerMessageBar');
 //          errorBar.html("");
 //          errorBar.html(U.template('headerErrorBar')({error: error, info: info, style: "text-color:#FFFC40;"}));
 //
@@ -1884,13 +1884,13 @@ define('router', [
       
       var activePage = document.querySelector('div.ui-page-active');
       if (activePage) {
-        var headerUl = activePage.$('#headerUl')[0];
+        var headerUl = activePage.$('.headerUl')[0];
         if (headerUl) {
           headerUl.$('.ui-btn-active').$removeClass('ui-btn-active');
         }
       }
       
-//        $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
+//        $('div.ui-page-active .headerUl .ui-btn-active').removeClass('ui-btn-active');
         
 //        if (G.isJQM()) 
       
@@ -2104,7 +2104,7 @@ define('router', [
 //      }
 //
 //      // back button: remove highlighting after active page was changed
-//      $('div.ui-page-active #headerUl .ui-btn-active').removeClass('ui-btn-active');
+//      $('div.ui-page-active .headerUl .ui-btn-active').removeClass('ui-btn-active');
 //      
 //      if (!activated)
 //        view.trigger('active', true);

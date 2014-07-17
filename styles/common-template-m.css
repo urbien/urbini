@@ -413,10 +413,10 @@ div.nabBtn {
   text-shadow: none;
 }
 
-.ui-bar-c #headerButtons  {
+.ui-bar-c .headerButtons  {
   background: #cccccc;
 }
-.ui-bar-e #headerButtons  {
+.ui-bar-e .headerButtons  {
   background: #fff9d7;
 }
 .ui-btn-up-e {
@@ -667,7 +667,7 @@ section[id^="view"] {
   width:100%;
 }
 
-#headerDiv, .headerDiv {
+.headerDiv {
   z-index:10001;
   position: relative;
   opacity: 0.8;
@@ -905,7 +905,7 @@ section[id^="view"] {
   }  
 }
 
-#headerUl {
+.headerUl {
   margin: 0;
 }
 

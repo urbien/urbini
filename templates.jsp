@@ -8,8 +8,8 @@
   <!-- Resource list page -->
   <section id="{{= viewId }}" data-type="sidebar"></section>
   <section id="{{= viewId + 'r' }}" data-type="sidebar"></section> 
-  <!-- div id="headerMessageBar"></div -->
-  <div id="headerDiv"></div>
+  <!-- div class="headerMessageBar"></div -->
+  <div class="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
   <div id="sidebarDiv" role="main">
   <!--
@@ -57,8 +57,8 @@
 <section id="{{= viewId }}" data-type="sidebar"></section>
 <section id="{{= viewId + 'r' }}" data-type="sidebar"></section> 
 
-<!-- div id="headerMessageBar"></div -->
-<div id="headerDiv"></div>
+<!-- div class="headerMessageBar"></div -->
+<div class="headerDiv"></div>
 <div id="resourceViewHolder">
   <div style="width: 100%;position:relative;padding-right:10px;overflow:hidden;margin-left:0;" class="container_16">
 
@@ -437,8 +437,8 @@
 <script type="text/template" id="articlePageTemplate">
   <section class="menuLeft" data-type="sidebar"></section>
   <section class="menuRight" data-type="sidebar"></section> 
-  <div id="headerDiv">
-    <ul id="headerUl">
+  <div class="headerDiv" style="padding-top: 10px;">
+    <ul class="headerUl">
     </ul>
   </div>
   <div class="section"></div>
@@ -887,12 +887,12 @@
   <!-- Chat page -->
   <div id="{{= viewId }}" data-role="panel" data-display="overlay" style="z-index: 3000;" data-theme="a" data-position="right"></div> 
   <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" style="z-index: 3001;" data-theme="a" data-position="right"></div> 
-  <div id="headerDiv"></div>
+  <div class="headerDiv"></div>
   <div id="videoChat" class="videoChat">
     <div id="localMedia"></div>
     <div id="remoteMedia"></div>
   </div>    
-  <!--div id="headerMessageBar" style="opacity:0.7"></div-->
+  <!--div class="headerMessageBar" style="opacity:0.7"></div-->
   <!--div id="localVideoMonitor" style="z-index:100;width:100%;height:100%;left:0;top:0;position:fixed;">
   </div-->
   <div id="ringtoneHolder" style="visibility: hidden; display: none;">
@@ -1021,7 +1021,7 @@
 <!-- View where the user can connect various social networks -->  
   <div id="{{= this.cid }}" data-role="panel" data-display="overlay" data-theme="a" data-position="right"></div>
   <div id="{{= this.cid + 'r' }}" data-role="panel" data-display="overlay" data-theme="a" data-position="right"></div> 
-  <div id="headerDiv"></div>
+  <div class="headerDiv"></div>
   <div id="socialButtons" style="min-width:200px; margin: 0 auto;"></div>
 </script>  
 
@@ -1808,11 +1808,11 @@
 <script type="text/template" id="headerTemplate">
 <!-- the page header, including buttons and the page title, used for all pages except the home page -->
 <div id="callInProgress"></div>
-<div id="header" {{= obj.style ? style : 'style="background:#efefef;color:' + G.darkColor + '"' }} {{= obj.more || '' }} >
+<div class="header" {{= obj.style ? style : 'style="background:#efefef;color:' + G.darkColor + '"' }} {{= obj.more || '' }} >
   <div class="hdr">
   <section role="region">
     <header style="background: none;height:inherit;">
-    <ul id="headerUl" style="position:relative;">
+    <ul class="headerUl" style="position:relative;">
     </ul>
     </header>
   </section>
@@ -1839,7 +1839,7 @@
   <div id="name" class="cf vcenteredR resTitle" style="z-index:0; width:60%;float:left;background:inherit;" align="center">
     <h4 id="pageTitle" style="text-overflow: ellipsis; font-weight:normal;color:{{= G.lightColor }};">{{= this.title }}</h4>
     {{= this.filter ? "<div class='filter'></div>" : "" }}
-    <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
+    <div align="center" class="headerButtons {{= obj.className || '' }}">
       <button style="max-width:200px; display: inline-block;" id="doTryBtn">
         {{ if (obj.tryApp) { }}
             {{= tryApp }}
@@ -1974,8 +1974,8 @@
 
 <script type="text/template" id="headerErrorBar">
   <div style="{{= obj.style || '' }}">
-  {{= obj.info ? '<h3 id="headerInfo"><i class="ui-icon-' + (obj.icon || 'warning-sign') + '"></i> ' + info + '</h3>' : '' }}
-  {{= obj.error ? '<h3 id="headerError">' + (obj.withIcon ? '<i class="ui-icon-ban-circle"></i>' : '') + error + '</h3>' : ''}}
+  {{= obj.info ? '<h3 class="headerInfo"><i class="ui-icon-' + (obj.icon || 'warning-sign') + '"></i> ' + info + '</h3>' : '' }}
+  {{= obj.error ? '<h3 class="headerError">' + (obj.withIcon ? '<i class="ui-icon-ban-circle"></i>' : '') + error + '</h3>' : ''}}
   </div>
 </script>
 
@@ -2307,8 +2307,8 @@
 <!-- the edit page for any particular resource -->
   <section id="{{= viewId }}" data-type="sidebar"></section>
   <section id="{{= viewId + 'r' }}" data-type="sidebar"></section> 
-<!--div id="headerMessageBar"></div-->
-  <div id="headerDiv"></div>
+<!--div class="headerMessageBar"></div-->
+  <div class="headerDiv"></div>
   <div id="resourceEditView">
   <!-- div id="resourceImage"></div -->
   <form data-ajax="false" id="{{= viewId + '_editForm'}}" action="#">

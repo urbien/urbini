@@ -618,7 +618,7 @@ body > .section:not([data-role="page"]) {
     margin-bottom: 60px;
   }
   
-  .title-block {
+  #homePage .title-block {
     margin-top: 50px;
   }
 }

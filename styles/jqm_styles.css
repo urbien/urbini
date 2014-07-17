@@ -317,7 +317,7 @@
 }
 /* navbar no text - icons only */ 
 .navbarUl .ui-btn-inner { font-size: 0px; }
-/* #headerUl .ui-btn { padding: 3px 0px; } */
+/* .headerUl .ui-btn { padding: 3px 0px; } */
 #sell .ui-btn-inner { border: none; }
 
 #mainGroup .ui-btn-inner { padding: 1.3em 10px; font-size: 14px;}
@@ -389,19 +389,19 @@
   padding: .7em 0px 0 0px;
 }
 /*
-#headerDiv .ui-bar-a  {
+.headerDiv .ui-bar-a  {
   background: #555;
   border-top: 1px solid #777;
 }
 */
-.ui-bar-a #headerButtons  {
+.ui-bar-a .headerButtons  {
   background: #777;
 }
-#headerDiv .ui-bar-c {
+.headerDiv .ui-bar-c {
   background: #ddd;
   border-top: 1px solid #777;
 }
-#headerDiv .ui-bar-c h4 {
+.headerDiv .ui-bar-c h4 {
   color: #757575;
 }
 #doTry .ui-btn-text {
