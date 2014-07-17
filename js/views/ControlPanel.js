@@ -28,7 +28,7 @@ define('views/ControlPanel', [
     tagName: "tr",
     autoFinish: false,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'refresh', 'add', 'update', 'insertInlineScroller', 'removeInlineScroller', 'toggleInlineScroller', 'doRenderFT', 'paintOverlay', 'showOverlay', 'hideOverlays'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'refresh', 'add', 'showOther', 'update', 'insertInlineScroller', 'removeInlineScroller', 'toggleInlineScroller', 'doRenderFT', 'paintOverlay', 'showOverlay', 'hideOverlays'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
@@ -55,6 +55,7 @@ define('views/ControlPanel', [
 //      'click a[data-shortName]': 'click',
       'click [data-cancel]': 'cancel',
       'click #mainGroup a[data-shortName]': 'add',
+      'click [data-display="collapsed"]': 'showOther',
       'click .add': 'add',
       'click [data-backlink]': 'clickInlined',
       'swipeleft [data-backlink]': 'onswipeleft',
@@ -397,6 +398,27 @@ define('views/ControlPanel', [
       var shortName = t.$data('shortname');
       this.addToBacklink(this.vocModel.properties[shortName], t);
     },
+    showOther: function(e) {
+      var t = e.target;
+      var tagName = t.tagName.toLowerCase();
+      if (tagName == 'a')
+        return;
+      if (tagName == 'i') {
+        var cl = t.getAttribute('class');
+        if (cl  &&  cl == 'ui-icon-plus')
+          return;
+      }
+//      var wl = G.currentApp.widgetLibrary
+//      if (wl  &&  wl != 'Jquery Mobile') {
+      Events.stopEvent(e);
+      
+      while (t.parentNode  &&  t.parentNode.tagName.toLowerCase() != 'ul')
+        t = t.parentNode; 
+      t.parentNode.$('ul').$toggleClass('hidden');
+      this.getPageView().invalidateSize();        
+      return;
+//      }
+    },
     
     addToBacklink: function(prop, t) {
       var self = this,       
@@ -508,13 +530,38 @@ define('views/ControlPanel', [
       if (!list.length  &&  isTrade  &&  this.resource.inlineLists['tradleRules'].length == 0)
         return;
 
+      
+      var gr, isBB = G.isBB(), isTopcoat = G.isTopcoat(), prop = meta[name], isBootstrap = G.isBootstrap();
+      
+      var displayCollapsed = prop.displayCollapsed;
       if (list.length || canAdd) {
-        U.addToFrag(frag, this.propGroupsDividerTemplate({
-          value: propDisplayName,
-          add: canAdd,
-          shortName: getBacklinkSub(vocModel, name),
-          style: prop.propertyStyle
-        }));
+        if (displayCollapsed  &&  list.length) {
+          if (isBB)
+            gr = '<section id="' + name + '" data-display="collapsed">'; 
+          else if (isTopcoat)
+            gr = '<li id="' + name + '" data-display="collapsed topcoat-list__item" ' +  (G.coverImage ? 'style="text-shadow:none;background:' + G.coverImage.color + ';color: ' + G.coverImage.background + ';"' : '') + '><h3><i class="ui-icon-plus-sign"></i>&#160;' + prop.displayName + '</h3><ul class="topcoat-list__container hidden">';
+          else if (isBootstrap)
+            gr = '<li id="' + name + '" data-display="collapsed"><h3 style="font-size:18px;"><i class="ui-icon-plus-sign"></i>&#160;' + prop.displayName + '</h3><ul class="list-group-container hidden">';
+
+          gr += this.propGroupsDividerTemplate({
+            value: propDisplayName,
+            add: canAdd,
+            shortName: getBacklinkSub(vocModel, name),
+            style: prop.propertyStyle,
+            displayCollapsed: displayCollapsed
+          });
+          if (isBB) 
+            gr += '<ul class="hidden">';
+          
+        }
+        else {
+          U.addToFrag(frag, this.propGroupsDividerTemplate({
+            value: propDisplayName,
+            add: canAdd,
+            shortName: getBacklinkSub(vocModel, name),
+            style: prop.propertyStyle
+          }));
+        }
       }
 
       if (!list.length)
@@ -672,10 +719,20 @@ define('views/ControlPanel', [
         else if (hasImages)
           params.needsAlignment = true;
         
-        U.addToFrag(frag, template.call(this, params));
+        if (displayCollapsed)
+          gr += template.call(this, params);
+        else
+          U.addToFrag(frag, template.call(this, params));
         displayedProps[name] = true;
         this.stopListening(iRes, 'change', this.update);
         this.listenTo(iRes, 'change', this.update);
+      }
+      if (displayCollapsed) {
+        if (isBB)
+          gr += "</ul></section>";
+        else
+          gr += "</ul></li>";
+        U.addToFrag(frag, gr);
       }
     },
     

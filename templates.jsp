@@ -1351,6 +1351,7 @@
 <script type="text/template" id="propGroupsDividerTemplate">
 <!-- row divider / property group header in resource view -->
 <header style="position:relative;{{= obj.style ? obj.style : G.coverImage ? 'color:' + G.coverImage.background + ';' : '' }}" class="{{= obj.class || '' }}">
+{{= obj.displayCollapsed ? '<i class="ui-icon-plus-sign"></i> ': '' }}  
 {{= obj.style ? '<div style="padding:1rem;display:inline-block;">' : '' }}
   {{= value }}
 {{= obj.style ? '</div>' : '' }}
