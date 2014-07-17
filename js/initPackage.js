@@ -1883,7 +1883,7 @@
     },    
     
     encode: function(str) {
-      return encodeURIComponent(str);
+      return encodeURIComponent(str).replace(/\%3a/ig, ':').replace(/\%2f/ig, '/');
     },
     
     decode: function(str) {
@@ -2135,8 +2135,8 @@
   var ArrayProto = Array.prototype,
     slice = ArrayProto.slice,
     root = this,
-    moduleMap = window.moduleMap = {}, 
-    defineMap = window.defineMap = {}, 
+    moduleMap = {}, 
+    defineMap = {}, 
     require,
     domReady = $.Deferred(function(defer) {
       DOMReady.add(defer.resolve);
