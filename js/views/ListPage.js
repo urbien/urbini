@@ -139,12 +139,14 @@ define('views/ListPage', [
         }
         var idx;
         if (!isChooser  &&  !showAddButton  &&  _.size(params)) {
+          var wasContainer;
           for (var p in params) {
             var prop = vocModel.properties[p],
                 val = params[p];
             
             if (!prop  ||  !prop.containerMember) 
               continue;
+            wasContainer = true;
             var type = U.getLongUri1(prop.range);
             var cM = U.getModel(type);
             if (!cM) {
@@ -167,6 +169,8 @@ define('views/ListPage', [
               break;
             }
           }
+          if (!wasContainer  &&  !G.currentUser.guest  &&  U.isAssignableFrom(this.vocModel, 'AccessControl'))
+            showAddButton = true;
         }
       }
       

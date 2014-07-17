@@ -318,7 +318,7 @@
   <div class="cf" style="font-size:1.6rem;font-weight:bold;text-align:center; height: auto; padding:1rem 0; width: 100%">
     <div style="float:left; width:40%; height:100%;">
       {{ if (resource.get('feedImage')) { }}
-        <img style="padding-left:1rem;" src="{{= resource.get('feedImage') }}" />
+        <img style="padding-left:1rem;float:left;af" src="{{= resource.get('feedImage') }}" />
       {{ }                               }}
       <div class="rule1">
         {{= resource.get('indicator.displayName') }}
@@ -376,11 +376,9 @@
   {{ if (!G.currentUser.guest  &&  this.resource.get('owner') == G.currentUser._uri) { }}
     <div class="share" data-url="{{= uri }}"><a style="background:#3777a1;color:#fff;padding:.5rem 2rem .55rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-edit" href="{{= U.makePageUrl('edit', this.resource.getUri(), {$editCols: 'activated,title,description,isPublic'}) }}"></a></div>
   {{ } }}
-  {{ if (this.resource.get('activated')) { }}
-    <div class="share" data-url="{{= uri }}"><i style="background:#3777a1;color:#fff;padding:.5rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-share"></i></div>
-    <div class="clone" data-url="{{= uri }}"><a style="color:#fff;border-radius:.8rem;margin:-.2rem;padding:.5rem 1.5rem;white-space:nowrap;background:#3777a1;font-weight:normal;" href="{{= U.makePageUrl('view', uri + '&$clone=y') }}">Use it</a></div>
-    <div class="embed" data-url="{{= uri }}"><a style="background:#3777a1;color:#fff;padding:.5rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-embed" href="{{= G.serverName }}/widget/embed.html?uri={{= encodeURIComponent(uri) }}"></a></div>
-  {{ } }}
+  <div class="share" data-url="{{= uri }}"><i style="background:#3777a1;color:#fff;padding:.5rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-share"></i></div>
+  <div class="clone" data-url="{{= uri }}"><a style="color:#fff;border-radius:.8rem;margin:-.2rem;padding:.5rem 1.5rem;white-space:nowrap;background:#3777a1;font-weight:normal;" href="{{= U.makePageUrl('view', uri + '&$clone=y') }}">Use it</a></div>
+  <div class="embed" data-url="{{= uri }}"><a style="background:#3777a1;color:#fff;padding:.5rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-embed" href="{{= G.serverName }}/widget/embed.html?uri={{= encodeURIComponent(uri) }}"></a></div>
 </li>
 </script>
 
@@ -1184,10 +1182,10 @@
 
 <script type="text/template" id="stringPT">
   <!-- Left-side slide-out menu panel -->
-  {{ if (obj.value  &&  value.indexOf('<span') == -1) { }}
+  {{ if (obj.value  &&  value.indexOf('<') != 0) { }}
      <div style="white-space: normal;font-size:16px;">{{= value }}</div>
   {{ } }}
-  {{ if (obj.value  &&  value.indexOf('<span') != -1) { }}
+  {{ if (obj.value  &&  value.indexOf('<') == 0) { }}
     {{= value }}
   {{ } }}
 </script>
@@ -1361,6 +1359,7 @@
 <script type="text/template" id="propGroupsDividerTemplate">
 <!-- row divider / property group header in resource view -->
 <header style="position:relative;{{= obj.style ? obj.style : G.coverImage ? 'color:' + G.coverImage.background + ';' : '' }}" class="{{= obj.class || '' }}">
+{{= obj.displayCollapsed ? '<i class="ui-icon-plus-sign"></i> ': '' }}  
 {{= obj.style ? '<div style="padding:1rem;display:inline-block;">' : '' }}
   {{= value }}
 {{= obj.style ? '</div>' : '' }}
@@ -1829,7 +1828,7 @@
 <script type="text/template" id="headerTemplate">
 <!-- the page header, including buttons and the page title, used for all pages except the home page -->
 <div id="callInProgress"></div>
-<div id="header" {{= obj.style ? style : 'style="background:#fff;color:' + G.darkColor + '"' }} {{= obj.more || '' }} >
+<div id="header" {{= obj.style ? style : 'style="background:#efefef;color:' + G.darkColor + '"' }} {{= obj.more || '' }} >
   <div class="hdr">
   <section role="region">
     <header style="background: none;height:inherit;">
@@ -1839,7 +1838,7 @@
   </section>
   </div>
 </div>
-<div id="buttons" style="white-space: nowrap; position:relative; height: 50px; background:#efefef;">
+<div id="buttons" style="white-space: nowrap; position:relative; height: 50px; background:{{= G.darkColor }};color:{{= G.lightColor }}">
   <div class="cf vcenteredR" style="z-index:1; width:20%;float:left;background:inherit;">
     <span class="placeholder"></span>
     {{ if (this.categories) { }}
@@ -1858,7 +1857,7 @@
     {{ }                     }}
   </div>
   <div id="name" class="cf vcenteredR resTitle" style="z-index:0; width:60%;float:left;background:inherit;" align="center">
-    <h4 id="pageTitle" style="text-overflow: ellipsis; font-weight:normal;color:{{= G.darkColor }};">{{= this.title }}</h4>
+    <h4 id="pageTitle" style="text-overflow: ellipsis; font-weight:normal;color:{{= G.lightColor }};">{{= this.title }}</h4>
     {{= this.filter ? "<div class='filter'></div>" : "" }}
     <div align="center" {{= obj.className ? 'class="' + className + '"' : '' }} id="headerButtons">
       <button style="max-width:200px; display: inline-block;" id="doTryBtn">
@@ -1901,7 +1900,7 @@
   </div>
   <div class="cf vcenteredR" style="z-index:1; width:20%;float:left;background:inherit;">
     {{ if (this.filter) { }}
-      <div style="margin-right: 5px; display:inline-block; float: right;"><a class="filterToggle lightText" href="#"><i class="ui-icon-search"></i></a></div> 
+      <div style="margin: 7px 5px 0 0; float: right;"><a class="filterToggle lightText" href="#"><i class="ui-icon-search"></i></a></div> 
     {{ }                  }}
     {{ if (this.hasQuickstart()) { }}    
       <i class="help ui-icon-help"></i>

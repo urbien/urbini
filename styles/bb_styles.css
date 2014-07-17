@@ -61,7 +61,7 @@ html {
 .hdr {
   width:100%;
   height:32px;
-  padding: 6px 0;
+  padding: 6px 0 3px 0;
 }
 
 #headerUl  {
