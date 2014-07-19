@@ -1212,7 +1212,7 @@ section[id^="view"] {
 }
 
 .gauge {
-  width: 100px;
+  max-width: 200px;
   display: inline-block;
   margin-top: -.5rem;
 }
@@ -1397,7 +1397,7 @@ label.subClass {
   padding-bottom:1rem;
 }
 .socialLinks {
-  text-align: center;background: aliceblue; font-weight: bold;min-height:3rem;
+  text-align: center;background: #fff; font-weight: bold;min-height:3rem;
 }
 .socialLinks div {
   display:inline-block;font-size:2rem;padding:1rem .5rem;
