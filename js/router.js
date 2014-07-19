@@ -105,7 +105,7 @@ define('router', [
       "chatLobby/*path"                                        : "chat", 
       "login/*path"                                            : "login", 
       ":type/:backlink"                                        : "list",
-      "*notFound"                                              : function() { U.alert404(); },
+      "*notFound"                                              : function() { U.alert404(); }
     },
 
 //    CollectionViews: {},
