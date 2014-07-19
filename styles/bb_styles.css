@@ -121,12 +121,13 @@ button {
 .headerButtons a[role="button"] {
   width: auto;
   height: 2.3rem;
-  background: #fafafa url(buttons/images/ui/default.png) repeat-x left bottom / auto 100%;
+/*  background: #fafafa url(buttons/images/ui/default.png) repeat-x left bottom / auto 100%; */
   border: 1px solid #a6a6a6;
   font-size: 1rem;
   line-height: 2.3rem;
   border-radius: 0.5rem;
 }
+
 #mainGroup a[role="button"] {
   color: #333333;
   border-radius: 1rem;
