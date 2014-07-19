@@ -1,8 +1,9 @@
 .play {
-  z-index: 10005;
   position: absolute;
-  width: 40px;
+  z-index: 10005;
+/*  width: 40px;
   height: 40px;
+
   opacity: 1;
   -webkit-transition: opacity .5s ease;
      -moz-transition: opacity .5s ease;
@@ -11,6 +12,7 @@
 
   pointer-events: none;
   background: transparent;
+*/
 }
 
 .play .glow {
@@ -130,7 +132,7 @@
 .hint--left .content {
   right: 100%;
   bottom: 50%;
-  margin-bottom: -23px;
+  margin-bottom: -43px;
   margin-right: 8px;
 }
 
@@ -141,8 +143,8 @@
 .hint--right .content {
   left: 100%;
   bottom: 50%;
-  margin-bottom: -23px;
-  margin-left: 8px;
+  margin-bottom: -43px;
+  margin-left: 48px;
 }
 
 .hint--right .content:after {
@@ -162,7 +164,7 @@
 }
 
 .hint--bottom .content {
-  margin-top: 8px;
+  margin-top: 48px; /*8*/
   top: 100%;
 }
 
@@ -174,10 +176,10 @@
 }
 
 .hint--bottom-left .content {
-  margin-top: 8px;
+  margin-top: 48px; /*8*/
   top: 100%;
   right: 100%;
-  margin-right: -34px;
+  margin-right: -74px; /*-34px;*/
 }
 
 .hint--bottom-left .content:after {

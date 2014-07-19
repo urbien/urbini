@@ -109,6 +109,7 @@
       "views/MainMenuPanel.js",
       "views/ContextMenuPanel.js",
       "views/ModalDialog.js",
+      "views/PaymentPage.js",
       "lib/crossfilter/crossfilter.js",
       "lib/dc/dc.js",
       "lib/dc/dc.css",

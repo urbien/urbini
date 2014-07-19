@@ -580,7 +580,7 @@
             </li>  
           </ul>
           <div class="section-footer">
-            <a class="cta buy" data-buyitem="basic" href="#">Buy Now</a>
+            <a class="cta buy" data-buyitem="basic" href="pay/?$amount=$19">Buy Now</a>
           </div>
         </div>
         <div class="col span_1_of_3 pricing-3">
@@ -613,7 +613,7 @@
             </li>  
           </ul>
           <div class="section-footer">
-            <a class="cta buy" data-buyitem="pro" href="#">Buy Now</a>
+            <a class="cta buy" data-buyitem="pro" href="pay/?$amount=$99">Buy Now</a>
           </div>
         </div>
       </div>
@@ -665,7 +665,7 @@
             </li>  
           </ul>
           <div class="section-footer">
-            <a class="cta buy1" href="#">Get Now</a>
+            <a class="cta buy1" href="pay/?$amount=$1,000">Buy Now</a>
           </div>
         </div>
         <div class="col span_1_of_3 pricing-2">
@@ -698,7 +698,7 @@
             </li>  
           </ul>
           <div class="section-footer">
-            <a class="cta buy2" href="#">Buy Now</a>
+            <a class="cta buy2" href="pay/?$amount=$10,000">Buy Now</a>
           </div>
         </div>
         <div class="col span_1_of_3 pricing-3">
@@ -1597,6 +1597,35 @@
 <script type="text/template" id="loginButtonTemplate">
 <!-- button that summons the login popup -->
 <a target="#"><i class="ui-icon-signin"></i></a>
+</script>
+
+<script type="text/template" id="paymentOptionsTemplate">
+  <div class="section">
+    <div class="section-content" style="margin:0 auto; padding-left:20px;padding-right:20px;">
+      <div class="title-block">
+        <h1 class="section-title">Payment Options</h1>
+        {{ if (obj.amount) { }}
+          <h2 style="padding:20px;color:#31B131;">Amount: {{= amount }}</h2>
+        {{ }                 }}
+      </div>
+      <div class="group" style="text-align:center;">
+        <div class="col span_1_of_1" style="width:100%;">
+          <span>
+            Currently we accept bitcoin donations here:
+          </span>
+          <div>
+            PUT BITCOIN QR CODE HERE
+            <input type="text" style="width:300px;" onfocus="Lablz.U.selectInputText(arguments[0]);" value="{{= '12vyT3q8UAADihwh8y214AEee79ZYXiMUH' }}" readonly="readonly" />
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="section-footer">
+      <span style="font-size:16px">
+        We will soon be accepting payment via PayPal, Amazon, and debit/credit card
+      </span>
+    </div>
+  </div>
 </script>
 
 <script type="text/template" id="blockchainInfoButtonTemplate">

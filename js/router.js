@@ -89,7 +89,7 @@ define('router', [
 //      "install/*path"                                          : "install",
       "social/*path"                                           : "social",
       "static/*path"                                           : "static",
-      "buy/*path"                                              : "buy",
+      "pay/*path"                                              : "pay",
 //      "tour/*path"                                             : "tour",
       ":type"                                                  : "list", 
       "list/*path"                                             : "list", 
@@ -104,7 +104,8 @@ define('router', [
       "chatPrivate/*path"                                      : "chat", 
       "chatLobby/*path"                                        : "chat", 
       "login/*path"                                            : "login", 
-      ":type/:backlink"                                        : "list"
+      ":type/:backlink"                                        : "list",
+      "*notFound"                                              : function() { U.alert404(); },
     },
 
 //    CollectionViews: {},
@@ -444,8 +445,8 @@ define('router', [
       this.changePage(view);
     },
 
-    buy: function() {
-      if (!this.routePrereqsFulfilled('buy', arguments))
+    pay: function() {
+      if (!this.routePrereqsFulfilled('pay', arguments))
         return;
       
       var page = new Modules.PaymentPage({});
@@ -1097,7 +1098,7 @@ define('router', [
       case 'article':
         views = ['ArticlePage'];
         break;
-      case 'buy':
+      case 'pay':
         views = ['PaymentPage'];
         break;
       case 'edit':

@@ -1380,7 +1380,7 @@ define('views/Header', [
       this.getPageView().removeTooltips();
       this.quickstart = this.quickstart || this.$('.quickstart')[0];
       this.el.$addClass('quickstart-active');
-      this.header && this.header.invalidateSize();
+      this.updateHeaderSize();
 //      if (e)
 //        e._showedQuickstart = true;
     },
@@ -1401,7 +1401,7 @@ define('views/Header', [
         noTooltip = true;
         
       this.el.$removeClass('quickstart-active');
-      this.header && this.header.invalidateSize();
+      this.updateHeaderSize();
       
 //      if (noTooltip)
 //        return;
@@ -1410,7 +1410,15 @@ define('views/Header', [
 //      setTimeout(function() {
 //        self.getPageView().addTooltip(helpIcon, 'You can always launch Quickstart again by clicking here', 'bottom-left');
 //      }, 300);
-    }
+    },
+    
+    updateHeaderSize: _.debounce(function() {
+      this.invalidateSize();
+      this.getPageView().invalidateSize();
+      var lv = this.getPageView().listView;
+      if (lv)
+        lv.invalidateSize();
+    }, 500)
 //    ,
 //    getContainerBodyOptions: function() {
 //      var options = BasicView.prototype.getContainerBodyOptions.apply(this, arguments);

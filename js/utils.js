@@ -3823,7 +3823,7 @@ define('utils', [
     
     alert404: function(msg) {
       U.alert({
-        header: msg || "This page doesn't exist! Can we take you <a href='{0}'>home</a>?".format(G.appUrl),
+        header: msg || "This page doesn't exist! <br /><a class='mini-cta' style='margin:1rem;' href='{0}'>Take me home</a>".format(G.appUrl),
         dismissible: false
 //        ,
 //        oncancel: function() {

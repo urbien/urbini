@@ -974,6 +974,7 @@ section[id^="view"] {
 .modal-active body {
   -webkit-transform: scale( 0.9 );
      -moz-transform: scale( 0.9 );
+      -ms-transform: scale( 0.9 );
           transform: scale( 0.9 );
 }
 
@@ -1042,6 +1043,7 @@ section[id^="view"] {
 
   -webkit-transform: scale( 0.7 );
      -moz-transform: scale( 0.7 );
+      -ms-transform: scale( 0.7 );
           transform: scale( 0.7 );
 }
 
@@ -1059,6 +1061,7 @@ section[id^="view"] {
 
   -webkit-transform: scale( 1 );
      -moz-transform: scale( 1 );
+      -ms-transform: scale( 1 );
           transform: scale( 1 );
 }
 
@@ -1073,6 +1076,7 @@ section[id^="view"] {
 .modal-ready .modal-cover {
   -webkit-transform-origin: 50% 50%;
      -moz-transform-origin: 50% 50%;
+      -ms-transform-origin: 50% 50%;
           transform-origin: 50% 50%;
 
   -webkit-transition: 0.3s all cubic-bezier(0.250, 0.460, 0.450, 0.940);
@@ -1084,6 +1088,7 @@ section[id^="view"] {
 .modal-ready .modal-popup.no-transition {
   -webkit-transition: none;
      -moz-transition: none;
+      -ms-transition: none;
           transition: none;
 }
 
@@ -1098,6 +1103,7 @@ section[id^="view"] {
 .encircled, .encircled i {
   -webkit-box-sizing: initial;
      -moz-box-sizing: initial;
+      -ms-box-sizing: initial;
           box-sizing: initial;
 }
 
@@ -1292,13 +1298,14 @@ label.subClass {
   position: absolute;
   top: 0;
   left: 0;
-  opacity: 0.5;
-  color: #BDE8FF;
   /*color: #7aaac3;
   background-color: #fff;
   background-color: #2e3b4e;
-   */
   background-color: #2B6BA5;
+   */
+  background-color: #f1f1f1;
+  opacity: 0.7;
+  color: #444;
   -webkit-transform: translateX(97%);
      -moz-transform: translateX(97%);
       -ms-transform: translateX(97%);
@@ -1310,6 +1317,17 @@ label.subClass {
           transition: 0.6s ease;
 }
 
+.anim-overlay i {
+  color: #BDE8FF;
+}
+
+.anim-overlay-active {
+  -webkit-transform: translateX(-97%);
+     -moz-transform: translateX(-97%);
+      -ms-transform: translateX(-97%);
+          transform: translateX(-97%);
+}
+
 @media screen and (min-width: 480px) {
   .anim-overlay {
     -webkit-transform: translateX(98%);
@@ -1317,13 +1335,13 @@ label.subClass {
         -ms-transform: translateX(98%);
             transform: translateX(98%);
   }  
-}
 
-.anim-overlay-active {
-  -webkit-transform: translateX(-98%);
-     -moz-transform: translateX(-98%);
-      -ms-transform: translateX(-98%);
-          transform: translateX(-98%);
+  .anim-overlay-active {
+    -webkit-transform: translateX(-98%);
+       -moz-transform: translateX(-98%);
+        -ms-transform: translateX(-98%);
+            transform: translateX(-98%);
+  }
 }
 
 .anim-overlay-active .anim-overlay {
@@ -1352,24 +1370,48 @@ label.subClass {
 .drawer-tab-left, .drawer-tab-right {
   cursor: pointer;
   z-index:2; 
-  width: 2%;
+  width: 3%;
   height: 100%;
   position:absolute;
   top:0;
+}
+
+@media screen and (min-width: 480px) {
+  .drawer-tab-left, .drawer-tab-right {
+    width: 2%;
+  }
+  
+  .drawer-tab-right {
+    right: 0px;
+  }
 }
 
 .drawer-tab-left {
   left:0;
 }
 
+.drawer-tab-left:hover {
+  background: #ccc;
+  opacity: 0.9;
+}
+
 .drawer-tab-right {
-  right: 0px;
+  right: 5px;
 }
 
 .drawer-tab-left i, .drawer-tab-right i {
   font-size: 15px;
   padding:0;
   left:0;
+}
+
+.drawer-tab-left i {
+  color: #777;
+}
+
+.drawer-tab-right i {
+  color: #ddd;
+  right: 0;
 }
 
 .anim-overlay-active .drawer-tab-left {
@@ -1383,14 +1425,15 @@ label.subClass {
 }
 
 @media screen and (min-width: 1200px) {
-  .drawer-tab-left {
-    left: 0.5%;
+  .drawer-tab-left i {
+    left: 10px;
   }  
 }
 
 .trades span {
-  font-size:2rem;font-weight:bold;color:#3777a1;
-
+  font-size:2rem;
+  font-weight:bold;
+  color:#3777a1;
 }
 .tradleRules .rule1 {
   font-size:1.5rem;
@@ -1410,6 +1453,9 @@ label.subClass {
           transition: 0.3s ease;
 
   position: relative;
+  /*
+  background-color: #FF9600;
+  */
   background-color: #E9FBC0;
   max-height: 0px;
   overflow: hidden;

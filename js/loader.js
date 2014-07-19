@@ -53,12 +53,13 @@ define('globals', function() {
   // From jQuery.browser (deprecated in 1.3, removed in 1.9.1)
   // Use of jQuery.browser is frowned upon.
   // More details: http://docs.jquery.com/Utilities/jQuery.browser
-  function detectBrowser() {
+  var browser = (function detectBrowser() {
     var browser = {},
         rwebkit = /(webkit)[ \/]([\w.]+)/,
         ropera = /(opera)(?:.*version)?[ \/]([\w.]+)/,
         rmsie = /(msie) ([\w.]+)/,
-        rmozilla = /(mozilla)(?:.*? rv:([\w.]+))?/;
+        rmozilla = /(mozilla)(?:.*? rv:([\w.]+))?/,
+        userAgent = navigator.userAgent;
 
     function uaMatch( ua ) {
       ua = ua.toLowerCase();
@@ -72,7 +73,7 @@ define('globals', function() {
       return { browser: match[1] || "", version: match[2] || "0" };
     };
 
-    var browserMatch = uaMatch( navigator.userAgent );
+    var browserMatch = uaMatch( userAgent );
     if ( browserMatch.browser ) {
       browser[ browserMatch.browser ] = true;
       browser.version = browserMatch.version;
@@ -81,8 +82,8 @@ define('globals', function() {
     browser.opera = window.opera && Object.prototype.toString.call(window.opera) === '[object Opera]';
     browser.chrome = browser.webkit && !!window.chrome;
     browser.safari = browser.webkit && !window.chrome;
-    browser.ios = navigator.userAgent.match(/(iPad|iPhone|iPod)/i);
-    var mobile = browser.ios || navigator.userAgent.match(/(Android|webOS|BlackBerry|IEMobile|Opera Mini|Opera Mobi)/);
+    browser.ios = userAgent.match(/(iPad|iPhone|iPod)/i);
+    var mobile = browser.ios || userAgent.match(/(Android|webOS|BlackBerry|IEMobile|Opera Mini|Opera Mobi)/);
     if (mobile) {
       browser.mobile = true;
       browser[mobile[1].toLowerCase()] = true;
@@ -96,8 +97,14 @@ define('globals', function() {
                       browser.mozilla ? 'moz' : 
                         browser.opera ? 'o' : 
                           browser.ms ? 'ms' : '';
-    
+
+    browser.supported = browser.chrome || browser.mozilla || browser.safari || browser.ios || (browser.msie && parseInt(browser.version) >= 10);
     return browser;
+  })();
+  
+  if (!browser.supported) {
+    alert("Alas, we don't yet support the version of the browser you're using. Please try Chrome, Firefox, Safari or IE10.");
+    return;
   }
   
   function hasLocalStorage() {
@@ -1237,7 +1244,6 @@ define('globals', function() {
       DB_OPEN_DFD = $.Deferred(),
       RESOLVED_PROMISE = $.Deferred().resolve().promise(),
       REJECTED_PROMISE = $.Deferred().reject().promise(),
-      browser = G.browser = detectBrowser(),
       
       // DOM stuff
 //      ALL_IN_APPCACHE,
@@ -1277,6 +1283,7 @@ define('globals', function() {
   _.extend(G, {
     _widgetLibrary: G.currentApp.widgetLibrary || 'topcoat',
     _pageIsVisible: true,
+    browser: browser,
     isVisible: function() {
       return G._pageIsVisible;
     },

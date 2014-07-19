@@ -905,3 +905,32 @@ body > .section:not([data-role="page"]) {
     padding: 15px 30px;
   }
 }
+
+.homePageMenu {
+  width: 100%; 
+  margin-top: 50px;
+  padding: 0; 
+  text-align:center; 
+  position:absolute;
+}
+
+.headerMenuItem {
+  color: #7aaac3;
+  padding: 10px;
+}
+
+.headerMenuActiveItem {
+  color: inherit;
+}
+
+@media only screen and (min-width: 480px) {
+  .headerMenuItem {
+    padding: 20px;
+  }
+}
+
+@media only screen and (min-width: 600px) {
+  .headerMenuItem {
+    font-size: 14px;
+  }
+}

@@ -1130,7 +1130,6 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
       }
       
       Voc.getModels('commerce/trading/TradleIndicator').done(function(iModel) {
-        debugger;
         tfParams.variantUri = 'http://tradle.io/voc/dev/Technicals/RawValue';
         new iModel(tfParams).save();
       });

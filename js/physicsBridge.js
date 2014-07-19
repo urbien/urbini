@@ -403,10 +403,10 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     THERE.dragend(v, draggable.getId(), !coast);
   };
   
-  function drag(draggable, v, doPage) {
-    if (doPage && draggable.isPaged()) {
+  function drag(draggable, v, pages) {
+    if (pages && draggable.isPaged()) {
       getLayoutManagers(draggable.getId()).map(function(l) {
-        l.page(v[1] > 0 ? -1 : 1);
+        l.page((pages || 1) * (v[1] > 0 ? -1 : 1));
       });
 //      THERE.page({
 //        body: draggable.getId(),
@@ -431,22 +431,26 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     return managers;
   };
   
-  Events.on('pageDown', function() {
-    simulateKeyPress(34);
+  Events.on('pageDown', function(pages) {
+    simulateKeyPress(34, {
+      pages: pages || 1
+    });
   });
 
-  Events.on('pageUp', function() {
-    simulateKeyPress(33);
+  Events.on('pageUp', function(pages) {
+    simulateKeyPress(33, {
+      pages: pages || 1
+    });
   });
   
-  function simulateKeyPress(code) {
-    KeyHandler._onKeyDown({
+  function simulateKeyPress(code, params) {
+    KeyHandler._onKeyDown(_.defaults({
       keyCode: code
-    });
+    }, params));
     
-    KeyHandler._onKeyUp({
+    KeyHandler._onKeyUp(_.defaults({
       keyCode: code
-    });
+    }, params));
   };
   
   KeyHandler = {
@@ -575,7 +579,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       for (var id in DRAGGABLES) {
         draggable = DRAGGABLES[id];
         if (draggable.isOn() && isDragAlongAxis(dir, draggable.axis)) {
-          drag(draggable, vector, isPage);
+          drag(draggable, vector, isPage && (e.pages || 1));
           dragend(draggable, endV, false); // smoother
         }
       }

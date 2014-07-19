@@ -531,6 +531,7 @@ define('views/ControlPanel', [
           propDisplayName = U.getPropDisplayName(prop),
           canceledProp,
           isRule = U.isAssignableFrom(listVocModel, 'commerce/trading/Rule'),
+          isIndicator = U.isAssignableFrom(listVocModel, 'commerce/trading/TradleIndicator'),
           isTrade = U.isAssignableFrom(listVocModel, 'commerce/trading/Order'),
           canAdd = !isRule && U.isPropEditable(this.resource, prop), // don't allow add other than by clicking individual indicators 
           linkToEdit = U.isAssignableFrom(listVocModel, G.commonTypes.WebProperty, 'commerce/trading/Notification'),
@@ -553,6 +554,11 @@ define('views/ControlPanel', [
       var gr, isBB = G.isBB(), isTopcoat = G.isTopcoat(), prop = meta[name], isBootstrap = G.isBootstrap();
       
       var displayCollapsed = prop.displayCollapsed;
+      if (isIndicator) {
+        var rulesList = this.resource.getInlineList('tradleRules');
+        displayCollapsed = rulesList && rulesList.length;
+      }
+      
       if (list.length || canAdd) {
         if (displayCollapsed  &&  list.length) {
           if (isBB)

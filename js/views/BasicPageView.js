@@ -183,18 +183,27 @@ define('views/BasicPageView', [
       if (this.mason)
         this.mason.snapBy(0, -offset.top);
       
-      if (tooltip)
-        this.addTooltip(target, tooltip, direction, 'info', 'square');
+      if (tooltip) {
+        this.addTooltip({
+          el: target, 
+          tooltip: tooltip, 
+          direction: direction, 
+          type: 'info', 
+          style: 'square'
+        });
+      }
     },
     
     pageUp: function(e) {
+      var pages = parseInt(e.selectorTarget.$data('pages') || "1");
       Events.stopEvent(e);
-      Events.trigger('pageUp');
+      Events.trigger('pageUp', pages);
     },
     
     pageDown: function(e) {
+      var pages = parseInt(e.selectorTarget.$data('pages') || "1");
       Events.stopEvent(e);
-      Events.trigger('pageDown');
+      Events.trigger('pageDown', pages);
     },
     
     globalEvents: {
@@ -369,11 +378,13 @@ define('views/BasicPageView', [
       }
 
       if (element) {
-        this.addTooltip(element, 
-                        step.get('tooltip'), 
-                        step.get('direction'),
-                        step.get('tooltipType') || 'info',
-                        step.get('tooltipStyle') == 'squareCorners' ? 'square' : 'rounded');
+        this.addTooltip({
+          el: element, 
+          tooltip: step.get('tooltip'), 
+          direction: step.get('direction'),
+          type: step.get('tooltipType') || 'info',
+          style: step.get('tooltipStyle') == 'squareCorners' ? 'square' : 'rounded'
+        });
       }
     },
     
@@ -420,24 +431,22 @@ define('views/BasicPageView', [
       delete this._tooltipMap;
     },
     
-    addTooltip: function(el, tooltip, direction, type, style) {
-//      el = el instanceof $ ? el : $(el);
+//    el, tooltip, direction, type, style
+    addTooltip: function(options) {
       this.removeTooltips();
       var self = this,
-          classes = ['always', 
-                     direction || 'left', 
-                     type      || 'info', 
-                     style     || 'square'];
-     
-      classes = _.map(classes, function(cl) {
-        return 'hint--' + cl;
-      });
-     
-      var self = this,
+          el = options.el,
+          tooltip = options.tooltip,
+          direction = options.direction || 'left',
+          type = options.type || 'info',
+          style = options.style || 'square',
           pos = this.getTooltipPos(el),
           posStyle = 'top:' + pos.top + ';left:' + pos.left + ';',
           page = this.el,
-          tooltipEl;
+          tooltipEl,
+          classes = ['always', direction, type, style].map(function(cl) {
+            return 'hint--' + cl;
+          });
       
       if (pos.maxWidth)
         posStyle += 'max-width:' + pos.maxWidth + ';';
@@ -446,10 +455,10 @@ define('views/BasicPageView', [
 //      var closeBtn = '<i class="closeBtn ' + direction.replace('-', ' ') + '"></i>';
       var closeBtn = '';
       if (tooltip)
-        tooltipEl = DOM.parseHTML('<div class="play ' + classes.join(' ') + '" style="' + posStyle + '"><div class="glow"></div><div class="shape"></div><div class="content">' + tooltip + closeBtn + '</div></div>');
+        tooltipEl = DOM.parseHTML('<div class="play ' + classes.join(' ') + '" style="' + posStyle + '"><div class="content">' + tooltip + closeBtn + '</div></div>');
       else {
         debugger;
-        tooltipEl = DOM.parseHTML('<div class="play" style="' + posStyle + '"><div class="glow"></div><div class="shape"></div></div>');
+        tooltipEl = DOM.parseHTML('<div class="play" style="' + posStyle + '"></div>');
       }
       
       tooltipEl = tooltipEl[0];
