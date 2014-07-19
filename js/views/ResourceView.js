@@ -388,7 +388,7 @@ define('views/ResourceView', [
                     gr = '<li id="' + grMeta.shortName + '" data-display="collapsed"><h3 style="font-size:18px;"><i class="ui-icon-plus-sign"></i>&#160;' + grMeta.displayName + '</h3><ul class="list-group-container hidden">';
                   if (this.isTradle  &&  grMeta.shortName == 'expectedPerformance') {
                     if (this.resource.get('maxDrawdown') || this.resource.get('profit')) {
-                      gr += '<li style="background:#2e3b4e;"><div class="gauges">' + this.gaugesTemplate({
+                      gr += '<li style="background:#2e3b4e;text-align:center;"><div class="gauges" style="display:inline-block">' + this.gaugesTemplate({
                         gauges: [{
                           shortName: 'profit',
                           name: 'Profit'
