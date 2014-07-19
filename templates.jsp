@@ -1614,7 +1614,7 @@
             Currently we accept bitcoin donations here:
           </span>
           <div>
-            PUT BITCOIN QR CODE HERE
+            <img src="images/tradle/bitcoinQRCode.png" style="display:block;margin: 0 auto;" />
             <input type="text" style="width:300px;" onfocus="Lablz.U.selectInputText(arguments[0]);" value="{{= '12vyT3q8UAADihwh8y214AEee79ZYXiMUH' }}" readonly="readonly" />
           </div>
         </div>
