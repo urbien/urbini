@@ -277,12 +277,15 @@ define('views/ResourceListView', [
 //        return dn && ~dn.toLowerCase().indexOf(valueLowerCase);
 //      });
 
-      console.log("5. FILTER - resetting", value);
+//      console.log("5. FILTER - resetting", value);
       filtered.reset([], {
         params: _.defaults(this._filterParams, this.originalParams)        
       });
-      
+
+//      var l = filtered.length;
+//      console.debug("6. FILTER - readding from " + l, filtered.models.slice(), _.clone(filtered.params));
       filtered.filterAndAddResources(col.models);
+//      console.debug("7. FILTER - readded", filtered.models.slice(l));
 //      filtered.belongsInCollection = U.buildValueTester(this._filterParams, this.vocModel) || G.trueFn;
 //      resourceMatches = col.models.filter(filtered.belongsInCollection.bind(filtered));
 //      filtered.reset(resourceMatches, {
