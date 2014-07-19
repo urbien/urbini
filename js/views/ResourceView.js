@@ -330,10 +330,14 @@ define('views/ResourceView', [
           }
         }
       }
+      
+      var showingSocialLinks;
       if (this.isTradle  &&  !G.currentUser.guest) {
+        showingSocialLinks = true;
         this.makeTemplate('socialLinksTemplate', 'socialTemplate', this.vocModel.type);
         U.addToFrag(frag, this.socialTemplate.call(this, {uri: this.resource.getUri()}));
       }
+      
       var displayedProps = {};
       var idx = 0;
       var groupNameDisplayed;
@@ -520,7 +524,8 @@ define('views/ResourceView', [
           this.$el.trigger('create');
       }
       */
-      if (_.isEmpty(displayedProps))
+      
+      if (!showingSocialLinks && _.isEmpty(displayedProps))
         this.el.$hide();
       else
         this.el.$show();

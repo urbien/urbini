@@ -421,7 +421,7 @@ function _onmessage(e) {
     importScripts(physicsJSUrl);
     log("IMPORTING: " + masonryUrl);
     importScripts(masonryUrl);
-    DEBUG = false;//e.data.debug;
+    DEBUG = e.data.debug;
 //    with (e.data.styleInfo) {
       // Transfer protocol props
 //    UNIT_MAP = e.data.styleInfo.units;
@@ -3286,7 +3286,7 @@ function getRectVertices(width, height) {
     
     _calcSlidingWindowDimensionRange: function() {
       this.minSlidingWindowDimension = this.pageScrollDim * this.minPagesInSlidingWindow;
-      this.maxSlidingWindowDimension = this.pageScrollDim * this.maxPagesInSlidingWindow;
+      this.maxSlidingWindowDimension = Math.max(this.pageScrollDim * this.maxPagesInSlidingWindow, 300);
 //      var slidingWindowDim = Math.max(this.slidingWindowDimension, (this.maxSlidingWindowDimension + this.minSlidingWindowDimension) / 2);
 //      this.slidingWindowInsideBuffer = slidingWindowDim / 2; // how far away the viewport is from the closest border of the sliding window before we start to fetch more resources
       this.slidingWindowInsideBuffer = this.minSlidingWindowDimension; // - this.getViewportDimension();

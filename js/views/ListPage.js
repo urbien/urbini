@@ -13,7 +13,7 @@ define('views/ListPage', [
 ], function(G, Events, U, Errors, Voc, BasicPageView, ResourceListView, Header, Q, DOM) {
   var MapView,
       SPECIAL_INTERSECTIONS = [G.commonTypes.Handler, G.commonTypes.Friend, U.getLongUri1('model/social/NominationForConnection') /*, commonTypes.FriendApp*/],
-      CAN_SHOW_ADD_BUTTON = true;
+      CAN_SHOW_ADD_BUTTON = false;
   
   function getLinearGradient(r, g, b) {
     var rgb = r + ',' + g + ',' + b;

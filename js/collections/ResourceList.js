@@ -573,7 +573,8 @@ define('collections/ResourceList', [
       if (options.params) {
         this._parseParams(options.params);
         try {
-          this.belongsInCollection = U.buildValueTester(this.params, this.vocModel) || G.trueFn;
+//          this.belongsInCollection = U.buildValueTester(this.params, this.vocModel) || G.trueFn;
+          this.calcBelongsFunction();
           this._unbreak();
         } catch (err) {
           this.belongsInCollection = G.falseFn; // for example, the where clause might assume a logged in user  
@@ -610,12 +611,14 @@ define('collections/ResourceList', [
       
       var self = this,
           vocModel = this.vocModel,
+          origOptions = _.clone(options),
           success = options.success,
           error = options.error = options.error || Errors.getBackboneErrorHandler(),
           adapter = vocModel.adapter,
           params = this.params,
           extraParams = options.params || {},
           urlParams,
+          colParams = _.clone(this.modelParams),
           limit;
 
       if (this['final']) {
@@ -661,12 +664,18 @@ define('collections/ResourceList', [
 //      }
         
       options.error = function(xhr, resp, options) {
+        if (!_.isEqual(colParams, self.modelParams))
+          return self.fetch(origOptions);
+        
         self._lastFetchedOn = G.currentServerTime();
         if (error)
           error.call(self, self, resp, options);
       }
       
       options.success = function(resp, status, xhr) {
+        if (!_.isEqual(colParams, self.modelParams))
+          return self.fetch(origOptions);
+          
         if (self._getLastFetchOrigin() === 'db') {
           if (success)
             return success(resp, status, xhr);
@@ -754,7 +763,8 @@ define('collections/ResourceList', [
             return;
         }
         
-        self.update(resp, options);        
+        options.modelParams = colParams;
+        self.update(resp, options);
         if (success)
           success(resp, status, xhr);
         
@@ -790,6 +800,7 @@ define('collections/ResourceList', [
         log("info", "fetching next page, from " + this.offset + ", to: " + (this.offset + limit));
       }
 
+      this._fetching = true;
       return this.sync('read', this, options);
     },
     

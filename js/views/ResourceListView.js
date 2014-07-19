@@ -277,12 +277,15 @@ define('views/ResourceListView', [
 //        return dn && ~dn.toLowerCase().indexOf(valueLowerCase);
 //      });
 
-      console.log("5. FILTER - resetting", value);
+//      console.log("5. FILTER - resetting", value);
       filtered.reset([], {
         params: _.defaults(this._filterParams, this.originalParams)        
       });
-      
+
+//      var l = filtered.length;
+//      console.debug("6. FILTER - readding from " + l, filtered.models.slice(), _.clone(filtered.params));
       filtered.filterAndAddResources(col.models);
+//      console.debug("7. FILTER - readded", filtered.models.slice(l));
 //      filtered.belongsInCollection = U.buildValueTester(this._filterParams, this.vocModel) || G.trueFn;
 //      resourceMatches = col.models.filter(filtered.belongsInCollection.bind(filtered));
 //      filtered.reset(resourceMatches, {
@@ -777,17 +780,41 @@ define('views/ResourceListView', [
           displayed = this._displayedRange,
           preRenderPromise;
       
+//      if (to > availableRange[1]) {
+//        if (to < total || !force)
+//          return this.fetchResources(availableRange[1], to).then(this._addBricks.bind(this, from, to, force), this._addBricks.bind(this, from, to, true));
+//        
+//        // FORCING, settle for loading an incomplete page
+//        to = total;
+//        if (from >= to) {
+//          // we're out of candy, no need to continue
+//          this.log("2. BRICK LIMIT");
+//          this.setBrickLimit(total);
+//          return;
+//        }
+//      }
       if (to > availableRange[1]) {
-        if (to < total || !force)
+        if (force) {
+          // settle for loading an incomplete page
+          to = availableRange[1];
+          if (from >= to) {
+            // we're out of candy, no need to continue
+            this.log("2. BRICK LIMIT");
+            this.setBrickLimit(availableRange[1]);
+            return;
+          }
+        }
+        else {
+//          if (this._outOfData) {
+//            this.mason.setLimit(this.collection.length);
+//            return;
+//          }
+          
+//          var numToFetch = to - col.length,
+//              fetchFrom = col.length, // + this._failedToRenderCount,
+//              fetchTo = fetchFrom + numToFetch;
+          
           return this.fetchResources(availableRange[1], to).then(this._addBricks.bind(this, from, to, force), this._addBricks.bind(this, from, to, true));
-        
-        // FORCING, settle for loading an incomplete page
-        to = total;
-        if (from >= to) {
-          // we're out of candy, no need to continue
-          this.log("2. BRICK LIMIT");
-          this.setBrickLimit(total);
-          return;
         }
       }
       else if (from < availableRange[0])

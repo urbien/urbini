@@ -3483,7 +3483,7 @@ define('utils', [
           var value = nameVal[1].toLowerCase();
           var chain = [];
           rules.push(function(res) {
-            var val = res[propName];
+            var val = U.getValue(res, propName);
             return val && val.toLowerCase().indexOf(value) != -1;
           });
           

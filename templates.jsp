@@ -162,11 +162,12 @@
   <i class="ui-icon-remove"></i>
   <h2>Quickstart</h2>
   {{ if (!desc && !nAnything) { }}
-  <h3>Welcome to your new Tradle! If this is your first time, follow the steps below:</h3>
+  <h3>Welcome to your new Tradle! If this is your first time, follow the steps below to learn the UI:</h3>
   {{ }            }}
   <ol class="quickstart-options">
     <li>
-      <a class="mini-cta" href="#" data-href="{{= U.makePageUrl('edit', this.resource.getUri(), { $editCols: 'title,description' }) }}">
+      <!--a class="mini-cta" href="#" data-href="{{= U.makePageUrl('edit', this.resource.getUri(), { $editCols: 'title,description' }) }}"-->
+      <a class="mini-cta" href="#" data-selector=".socialLinks .ui-icon-edit" data-tooltip="Click here to edit the name and description" data-direction="bottom">
         {{ if (!desc) { }}
           Name and describe your Tradle
         {{ }           }}
@@ -353,7 +354,8 @@
 <script type="text/template" id="socialLinksTemplate">
 <!-- Social Links -->
 <li class="socialLinks">
-  {{ if (!G.currentUser.guest  &&  this.resource.get('owner') == G.currentUser._uri) { }}
+  {{ var owner = this.resource.get('owner'), submittedBy = this.resource.get('submittedBy'), user = G.currentUser._uri; }}
+  {{ if (user && (user == owner || user == submittedBy)) { }}
     <div class="share" data-url="{{= uri }}"><a style="background:#3777a1;color:#fff;padding:.5rem 2rem .55rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-edit" href="{{= U.makePageUrl('edit', this.resource.getUri(), {$editCols: 'activated,title,description,isPublic'}) }}"></a></div>
   {{ } }}
   <div class="share" data-url="{{= uri }}"><i style="background:#3777a1;color:#fff;padding:.5rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-share"></i></div>
