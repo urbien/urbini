@@ -769,7 +769,11 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
 
 //    if (U.isAssignableFrom(vocModel, 'commerce/trading/TradleFeed') && prop.range.endsWith('commerce/trading/Feed'))
 //      rParams['-info'] = 'Choose a feed for your Tradle';
-    
+    if (this.isChooserFastForwarded()) {
+      if (!rParams['$title']) {
+        rParams['$title'] = 'Choose ' + prop.displayName + ' for a new ' + vocModel.displayName + '';
+      }
+    }
     Events.trigger('navigate', U.makeMobileUrl('chooser', U.getTypeUri(range), rParams), options);
   };
 
