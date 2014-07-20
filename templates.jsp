@@ -353,14 +353,14 @@
 
 <script type="text/template" id="socialLinksTemplate">
 <!-- Social Links -->
-<li class="socialLinks">
+<li class="socialLinks" style="font-weight: normal;color:#3777a1;">
   {{ var owner = this.resource.get('owner'), submittedBy = this.resource.get('submittedBy'), user = G.currentUser._uri; }}
   {{ if (user && (user == owner || user == submittedBy)) { }}
-    <div class="share" data-url="{{= uri }}"><a style="background:#3777a1;color:#fff;padding:.5rem 2rem .55rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-edit" href="{{= U.makePageUrl('edit', this.resource.getUri(), {$editCols: 'activated,title,description,isPublic'}) }}"></a></div>
+    <div class="share" data-url="{{= uri }}"><a style="border:1px solid #3777a1;padding:.5rem 2rem .55rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-edit" href="{{= U.makePageUrl('edit', this.resource.getUri(), {$editCols: 'activated,title,description,isPublic'}) }}">&#160;EDIT</a></div>
   {{ } }}
-  <div class="share" data-url="{{= uri }}"><i style="background:#3777a1;color:#fff;padding:.5rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-share"></i></div>
-  <div class="clone" data-url="{{= uri }}"><a style="color:#fff;border-radius:.8rem;margin:-.2rem;padding:.5rem 1.5rem;white-space:nowrap;background:#3777a1;font-weight:normal;" href="{{= U.makePageUrl('view', uri + '&$clone=y') }}">Use it</a></div>
-  <div class="embed" data-url="{{= uri }}"><a style="background:#3777a1;color:#fff;padding:.5rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-embed" href="{{= G.serverName }}/widget/embed.html?uri={{= encodeURIComponent(uri) }}"></a></div>
+  <div class="share" data-url="{{= uri }}"><span style="border:1px solid #3777a1; padding:.5rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-share">&#160;SHARE</span></div>
+  <div class="clone" data-url="{{= uri }}"><a style="border:1px solid #3777a1;;border-radius:.8rem;margin:-.2rem;padding:.5rem 2rem;white-space:nowrap;font-weight:normal;" href="{{= U.makePageUrl('view', uri + '&$clone=y') }}" class="ui-icon-fork">&#160;CLONE</a></div>
+  <div class="embed" data-url="{{= uri }}"><a style="border:1px solid #3777a1;padding:.5rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-embed" href="{{= G.serverName }}/widget/embed.html?uri={{= encodeURIComponent(uri) }}">&#160;EMBED</a></div>
 </li>
 </script>
 
@@ -514,9 +514,9 @@
     </div>
     <div class="section-content" style="margin:0 auto;">
       <div class="title-block">
-        <h1 class="section-title">Pricing</h1>
+        <h1 class="section-title">Pricing for Individuals</h1>
         <h3 class="section-title _2">Creating and running tradles</h3>
-        <h3 class="section-title _2"><a href="app/Tradle/static/pricing1PageTemplate" class="link" style="font-size: 20px">Pricing for PR, idea harvesting is separate</a></h3>
+        <h3 class="section-title _2"><a href="app/Tradle/static/pricing1PageTemplate" class="link" style="font-size: 20px">Pricing for Companies</a></h3>
       </div>
       <div class="pricing-section group">
         <div class="col span_1_of_3 pricing-1">
@@ -633,7 +633,7 @@
     </div>
     <div class="section-content" style="margin:0 auto;">
       <div class="title-block">
-        <h1 class="section-title">Pricing</h1>
+        <h1 class="section-title">Pricing for Companies</h1>
         <h3 class="section-title _2">Idea harvesting, PR, fundraising</h3>
       </div>
       <div class="pricing-section group">
@@ -731,7 +731,7 @@
             </li>  
           </ul>
           <div class="section-footer">
-            <a class="cta buy3" href="#">Get a callback</a>
+            <a class="cta buy3" href="make/commerce/trading/Lead?$title=Get+a+callback">Get a callback</a>
           </div>
         </div>
       </div>
