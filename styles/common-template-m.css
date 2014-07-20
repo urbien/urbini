@@ -1303,8 +1303,6 @@ label.subClass {
   background-color: #2e3b4e;
   background-color: #2B6BA5;
    */
-  background-color: #f1f1f1;
-  opacity: 0.7;
   color: #444;
   -webkit-transform: translateX(97%);
      -moz-transform: translateX(97%);
@@ -1388,6 +1386,8 @@ label.subClass {
 
 .drawer-tab-left {
   left:0;
+  opacity: 0.7;
+  background-color: #f7f7f7;
 }
 
 .drawer-tab-left:hover {
@@ -1422,6 +1422,10 @@ label.subClass {
   .drawer-tab-left i, .drawer-tab-right i {
     font-size: 20px;
   }
+  
+  .drawer-tab-right {
+    right: 0px;
+  }
 }
 
 @media screen and (min-width: 1200px) {
@@ -1440,10 +1444,19 @@ label.subClass {
   padding-bottom:1rem;
 }
 .socialLinks {
-  text-align: center;background: #fff; font-weight: bold;min-height:3rem;
+  text-align: center;
+  background: #fff; 
+  font-weight: bold;
+  min-height:3rem;
 }
 .socialLinks div {
-  display:inline-block;font-size:2rem;padding:1rem .5rem;
+  display: inline-block;
+  font-size: 2rem;
+  margin: 1rem 1rem;
+  border: 1px solid;
+  width: 120px;
+  padding: 0.5rem;
+  border-radius: 1rem;
 }
 
 .quickstart {

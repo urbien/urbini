@@ -787,7 +787,8 @@ define('views/Header', [
             });
           }
           
-          self.updateQuickstart();
+          if (!self.resource || self.resource.isLoaded())
+            self.updateQuickstart();
 //          if (self.pageView.TAG == 'ListPage') {
 //            self.pageView.listView.onload(function() {              
 //              Physics.there.track(self.getContainerBodyId(), self.pageView.listView.getContainerBodyId(), 'vel');
@@ -1104,7 +1105,7 @@ define('views/Header', [
           filter = this.filterParams,
           i = sCls.length,
           runFilter = function() {
-            delete filter.type;
+            _.wipe(filter);
             if (type)
               filter.type = type;
             
@@ -1125,7 +1126,7 @@ define('views/Header', [
           this._fetchingFilterType = type;
           Voc.getModels(type).done(function() {
             if (input == self._lastSubClass)
-              runFilter()
+              runFilter();
           });
           
           return;

@@ -158,27 +158,24 @@
 <script type="text/template" id="tradleViewQuickstartTemplate">
 <div class="quickstart-content">
   {{ var desc = this.resource.get('description'), ils = this.resource.getInlineLists() || {}, rules = ils.tradleRules, nRules = rules && rules.length, indicators = ils.indicators, nIndicators = indicators && indicators.length; }}
-  {{ var alerts = ils.notifications, nAlerts = alerts && alerts.length, orders = ils.orders, nOrders = orders && orders.length, nAnything = nIndicators || nRules || nOrders || nAlerts; }}
+  {{ var alerts = ils.notifications, orders = ils.orders, nOrders = orders && orders.length, nAnything = nIndicators || nRules || nOrders, activated = this.resource.get('activated'); }}
   <i class="ui-icon-remove"></i>
   <h2>Quickstart</h2>
   {{ if (!desc && !nAnything) { }}
-  <h3>Welcome to your new Tradle! If this is your first time, follow the steps below to learn the UI:</h3>
+  <h3>Welcome to your new tradle! If this is your first time, follow the steps below to learn the UI:</h3>
   {{ }            }}
   <ol class="quickstart-options">
-    <li>
-      <!--a class="mini-cta" href="#" data-href="{{= U.makePageUrl('edit', this.resource.getUri(), { $editCols: 'title,description' }) }}"-->
-      <a class="mini-cta" href="#" data-selector=".socialLinks .ui-icon-edit" data-tooltip="Click here to edit the name and description" data-direction="bottom">
-        {{ if (!desc) { }}
-          Name and describe your Tradle
-        {{ }           }}
-        {{ if (desc) { }}
-          Edit your Tradle's description
-        {{ }           }}
-      </a>
-    </li>
+    {{ if (!desc && !(!activated && nRules)) { }}
+      <!-- if there's no description and we're not ready to activate yet -->
+      <li>
+        <a class="mini-cta" href="#" data-selector=".socialLinks .ui-icon-edit" data-tooltip="Click here to edit the name and description" data-direction="bottom">
+          Name and describe
+        </a> your tradle
+      </li>
+    {{ }                                        }}
     {{ if (!nIndicators) { }}
       <li>
-        <a class="mini-cta" href="#" data-selector="header [data-shortname=&quot;feeds&quot;] i" data-tooltip="Click here to add indicators" data-direction="left">Add indicators</a> to your Tradle.
+        <a class="mini-cta" href="#" data-selector="header [data-shortname=&quot;feeds&quot;] i" data-tooltip="Click here to add indicators" data-direction="left">Add indicators</a> to your tradle.
       </li>          
     {{ }                                        }}
     {{ if (nIndicators && !nRules) { }}
@@ -186,19 +183,19 @@
         <a class="mini-cta" href="#" data-selector="li[data-backlink=&quot;indicators&quot;]" data-tooltip="Click an indicator to make a rule with it" data-direction="top">Create rules</a> out of the indicators you've chosen
       </li>
     {{ }                                        }}
-    {{ if (nRules && !nAlerts) { }}
-      <li>
-        <a class="mini-cta" href="#" data-selector="header [data-shortname=&quot;notifications&quot;] i" data-tooltip="Click here to setup notifications" data-direction="left">Get notified</a> when your Tradle fires
-      </li>
-    {{ }                                        }}
     {{ if (nRules && !nOrders) { }}
       <li>
-        <a class="mini-cta" href="#" data-selector="header [data-shortname=&quot;orders&quot;] i" data-tooltip="Click here to add trades" data-direction="left">Add trades</a> to be executed when your Tradle fires
+        <a class="mini-cta" href="#" data-selector="header [data-shortname=&quot;orders&quot;] i" data-tooltip="Click here to add trades" data-direction="left">Add trades</a> to be executed when your tradle fires
       </li>
     {{ }                                        }}
     {{ if (nAnything) { }}
       <li>
         <a class="mini-cta" href="#" data-selector="[data-backlink]" data-tooltip="Swipe left on any row to pull out an actions bar" data-direction="top">Delete</a> anything you don't need
+      </li>
+    {{ }                                        }}
+    {{ if (!activated && nRules) { }}
+      <li>
+        <a class="mini-cta" href="#" data-selector=".socialLinks .ui-icon-edit" data-tooltip="Click to edit, then turn your tradle 'On'" data-direction="bottom">Activate</a> your tradle.
       </li>
     {{ }                                        }}
   </ol>
@@ -354,13 +351,13 @@
 <script type="text/template" id="socialLinksTemplate">
 <!-- Social Links -->
 <li class="socialLinks" style="font-weight: normal;color:#3777a1;">
-  {{ var owner = this.resource.get('owner'), submittedBy = this.resource.get('submittedBy'), user = G.currentUser._uri; }}
+  {{ var owner = this.resource.get('owner'), submittedBy = this.resource.get('submittedBy'), user = G.currentUser._uri, isOwner = user && user == (owner || submittedBy); }}
   {{ if (user && (user == owner || user == submittedBy)) { }}
-    <div class="share" data-url="{{= uri }}"><a style="border:1px solid #3777a1;padding:.5rem 2rem .55rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-edit" href="{{= U.makePageUrl('edit', this.resource.getUri(), {$editCols: 'activated,title,description,isPublic'}) }}">&#160;EDIT</a></div>
+    <div class="share" data-url="{{= uri }}"><a class="ui-icon-edit" href="{{= U.makePageUrl('edit', this.resource.getUri(), {$editCols: 'activated,title,description,isPublic'}) }}">&#160;EDIT</a></div>
   {{ } }}
-  <div class="share" data-url="{{= uri }}"><span style="border:1px solid #3777a1; padding:.5rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-share">&#160;SHARE</span></div>
-  <div class="clone" data-url="{{= uri }}"><a style="border:1px solid #3777a1;;border-radius:.8rem;margin:-.2rem;padding:.5rem 2rem;white-space:nowrap;font-weight:normal;" href="{{= U.makePageUrl('view', uri + '&$clone=y') }}" class="ui-icon-fork">&#160;CLONE</a></div>
-  <div class="embed" data-url="{{= uri }}"><a style="border:1px solid #3777a1;padding:.5rem 2rem;border-radius:1rem;width:4rem;" class="ui-icon-embed" href="{{= G.serverName }}/widget/embed.html?uri={{= encodeURIComponent(uri) }}">&#160;EMBED</a></div>
+  <div class="share" data-url="{{= uri }}"><a class="ui-icon-twitter" href="{{= U.getTwitterLink(this.resource) }}" target="_blank">&#160;TWEET</a></div>
+  <div class="clone" data-url="{{= uri }}"><a href="{{= U.makePageUrl('view', uri + '&$clone=y') }}" class="ui-icon-fork">&#160;CLONE</a></div>
+  <div class="embed" data-url="{{= uri }}"><a class="ui-icon-embed" href="{{= G.serverName }}/widget/embed.html?uri={{= encodeURIComponent(uri) }}">&#160;EMBED</a></div>
 </li>
 </script>
 
@@ -1580,16 +1577,9 @@
 <a target="#"><i class="ui-icon-plus" style="color: {{= G.darkColor }};"></i></a>
 </script>
 
-<script type="text/template" id="menuButtonTemplate">
-<!-- button that toggles the menu panel -->
-<a target="#" href="#{{= viewId }}" style="color: {{= G.darkColor }};"><i class="ui-icon-reorder"></i>
-  {{= !this.viewId  ||  this.viewId.indexOf('viewHome') != -1 ? '' :  '<span class="menuBadge">{0}</span>'.format(obj.newAlerts || '') }}
-</a>
-</script>
-
 <script type="text/template" id="rightMenuButtonTemplate">
 <!-- button that toggles the object properties panel -->
-<a target="#" href="#{{= viewId }}" style="cursor: pointer; color: {{= G.darkColor }};"><i class="{{= obj.icon || 'ui-icon-reorder' }}"></i></a><!-- {{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }} -->
+<a target="#" style="cursor: pointer; color: {{= G.darkColor }};"><i class="{{= obj.icon || 'ui-icon-reorder' }}"></i></a><!-- {{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }} -->
   {{= !this.viewId  ||  this.viewId.indexOf('viewHome') != -1 ? '' : '<span class="menuBadge">{0}</span>'.format(obj.newAlerts || '') }}
 </span>
 </script>
@@ -2445,7 +2435,7 @@
   {{ } }}
   <section>
   <label class="pack-switch" style="right: 2rem;top:0rem;left:auto;position:absolute;color:{{= G.darkColor }};">
-    <input type="checkbox" name="{{= shortName }}" id="{{= id }}" class="formElement boolean" {{= obj.value ? 'checked="checked"' : '' }} />
+    <input type="checkbox" {{= prop.editDisabled ? 'disabled="disabled"' : '' }} name="{{= shortName }}" id="{{= id }}" class="formElement boolean" {{= obj.value ? 'checked="checked"' : '' }} />
     <span style="top:2rem"></span>
   </label>
   </section>
@@ -2542,9 +2532,9 @@
 </script>
 
 <script type="text/template" id="srcPT">
-<div class="_prim" data-type="src">
-  {{= value }}
-</div>
+  <div class="_prim" data-type="src" style="padding-left:0;">
+    {{= value }}
+  </div>
 </script>
 
 <script type="text/template" id="cameraPopupTemplate">

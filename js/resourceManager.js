@@ -587,11 +587,16 @@ define('resourceManager', [
     
     var made = sideEffects.MKRESOURCE,
         modified = sideEffects.PROPPATCH,
-        deleted = sideEffects['DELETE'];
+        deleted = sideEffects['DELETE'],
+        inlined = U.getPropertiesWith(res.vocModel.properties, [{name: "displayInline", value: true}, {name: "backLink"}]);
 
     if (!_.isEmpty(made)) {
       made.forEach(function(uri) {
-        G.log(RM.TAG, 'info', 'SIDE EFFECT MKRESOURCE: ' + uri);
+        var type = U.getTypeUri(uri);
+        for (var p in inlined) {
+          if (U.getTypeUri(inlined[p].range) == type)
+            return U.getResourcePromise(uri);
+        }
       });
     }
     

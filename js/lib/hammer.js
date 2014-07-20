@@ -1206,7 +1206,7 @@ Hammer.gestures.Tap = {
   name    : 'tap',
   index   : 100,
   defaults: {
-    tap_max_touchtime : 250,
+    tap_max_touchtime : 499,
     tap_max_distance  : 10,
     tap_always        : true,
     doubletap_distance: 20,

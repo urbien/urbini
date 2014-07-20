@@ -79,7 +79,7 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
     info.end = info.start + numRequested;
     
 //    shortPage = !!(numNow && numNow < perPage);
-    info.isUpdate = numNow >= info.end; // || shortPage;
+    info.isUpdate = info.start < numNow; //numNow >= info.end || ; // || shortPage;
 //    if (numNow) // we've already gotten everything out of the DB
 //      this.info.isForceFetch = true;
     

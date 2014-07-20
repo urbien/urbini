@@ -145,6 +145,9 @@ define('router', [
       });
 
       Events.on('navigate', function(fragment, options) {
+        if (~fragment.indexOf('#'))
+          debugger;
+        
         self.navigate.apply(self, [fragment, _.defaults(options || {}, {trigger: true, replace: false})]);
       });
 

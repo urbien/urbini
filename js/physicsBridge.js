@@ -201,13 +201,15 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     }
     else {
       if (G.support.pushState) {
-        var t = e.target;
+        var t = e.target,
+            href;
+        
         if (!t.tagName != 'A')
           t = t.$closest('a');
         
         if (t) {
           e.preventDefault();
-          if (!t.href.startsWith('javascript:'))
+          if (t.href && !t.href.startsWith('javascript:'))
             Events.trigger('navigate', t.href);
         }
       }
@@ -238,14 +240,12 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         return;
       }
       else if (href) {
-        if (!U.isExternalUrl(absoluteHref)) {
+        if ((!a.target || a.target == '#') && !U.isExternalUrl(absoluteHref)) {
           Events.stopEvent(e);
           Events.trigger('navigate', href);
           return;
         }
       }
-      
-      debugger;
     }
   }, false);
 

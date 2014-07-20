@@ -201,7 +201,15 @@ define('views/ViewPage', [
                   }
                 }
               });
-            });        
+            });
+            
+            if (self.resource.isAssignableFrom("model/workflow/Alert") && !self.resource.get('markedAsRead')) {
+              self.resource.save({
+                markedAsRead: true
+              }, {
+                userEdit: true
+              });
+            }
           });
         });
       }

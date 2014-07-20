@@ -103,7 +103,7 @@ define('globals', function() {
   })();
   
   if (!browser.supported) {
-    alert("Alas, we don't yet support the version of the browser you're using. Please try Chrome, Firefox, Safari or IE10.");
+    alert("Alas, we don't yet support the version of the browser you're using. Please try Chrome, Firefox, Safari or IE10+.");
     return;
   }
   
@@ -130,7 +130,11 @@ define('globals', function() {
   }
   
   function getFileStorageType(fileName) {
-    return getBundleStorageType(getBundleForFile(fileName)._name);
+    var bundle = getBundleForFile(fileName);
+    if (bundle)
+      return getBundleStorageType(bundle._name);
+    else
+      return 'localStorage';
   }
 
   function getBundleStorageType(bundleName) {
@@ -1139,7 +1143,7 @@ define('globals', function() {
 //        bg: '#000'
 //      },
       taskQueue: {
-        on: true,
+        on: false,
         color: '#88FFFF',
         bg: '#000'
       },
@@ -1154,7 +1158,7 @@ define('globals', function() {
         bg: '#000'
       },
       db: {
-        on: true,
+        on: false,
         color: '#FFFFFF',
         bg: '#000'
       },

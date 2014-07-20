@@ -37,7 +37,6 @@ define('views/ResourceView', [
       }.bind(this));
       
       var res = this.resource;
-      res.on('change', this.refresh, this);
       var uri = res.getUri(), self = this;
 //      if (U.isTempUri(uri)) {
 //        Events.once('synced:' + uri, function(data) {
@@ -80,7 +79,38 @@ define('views/ResourceView', [
     
     events: {
       'click': 'click',
-      'click [data-display="collapsed"]': 'showOther'
+      'click [data-display="collapsed"]': 'showOther',
+      'click .socialLinks .ui-icon-twitter': 'share'
+    },
+
+    modelEvents: {
+      'change': 'update',
+      'inlineList': 'update'
+    },
+    
+    update1: function() {
+      console.log('UPDATE, QUEUING', this.TAG);
+      this.update.apply(this, arguments);
+    },
+    
+    share: function(e) {
+//      var twitterLink = this.resource && this.resource.get('twitterLink');
+//      if (twitterLink) {
+//        Events.trigger('navigate', twitterLink);
+//        return;
+//      }
+      
+      if (!this.resource.get('isPublic')) {
+        Events.stopEvent(e);
+        Events.trigger('navigate', U.makeMobileUrl('edit', this.resource.getUri(), {
+          '-info': 'Before you can share this tradle, edit it to make it public',
+          $editCols: 'isPublic'
+        }));
+      }
+//      this.getPageView().addTooltip({
+//        el: this.$('.socialLinks .ui-icon-edit')[0],
+//        tooltip: 'Before you can share this tradle, edit it to make it public'
+//      });
     },
     
     pageEvents: {

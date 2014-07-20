@@ -46,7 +46,7 @@ define('views/BasicView', [
     _rail: true,
     _scrollAxis: 'y',
     initialize: function(options) {
-      _.bindAll(this, 'render', 'refresh', 'destroy', '_onActive', '_onInactive', '_render',  '_refresh', 'finish', '_onViewportDimensionsChanged', '_recheckDimensions', '_onMutation', '_updateSize', 'invalidateSize');
+      _.bindAll(this, 'render', 'refresh', 'update', 'destroy', '_onActive', '_onInactive', '_render',  '_refresh', 'finish', '_onViewportDimensionsChanged', '_recheckDimensions', '_onMutation', '_updateSize', 'invalidateSize');
       this._initializedCounter++;
       this.TAG = this.TAG || this.constructor.displayName;
 //      this.log('newView', ++this.constructor._instanceCounter);
@@ -411,12 +411,47 @@ define('views/BasicView', [
     isChildless: function() {
       return _.isEmpty(this.children);
     },
-    
+
+//    update: _.debounce(function() {
+//      if (this.rendered) {
+//        console.debug("UPDATE, REFRESHING: " + this.TAG, arguments);
+//        this.refresh.apply(this, arguments);
+//      }
+//      else {
+//        console.debug("UPDATE, RENDERING: " + this.TAG, arguments);
+//        this.render.apply(this, arguments);
+//      }
+//    }, 100),
+
     update: function() {
-      if (this.rendered)
-        this.refresh.apply(this, arguments);
-      else
-        this.render.apply(this, arguments);      
+//      if (!this._update) {
+//        this._update = _.debounce(function() {
+      var now = _.now();
+      clearTimeout(this._updateTimeout);
+      if (this._lastUpdateTime && now - this._lastUpdateTime < 100) {
+//        console.debug("UPDATE, DEBOUNCING: " + this.TAG, args);
+        this._updateTimeout = setTimeout(this.update, 100);
+        this._lastUpdateTime = now;
+        this._lastUpdateArgs = arguments;
+        return;
+      }
+      
+      var args = this._lastUpdateArgs || arguments;
+      this._lastUpdateArgs = null;
+      this._lastUpdateTime = now;
+      if (this.rendered) {
+//        console.debug("UPDATE, REFRESHING: " + this.TAG, args);
+        this.refresh.apply(this, args);
+      }
+      else {
+//        console.debug("UPDATE, RENDERING: " + this.TAG, args);
+        this.render.apply(this, args);
+      }
+      
+//        }, 100);
+//      }
+//      
+//      return this._update.apply(this, arguments);
     },
     
     destroy: function(keepEl) {

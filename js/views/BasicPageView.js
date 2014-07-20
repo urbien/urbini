@@ -24,6 +24,10 @@ define('views/BasicPageView', [
 
 //  if (G.lazifyImages)
 //    mixins.unshift(LazyImageLoader);
+
+  function fixSelector(s) {
+    return s.replace(/\[([^\]=]+)=([^\"\]]+)\]/, '[$1="$2"]');
+  };
   
   function isInsideDraggableElement(element) {
     return !!$(element).parents('[draggable=true]').length;
@@ -166,7 +170,7 @@ define('views/BasicPageView', [
     
     scrollToTarget: function(e) {
       var link = e.selectorTarget,
-          selector = link.$data('selector'),
+          selector = fixSelector(link.$data('selector')),
           target = this.$(selector)[0],
           offset,
           tooltip,

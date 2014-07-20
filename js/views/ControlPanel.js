@@ -20,6 +20,16 @@ define('views/ControlPanel', [
     
     return bl;
   };
+
+  function shouldPaintOverlay(res, blProp) {
+    if (!res)
+      return false;
+    
+    if (res.isAssignableFrom('commerce/trading/Tradle') && blProp.shortName == 'notifications')
+      return false;
+    
+    return true;
+  };
   
   var CLICK_INDICATOR = 'Click an indicator to create a rule. <br /><br /> Swipe from right to left on rules or indicators for a list of actions.';
   
@@ -27,7 +37,7 @@ define('views/ControlPanel', [
     tagName: "tr",
     autoFinish: false,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'refresh', 'add', 'showOther', 'update', 'insertInlineScroller', 'removeInlineScroller', 'toggleInlineScroller', 'doRenderFT', 'paintOverlay', 'showOverlay', 'hideOverlays'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'refresh', 'add', 'showOther', 'insertInlineScroller', 'removeInlineScroller', 'toggleInlineScroller', 'doRenderFT', 'paintOverlay', 'showOverlay', 'hideOverlays'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
@@ -47,7 +57,7 @@ define('views/ControlPanel', [
     
     modelEvents: {
       'inlineList': 'update',
-      'change': 'refresh'
+      'change': 'update'
     },
     
     events: {
@@ -97,18 +107,18 @@ define('views/ControlPanel', [
           overlay = li.$('.anim-overlay')[0],
           overlayHTML;
       
-      if (!res)
-        return;
+      if (!shouldPaintOverlay(this.resource, blProp))
+        return false;
         
       var actions = {
         cancel: res.isA('Cancellable') && !res.get('Cancellable.cancelled'),
         edit: !U.isAssignableFrom(vocModel, 'commerce/trading/Rule', 'commerce/trading/TradleIndicator'),
         add: U.isPropEditable(res, blProp),
-        comment: res.isA('CollaborationPoint') || this.resource.isA('CollaborationPoint')
+        comment: res.isA('CollaborationPoint') // || this.resource.isA('CollaborationPoint')
       };
       
       if (!_.any(actions, function(v, k) { return v }))
-        return;
+        return false;
       
       if (!this.actionsOverlayTemplate)
         this.makeTemplate('actionsOverlayTemplate', 'actionsOverlayTemplate', this.vocModel.type);
@@ -124,6 +134,7 @@ define('views/ControlPanel', [
       
       li.$prepend(overlayHTML);
       overlay = li.$('.anim-overlay')[0];
+      return true;
     },
     
     onswiperight: function(e) {
@@ -135,10 +146,11 @@ define('views/ControlPanel', [
           li = getLi(e.selectorTarget);
       
       this.hideOverlays();
-      this.paintOverlay(li);
-      setTimeout(function() {
-        self.showOverlay(li);
-      }, 1);      
+      if (this.paintOverlay(li)) {
+        setTimeout(function() {
+          self.showOverlay(li);
+        }, 1);
+      }
     },
     
     showOverlay: function(li) {
@@ -533,7 +545,7 @@ define('views/ControlPanel', [
           isRule = U.isAssignableFrom(listVocModel, 'commerce/trading/Rule'),
           isIndicator = U.isAssignableFrom(listVocModel, 'commerce/trading/TradleIndicator'),
           isTrade = U.isAssignableFrom(listVocModel, 'commerce/trading/Order'),
-          canAdd = !isRule && U.isPropEditable(this.resource, prop), // don't allow add other than by clicking individual indicators 
+          canAdd = !isRule && U.canAddToBacklink(this.resource, prop), // don't allow add other than by clicking individual indicators 
           linkToEdit = U.isAssignableFrom(listVocModel, G.commonTypes.WebProperty, 'commerce/trading/Notification'),
           action = linkToEdit ? 'edit' : 'view',
           template;
@@ -1033,8 +1045,8 @@ define('views/ControlPanel', [
         return;
       
       var isHorizontal;      
+      var isTradle = U.isAssignableFrom(this.vocModel, 'Tradle');
       if (this.isMainGroup && !this.dontStyle) {
-        var isTradle = U.isAssignableFrom(this.vocModel, 'Tradle');
         if ((!U.isA(this.vocModel, 'ImageResource')  &&  !U.isA(this.vocModel, 'Intersection')) ||  isTradle) {
           if (!isTradle) {
             this.el.$css("float", "left");
@@ -1437,7 +1449,7 @@ define('views/ControlPanel', [
 //          setTimeout(this.hideOverlays, 1000);
         }
 
-        if (U.isAssignableFrom(this.vocModel, 'commerce/trading/Tradle'))
+        if (isTradle)
           this.renderFT();
         
 //        this.addToWorld(null, false);

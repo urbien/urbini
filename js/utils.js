@@ -1403,14 +1403,22 @@ define('utils', [
     
     getBacklinkCount: function(res, pName) {
       var count = res.get(pName),
-          countPName = pName + 'Count';
-          
+          countPName = pName + 'Count',
+          inlineList = res.getInlineList(pName);
+      
       if (count)
         count = count.count;
       else
         count = res.vocModel.properties[countPName] && res.get(countPName);
       
+      if (!count && inlineList)
+        count = inlineList.length;
+      
       return count || 0;
+    },
+    
+    canAddToBacklink: function(res, prop) {
+      return U.isPropEditable(res, prop) && (!prop.maxCardinality || U.getBacklinkCount(res, prop.shortName) < prop.maxCardinality); 
     },
     
     areQueriesEqual: function(q1, q2) {
@@ -4687,6 +4695,44 @@ define('utils', [
         return rule.get('resourceValue.displayName');
       else
         throw "unsupported";
+    },
+    
+    getTwitterLink: function(res) {
+      var text = U.getDisplayName(res),
+          url, 
+          hashtags,
+          twitterLink = res.get('twitterLink'),
+          action = twitterLink ? 'retweet' : 'tweet',
+          params = {
+            size: 'large'
+          };
+      
+      if (twitterLink) {
+        params.tweet_id = twitterLink.match(/\/status\/(\d+)/)[1];
+      }
+      else if (res.isAssignableFrom('commerce/trading/Tradle')) {
+        params.url = G.serverName + '/media/media.html?uri=' + _.encode(res.getUri());
+        hashtags = 'tradle';
+      
+        var orders = res.getInlineList('orders');
+        if (orders && orders.length)
+          hashtags += ',' + _.uniq(orders.pluck('security').map(function(uri) { return _.decode(uri.split('=')[1]) })).join(',');
+      }
+      else {
+        url = U.makePageUrl('view', res);
+        hashtags = res.vocModel.displayName;
+      }
+      
+      if (text.length > 120)
+        text = text.slice(0, 118) + '..';
+      
+      if (text)
+        params.text = text;
+      
+      if (hashtags)
+        params.hashtags = hashtags;
+      
+      return 'https://twitter.com/intent/' + action + '?' + _.param(params);
     }
   };
   
