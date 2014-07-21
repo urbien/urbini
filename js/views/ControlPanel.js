@@ -430,22 +430,30 @@ define('views/ControlPanel', [
       this.addToBacklink(this.vocModel.properties[shortName], t);
     },
     showOther: function(e) {
-      var t = e.target;
-      var tagName = t.tagName.toLowerCase();
+      var t = e.target,
+          selectorTarget = e.selectorTarget,
+          tagName = t.tagName.toLowerCase();
+      
       if (tagName == 'a')
         return;
-      if (tagName == 'i') {
-        var cl = t.getAttribute('class');
-        if (cl  &&  cl == 'ui-icon-plus')
-          return;
-      }
+      
+//      if (tagName == 'i') {
+//        if (t.$hasClass('ui-icon-plus'))
+//          return;
+//      }
 //      var wl = G.currentApp.widgetLibrary
 //      if (wl  &&  wl != 'Jquery Mobile') {
       Events.stopEvent(e);
       
-      while (t.parentNode  &&  t.parentNode.tagName.toLowerCase() != 'ul')
-        t = t.parentNode; 
-      t.parentNode.$('ul').$toggleClass('hidden');
+      selectorTarget.$('ul').$toggleClass('hidden');
+      var icon = selectorTarget.$('header i.ui-icon-plus-sign,header i.ui-icon-minus-sign')[0],
+          isPlus = icon.$hasClass('ui-icon-plus-sign'),
+          add = isPlus ? 'minus' : 'plus',
+          remove = isPlus ? 'plus' : 'minus';
+      
+      icon.$removeClass('ui-icon-' + remove + '-sign')
+          .$addClass('ui-icon-' + add + '-sign');
+      
       this.getPageView().invalidateSize();        
       return;
 //      }
