@@ -1496,12 +1496,21 @@ label.subClass {
 
 #buttons i.help {
   opacity: 1;
+  -webkit-transform: scale(1);
+     -moz-transform: scale(1);
+      -ms-transform: scale(1);
+          transform: scale(1);
+
   float: right; 
   margin-right: 10px;
 }
 
 .quickstart-active #buttons i.help {
   opacity: 0;
+  -webkit-transform: scale(0);
+     -moz-transform: scale(0);
+      -ms-transform: scale(0);
+          transform: scale(0);
 }
 
 .quickstart-active .quickstart {
@@ -1550,4 +1559,8 @@ label.subClass {
 #hpRightPanel.hint:after, #hpRightPanel[data-hint]:after {
   color: #000000;
   background: #ffffff;
+}
+
+input.ui-input-text.invalid {
+  border: 2px solid red;
 }
