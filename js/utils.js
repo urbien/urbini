@@ -2184,7 +2184,7 @@ define('utils', [
               val = val.charAt(0) == '<' ? val : "<span>" + val + "</span>";
           }
 //            val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
-          else if (!isView  &&  prop.maxSize > 1000) {
+          else if (!isView  &&  prop.maxSize > 1000) {//  &&  val.length > 1000) {
             var color;
             color = G.darkColor;
             /*
@@ -2372,17 +2372,19 @@ define('utils', [
       params = params || {};
       if (typeOrUriParts[1]) 
         _.extend(params, _.toQueryParams(typeOrUriParts[1]));
-        
+      
       if (!G.currentUser.guest)
         params['-ref'] = U.getUserReferralParam();
       
       url = action + '/' + (HAS_PUSH_STATE ? typeOrUri : encodeURIComponent(typeOrUri));
-      if (HAS_PUSH_STATE) {
-        url += ~url.indexOf('?') ? '&' : '?';
-        url += U.getQueryString(params, {sort: U.modelParamsFirst});
+      if (!_.isEmpty(params)) {
+        if (HAS_PUSH_STATE) {
+          url += ~url.indexOf('?') ? '&' : '?';
+          url += U.getQueryString(params, {sort: U.modelParamsFirst});
+        }
+        else
+          url += '?' + U.getQueryString(params, {sort: U.modelParamsFirst}); //, encOptions);
       }
-      else
-        url += '?' + U.getQueryString(params, {sort: U.modelParamsFirst}); //, encOptions);
       
       return url;
     },
@@ -2435,7 +2437,8 @@ define('utils', [
         val.options = eCl.values;
       }
       
-      val.value = val.value || '';
+      if (val.value == null)
+        val.value = '';
       if (prop.range == 'resource') 
         val.uri = val.value;
       else if (isImage) {
@@ -4712,11 +4715,13 @@ define('utils', [
       }
       else if (res.isAssignableFrom('commerce/trading/Tradle')) {
         params.url = G.serverName + '/media/media.html?uri=' + _.encode(res.getUri());
-        hashtags = 'tradle';
+//        hashtags = 'tradle';
       
         var orders = res.getInlineList('orders');
         if (orders && orders.length)
-          hashtags += ',' + _.uniq(orders.pluck('security').map(function(uri) { return _.decode(uri.split('=')[1]) })).join(',');
+          text += ' ' + hashtags;
+//          hashtags = _.uniq(orders.pluck('security').map(function(uri) { return _.decode(uri.split('=')[1]) })).join(',');
+        
       }
       else {
         url = U.makePageUrl('view', res);
