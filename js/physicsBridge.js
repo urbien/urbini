@@ -209,7 +209,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         
         if (t) {
           e.preventDefault();
-          if (t.href && !t.href.startsWith('javascript:'))
+          if (canNavigate(t))
             Events.trigger('navigate', t.href);
         }
       }
@@ -217,6 +217,10 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       log('events', 'ALLOWING CLICK', _.now());
     }
   }, true);
+  
+  function canNavigate(a) {
+    return a.href && !a.href.startsWith('javascript:') && !a.href.endsWith('#') && a.target != '#';
+  }
 
   document.addEventListener('click', function(e) {
     if (e.defaultPrevented)
@@ -234,17 +238,24 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       return;
     }
     
-    if (tagName == 'A') {
-      if (href == '#') {
-        Events.stopEvent(e);
-        return;
-      }
-      else if (href) {
-        if ((!a.target || a.target == '#') && !U.isExternalUrl(absoluteHref)) {
-          Events.stopEvent(e);
-          Events.trigger('navigate', href);
+    if (tagName != 'A')
+      return;
+    
+    if (href == '#') {
+      Events.stopEvent(e);
+      return;
+    }
+    else if (href) {
+      Events.stopEvent(e);
+      if (canNavigate(a)) {
+        if (U.isExternalUrl(absoluteHref)) {
+          window.location.href = absoluteHref;
           return;
         }
+        
+        Events.stopEvent(e);
+        Events.trigger('navigate', href);
+        return;
       }
     }
   }, false);
