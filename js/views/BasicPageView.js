@@ -133,7 +133,7 @@ define('views/BasicPageView', [
         this._fetchPromise.fail(Errors.getBackboneErrorHandler());
         if (this._autoFetch) {
           this.model.fetch(_.extend({
-//            sync: true,
+            sync: true,
             success: self._fetchDfd.resolve,
             error: self._fetchDfd.reject
           }, options.fetchOptions));
@@ -199,31 +199,35 @@ define('views/BasicPageView', [
         tooltip.$remove();
     },
     
+    scrollToElement: function(el, alignToTop) {
+      var offset = el.$offset();
+      if (this.mason) {
+        var snapBy = offset.top;
+        if (!alignToTop)
+          snapBy -= G.viewport.height / 2;
+          
+        if (snapBy)
+          this.mason.snapBy(0, -snapBy);
+      }
+    },
+    
     scrollToTarget: function(e) {
       var link = e.selectorTarget,
           selector = fixSelector(link.$data('selector')),
           target = this.$(selector)[0],
-          offset,
           tooltip,
           direction;
       
       if (!target)
         return;
       
+      var collapsed = target.$closest('[data-display="collapsed"]');
+      if (collapsed && this.isCollapsed(collapsed))
+        this.toggleCollapsedEl(collapsed);
+      
       Events.stopEvent(e);
-      offset = target.$offset();
       tooltip = link.$data('tooltip');
       direction = link.$data('direction');
-      
-//      if (offset.top > (G.viewport.height / 2) && this.mason)
-      if (this.mason) {
-        var snapBy = offset.top;
-        if (tooltip)
-          snapBy -= G.viewport.height / 2;
-          
-        this.mason.snapBy(0, -snapBy);
-      }
-      
       if (tooltip) {
         this.addTooltip({
           el: target, 
@@ -233,6 +237,12 @@ define('views/BasicPageView', [
           style: 'square'
         });
       }
+      
+      this.scrollToElement(target, !tooltip);
+    },
+    
+    isCollapsed: function(el) {
+      return !!el.$('header i.ui-icon-plus-sign').length;
     },
     
     pageUp: function(e) {
@@ -242,7 +252,16 @@ define('views/BasicPageView', [
     },
     
     pageDown: function(e) {
-      var pages = parseInt(e.selectorTarget.$data('pages') || "1");
+      var t = e.selectorTarget;
+//          section = t.$closest('[data-homepage]')[0];
+//      
+//      if (section) {
+//        var el = section.parentElement.$('[data-homepage="{0}"]'.format(parseInt(section.$data('homepage')) +1))[0];
+//        if (el)
+//          this.scrollToElement(el);
+//      }
+      
+      var pages = parseInt(t.$data('pages') || "1");
       Events.stopEvent(e);
       Events.trigger('pageDown', pages);
     },

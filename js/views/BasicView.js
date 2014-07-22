@@ -1569,7 +1569,6 @@ define('views/BasicView', [
     },
     
     clickDataHref: function(e) {
-      debugger;
       Events.stopEvent(e);
       Events.trigger('navigate', e.selectorTarget.$data('href'));
     }    

@@ -107,6 +107,7 @@ define('views/EditView', [
       var promises = [],
           fetchPromise = this.getFetchPromise();
       
+      this._activatedPropName = U.getCloneOf(this.vocModel, 'Activatable.activated')[0];
       this.isCode = !!codemirrorModes.length;
       var codemirrorPromise;
       if (this.isCode) {
@@ -1212,12 +1213,18 @@ define('views/EditView', [
       if (set)
         onValidated && onValidated();
       
+      if (onInvalid)
+        res.off('invalid', onInvalid);
+      
       return set;
     },
 
     addProp: function(info) {
       var prop = info.prop,
           p = prop.shortName;
+      
+      if (p == this._activatedPropName)
+        return;
       
       if (p == 'value' && U.isAssignableFrom(this.vocModel, 'commerce/trading/EnumRule')) {
         var enumModel = U.getEnumModel(this.resource.get('eventPropertyRangeUri'));

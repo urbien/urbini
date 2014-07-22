@@ -268,12 +268,12 @@ define('resourceSynchronizer', [
     SYNCING = true;
     console.log("2. SYNCING!");
     var IDB = IndexedDBModule.getIDB(),
-        version = IDB.getVersion() || 0,
+//        version = IDB.getVersion() || 0,
         types = [],
         self = this;
     
-    if (version <= 1)
-      return;
+//    if (version <= 1)
+//      return;
 
     var retry = function() {
       SYNCING = false;

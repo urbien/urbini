@@ -781,7 +781,13 @@ section[id^="view"] {
 }
 
 .header2 i {
-  font-size:28px;
+  font-size:20px;
+}
+
+@media only screen and (min-width: 480px) {
+ .header2 i {
+   font-size:28px;
+ }
 }
 
 .header2 label.pack-switch {
@@ -1269,9 +1275,6 @@ section[id^="view"] {
 
 label.subClass {
   font-size: 1.5rem;
-  -webkit-appearance: button;
-     -moz-appearance: button;
-          appearance: button;
 }
 
 .subClass input {
@@ -1317,6 +1320,10 @@ label.subClass {
      -moz-transition: 0.6s ease;
       -ms-transition: 0.6s ease;
           transition: 0.6s ease;
+}
+
+.anim-overlay-content {
+  width: 100%;
 }
 
 .anim-overlay i {

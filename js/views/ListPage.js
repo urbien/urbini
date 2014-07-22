@@ -446,7 +446,7 @@ define('views/ListPage', [
 //      this.addToWorld(null, true);
       this.finish();
       return this;
-    },
+    }
     
 //    ,
 //    buildMockViewPage: function() {

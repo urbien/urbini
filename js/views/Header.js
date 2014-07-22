@@ -27,27 +27,30 @@ define('views/Header', [
   return BasicView.extend({
 //    viewType: 'any',
     style: {
-      opacity: 0.75//, //DOM.maxOpacity
+      opacity: 1//, //DOM.maxOpacity
 //      zIndex: 10001
     },
     _draggable: false,
     autoFinish: false,
     template: 'headerTemplate',
     initialize: function(options) {
-      _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload', 'refresh', 'onFilter'); //, '_updateInfoErrorBar', 'checkErrorList', 'sendToCall');
+      _.bindAll(this, 'render', /*'makeWidget', 'makeWidgets',*/ 'fileUpload', 'refresh', 'onFilter', 'updateQuickstart'); //, '_updateInfoErrorBar', 'checkErrorList', 'sendToCall');
       BasicView.prototype.initialize.apply(this, arguments);
       options = options || {};
       _.extend(this, options);
       this.viewId = options.viewId;
       this.locationHref = window.location.hash;
       if (this.resource) {
-        this.resource.on('change', function(res, options) {
+        function update(res, options) {
 //          G.log(this.TAG, 'events', 'change event received for', U.getDisplayName(this.resource));
           if (options && options.skipRefresh)
             return;
           
           this.refresh();
-        }, this);
+        }
+        
+        this.resource.on('change', update, this);
+        this.resource.on('inlineList', update, this);
       }
 
       if (this.buttons)
@@ -116,6 +119,11 @@ define('views/Header', [
 //            name: U.getPropDisplayName(vocModel.properties[pName])
 //          };
 //        }
+//      }
+      
+//      if (this.resource) {
+//        this.listenTo(this.resource, 'change', this.updateQuickstart);
+//        this.listenTo(this.resource, 'inlineList', this.updateQuickstart);
 //      }
 
       return this;
@@ -253,7 +261,7 @@ define('views/Header', [
         'keyup .filterConditionInput input'          : 'onFilter',
         'change .filterConditionInput select'        : 'onFilter',
         'change .filterConditionInput input'         : 'onFilter',
-        'change .subClass input'                     : 'onChoseSubClass',
+        'click .subClass'                            : 'onChoseSubClass',
         'click.header .quickstart .ui-icon-remove'   : 'hideQuickstart',
   //      'click.header'                                 : 'checkHideQuickstart',
         'click.header i.help'                        : 'showQuickstart'
@@ -263,10 +271,10 @@ define('views/Header', [
       return events;
     })(),
     
-    modelEvents: {
-      'change': 'updateQuickstart',
-      'inlineList': 'updateQuickstart'
-    },
+//    modelEvents: {
+//      'change': 'updateQuickstart',
+//      'inlineList': 'updateQuickstart'
+//    },
 
     back: function() {
       Events.trigger('back', 'Back clicked from header');
@@ -285,9 +293,9 @@ define('views/Header', [
       var params = {},
           res = this.resource,
           pName = this.activatedProp.shortName,
-          activated = !this.resource.get(pName);
+          activating = !this.resource.get(pName);
 
-      if (!activated && U.isAssignableFrom(this.vocModel, "commerce/trading/Tradle")) {
+      if (activating && U.isAssignableFrom(this.vocModel, "commerce/trading/Tradle")) {
         var msg;        
         
         var defaultTitle = "New tradle";
@@ -313,7 +321,7 @@ define('views/Header', [
         }
       }
       
-      if (!force && activated && U.isAssignableFrom(this.vocModel, "commerce/trading/Tradle")) {
+      if (!force && activating && U.isAssignableFrom(this.vocModel, "commerce/trading/Tradle")) {
         function undo() {
           e.selectorTarget.checked = false;
         };
@@ -346,7 +354,9 @@ define('views/Header', [
             if (spinner)
               G.hideSpinner(spinner);
             
-            self.getPageView().toggleCollapsedEl(self.getPageView().$('#expectedPerformance')[0]);
+            var perf = self.getPageView().$('#expectedPerformance')[0];
+            if (perf)
+              self.getPageView().toggleCollapsedEl();
           }
           
           U.modalDialog({
@@ -387,7 +397,7 @@ define('views/Header', [
         }
       }
       
-      params[this.activatedProp.shortName] = activated;
+      params[this.activatedProp.shortName] = activating;
       this.resource.save(params, {
         userEdit: true,
         redirect: false
@@ -717,6 +727,7 @@ define('views/Header', [
       this.refreshFolder();
       this.calcSpecialButtons();
       this.renderSpecialButtons();
+      this.updateQuickstart();
 //      this.error = null;
 //      this.renderError();
 //      this.restyleNavbar();
@@ -1100,7 +1111,7 @@ define('views/Header', [
 
     onChoseSubClass: function(e) {
       var self = this,
-          input = e.selectorTarget,
+          input = e.selectorTarget.$('input')[0],
           sClName = input.value,
           sCls = this.subClassesEl.$('input[type="radio"]'),
           filter = this.filterParams,
@@ -1117,6 +1128,7 @@ define('views/Header', [
             }
           };
            
+      input.checked = true;
       this._lastSubClass = input;
       if (sClName != 'All') {
         var type = input.$data('type');
@@ -1331,7 +1343,7 @@ define('views/Header', [
     },
 
     getQuickstartTemplate: function() {
-      if (_.has(this, 'quickstartTemplate'))
+      if (this.quickstartTemplate)
         return this.quickstartTemplate;
       
       var urlInfo = U.getCurrentUrlInfo(),
@@ -1339,8 +1351,13 @@ define('views/Header', [
           forRes = params.$forResource,
           template;
       
-      if (this.resource && this.resource.isAssignableFrom('commerce/trading/Tradle'))
-        template = 'tradleViewQuickstartTemplate';
+      if (this.resource && this.resource.isAssignableFrom('commerce/trading/Tradle')) {
+        var owner = this.resource.get('owner'),
+            submittedBy = this.resource.get('submittedBy');
+        
+        if (G.currentUser._uri == (owner || submittedBy))
+          template = 'tradleViewQuickstartTemplate';
+      }
       else if (urlInfo.route == 'chooser') {
         if (params.$propA == 'tradle' && params.$propB == 'feed')
           template = 'feedChooserQuickstartTemplate';
@@ -1351,10 +1368,9 @@ define('views/Header', [
       }
       
       if (!template)
-        this.quickstartTemplate = null;
-      else
-        this.makeTemplate(template, 'quickstartTemplate', this.vocModel.type);
+        return null;
       
+      this.makeTemplate(template, 'quickstartTemplate', this.vocModel.type);
       return this.quickstartTemplate;
     },
     
@@ -1376,6 +1392,7 @@ define('views/Header', [
 //      this.helpIcon = this.$('i.help')[0];
         this.quickstart.$html(this.quickstartTemplate());
         this.showQuickstart();
+        this.$('i.help').$show();
       }      
     },    
     

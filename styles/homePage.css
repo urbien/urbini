@@ -451,11 +451,11 @@ body > .section:not([data-role="page"]) {
 }
 
 .mini-cta {
-  background: #2892c6;
+  border: 1px solid #3777a1;
+  color: #3777a1;
   white-space: nowrap;
   padding: 5px 10px;
   border-radius: 5px;
-  color: white;
   font-weight: bold;
   text-transform: uppercase;
   box-sizing: border-box;
@@ -540,6 +540,13 @@ body > .section:not([data-role="page"]) {
 .section .col i { 
   max-width: 100%; 
   font-size: 96px;
+}
+
+@media only screen and (max-width: 480px) {
+  .section .col {
+    height: auto;
+    min-height: 0;
+  }
 }
 
 .section .span_1_of_4 i {
@@ -871,13 +878,6 @@ body > .section:not([data-role="page"]) {
   height: 100%;
 }
   
-@media only screen and (max-width: 480px) {
-  .section .col {
-    height: auto;
-    min-height: 0;
-  }
-}
-
 @media only screen and (min-width: 480px) {
   .section .span_1_of_4, .section .span_1_of_3 {
     min-height: 400px;
