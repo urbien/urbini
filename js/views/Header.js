@@ -9,6 +9,7 @@ define('views/Header', [
   'domUtils',
   'lib/fastdom'
 ], function(G, Events, U, Voc, BasicView, Physics, DOM, Q) {
+  var TOUCHEND = G.browser.touch ? 'touchend' : 'click';
   var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate', 'installApp'];
   var REGULAR_BUTTONS = ['back', 'cancel', 'save', 'mapIt', 'add', 'video', 'chat', 'login', 'rightMenu'];
   var commonTypes = G.commonTypes;
@@ -235,28 +236,32 @@ define('views/Header', [
       return this;
     },
 
-    events: {
-      'change .activatable input'                  : 'activate',
-      'change #fileUpload'                         : 'fileUpload',
-      'change .physicsConstants input'             : 'changePhysics',
-      'click .filterToggle'                        : 'toggleFilter',
-      'click .categories'                          : 'showCategories',
-      'click .back'                                : 'back',
-//      'click #installApp'         : 'installApp',
-      'click #moreRanges'                          : 'showMoreRanges',
-      'click .filterCondition i.ui-icon-remove-sign, .filterCondition i.ui-icon-remove': 'removeFilterCondition',
-      'click .filterCondition i.ui-icon-plus-sign, .filterCondition i.ui-icon-plus' : 'addFilterCondition',
-      'change .propertySelector'                   : 'changeFilterConditionProperty',
-      'click .filter'                              : 'focusFilter',
-      'keyup .searchInput'                         : 'search',
-      'keyup .filterConditionInput input'          : 'onFilter',
-      'change .filterConditionInput select'        : 'onFilter',
-      'change .filterConditionInput input'         : 'onFilter',
-      'change .subClass input'                     : 'onChoseSubClass',
-      'click.header .quickstart .ui-icon-remove'   : 'hideQuickstart',
-//      'click.header'                                 : 'checkHideQuickstart',
-      'click.header i.help'                        : 'showQuickstart'
-    },
+    events: (function() {
+      var events = {
+        'change .activatable input'                  : 'activate',
+        'change #fileUpload'                         : 'fileUpload',
+        'change .physicsConstants input'             : 'changePhysics',
+        'click .categories'                          : 'showCategories',
+        'click .back'                                : 'back',
+  //      'click #installApp'         : 'installApp',
+        'click #moreRanges'                          : 'showMoreRanges',
+        'click .filterCondition i.ui-icon-remove-sign, .filterCondition i.ui-icon-remove': 'removeFilterCondition',
+        'click .filterCondition i.ui-icon-plus-sign, .filterCondition i.ui-icon-plus' : 'addFilterCondition',
+        'change .propertySelector'                   : 'changeFilterConditionProperty',
+        'click .filter'                              : 'focusFilter',
+        'keyup .searchInput'                         : 'search',
+        'keyup .filterConditionInput input'          : 'onFilter',
+        'change .filterConditionInput select'        : 'onFilter',
+        'change .filterConditionInput input'         : 'onFilter',
+        'change .subClass input'                     : 'onChoseSubClass',
+        'click.header .quickstart .ui-icon-remove'   : 'hideQuickstart',
+  //      'click.header'                                 : 'checkHideQuickstart',
+        'click.header i.help'                        : 'showQuickstart'
+      };
+      
+      events[TOUCHEND + ' .filterToggle'] = 'toggleFilter'; // input focus trick for mobile browsers (call input.focus() on 'touchend')
+      return events;
+    })(),
     
     modelEvents: {
       'change': 'updateQuickstart',
@@ -268,25 +273,7 @@ define('views/Header', [
     },
     
     activate: function(e, force) {
-      e && Events.stopEvent(e);
-      
-      if (U.isAssignableFrom(this.vocModel, "commerce/trading/Tradle")) {
-        var msg;        
-        if (this.resource.get('title') == '')
-          msg = 'Please give your Tradle a title';
-        else if (!this.resource.get('description'))
-          msg = 'Please give your Tradle a description';
-        
-        if (msg) {
-          Events.trigger('navigate', U.makeMobileUrl('edit', this.resource.getUri(), {
-            '-info': msg,
-            '$editCols': 'title,description'
-          }));
-          
-          return;
-        }
-      }
-
+      e && Events.stopEvent(e);      
       var self = this;
       U.require('views/ModalDialog').done(function(MD) {
         ModalDialog = MD;
@@ -300,21 +287,21 @@ define('views/Header', [
           pName = this.activatedProp.shortName,
           activated = !this.resource.get(pName);
 
-      if (U.isAssignableFrom(this.vocModel, "commerce/trading/Tradle")) {
+      if (!activated && U.isAssignableFrom(this.vocModel, "commerce/trading/Tradle")) {
         var msg;        
         
-        var defaultTitle = "";
+        var defaultTitle = "New tradle";
         
-        if (G.currentUser.firstName)
-          defaultTitle += G.currentUser.firstName.substring(0, 1);
-        if (G.currentUser.lastName)
-          defaultTitle += G.currentUser.lastName.substring(0, 1);
-        
-        defaultTitle += "'s Tradle"; 
+//        if (G.currentUser.firstName)
+//          defaultTitle += G.currentUser.firstName.substring(0, 1);
+//        if (G.currentUser.lastName)
+//          defaultTitle += G.currentUser.lastName.substring(0, 1);
+//        
+//        defaultTitle += "'s Tradle"; 
         if (this.resource.get('title') == defaultTitle)
           msg = 'Please give your Tradle a title';
-        else if (!this.resource.get('description'))
-          msg = 'Please give your Tradle a description';
+//        else if (!this.resource.get('description'))
+//          msg = 'Please give your Tradle a description';
         
         if (msg) {
           Events.trigger('navigate', U.makeMobileUrl('edit', this.resource.getUri(), {
@@ -358,6 +345,8 @@ define('views/Header', [
             ModalDialog.hide();
             if (spinner)
               G.hideSpinner(spinner);
+            
+            self.getPageView().toggleCollapsedEl(self.getPageView().$('#expectedPerformance')[0]);
           }
           
           U.modalDialog({
@@ -376,7 +365,7 @@ define('views/Header', [
                 blockClick: true
               };
     
-              G.showSpinner(spinner);              
+              G.showSpinner(spinner);
               tradle.save({
                 backtest: true
               }, {
@@ -724,6 +713,7 @@ define('views/Header', [
     refresh: function() {
 //      this.refreshCallInProgressHeader();
       this.refreshTitle();
+      this.refreshActivated();
       this.refreshFolder();
       this.calcSpecialButtons();
       this.renderSpecialButtons();
@@ -759,6 +749,17 @@ define('views/Header', [
 //    _getRootFolderHref: function() {
 //      return U.makePageUrl('view', this.rootFolder, rootFolder.params);
 //    },
+    
+    refreshActivated: function() {
+      this._checkActivatable();
+      if (this._activatable) {
+        var activatable = this.$('.activatable')[0];
+        if (activatable) {
+          activatable.style.display = 'inline-block';
+          activatable.$('input')[0].checked = this.resource.get(this.activatedProp.shortName) ? 'checked' : '';
+        }
+      }
+    },
     
     _isGeo: function() {
       return !_.isEmpty(_.pick(this.buttons, 'mapIt', 'aroundMe'));
@@ -1223,6 +1224,7 @@ define('views/Header', [
       }
       this.renderPhysics();
       this.refreshTitle();
+      this.refreshActivated();
       this.refreshFolder();
 //      this.$el.prevObject.attr('data-title', this.pageTitle);
 //      this.$el.prevObject.attr('data-theme', G.theme.list);

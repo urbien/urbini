@@ -423,14 +423,15 @@ define('views/BasicView', [
 //      }
 //    }, 100),
 
+    _updatePeriod: 200,
     update: function() {
 //      if (!this._update) {
 //        this._update = _.debounce(function() {
       var now = _.now();
       clearTimeout(this._updateTimeout);
-      if (this._lastUpdateTime && now - this._lastUpdateTime < 100) {
+      if (this._lastUpdateTime && now - this._lastUpdateTime < this._updatePeriod) {
 //        console.debug("UPDATE, DEBOUNCING: " + this.TAG, args);
-        this._updateTimeout = setTimeout(this.update, 100);
+        this._updateTimeout = setTimeout(this.update, this._updatePeriod);
         this._lastUpdateTime = now;
         this._lastUpdateArgs = arguments;
         return;

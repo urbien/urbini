@@ -157,48 +157,52 @@
 
 <script type="text/template" id="tradleViewQuickstartTemplate">
 <div class="quickstart-content">
-  {{ var desc = this.resource.get('description'), ils = this.resource.getInlineLists() || {}, rules = ils.tradleRules, nRules = rules && rules.length, indicators = ils.indicators, nIndicators = indicators && indicators.length; }}
-  {{ var alerts = ils.notifications, orders = ils.orders, nOrders = orders && orders.length, nAnything = nIndicators || nRules || nOrders, activated = this.resource.get('activated'); }}
+  {{ var res = this.resource, desc = res.get('description'), ils = res.getInlineLists() || {}, rules = ils.tradleRules, nRules = rules && rules.length, indicators = ils.indicators, nIndicators = indicators && indicators.length; }}
+  {{ var alerts = ils.notifications, trades = ils.orders, nTrades = trades && trades.length, nAnything = nIndicators || nRules || nTrades, activated = res.get('activated'), isPublic = res.get('isPublic'); }}
+  {{ var currentStep = !nIndicators ? 0 : !nRules ? 1 : !nTrades ? 2 : 3; }}
   <i class="ui-icon-remove"></i>
-  <h2>Quickstart</h2>
+  <h2>Quickstart {{= [0, 1, 2].map(function(step) { return '<span class="step-{0}">{1}</span>'.format(currentStep == step ? 'current' : currentStep > step ? 'complete' : 'incomplete', ++step) }).join('-') }}</h2>
+  {{ if (currentStep < 2) { }}
   {{ if (!desc && !nAnything) { }}
   <h3>Welcome to your new tradle! If this is your first time, follow the steps below to learn the UI:</h3>
   {{ }            }}
   <ol class="quickstart-options">
+    <li>
+      <a class="mini-cta" href="#" data-selector="header [data-shortname=&quot;feeds&quot;] i" data-tooltip="Click here to add indicators" data-direction="left">Add indicators</a> to your tradle.
+    </li>          
+    <li>
+      <a class="mini-cta" href="#" data-selector="li[data-backlink=&quot;indicators&quot;]" data-tooltip="Click an indicator to make a rule with it" data-direction="top">Create rules</a> out of the indicators you've chosen
+    </li>
+    <li>
+      <a class="mini-cta" href="#" data-selector="header [data-shortname=&quot;orders&quot;] i" data-tooltip="Click here to add trades" data-direction="left">Add trades</a> to be executed when your tradle fires
+    </li>
+  </ol>
+  {{ }                     }}
+
+  {{ if (currentStep > 2) { }}
+  <h3>You're done with the first cut! Don't forget to:</h3>
+  <ul class="quickstart-options">
     {{ if (!desc && !(!activated && nRules)) { }}
       <!-- if there's no description and we're not ready to activate yet -->
       <li>
-        <a class="mini-cta" href="#" data-selector=".socialLinks .ui-icon-edit" data-tooltip="Click here to edit the name and description" data-direction="bottom">
-          Name and describe
-        </a> your tradle
+        <a class="mini-cta" href="#" data-selector=".socialLinks .ui-icon-edit" data-tooltip="Click here to edit the name and description" data-direction="bottom">Name</a> your tradle
       </li>
     {{ }                                        }}
-    {{ if (!nIndicators) { }}
+    <li>
+      <a class="mini-cta" href="#" data-selector=".socialLinks .ui-icon-twitter" data-tooltip="Click here whenever you want to Tweet your tradle" data-direction="bottom">Tweet</a> your tradle
+    </li>
+    {{ if (!isPublic && nRules) { }}
       <li>
-        <a class="mini-cta" href="#" data-selector="header [data-shortname=&quot;feeds&quot;] i" data-tooltip="Click here to add indicators" data-direction="left">Add indicators</a> to your tradle.
-      </li>          
-    {{ }                                        }}
-    {{ if (nIndicators && !nRules) { }}
-      <li>
-        <a class="mini-cta" href="#" data-selector="li[data-backlink=&quot;indicators&quot;]" data-tooltip="Click an indicator to make a rule with it" data-direction="top">Create rules</a> out of the indicators you've chosen
-      </li>
-    {{ }                                        }}
-    {{ if (nRules && !nOrders) { }}
-      <li>
-        <a class="mini-cta" href="#" data-selector="header [data-shortname=&quot;orders&quot;] i" data-tooltip="Click here to add trades" data-direction="left">Add trades</a> to be executed when your tradle fires
-      </li>
-    {{ }                                        }}
-    {{ if (nAnything) { }}
-      <li>
-        <a class="mini-cta" href="#" data-selector="[data-backlink]" data-tooltip="Swipe left on any row to pull out an actions bar" data-direction="top">Delete</a> anything you don't need
+        Make your tradle <a class="mini-cta" href="#" data-selector=".socialLinks .ui-icon-edit" data-tooltip="Click to edit, then flip the 'Public' switch to 'On'" data-direction="bottom">Public</a>
       </li>
     {{ }                                        }}
     {{ if (!activated && nRules) { }}
       <li>
-        <a class="mini-cta" href="#" data-selector=".socialLinks .ui-icon-edit" data-tooltip="Click to edit, then turn your tradle 'On'" data-direction="bottom">Activate</a> your tradle.
+        <a class="mini-cta" href="#" data-selector=".activatable" data-tooltip="This switch turns your tradle on or off" data-direction="left">Activate</a> your tradle. {{= this.vocModel.properties.activated.comment || '' }}
       </li>
     {{ }                                        }}
-  </ol>
+  </ul>
+  {{ }                     }}
 </div>
 </script>
 
@@ -1900,6 +1904,14 @@
     <div style="clear:both"></div>
   </div>
   <div class="cf vcenteredR" style="z-index:1; width:20%;float:left;background:inherit;">
+    {{ if (activatedProp) { }}
+      <section class="activatable" style="float: right; margin-right: 2rem; display: none;">
+        <label class="pack-switch">
+          <input type="checkbox" name="{{= activatedProp.shortName }}" class="formElement boolean" {{= this.resource.get(activatedProp.shortName) ? 'checked="checked"' : '' }} />
+          <span></span>
+        </label>
+      </section>
+    {{ }                     }}
     {{ if (this.filter) { }}
       <div style="margin-right: 5px; float: right;"><a class="filterToggle lightText" href="#"><i class="ui-icon-search"></i></a></div> 
     {{ }                  }}

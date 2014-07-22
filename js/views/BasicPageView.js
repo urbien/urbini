@@ -133,7 +133,7 @@ define('views/BasicPageView', [
         this._fetchPromise.fail(Errors.getBackboneErrorHandler());
         if (this._autoFetch) {
           this.model.fetch(_.extend({
-            sync: true,
+//            sync: true,
             success: self._fetchDfd.resolve,
             error: self._fetchDfd.reject
           }, options.fetchOptions));
@@ -160,29 +160,39 @@ define('views/BasicPageView', [
       'click.page .pgUp': 'pageUp',
       'click.page [data-selector]': 'scrollToTarget',
       'click.page .closeBtn': 'closeDialog',
-      'click [data-display="collapsed"]': 'showOther'
+      'click [data-display="collapsed"]': 'toggleCollapsed'
     },
 
-    showOther: function(e) {
+    toggleCollapsed: function(e) {
       if (e.target.tagName.toLowerCase() == 'a')
         return;
       
       Events.stopEvent(e);
-      var section = e.selectorTarget,
-          icon = section.$('header i.ui-icon-plus-sign,header i.ui-icon-minus-sign')[0],
-          isPlus = icon.$hasClass('ui-icon-plus-sign'),
-          add = isPlus ? 'minus' : 'plus',
-          remove = isPlus ? 'plus' : 'minus';
-      
-      section.$('ul').$toggleClass('hidden');
-      icon.$removeClass('ui-icon-' + remove + '-sign')
-          .$addClass('ui-icon-' + add + '-sign');
-      
-      this.getPageView().invalidateSize();        
+      this.toggleCollapsedEl(e.selectorTarget);        
       return;
 //      }
     },
 
+//    showCollapsedEl: function(el) {
+//      if (el.$hasClass('ui-icon-plus-sign')) {
+//        el.$removeClass('ui-icon-plus-sign').$addClass('ui-icon-minus-sign');
+//        el.$('ul').$removeClass('hidden');
+//      }
+//    },
+
+    toggleCollapsedEl: function(el) {
+      var icon = el.$('header i.ui-icon-plus-sign,header i.ui-icon-minus-sign')[0],
+          isPlus = icon.$hasClass('ui-icon-plus-sign'),
+          add = isPlus ? 'minus' : 'plus',
+          remove = isPlus ? 'plus' : 'minus';
+  
+      el.$('ul').$toggleClass('hidden');
+      icon.$removeClass('ui-icon-' + remove + '-sign')
+          .$addClass('ui-icon-' + add + '-sign');
+  
+      this.getPageView().invalidateSize();
+    },
+    
     closeDialog: function(e) {
       var tooltip = e.target.$closest('.play');
       if (tooltip)
@@ -205,8 +215,14 @@ define('views/BasicPageView', [
       tooltip = link.$data('tooltip');
       direction = link.$data('direction');
       
-      if (this.mason)
-        this.mason.snapBy(0, -offset.top);
+//      if (offset.top > (G.viewport.height / 2) && this.mason)
+      if (this.mason) {
+        var snapBy = offset.top;
+        if (tooltip)
+          snapBy -= G.viewport.height / 2;
+          
+        this.mason.snapBy(0, -snapBy);
+      }
       
       if (tooltip) {
         this.addTooltip({

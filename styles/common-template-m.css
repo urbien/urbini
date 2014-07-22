@@ -784,6 +784,10 @@ section[id^="view"] {
   font-size:28px;
 }
 
+.header2 label.pack-switch {
+  height:38px;
+}
+
 /*  GROUPING  ============================================================================= */
 
 
@@ -1492,6 +1496,19 @@ label.subClass {
 
   cursor: pointer;
   opacity: 0;
+}
+
+.quickstart .step-current {
+/*  color: #ff0;*/
+  font-weight: bold;
+}
+
+.quickstart .step-complete {
+  color: #009E00;
+}
+
+.quickstart .step-incomplete {
+/*  color: #f00; */
 }
 
 #buttons i.help {
