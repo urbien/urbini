@@ -355,8 +355,10 @@ define('views/Header', [
               G.hideSpinner(spinner);
             
             var perf = self.getPageView().$('#expectedPerformance')[0];
-            if (perf)
-              self.getPageView().toggleCollapsedEl();
+            if (perf) {
+              self.getPageView().toggleCollapsedEl(perf);
+              self.getPageView().scrollToElement(perf);
+            }
           }
           
           U.modalDialog({
@@ -1379,7 +1381,7 @@ define('views/Header', [
         return false;
       
       var route = this._hashInfo.route;
-      return (route == 'view' || route == 'chooser') && this.getQuickstartTemplate();
+      return (route == 'view' || route == 'chooser') && !!this.getQuickstartTemplate();
     },
 
     updateQuickstart: function() {

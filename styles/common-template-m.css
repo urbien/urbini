@@ -790,10 +790,6 @@ section[id^="view"] {
  }
 }
 
-.header2 label.pack-switch {
-  height:38px;
-}
-
 /*  GROUPING  ============================================================================= */
 
 
@@ -1468,6 +1464,7 @@ label.subClass {
   width: 120px;
   padding: 0.5rem;
   border-radius: 1rem;
+  cursor: pointer;
 }
 
 .quickstart {

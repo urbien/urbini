@@ -161,7 +161,15 @@
   {{ var alerts = ils.notifications, trades = ils.orders, nTrades = trades && trades.length, nAnything = nIndicators || nRules || nTrades, activated = res.get('activated'), isPublic = res.get('isPublic'); }}
   {{ var currentStep = !nIndicators ? 0 : !nRules ? 1 : !nTrades ? 2 : 3; }}
   <i class="ui-icon-remove"></i>
-  <h2>Quickstart<br /><br />{{= [0, 1, 2].map(function(step) { return '<span class="step-{0}">{1}</span>'.format(currentStep == step ? 'current' : currentStep > step ? 'complete' : 'incomplete', ++step) }).join('-') }}</h2>
+  <h2>Quickstart
+    <br /><br />
+    {{ if (currentStep < 3) { }}
+      {{= [0, 1, 2].map(function(step) { return '<span class="step-{0}">{1}</span>'.format(currentStep == step ? 'current' : currentStep > step ? 'complete' : 'incomplete', ++step) }).join('-') }}
+    {{ }                     }}
+    {{ if (currentStep >= 3) { }}
+      <span style="font-size: 25px;">First cut complete!</span>
+    {{ }                     }}
+  </h2>
   {{ if (currentStep < 3) { }}
   {{ if (!desc && !nAnything) { }}
   <h3>Welcome to your new tradle! If this is your first time, follow the steps below to learn the UI:</h3>
@@ -179,8 +187,8 @@
   </ol>
   {{ }                     }}
 
-  {{ if (currentStep > 2) { }}
-  <h3>You're done with the first cut! Don't forget to:</h3>
+  {{ if (currentStep >= 3) { }}
+  <h3>Don't forget to:</h3>
   <ul class="quickstart-options">
     {{ if (!desc && !(!activated && nRules)) { }}
       <!-- if there's no description and we're not ready to activate yet -->
@@ -1903,11 +1911,10 @@
         {{ } }}
       </button>
     </div>
-    <div style="clear:both"></div>
   </div>
   <div class="cf vcenteredR" style="z-index:1; width:20%;float:left;background:inherit;">
     {{ if (activatedProp) { }}
-      <section class="activatable" style="float: right; margin-right: 2rem; display: none;">
+      <section class="activatable" style="float: right; display: none;">
         <label class="pack-switch">
           <input type="checkbox" name="{{= activatedProp.shortName }}" class="formElement boolean" {{= this.resource.get(activatedProp.shortName) ? 'checked="checked"' : '' }} />
           <span></span>
@@ -1918,7 +1925,7 @@
       <div style="margin-right: 5px; float: right;"><a class="filterToggle lightText" href="#"><i class="ui-icon-search"></i></a></div> 
     {{ }                  }}
     <i class="help ui-icon-help" style="{{= this.hasQuickstart() ? '' : 'display:none;' }}"></i>
-    <div style="clear:both"></div>
+    <div style="clear:both;"></div>
   </div>
 </div>
 <div class="physicsConstants" style="display:none; background-color: #606060; color:#FFFFFF; display:none;"></div>

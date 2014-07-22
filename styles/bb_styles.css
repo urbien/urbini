@@ -511,3 +511,23 @@ section#login_popup {
 .section .section-header:after {
   height: auto;
 }
+
+.header2 label.pack-switch {
+  height:38px;
+  width: 3.2rem;
+  margin-right: 1.5rem;
+}
+
+@media only screen and (max-width: 479px) {
+  .header2 label.pack-switch {
+    height: 28px;
+    width: 3rem;
+    margin-left: 0rem;
+    margin-right: 4px;
+  }
+  
+  .header2 label.pack-switch input + span {
+    margin: -1.1rem 0 0 -1.7rem;
+    width: 3.1rem;
+  }
+}
