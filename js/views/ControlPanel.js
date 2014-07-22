@@ -37,7 +37,7 @@ define('views/ControlPanel', [
     tagName: "tr",
     autoFinish: false,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'refresh', 'add', 'showOther', 'insertInlineScroller', 'removeInlineScroller', 'toggleInlineScroller', 'doRenderFT', 'paintOverlay', 'showOverlay', 'hideOverlays'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'refresh', 'add', 'insertInlineScroller', 'removeInlineScroller', 'toggleInlineScroller', 'doRenderFT', 'paintOverlay', 'showOverlay', 'hideOverlays'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
@@ -64,7 +64,6 @@ define('views/ControlPanel', [
 //      'click a[data-shortName]': 'click',
       'click [data-cancel]': 'cancel',
       'click #mainGroup a[data-shortName]': 'add',
-      'click [data-display="collapsed"]': 'showOther',
       'click .add': 'add',
       'click [data-backlink]': 'clickInlined',
       'swipeleft [data-backlink]': 'onswipeleft',
@@ -428,35 +427,6 @@ define('views/ControlPanel', [
       
       var shortName = t.$data('shortname');
       this.addToBacklink(this.vocModel.properties[shortName], t);
-    },
-    showOther: function(e) {
-      var t = e.target,
-          selectorTarget = e.selectorTarget,
-          tagName = t.tagName.toLowerCase();
-      
-      if (tagName == 'a')
-        return;
-      
-//      if (tagName == 'i') {
-//        if (t.$hasClass('ui-icon-plus'))
-//          return;
-//      }
-//      var wl = G.currentApp.widgetLibrary
-//      if (wl  &&  wl != 'Jquery Mobile') {
-      Events.stopEvent(e);
-      
-      selectorTarget.$('ul').$toggleClass('hidden');
-      var icon = selectorTarget.$('header i.ui-icon-plus-sign,header i.ui-icon-minus-sign')[0],
-          isPlus = icon.$hasClass('ui-icon-plus-sign'),
-          add = isPlus ? 'minus' : 'plus',
-          remove = isPlus ? 'plus' : 'minus';
-      
-      icon.$removeClass('ui-icon-' + remove + '-sign')
-          .$addClass('ui-icon-' + add + '-sign');
-      
-      this.getPageView().invalidateSize();        
-      return;
-//      }
     },
     
     addToBacklink: function(prop, t) {

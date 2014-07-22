@@ -159,9 +159,30 @@ define('views/BasicPageView', [
       'click.page .pgDown': 'pageDown',
       'click.page .pgUp': 'pageUp',
       'click.page [data-selector]': 'scrollToTarget',
-      'click.page .closeBtn': 'closeDialog'
+      'click.page .closeBtn': 'closeDialog',
+      'click [data-display="collapsed"]': 'showOther'
     },
-    
+
+    showOther: function(e) {
+      if (e.target.tagName.toLowerCase() == 'a')
+        return;
+      
+      Events.stopEvent(e);
+      var section = e.selectorTarget,
+          icon = section.$('header i.ui-icon-plus-sign,header i.ui-icon-minus-sign')[0],
+          isPlus = icon.$hasClass('ui-icon-plus-sign'),
+          add = isPlus ? 'minus' : 'plus',
+          remove = isPlus ? 'plus' : 'minus';
+      
+      section.$('ul').$toggleClass('hidden');
+      icon.$removeClass('ui-icon-' + remove + '-sign')
+          .$addClass('ui-icon-' + add + '-sign');
+      
+      this.getPageView().invalidateSize();        
+      return;
+//      }
+    },
+
     closeDialog: function(e) {
       var tooltip = e.target.$closest('.play');
       if (tooltip)

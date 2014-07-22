@@ -79,7 +79,6 @@ define('views/ResourceView', [
     
     events: {
       'click': 'click',
-      'click [data-display="collapsed"]': 'showOther',
       'click .socialLinks .ui-icon-twitter': 'share'
     },
 
@@ -194,23 +193,6 @@ define('views/ResourceView', [
       var props = {};
       props[bl.backLink] = res.getUri();
       return this.router.navigate(U.makeMobileUrl('make', U.getLongUri1(cbType), props));
-    },
-    showOther: function(e) {
-      var t = e.target;
-      var tagName = t.tagName.toLowerCase();
-      if (tagName == 'a')
-        return;
-      
-//      var wl = G.currentApp.widgetLibrary
-//      if (wl  &&  wl != 'Jquery Mobile') {
-      Events.stopEvent(e);
-      
-      while (t.parentNode  &&  t.parentNode.tagName.toLowerCase() != 'ul')
-        t = t.parentNode; 
-      t.parentNode.$('ul').$toggleClass('hidden');
-      this.getPageView().invalidateSize();        
-      return;
-//      }
     },
     refresh: function(resource, options) {
       options = options || {};
