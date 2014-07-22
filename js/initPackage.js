@@ -1883,7 +1883,7 @@
     },    
     
     encode: function(str) {
-      return encodeURIComponent(str).replace(/\%3a/ig, ':').replace(/\%2f/ig, '/');
+      return encodeURIComponent(str).replace(/\%3a/ig, ':').replace(/\%2f/ig, '/').replace(/\%2c/ig, ',');
     },
     
     decode: function(str) {
