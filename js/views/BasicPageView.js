@@ -133,7 +133,7 @@ define('views/BasicPageView', [
         this._fetchPromise.fail(Errors.getBackboneErrorHandler());
         if (this._autoFetch) {
           this.model.fetch(_.extend({
-            sync: true,
+//            sync: true,
             success: self._fetchDfd.resolve,
             error: self._fetchDfd.reject
           }, options.fetchOptions));
@@ -160,54 +160,74 @@ define('views/BasicPageView', [
       'click.page .pgUp': 'pageUp',
       'click.page [data-selector]': 'scrollToTarget',
       'click.page .closeBtn': 'closeDialog',
-      'click [data-display="collapsed"]': 'showOther'
+      'click [data-display="collapsed"]': 'toggleCollapsed'
     },
 
-    showOther: function(e) {
+    toggleCollapsed: function(e) {
       if (e.target.tagName.toLowerCase() == 'a')
         return;
       
       Events.stopEvent(e);
-      var section = e.selectorTarget,
-          icon = section.$('header i.ui-icon-plus-sign,header i.ui-icon-minus-sign')[0],
-          isPlus = icon.$hasClass('ui-icon-plus-sign'),
-          add = isPlus ? 'minus' : 'plus',
-          remove = isPlus ? 'plus' : 'minus';
-      
-      section.$('ul').$toggleClass('hidden');
-      icon.$removeClass('ui-icon-' + remove + '-sign')
-          .$addClass('ui-icon-' + add + '-sign');
-      
-      this.getPageView().invalidateSize();        
+      this.toggleCollapsedEl(e.selectorTarget);        
       return;
 //      }
     },
 
+//    showCollapsedEl: function(el) {
+//      if (el.$hasClass('ui-icon-plus-sign')) {
+//        el.$removeClass('ui-icon-plus-sign').$addClass('ui-icon-minus-sign');
+//        el.$('ul').$removeClass('hidden');
+//      }
+//    },
+
+    toggleCollapsedEl: function(el) {
+      var icon = el.$('header i.ui-icon-plus-sign,header i.ui-icon-minus-sign')[0],
+          isPlus = icon.$hasClass('ui-icon-plus-sign'),
+          add = isPlus ? 'minus' : 'plus',
+          remove = isPlus ? 'plus' : 'minus';
+  
+      el.$('ul').$toggleClass('hidden');
+      icon.$removeClass('ui-icon-' + remove + '-sign')
+          .$addClass('ui-icon-' + add + '-sign');
+  
+      this.getPageView().invalidateSize();
+    },
+    
     closeDialog: function(e) {
       var tooltip = e.target.$closest('.play');
       if (tooltip)
         tooltip.$remove();
     },
     
+    scrollToElement: function(el, alignToTop) {
+      var offset = el.$offset();
+      if (this.mason) {
+        var snapBy = offset.top;
+        if (!alignToTop)
+          snapBy -= G.viewport.height / 2;
+          
+        if (snapBy)
+          this.mason.snapBy(0, -snapBy);
+      }
+    },
+    
     scrollToTarget: function(e) {
       var link = e.selectorTarget,
           selector = fixSelector(link.$data('selector')),
           target = this.$(selector)[0],
-          offset,
           tooltip,
           direction;
       
       if (!target)
         return;
       
+      var collapsed = target.$closest('[data-display="collapsed"]');
+      if (collapsed && this.isCollapsed(collapsed))
+        this.toggleCollapsedEl(collapsed);
+      
       Events.stopEvent(e);
-      offset = target.$offset();
       tooltip = link.$data('tooltip');
       direction = link.$data('direction');
-      
-      if (this.mason)
-        this.mason.snapBy(0, -offset.top);
-      
       if (tooltip) {
         this.addTooltip({
           el: target, 
@@ -217,6 +237,12 @@ define('views/BasicPageView', [
           style: 'square'
         });
       }
+      
+      this.scrollToElement(target, !tooltip);
+    },
+    
+    isCollapsed: function(el) {
+      return !!el.$('header i.ui-icon-plus-sign').length;
     },
     
     pageUp: function(e) {
@@ -226,7 +252,16 @@ define('views/BasicPageView', [
     },
     
     pageDown: function(e) {
-      var pages = parseInt(e.selectorTarget.$data('pages') || "1");
+      var t = e.selectorTarget;
+//          section = t.$closest('[data-homepage]')[0];
+//      
+//      if (section) {
+//        var el = section.parentElement.$('[data-homepage="{0}"]'.format(parseInt(section.$data('homepage')) +1))[0];
+//        if (el)
+//          this.scrollToElement(el);
+//      }
+      
+      var pages = parseInt(t.$data('pages') || "1");
       Events.stopEvent(e);
       Events.trigger('pageDown', pages);
     },

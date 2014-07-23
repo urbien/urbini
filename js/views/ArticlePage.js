@@ -156,7 +156,7 @@ define('views/ArticlePage', [
           body: this.resource.get('Submission.description'),
           link: moreByText ? {
             text: moreByText,
-            href: U.makePageUrl('list', this.vocModel.type, _.param(moreOfType))
+            href: U.makePageUrl('list', this.vocModel.type, moreOfType)
           } : null
         }]
       };

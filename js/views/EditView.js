@@ -49,9 +49,11 @@ define('views/EditView', [
   };
   
   function getRemoveErrorLabelsFunction(el) {
-    var parent = el.parentNode;
+//    var parent = el.parentNode;
+//    var parent = el.$closest('form');
     return function() {
-      parent.$('label.error').$remove();
+//      parent.$('label.error').$remove();
+      el.$removeClass('invalid');
     };
   };
 
@@ -105,6 +107,7 @@ define('views/EditView', [
       var promises = [],
           fetchPromise = this.getFetchPromise();
       
+      this._activatedPropName = U.getCloneOf(this.vocModel, 'Activatable.activated')[0];
       this.isCode = !!codemirrorModes.length;
       var codemirrorPromise;
       if (this.isCode) {
@@ -717,32 +720,33 @@ define('views/EditView', [
         while (i--) {
           if (inputs[i].name == name) {
             input = inputs[i];
+            input.$addClass('invalid');
             break;
           }
         }
         
-        var id;
-        if (input) {
-          badInputs.push(input);
-          var id = input.id;
-          var err = this.getForm().$('label.error[for="{0}"]'.format(id))[0];
-          if (err) {
-            err.innerText = msg;
-            madeError = true;
-          }
-        }
-        
-        if (!madeError) {
-          var label = document.createElement('label');
-          label.innerHTML = msg;
-          if (id)
-            label.setAttribute('for', id);
-          label.setAttribute('class', 'error');
-          if (input.length)
-            input.parentNode.insertBefore(label, input.nextSibling);
-          else
-            errDiv.appendChild(label);
-        }
+//        var id;
+//        if (input) {
+//          badInputs.push(input);
+//          var id = input.id;
+//          var err = this.getForm().$('label.error[for="{0}"]'.format(id))[0];
+//          if (err) {
+//            err.innerText = msg;
+//            madeError = true;
+//          }
+//        }
+//        
+//        if (!madeError) {
+//          var label = document.createElement('label');
+//          label.innerHTML = msg;
+//          if (id)
+//            label.setAttribute('for', id);
+//          label.setAttribute('class', 'error');
+//          if (input.length)
+//            input.parentNode.insertBefore(label, input.nextSibling);
+//          else
+//            errDiv.appendChild(label);
+//        }
       }
     },
     
@@ -828,6 +832,11 @@ define('views/EditView', [
       if (!this.isActive() || this.isSubmitted())
         return;
 
+      if (this.form.$('.invalid').length) {
+        U.alert("You have errors in the fields with red borders");
+        return;
+      }
+      
       if (G.currentUser.guest) {
         // TODO; save to db before making them login? To prevent losing data entry
         Events.trigger('req-login', {
@@ -1177,11 +1186,23 @@ define('views/EditView', [
         return false;
       
       options = options || {};
-      var res = this.resource;
-      var onValidated = options.onValidated;      
-      var onInvalid = options.onValidationError;
+      var res = this.resource,
+          onValidated = options.onValidated,      
+          onInvalid = options.onValidationError,
+          meta = res.vocModel.properties,
+          errors = {};
+      
       if (onInvalid)
         res.once('invalid', onInvalid);
+      
+      for (var p in atts) {
+        var prop = meta[p];
+        if (!U.validateValue(prop, atts[p])) {
+          errors[prop.shortName] = true;
+          onInvalid(res, errors);
+          return false;
+        }
+      }
       
       var set = res.set(atts, _.extend({
         validate: true,
@@ -1192,12 +1213,18 @@ define('views/EditView', [
       if (set)
         onValidated && onValidated();
       
+      if (onInvalid)
+        res.off('invalid', onInvalid);
+      
       return set;
     },
 
     addProp: function(info) {
       var prop = info.prop,
           p = prop.shortName;
+      
+      if (p == this._activatedPropName)
+        return;
       
       if (p == 'value' && U.isAssignableFrom(this.vocModel, 'commerce/trading/EnumRule')) {
         var enumModel = U.getEnumModel(this.resource.get('eventPropertyRangeUri'));

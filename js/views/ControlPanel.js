@@ -1154,6 +1154,7 @@ define('views/ControlPanel', [
         for (var name in res.inlineLists) {
           list.push(this.vocModel.properties[name]);
         }
+        
         var props = _.sortBy(list, function(prop) {
           return prop.dataProviderPropertyIndex;
         });

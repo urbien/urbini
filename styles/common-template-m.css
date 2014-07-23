@@ -781,7 +781,13 @@ section[id^="view"] {
 }
 
 .header2 i {
-  font-size:28px;
+  font-size:20px;
+}
+
+@media only screen and (min-width: 480px) {
+ .header2 i {
+   font-size:28px;
+ }
 }
 
 /*  GROUPING  ============================================================================= */
@@ -1265,9 +1271,6 @@ section[id^="view"] {
 
 label.subClass {
   font-size: 1.5rem;
-  -webkit-appearance: button;
-     -moz-appearance: button;
-          appearance: button;
 }
 
 .subClass input {
@@ -1313,6 +1316,10 @@ label.subClass {
      -moz-transition: 0.6s ease;
       -ms-transition: 0.6s ease;
           transition: 0.6s ease;
+}
+
+.anim-overlay-content {
+  width: 100%;
 }
 
 .anim-overlay i {
@@ -1457,6 +1464,7 @@ label.subClass {
   width: 120px;
   padding: 0.5rem;
   border-radius: 1rem;
+  cursor: pointer;
 }
 
 .quickstart {
@@ -1492,6 +1500,19 @@ label.subClass {
 
   cursor: pointer;
   opacity: 0;
+}
+
+.quickstart .step-current {
+/*  color: #ff0;*/
+  font-weight: bold;
+}
+
+.quickstart .step-complete {
+  color: #009E00;
+}
+
+.quickstart .step-incomplete {
+/*  color: #f00; */
 }
 
 #buttons i.help {

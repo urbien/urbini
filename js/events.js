@@ -4,6 +4,9 @@ define('events', [
   'underscore',
   'backbone'
 ], function(G, _, Backbone) {
+  var rclick = /^(dbl)?click/,
+      rtouch = /^touch([a-zA-Z]+)$/;
+  
   var Events = _.extend({
 //    REQUEST_LOGIN: 'req-login',
 //    LOGOUT: 'logout',
@@ -27,7 +30,7 @@ define('events', [
 //      if (event == 'orientationchange')
 //        return 'debouncedorientationchange';
       
-      var match = event.match(/^(dbl)?click/),
+      var match = event.match(rclick),
           newEvent;
       
       if (match) {
@@ -35,6 +38,10 @@ define('events', [
         newEvent = 'tap' + event.slice(dbl ? 8 : 5);
         return dbl + newEvent;
       }
+//      else if (!G.browser.touch && (match = event.match(rtouch))) {
+//        debugger;
+//        return 'mouse' + (match[1] == 'start' ? 'down' : match[1] == 'end' ? 'up' : 'move');
+//      }
       
       return event;
     }

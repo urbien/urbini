@@ -81,7 +81,7 @@ define('models/Resource', [
       this.resetUnsavedChanges();
       this.on('cancel', this.remove);
       this.on('change', this.onchange);
-      this.on('load', this.announceNewResource);      
+      this.on('load', this.announceNewResource);
       this.on('inlineResources', function(resources) {        
         Events.trigger('inlineResources', self, resources);
       });
@@ -295,6 +295,7 @@ define('models/Resource', [
       
       var uri = this.getUri();
       this.listenTo(Events, 'getResource:' + uri, this.onSearch);
+      this.listenTo(Events, 'delete:' + this.getUri(), this['delete']);
 //      if (!this.collection) {
 //        var self = this;
 //        U.getTypes(this.vocModel).forEach(function(type) {
@@ -365,14 +366,21 @@ define('models/Resource', [
       this.collection && this.collection.remove(this);
     },
     'delete': function(options) {
+      if (this._deleting)
+        return;
+      
+      this._deleting = true;
       var preventDelete = false;
       Events.on('preventDelete', function() {
         preventDelete = true;
       });
       
       Events.trigger('delete', this, options);
-      if (preventDelete)
+      Events.trigger('delete:' + this.getUri(), this, options);
+      if (preventDelete) {
+        delete this._deleting;
         return;
+      }
       
       this.trigger('delete', this, options);
       this.remove();
@@ -723,8 +731,8 @@ define('models/Resource', [
         var val = props[shortName],
             isResourceProp;
         
-        if (!val)
-          continue;
+//        if (!val)
+//          continue;
         
         if (shortName == '_uri' && val !== uri)
           uriChanged = true;
@@ -838,7 +846,7 @@ define('models/Resource', [
       for (var name in props) {
         var error = this.validateProperty(props, name, options);
         if (error !== true)
-          errors[name] = typeof error === 'string' ? error : "Please enter a valid " + U.getPropDisplayName(props[name]);
+          errors[name] = typeof error === 'string' ? error : "Please enter a valid " + U.getPropDisplayName(meta[name]);
       }
       
       if (!_.isEmpty(errors))
@@ -850,7 +858,7 @@ define('models/Resource', [
         return true;
       
       var prop = this.vocModel.properties[name];
-      if (!prop || prop.readOnly || prop.backLink || prop.virtual || prop.propertyGroupList)
+      if (!prop || prop.backLink || !U.isPropEditable(this, prop))
         return true;
       
       var value = attrs[name];
@@ -864,11 +872,14 @@ define('models/Resource', [
         else
           return true;
       }
-      else if (value === this.get(name))
-        return true;
+//      else if (value === this.get(name))
+//        return true;
       
       if (prop.range === 'enum')
         return true;
+      
+      if (!U.validateValue(prop, value))
+        return false;
       
       var facet = prop.facet;
       if (facet) {
@@ -1295,10 +1306,14 @@ define('models/Resource', [
             var conflict = errorObj.conflict;
             if (self.hasStablePrimaryKeys()) {
               self.set(self.parse(conflict, {overwriteUserChanges: true}));
-              return options.success(self, self.toJSON(), options);  
+              options.success(self, self.toJSON(), options);
+//              self.announceNewResource(options);
+              return;
             }
-            else
+            else {
+//              new self.vocModel(conflict);
               debugger;
+            }
           
           break;
           

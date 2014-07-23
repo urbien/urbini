@@ -28,7 +28,7 @@ define('views/ModalDialog', ['domUtils', 'events'], function(DOM, Events) {
   // Deactivate on click outside
   function onDocumentClick( event ) {
     if (dismissible) {
-      if (!cover || event.target === cover || event.target.contains(cover) || (popup != event.target && !popup.contains(event.target))) {
+      if (!cover || event.target === cover || event.target.contains(cover) || !popup || (popup != event.target && !popup.contains(event.target))) {
         hide();
       }
     }

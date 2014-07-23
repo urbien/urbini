@@ -31,7 +31,46 @@ define('utils', [
        'media/publishing/Article', 
        'media/publishing/Blog'
       ],
-      tempIdParam = '__tempId__';
+      tempIdParam = '__tempId__',
+      VALIDATORS = (function() {
+        var integer = {
+              regex: /^[0-9]+$/,
+              error: 'must be a whole number'
+            },
+            decimal = {
+              regex: /^[0-9]+(?:\.[0-9]+)?$/,
+              error: 'must be a number'
+            },
+            money = {
+              regex: /^[^\d]*?[0-9]+(?:\.[0-9]+)?$/,
+              error: 'is invalid'
+            },
+            date = {
+              regex: /^(today|tomorrow|yesterday|day after tomorrow|[0-9]+)$/ig,
+              error: 'is invalid'
+            },
+            v;
+            
+        return {
+          'string': G.trueFn,
+          'int': integer,
+          'long': integer,
+          'float': decimal,
+          'double': decimal,
+          'Money': money,
+          'model/company/Money': money,
+          'Duration': integer,
+          'system/primitiveTypes/Duration': integer,
+          'date': date,
+          'dateTime': date,
+          'ComplexDate': date,
+          'system/fog/ComplexDate': date,
+          'boolean': {
+            regex: /^(true|false|1|0|Yes|No)$/ig,
+            error: 'acceptable values are True and False'
+          }
+        };        
+      })();
   
 //      MONTHS = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ],
 //      MONTH_ABBRS = [ "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" ];
@@ -1104,7 +1143,7 @@ define('utils', [
           continue;
         var prop = vocModel.properties[col];
         if (!prop || prop.backLink)
-          return;
+          continue;
         
         var val = res.get(col);
         if (!val) {
@@ -2381,17 +2420,19 @@ define('utils', [
       params = params || {};
       if (typeOrUriParts[1]) 
         _.extend(params, _.toQueryParams(typeOrUriParts[1]));
-        
+      
       if (!G.currentUser.guest)
         params['-ref'] = U.getUserReferralParam();
       
       url = action + '/' + (HAS_PUSH_STATE ? typeOrUri : encodeURIComponent(typeOrUri));
-      if (HAS_PUSH_STATE) {
-        url += ~url.indexOf('?') ? '&' : '?';
-        url += U.getQueryString(params, {sort: U.modelParamsFirst});
+      if (!_.isEmpty(params)) {
+        if (HAS_PUSH_STATE) {
+          url += ~url.indexOf('?') ? '&' : '?';
+          url += U.getQueryString(params, {sort: U.modelParamsFirst});
+        }
+        else
+          url += '?' + U.getQueryString(params, {sort: U.modelParamsFirst}); //, encOptions);
       }
-      else
-        url += '?' + U.getQueryString(params, {sort: U.modelParamsFirst}); //, encOptions);
       
       return url;
     },
@@ -2444,7 +2485,8 @@ define('utils', [
         val.options = eCl.values;
       }
       
-      val.value = val.value || '';
+      if (val.value == null)
+        val.value = '';
       if (prop.range == 'resource') 
         val.uri = val.value;
       else if (isImage) {
@@ -2670,6 +2712,69 @@ define('utils', [
       }
       
       return false;
+    },
+    
+//    validateValue: function(res, prop, value) {
+//      var vocModel = res.vocModel || res;
+//      var p = U.primitiveTypes;
+//      var prop = vocModel.properties[prop];
+//      var range = prop.range || prop.facet;
+//      var isNumber = !isNaN(value);
+//      if (range === 'boolean')
+//        return typeof value === 'boolean' || value === 'true' || value === 'Yes' || value === '1' || value === 1; 
+//      else if (~p.dates.indexOf(range))
+//        return !!U.parseDate(value);
+//      else if (~p.floats.indexOf(range))
+//        return /^[0-9]+(?:\.[0-9]+)?$/.test(value);
+//      else if (~p.ints.indexOf(range))
+//        return /^[0-9]+$/.test(value);
+//      else
+//        return true;
+//    },
+    
+    validateValue: function(prop, value) {
+      if (value == null)
+        return true;
+      
+      var propName = U.getPropDisplayName(prop),
+          err;
+      
+      if (typeof value == 'object')
+        return false;
+      
+      var range = prop.range || prop.facet,
+          validator = VALIDATORS[range],
+          p = U.primitiveTypes;
+      
+      switch (typeof value) {
+      case 'boolean':
+        if (range == 'boolean')
+          return true;
+        break;
+      case 'number':
+        return ~p.ints.indexOf(range) || ~p.floats.indexOf(range) || ~p.dates.indexOf(range);
+      case 'object':
+        return false;
+      case 'string':
+        if (range == 'string' || range == 'enum' || U.isResourceProp(prop))
+          return true;
+        
+        break;
+      }
+
+      if (validator) {
+        if (validator.regex)
+          return validator.regex.test(value);
+        else
+          return validator(value);
+      }
+      else {
+        debugger;
+        return false;
+      }
+      
+//      return err ? propName + ' ' + err : true;
+      return true;
     },
     
     /**
@@ -4709,7 +4814,7 @@ define('utils', [
     getTwitterLink: function(res) {
       var text = U.getDisplayName(res),
           url, 
-          hashtags,
+          hashtags = res.get('hashtags'),
           twitterLink = res.get('twitterLink'),
           action = twitterLink ? 'retweet' : 'tweet',
           params = {
@@ -4721,11 +4826,11 @@ define('utils', [
       }
       else if (res.isAssignableFrom('commerce/trading/Tradle')) {
         params.url = G.serverName + '/media/media.html?uri=' + _.encode(res.getUri());
-        hashtags = 'tradle';
+//        hashtags = 'tradle';
       
         var orders = res.getInlineList('orders');
         if (orders && orders.length)
-          hashtags += ',' + _.uniq(orders.pluck('security').map(function(uri) { return _.decode(uri.split('=')[1]) })).join(',');
+          text += ' ' + _.uniq(orders.pluck('security').map(function(uri) { return '$' + _.decode(uri.split('=')[1]) })).join(',');
       }
       else {
         url = U.makePageUrl('view', res);

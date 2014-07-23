@@ -1765,10 +1765,12 @@ var cleanInterface = false;
             window.IDBTransaction = {};
         }
         /* Some browsers (e.g. Chrome 18 on Android) support IndexedDb but do not allow writing of these properties */
-        try {
-        window.IDBTransaction.READ_ONLY = window.IDBTransaction.READ_ONLY || "readonly";
-        window.IDBTransaction.READ_WRITE = window.IDBTransaction.READ_WRITE || "readwrite";
-        } catch (e) {}
+        if (!window.IDBTransaction.READ_ONLY) {
+          try {
+            window.IDBTransaction.READ_ONLY = "readonly";
+            window.IDBTransaction.READ_WRITE = "readwrite";
+          } catch (e) {}
+        }
     }
     
 }(window, idbModules));
