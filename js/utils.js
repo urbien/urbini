@@ -3408,8 +3408,8 @@ define('utils', [
       switch (numArgs) {
       case 1:
         clause = clause.split('=');
-        name = decodeURIComponent(clause[0]);
-        opVal = decodeURIComponent(clause[1]);
+        name = _.decode(clause[0]);
+        opVal = _.decode(clause[1]);
         break;
       case 2:
         name = clause;
@@ -3534,7 +3534,7 @@ define('utils', [
           }
           else {
             rules.push(function(res) {
-              var type = U.isModel(res) ? res.vocModel.type : U.getTypeUri(res._uri);
+              var type = U.getTypeUri(U.getValue(res, '_uri'));
               return type == superUri;
             });
           }

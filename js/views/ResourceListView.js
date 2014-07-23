@@ -16,12 +16,13 @@ define('views/ResourceListView', [
 ], function(G, U, DOM, Events, Errors, BasicView, /*Scrollable, */ ResourceMasonryItemView, ResourceListItemView, ResourceList, Q, Voc, Physics) {
   var doc = document,
       MASONRY_FN = 'masonry', // in case we decide to switch to Packery or some other plugin
-      ITEM_SELECTOR = '.masonry-brick';
+      ITEM_SELECTOR = '.masonry-brick',
+      RECYCLE_VIEWS = false;
 
   var defaultSlidingWindowOptions = {
     // <MASONRY INITIAL CONFIG>
     slidingWindow: true,
-    tilt: 'forward',
+//    tilt: 'forward',
 //    gradient: true,
 //    squeeze: false,
     horizontal: false,
@@ -140,6 +141,7 @@ define('views/ResourceListView', [
               self._pagingPromise._canceled = true;
 //            self.mason.unsetLimit();
             self._removeBricks(self._displayedRange.from, self._displayedRange.to);
+            self.$('.masonry-brick').$remove();
             self._displayedRange.from = self._displayedRange.to = 0;
             self.mason.reset();
 //            if (self.mason.isLocked())
@@ -997,7 +999,7 @@ define('views/ResourceListView', [
       var i = removedViews.length,
           numLeft = this._childEls.length,
           numMax = this.options.maxBricks,
-          numToRecycle = Math.min(numMax * 2 - numLeft, i),
+          numToRecycle = RECYCLE_VIEWS ? Math.min(numMax * 2 - numLeft, i) : 0,
           numYetToRecycle = numToRecycle,
 //          ids = [],
           recycled = [],
@@ -1007,7 +1009,7 @@ define('views/ResourceListView', [
       while (i--) {
         view = removedViews[i];
         this.stopListening(view.resource);
-        if (numYetToRecycle-- >= 0) {
+        if (numYetToRecycle-- > 0) {
           view.undelegateAllEvents();
 //          DOM.queueRender(view.el, DOM.transparentStyle);
           recycled[recycled.length] = view;
