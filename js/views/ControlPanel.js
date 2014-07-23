@@ -537,8 +537,15 @@ define('views/ControlPanel', [
         isCancelable = canceledProp && U.isPropEditable(list.models[0], canceledProp);
       }
 
-      if (!list.length  &&  isTrade  &&  this.resource.inlineLists['tradleRules'].length == 0)
+      if (!list.length  &&  isTrade  &&  this.resource.inlineLists['tradleRules'].length == 0) {
+        U.addToFrag(frag, this.propGroupsDividerTemplate({
+          value: propDisplayName,
+          add: canAdd,
+          shortName: getBacklinkSub(vocModel, name),
+          style: prop.propertyStyle
+        }));
         return;
+      }
 
       
       var gr, isBB = G.isBB(), isTopcoat = G.isTopcoat(), prop = meta[name], isBootstrap = G.isBootstrap();
@@ -579,8 +586,16 @@ define('views/ControlPanel', [
         }
       }
 
-      if (!list.length)
+      if (!list.length) {
+        if (isRule  ||  isTrade)
+          U.addToFrag(frag, this.propGroupsDividerTemplate({
+            value: propDisplayName,
+            add: canAdd,
+            shortName: getBacklinkSub(vocModel, name),
+            style: prop.propertyStyle
+          }));
         return;
+      }
       
       var hasImages;
       for (var i = 0, l = resources.length; i < l; i++) {
@@ -606,8 +621,9 @@ define('views/ControlPanel', [
 ////          }
 //        }
         if (isTrade) { 
-          params.action = iRes.get('action');
-          params.securityName = iRes.get('security.davDisplayName');
+          var title = iRes.get('title');
+          var idx = title.indexOf(":");
+          iRes.attributes.davDisplayName = idx == -1 ? title : title.substring(idx + 2);
         }
         else if (U.isA(listVocModel, 'Intersection')) {
           var oH, oW, ab;
