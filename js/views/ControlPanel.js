@@ -540,11 +540,17 @@ define('views/ControlPanel', [
       if (!list.length) {  
           if ((isTrade && !this.resource.inlineLists['orders'].length)  ||  (isRule  && !this.resource.inlineLists['tradleRules'].length)) {
             U.addToFrag(frag, this.propGroupsDividerTemplate({
-              value: propDisplayName,
+              value: propDisplayName, // + (isRule ? ' <span style="color:#3777a1;text-transform:none;text-align:center;font-weight:normal">(no rules yet)</span>' : ''),
               add: canAdd,
               shortName: getBacklinkSub(vocModel, name),
               style: prop.propertyStyle
             }));
+            U.addToFrag(frag, this.propGroupsDividerTemplate({
+              value: '(no rules yet)',
+              shortName: getBacklinkSub(vocModel, name),
+              style: "font-weight:bold;font-size:3rem;opacity:.5;color:#3777a1;background:#eee;text-align:center;"
+            }));
+            
             return;
         }
 //        return;
