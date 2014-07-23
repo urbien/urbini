@@ -12,7 +12,7 @@ html {
   font-size: 1.2rem;
 }
 
-#other li {
+.other li {
   min-height: 3rem;
 }
 .menuItems {
@@ -305,7 +305,7 @@ fieldset {
   background: none;
 }
 
-#resourceView > li > p, #other > ul > li > p {
+#resourceView > li > p, .other > ul > li > p {
   margin: 0 1rem;
 }
 

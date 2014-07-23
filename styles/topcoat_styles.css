@@ -68,11 +68,11 @@ li {
 #mainGroup div.counter {
   height: 30px;
 }
-#other {
+.other {
   padding: 4px 0px;
   cursor: pointer;
 }
-#other h3 {
+.other h3 {
   margin:0.3rem 1.25rem;
 }
 #cpView {

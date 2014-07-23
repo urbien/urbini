@@ -395,13 +395,13 @@ define('views/ResourceView', [
               if (!grMeta.skipLabelInGroup) {
                 if (grCollapsed) {
                   if (isJQM)
-                    gr = '<li id="' + grMeta.shortName + '" data-display="collapsed" style="border:0px;' + (G.theme.backgroundImage ? 'background-image: url(' + G.theme.backgroundImage + ')' : '') + '" data-content-theme="' + G.theme.list + '"  data-theme="' + G.theme.list + '"><h3 style="margin:0px;"><i class="ui-icon-plus-sign"></i>&#160;' + grMeta.displayName + '</h3><ul class="hidden"">';
+                    gr = '<li class="' + grMeta.shortName + '" data-display="collapsed" style="border:0px;' + (G.theme.backgroundImage ? 'background-image: url(' + G.theme.backgroundImage + ')' : '') + '" data-content-theme="' + G.theme.list + '"  data-theme="' + G.theme.list + '"><h3 style="margin:0px;"><i class="ui-icon-plus-sign"></i>&#160;' + grMeta.displayName + '</h3><ul class="hidden"">';
                   else if (isBB)
-                    gr = '<section id="' + grMeta.shortName + '" data-display="collapsed"><header style="margin:0px;cursor:pointer;' + (G.coverImage ? 'color:' + G.coverImage.background + ';border-bottom:0.1rem solid ' + G.coverImage.background + ';"' : '') + '"><i class="ui-icon-plus-sign"></i>&#160;' + grMeta.displayName + '</header><ul class="other hidden">';
+                    gr = '<section class="' + grMeta.shortName + '" data-display="collapsed"><header style="margin:0px;cursor:pointer;' + (G.coverImage ? 'color:' + G.coverImage.background + ';border-bottom:0.1rem solid ' + G.coverImage.background + ';"' : '') + '"><i class="ui-icon-plus-sign"></i>&#160;' + grMeta.displayName + '</header><ul class="other hidden">';
                   else if (G.isTopcoat())
-                    gr = '<li id="' + grMeta.shortName + '" data-display="collapsed topcoat-list__item" ' +  (G.coverImage ? 'style="text-shadow:none;background:' + G.coverImage.color + ';color: ' + G.coverImage.background + ';"' : '') + '><h3><i class="ui-icon-plus-sign"></i>&#160;' + grMeta.displayName + '</h3><ul class="topcoat-list__container hidden">';
+                    gr = '<li class="' + grMeta.shortName + '" data-display="collapsed topcoat-list__item" ' +  (G.coverImage ? 'style="text-shadow:none;background:' + G.coverImage.color + ';color: ' + G.coverImage.background + ';"' : '') + '><h3><i class="ui-icon-plus-sign"></i>&#160;' + grMeta.displayName + '</h3><ul class="topcoat-list__container hidden">';
                   else if (G.isBootstrap())
-                    gr = '<li id="' + grMeta.shortName + '" data-display="collapsed"><h3 style="font-size:18px;"><i class="ui-icon-plus-sign"></i>&#160;' + grMeta.displayName + '</h3><ul class="list-group-container hidden">';
+                    gr = '<li class="' + grMeta.shortName + '" data-display="collapsed"><h3 style="font-size:18px;"><i class="ui-icon-plus-sign"></i>&#160;' + grMeta.displayName + '</h3><ul class="list-group-container hidden">';
                   if (this.isTradle  &&  grMeta.shortName == 'expectedPerformance') {
                     if (this.resource.get('maxDrawdown') || this.resource.get('profit')) {
                       gr += '<li style="background:#2e3b4e;text-align:center;"><div class="gauges" style="display:inline-block">' + this.gaugesTemplate({
@@ -483,13 +483,13 @@ define('views/ResourceView', [
 //          var wl = G.currentApp.widgetLibrary;
           var otherTitle = "Other";
           if (isJQM)
-            otherLi = '<li id="other" data-display="collapsed" style="border:0px;' + (G.theme.backgroundImage ? 'background-image: url(' + G.theme.backgroundImage + ')' : '') + '" data-content-theme="' + G.theme.list + '"  data-theme="' + G.theme.list + '"><h3 style="margin:0px;"><i class="ui-icon-plus-sign"></i>&#160;' + otherTitle + '</h3><ul class="hidden"">';
+            otherLi = '<li class="other" data-display="collapsed" style="border:0px;' + (G.theme.backgroundImage ? 'background-image: url(' + G.theme.backgroundImage + ')' : '') + '" data-content-theme="' + G.theme.list + '"  data-theme="' + G.theme.list + '"><h3 style="margin:0px;"><i class="ui-icon-plus-sign"></i>&#160;' + otherTitle + '</h3><ul class="hidden"">';
           else if (isBB)
-            otherLi = '<section id="other" data-display="collapsed"><header style="margin:0px;cursor:pointer;' + (G.coverImage ? 'color:' + G.coverImage.background + ';border-bottom:0.1rem solid ' + G.coverImage.background + ';"' : '') + '"><i class="ui-icon-plus-sign"></i>&#160;' + otherTitle + '</header><ul class="other hidden">';
+            otherLi = '<section class="other" data-display="collapsed"><header style="margin:0px;cursor:pointer;' + (G.coverImage ? 'color:' + G.coverImage.background + ';border-bottom:0.1rem solid ' + G.coverImage.background + ';"' : '') + '"><i class="ui-icon-plus-sign"></i>&#160;' + otherTitle + '</header><ul class="other hidden">';
           else if (G.isTopcoat())
-            otherLi = '<li id="other" data-display="collapsed topcoat-list__item" ' +  (G.coverImage ? 'style="text-shadow:none;background:' + G.coverImage.color + ';color: ' + G.coverImage.background + ';"' : '') + '><h3><i class="ui-icon-plus-sign"></i>&#160;' + otherTitle + '</h3><ul class="topcoat-list__container hidden">';
+            otherLi = '<li class="other" data-display="collapsed topcoat-list__item" ' +  (G.coverImage ? 'style="text-shadow:none;background:' + G.coverImage.color + ';color: ' + G.coverImage.background + ';"' : '') + '><h3><i class="ui-icon-plus-sign"></i>&#160;' + otherTitle + '</h3><ul class="topcoat-list__container hidden">';
           else if (G.isBootstrap())
-            otherLi = '<li id="other" data-display="collapsed"><h3 style="font-size:18px;"><i class="ui-icon-plus-sign"></i>&#160;' + otherTitle + '</h3><ul class="list-group-container hidden">';
+            otherLi = '<li class="other" data-display="collapsed"><h3 style="font-size:18px;"><i class="ui-icon-plus-sign"></i>&#160;' + otherTitle + '</h3><ul class="list-group-container hidden">';
   //        this.$el.append('<li data-role="collapsible" data-content-theme="c" id="other"><h2>Other</h2><ul data-role="listview">'); 
           groupNameDisplayed = true;
         }

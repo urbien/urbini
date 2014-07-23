@@ -79,10 +79,10 @@ li {
   position:absolute;
   right: 1.5rem;
 }
-#other {
+.other {
   padding: 4px 0px;
 }
-#other h3 {
+.other h3 {
   margin:10px;
 }
 #cpView {
@@ -196,10 +196,10 @@ a:hover {
   right: 1.3rem;
 }
 
-#other h3 {
+.other h3 {
   font-size: 20px;
 }
-#other ul {
+.other ul {
   padding-left: 0;
 }
 .list-group-item.active {
