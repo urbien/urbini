@@ -2164,6 +2164,15 @@ define('utils', [
               val = "<span style='color:" + cc + "'>" + val + "</span>";
           }
         }
+        else if (prop.facet  &&  prop.facet == 'iconFont') {
+          var s = val.split(';');
+          var v = '';
+          for (var i=0; i<s.length; i++) 
+            v += '<i style="font-size:4rem;color:#2c94c5;" class="' + s[i] + '"></i>&#160;';
+          
+          noName = true;
+          val = v;
+        }
         else if (prop.facet  &&  prop.facet == 'src') {
           var s = val.split(';');
           var v = '';
@@ -2184,6 +2193,24 @@ define('utils', [
               val = val.charAt(0) == '<' ? val : "<span>" + val + "</span>";
           }
 //            val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
+          else if (prop.facet  &&  prop.facet == 'tags') {
+            var s = val.split(',');
+            val = '';
+            for (var i=0; i < s.length; i++) {
+              var t = s[i].trim();
+              if (i)
+                val += ', ';
+              
+              var params = {};
+              params ['tagUses.tag.tag'] = t;
+              params ['tagUses.tag.application'] = vocModel.type;
+              var uri = U.makeMobileUrl('list', vocModel.type, params);
+              
+              val += "<a href='" + G.serverName + '/' + G.pageRoot + '#' + uri + "'>" + t + "</a>";
+            }
+          }
+          else if (prop.facet != 'emailAddress'  &&  val.indexOf('<') == -1)
+            val = "<span>" + val + "</span>";
           else if (!isView  &&  prop.maxSize > 1000) {
             var color;
             color = G.darkColor;
@@ -2214,24 +2241,6 @@ define('utils', [
           }
           else if (prop.facet  &&  prop.facet == 'href')
             val = "<a href='" + val + "'>" + U.getDisplayName(res, vocModel) + "</a>";
-          else if (prop.facet  &&  prop.facet == 'tags') {
-            var s = val.split(',');
-            val = '';
-            for (var i=0; i < s.length; i++) {
-              var t = s[i].trim();
-              if (i)
-                val += '<br/>';
-              
-              var params = {};
-              params ['tagUses.tag.tag'] = t;
-              params ['tagUses.tag.application'] = vocModel.type;
-              var uri = U.makeMobileUrl('list', vocModel.type, params);
-              
-              val += "<a href='" + G.serverName + '/' + G.pageRoot + '#' + uri + "'>" + t + "</a>";
-            }
-          }
-          else if (prop.facet != 'emailAddress'  &&  val.indexOf('<') == -1)
-            val = "<span>" + val + "</span>";
         }
         else if (prop.range == 'enum') {
           val = "<span>" + val + "</span>";
