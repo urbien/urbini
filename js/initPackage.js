@@ -37,7 +37,11 @@
     nativeIsArray      = Array.isArray,
     nativeKeys         = Object.keys,
     nativeBind         = FuncProto.bind,
-    r20                = /%20/g;
+    r20                = /%20/g,
+    r2c                = /\%2c/ig,
+    r3a                = /\%3a/ig,
+    r2f                = /\%2f/ig,
+    singleQuote        = /'/g;
 
   // Create a safe reference to the Underscore object for use below.
   var _ = function(obj) {
@@ -1727,7 +1731,7 @@
         }
       }
       
-      return parts.join("&").replace(r20, "+");
+      return parts.join("&");//.replace(r20, "+");
     },
 //    partial: function(fn) {
 ////      var args = slice.call(arguments, 1);
@@ -1883,13 +1887,13 @@
     },    
     
     encode: function(str) {
-      return encodeURIComponent(str).replace(/\%3a/ig, ':').replace(/\%2f/ig, '/').replace(/\%2c/ig, ',');
+      return encodeURIComponent(str).replace(r3a, ':').replace(r2f, '/').replace(r2c, ',').replace(r20, '+').replace(singleQuote, '%27');
     },
     
     decode: function(str) {
       return decodeURIComponent(str.replace(/\+/g, '%20'));
     },
-
+        
     pushUniq: function(arr) {
       var items = concat.apply([], slice.call(arguments, 1));
       for (var i = 0; i < items.length; i++) {

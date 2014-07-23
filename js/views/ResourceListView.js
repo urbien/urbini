@@ -136,13 +136,12 @@ define('views/ResourceListView', [
           if (event == 'reset') {
             console.log("RESETTING LIST VIEW MASON");
             self._outOfData = false;
-            self._isPaging = false;
             if (self.isPaging())
               self._pagingPromise._canceled = true;
 //            self.mason.unsetLimit();
             self._removeBricks(self._displayedRange.from, self._displayedRange.to);
             self.$('.masonry-brick').$remove();
-            self._displayedRange.from = self._displayedRange.to = 0;
+            self.setDisplayedRange(0, 0);
             self.mason.reset();
 //            if (self.mason.isLocked())
 //              self.mason['continue']();
@@ -168,6 +167,7 @@ define('views/ResourceListView', [
       this.originalParams = _.clone(this.collection.params);
       this.originalModel = this.collection.vocModel;
       this.setDisplayModel(this.originalModel);
+      this.collection.on('change', this.onResourceChanged, this);
       
 //      Physics.here.on('translate.' + this.axis.toLowerCase(), this.getBodyId(), this.onScroll);
 //      
@@ -351,22 +351,18 @@ define('views/ResourceListView', [
       if (this.updateTotal())
         this.mason.setLimit(this.collection.getTotal());
 
+      var displayed = this._displayedRange;
       switch (event.type) {
         case 'range':
-          if (this._displayedRange.to > this._displayedRange.from)
-            this._removeBricks(this._displayedRange.from, this._displayedRange.to);
+          if (displayed.to > displayed.from)
+            this._removeBricks(displayed.from, displayed.to);
           
-          if (event.from < this._displayedRange.from)
-            this._displayedRange.from = this._displayedRange.to = event.to;
+          if (event.from < displayed.from)
+            this.setDisplayedRange(event.to, event.to);
           else
-            this._displayedRange.from = this._displayedRange.to = event.from;
+            this.setDisplayedRange(event.from, event.from);
           
           return this._addBricks(event.from, event.to);
-        case 'prefetch':
-          if (this._isPaging)
-            return;
-          
-          // fall through to 'more'
         case 'more':
 //          this._lastRangeEventSeq = event.eventSeq;
           var num = event.quantity,
@@ -374,11 +370,11 @@ define('views/ResourceListView', [
               to;
           
           if (event.head) {
-            from = Math.max(this._displayedRange.from - num, 0);
-            to = this._displayedRange.from;
+            from = Math.max(displayed.from - num, 0);
+            to = displayed.from;
           }
           else {
-            from = this._displayedRange.to;
+            from = displayed.to;
             to = from + num;
           }
           
@@ -389,22 +385,36 @@ define('views/ResourceListView', [
           
         case 'less':
           var from, 
-              to;
+              to,
+              current = _.clone(displayed),
+              projected = {
+                from: displayed.from + (event.head || 0),
+                to: displayed.to - (event.tail || 0)
+              }
           
+          console.debug("1. REMOVING BRICKS, CURRENT RANGE: ", displayed);
           if (event.head) {
-            from = this._displayedRange.from;
-            to = Math.min(from + event.head, this._displayedRange.to);
+            console.debug("2. REMOVING FROM HEAD: " + event.head);
+            from = displayed.from;
+            to = Math.min(from + event.head, displayed.to);
             this._removeBricks(from, to);
-            this._displayedRange.from += (to - from);
+            this.setDisplayedRange(displayed.from + (to - from), displayed.to);
+//            displayed.from += (to - from);
           }
           
           if (event.tail) {
-            from = Math.max(this._displayedRange.to - event.tail, this._displayedRange.from);
-            to = Math.min(from + event.tail, this._displayedRange.to);
+            console.debug("2. REMOVING FROM TAIL: " + event.tail);
+            from = Math.max(displayed.to - event.tail, displayed.from);
+            to = Math.min(from + event.tail, displayed.to);
             this._removeBricks(from, to);
-            this._displayedRange.to -= (to - from);
+//            displayed.to -= (to - from);
+            this.setDisplayedRange(displayed.from, displayed.to - (to - from));
           }
           
+          if (!_.isEqual(projected, displayed))
+            debugger;
+          
+          console.debug("3. REMOVED BRICKS, new range: ", displayed);
           this.mason['continue']();
           return;
         default:
@@ -734,6 +744,7 @@ define('views/ResourceListView', [
 //        Physics.there.addBody('point', scrollbarOptions, scrollbarId);
         
         this.addToWorld(this.options);
+        this.mason.end = G.emptyFn;
 //        Q.read(this.checkOffsetTop, this);
       }
       else 
@@ -852,21 +863,21 @@ define('views/ResourceListView', [
           failed = [],
           childView;
       
-      this.log("PAGER", "ADDING", to - from, "BRICKS AT THE", atTheHead ? "HEAD" : "TAIL", "FOR A TOTAL OF", this._displayedRange.to - this._displayedRange.from + to - from);
+      this.log("PAGER", "ADDING", to - from, "BRICKS AT THE", atTheHead ? "HEAD" : "TAIL", "FOR A TOTAL OF", displayed.to - displayed.from + to - from);
 
       for (var i = from; i < to - 1; i++) {
-//        var res = col.models[i],
-//            liView = this.renderItem(res, atTheHead);
-        Q.write(this.renderItem, this, [col.models[i], atTheHead]);
+        var res = col.models[i],
+            liView = this.renderItem(res, atTheHead);
+//        Q.write(this.renderItem, this, [col.models[i], atTheHead]);
       }
       
       var last = col.models[to - 1];
-      Q.write(function() {
-        if (!this.isDestroyed()) {
+//      Q.write(function() {
+//        if (!this.isDestroyed()) {
           this.renderItem(last, atTheHead);
           this.postRender(from, to);
-        }
-      }, this);
+//        }
+//      }, this);
 
 //      added.forEach(function(childView) {
 //        childView.el.style.opacity = 0;
@@ -894,9 +905,9 @@ define('views/ResourceListView', [
         return;
       
       var numToRemove = to - from,
-          fromTheHead = from == this._displayedRange.from,
-          childNodes = this._childEls,
           displayed = this._displayedRange,
+          fromTheHead = from == displayed.from && to != displayed.to,
+          childNodes = this._childEls,
           removedViews = [],
           i = fromTheHead ? 0 : childNodes.length - numToRemove,
           end = end = fromTheHead ? numToRemove : childNodes.length;
@@ -919,7 +930,7 @@ define('views/ResourceListView', [
       }
 
 //      this.collection.clearRange(from, to);
-      this.log("REMOVING BRICK RANGE " + from + "-" + to); 
+//      this.log("REMOVING BRICK RANGE " + from + "-" + to + " FROM THE ", fromTheHead ? "HEAD" : "TAIL"); 
       this.doRemove(removedViews);
       if (fromTheHead) {
         Array.removeFromTo(this._childEls, 0, numToRemove);
@@ -930,13 +941,19 @@ define('views/ResourceListView', [
 //        displayed.to -= removedViews.length;
       }
 
-      if (fromTheHead && this.collection.getRange().to - this._displayedRange.to < this.options.bricksPerPage * this.options.minPagesInSlidingWindow)
+      if (fromTheHead && this.collection.getRange().to - displayed.to < this.options.bricksPerPage * this.options.minPagesInSlidingWindow)
         this.prefetch(this.options.bricksPerPage * this.options.minPagesInSlidingWindow);
       
 //      if (displayed.from > displayed.to) {
 //        debugger;
 //        displayed.from = displayed.to;
 //      }
+    },
+    
+    setDisplayedRange: function(from, to) {
+      var d = this._displayedRange;
+      d.from = from;
+      d.to = to;
     },
     
     prefetch: function(num) {
@@ -1016,7 +1033,8 @@ define('views/ResourceListView', [
         }
         else {
           Physics.here.removeBody(view.getBodyId());
-          Q.write(view.destroy, view);
+          view.destroy();
+//          Q.write(view.destroy, view);
         }
         
 //        ids.push(view.getBodyId());
@@ -1096,7 +1114,7 @@ define('views/ResourceListView', [
     },
 
     fetchResources: function(from, to) {
-      if (this._isPaging)
+      if (this.isPaging())
         return this._pagingPromise;
       else if (this._outOfData)
         return G.getRejectedPromise();
@@ -1161,17 +1179,16 @@ define('views/ResourceListView', [
       if (nextPagePromise)
         nextPageUrl = nextPagePromise._url;
       
-      this._isPaging = true;
       if (firstFetchDfd && firstFetchDfd.state() == 'pending')
         pagingPromise.done(firstFetchDfd.resolve).fail(firstFetchDfd.resolve); // HACK
       
-      this.getTemplateResource();
-      if (this._templateResourcePromise.state() == 'done')
-        pagingPromise = defer.promise();
-      else
-        pagingPromise = $.when(defer.promise(), this._templateResourcePromise);
-        
-      this._pagingPromise = pagingPromise;
+//      this.getTemplateResource();
+//      if (this._templateResourcePromise.state() == 'done')
+//        pagingPromise = defer.promise();
+//      else
+//        pagingPromise = $.when(defer.promise(), this._templateResourcePromise);
+//        
+//      this._pagingPromise = pagingPromise;
       pagingPromise.always(function() {
         G.hideSpinner(spinner);
         if (pagingPromise._canceled) {
@@ -1183,7 +1200,6 @@ define('views/ResourceListView', [
           self.finish();
         }
         
-        self._isPaging = false;
         if (defer.state() == 'rejected' && col.isOutOfResources())
           self._outOfData = true;
         else {
@@ -1196,9 +1212,9 @@ define('views/ResourceListView', [
         }
       }); 
       
-      this._pagingPromise._range = 'from: ' + before + ', to: ' + (before + limit);
+      pagingPromise._range = 'from: ' + before + ', to: ' + (before + limit);
 //      this.log("Fetching next page: " + this._pagingPromise._range);
-      return this._pagingPromise;
+      return pagingPromise;
     },
    
     setMode: function(mode) {
@@ -1354,7 +1370,7 @@ define('views/ResourceListView', [
       if (!this._preinitializedItem)
         this._preinitializedItem = this.preinitializeItem(first);
       
-      Q.write(this.addPlaceholders, this);
+//      Q.write(this.addPlaceholders, this);
       if (U.isA(vocModel, 'Intersection')) {
         var ab = U.getCloneOf(vocModel, 'Intersection.a', 'Intersection.b'),
             a = ab['Intersection.a'],
@@ -1437,7 +1453,8 @@ define('views/ResourceListView', [
     },
 
     postRender: function(from, to) {
-      Q.read(this._doPostRender, this, [from, to]); // need to get new brick sizes
+//      Q.read(this._doPostRender, this, [from, to]); // need to get new brick sizes
+      this._doPostRender(from, to);
     },
     
     _doPostRender: function(from, to) {
@@ -1458,8 +1475,8 @@ define('views/ResourceListView', [
       
       while (i--) {
         view = this._currentAddBatch[i];
-        this.listenTo(view.resource, 'change', this.onResourceChanged);
-        this.listenTo(view.resource, 'saved', this.onResourceChanged);
+//        this.listenTo(view.resource, 'change', this.onResourceChanged);
+//        this.listenTo(view.resource, 'saved', this.onResourceChanged);
 
         id = view.getBodyId();
 //        bodies.push(id);
@@ -1472,16 +1489,12 @@ define('views/ResourceListView', [
         childEls.push.apply(childEls, addedEls);
 
       this._currentAddBatch.length = 0;
-      if (displayed.from == displayed.to) {
-        displayed.from = from;
-        displayed.to = to;
-      }
-      else {
-        this._displayedRange.from = Math.min(this._displayedRange.from, from);
-        this._displayedRange.to = Math.max(this._displayedRange.to, to);
-      }
+      if (displayed.from == displayed.to)
+        this.setDisplayedRange(from, to);
+      else
+        this.setDisplayedRange(Math.min(displayed.from, from), Math.max(displayed.to, to));
       
-      this.log("New range: " + this._displayedRange.from + "-" + this._displayedRange.to);
+      this.log("New range: " + displayed.from + "-" + displayed.to);
       if (this._outOfData && this.collection.length == to) {
         this.log("3. BRICK LIMIT");
         this.mason.setLimit(this.collection.length);
