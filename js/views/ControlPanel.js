@@ -537,14 +537,17 @@ define('views/ControlPanel', [
         isCancelable = canceledProp && U.isPropEditable(list.models[0], canceledProp);
       }
 
-      if (!list.length  &&  isTrade  &&  this.resource.inlineLists['tradleRules'].length == 0) {
-        U.addToFrag(frag, this.propGroupsDividerTemplate({
-          value: propDisplayName,
-          add: canAdd,
-          shortName: getBacklinkSub(vocModel, name),
-          style: prop.propertyStyle
-        }));
-        return;
+      if (!list.length) {  
+          if ((isTrade && !this.resource.inlineLists['orders'].length)  ||  (isRule  && !this.resource.inlineLists['tradleRules'].length)) {
+            U.addToFrag(frag, this.propGroupsDividerTemplate({
+              value: propDisplayName,
+              add: canAdd,
+              shortName: getBacklinkSub(vocModel, name),
+              style: prop.propertyStyle
+            }));
+            return;
+        }
+//        return;
       }
 
       
@@ -585,17 +588,19 @@ define('views/ControlPanel', [
           }));
         }
       }
-
-      if (!list.length) {
-        if (isRule  ||  isTrade)
-          U.addToFrag(frag, this.propGroupsDividerTemplate({
-            value: propDisplayName,
-            add: canAdd,
-            shortName: getBacklinkSub(vocModel, name),
-            style: prop.propertyStyle
-          }));
+      if (!list.length)
         return;
-      }
+
+//      if (!list.length) {
+//        if (isRule  ||  isTrade)
+//          U.addToFrag(frag, this.propGroupsDividerTemplate({
+//            value: propDisplayName,
+//            add: canAdd,
+//            shortName: getBacklinkSub(vocModel, name),
+//            style: prop.propertyStyle
+//          }));
+//        return;
+//      }
       
       var hasImages;
       for (var i = 0, l = resources.length; i < l; i++) {
@@ -621,9 +626,15 @@ define('views/ControlPanel', [
 ////          }
 //        }
         if (isTrade) { 
-          var title = iRes.get('title');
-          var idx = title.indexOf(":");
-          iRes.attributes.davDisplayName = idx == -1 ? title : title.substring(idx + 2);
+//          var title = iRes.get('title');
+//          if (title) {
+//            var idx = title.indexOf(":");
+//            iRes.attributes.davDisplayName = idx == -1 ? title : title.substring(idx + 2);
+//          }
+//          else {
+            iRes.attributes.davDisplayName = iRes.get('action') + " " + iRes.get('quantity') + " " + iRes.get('security.displayName');
+//          }
+          params.name = iRes.attributes.davDisplayName;
         }
         else if (U.isA(listVocModel, 'Intersection')) {
           var oH, oW, ab;
