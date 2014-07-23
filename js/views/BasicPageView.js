@@ -133,7 +133,7 @@ define('views/BasicPageView', [
         this._fetchPromise.fail(Errors.getBackboneErrorHandler());
         if (this._autoFetch) {
           this.model.fetch(_.extend({
-            sync: true,
+//            sync: true,
             success: self._fetchDfd.resolve,
             error: self._fetchDfd.reject
           }, options.fetchOptions));

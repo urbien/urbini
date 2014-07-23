@@ -1143,7 +1143,7 @@ define('utils', [
           continue;
         var prop = vocModel.properties[col];
         if (!prop || prop.backLink)
-          return;
+          continue;
         
         var val = res.get(col);
         if (!val) {
