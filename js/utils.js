@@ -3525,7 +3525,7 @@ define('utils', [
           }
           else {
             rules.push(function(res) {
-              var type = U.getTypeUri(U.getValue(res, '_uri'));
+              var type = U.getValue(res, '_type') || U.getTypeUri(U.getValue(res, '_uri'));
               return type == superUri;
             });
           }

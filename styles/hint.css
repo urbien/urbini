@@ -258,8 +258,8 @@
 .hint--bottom-left .content {
   margin-top: 48px; /*8*/
   top: 100%;
-  right: 100%;
-  margin-right: -74px; /*-34px;*/
+  right: 0;
+  margin-right: -30px;
 }
 
 .hint--bottom-left .content:after {

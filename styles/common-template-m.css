@@ -1456,7 +1456,7 @@ label.subClass {
   font-weight: bold;
   min-height:3rem;
 }
-.socialLinks div {
+.socialLinks > a.socialAction {
   display: inline-block;
   font-size: 2rem;
   margin: 1rem 1rem;

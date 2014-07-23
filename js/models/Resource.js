@@ -35,10 +35,6 @@ define('models/Resource', [
     });
   };
  
-//  Events.on('uriChanged', function(tempUri, data) {
-//    Events.trigger('synced:' + tempUri, data);
-//  });
-  
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(atts, options) {
@@ -289,13 +285,19 @@ define('models/Resource', [
       this.set(defaults, {silent: true, defaults: true});
     },
     
-    subscribeToUpdates: function() {
-      if (this.subscribedToUpdates)
+    onUriChanged: function() {
+      if (this._hasUri)
         return;
       
       var uri = this.getUri();
+      this.set({
+        _type: U.getTypeUri(uri)
+      }, {
+        silent: true
+      })
+      
       this.listenTo(Events, 'getResource:' + uri, this.onSearch);
-      this.listenTo(Events, 'delete:' + this.getUri(), this['delete']);
+      this.listenTo(Events, 'delete:' + uri, this['delete']);
 //      if (!this.collection) {
 //        var self = this;
 //        U.getTypes(this.vocModel).forEach(function(type) {
@@ -305,7 +307,7 @@ define('models/Resource', [
 //      }
       
       this.listenTo(Events, 'updateBacklinkCounts:' + uri, this.updateCounts);
-      this.subscribedToUpdates = true;
+      this._hasUri = true;
     },
     
     onSearch: function(cb) {
@@ -558,10 +560,10 @@ define('models/Resource', [
     },
     
     preParse: function (resp) {
-      var lf = this.lastFetchOrigin != 'edit' && G.currentServerTime();
       if (!resp)
         return null;
         
+      var lf = this.lastFetchOrigin != 'edit' && G.currentServerTime();
       var primaryKeys = U.getPrimaryKeys(this.vocModel);
       resp._uri = U.getLongUri1(resp._uri || resp.uri, this.vocModel || { type: this.type, primaryKeys: primaryKeys });
       resp._shortUri = U.getShortUri(resp._uri, this.vocModel);
@@ -798,7 +800,7 @@ define('models/Resource', [
 
       if (result) {
         if (uriChanged)
-          this.subscribeToUpdates();
+          this.onUriChanged();
 
 //        this._resetEditableProps();
         if (options.userEdit)
@@ -1291,10 +1293,6 @@ define('models/Resource', [
           self.notifyContainers();
         
         self.trigger('syncedWithServer', self);
-//        if (tempUri) {
-//          self.subscribedToUpdates = false;
-//          self.subscribeToUpdates();
-//        }        
       };
       
       options.error = function(originalModel, xhr, opts) {
@@ -1399,8 +1397,13 @@ define('models/Resource', [
             uri = U.buildUri(this);
         }
           
-        if (uri)
-          this.set('_uri', U.buildUri(this), { silent: true });
+        if (uri) {
+          this.set({
+            _uri: uri
+          }, { 
+            silent: true 
+          });
+        }
         else
           debugger; // should never happen
       }

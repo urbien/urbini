@@ -125,7 +125,7 @@
     <li>
       <a href="#" class="mini-cta" data-selector=".subClass:nth-child(2)" data-tooltip="Choose one of these feed categories" data-direction="bottom">Choose a category</a>
       OR
-      <a href="#" class="mini-cta" data-selector=".ui-icon-search" data-tooltip="Click here to search for a feed by name" data-direction="left">Search by name</a>
+      <a href="#" class="mini-cta" data-selector=".ui-icon-search,.searchInput" data-tooltip="Click here to search for a feed by name" data-direction="bottom-left">Search by name</a>
     </li>
     <li>
       <a href="#" class="mini-cta" data-selector="section[data-type=&quot;list&quot;]" data-tooltip="Click any of the feeds shown below to see the indicators it provides" data-direction="top">Choose a feed</a> from the filtered down list
@@ -365,13 +365,13 @@
 <li class="socialLinks" style="font-weight: normal;color:#3777a1;">
   {{ var owner = this.resource.get('owner'), submittedBy = this.resource.get('submittedBy'), user = G.currentUser._uri, isOwner = user && user == (owner || submittedBy); }}
   {{ if (user && (user == owner || user == submittedBy)) { }}
-    <div class="share" data-url="{{= uri }}"><a class="ui-icon-edit" href="{{= U.makePageUrl('edit', this.resource.getUri(), {$editCols: 'activated,title,description,isPublic'}) }}">&#160;EDIT</a></div>
+    <a class="socialAction" href="{{= U.makePageUrl('edit', this.resource.getUri(), {$editCols: 'activated,title,description,isPublic'}) }}"><span class="ui-icon-edit" data-url="{{= uri }}">&#160;EDIT</span></a>
   {{ } }}
   {{ if (U.getBacklinkCount(this.resource, 'tradleRules')) { }}
-    <div class="share" data-url="{{= uri }}"><a class="ui-icon-twitter" href="{{= U.getTwitterLink(this.resource) }}" target="_blank">&#160;TWEET</a></div>
+    <a href="{{= U.getTwitterLink(this.resource) }}" class="socialAction" data-url="{{= uri }}"><span class="ui-icon-twitter" target="_blank">&#160;TWEET</span></a>
   {{ } }}
-  <div class="clone" data-url="{{= uri }}"><a href="{{= U.makePageUrl('view', uri + '&$clone=y') }}" class="ui-icon-fork">&#160;CLONE</a></div>
-  <div class="embed" data-url="{{= uri }}"><a class="ui-icon-embed" href="{{= G.serverName }}/widget/embed.html?uri={{= encodeURIComponent(uri) }}">&#160;EMBED</a></div>
+  <a href="{{= U.makePageUrl('view', uri + '&$clone=y') }}" class="socialAction" data-url="{{= uri }}"><span class="ui-icon-fork">&#160;CLONE</span></a>
+  <a href="{{= G.serverName }}/widget/embed.html?uri={{= encodeURIComponent(uri) }}" class="socialAction" data-url="{{= uri }}"><span class="ui-icon-embed">&#160;EMBED</span></a>
 </li>
 </script>
 
