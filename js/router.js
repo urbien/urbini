@@ -937,8 +937,7 @@ define('router', [
       }
       else {
         var model = U.getModel(type),
-            modelParams = U.getQueryParams(hashInfo.params, model),
-            resource = new model(U.filterInequalities(modelParams));
+            resource = new model();
         
         if (!resource.getUri() && Redirecter.fastForwardMake(resource))
           return;

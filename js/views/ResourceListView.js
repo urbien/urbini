@@ -167,7 +167,6 @@ define('views/ResourceListView', [
       this.originalParams = _.clone(this.collection.params);
       this.originalModel = this.collection.vocModel;
       this.setDisplayModel(this.originalModel);
-      this.collection.on('change', this.onResourceChanged, this);
       
 //      Physics.here.on('translate.' + this.axis.toLowerCase(), this.getBodyId(), this.onScroll);
 //      
@@ -209,7 +208,8 @@ define('views/ResourceListView', [
 
     modelEvents: {
       'reset': '_resetSlidingWindow',
-      'added': '_onAddedResources'
+      'added': '_onAddedResources',
+      'change': 'onResourceChanged'
 //        ,
 //      'updated': '_onUpdatedResources'
     },
@@ -1475,9 +1475,6 @@ define('views/ResourceListView', [
       
       while (i--) {
         view = this._currentAddBatch[i];
-//        this.listenTo(view.resource, 'change', this.onResourceChanged);
-//        this.listenTo(view.resource, 'saved', this.onResourceChanged);
-
         id = view.getBodyId();
 //        bodies.push(id);
         Physics.here.addBody(view.el, id);

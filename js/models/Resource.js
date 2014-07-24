@@ -187,7 +187,8 @@ define('models/Resource', [
     
     setDefaults: function() {
       var vocModel = this.vocModel,
-          action = G.currentHashInfo.action,
+          urlInfo = U.getCurrentUrlInfo(),
+          action = urlInfo.action,
           isEdit = action == 'make' || action == 'edit',
           query,
           defaults = {};
@@ -279,8 +280,16 @@ define('models/Resource', [
         }
       }
       
-      if (isEdit)
-        _.extend(defaults, U.getQueryParams(G.currentHashInfo.params, vocModel));
+      if (isEdit) {
+        var params = urlInfo.params,
+            modelParams = U.getQueryParams(params, this.vocModel),
+            modelParamsStrict = U.filterInequalities(modelParams),
+            conditions = _.omit(modelParams, _.keys(modelParamsStrict));
+            
+        _.extend(defaults, modelParamsStrict);
+        if (conditions)
+          this.where = conditions;
+      }
       
       this.set(defaults, {silent: true, defaults: true});
     },
@@ -1531,7 +1540,7 @@ define('models/Resource', [
 //        return this._editableProps;
       
       var isEdit = !!this.getUri();
-      
+
       urlInfo = urlInfo || U.getUrlInfo(U.makeMobileUrl(isEdit ? 'edit' : 'make', this.getUri(), this.attributes));
       var self = this,
           model = this.vocModel,
@@ -1540,10 +1549,10 @@ define('models/Resource', [
           unsavedChanges = this.getUnsavedChanges() || {},
           propGroups = U.getArrayOfPropertiesWith(meta, "propertyGroupList"),
           backlinks = this.vocModel._backlinks = U.getPropertiesWith(meta, "backLink"),
-          reqParams = urlInfo.getParams(),
+          reqParams = U.filterInequalities(urlInfo.getParams(), model),
 //          currentAtts = U.filterObj(isMake ? res.attributes : res.changed, U.isModelParameter),
           editProps = reqParams['$editCols'] && reqParams['$editCols'].splitAndTrim(','),
-          mkResourceCols = isMake && this.vocModel['mkResourceCols'],
+          mkResourceCols = isMake && model['mkResourceCols'],
           userRole = U.getUserRole(),
           collected = [],
           result = {

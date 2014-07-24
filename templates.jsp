@@ -162,13 +162,14 @@
   {{ var currentStep = !nIndicators ? 0 : !nRules ? 1 : !nTrades ? 2 : 3; }}
   <i class="ui-icon-remove"></i>
   <h2>Quickstart
-    <br /><br />
+    <subtitle>
     {{ if (currentStep < 3) { }}
       {{= [0, 1, 2].map(function(step) { return '<span class="step-{0}">{1}</span>'.format(currentStep == step ? 'current' : currentStep > step ? 'complete' : 'incomplete', ++step) }).join('-') }}
     {{ }                     }}
     {{ if (currentStep >= 3) { }}
-      <span style="font-size: 25px;">Completed</span>
+      complete
     {{ }                     }}
+    </subtitle>
   </h2>
   {{ if (currentStep < 3) { }}
   {{ if (!desc && !nAnything) { }}

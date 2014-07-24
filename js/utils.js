@@ -1340,13 +1340,17 @@ define('utils', [
       if (_.isEmpty(params))
         return params;
       
-      var query = _.param(params);
-      var parsed = U.parseAPIQuery(query, '&');
-      var filtered = {};
-      _.each(parsed, function(clause) {
+      var query = _.param(params),
+          parsed = U.parseAPIQuery(query, '&'),
+          filtered = {},
+          i = parsed.length,
+          clause;
+      
+      while (i--) {
+        clause = parsed[i];
         if (clause.op === '==')
           filtered[clause.name] = clause.value;
-      });
+      }
       
       return filtered;
     },

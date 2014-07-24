@@ -623,9 +623,15 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
       fast: options.replace
     };      
     
-    var params;
+    var params;    
     if (prop.where) {
       params = U.getQueryParams(prop.where);
+      if (res.where) {
+        var condition = res.where[prop.shortName];
+        if (condition)
+          params._uri = condition;
+      }
+      
 //      params = U.getListParams(res, prop);
       for (var p in params) {
         var val = params[p];
@@ -1087,12 +1093,15 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
         params = urlInfo.params;
     
     if (params.$createInstance == 'y') {
-      var params = urlInfo.params.$props;
-      params = params ? U.getQueryParams(params) : {};
-      if (urlInfo.params.$title)
-        params.$title = urlInfo.params.$title + ' ' + valueRes.get('label');
+      var props = params.$props;
+      props = props ? U.getQueryParams(props) : {};
+      if (params.$title)
+        props.$title = params.$title + ' ' + valueRes.get('label');
       
-      Events.trigger('navigate', U.makeMobileUrl('make', valueRes.get('davClassUri'), params));
+      if (props.indicator)
+        props.compareWith = '!' + props.indicator;
+      
+      Events.trigger('navigate', U.makeMobileUrl('make', valueRes.get('davClassUri'), props));
       return;
     }
     else if (params.$tradleFeedParams) {
