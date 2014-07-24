@@ -1774,6 +1774,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         return this._handlingRangeRequest;
       }
       
+//      console.debug.apply(console, ["LIST VIEW CALLING WORKER", method].concat(_.toArray(arguments)));
       return THERE.rpc(this.id, method, _.toArray(arguments));
     };
   });

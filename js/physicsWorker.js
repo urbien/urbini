@@ -2773,7 +2773,7 @@ function getRectVertices(width, height) {
     },
     
     _getInfo: function() {
-      return Physics.util.pick(this, 'minBricks', 'maxBricks', 'minSlidingPagesInWindow', 'maxSlidingPagesInWindow', 'bricksPerPage');
+      return Physics.util.pick(this, 'minBricks', 'maxBricks', 'minSlidingPagesInWindow', 'maxSlidingPagesInWindow', 'bricksPerPage', 'range', '_resetting');
     },
     
 //    requestMore: function(n, atTheHead) {
@@ -2801,6 +2801,8 @@ function getRectVertices(width, height) {
         head: atTheHead,
         info: this._getInfo()
       });
+      
+      this._resetting = false;
     },
 
 //    requestLess: function(head, tail) {
@@ -3168,6 +3170,7 @@ function getRectVertices(width, height) {
     },
 
     reset: function() {
+      this._waiting = false;
       this.unsetLimit();
       var numBricks = this.numBricks();
       if (numBricks)
@@ -3189,6 +3192,11 @@ function getRectVertices(width, height) {
         this.offsetBody.stop(this._initialOffsetBodyPos);
 //        return this.requestLess(0, numBricks);
       }
+      
+      triggerEvent(this._callbackId, {
+        type: 'reset',
+        info: this._getInfo()
+      });
       
       if (this._initialized) {
         if (this.headEdge)
@@ -3711,10 +3719,16 @@ function getRectVertices(width, height) {
       return Math.max(this.slidingWindowBounds.max - this.getViewport().max, 0) * favor; // + favor
     },
 
+    _adjustSlidingWindow: function() {
+      this._doAdjustSlidingWindow();
+      if (!this._waiting)
+        this.log("SLIDING WINDOW DOESN'T NEED ADJUSTMENT");
+    },
+
     /**
      * determine if viewport is too close to one of the sliding window boundaries, in which case slide the sliding window, and grow it if it's too cramped
      */
-    _adjustSlidingWindow: function() {
+    _doAdjustSlidingWindow: function() {
       if (!this.slidingWindow)
         return;
       

@@ -136,12 +136,15 @@ define('views/ResourceListView', [
           if (event == 'reset') {
             console.log("RESETTING LIST VIEW MASON");
             self._outOfData = false;
-            if (self.isPaging())
+            if (self._pagingDeferred.state() == 'pending')
+              self._pagingDeferred.reject();
+            else
               self._pagingPromise._canceled = true;
-//            self.mason.unsetLimit();
+
             self._removeBricks(self._displayedRange.from, self._displayedRange.to);
             self.$('.masonry-brick').$remove();
             self.setDisplayedRange(0, 0);
+            self._resetting = 1;
             self.mason.reset();
 //            if (self.mason.isLocked())
 //              self.mason['continue']();
@@ -193,7 +196,7 @@ define('views/ResourceListView', [
     },
     
     isPaging: function() {
-      return this._pagingPromise && this._pagingPromise.state() == 'pending';
+      return this._pagingPromise && this._pagingPromise.state() == 'pending' && !this._pagingPromise._canceled;
     },
 
     setBrickLimit: function(limit) {
@@ -286,13 +289,20 @@ define('views/ResourceListView', [
 
 //      var l = filtered.length;
 //      console.debug("6. FILTER - readding from " + l, filtered.models.slice(), _.clone(filtered.params));
-      filtered.filterAndAddResources(col.models);
+      
+//      if (!this.shouldUseSync())
+        filtered.filterAndAddResources(col.models);
+      
 //      console.debug("7. FILTER - readded", filtered.models.slice(l));
 //      filtered.belongsInCollection = U.buildValueTester(this._filterParams, this.vocModel) || G.trueFn;
 //      resourceMatches = col.models.filter(filtered.belongsInCollection.bind(filtered));
 //      filtered.reset(resourceMatches, {
 //        params: _.defaults(this._filterParams, this.originalParams)
 //      });      
+    },
+    
+    shouldUseSync: function() {
+      return G.online;
     },
     
 //    myEvents: {
@@ -336,9 +346,39 @@ define('views/ResourceListView', [
     },
     
     _onPhysicsMessage: function(event) {
+      this._lastMessage = _.clone(event);
+      if (event.type == 'reset') {
+//        console.debug("LIST VIEW RESET MADE ROUND TRIP");
+        this._resetting = 2;
+        this.setDisplayedRange(0, 0);
+        return;
+      }
+      
+      switch (this._resetting) {
+      case 1:
+//        console.debug("LIST VIEW IGNORING MESSAGE DUE TO RESET");
+        return;
+      case 2:
+        this._resetting = false;
+        break;
+      }
+//      if (this._resetting) {
+////        if (event.info._resetting) {
+////          this._resetting = false;
+////          console.debug("LIST VIEW RESET MADE ROUND TRIP");
+////          this.setDisplayedRange(0, 0);
+////        }
+////        else {
+//          console.debug("LIST VIEW IGNORING MESSAGE DUE TO RESET");
+//          return;
+////          return;
+////        }
+//      }
+      
+//      console.debug("LIST VIEW MAIN RECEIVED", event);
       if (event.info)
         _.extend(this.options, event.info);
-
+      
       if (event.type != 'prefetch') {
         if (this.mason.isLocked()) {
 //          debugger; // should never happen
@@ -352,6 +392,9 @@ define('views/ResourceListView', [
         this.mason.setLimit(this.collection.getTotal());
 
       var displayed = this._displayedRange;
+      if (event.type != 'less' && !_.isEqual(event.info.range, displayed))
+        debugger;
+      
       switch (event.type) {
         case 'range':
           if (displayed.to > displayed.from)
@@ -392,9 +435,9 @@ define('views/ResourceListView', [
                 to: displayed.to - (event.tail || 0)
               }
           
-          console.debug("1. REMOVING BRICKS, CURRENT RANGE: ", displayed);
+//          console.debug("1. REMOVING BRICKS, CURRENT RANGE: ", displayed);
           if (event.head) {
-            console.debug("2. REMOVING FROM HEAD: " + event.head);
+//            console.debug("2. REMOVING FROM HEAD: " + event.head);
             from = displayed.from;
             to = Math.min(from + event.head, displayed.to);
             this._removeBricks(from, to);
@@ -403,7 +446,7 @@ define('views/ResourceListView', [
           }
           
           if (event.tail) {
-            console.debug("2. REMOVING FROM TAIL: " + event.tail);
+//            console.debug("2. REMOVING FROM TAIL: " + event.tail);
             from = Math.max(displayed.to - event.tail, displayed.from);
             to = Math.min(from + event.tail, displayed.to);
             this._removeBricks(from, to);
@@ -411,10 +454,13 @@ define('views/ResourceListView', [
             this.setDisplayedRange(displayed.from, displayed.to - (to - from));
           }
           
+          if (!_.isEqual(event.info.range, displayed))
+            debugger;
+          
           if (!_.isEqual(projected, displayed))
             debugger;
           
-          console.debug("3. REMOVED BRICKS, new range: ", displayed);
+//          console.debug("3. REMOVED BRICKS, new range: ", displayed);
           this.mason['continue']();
           return;
         default:
@@ -764,6 +810,9 @@ define('views/ResourceListView', [
     * @return a promise
     */
     _addBricks: function(from, to, force) {
+      if (this._resetting)
+        return;
+      
       if (!this._currentAddBatch)
         this._currentAddBatch = [];
       
@@ -852,8 +901,13 @@ define('views/ResourceListView', [
     getBrickTagName: function() {
       return this._preinitializedItem.prototype.tagName || 'div';
     },
-    
+
     _doAddBricks: function(from, to) {
+      if (this._resetting) {
+        console.log("1. LIST VIEW - GOT BRICKS BUT NOT ADDING DUE TO ASYNC RESET");
+        return;
+      }
+      
       var self = this,
           el = this.el,
           childTagName = this.getBrickTagName(),
@@ -906,7 +960,7 @@ define('views/ResourceListView', [
       
       var numToRemove = to - from,
           displayed = this._displayedRange,
-          fromTheHead = from == displayed.from && to != displayed.to,
+          fromTheHead = to < displayed.to,
           childNodes = this._childEls,
           removedViews = [],
           i = fromTheHead ? 0 : childNodes.length - numToRemove,
@@ -952,6 +1006,9 @@ define('views/ResourceListView', [
     
     setDisplayedRange: function(from, to) {
       var d = this._displayedRange;
+      if (!d.from && !d.to && from > 0)
+        debugger;
+      
       d.from = from;
       d.to = to;
     },
@@ -1122,11 +1179,11 @@ define('views/ResourceListView', [
       var self = this,
           col = this.collection,
           before = col.length,
-          defer = $.Deferred(),
           firstFetchDfd = this.getPageView()._fetchDfd, // HACK
           nextPagePromise,
           nextPageUrl,
           limit = Math.min(Math.max(to - from, this.options.minPagesInSlidingWindow * this.options.bricksPerPage, 10), 50),
+          defer = this._pagingDeferred = $.Deferred(),
           pagingPromise = this._pagingPromise = defer.promise(),
           spinner = this.spinner || {
             name: 'listLoading' + G.nextId(),
@@ -1141,6 +1198,7 @@ define('views/ResourceListView', [
           
       this._pageRequestTimePlaced = _.now();
       nextPagePromise = col.getNextPage({
+        sync: this.shouldUseSync(),
         params: {
           $offset: from,
           $limit: limit
@@ -1454,22 +1512,32 @@ define('views/ResourceListView', [
 
     postRender: function(from, to) {
 //      Q.read(this._doPostRender, this, [from, to]); // need to get new brick sizes
+      if (this._resetting) {
+        console.log("2. LIST VIEW - GOT BRICKS BUT NOT ADDING DUE TO ASYNC RESET");
+        return;
+      }
+      
       this._doPostRender(from, to);
     },
     
     _doPostRender: function(from, to) {
+      if (this._resetting) {
+        console.log("3. LIST VIEW - GOT BRICKS BUT NOT ADDING DUE TO ASYNC RESET");
+        return;
+      }
+      
 //      if (this.stashed.length) {
 //        Array.prepend(added, this.stashed);
 //        this.stashed.length = 0;
 //      }
       
-      var atTheHead = from < this._displayedRange.from,
-          childEls = this._childEls,
+      var childEls = this._childEls,
           addedEls = _.pluck(this._currentAddBatch, 'el'),
           bricks = this.toBricks(this._currentAddBatch, this.options),
           i = bricks.length,
 //          bodies = this.pageView._bodies,
           displayed = this._displayedRange,
+          atTheHead = from < displayed.from,
           view,
           id;
       
