@@ -896,7 +896,7 @@ section[id^="view"] {
 
 @media only screen and (max-width: 480px) {
   .col, .col.thin { 
-    margin: 1% 0 40px 0%;
+    margin: 1% 0 10px 0%;
     height: 100%;
   }
 

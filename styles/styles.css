@@ -50,7 +50,7 @@ label.req::after {
   margin-bottom: 25px;
 }
 
-#other {
+.other {
   padding:0; 
   border:0;border-collapse:collapse 
 }
