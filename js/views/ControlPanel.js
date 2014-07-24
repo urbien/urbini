@@ -545,6 +545,7 @@ define('views/ControlPanel', [
               shortName: getBacklinkSub(vocModel, name),
               style: prop.propertyStyle
             }));
+            if (isRule)
             U.addToFrag(frag, this.propGroupsDividerTemplate({
               value: '(no rules yet)',
               shortName: getBacklinkSub(vocModel, name),
@@ -762,7 +763,7 @@ define('views/ControlPanel', [
           hasImages = true;
         else if (hasImages)
           params.needsAlignment = true;
-        
+        params.isTrade = isTrade;
         if (displayCollapsed)
           gr += template.call(this, params);
         else

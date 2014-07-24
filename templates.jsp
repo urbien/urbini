@@ -238,9 +238,8 @@
 
 
 <li data-viewid="{{= viewId }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}"
-
-{{ if (U.isAssignableFrom(resource.vocModel, 'commerce/trading/Order')) { }}
-  style="text-align:center;padding:0;border:none;" class="trades"
+{{ if (isTrade) { }}
+  style="text-align:center;padding:0;border:none;background:#3777a1;border-bottom:1px solid #ddd;" class="trades"
 {{ } }}
   >  
   <a href="{{= href }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="{{= obj.img || obj.needsAlignment ? '' : 'padding:1rem 0;'}} {{= obj.noclick ? 'cursor:default;' : 'cursor:pointer;' }}">
@@ -260,7 +259,7 @@
     {{ if (!obj.img  &&  obj.needsAlignment) { }}
       <img src="{{= G.getBlankImgSrc() }}" height="80" style="vertical-align:middle;"/> 
     {{ } }}
-    <span style="{{= obj.img || obj.needsAlignment ? 'position:absolute;padding:10px;' : ''}}font-size:1.6rem;font-weight:bold;">{{= obj.gridCols  ? (obj.gridCols.indexOf(name) == -1 ? name + '<br/>' + gridCols : gridCols) : name }}</span>
+    <span style="{{= obj.img || obj.needsAlignment ? 'position:absolute;padding:10px;' : ''}}{{= isTrade ? 'font-size:2.5rem;color:aliceblue;' : 'font-size:1.6rem;' }}font-weight:bold;">{{= obj.gridCols  ? (obj.gridCols.indexOf(name) == -1 ? name + '<br/>' + gridCols : gridCols) : name }}</span>
   </a>
   {{ if (typeof comment != 'undefined') { }}
     <p>{{= comment }}</p>
