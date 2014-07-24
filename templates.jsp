@@ -157,7 +157,7 @@
 
 <script type="text/template" id="tradleViewQuickstartTemplate">
 <div class="quickstart-content">
-  {{ var res = this.resource, desc = res.get('description'), ils = res.getInlineLists() || {}, rules = ils.tradleRules, nRules = rules && rules.length, indicators = ils.indicators, nIndicators = indicators && indicators.length; }}
+  {{ var res = this.resource, name = res.get('title'), desc = res.get('description'), ils = res.getInlineLists() || {}, rules = ils.tradleRules, nRules = rules && rules.length, indicators = ils.indicators, nIndicators = indicators && indicators.length; }}
   {{ var alerts = ils.notifications, trades = ils.orders, nTrades = trades && trades.length, nAnything = nIndicators || nRules || nTrades, activated = res.get('activated'), isPublic = res.get('isPublic'); }}
   {{ var currentStep = !nIndicators ? 0 : !nRules ? 1 : !nTrades ? 2 : 3; }}
   <i class="ui-icon-remove"></i>
@@ -167,41 +167,50 @@
       {{= [0, 1, 2].map(function(step) { return '<span class="step-{0}">{1}</span>'.format(currentStep == step ? 'current' : currentStep > step ? 'complete' : 'incomplete', ++step) }).join('-') }}
     {{ }                     }}
     {{ if (currentStep >= 3) { }}
-      <span style="font-size: 25px;">First cut complete!</span>
+      <span style="font-size: 25px;">Completed</span>
     {{ }                     }}
   </h2>
   {{ if (currentStep < 3) { }}
   {{ if (!desc && !nAnything) { }}
-  <h3>Welcome to your new tradle! If this is your first time, follow the steps below to learn the UI:</h3>
+  <h3>Welcome to your new tradle!</h3>
   {{ }            }}
-  <ol class="quickstart-options">
+  <h3>Step {{= (currentStep + 1) }} is to...</h3>
+  <ul class="quickstart-options" style="list-style:none;">
+    {{ if (currentStep == 0) { }}
     <li>
       <a class="mini-cta" href="#" data-selector="header [data-shortname=&quot;feeds&quot;] i" data-tooltip="Click here to add indicators" data-direction="left">Add indicators</a> to your tradle.
-    </li>          
+    </li>
+    {{ }                       }}          
+    {{ if (currentStep == 1) { }}
     <li>
       <a class="mini-cta" href="#" data-selector="li[data-backlink=&quot;indicators&quot;]" data-tooltip="Click an indicator to make a rule with it" data-direction="top">Create rules</a> out of the indicators you've chosen
     </li>
+    {{ }                       }}          
+    {{ if (currentStep == 2) { }}
     <li>
       <a class="mini-cta" href="#" data-selector="header [data-shortname=&quot;orders&quot;] i" data-tooltip="Click here to add trades" data-direction="left">Add trades</a> to be executed when your tradle fires
     </li>
-  </ol>
+    {{ }                       }}          
+  </ul>
   {{ }                     }}
 
   {{ if (currentStep >= 3) { }}
   <h3>Don't forget to:</h3>
   <ul class="quickstart-options">
-    {{ if (!desc && !(!activated && nRules)) { }}
+    {{ if (name == 'New tradle') { }}
       <!-- if there's no description and we're not ready to activate yet -->
       <li>
         <a class="mini-cta" href="#" data-selector=".socialLinks .ui-icon-edit" data-tooltip="Click here to edit the name and description" data-direction="bottom">Name</a> your tradle
       </li>
     {{ }                                        }}
-    <li>
-      <a class="mini-cta" href="#" data-selector=".socialLinks .ui-icon-twitter" data-tooltip="Click here whenever you want to Tweet your tradle" data-direction="bottom">Tweet</a> your tradle
-    </li>
     {{ if (!isPublic && nRules) { }}
       <li>
-        Make your tradle <a class="mini-cta" href="#" data-selector=".socialLinks .ui-icon-edit" data-tooltip="Click to edit, then flip the 'Public' switch to 'On'" data-direction="bottom">Public</a>
+        Make your tradle <a class="mini-cta" href="#" data-selector=".socialLinks .ui-icon-edit" data-tooltip="Click to edit, then flip the 'Public' switch to 'On'" data-direction="bottom">Public</a> to share it with the world
+      </li>
+    {{ }                                        }}
+    {{ if (isPublic) { }}
+      <li>
+        <a class="mini-cta" href="#" data-selector=".socialLinks .ui-icon-twitter" data-tooltip="Click here whenever you want to Tweet your tradle" data-direction="bottom">Tweet</a> your tradle
       </li>
     {{ }                                        }}
     {{ if (!activated && nRules) { }}
