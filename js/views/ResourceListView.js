@@ -392,7 +392,7 @@ define('views/ResourceListView', [
         this.mason.setLimit(this.collection.getTotal());
 
       var displayed = this._displayedRange;
-      if (event.type != 'less' && !_.isEqual(event.info.range, displayed))
+      if (event.type == 'more' && !_.isEqual(event.info.range, displayed))
         debugger;
       
       switch (event.type) {

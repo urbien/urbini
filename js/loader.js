@@ -1923,7 +1923,7 @@ define('globals', function() {
     },
 
 //    mainWorkerName: 'main',
-    maxXhrWorkers: 1,
+    maxXhrWorkers: 4,
     numXhrWorkers: 0,
     workers: [],
     runningWorkers: [],

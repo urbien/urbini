@@ -3158,6 +3158,11 @@ function getRectVertices(width, height) {
 
     unsetLimit: function() {
       this.brickLimit = Infinity;
+      this.removeTailEdge();
+      this.log("UNSETTING BRICK LIMIT");
+    },
+    
+    removeTailEdge: function() {
       if (this.tailEdge) {
         this.disableTailConstraint();
         API.removeConstraint(this.tailEdgeConstraint);
@@ -3165,8 +3170,6 @@ function getRectVertices(width, height) {
         delete this.tailEdgeConstraint;
         delete this.tailEdge;
       }
-      
-      this.log("UNSETTING BRICK LIMIT");
     },
 
     reset: function() {
@@ -3200,7 +3203,8 @@ function getRectVertices(width, height) {
       
       if (this._initialized) {
         if (this.headEdge)
-          this.headEdge.state.pos.clone(this._initialOffsetBodyPos);
+          this.headEdge.stop(this._initialOffsetBodyPos);
+
         this._updateScrollbar(true);
         this._adjustSlidingWindow();
       }
@@ -3887,6 +3891,7 @@ function getRectVertices(width, height) {
         this.requestRange(0, this.bricksPerPage, true);
       
       log(this.containerId + ": Disabling edge constraints (temporarily) on jump to HOME");
+      this.removeTailEdge();
       this.disableEdgeConstraints();
       this.cancelPendingActions();
       this.offsetBody.stop(this.headEdge.state.pos);
