@@ -458,6 +458,10 @@ define('models/Resource', [
       return this.get('_uri');
     },
     
+    getType: function() {
+      return this.get('_type') || U.getTypeUri(this.getUri());
+    },
+    
     hasStablePrimaryKeys: function() {
       return U.hasStablePrimaryKeys(this.vocModel);
     },

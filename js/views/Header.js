@@ -1091,7 +1091,7 @@ define('views/Header', [
             type: U.getLongUri1('commerce/trading/Commodity')            
           }, {
             name: 'Macro',
-            type: U.getLongUri1('commerce/events/AlphaFlashFeed')                        
+            type: U.getLongUri1('commerce/trading/FREDFeed')                        
           }
           );
 //        }
@@ -1365,8 +1365,12 @@ define('views/Header', [
           template = 'feedChooserQuickstartTemplate';
         else if (U.isAssignableFrom(this.vocModel, 'system/designer/WebProperty'))
           template = 'indicatorChooserQuickstartTemplate';
-        else if (urlInfo.params.$createInstance != 'y' && U.isAssignableFrom(this.vocModel, 'system/designer/WebClass'))
-          template = 'indicatorVariantChooserQuickstartTemplate';
+        else if (U.isAssignableFrom(this.vocModel, 'system/designer/WebClass')) {
+          if (urlInfo.params.$createInstance == 'y')
+            template = 'ruleChooserQuickstartTemplate';
+          else
+            template = 'indicatorVariantChooserQuickstartTemplate';
+        }
       }
       
       if (!template)
@@ -1384,7 +1388,7 @@ define('views/Header', [
       return (route == 'view' || route == 'chooser') && !!this.getQuickstartTemplate();
     },
 
-    updateQuickstart: function() {
+    updateQuickstart: _.debounce(function() {
       if (!this.hasQuickstart() || !this.rendered)
         return;
       
@@ -1396,7 +1400,7 @@ define('views/Header', [
         this.showQuickstart();
         this.$('i.help').$show();
       }      
-    },    
+    }, 100),    
     
     showQuickstart: function(e) {
       this.getPageView().removeTooltips();

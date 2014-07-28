@@ -2696,7 +2696,7 @@ define('utils', [
     primitiveTypes: {
 //      uri: 'system/primitiveTypes',
       strings: ['String', 'longString'],
-      dates: ['date', 'dateTime', 'ComplexDate'],
+      dates: ['date', 'dateTime', 'ComplexDate', 'system/fog/ComplexDate', 'Money', 'model/company/Money'],
       floats: ['float', 'double', 'Percent', 'm', 'm2', 'km', 'km2', 'g', 'kg'], 
       ints: ['int', 'long', 'Duration', 'ComplexDate', 'dateTime', 'date']
     },
@@ -2737,7 +2737,7 @@ define('utils', [
 //    },
     
     validateValue: function(prop, value) {
-      if (value == null)
+      if (value == null || value == "")
         return true;
       
       var propName = U.getPropDisplayName(prop),
@@ -4851,6 +4851,18 @@ define('utils', [
         params.hashtags = hashtags;
       
       return 'https://twitter.com/intent/' + action + '?' + _.param(params);
+    },
+    
+    KEYS: {
+      PAGE_UP: 33,
+      PAGE_DOWN: 34,
+      END: 35, // end
+      HOME: 36,
+      LEFT: 37,
+      UP: 38,
+      RIGHT: 39,
+      DOWN: 40,
+      INPUT_METHOD_PROCESSING: 229
     }
   };
   

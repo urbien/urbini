@@ -18,6 +18,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       MouseWheelHandler,
       MOUSE_WHEEL_TIMEOUT,
       KeyHandler,
+      Keys = U.KEYS,
       MAX_DRAG_VECTOR = 200,
       PAGE_VECTOR_MAG = 80,
       ARROW_KEY_VECTOR_MAG = 40,
@@ -142,7 +143,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   };
 
   function isPageKey(keyCode) {
-    return keyCode == 33 || keyCode == 34;
+    return keyCode == Keys.PAGE_UP || keyCode == Keys.PAGE_DOWN;
   }
   
   function adjustForScreen(dragMag) {
@@ -443,13 +444,13 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   };
   
   Events.on('pageDown', function(pages) {
-    simulateKeyPress(34, {
+    simulateKeyPress(Keys.PAGE_DOWN, {
       pages: pages || 1
     });
   });
 
   Events.on('pageUp', function(pages) {
-    simulateKeyPress(33, {
+    simulateKeyPress(Keys.PAGE_UP, {
       pages: pages || 1
     });
   });
@@ -474,8 +475,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 
       switch (e.target.tagName) {
         case 'TEXTAREA':
-        case 'INPUT':
           return;
+        case 'INPUT':
+          var keyCode = U.getKeyEventCode(e);
+          if (!isPageKey(keyCode))
+            return;
       }
 
       switch (e.type) {
@@ -490,21 +494,21 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     
     getDragDirection: function(keyCode) {
       switch (keyCode) {
-      case 33: // page up
+      case Keys.PAGE_UP: // page up
         return 'up';
-      case 34: // page down
+      case Keys.PAGE_DOWN: // page down
         return 'down';
-      case 35: // end
+      case Keys.END: // end
         return 'downright';
-      case 36: // home
+      case Keys.HOME: // home
         return 'upleft';
-      case 37: // left arrow
+      case Keys.LEFT: // left arrow
         return 'left';
-      case 38: // up arrow
+      case Keys.UP: // up arrow
         return 'up';
-      case 39: // right arrow
+      case Keys.RIGHT: // right arrow
         return 'right';
-      case 40: // down arrow
+      case Keys.DOWN: // down arrow
         return 'down';
       default:
         throw "key does not correspond to a direction";
@@ -528,19 +532,21 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         return;
       
       switch (keyCode) {
-      case 33: // page up
+      case Keys.INPUT_METHOD_PROCESSING:
+        return;
+      case Keys.PAGE_UP: // page up
         if (this._keyHeld)
           return;
       
         vector[0] = vector[1] = getPageDragMag();
         break;
-      case 34: // page down
+      case Keys.PAGE_DOWN: // page down
         if (this._keyHeld)
           return;
         
         vector[0] = vector[1] = -getPageDragMag();
         break;
-      case 35: // end
+      case Keys.END: // end
         if (this._keyHeld)
           return;
         
@@ -552,7 +558,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         }
         
         return; 
-      case 36: // home
+      case Keys.HOME: // home
         if (this._keyHeld)
           return;
         
@@ -564,19 +570,19 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         }
         
         return; 
-      case 37: // left arrow
+      case Keys.LEFT: // left arrow
         this._coast = true;
         vector[0] = getArrowDragMag();
         break;
-      case 38: // up arrow
+      case Keys.UP: // up arrow
         this._coast = true;
         vector[1] = getArrowDragMag();
         break;
-      case 39: // right arrow
+      case Keys.RIGHT: // right arrow
         this._coast = true;
         vector[0] = -getArrowDragMag();
         break;
-      case 40: // down arrow
+      case Keys.DOWN: // down arrow
         this._coast = true;
         vector[1] = -getArrowDragMag();
         break;

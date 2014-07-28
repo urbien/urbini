@@ -2197,7 +2197,8 @@ define('globals', function() {
       }
     },
     
-    viewport: { width: null, height: null }
+    viewport: { width: null, height: null },
+    DEFAULT_TRADLE_NAME: 'New tradle'
   });
 
   if (G.globalCss) {

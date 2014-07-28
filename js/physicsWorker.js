@@ -2129,6 +2129,7 @@ function getRectVertices(width, height) {
         
         scratchpad.done();
 //        this.log("BREAKING HEAD EDGE CONSTRAINT, dist: " + dist);
+      if (this.headEdgeConstraint)
         this.headEdgeConstraint['break']();
 //      }
     },
@@ -2138,6 +2139,7 @@ function getRectVertices(width, height) {
   //    if (~data.bodies.indexOf(this.offsetBody) && this.offsetBody.state.pos.get(this.axisIdx) < this.headEdge.state.pos.get(this.axisIdx))
 //      if (!this.shouldArmTail()) {
 //        this.log("BREAKING TAIL EDGE CONSTRAINT");
+      if (this.tailEdgeConstraint)
         this.tailEdgeConstraint['break']();
 //      }
     },

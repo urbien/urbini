@@ -14,7 +14,8 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
       CHOOSE_INDICATOR = 'Choose an indicator';
       CHOOSE_INDICATOR_FOR = CHOOSE_INDICATOR + ' for',
       CHOOSE_VALUES_FOR = 'Choose value(s) for',
-      CLICK_INDICATOR_TO_CREATE_RULE = 'Click an indicator to create a rule with it';
+      CLICK_INDICATOR_TO_CREATE_RULE = 'Click an indicator to create a rule with it',
+      rClass = /\/[^\/]+\/([^\/]+)\/value/;
   
   function makeWriteUrl(res) {
     var uri = res.get('_uri'),
@@ -22,6 +23,12 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
         params = uri ? { _uri: uri } : U.filterObj(res.attributes, U.isModelParameter);
     
     return U.makeMobileUrl(route, res.vocModel.type, params);
+  };
+
+  function getTradleUri(tradleFeed) {
+    return U.makeUri(U.getTypeUri('commerce/trading/Tradle'), {
+      uuid: _.toQueryParams(tradleFeed).uuid
+    })
   };
   
   function getForResourceInfo() {
@@ -546,9 +553,20 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
     var feedUri = res.get('feed');
     
     U.getResourcePromise(feedUri).done(function(feed) {
-//      var eventClassUri = feed.get('eventClass'),
       var eventClassRangeUri = feed.get('eventClassRangeUri'),
-          tradleUri = res.get('tradle');
+          tradleUri = res.get('tradle'),
+          isDynamicallyGenned = feed.getType().endsWith('commerce/trading/FREDFeed');
+      
+      if (isDynamicallyGenned) {
+        Events.trigger('navigate', U.makeMobileUrl('chooser', 'commerce/trading/FREDSeries', {
+          feed: feedUri,
+          $tradleFeedParams: _.param({
+            tradleFeed: res.getUri()
+          })
+        }));
+        
+        return;
+      }
     
       if (!eventClassRangeUri) {
         U.getResourcePromise(feedUri, true).done(function() {
@@ -590,11 +608,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
           $select: 'name,label,propertyType,range,rangeUri,davPropertyUri',
           $title: title,
           $tradleFeedParams: _.param({
-            tradle: res.get('tradle'),
             tradleFeed: res.getUri(),
-//            'tradleFeed.displayName': U.getDisplayName(res),
-            feed: res.get('feed'),
-//            'feed.displayName': res.get('feed.displayName'),
             eventClassRangeUri: eventClassRangeUri
           })
         }), options);
@@ -1021,41 +1035,21 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
     if (params.$indicator) {
       Voc.getModels('commerce/trading/TradleIndicator').done(function(iModel) {
         var i = checked.length,
-            common = _.toQueryParams(params.$indicator);
-            
+            common = _.toQueryParams(params.$indicator),
+            isTechnical = list.models[0].isAssignableFrom('commerce/trading/Technical');
+        
+        common.tradle = getTradleUri(common.tradleFeed);
         while (i--) {
           var variant = checked[i].value,
               vRes = list.get(variant),
               indicator = new iModel(_.extend({
-                variant: variant,
-                variantUri: vRes.get('davClassUri')
-//                ,
-//                'variant.displayName': U.getDisplayName(vRes)
+                variantUri: isTechnical ? '{0}{1}/{2}{3}{4}'.format(G.DEV_PACKAGE_PATH, 'Technicals', common.eventPropertyUri.match(rClass)[1], 'Value', vRes.get('name')) : vRes.get('davClassUri') 
               }, common));
           
           indicator.save();
         }
 
         Events.trigger('navigate', U.makeMobileUrl('view', common.tradle));
-//        , {
-//          '-gluedInfo': CLICK_INDICATOR_TO_CREATE_RULE
-//        }));
-        
-
-//        U.getResourcePromise(common.tradleFeed).done(function(tf) {
-//          Events.trigger('loadChooser', tf, tfModel.properties.feed);
-//        });
-//        
-//        Events.trigger('navigate', U.makeMobileUrl('chooser', 'commerce/trading/Feed', _.extend({
-//          
-//        },
-//          tradle: common.tradle,
-//          $propA: 'tradle',
-//          $propB: 'feed',
-//          $type: U.getTypeUri('commerce/trading/TradleFeed'),
-//          activated: true,
-//          eventClass: '!$this.null'
-//        }));
       });
       
       return;
@@ -1111,6 +1105,17 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
           isNumeric = U.isNumericType(propertyType),
           tfParams = _.toQueryParams(params.$tradleFeedParams);
       
+      if (U.getTypeUri(eventProperty).endsWith('commerce/trading/FREDSeries')) {
+        tfParams.eventPropertyUri = G.DEV_PACKAGE_PATH + 'FRED/' + valueRes.get('id') + '/value';
+        var technicals = valueRes.get('technicals').replace(/, /ig, ',');
+        Events.trigger('navigate', U.makeMobileUrl('chooser', 'commerce/trading/Technical', {
+          $in: 'label,' + technicals,
+          $indicator: _.param(tfParams)
+        }));
+        
+        return;
+      }
+      
       tfParams.eventProperty = eventProperty;
       tfParams.eventPropertyUri = eventPropertyUri;
 //      tfParams['eventProperty.displayName'] = U.getDisplayName(valueRes);
@@ -1142,6 +1147,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
         return;
       }
       
+      tfParams.tradle = getTradleUri(tfParams.tradleFeed);
       Voc.getModels('commerce/trading/TradleIndicator').done(function(iModel) {
         tfParams.variantUri = 'http://tradle.io/voc/dev/Technicals/RawValue';
         new iModel(tfParams).save();

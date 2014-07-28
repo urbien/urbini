@@ -224,6 +224,24 @@
 </div>
 </script>
 
+<script type="text/template" id="ruleChooserQuickstartTemplate">
+<div class="quickstart-content">
+  <i class="ui-icon-remove"></i>
+  <h2>Quickstart</h2>
+  {{ var indicator = _.toQueryParams(this.hashParams.$props).indicator; }}
+  {{ if (indicator) { indicator = U.getResource(indicator); } }}
+  {{ var feedName = indicator && indicator.get('tradleFeed.displayName'); }}
+  {{ var name = indicator ? U.getDisplayName(indicator) : this.hashParams.$title; }}
+  {{ name = feedName ? feedName + ': ' + name : name; }}
+  <h3>Choose a rule to create with indicator "{{= name }}"</h3>
+  <ul class="quickstart-options">
+    <li>
+      <a href="#" class="mini-cta" data-selector="section[data-type=&quot;list&quot;]" data-tooltip="Click on a row to choose a rule" data-direction="top">Choose a rule</a>
+    </li>          
+  </ul>
+</div>
+</script>
+
 <script type="text/template" id="ftItemTemplate">
   <li class="ftItem">
     <a href="{{= location.uri }}" target="_blank" style="padding:10px 0">
@@ -2418,7 +2436,7 @@
 
 <script type="text/template" id="editRowTemplate">
   <!-- one property row in edit mode -->
-  <li data-role="fieldcontain">{{= value }}</li>
+  <li data-role="fieldcontain" data-shortname="{{= prop.shortName }}">{{= value }}</li>
 </script>
 
 <script type="text/template" id="shortEnumPET">

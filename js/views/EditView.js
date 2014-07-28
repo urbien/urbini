@@ -53,6 +53,10 @@ define('views/EditView', [
 //    var parent = el.$closest('form');
     return function() {
 //      parent.$('label.error').$remove();
+      var fieldcontain = el.$closest('[data-role="fieldcontain"]');
+      if (fieldcontain)
+        fieldcontain.$removeClass('invalid');
+      
       el.$removeClass('invalid');
     };
   };
@@ -700,31 +704,34 @@ define('views/EditView', [
     fieldError: function(resource, errors) {
       if (arguments.length === 1)
         errors = resource;
+
+      this.$(_.keys(errors).map(function(e) {return '[data-role="fieldcontain"][data-shortname="{0}"]'.format(e)}).join(',')).$addClass('invalid');
+//      this.$(_.keys(errors).map(function(e) {return '[name="{0}"]'.format(e)}).join(',')).$addClass('invalid');
       
-      var badInputs = [];
-      var errDiv = this.getForm().$('div[name="errors"]');
-      errDiv.$empty();
-      errDiv = errDiv[0];
-//      errDiv.empty();
-      var inputs = this.getInputs(),
-          msg,
-          madeError = false,
-          input,
-          i;
-      
-      for (name in errors) {
-        input = null;
-        msg = errors[name];
-        madeError = false;
-        i = inputs.length;
-        while (i--) {
-          if (inputs[i].name == name) {
-            input = inputs[i];
-            input.$addClass('invalid');
-            break;
-          }
-        }
-        
+//      var badInputs = [];
+////      var errDiv = this.getForm().$('div[name="errors"]');
+////      errDiv.$empty();
+////      errDiv = errDiv[0];
+////      errDiv.empty();
+//      var inputs = this.getInputs(),
+//          msg,
+//          madeError = false,
+//          input,
+//          i;
+//      
+//      for (name in errors) {
+//        input = null;
+//        msg = errors[name];
+//        madeError = false;
+//        i = inputs.length;
+//        while (i--) {
+//          if (inputs[i].name == name) {
+//            input = inputs[i];
+//            input.$addClass('invalid');
+//            break;
+//          }
+//        }
+//        
 //        var id;
 //        if (input) {
 //          badInputs.push(input);
@@ -747,7 +754,7 @@ define('views/EditView', [
 //          else
 //            errDiv.appendChild(label);
 //        }
-      }
+//      }
     },
     
 //    redirect: function(options) {
@@ -955,6 +962,16 @@ define('views/EditView', [
       
       var errors = res.validate(atts, {validateAll: true, skipRefresh: true});
       if (typeof errors === 'undefined') {
+        // TRADLE APP HACK
+        if (res.get('isPublic') && res.isAssignableFrom('commerce/trading/Tradle') && res.get('title') == G.DEFAULT_TRADLE_NAME) {
+          this.$('input[name="isPublic"]')[0].checked = false;
+          res.set('isPublic', false, {silent: true});
+          var err = 'Please give your tradle a real name';
+          U.alert(err);
+          this.onerror(res, { name: err });
+          return;
+        }
+        
         this.setValues(atts, {skipValidation: true});
         this.onsuccess();
         self.getInputs().$attr('disabled', false);
@@ -1166,6 +1183,7 @@ define('views/EditView', [
 //        }
 //      }
 //      else {
+      
         input = e.target;
         atts[input.name] = this.getValue(input);
 //      }
