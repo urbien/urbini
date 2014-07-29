@@ -4,26 +4,26 @@ body {
     -webkit-margin-after: 0;
     -webkit-perspective: 100px;
             perspective: 100px;
-    -webkit-text-size-adjust: none; 
+    -webkit-text-size-adjust: none;
     -webkit-touch-callout: none;
     -webkit-tap-highlight-color:rgba(0,0,0,0);
     -webkit-backface-visibility: hidden;
     -webkit-transform-style: preserve-3d;
     -moz-transform-style: preserve-3d;
          transform-style: preserve-3d;
-    -webkit-user-select: none;         
+    -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
         user-select: none;
     text-overflow: ellipsis;
 }
-[data-role="page"] { 
-  top: 0; 
+[data-role="page"] {
+  top: 0;
   left: 0;
-  width: 100%; 
-  min-height: 100%; 
-  position: absolute; 
-  border: 0; 
+  width: 100%;
+  min-height: 100%;
+  position: absolute;
+  border: 0;
   background-color: inherit;
   min-height: 100%;
   overflow:hidden;
@@ -53,8 +53,8 @@ html { height: 100%; }
 
 .galleryItem_container .galleryItem, .galleryItem_container .galleryItem_css3 { margin: 0px; }
 #.nab  { -webkit-transition: all 300ms; }
-.nab  { 
-  box-shadow: none; 
+.nab  {
+  box-shadow: none;
   position: absolute;
 }
 
@@ -72,11 +72,11 @@ html { height: 100%; }
 
 .nab .modP img { padding-right: 5px; }
 
-.galleryItem, .galleryItem_css3, .galleryItem_nab { 
-  position: relative; 
+.galleryItem, .galleryItem_css3, .galleryItem_nab {
+  position: relative;
 }
-.galleryItem_css3, galleryItem_nab { 
-  display: inline-block; 
+.galleryItem_css3, galleryItem_nab {
+  display: inline-block;
  }
 
 .likes_tbl {  position: absolute; opacity: 0; visibility: hidden; z-index: 1; top: 0px; left: 0px; border-collapse: collapse; }
@@ -125,7 +125,7 @@ html { height: 100%; }
 .arrow_td { cursor: pointer; }
 .arrow_td { background-color: &[PrimaryColor_1];;}
 
-.param_tr .label_td { white-space: nowrap; position: relative; } 
+.param_tr .label_td { white-space: nowrap; position: relative; }
 .param_tr .field_comment, #mkresource .field_comment { height: 57px !important; }
 .param_tr .label { -moz-user-select: none; white-space: nowrap; font-size: 16px; font-weight: bold; overflow: visible; color: &[PrimaryColor_4_text];;}
 .param_tr .label img { margin-right: 3px; }
@@ -140,15 +140,15 @@ html { height: 100%; }
   transform-style: preserve-3d;
 }
 
-.nab { 
-  font-size: 12px; 
-  background-color: #ffffff; 
-  border: 1px solid #DDDDDD; 
+.nab {
+  font-size: 12px;
+  background-color: #ffffff;
+  border: 1px solid #DDDDDD;
 }
 
 .dList #nabs_grid .nab { visibility: visible; -webkit-transform-style: preserve-3d } /* TODO: implement 2 (RL) masonry and delete this rule */
 
-/* hide "bricks" initially and show them only ones are aligned */ 
+/* hide "bricks" initially and show them only ones are aligned */
 .masonry > li, .masonry > div { visibility: hidden; }
 .masonry .masonry-brick { visibility: visible; }
 
@@ -210,15 +210,15 @@ h3#pageTitle {margin: 10px 0 7px 0;}
   -ms-filter: "progid:DXImageTransform.Microsoft.gradient(startColorstr=#fff167,endColorstr=#ffba24)";
 
   border: 1px solid #ffba24;
-  
+
 }
 .lc1 img {
   max-width: 32px;
 }
-div.nabBtn { 
-  text-align: center; 
-  background: #eeeeee; 
-  padding-top: 10px; 
+div.nabBtn {
+  text-align: center;
+  background: #eeeeee;
+  padding-top: 10px;
 }
 
 .nabRL .nabBtn a { color: #757575; text-shadow: none; }
@@ -228,7 +228,7 @@ div.nabBtn {
   font-size: 11px;
 }
 #comments {
-  padding-top: 12px; 
+  padding-top: 12px;
   padding-bottom: 12px;
   font-size: 14px;
 }
@@ -241,11 +241,11 @@ div.nabBtn {
 }
 
 .commentList {
-  background-color: &[PrimaryColor_4];; 
-  border-bottom: #ddd; 
-  border-bottom-style: solid; 
-  border-bottom-width: 1px; 
-  padding-top: 12px; 
+  background-color: &[PrimaryColor_4];;
+  border-bottom: #ddd;
+  border-bottom-style: solid;
+  border-bottom-width: 1px;
+  padding-top: 12px;
   padding-bottom: 12px;
   font-size: 12px;
   text-align: left;
@@ -282,15 +282,15 @@ div.nabBtn {
   }
   .nab a { font-size: 16px; }
 
-  .nab { 
-    margin: auto; 
-    margin-top: 5px; 
-    margin-bottom: 5px; 
-    padding: 15px 15px 0; 
-    float: none; 
-    font-size: 12px; 
-    background-color: #fff; 
-    border: 1px solid #DDDDDD; 
+  .nab {
+    margin: auto;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    padding: 15px 15px 0;
+    float: none;
+    font-size: 12px;
+    background-color: #fff;
+    border: 1px solid #DDDDDD;
   }
   #resourceImage img {max-width: 320px;}
   .ui-listview .connect { float: left; top:60px; padding:0px; border:0px; background: none;background-image:none;}
@@ -310,7 +310,7 @@ div.nabBtn {
 #resourceView { font-size: 16px; }
 #resourceView p { margin-top: 0.5em; }
 
-.menu_image_fitted .thumb { 
+.menu_image_fitted .thumb {
   position: absolute;
 }
 
@@ -357,20 +357,20 @@ div.nabBtn {
 .badge, .menuBadge, .appBadge {
   background-color: red;
   border: 2px solid white;
-  border-radius: 12px; 
+  border-radius: 12px;
   box-shadow: 1px 1px 1px black;
   color: white;
   font: bold 17px/15px Helvetica, Verdana, Tahoma;
-  height: 18px; 
-  padding: 2px 2px 0 2px; 
+  height: 18px;
+  padding: 2px 2px 0 2px;
   text-align: center;
   min-width: 16px;
 }
 
 .menuBadge {
-  position: absolute; 
-  top: -30px; 
-  left: 8px; 
+  position: absolute;
+  top: -30px;
+  left: 8px;
   font-size: 12px;
 }
 
@@ -380,9 +380,9 @@ div.nabBtn {
   background: -ms-radial-gradient( center -9px, circle closest-side, white 0, blue 26px );
   background: -o-radial-gradient( center -9px, circle closest-side, white 0, blue 26px );
   background: -webkit-radial-gradient( center -9px, circle closest-side, white 0, blue 26px );
-  position: absolute; 
-  top: 0px; 
-  right: 5px; 
+  position: absolute;
+  top: 0px;
+  right: 5px;
   font-size: 12px;
   background-color: blue;
 }
@@ -448,7 +448,7 @@ div.nabBtn {
   background-image: -moz-linear-gradient(left center, rgba(51, 51, 51, 0), rgba(51, 51, 51, 0.9));
   background-image: -webkit-gradient(linear, 0% 70%, 70% 100%, from(rgba(51, 51, 51, 0)), to(rgba(51, 51, 51, 0.9)));
   content: "";
-  
+
 }
 
 .faBg {
@@ -465,7 +465,7 @@ div.nabBtn {
 }
 
 .countdown {
-  color: #E21F27; 
+  color: #E21F27;
   font-weight: bold;
 }
 .transition {
@@ -549,7 +549,7 @@ section[id^="view"] {
   -webkit-border-radius: 0.6em;
   -moz-border-radius: 0.6em;
   border-radius: 0.6em;
-  border: 1px solid #999;  
+  border: 1px solid #999;
   overflow: hidden;
   position: relative;
 }
@@ -591,7 +591,7 @@ section[id^="view"] {
   #border-width: 0;
 }
 @media all and (min-width: 298px) {
-  
+
   .connect i { font-size:16px; color: #888;}
   .thumb-gal-item .thumb-gal-thumb {
     height: auto;
@@ -601,7 +601,7 @@ section[id^="view"] {
     left: 0;
     z-index: -1;
   }
-  
+
   .thumb-gal-item .thumb-gal-text {
     white-space: normal;
     overflow: visible;
@@ -609,14 +609,14 @@ section[id^="view"] {
     left: 0;
     right: 0;
   }
-  
+
   /* Text position */
   .thumb-gal-item .thumb-gal-heading {
     margin: 0;
     padding: 20px;
     bottom: 50%;
   }
-  
+
   .thumb-gal-item .thumb-gal-desc {
     margin: 0;
     padding: 0 20px;
@@ -653,12 +653,12 @@ section[id^="view"] {
     height: 140px;
     #margin: 10px 1%;
   }
-}  
-  
+}
+
 #sidebarDiv {
   z-index: 10000;
-}  
-  
+}
+
 #sidebarDiv #sidebar ul.listPage {
   list-style: none;
   margin-top:0;
@@ -690,7 +690,7 @@ section[id^="view"] {
   cursor: pointer;
   list-style: none;
 }
-  
+
 #resourceImage img {
   display: block;
 }
@@ -704,29 +704,29 @@ section[id^="view"] {
 }
 
 .triangle {
-  position:absolute;  
+  position:absolute;
   border-color: transparent transparent #2d2d2d transparent;
   border-width: 0px 0px 10px 10px;
   border-style: solid;
   width: 0;
   height: 0;
-  position:absolute;  
+  position:absolute;
   right: 1px;
   bottom: 2px;
 }
 
-.scrollbar { 
-  pointer-events: none; 
-  position: absolute; 
-  width: 5px; 
+.scrollbar {
+  pointer-events: none;
+  position: absolute;
+  width: 5px;
   height: 5px;
-  -webkit-border-radius: 3px; 
-  border-radius: 6px; 
+  -webkit-border-radius: 3px;
+  border-radius: 6px;
   opacity: 0;
   z-index:10002;
-  -webkit-box-sizing: content-box; 
-  -moz-box-sizing: content-box; 
-  box-sizing: content-box 
+  -webkit-box-sizing: content-box;
+  -moz-box-sizing: content-box;
+  box-sizing: content-box
 }
 
 .scrollbarinner { height: 100%; background: rgba(0,0,0,0.5); -webkit-border-radius: 2px; border-radius: 4px / 6px }
@@ -837,7 +837,7 @@ section[id^="view"] {
 }
 
 #resourceView a {
-  color: #3777a1; 
+  color: #3777a1;
 }
 
 /* GRID OF THREE   ============================================================================= */
@@ -882,20 +882,20 @@ section[id^="view"] {
 }
 
 #resourceView .col:nth-child(2) span, #resourceView .col:nth-child(2) div, #resourceView .col:nth-child(2) a {
-  float: right; 
+  float: right;
 }
 #resourceView p {
   white-space: normal;
 }
 
 #resourceView .col:nth-child(2) a {
-  color: #3777a1; 
+  color: #3777a1;
 }
 
 /* REMOVE MARGINS AND GO FULL WIDTH AT LESS THAN 480 PIXELS */
 
 @media only screen and (max-width: 480px) {
-  .col, .col.thin { 
+  .col, .col.thin {
     margin: 1% 0 10px 0%;
     height: 100%;
   }
@@ -903,14 +903,14 @@ section[id^="view"] {
   .group {
     margin: 0 20px;
   }
-  
-  .col, .col.thin { 
-		width: 100%; 
+
+  .col, .col.thin {
+		width: 100%;
 	}
-	
+
   #resourceView .col:nth-child(2) span, #resourceView .col:nth-child(2) div, #resourceView .col:nth-child(2) a {
     float: inherit;
-  }  
+  }
 }
 
 .headerUl {
@@ -1019,23 +1019,23 @@ section[id^="view"] {
 .modal-active [data-role="page"] {
   z-index:0;
 /*  -webkit-filter: blur(2px) contrast(0.4) brightness(1.4);
-     -moz-filter: blur(2px) contrast(0.4) brightness(1.4);          
+     -moz-filter: blur(2px) contrast(0.4) brightness(1.4);
           filter: url(data:image/svg+xml;base64,PHN2ZyB2ZXJzaW9uPSIxLjEiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+DQoJPGZpbHRlciBpZD0iYmx1ciI+DQoJCTxmZUdhdXNzaWFuQmx1ciBzdGREZXZpYXRpb249IjIiIC8+DQoJPC9maWx0ZXI+DQo8L3N2Zz4=#blur);
-          */          
+          */
 }
 
 .section-header:after {
    content: '';
-   position: absolute; 
+   position: absolute;
    z-index: 0;
   -webkit-filter: blur(10px);
    /* To eliminate the blur borders */
    padding: 20px;
-   top: -20px; 
+   top: -20px;
    left: -20px;
    width: 100%; height: 100%;
 }
-  
+
 .modal-popup {
   position: relative;
   margin: auto;
@@ -1156,7 +1156,7 @@ section[id^="view"] {
   cursor: pointer;
 }
 
-.closeBtn:after {  
+.closeBtn:after {
   position: absolute;
   top: 1px;
   left: 5px;
@@ -1235,7 +1235,7 @@ section[id^="view"] {
   display: inline-block;
   width: 100%;
   color: white;
-  text-align: center; 
+  text-align: center;
   font-size: 1.5rem;
   font-weight: bold;
 }
@@ -1244,12 +1244,12 @@ section[id^="view"] {
   .dialogBtn {
     display: block;
   }
-  
+
   .gauges {
     padding: 3rem 1rem;
     margin-top: -1.5rem;
   }
-  
+
   .gauge {
     width: 75px;
   }
@@ -1298,8 +1298,8 @@ label.subClass {
   z-index: 1;
   width: 100%;
   height: 100%;
-  margin: 0; 
-  padding: 0; 
+  margin: 0;
+  padding: 0;
   position: absolute;
   top: 0;
   left: 0;
@@ -1341,7 +1341,7 @@ label.subClass {
        -moz-transform: translateX(98%);
         -ms-transform: translateX(98%);
             transform: translateX(98%);
-  }  
+  }
 
   .anim-overlay-active {
     -webkit-transform: translateX(-98%);
@@ -1358,7 +1358,7 @@ label.subClass {
 
 .anim-overlay i {
   font-size: 40px;
-  padding: 0 20px; 
+  padding: 0 20px;
 }
 
 .anim-overlay .span_1_of_4, .anim-overlay .span_1_of_3, .anim-overlay .span_1_of_2, .anim-overlay .span_1_of_1 {
@@ -1376,7 +1376,7 @@ label.subClass {
 
 .drawer-tab-left, .drawer-tab-right {
   cursor: pointer;
-  z-index:2; 
+  z-index:2;
   width: 3%;
   height: 100%;
   position:absolute;
@@ -1387,7 +1387,7 @@ label.subClass {
   .drawer-tab-left, .drawer-tab-right {
     width: 2%;
   }
-  
+
   .drawer-tab-right {
     right: 0px;
   }
@@ -1431,7 +1431,7 @@ label.subClass {
   .drawer-tab-left i, .drawer-tab-right i {
     font-size: 20px;
   }
-  
+
   .drawer-tab-right {
     right: 0px;
   }
@@ -1440,7 +1440,7 @@ label.subClass {
 @media screen and (min-width: 1200px) {
   .drawer-tab-left i {
     left: 10px;
-  }  
+  }
 }
 
 .trades span {
@@ -1454,7 +1454,7 @@ label.subClass {
 }
 .socialLinks {
   text-align: center;
-  background: #fff; 
+  background: #fff;
   font-weight: bold;
   min-height:3rem;
 }
@@ -1530,7 +1530,7 @@ label.subClass {
       -ms-transform: scale(1);
           transform: scale(1);
 
-  float: right; 
+  float: right;
   margin-right: 10px;
 }
 
@@ -1560,26 +1560,26 @@ label.subClass {
 }
 
 .quickstart .ui-icon-remove {
-  position: absolute; 
+  position: absolute;
   padding: 5px;
-  top: 0; 
-  right: 0px; 
-  font-size: 20px; 
+  top: 0;
+  right: 0px;
+  font-size: 20px;
   color: #555;
 }
 
 #resourceViewHolder .hint--top:before,#resourceViewHolder .hint--top:after {
   bottom: 100%;
-  left: 5%; 
+  left: 5%;
 }
 #resourceViewHolder .hint--bottom:before,#resourceViewHolder .hint--bottom:after {
   top: 100%;
-  left: 50%; 
+  left: 50%;
 }
 
 #resourceViewHolder .hint--right:before,#resourceViewHolder .hint--right:after {
   left: 20%;
-  bottom: 50%; 
+  bottom: 50%;
 }
 
 #hpRightPanel.hint--left:before {
@@ -1593,4 +1593,12 @@ label.subClass {
 li.invalid[data-role="fieldcontain"] {
   border: 3px solid red;
   background: rgba(255,0,0,0.2);
+}
+
+[data-display="collapsed"] ul {
+  display: none;
+}
+
+.unfolded[data-display="collapsed"] ul {
+  display: inherit;
 }

@@ -59,14 +59,14 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
   function toTitleCase(str) {
     return str.replace(/(?:^|\s|-)\w/g, function(match) {
         return match.toUpperCase();
-    }).replace(/-/, ''); 
+    }).replace(/-/, '');
   };
 
   function fireResizeEvent() {
     var v = G.viewport,
         heightChanged = window.innerHeight !== v.height,
         widthChanged = window.innerWidth !== v.width;
-    
+
     if (heightChanged || widthChanged) {
       saveViewportSize();
       G.triggerEvent(window, "debouncedresize");
@@ -85,7 +85,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
 //      window.dispatchEvent(new Event('viewportdimensions'));
 //    }
   }
-  
+
   window.addEventListener('orientationchange', function() {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(fireOrientationchangeEvent, 100);
@@ -112,14 +112,14 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
 //        oldWidth = 0,
 //        oldHeight = 0,
 //        changed = false;
-//    
+//
 //    if (viewport) {
 //      oldWidth = viewport.width;
 //      oldHeight = viewport.height;
 //    }
 //    else
 //      viewport = G.viewport = {};
-//    
+//
 //    if (oldWidth !== width) {
 //      viewport.width = width;
 //      changed = true;
@@ -144,16 +144,16 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
     return el instanceof $ ? el[0] : el;
   }
 
-  saveViewportSize();  
-//  window.addEventListener('orientationchange', saveViewportSize); 
-//  window.addEventListener('debouncedresize', saveViewportSize); 
+  saveViewportSize();
+//  window.addEventListener('orientationchange', saveViewportSize);
+//  window.addEventListener('debouncedresize', saveViewportSize);
 
   function isElementCollection(els) {
     return els instanceof Array ||
-           els instanceof NodeList || 
+           els instanceof NodeList ||
            els instanceof HTMLCollection;
   };
-  
+
   function getElementArray(els) {
     return isElementCollection(els) ? els : els && [els];
   };
@@ -167,7 +167,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
 //      element._prototypeUID = Element.Storage.UID++;
 //    return element._prototypeUID;
 //  };
-  
+
   // Bezier functions
   function B1(t) { return t*t*t }
   function B2(t) { return 3*t*t*(1-t) }
@@ -179,11 +179,11 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
   var htmlCollectionProto = HTMLCollection.prototype;
   var elementProto = Element.prototype;
   var $matches = elementProto.matches || elementProto.webkitMatchesSelector || elementProto.mozMatchesSelector || elementProto.msMatchesSelector;
-  
+
   function removeEventListeners(el, event, listeners, _listener) {
     var i = listeners.length,
         listener;
-    
+
     while (i--) {
       listener = listeners[i];
       if (_listener) {
@@ -198,42 +198,42 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         G.removeEventListener(el, event, listener.proxy);
 //        removed = true;
       }
-      
+
     }
-    
+
     if (!_listener)
       listeners.length = 0;
-    
+
 //    if (!removed)
 //      console.log("FAILED TO REMOVE EVENT LISTENER", event, _listener._listenerId, listeners.map(function(l) { return l.listener._listenerId }).join(','));
 //    else
 //      console.log("REMOVED EVENT LISTENER", event, _listener._listenerId);
   };
-  
+
   (function extendNodeAndNodeList(win, doc) {
     var NodeAndNodeListAug = {
       $matches: $matches,
       $on: function(event, selector, listener, capture) {
         var self = this,
             proxy;
-      
+
         if (~event.indexOf(' ')) {
           event.split(' ').map(function(event) {
             self.$on(event, selector, listener, capture);
           });
-          
+
           return this;
         }
-        
+
         if (typeof selector == 'function') {
           capture = listener;
           listener = selector;
           selector = '';
         }
-        
+
         if (!this._$handlers)
           this._$handlers = {};
-        
+
         var proxyInfo = this._$handlers[event];
         if (!proxyInfo) {
           proxyInfo = this._$handlers[event] = {
@@ -243,7 +243,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
               var el = e.target,
                   selectors = proxyInfo.selectors,
                   handlers;
-              
+
               // bubble up starting with event target till we reach document
               while (el) {
                 // check all selectors for this event against next element in the bubbling phase
@@ -254,39 +254,39 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
                     for (var i = 0; i < handlers.length; i++) {
                       if (e._stoppedImmediatePropagation)
                         return;
-                      
+
                       handlers[i](e);
                     }
                   }
-                }            
-    
+                }
+
                 if (e._stoppedPropagation)
                   return;
-                
+
                 el = el.parentElement;
               }
             }
           }
-          
+
           G.addEventListener(this, event, proxyInfo.proxy, capture);
         }
-        
+
         if (!proxyInfo.selectors[selector])
           proxyInfo.selectors[selector] = [];
-        
+
         proxyInfo.selectors[selector].push(listener);
         return this;
       },
       $off: function(event, selector, listener, capture) {
         if (!this._$handlers)
           return this;
-          
+
         if (~event.indexOf(' ')) {
           var self = this;
           event.split(' ').map(function(event) {
             self.$off(event, selector, listener, capture);
           });
-          
+
           return this;
         }
 
@@ -307,11 +307,11 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
             }
           }
         }
-        
+
         return this;
       },
       $once: function(event, handler, capture) {
-        var self = this; 
+        var self = this;
         return this.$on(event, function proxy() {
           self.$off(event, proxy);
           handler();
@@ -321,7 +321,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         G.triggerEvent(this, eventType, data);
 //        if (typeof event == 'string')
 //          event = data ? new Event(event, data) : new Event(event);
-//        
+//
 //        this.dispatchEvent(event);
         return this;
       },
@@ -338,7 +338,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
               this.style[DOM.prefix(prop)] = arg0[prop];
             }
           }
-          
+
           break;
         case 2:
           this.style[DOM.prefix(arguments[0])] = arguments[1];
@@ -346,17 +346,17 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         default:
           throw "invalid arguments to style method of Node";
         }
-        
+
         return this;
       },
-      
+
       $attr: function() {
         var arg0 = arguments[0];
         switch (arguments.length) {
         case 1:
           if (typeof arg0 == 'string') // get
             return this.getAttribute(arg0);
-          
+
           for (var prop in arg0) { // set
             var val = arg0[prop];
             if (val == null)
@@ -364,7 +364,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
             else
               this.setAttribute(prop, arg0[prop]);
           }
-          
+
           break;
         case 2:
           var val = arguments[1];
@@ -376,81 +376,81 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         default:
           throw "invalid arguments to style method of Node";
         }
-        
+
         return this;
       },
 
       $onremove: function(fn) {
         if (!this._removeListeners)
           this._removeListeners = [];
-        
+
         this._removeListeners.push(fn);
       },
-      
+
       $remove: function() {
         if (this._removeListeners) {
           this._removeListeners.forEach(function(fn) { fn() });
           delete this._removeListeners;
         }
-          
+
         delete this._$handlers; // listeners should auto-unbind in modern browsers
         if (this.parentNode)
           this.parentNode.removeChild(this);
-        
+
         return this;
       },
-  
+
       $hide: function() {
         this.style.display = 'none';
         return this;
       },
-      
+
       $show: function() {
         if (this.style.display == 'none')
           this.style.display = '';
-        
+
         return this;
       },
-      
+
       $addClass: function() {
         var i = arguments.length;
         while (i--) this.classList.add(arguments[i]);
         return this;
       },
-      
+
       $removeClass: function() {
         var i = arguments.length;
         while (i--) this.classList.remove(arguments[i]);
         return this;
       },
-      
+
       $toggleClass: function(cl) {
         if (this.$hasClass(cl))
           this.$removeClass(cl);
         else
           this.$addClass(cl);
       },
-      
+
       $empty: function() {
         while (this.lastChild) {
 //        this.innerHTML = "";
           this.removeChild(this.lastChild); // http://jsperf.com/removechild-vs-innerhtml-empty/5
         }
-        
+
         return this;
       },
-      
+
       $html: function(htmlOrFrag) {
         if (!arguments.length)
           return this.innerHTML;
-        
+
         if (typeof htmlOrFrag == 'string')
           return this.$html(DOM.parseHTML(htmlOrFrag));
-        
-        return this.$empty().$append(htmlOrFrag);        
+
+        return this.$empty().$append(htmlOrFrag);
       }
     };
-        
+
     var NodeAug = {
       $: function(selector) {
         switch (this.nodeType) {
@@ -460,37 +460,37 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
           if (G.browser.safari && /^#/.test(selector)) {
 //            var nodeList = newNodeList(),
 //                match = this.querySelector('[id="' + selector.slice(1) + '"]');
-//            
+//
 //            if (match)
 //              nodeList.push(match);
-//            
+//
 //            return nodeList;
 //            selector = '[id="' + selector.slice(1) + '"]';
 //            selector = selector.replace(/#([a-zA-Z0-9\-_]*)/g, '[id="$1"]');
             // replace all id selectors with selection by attribute
             selector = selector.replace(/#([_a-zA-Z]+[_a-zA-Z0-9-]*)/g, '[id="$1"]'); // http://stackoverflow.com/questions/448981/what-characters-are-valid-in-css-class-selectors
           }
-          
+
           return this.querySelectorAll(selector);
         default:
           return DOM.emptyNodeList();
         }
       },
-    
+
       $closest: function(selector) {
         var parent = this;
         while ((parent = parent.parentNode) && parent != doc) {
           if (parent.$matches(selector))
             return parent;
         }
-        
+
         return null;
       },
-      
+
       $offset: function() {
         var box = this.getBoundingClientRect(),
             docElem = doc.documentElement;
-        
+
         return {
           top: box.top  + ( win.pageYOffset || docElem.scrollTop )  - ( docElem.clientTop  || 0 ),
           left: box.left + ( win.pageXOffset || docElem.scrollLeft ) - ( docElem.clientLeft || 0 )
@@ -503,10 +503,10 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
 //        while (offsetParent && offsetParent.nodeName !== "HTML" && win.getComputedStyle(offsetParent).position === "static") {
 //          offsetParent = offsetParent.offsetParent;
 //        }
-//        
+//
 //        return offsetParent || doc.documentElement;
 //      },
-      
+
       $position: function() {
         var offset = this.$offset(),
             offsetParent = this.offsetParent, // maybe use jQuery's offsetParent?
@@ -515,17 +515,17 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
             parentOffset = offset.nodeName == 'HTML' ? { top: 0, left: 0 } : offsetParent.$offset(),
             marginTop = 0,
             marginLeft = 0;
-        
+
         if (parentStyle.borderTopWidth)
           parentOffset.top += parseFloat(parentStyle.borderTopWidth);
         if (parentStyle.borderLeftWidth)
           parentOffset.left += parseFloat(parentStyle.borderLeftWidth);
-        
+
         if (style.marginTop)
           marginTop = parseFloat(style.marginTop);
         if (style.marginLeft)
           marginLeft = parseFloat(style.marginLeft);
-        
+
         return {
           top:  offset.top  - parentOffset.top - marginTop,
           left: offset.left - parentOffset.left - marginLeft
@@ -535,25 +535,25 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
       $not: function(selector) {
         return this.$matches(selector) ? false : true;
       },
-      
+
       $before: function(before) {
         if (before.parentNode)
           before.parentNode.insertBefore(this, before);
-        
+
         return this;
       },
-    
+
       $after: function(after) {
         if (after.parentNode)
           after.parentNode.insertBefore(this, after.nextSibling );
-        
+
         return this;
       },
-      
+
       $hasClass: function(cl) {
         return this.classList.contains(cl);
       },
-  
+
       $prepend: function(/* htmlOrFrag, htmlOrFrag, ... */) {
         var i = arguments.length;
         while (i--) {
@@ -562,22 +562,22 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
             this.$prepend.apply(this, htmlOrFrag);
             continue;
           }
-          
+
           if (!this.firstChild) {
             this.$append(htmlOrFrag);
             continue;
           }
-          
+
           if (typeof htmlOrFrag == 'string')
             htmlOrFrag = DOM.parseHTML(htmlOrFrag);
-          
+
           isElementCollection(htmlOrFrag) ? htmlOrFrag[0].$before(this.firstChild) : htmlOrFrag.$before(this.firstChild);
 //           htmlOrFrag.$before(this.firstChild);
         }
-        
+
         return this;
-      },  
-      
+      },
+
       $append: function(/* htmlOrFrag, htmlOrFrag, ... */) {
         for (var i = 0; i < arguments.length; i++) {
           var htmlOrFrag = arguments[i];
@@ -600,10 +600,10 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
           else
             throw "only HTML string or DocumentFragment are supported";
         }
-        
+
         return this;
       },
-      
+
       $fadeTo: function(targetOpacity, time, callback) {
         targetOpacity = targetOpacity || 0;
         var style = this.style,
@@ -612,13 +612,13 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
             opacityInterval = Math.abs(targetOpacity - opacity) / (time / timeInterval),
             multiplier = targetOpacity - opacity > 0 ? 1 : -1,
             diff;
-        
-        (function fader() {        
+
+        (function fader() {
           if (time <= 0 || Math.abs(targetOpacity - opacity) <= opacityInterval) {
             style.opacity = targetOpacity;
             if (targetOpacity == 0)
               style.display = "none";
-            
+
             if (callback)
               callback.call(self);
           }
@@ -629,7 +629,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
             setTimeout(fader, timeInterval);
           }
         })();
-        
+
         return this;
       },
 
@@ -661,7 +661,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
           return this.offsetHeight + margin.top + margin.bottom;
         }
       },
-      
+
       $outerWidth: function(includeMargin) {
         if (!includeMargin)
           return this.offsetWidth;
@@ -670,7 +670,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
           return this.offsetWidth + margin.left + margin.right;
         }
       },
-      
+
       $data: function(/* key, val or properties object */) {
         var arg0 = arguments[0];
         if (arguments.length == 2) {
@@ -686,37 +686,41 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
             }
           }
         }
-        
+
         return this;
       },
-      
+
       $getUniqueId: function() {
         if (!this._urbiniId)
           this._urbiniId = elId++;
-        
+
         return this._urbiniId;
+      },
+
+      $isCollapsed: function() {
+        return this.$data('display') == 'collapsed' && !this.$hasClass('unfolded');
       }
     };
-    
+
     _.defaults(nodeListProto, {
       $not: function(selector) {
         var i = this.length,
             node,
             filtered = [];
-        
+
         while (i--) {
           node = this[i];
           if (!node.$matches(selector))
             filtered.push(node);
         }
-        
+
         return filtered;
       }
     });
-    
+
     var arrayMethods = Object.getOwnPropertyNames( ArrayProto ),
         arrayMethodI = arrayMethods.length;
-    
+
     while (arrayMethodI--) {
       var methodName = arrayMethods[arrayMethodI];
       var method = ArrayProto[methodName];
@@ -726,7 +730,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         htmlCollectionProto[methodName] = method;
       }
     }
-    
+
     function extendCollection(col, fnName) {
       var nodeFn = nodeProto[fnName];
       if (nodeFn) {
@@ -735,19 +739,19 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
               result,
               node,
               i = this.length;
-          
+
           while (i--) {
             node = this[i];
             nodeFn.apply(node, args);
           }
-          
+
           return this;
         }
       }
     }
-    
+
     _.defaults(nodeProto, NodeAug, NodeAndNodeListAug);
-  
+
     for (var prop in NodeAndNodeListAug) {
       var method = NodeAndNodeListAug[prop];
       if (!nodeListProto[prop])
@@ -755,11 +759,11 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
       if (!htmlCollectionProto[prop])
         extendCollection(htmlCollectionProto, prop);
     }
-    
+
     NodeList.prototype.$eq = HTMLCollection.prototype.$eq = function(idx) {
       return this[idx >= 0 ? idx : this.length + idx];
     };
-    
+
   })(window, document);
 
   DOM = {
@@ -769,37 +773,37 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
       return [p1x*B1(percent) + p2x*B2(percent) + p3x*B3(percent) + p4x*B4(percent),
               p1y*B1(percent) + p2y*B2(percent) + p3y*B3(percent) + p4y*B4(percent)];
     },
-        
+
     getBezierPercentComplete: function(x1, y1, x2, y2, xTarget, xTolerance) {
       var self = this;
       xTolerance = xTolerance || 0.01; //adjust as you please
       var myBezier = function(t) {
         return self.getBezierCoordinate(0, 0, x1, y1, x2, y2, 1, 1, t);
       };
-  
+
       //we could do something less stupid, but since the x is monotonic
       //increasing given the problem constraints, we'll do a binary search.
-  
+
       //establish bounds
       var lower = 0;
       var upper = 1;
       var percent = (upper + lower) / 2;
-  
+
       //get initial x
       var bezier = myBezier(percent);
       var x = bezier[0];
       var numLoops = 0;
-  
+
       //loop until completion
       while (Math.abs(xTarget - x) > xTolerance) {
         if (numLoops++ > 100)
           debugger;
-        
-        if (xTarget > x) 
+
+        if (xTarget > x)
           lower = percent;
-        else 
+        else
           upper = percent;
-  
+
         percent = (upper + lower) / 2;
         bezier = myBezier(percent);
         x = bezier[0];
@@ -815,14 +819,14 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
     identityTransformString: function() {
       return 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1)';
     },
-    
+
     parseTransform: function(transformStr) {
       if (!transformStr || transformStr == 'none')
         return this.getNewIdentityTransform();
-      
+
       var split = transformStr.slice(transformStr.indexOf('(') + 1).split(', '),
           xIdx = split.length == 6 ? 4 : 12,
-          yIdx = xIdx + 1; 
+          yIdx = xIdx + 1;
 
       split = split.map(parseFloat.bind(window));
       if (split.length == 6) {
@@ -849,16 +853,16 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         y = arguments[1];
         z = arguments[2];
       }
-      
+
       return 'translate3d(' + (x || 0) + 'px, ' + (y || 0) + 'px, ' + (z || 0) + 'px)'; //+ (isFF ? ' rotate(0.01deg)' : '');
     },
-    
+
     _zeroTranslation: {
       X:0,
       Y:0,
       Z:0
     },
-    
+
     /**
      * @return { X: x-offset, Y: y-offset }
      */
@@ -866,7 +870,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
       transformStr = transformStr.trim();
       if (!transformStr || transformStr == 'none')
         return _.clone(this._zeroTranslation);
-      
+
       var match = transformStr.match(/^matrix/);
       if (match) {
         var matrix = this.parseTransform(transformStr);
@@ -876,7 +880,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
           Z: matrix[14]
         }
       }
-      
+
       if (/translate/.test(transformStr)) {
         var xyz = transformStr.match(/(\d)+/g);
         if (!xyz)
@@ -898,7 +902,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
 
 //      throw "can't parse transform";
     },
-    
+
     getStylePropertyValue: function(computedStyle, prop) {
       return computedStyle.getPropertyValue(this.prefix(prop));
     },
@@ -909,11 +913,11 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         el.style[transformProp] = transform;
       else
         el.style[transformProp] = this.toMatrix3DString(transform);
-      
+
       if (arguments.length == 3)
         el.style[this.prefix('transition')] = transition || '';
     },
-    
+
     toMatrix3DString: function(transform) {
       var transformStr = 'matrix3d(';
       for (var i = 0; i < 16; i++) {
@@ -921,7 +925,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         if (i != 15)
           transformStr += ", ";
       }
-      
+
       return transformStr + ")";
     },
 
@@ -938,7 +942,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
     getTransform: function(el) {
       return this.parseTransform(el.style[this.prefix('transform')]);
     },
-    
+
     empty: function(els) {
       els = getElementArray(els);
       if (els) {
@@ -957,7 +961,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
       if (els) {
         var i = els.length,
             el;
-        
+
         while (i--) {
           el = els[i];
           if (el.parentNode)
@@ -967,34 +971,34 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
     },
     tag: function(name, content, attributes) {
       return {
-        name: name, 
-        attributes: attributes, 
-        content: _.isArray(content) ? content : 
+        name: name,
+        attributes: attributes,
+        content: _.isArray(content) ? content :
                              content == null ? [] : [content]
       };
     },
-    
+
     toAttributesString: function(attributes) {
       var result = [];
       if (attributes) {
-        for (var name in attributes) { 
+        for (var name in attributes) {
           result.push(" " + name + "=\"" + this.escape(attributes[name]) + "\"");
         }
       }
-      
+
       return result.join("");
     },
-  
+
     /**
      * @param element: e.g. {
      *  name: 'p',
      *  attributes: {
      *    style: 'color: #000'
      *  },
-     *  content: ['Hello there'] // an array of elements 
-     * } 
+     *  content: ['Hello there'] // an array of elements
+     * }
     **/
-    
+
     toHTML: function(element) {
       // Text node
       if (typeof element == "string") {
@@ -1009,27 +1013,27 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         var html = ["<", element.name, this.toAttributesString(element.attributes), ">"],
             content = element.content,
             len = content.length;
-        
+
         for (var i = 0; i < len; i++) {
           html[html.length] = this.toHTML(content[i]);
         }
-        
+
         html[html.length] = "</" + element.name + ">";
         return html.join("");
       }
     },
-  
+
     _replacements: [[/&/g, "&amp;"], [/"/g, "&quot;"], [/</g, "&lt;"], [/>/g, "&gt;"]],
     escape: function(text) {
       if (typeof text !== 'string')
         text = '' + text;
-      
+
       var replacements = this._replacements;
       for (var i = 0; i < replacements.length; i++) {
         var replace = replacements[i];
         text = text.replace(replace[0], replace[1]);
       }
-      
+
       return text;
     },
 
@@ -1038,10 +1042,10 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
     unlazifyImagesInHTML: function(html) {
       if (!DOM.lazyRegex)
         DOM.lazyRegex = new RegExp('src="{0}" {1}=\"?\'?([^\"\']+)\"?\'?'.format(G.getBlankImgSrc(), G.lazyImgSrcAttr), 'ig');
-      
+
       return html.replace(DOM.lazyRegex, 'src="$1"').replace(DOM.lazyClassRegex, '$1 wasLazyImage $2');
     },
-    
+
     /**
      * @param img {HTMLElement}
      * @param info {Object}
@@ -1052,7 +1056,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
      *      onerror: function() {},
      *      data: {File or Blob},
      *      realSrc: src of the actual image
-     *    } 
+     *    }
      */
     unlazifyImage: function(img, info) {
       img.onload = null;
@@ -1061,7 +1065,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
       img.classList.remove('lazyImage');
       if (!info)
         return;
-      
+
       img.classList.add('wasLazyImage');
       if (_.has(info, 'width'))
         img.style.width = info.width;
@@ -1071,10 +1075,10 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         var src = URL.createObjectURL(info.data), // blob or file
             onload = info.onload,
             onerror = info.onerror;
-        
+
         if (info.realSrc)
           img.setAttribute(LAZY_DATA_ATTR, info.realSrc);
-        
+
         img.src = src;
         this.onImageLoad(img, function() {
           try {
@@ -1089,30 +1093,30 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
             return onerror && onerror.apply(this, arguments);
           } finally {
             URL.revokeObjectURL(src);
-          }          
+          }
         });
       }
       else if (info.realSrc) {
         img.src = info.realSrc;
-        
+
         if (info.onload)
           this.onImageLoad(img, info.onload); // probably store img in local filesystem
         if (info.onerror)
-          this.onImageError(img, info.onerror);        
+          this.onImageError(img, info.onerror);
       }
     },
-    
+
     onImageError: function(img, callback) {
       if (img.complete)
         return;
-      
+
       var onerror = img.onerror;
       img.onerror = function() {
         onerror && onerror.call(img);
         callback.call(img);
       };
     },
-    
+
     onImageLoad: function(img, callback) {
       if (img.complete)
         callback.call(img);
@@ -1125,18 +1129,18 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
       }
 //        img.$on('load', callback);
     },
-    
+
     lazifyImage: function(img, immediately) {
       if (!G.lazifyImages)
         return img;
-      
+
       return this.lazifyImages([img], immediately)[0];
     },
-    
+
     lazifyImages: function(images, immediately) {
       if (!G.lazifyImages)
         return images;
-      
+
       var infos = [],
           lazyImgAttr = G.lazyImgSrcAttr,
           blankImg = G.getBlankImgSrc(),
@@ -1145,13 +1149,13 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
           realSrc,
           isHTMLElement = images[0] instanceof HTMLElement,
           get = isHTMLElement ? function(el, attr) { return el.getAttribute(attr) || el.style[attr] } : _.index;
-      
+
       function read() {
         for (var i = 0, num = images.length; i < num; i++) {
           img = images[i];
           realSrc = get(img, lazyImgAttr);
           src = get(img, 'src');
-          
+
           if (realSrc && src == blankImg) {
             infos.push(null); // already lazy
 //            debugger;
@@ -1161,7 +1165,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
               src: realSrc || src,
               width: get(img, 'width'),
               height: get(img, 'height')
-            });  
+            });
           }
         }
       }
@@ -1170,10 +1174,10 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         for (var i = images.length - 1; i >= 0; i--) { // MUST be backwards loop, as this may be a NodeList and thus may be automatically updated by the browser when we add/remove a class
           var img = images[i],
               info = infos[i];
-          
+
           if (!info)
             continue;
-            
+
           if (isHTMLElement) {
             if (!info.src.startsWith('data:') || info.src != blankImg) {
               img.setAttribute(lazyImgAttr, info.src);
@@ -1184,7 +1188,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
               img.style.width = info.width;
             if (typeof info.height == 'number')
               img.style.height = info.height;
-            
+
   //          img.onload = window.onimageload;
   //          img.onerror = window.onimageerror;
           }
@@ -1194,11 +1198,11 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
   //          img.onload = 'window.onimageload.call(this)';
   //          img.onerror = 'window.onimageerror.call(this)';
           }
-          
+
           img.src = blankImg;
         }
       }
-      
+
       if (isHTMLElement && !immediately) {
         Q.read(read);
         Q.write(write);
@@ -1209,7 +1213,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         return images;
       }
     },
-    
+
     toggleButton: function(btn, disable) {
       if (G.isJQM()) {
         btn = $wrap(btn);
@@ -1220,14 +1224,14 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         btn.$attr('disabled', disable ? true : null);
       }
     },
-    
+
     closeDialog: function(p) {
       if (G.isJQM())
         $wrap(p).popup('close');
       else
         $unwrap(p).$remove();
     },
-    
+
     getCachedWidth: function(el) {
       var width = el.$data('width');
       if (width)
@@ -1248,11 +1252,11 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
 //        [x || 0, y || 0, z || 0, 1]
 //      ];
 //    },
-//    
+//
 //    positionToMatrix3DString: function(x, y, z) {
 //      return 'matrix3d(1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, ' + (x || 0) + ', ' + (y || 0) + ', ' + (z || 0) + ', 1)';
 //    },
-   
+
     prefix: function(prop) {
       if (cssPrefix[prop]){
         return cssPrefix[prop];
@@ -1275,7 +1279,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
           break;
         }
       }
-      
+
       for (var i = 0, l = arrayOfPrefixes.length; i < l; ++i) {
         name = arrayOfPrefixes[i] + TitleCase;
 
@@ -1300,13 +1304,13 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
      *        width: '100px'
      *      },
      *      remove: ['height']
-     *    }, 
+     *    },
      *    attributes: {
      *      add: {
      *        'data-blah': 12
      *      },
      *      remove: ['stupid']
-     *    }, 
+     *    },
      *    class: {
      *      add: ['hey', 'ho'],
      *      remove: ['yo', 'booya'],
@@ -1323,50 +1327,50 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
     processRenderQueue: function() {
       var i = renderQueue.length,
           item;
-          
+
       while (i--) {
         item = renderQueue[i];
         this.render(item[0] /* el */, item[1] /* renderData */);  // see queueRender method
       }
-      
+
       renderQueue.length = 0;
     },
-    
+
     blankRenderData: function() {
-      return { 
-        style: {}, 
-        attributes: {}, 
+      return {
+        style: {},
+        attributes: {},
         'class': {}
       };
     },
-    
+
     _renderCallbacks: [],
     onNextRender: function(callback) {
       this._renderCallbacks.push(callback);
     },
-    
+
     /**
      * changes an element's styles, attributes, classes (see queueRender method signature for parameter definitions)
      */
     render: function(el, renderData) {
       var html = renderData.innerHTML,
-          style = renderData.style, 
-          attrs = renderData.attributes, 
-          classes = renderData['class'], 
+          style = renderData.style,
+          attrs = renderData.attributes,
+          classes = renderData['class'],
           add, remove, replace,
           i = this._renderCallbacks.length;
-      
+
       if (i) {
         while (i--) {
           this._renderCallbacks[i]();
         }
-        
+
         this._renderCallbacks.length = 0;
       }
-      
+
       if (html)
         el.innerHTML = html;
-      
+
       if (style) {
         if ((add = style.add))
           el.$css(add);
@@ -1377,7 +1381,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
           }
         }
       }
-      
+
       if (attrs) {
         if ((add = attrs.add))
           el.$attr(add);
@@ -1403,18 +1407,18 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
           else
             el.$removeClass.apply(el, remove);
         }
-        
+
         if ((replace = classes['set']) !== undefined) {
           if (replace instanceof Array)
             replace = replace.join(' ');
-          
+
           el.setAttribute('class', replace);
         }
       }
     },
 
     maxOpacity: MAX_OPACITY,
-    
+
     /**
      * IMPORTANT: returns a live NodeList (meaning if you start taking its nodes and appending them somewhere, the collection length WILL change automatically)
      */
@@ -1422,7 +1426,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
 //      return $.parseHTML(html);
 //      var tmp = document.createDocumentFragment(),
       var div = document.createElement('div');
-      
+
 //      tmp.appendChild(div);
       div.innerHTML = html;
       return div.childNodes; // live NodeList
@@ -1441,7 +1445,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
 //      tmp.innerHTML = html;
 //      return tmp.body.children; // live NodeList
 //    },
-    
+
     /**
      * Replaces all of a's child nodes with b's
      */
@@ -1463,7 +1467,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
       },
       height: function() {
         return doc.documentElement.clientHeight;
-      }      
+      }
     },
     isCollection: function(obj) {
       return isElementCollection(obj);
@@ -1473,6 +1477,6 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
     hideStyle: HIDE_STYLE,
     showStyle: SHOW_STYLE
   };
-  
+
   return DOM;
 });

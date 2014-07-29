@@ -144,6 +144,15 @@
 .ui-icon-share:before {
   content: "\e05b";
 }
+
+.ui-icon-collapsable:before {
+  content: "\e095"; /*plus-sign*/
+}
+
+.unfolded .ui-icon-collapsable:before {
+  content: "\e041";
+}
+
 [class^="ui-icon-"]:before,
 [class*=" ui-icon-"]:before {
   font-family: "tradle" !important;
@@ -156,4 +165,3 @@
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-

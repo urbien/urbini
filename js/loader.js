@@ -7,11 +7,11 @@ _.extend($, {
   whenAll: function() {
     var args = ArrayProto.slice.call(arguments),
         len = args.length;
-    
+
     if (!len)
       return $.RESOLVED_PROMISE;
-    
-    return $.Deferred(function(dfd) {      
+
+    return $.Deferred(function(dfd) {
       var results = new Array(len),
           counter = 0,
           state = "resolved",
@@ -19,27 +19,27 @@ _.extend($, {
             if (this.state() === "rejected"){
               state = "rejected";
             }
-            
+
             var idx = args.indexOf(this);
             counter++;
             switch (arguments.length) {
               case 0:
-              case 1:            
+              case 1:
                 results[idx] = arguments[0] || null;
                 break;
               default:
                 results[idx] = [].slice.call(arguments);
                 break;
             }
-  
+
             if (counter === len) {
-              dfd[state === "rejected"? "reject": "resolve"].apply(dfd, results);   
-            }            
+              dfd[state === "rejected"? "reject": "resolve"].apply(dfd, results);
+            }
           };
-    
-      for (var i = 0, l = args.length; i < l; i++) {        
+
+      for (var i = 0, l = args.length; i < l; i++) {
         var item = args[i];
-        item.always(resolveOrReject.bind(item)); 
+        item.always(resolveOrReject.bind(item));
       }
     }).promise();
   }
@@ -49,7 +49,7 @@ define('globals', function() {
   /**
    * @param constantTimeout: if specified, this will always be the timeout for this function, otherwise the first param of the returned async function will be the timeout
    */
-  
+
   // From jQuery.browser (deprecated in 1.3, removed in 1.9.1)
   // Use of jQuery.browser is frowned upon.
   // More details: http://docs.jquery.com/Utilities/jQuery.browser
@@ -93,33 +93,33 @@ define('globals', function() {
     browser.touch = 'ontouchstart' in window;
     browser.firefox = browser.mozilla;
     browser.name = browser.chrome ? 'chrome' : browser.firefox ? 'firefox' : browser.safari ? 'safari' : 'unknown';
-    browser.prefix = browser.webkit ? 'webkit' : 
-                      browser.mozilla ? 'moz' : 
-                        browser.opera ? 'o' : 
+    browser.prefix = browser.webkit ? 'webkit' :
+                      browser.mozilla ? 'moz' :
+                        browser.opera ? 'o' :
                           browser.ms ? 'ms' : '';
 
     browser.supported = browser.chrome || browser.mozilla || browser.safari || browser.ios || (browser.msie && parseInt(browser.version) >= 10);
     return browser;
   })();
-  
+
   if (!browser.supported) {
     alert("Alas, we don't yet support the version of the browser you're using. Please try Chrome, Firefox, Safari or IE10+.");
     return;
   }
-  
+
   function hasLocalStorage() {
     var supported = false;
     try{
       supported = window && ("localStorage" in window) && ("getItem" in localStorage);
     } catch(e) {}
-    
+
     return supported;
   };
 
   function getFullName(module) {
     return require.toUrl(module).slice(require.getConfig().baseUrl.length);
   };
-  
+
   function getBundleForFile(fileName) {
     var fullName = getFullName(fileName);
     for (var bName in G.bundles) {
@@ -128,7 +128,7 @@ define('globals', function() {
         return bundle;
     }
   }
-  
+
   function getFileStorageType(fileName) {
     var bundle = getBundleForFile(fileName);
     if (bundle)
@@ -140,7 +140,7 @@ define('globals', function() {
   function getBundleStorageType(bundleName) {
     if (G.dbType == 'none')
       return 'localStorage';
-    
+
     switch (bundleName) {
     case 'pre':
     case 'post':
@@ -150,25 +150,25 @@ define('globals', function() {
       return 'indexedDB';
     }
   };
-  
+
   function saveBootInfo() {
     var ls = G.localStorage,
         sortable = [],
         count = 0;
-    
+
     if (!ls)
       return;
-    
+
     for (var source in ls) {
       sortable.push([source, ls[source].length]);
     }
-    
+
     sortable.sort(function(a, b) {return a[1] - b[1]})
-    for (var i = 0; i < sortable.length; i++) { 
+    for (var i = 0; i < sortable.length; i++) {
       count += sortable[i][1];
       G.log(G.TAG, 'boot', sortable[i][1] + ' ' + sortable[i][0]);
     }
-    
+
     G.log(G.TAG, 'boot', 'total: ' + count);
 
     var v = ls.get('VERSION');
@@ -181,25 +181,25 @@ define('globals', function() {
   function addModule(text) {
   //  console.log("evaling/injecting", text.slice(text.lastIndexOf('# sourceURL')));
     // Script Injection
-    
+
     var idx = text.indexOf('//@ sourceURL');
     idx = idx == -1 ? 0 : idx;
     var length = idx ? 100 : text.length - idx;
 //    Lablz.log(Lablz.TAG, 'module load', text.slice(idx, idx + length));
-    
+
     if (G.minify) {
       if (browser.chrome) // || nav.isSafari)
         G.inject(text);
       else if (browser.mozilla)
         return window.eval(text);
-//        return window.eval.call({}, text);  
+//        return window.eval.call({}, text);
       else // Safari
         return window.eval(text);
-    } 
+    }
     else
       return window.eval(text);
   }
-    
+
   Function.prototype.async = function(constantTimeout) {
     var self = this;
     return function() {
@@ -213,10 +213,10 @@ define('globals', function() {
 
   // maybe we don't even need deferreds here, but if sth here ever becomes async with onload callbacks...
   function loadModule (name, url, text) {
-    return $.Deferred(function(defer) {        
+    return $.Deferred(function(defer) {
       var ext = url.match(/\.[a-zA-Z]+$/g)[0];
       var appcache = G.files.appcache;
-        
+
       switch (ext) {
         case '.css':
           text += '\r\n/*//@ sourceURL=' + url + '*/';
@@ -224,7 +224,7 @@ define('globals', function() {
             G.linkCSS(G.serverName + '/' + url);
           else
             G.appendCSS(text);
-          
+
           G.log(G.TAG, 'cache', 'cache.get: ' + url);
           defer.resolve(name);
           G.log(G.TAG, 'cache', 'end cache.get: ' + url);
@@ -243,20 +243,20 @@ define('globals', function() {
           G.log(G.TAG, 'cache', 'end cache.get: ' + url);
           break;
         default:
-          if (browser.msie) 
+          if (browser.msie)
             text += '/*\n'; // see http://bugs.jquery.com/ticket/13274#comment:6
-//          temp commment out as profiler says sourceMappingURL slows down app load          
+//          temp commment out as profiler says sourceMappingURL slows down app load
 //          if (G.minify)
 //            text += '\n//@ sourceMappingURL=' + url.match(/\/([^\/]*)\.js$/)[1] + '.min.js.map';
-          
+
           text += '\n//@ sourceURL=' + url;
-          if (browser.msie) 
+          if (browser.msie)
             text += '*/\n';
 
           addModule(text);
           defer.resolve();
           break;
-      }      
+      }
     }).promise();
   }
 
@@ -265,21 +265,21 @@ define('globals', function() {
     name = require.getRealName(name);
 //    if (!isModuleNeeded(name))
 //      return G.getResolvedPromise();
-    
+
     var url = G.getCanonicalPath(require.toUrl(name));
     var args = arguments,
         self = this;
-    
+
     return $.Deferred(function(defer) {
       if (name === 'globals')
         return defer.resolve(G);
       else if (name == 'underscore')
         return defer.resolve(window._);
-      
-      var cached, realPath;  
+
+      var cached, realPath;
       if (/\.(jsp|css|html|json)\.js$/.test(url))
         url = url.replace(/\.js$/, '');
-  
+
       var inAppcache = realPath = Bundler.getFromAppcacheBundle(url);
       if (inAppcache || (G.inFirefoxOS && G.minify)) {
         var path = requireConfig.paths[name] || name;
@@ -288,19 +288,19 @@ define('globals', function() {
           return;
         }
       }
-  
-        
+
+
       var ext;
       var isText = ext = name.match(/\.[a-zA-Z]+$/g);
       if (ext)
         ext = ext[0].slice(1).toLowerCase();
-        
+
       var mCache = G.modules;
       var cached = inAppcache || (mCache && mCache[url]);
       var loadedCached = false;
       if (cached) {// || hasLocalStorage) {
         var loadedCached = cached;
-        if (loadedCached) {            
+        if (loadedCached) {
           try {
             G.log(G.TAG, 'cache', 'Loading from LS', url);
             loadModule(name, url, cached).done(defer.resolve);
@@ -312,14 +312,14 @@ define('globals', function() {
             G.localStorage.del(url);
             loadedCached = false;
           }
-        } 
+        }
       }
-      
+
       if (loadedCached) {
         delete G.modules[url];
         return;
       }
-      
+
       /// use 'sendXhr' instead of 'req' so we can store to localStorage
       Bundler.loadBundle(name, {source: getFileStorageType(name)}).done(function() {
         if (G.modules[url])
@@ -328,18 +328,18 @@ define('globals', function() {
           G.log(G.TAG, ['error', 'cache'], 'failed to load module', name);
           defer.reject();
         }
-      });        
+      });
     }).promise();
   };
-  
+
   function getDomain() {
     return window.location.host.match(/[a-zA-Z]+\.[a-zA-Z]+$/)[0];
   }
-  
+
   function testCSS(prop) {
     return prop in doc.documentElement.style;
   };
-    
+
   function getSpinnerId(name) {
     return 'loading-spinner-holder-' + (name || '').replace(/[\.\ ]/g, '-');
   };
@@ -348,16 +348,16 @@ define('globals', function() {
     url = isFilePathKey(url) ? url : 'file:' + url;
     if (G.minify && !/\.min$/.test(url))
       url += ".min";
-    
+
     return url;
   };
 
   function isFilePathKey(str) {
-    return /^file:/.test(str); 
+    return /^file:/.test(str);
   };
 
   function isFilePathMetadataKey(str) {
-    return /^file:metadata:/.test(str); 
+    return /^file:metadata:/.test(str);
   };
 
   function getMetadataURL(url) {
@@ -369,31 +369,31 @@ define('globals', function() {
     var storage = options.storage || G.getPreferredStorage(),
         store = options.store || 'modules',
         storeInfo = store === 'modules' ? G.getModulesStoreInfo() : G.getModelsStoreInfo(),
-        keyPath = storeInfo.options.keyPath;        
-    
+        keyPath = storeInfo.options.keyPath;
+
     if (storage === 'localStorage') {
       if (!G.prunedLocalStorage)
         G.pruneLocalStorage();
-      
+
       for (var key in keyToData) {
         var val = keyToData[key];
         if (typeof val == 'object')
           val = JSON.stringify(val);
-        
+
         G.localStorage.put(key, val);
       }
-      
+
       return RESOLVED_PROMISE;
     }
     else if (storage === 'indexedDB') {
       if (G.dbType === 'none')
         return REJECTED_PROMISE;
-            
+
       if (DB_OPEN_DFD.state() == 'pending') {
         debugger;
-        var self = this, 
+        var self = this,
             args = arguments;
-        
+
         return DB_OPEN_DFD.promise().then(function() {
           return putCached.apply(self, args);
         });
@@ -401,13 +401,13 @@ define('globals', function() {
 
 //      if (!G.prunedIndexedDB)
 //        G.pruneIndexedDB();
-      
+
       var stuff = [];
       for (var key in keyToData) {
         var stuffInfo = {
           data: keyToData[key]
         };
-        
+
         stuffInfo[keyPath] = key;
         stuff.push(stuffInfo);
       };
@@ -423,9 +423,9 @@ define('globals', function() {
         appPath = path.slice(path.lastIndexOf('/') + 1),
         devVoc = G.DEV_PACKAGE_PATH.replace('/', '\/'),
         regex = devVoc + appPath + '\/[^\/]*$',
-        commonTypes = G.commonTypes, 
+        commonTypes = G.commonTypes,
         defaultVocPath = G.defaultVocPath;
-    
+
     G.serverNameHttp = G.serverName.replace(/^[a-zA-Z]+:\/\//, 'http://');
     _.extend(G, {
       appUrl: G.serverName + '/' + G.pageRoot,
@@ -442,14 +442,14 @@ define('globals', function() {
       domainRegExp: new RegExp('(https?:\/\/)?' + G.serverName.slice(G.serverName.indexOf('://') + 3)),
       appModelRegExp: new RegExp('model:(metadata:)?' + devVoc),
       currentAppRegExp: new RegExp(regex),
-      currentAppModelRegExp: new RegExp('model:(metadata:)?' + regex)    
+      currentAppModelRegExp: new RegExp('model:(metadata:)?' + regex)
     });
-    
+
     for (var type in commonTypes) {
       commonTypes[type] = defaultVocPath + commonTypes[type];
-    }  
+    }
   };
-  
+
   function adjustForVendor() {
     (function () {
       function CustomEvent ( event, params ) {
@@ -463,7 +463,7 @@ define('globals', function() {
 
       window.CustomEvent = CustomEvent;
     })();
-    
+
     // requestAnimationFrame polyfill by Erik Miller & Paul Irish et. al., adjusted by David DeSandro https://gist.github.com/desandro/1866474
     window.AudioContext = window.AudioContext || window.webkitAudioContext; // keep in mind, firefox doesn't have AudioContext.createMediaStreamSource
     window.MediaStream = window.webkitMediaStream || window.MediaStream;
@@ -471,7 +471,7 @@ define('globals', function() {
     window.URL = window.URL || window.webkitURL;
     (function( window ) {
       'use strict';
-     
+
       var lastTime = 0;
       var prefixes = 'webkit moz ms o'.split(' ');
       // get unprefixed rAF and cAF, if present
@@ -488,7 +488,7 @@ define('globals', function() {
         cancelAnimationFrame  = cancelAnimationFrame  || window[ prefix + 'CancelAnimationFrame' ] ||
                                   window[ prefix + 'CancelRequestAnimationFrame' ];
       }
-     
+
       // fallback to setTimeout and clearTimeout if either request/cancel is not supported
       if ( !requestAnimationFrame || !cancelAnimationFrame ) {
         G.hasRequestAnimationFrame = false;
@@ -501,26 +501,26 @@ define('globals', function() {
           lastTime = currTime + timeToCall;
           return id;
         };
-     
+
         cancelAnimationFrame = function( id ) {
           window.clearTimeout( id );
         };
       }
       else
         G.hasRequestAnimationFrame = true;
-     
+
       // put in global namespace
       window.raf = window.requestAnimationFrame = requestAnimationFrame;
       window.caf = window.cancelAnimationFrame = cancelAnimationFrame;
-      
+
     })( window );
   }
-  
+
   function testIfInsidePackagedApp() {
     // browser and version detection: http://stackoverflow.com/questions/5916900/detect-version-of-browser
     if (!browser.chrome && !browser.firefox)
       return;
-    
+
     function setParent() {
       if (browser.chrome)
         G.inWebview = true;
@@ -530,25 +530,25 @@ define('globals', function() {
       }
     };
 
-    var param = browser.chrome ? '-webview' : '-ffiframe';    
+    var param = browser.chrome ? '-webview' : '-ffiframe';
     if (hasLocalStorage) {
       if (localStorage.getItem(param) === 'y') {
         setParent();
         return;
       }
     }
-    
+
     if (params[param] == 'y') {
-      setParent();          
+      setParent();
       G.localStorage.put(param, 'y');
     }
-    
+
     G.hasFFApps = browser.firefox && 'mozApps' in navigator;
     G.log(G.TAG, 'webview', 'inWebview:', G.inWebview);
     G.log(G.TAG, 'ffIframe', 'inFFIframe:', G.inFirefoxOS);
   //    ALL_IN_APPCACHE = G.inFirefoxOS;
   }
-  
+
   function determineMinificationMode() {
     // Determine whether we want the server to minify stuff
     // START minify
@@ -556,8 +556,8 @@ define('globals', function() {
         set = false,
         mCookieName = G.serverName + '/cookies/minify',
         minified = G.getCookie(mCookieName);
-        
-    if (qIdx != -1) {    
+
+    if (qIdx != -1) {
       var hParams = hash.slice(qIdx + 1).split('&');
       for (var i = 0; i < hParams.length; i++) {
         var p = hParams[i].split('=');
@@ -566,7 +566,7 @@ define('globals', function() {
           if (p[1] != minified) {
             minified = p[1];
           }
-          
+
           break;
         }
       }
@@ -578,7 +578,7 @@ define('globals', function() {
   function setupLocalStorage() {
     if (!hasLocalStorage)
       return;
-    
+
     G.localStorage = {
       get: function(url) {
         var item = localStorage.getItem(url);
@@ -590,7 +590,7 @@ define('globals', function() {
       put: function(key, value, force) {
         if (!G.hasLocalStorage)
           return false;
-  
+
         value = Object.prototype.toString.call(value) === '[object String]' ? value : JSON.stringify(value);
         try {
           localStorage.setItem(key, value);
@@ -603,22 +603,22 @@ define('globals', function() {
                 numRemoved = this.clean(function(key) {
                   return appModelRegexp.test(key) && !thisAppModelRegexp.test(key);
                 });
-            
+
             if (!numRemoved) {
               numRemoved = this.clean(function(key) {
                 return /^model\:/.test(key);
               });
             }
-            
+
             if (!numRemoved) {
               numRemoved = this.clean(function(key) {
                 return !/\//.test(key); // all except Globals, Version, other state variables
               });
             }
-            
+
             if (!numRemoved)
               this.clean();
-            
+
   //          if (!numRemoved) {
   //            var extras = G.bundles.extras;
   //            for (var type in extras) {
@@ -630,15 +630,15 @@ define('globals', function() {
   //              }
   //            }
   //          }
-            
+
             if (!this.cleaning) { // TODO: unhack this garbage
               this.cleaning = true;
               G.Voc && G.Voc.saveModelsToStorage();
             }
-            
+
             if (numRemoved)
               this.put(key, value);
-            
+
             this.cleaning = false;
           } else {
             debugger;
@@ -647,11 +647,11 @@ define('globals', function() {
           }
         }
       },
-      
+
       clean: function(test) {
         var cleaning = this.cleaning,
             numRemoved = 0;
-        
+
         this.cleaning = true;
         for (var i = localStorage.length - 1; i > -1; i--) {
           var key = localStorage.key(i);
@@ -659,27 +659,27 @@ define('globals', function() {
             G.localStorage.del(key);
             numRemoved++;
           }
-        }  
-        
+        }
+
         return numRemoved;
       },
-      
+
       nukeScripts: function() {
         var start = new Date().getTime();
         var length = localStorage.length;
         G.log(G.TAG, 'nuke', "nuking scripts, localStorage has", length, "keys", start);
         for (var i = length - 1; i > -1; i--) {
           var key = localStorage.key(i);
-          if (/\.(?:js|css|jsp|json)$/.test(key)) {          
+          if (/\.(?:js|css|jsp|json)$/.test(key)) {
             var start1 = new Date().getTime();
             G.localStorage.del(key);
             G.log(G.TAG, "nuke", key, new Date().getTime() - start1);
           }
         }
-  
+
         G.log(G.TAG, "nuke", "nuking scripts took", new Date().getTime() - start, "ms");
       },
-      
+
       nukePlugs: function() {
         var length = localStorage.length;
         var types = [], plugs;
@@ -690,11 +690,11 @@ define('globals', function() {
             G.localStorage.del(key);
           }
         }
-        
+
         return types;
       }
     };
-    
+
     G.localStorage.putAsync = G.localStorage.put.async(100);
     G.localStorage.cleanAsync = G.localStorage.clean.async(100);
   }
@@ -703,11 +703,11 @@ define('globals', function() {
     var widgets = G._widgetsLib = [],
         bundle = widgetsBundle,
         templates = ['../templates.jsp'];
-    
+
     for (var i = 0, len = bundle.length; i < len; i++) {
       widgets.push(bundle[i].name);
     }
-    
+
     switch (G._widgetLibrary.toLowerCase()) {
 //    case 'building blocks':
 //      templates.push('../templates.jsp');
@@ -719,10 +719,10 @@ define('globals', function() {
       templates.push('../templates_bootstrap.jsp');
       break;
     }
-    
+
     G._widgetTemplates = templates;
   }
-  
+
   function load() {
     var spinner = {
           name: 'app init',
@@ -753,20 +753,20 @@ define('globals', function() {
       priorityModules.sort(function(a, b) {
         return b.priority - a.priority;
       });
-      
+
 //      var pModules = [];
       for (var i = 0; i < priorityModules.length; i++) {
         priorityModules[i] = priorityModules[i].name;
 //        pModules.push(priorityModules[i].name);
       }
-      
+
 //        require(pModules);
       require(priorityModules).done(loadRegular);
     }
     else
       loadRegular();
   }
-  
+
   function getCSS(/* bundles */) {
     var css = [];
     for (var i = 0; i < arguments.length; i++) {
@@ -777,18 +777,18 @@ define('globals', function() {
           css.push(info);
       }
     }
-    
+
     css.sort(function(item) {
       return item.order || 0;
     });
-    
+
     for (var i = 0, len = css.length; i < len; i++) {
       css[i] = css[i].name;
     }
-    
+
     return css;
   }
-  
+
   function loadRegular() {
     G.log(G.TAG, 'bundles', 'loaded app cache bundle');
     G.bundles.appcache._deferred.resolve();
@@ -827,7 +827,7 @@ define('globals', function() {
       });
     });
 
-    G.onAppStart(function() {            
+    G.onAppStart(function() {
 //      G.startedTask('loading extras-bundle');
       G.log(G.TAG, 'bundles', 'loading extras bundle');
       Bundler.loadBundle(extrasBundle, {async: true, source: getBundleStorageType('extras')}).done(function() {
@@ -835,9 +835,9 @@ define('globals', function() {
 //        G.startedTask('loading extras-bundle');
         extrasBundle._deferred.resolve();
       });
-    });    
+    });
   }
-  
+
   var Bundler = {
     pruneUnneededModules: function() {
       var bundles = G.bundles;
@@ -848,10 +848,10 @@ define('globals', function() {
             bundle.splice(i, 1);
         }
       }
-      
+
       this.pruneUnneededBundles = null;
     },
-      
+
     pruneBundle: function(bundle, options) {
       options = options || {};
       var source = options.source || G.getPreferredStorage();
@@ -865,11 +865,11 @@ define('globals', function() {
         var info = {
           name: bundle
         }
-        
+
         var timestamp = G.files[name];
         if (timestamp && timestamp.timestamp)
           info.timestamp = timestamp.timestamp;
-        
+
         bundle = {def: [info]};
       }
       else if (Object.prototype.toString.call(bundle) === '[object Array]') {
@@ -885,28 +885,28 @@ define('globals', function() {
             name = info, timestamp = G.files[name];
           else {
             name = info.name;
-            timestamp = info.timestamp;            
+            timestamp = info.timestamp;
           }
-          
+
           if (!name || (appcache[name] && (!name.endsWith('Worker.js') || !G.useInlineWorkers)))
             continue;
-          
+
           info = {};
           var path = G.getCanonicalPath(require.toUrl(name));
           if (G.modules[path])
             continue;
-          
+
           info[path] = timestamp; // || G.modules(G.bundles, path)[path];
           modules.push(info);
         }
       }
-      
+
       if (!hasLocalStorage)
         source = 'indexedDB';
-      
+
       if (!modules.length)
         return $.Deferred().resolve(modules).promise();
-      
+
       var minify = G.minify,
           def = G.minifyByDefault;
 
@@ -917,13 +917,13 @@ define('globals', function() {
           url = n;
           break;
         }
-        
+
         return G.getCached(getMetadataURL(url), source).then(function(metadata) {
           if (!metadata) {
             pruned.push(url);
             return;
           }
-          
+
           metadata = typeof metadata === 'string' ? JSON.parse(metadata) : metadata;
           var dateSaved = metadata.dateModified;
           var minified = metadata.minified;
@@ -931,7 +931,7 @@ define('globals', function() {
           if (dateModified <= dateSaved) {
             var fetch = false;
             if (G.isMinifiable(url)) {
-              if ((!minified && (minify===true || (typeof minify ==='undefined' && def))) || 
+              if ((!minified && (minify===true || (typeof minify ==='undefined' && def))) ||
                   (minified && (minify===false || (typeof minify ==='undefined' && !def)))) {
                 // wrong minification mode on this file
                 fetch = true;
@@ -949,23 +949,23 @@ define('globals', function() {
           else {
             if (!info)
               G.log('init', 'error', 'no info found for file: ' + url);
-              
+
 //              G.localStorage.del(url);
           }
-          
+
           pruned.push(url);
-        }, function() {          
+        }, function() {
           pruned.push(url);
         });
       });
-    
+
       $.whenAll.apply($, cachedPromises).always(function() {
         pruneDfd.resolve(pruned);
       });
-      
+
       return prunePromise;
     },
-    
+
 //    _queuedToLoad: [],
 //    queueLoadBundle: function(/* module names */) {
 //      var self = this;
@@ -974,12 +974,12 @@ define('globals', function() {
 //        clearTimeout(this._bundleTimer);
 //        debugger;
 //      }
-//      
+//
 //      this._bundleTimer = setTimeout(function() {
 //        self.loadBundle(self._queuedToLoad);
 //      }, 50);
 //    },
-    
+
     loadBundle: function(bundle, options) {
       var bundleDfd = $.Deferred(),
           bundlePromise = bundleDfd.promise(),
@@ -988,14 +988,14 @@ define('globals', function() {
           useWorker = G.hasWebWorkers && options.async,
           worker;
 
-      // recycling the worker needs to be the first order of business when this promise if resolved/rejected 
+      // recycling the worker needs to be the first order of business when this promise if resolved/rejected
       if (useWorker) {
         bundlePromise.always(function() {
           if (worker)
             G.recycleXhrWorker(worker);
         });
       }
-      
+
       function onResponse(resp) {
         if (useWorker) {
           if (resp.status == 304)
@@ -1009,7 +1009,7 @@ define('globals', function() {
           } catch (err) {
           }
         }
-        
+
         if (resp && !resp.error && resp.modules) {
           var newModules = {};
           var modules = resp.modules;
@@ -1027,14 +1027,14 @@ define('globals', function() {
               minified: G.isMinified(name, m.body)
             };
           }
-          
+
           setTimeout(function() {
             G.putCached(newModules, {
               storage: source
-            });          
+            });
           }, 100);
         }
-        
+
         bundleDfd.resolve();
       };
 
@@ -1043,15 +1043,15 @@ define('globals', function() {
           G.log('init', 'cache', 'bundle was cached', bundle);
           return bundleDfd.resolve();
         }
-        
+
         var data = {modules: pruned.join(',')},
             getBundleReq = {
-              url: G.serverName + "/backboneFiles", 
+              url: G.serverName + "/backboneFiles",
               type: 'POST',
               data: data,
               dataType: 'JSON'
             };
-          
+
         if (useWorker) {
           G.getXhrWorker().done(function() {
             worker = arguments[0];
@@ -1059,27 +1059,27 @@ define('globals', function() {
               G.log(G.TAG, 'xhr', 'fetched', getBundleReq.data.modules);
               onResponse(event.data);
             };
-            
+
             worker.onerror = function(e) {
               debugger;
               bundleDfd.reject();
             };
-            
+
             worker.postMessage({
               command: 'xhr',
               config: getBundleReq
-            });  
+            });
           });
         }
-        else {      
-          getBundleReq.success = onResponse; 
+        else {
+          getBundleReq.success = onResponse;
           G.sendXhr(getBundleReq);
         }
       });
-      
+
       return bundlePromise;
     },
-    
+
     prepAppCacheBundle: function() {
       var bundles = G.bundles;
       G.files = {appcache: {}};
@@ -1100,14 +1100,14 @@ define('globals', function() {
     getFromAppcacheBundle: function(url) {
       var appcacheBundle = G.bundles.appcache;
       url = url.slice(url.indexOf('/') + 1);
-//      if (/\.js$/.test(url)) 
+//      if (/\.js$/.test(url))
 //        url = url.slice(0, url.length - 3);
-      
+
       var info = G.files.appcache[url];
       return info ? info.fullName || info.name : null;
     }
   };
-  
+
   var TRACE = {
     ON: true,
     DEFAULT: {on: true},
@@ -1115,7 +1115,7 @@ define('globals', function() {
       info: {
         on: false,
         color: '#FFFFFF',
-        bg: '#000'      
+        bg: '#000'
       },
       error: {
         on: true,
@@ -1184,7 +1184,7 @@ define('globals', function() {
       }
     }
   };
-  
+
   var requireConfig = {
     paths: {
       '@widgets': 'widgetsLibAdapter',
@@ -1239,16 +1239,16 @@ define('globals', function() {
       codemirrorHTMLMode: ['codemirror', 'codemirrorCss', 'codemirrorXMLMode']
     }
   };
-  
+
   /////////////////// START SETUP ///////////////////////////////
 
   var G = window.Lablz,
       APP_START_DFD = $.Deferred(),
-      APP_START_PROMISE = APP_START_DFD.promise(), 
+      APP_START_PROMISE = APP_START_DFD.promise(),
       DB_OPEN_DFD = $.Deferred(),
       RESOLVED_PROMISE = $.Deferred().resolve().promise(),
       REJECTED_PROMISE = $.Deferred().reject().promise(),
-      
+
       // DOM stuff
 //      ALL_IN_APPCACHE,
       hash = window.location.hash ? window.location.hash.slice(1) : window.location.href.slice(window.location.href.indexOf(Lablz.pageRoot) + Lablz.pageRoot.length + 1),
@@ -1260,20 +1260,20 @@ define('globals', function() {
 //      head = $head[0],
 //      $body = $('body'),
 //      body = $body[0],
-      
+
       // XHR
       PROG_IDS = ['Msxml2.XMLHTTP', 'Microsoft.XMLHTTP', 'Msxml2.XMLHTTP.4.0'],
-      
+
       // localStorage
       hasLocalStorage = hasLocalStorage(), // yes, overwrite the function reference, we don't need it anymore
-      
+
       // bundles
       bundles = G.bundles, // is part of initial globals
       widgetsBundle = bundles.widgetsFramework,
       preBundle = bundles.pre,
-      postBundle = bundles.post, 
+      postBundle = bundles.post,
       extrasBundle = bundles.extras;
-    
+
   window.addEventListener("offline", function(e) {
     // we just lost our connection and entered offline mode, disable eternal link
     G.setOnline(false);
@@ -1323,7 +1323,7 @@ define('globals', function() {
     getRejectedPromise: function() {
       return REJECTED_PROMISE;
     },
-//    serverName: (function() { // defined in boot.js     
+//    serverName: (function() { // defined in boot.js
 //      var s = $('base')[0].href;
 //      return s.match("/$") ? s.slice(0, s.length - 1) : s;
 //    })(),
@@ -1335,10 +1335,10 @@ define('globals', function() {
 //        });
       });
     },
-    
+
     getCached: function(url, source, storeName) {
       if (source === 'localStorage') {
-        return $.Deferred(function(defer) {        
+        return $.Deferred(function(defer) {
           var result = G.localStorage.get(url);
           if (result)
             defer.resolve(result);
@@ -1350,13 +1350,13 @@ define('globals', function() {
         var RM = G.ResourceManager;
         if (!RM)
           return REJECTED_PROMISE;
-        
+
         return RM.getItem(storeName || 'modules', url).then(function(data) {
           return data.data;
         });
       }
     },
-    
+
     pruneLocalStorage: function() {
       G.prunedLocalStorage = true;
       var except = [],
@@ -1365,7 +1365,7 @@ define('globals', function() {
           url,
           i,
           key;
-      
+
       for (var bName in bundles) {
         bundle = bundles[bName];
         if (bName == 'pre' || bName == 'post' || bName == 'widgetsFramework' || bName == 'appcache') { // TODO: this preference should be set in one spot, not all over the place
@@ -1377,13 +1377,13 @@ define('globals', function() {
           }
         }
       }
-      
+
       for (var key in localStorage) {
         if ((isFilePathKey(key) || isFilePathMetadataKey(key)) && except.indexOf(key) == -1) {
           remove.push(key); // just in case removing while looping affects the loop order
         }
       }
-      
+
       i = remove.length;
       while (i--) {
         key = remove[i];
@@ -1401,7 +1401,7 @@ define('globals', function() {
           bundle,
           url,
           i;
-      
+
       for (var bName in bundles) {
         bundle = bundles[bName];
         if (bName != 'pre' && bName != 'post') {
@@ -1410,7 +1410,7 @@ define('globals', function() {
             url = G.getCanonicalPath(require.toUrl(bundle[i].name));
             except.push(getFilePathInStorage(url));
             except.push(getMetadataURL(url));
-          }          
+          }
         }
       }
 
@@ -1422,7 +1422,7 @@ define('globals', function() {
             remove.push(key); // just in case removing while looping affects the loop order
           }
         }
-        
+
         if (remove.length)
           idb['delete']('modules', remove);
       });
@@ -1445,10 +1445,10 @@ define('globals', function() {
       else {
 //        var pre = G.bundles.pre.js,
 //            shimIdx = pre.indexOf('lib/IndexedDBShim');
-//        
+//
 //        if (shimIdx >= 0)
 //          pre.splice(shimIdx, 1);
-//        
+//
 //        G.log(G.TAG, 'db', "don't need indexeddb shim");
         type = 'idb';
       }
@@ -1458,19 +1458,19 @@ define('globals', function() {
 
       var dfd = $.Deferred(),
           promise = dfd.promise();
-      
+
       G.getDBReadyPromise = function() {
         return promise;
       };
-      
+
       if (type == 'shim')
         window.addEventListener('IndexedDBShimInit', dfd.resolve);
       else
         dfd.resolve();
-        
+
       return type;
     })(),
-    
+
     _preferredStorageMedium: 'indexedDB',
     getPreferredStorage: function() {
       debugger;
@@ -1480,19 +1480,19 @@ define('globals', function() {
           type = 'localStorage';
         }
       }
-      
+
       return type;
     },
-    
-    media_events: ["loadstart", "progress", "suspend", "abort", "error", "emptied", "stalled", 
-                    "loadedmetadata", "loadeddata", "canplay", "canplaythrough", "playing", "waiting", 
+
+    media_events: ["loadstart", "progress", "suspend", "abort", "error", "emptied", "stalled",
+                    "loadedmetadata", "loadeddata", "canplay", "canplaythrough", "playing", "waiting",
                     "seeking", "seeked", "ended", "durationchange", "timeupdate", "play", "pause", "ratechange", "volumechange"],
-                    
+
     nukeAll: function(reload) {
       G.Events.trigger('clearTaskQueues');
       hasLocalStorage && localStorage.clear();
       if (G.ResourceManager) {
-        return G.ResourceManager.deleteDatabase().done(function() {          
+        return G.ResourceManager.deleteDatabase().done(function() {
           if (reload)
             window.location.reload();
         });
@@ -1505,7 +1505,7 @@ define('globals', function() {
           navigator.webkitGetUserMedia ||
           navigator.mozGetUserMedia ||
           navigator.msGetUserMedia));
-      
+
 //      m && m.bind(navigator);
       return !!m;
     })(),
@@ -1517,7 +1517,7 @@ define('globals', function() {
       options = options || {};
       if (typeof options === 'string')
         options = {name: options};
-      
+
       var id = getSpinnerId(options.name);
       var cl = 'vcenteredR ' + (options.nonBlockingOverlay ? '' : ' spinner_bg');
       var color;
@@ -1526,13 +1526,13 @@ define('globals', function() {
         if (t0)
           color = t0.color;
       }
-      
+
       var style = ' style="' + (color ? 'color:' + color + ';' : '') + '"';
       var innerHTML = '<div ' + style + ' class="spinner"></div>';
       var spinner = doc.createElement('div');
       spinner.id = id;
       spinner.className = cl;
-      
+
       spinner.innerHTML = innerHTML;
 //      var spinner = '<div id="' + id + '" class="' + cl + '">' + innerHTML + '</div>';
       body.appendChild(spinner);
@@ -1541,7 +1541,7 @@ define('globals', function() {
           G.hideSpinner(options);
         }, options.timeout);
       }
-      
+
       if (options.blockClick)
         document.addEventListener('click', this.clickBlocker, true);
     },
@@ -1550,29 +1550,29 @@ define('globals', function() {
       while (spinner = doc.getElementById(id)) {
         spinner.parentNode.removeChild(spinner);
       }
-      
+
       document.removeEventListener('click', this.clickBlocker, true);
     },
-    
+
     getVersion: function(old) {
       if (!old && G.VERSION)
         return G.VERSION;
-      
+
       var v = G.localStorage.get((old ? 'OLD_' : '') + 'VERSION');
       try {
         v = JSON.parse(v);
       } catch (err) {
       }
-      
+
       return v;
 //          || {
-//        All: 0, 
-//        Models: 0, 
-//        JS: 0, 
+//        All: 0,
+//        Models: 0,
+//        JS: 0,
 //        CSS: 0
 //      };
     },
-    
+
     setVersion: function(key, version) {
       var oldV = G.VERSION;
       var newV;
@@ -1582,29 +1582,29 @@ define('globals', function() {
         newV = _.clone(G.VERSION) || {};
         newV[key] = version;
       }
-      
+
       G.localStorage.put("OLD_VERSION", JSON.stringify(oldV));
       G.localStorage.put("VERSION", JSON.stringify(newV));
     },
-    
+
     checkVersion: function(data) {
       if (G._nuking)
         return;
-      
+
       var init = data === true,
           newV = data ? data.VERSION : G.getVersion(),
           oldV = G.getVersion(!data) || newV; // get old
 
       if (!newV)
         return;
-      
+
       if (newV.All > oldV.All) {
         if (G._nuking)
           return;
-        
+
         this._nuking = true;
 //        APP_START_PROMISE.done(function() {
-          G.nukeAll().done(function() {          
+          G.nukeAll().done(function() {
             G.setVersion(newV);
             window.location.reload(); // otherwise pending reqs to database may fail and cause trouble, expecting object stores we just deleted
           }).fail(function() {
@@ -1613,7 +1613,7 @@ define('globals', function() {
             G._nuking = false;
           });
 //        });
-        
+
         return;
       }
 
@@ -1627,9 +1627,9 @@ define('globals', function() {
       }
     },
 
-    DEV_PACKAGE_PATH: 'http://urbien.com/voc/dev/',
+    DEV_PACKAGE_PATH: 'http://' + Lablz._serverName + '/voc/dev/',
     localTime: new Date().getTime(),
-    online: !!navigator.onLine,    
+    online: !!navigator.onLine,
     setOnline: function(online) {
       G.online = online;
     }, // will fill out in app.js
@@ -1639,7 +1639,7 @@ define('globals', function() {
           allBundles = G.bundles,
           baseUrlLength = require.getConfig().baseUrl.length,
           modules = typeof modules === 'string' ? [modules] : modules;
-      
+
       for (var i = 0, len = modules.length; i < len; i++) {
         var module = modules[i],
             found = false,
@@ -1652,12 +1652,12 @@ define('globals', function() {
         else
           missing.push(getFullName(module));
       }
-      
+
       if (missing.length) {
         // should only happen when dynamically deciding which modules to load (like based on browser, or based on app settings)
         bundlePromises.push(Bundler.loadBundle(missing));
       }
-      
+
       return $.when.apply($, bundlePromises);
     },
     isMinifiable: function(url) {
@@ -1666,7 +1666,7 @@ define('globals', function() {
     isMinified: function(url, text) {
       if (!G.isMinifiable(url))
         return false;
-      
+
 //      if (/\.min\.(js|css)$/.test(url))
 //        return true;
 //      else
@@ -1681,11 +1681,11 @@ define('globals', function() {
       radius: 2000 // km
     },
 //    modelsMetadataMap: {},
-//    oldModelsMetadataMap: {}, // map of models which we don't know latest lastModified date for    
+//    oldModelsMetadataMap: {}, // map of models which we don't know latest lastModified date for
     LISTMODES: {
       // TODO: get this out of here
-      LIST: 'LIST', 
-      CHOOSER: 'CHOOSER', 
+      LIST: 'LIST',
+      CHOOSER: 'CHOOSER',
       DEFAULT: 'LIST'
     },
     classMap: G.classMap || {},
@@ -1743,10 +1743,10 @@ define('globals', function() {
 //    finishedTask: function(name, dontPrint) {
 //      var task = G.tasks[name];
 //      if (!task) {
-//        G.log(G.TAG, 'tasks', name, 'finished but starting point was not recorded');        
+//        G.log(G.TAG, 'tasks', name, 'finished but starting point was not recorded');
 //        return;
 //      }
-//      
+//
 //      task.end = new Date();
 //      if (!dontPrint)
 //        G.printTask(name);
@@ -1806,7 +1806,7 @@ define('globals', function() {
 
     sendXhr: function (options) {
       var url = options.url;
-      var method = (options.type || 'GET').toUpperCase();      
+      var method = (options.type || 'GET').toUpperCase();
       var xhr = G.createXhr();
 //      if (options.raw && browser.chrome)
 //        xhr.responseType = 'blob';
@@ -1816,7 +1816,7 @@ define('globals', function() {
       xhr.open(method, url, true);
       if (options.responseType)
         xhr.responseType = options.responseType;
-      
+
       xhr.onreadystatechange = function (evt) {
         var status, err;
         //Do not explicitly handle errors, those should be
@@ -1833,21 +1833,21 @@ define('globals', function() {
           }
         }
       };
-      
+
       if (method === 'POST') {
         xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
         var tmp = [];
         for (var name in params) {
           tmp.push(encodeURIComponent(name) + '=' + encodeURIComponent(params[name]));
         }
-        
+
         if (tmp.length)
           params = tmp.join('&');
       }
-      
+
       xhr.send(params);
     },
-    
+
     debug: function() {
       console.debug.apply(console, arguments);
     },
@@ -1857,23 +1857,23 @@ define('globals', function() {
 //      while (n--) {
 //        space += ' ';
 //      }
-//      
+//
 //      return space;
 //    },
-    
+
     _logArray: new Array(0),
     log: function(tag, type) {
       if (!G.DEBUG || !TRACE.ON || !console || !console.log || !type)
         return;
-      
+
       var types = typeof type == 'string' ? [type] : type;
       for (var i = 0; i < types.length; i++) {
         var type = types[i],
             typeTrace = TRACE.types[type] || TRACE.DEFAULT;
-        
+
         if (!typeTrace.on)
           continue;
-        
+
         var b = G.browser;
         var css = b && ((b.mozilla && parseInt(b.version.slice(0,2))) > 4 || b.chrome && parseInt(b.version.slice(0,2)) >= 24);
         var msg = ArrayProto.slice.call(arguments, 2);
@@ -1886,15 +1886,15 @@ define('globals', function() {
         var txt = type + ' : ' + tag + ' : ' + msgStr + ' : ';
         var d = new Date(G.currentServerTime());
         G._logArray.length = Math.max(100 - txt.length, 0);
-        console.log((css ? '%c ' : '') + txt + G._logArray.join(' ') + d.toUTCString().slice(17, 25) + ':' + d.getUTCMilliseconds(), css ? 'background: ' + (typeTrace.bg || '#FFF') + '; color: ' + (typeTrace.color || '#000') : '');        
+        console.log((css ? '%c ' : '') + txt + G._logArray.join(' ') + d.toUTCString().slice(17, 25) + ':' + d.getUTCMilliseconds(), css ? 'background: ' + (typeTrace.bg || '#FFF') + '; color: ' + (typeTrace.color || '#000') : '');
       }
     },
-    
+
     linkCSS: function(url) {
       var link = doc.createElement('link');
       link.rel = 'stylesheet';
       link.type = 'text/css';
-      link.href = url; 
+      link.href = url;
 //      link.setAttribute("rel", "stylesheet")
 //      link.setAttribute("type", "text/css")
 //      link.setAttribute("href", url);
@@ -1904,10 +1904,10 @@ define('globals', function() {
     appendCSS: function(text) {
       var style = doc.createElement('style');
       style.type = 'text/css';
-      style.textContent = text; // iphone 2g gave innerhtml and appendchild the no_modification_allowed_err 
+      style.textContent = text; // iphone 2g gave innerhtml and appendchild the no_modification_allowed_err
       head.appendChild(style);
     },
-    
+
     getCanonicalPath: function(path, separator) {
       separator = separator || '/';
       var parts = path.split(separator);
@@ -1918,7 +1918,7 @@ define('globals', function() {
         else
           stack.push(part);
       });
-      
+
       return stack.join(separator);
     },
 
@@ -1931,12 +1931,12 @@ define('globals', function() {
 //    isWorkerAvailable: function(worker) {
 //      return !worker.__lablzTaken;
 //    },
-//    
+//
 //    captureWorker: function(worker) {
 //      worker.__lablzTaken = true;
 //      return worker;
 //    },
-//    
+//
 //    /**
 //     * get a promise of a web worker
 //     */
@@ -1947,7 +1947,7 @@ define('globals', function() {
 //          var xw = G.files.xhrWorker;
 //          G.workers[taskType] = new Worker(G.serverName + '/js/' + (xw.fullName || xw.name) + '.js');
 //        }
-//        
+//
 //        var w = G.workers[taskType];
 //        w._taskType = taskType;
 //        if (G.isWorkerAvailable(w)) {
@@ -1959,7 +1959,7 @@ define('globals', function() {
 //        }
 //      }).promise();
 //    },
-    
+
     loadWorker: function(relUrl) {
       var worker;
       if (G.useInlineWorkers) {
@@ -1973,10 +1973,10 @@ define('globals', function() {
         var xw = G.files.appcache[url] || G.files[url];
         worker = new Worker(G.serverName + '/js/' + (xw.fullName || xw.name));
       }
-      
+
       return worker;
     },
-    
+
     getXhrWorker: function() {
       return $.Deferred(function(dfd) {
         var worker;
@@ -1992,7 +1992,7 @@ define('globals', function() {
             worker = G.loadWorker('js/xhrWorker.js');
           }
         }
-        
+
         dfd.resolve(worker);
       }).promise().done(function(worker) {
         G.runningWorkers.push(worker);
@@ -2008,7 +2008,7 @@ define('globals', function() {
         debugger; // should never happen
       else
         G.runningWorkers.splice(idx, 1);
-      
+
       worker.onerror = null;
       worker.onmessage = null;
       if (G.workerDeferreds.length)
@@ -2020,14 +2020,14 @@ define('globals', function() {
 //      if (q && q.length)
 //        q.shift().resolve(G.captureWorker(worker));
     },
-    
+
     setCookie: function(name, value, exdays) {
       var exdate = new Date();
       exdate.setDate(exdate.getDate() + exdays);
       var c_value = escape(value) + ((exdays==null) ? "" : ";domain=." + getDomain() + ";path=/;expires="+exdate.toUTCString());
       doc.cookie = name + "=" + c_value;
     },
-    
+
     getCookie: function(name) {
       var i, x, y, cookies = doc.cookie.split(";");
       for (i = 0;i < cookies.length; i++) {
@@ -2040,7 +2040,7 @@ define('globals', function() {
         }
       }
     },
-    
+
     inject: function(text) {// , context) {
       var script = doc.createElement("script");
       script.type = "text/javascript";
@@ -2062,19 +2062,19 @@ define('globals', function() {
     support: {
       pushState: !!(G.preferPushState && window.history && history.pushState)// && !browser.chrome
     },
-    
+
     // http://stackoverflow.com/questions/5342917/custom-events-in-ie-without-using-libraries
-    _htmlEvents: [ 
+    _htmlEvents: [
       // list of real events
       // <body> and <frameset> events
-      'onload', 'onunload', 
+      'onload', 'onunload',
       //Form Events
       'onblur', 'onchange', 'onfocus', 'onreset', 'onselect', 'onsubmit', //Image Events
       'onabort', //Keyboard Events
       'onkeydown', 'onkeypress', 'onkeyup', //Mouse Events
       'onclick', 'ondblclick', 'onmousedown', 'onmousemove', 'onmouseout', 'onmouseover', 'onmouseup'
     ],
-    
+
     triggerEvent: function triggerEvent(el, eventName){
         var event;
         if(document.createEvent){
@@ -2095,7 +2095,7 @@ define('globals', function() {
             el['on'+eventName]();
         }
     },
-    
+
     addEventListener: function addEvent(el,type,handler){
       if(el.addEventListener){
         el.addEventListener(type,handler,false);
@@ -2110,7 +2110,7 @@ define('globals', function() {
           el[name] = function() {
             var self = this,
                 args = arguments;
-            
+
             el[name].handlers.forEach(function(h) {
               h.apply(self, arguments);
             });
@@ -2129,20 +2129,20 @@ define('globals', function() {
         var handler = el[name];
         if (!handler)
           return;
-        
+
         debugger;
         var idx = handler.handlers.indexOf(handler);
         if (~idx)
           handler.handlers.splice(idx, 1);
-        
+
         if (!handler.handlers.length)
           el[name] = null;
       }
     },
-        
+
     language: params['-lang'] || (navigator.language || 'en-US').split('-')[0],
     tourGuideEnabled: false,
-    Errors: {      
+    Errors: {
       Login: {
         code: 401,
         name: 'User is not logged in',
@@ -2170,7 +2170,7 @@ define('globals', function() {
     isModuleNeeded: function(name) {
       if (~G.skipModules.indexOf(name))
         return false;
-      
+
       switch (name) {
 //      case 'lib/physicsjs-custom.js':
 //        return false;
@@ -2196,7 +2196,7 @@ define('globals', function() {
         return true;
       }
     },
-    
+
     viewport: { width: null, height: null },
     DEFAULT_TRADLE_NAME: 'New tradle'
   });
@@ -2204,7 +2204,7 @@ define('globals', function() {
   if (G.globalCss) {
     G.appendCSS(G.globalCss);
     delete G.globalCss;
-  }  
+  }
 
   determineMinificationMode();
   G.skipModules = G.skipModules || [];
@@ -2218,9 +2218,9 @@ define('globals', function() {
   testIfInsidePackagedApp();
   Bundler.pruneUnneededModules();
   Bundler.prepAppCacheBundle();
-  require.config(requireConfig);   
+  require.config(requireConfig);
   load();
-  
+
   return G;
 });
 

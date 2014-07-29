@@ -21,7 +21,7 @@ define('views/BasicView', [
       G.localize.apply(this, arguments);
     }
   };
-  
+
   baseTemplateData = new baseTemplateData();
   function disableHover(el) {
     el.addEventListener('mouseover', function() {
@@ -30,7 +30,7 @@ define('views/BasicView', [
   }
 
   // END http://open.bekk.no/mixins-in-backbone //
-  
+
   var BasicView = Backbone.View.extend({
 //    viewType: 'resource',
     myBrick: null,
@@ -55,20 +55,20 @@ define('views/BasicView', [
         var superDuperCtor = superCtor.__super__.constructor;
         if (superCtor === superDuperCtor) // prevent infinite loops
           break;
-        
+
         _.defaults(this.events, superDuperCtor.prototype.events);
         _.defaults(this.pageEvents, superDuperCtor.prototype.pageEvents);
         _.defaults(this.myEvents, superDuperCtor.prototype.myEvents);
         _.defaults(this.windowEvents, superDuperCtor.prototype.windowEvents);
         superCtor = superDuperCtor;
       }
-      
+
 //      // replace click with vclick and so on, if necessary
 //      for (var eventSelectorName in this.events) {
 //        var eventName = eventSelectorName.match(/^([^\.\ ]+)/);
 //        if (!eventName)
 //          continue;
-//        
+//
 //        eventName = eventName[1];
 //        var actualName = Events.getEventName(eventName);
 //        if (actualName !== eventName && !events[actualName]) {
@@ -76,7 +76,7 @@ define('views/BasicView', [
 //          delete this.events[eventSelectorName];
 //        }
 //      }
-      
+
       if (this.events) {
         for (var key in this.events) {
           var fn = this.events[key];
@@ -84,7 +84,7 @@ define('views/BasicView', [
             this[fn] = this[fn].bind(this);
         }
       }
-      
+
       options = options || {};
       this._updateHashInfo();
       this._loadingDfd = new $.Deferred();
@@ -97,7 +97,7 @@ define('views/BasicView', [
 
       this._bodies = [];
       this._draggables = [];
-      this._taskQueue = [];      
+      this._taskQueue = [];
       this._templates = [];
       this._templateMap = {};
 
@@ -113,12 +113,12 @@ define('views/BasicView', [
           this.vocModel = res.constructor;
           this.listenTo(res, 'modelChanged', this._onModelChanged);
         }
-        
+
         this.modelType = this.vocModel.type;
       }
-      
+
       this.router = window.router || Backbone.history; //G.Router || Backbone.history;
-      
+
       this._doRefresh = this.refresh;
       this.refresh = this._refresh;
 
@@ -127,12 +127,12 @@ define('views/BasicView', [
 
 //      this.on('active', this._onActive);
 //      this.on('inactive', this._onInactive);
-      
+
 //      this.on('destroyed', this._onDestroyed);
       this.loc = G.localize;
       if (this.model)
         this.listenTo(Events, 'preparingModelForDestruction.' + this.model.cid, this._preventModelDeletion);
-    
+
       this.children = {};
       this._dimensions = {};
       this._bounds = new Array(4);
@@ -142,7 +142,7 @@ define('views/BasicView', [
 //      G.log(this.TAG, 'new view', this.getPageTitle());
       return this;
     },
-    
+
     _configure: function() {
 //      options = options || {};
 //      options.attributes = options.attributes || {};
@@ -151,10 +151,10 @@ define('views/BasicView', [
       atts['data-viewid'] = this.cid;
 //      if (!_.has(atts, 'id'))
 //        atts['id'] = 'view' + G.nextId();
-      
+
       return Backbone.View.prototype._configure.apply(this, arguments);
     },
-    
+
     renderHtml: function(html) {
       var tag = DOM.tag(this.tagName, html, this.attributes);
       return DOM.toHTML(tag);
@@ -168,14 +168,14 @@ define('views/BasicView', [
 //      dim.width = width;
 //      dim.height = height;
 //    },
-//    
+//
 //    /**
 //     * @return the last data passed in to setDimensions (doesn't access DOM so may not be up to date)
 //     */
 //    getDimensions: function() {
 //      return this._dimensions;
 //    },
-//    
+//
 //    setWidth: function(width) {
 //      this._dimensions.width = width;
 //    },
@@ -235,24 +235,24 @@ define('views/BasicView', [
           myWidth = dim && dim.width || 0,
           myHeight = dim && dim.height || 0,
           viewport;
-      
+
       if (!loc)
         return false;
-      
+
       viewport = G.viewport;
-      return loc.x >= viewport.width - myWidth && 
+      return loc.x >= viewport.width - myWidth &&
              loc.x <= viewport.width + myWidth &&
-             loc.y >= viewport.width - myHeight && 
+             loc.y >= viewport.width - myHeight &&
              loc.y <= viewport.height + myHeight;
     },
-    
+
 //    calculateGeography: function() {
 //      if (!this._offsetParent)
 //        this._offsetParent = this.$el.offsetParent();
-//      
+//
 //      if (!this._parentPosition)
 //        this._parentPosition = this.parentView.getPosition();
-//      
+//
 //      var el = this.el,
 //          width = el.offsetWidth,
 //          height = el.offsetHeight,
@@ -261,14 +261,14 @@ define('views/BasicView', [
 //          x,
 //          y;
 //
-//      
-//      
+//
+//
 //      this.setDimensions(width, height);
 //      while (parent = parent.parentView) {
 //        var parentPos = parent.getPosition();
-//        
+//
 //      }
-//      
+//
 //      self.setChildPosition(child);
 //    },
 //
@@ -277,28 +277,32 @@ define('views/BasicView', [
 //        prevent_default: true,
 //        no_mouseevents: true
 //      });
-//      
+//
 //      return Backbone.View.prototype.setElement.apply(this, arguments);
 //    },
-    
+
+    events: {
+      'click [data-display="collapsed"]': 'toggleCollapsed'
+    },
+
     myEvents: {
       '.default active': '_onActive',
       '.default inactive': '_onInactive',
       '.default destroyed': '_onDestroyed'
     },
-    
+
     globalEvents: {},
-    
+
     modelEvents: {},
-    
+
     windowEvents: {
       'viewportdimensions': '_onViewportDimensionsChanged'
     },
-    
+
     _preventModelDeletion: function() {
       Events.trigger('saveModelFromUntimelyDeath.' + this.model.cid);
     },
-    
+
     _updateHashInfo: function() {
       this._hashInfo = U.getCurrentUrlInfo();
       this.hash = U.getHash();
@@ -311,36 +315,36 @@ define('views/BasicView', [
         _.wipe(data);
       else
         data = this._baseTemplateData = {};
-      
+
       data.viewId = this.cid;
       if (this.resource)
         data._uri = this.resource.get('_uri');
-      
+
       return data;
     },
-    
+
     refresh: function() {
       // override this
     },
-    
+
     _refresh: function(rOptions) {
       rOptions = rOptions || {};
       var force = rOptions.force;
       if (!force && !this.rendered)
         return this;
-      
+
 //      this.log('refresh', 'page title:', this.getPageTitle());
 //      this._queueTask(this._doRefresh, this, arguments);
       if (this.isActive()) {
         this._doRefresh.apply(this, arguments);
 //        if (rOptions.delegateEvents !== false)
 //          this.redelegateEvents();
-        
+
         this._checkScrollbar();
       }
       else
         this._refreshArgs = arguments;
-      
+
       return this;
     },
 
@@ -354,7 +358,7 @@ define('views/BasicView', [
 //        if (G.browser.mobile)
 //          disableHover(this.$el);
 //      }, this, arguments); //, !delay);
-//      
+//
 //      return this;
 //    },
 
@@ -368,7 +372,7 @@ define('views/BasicView', [
                 axis: this._scrollAxis,
                 id: scrollbarId
               };
-          
+
           if (!this.scrollbarTemplate)
             this.makeTemplate('scrollbarTemplate', 'scrollbarTemplate', this.vocModel && this.vocModel.type);
 
@@ -384,7 +388,7 @@ define('views/BasicView', [
         }
       }
     },
-    
+
     _render: function(rOptions) {
   //    this.log('render', 'page title:', this.getPageTitle());
       rOptions = rOptions || {};
@@ -394,7 +398,7 @@ define('views/BasicView', [
           this.finish(rOptions);
 //        else if (rOptions.delegateEvents !== false)
 //          this.redelegateEvents(); // bind what events we can at the moment
-        
+
         if (this.el && G.browser.mobile) // TODO disable hover when el appears
           disableHover(this.el);
 
@@ -436,7 +440,7 @@ define('views/BasicView', [
         this._lastUpdateArgs = arguments;
         return;
       }
-      
+
       var args = this._lastUpdateArgs || arguments;
       this._lastUpdateArgs = null;
       this._lastUpdateTime = now;
@@ -448,51 +452,51 @@ define('views/BasicView', [
 //        console.debug("UPDATE, RENDERING: " + this.TAG, args);
         this.render.apply(this, args);
       }
-      
+
 //        }, 100);
 //      }
-//      
+//
 //      return this._update.apply(this, arguments);
     },
-    
+
     destroy: function(keepEl) {
       if (this.isDestroyed())
         return;
-      
+
       this._destroyed = true;
       this.trigger('destroyed', keepEl);
     },
-    
+
     isDestroyed: function() {
       return this._destroyed;
     },
-    
+
     _onDestroyed: function(keepEl) {
 //      Events.trigger('garbage', this);
       this.trigger('inactive');
       for (var cid in this.children) {
         this.children[cid].destroy();
       }
-      
+
 //      if (this.parentView)
 //        delete this.parentView.children[this.cid];
-//      
+//
 //      for (var i = 0; i < viewportEvents.length; i++) {
-//        window.removeEventListener(viewportEvents[i], this._onViewportDimensionsChanged);          
+//        window.removeEventListener(viewportEvents[i], this._onViewportDimensionsChanged);
 //      }
-      
+
       Events.trigger('viewDestroyed', this);
       Events.trigger('viewDestroyed:' + this.cid, this);
-      
+
       if (this.model)
         this.stopListening(this.model);
       if (this.pageView)
         this.stopListening(this.pageView);
-      
+
       this.undelegateAllEvents();
       this.stopListening(); // last cleanup
       this.unobserveMutations();
-      
+
       if (this.parentView) {
         this.parentView.removeChild(this);
         delete this.parentView;
@@ -500,7 +504,7 @@ define('views/BasicView', [
 
       if (this.pageView)
         delete this.pageView;
-      
+
       if (this._draggable)
         Physics.removeDraggable(this.getContainerBodyId());
       if (this.mason)
@@ -508,27 +512,27 @@ define('views/BasicView', [
 
       if (!keepEl && this.el)
         this.el.$remove();
-      
+
       this.$el = this.el = this._hammer = this._hammered = null;
-      
+
 //      if (this._bodies.length)
 //        Physics.removeBodies.apply(Physics, this._bodies);
 //      if (this._draggables.length)
 //        Physics.removeDraggables.apply(Physics, this._draggables);
     },
-    
+
     _onModelChanged: function() {
       this.vocModel = this.model.vocModel;
     },
-    
+
     _getChildrenLoadingPromises: function() {
       return _.pluck(this.getDescendants(), '_loadPromise');
     },
-    
+
     _getLoadingPromises: function() {
       return [this._loadPromise].concat(this._getChildrenLoadingPromises());
     },
-    
+
     isLoaded: function() {
       return this._loadPromise.state() == 'resolved';
     },
@@ -557,12 +561,12 @@ define('views/BasicView', [
 //      callback && promise.then(callback);
 //      return promise;
 //    },
-    
-    finish: function(options) {      
+
+    finish: function(options) {
       this._loadingDfd.resolve();
 //      if (!options || options.delegateEvents !== false) {
 //        this.redelegateEvents();
-//        
+//
 //        var parent = this;
 //        while ((parent = parent.parentView)) {
 //          parent.redelegateEvents();
@@ -576,11 +580,11 @@ define('views/BasicView', [
           pageView.invalidateSize();
       }, 100);
     },
-    
+
     _queueTask: function(fn, scope, args) {
       var self = this,
           lazyDfd = $.Deferred();
-      
+
       this._taskQueue.push(lazyDfd);
       lazyDfd.start = function() {
         this._started = true;
@@ -591,12 +595,12 @@ define('views/BasicView', [
         else
           lazyDfd.resolve();
       };
-      
+
       lazyDfd.promise().always(function() {
         self._dequeueTask(lazyDfd);
         self._processQueue();
       });
-      
+
       this._processQueue();
     },
 
@@ -607,7 +611,7 @@ define('views/BasicView', [
     _processQueue: function() {
       if (!this.isActive())
         return;
-      
+
       var next = this._taskQueue[0];
       if (next) {
         if (!next._started) {
@@ -621,7 +625,7 @@ define('views/BasicView', [
           this.log('info', 'postponing {0} {1} task'.format(this.TAG, this.cid));
       }
     },
-    
+
     getTemplate: function(templateName, type) {
       return Templates.get(templateName, type);
     },
@@ -639,7 +643,7 @@ define('views/BasicView', [
         else
           return template;
       }
-        
+
       _.pushUniq(this._templates, templateName);
       this._templateMap[templateName] = localName;
       this._monitorTemplate(templateName);
@@ -649,14 +653,14 @@ define('views/BasicView', [
         else
           return template(_.extend(this.getBaseTemplateData(), json));
       }.bind(this);
-      
+
       return proxy;
-    },  
-    
+    },
+
     _monitorTemplate: function(templateName) {
       var self = this,
           event = 'templateUpdate:' + templateName;
-      
+
       this.stopListening(Events, event);
       this.listenTo(Events, event, function(template) {
         var dClUri = template.get('modelDavClassUri');
@@ -665,17 +669,17 @@ define('views/BasicView', [
           if (U.getTypes(self.vocModel).indexOf(type) == -1)
             return;
         }
-        
+
         self.makeTemplate(templateName, self._templateMap[templateName], dClUri);
         self[self.rendered ? 'render' : 'refresh']();
         self.restyle();
       });
     },
-    
+
     atBottom: function() {
       return this.pageView.el.$outerHeight() - DOM.window.height() - window.pageYOffset < 20;
     },
-    
+
 //    onInactive: function(callback) {
 //      this._inactiveDfd.done(callback);
 //    },
@@ -683,24 +687,24 @@ define('views/BasicView', [
 //    onActive: function(callback) {
 //      this._activeDfd.done(callback);
 //    },
-    
+
     addChild: function(view) {
       this.children[view.cid] = view;
       view.parentView = view.parentView || this;
-      view.pageView = this.getPageView() || view.pageView;      
+      view.pageView = this.getPageView() || view.pageView;
       return view;
     },
-    
+
     removeChild: function(view) {
       if (this.children)
         delete this.children[view.cid];
-      
+
 //      for (var prop in this) {
 //        if (this[prop] === view)
 //          this[prop] = null;
 //      }
     },
-    
+
     getChildViews: function() {
       return this.children;
     },
@@ -714,7 +718,7 @@ define('views/BasicView', [
 ////      _.wipe(this.children);
 //      this.$el.html(html);
 //    },
-    
+
     getDescendants: function() {
       if (!this.children)
         return [];
@@ -723,7 +727,7 @@ define('views/BasicView', [
         return _.union([], childViews, _.union.apply(_, _.map(childViews, function(child) {return child.getDescendants()})));
       }
     },
-    
+
     triggerChildren: function(event) {
       var args = _.tail(arguments);
       args.unshift(event);
@@ -731,7 +735,7 @@ define('views/BasicView', [
         child.trigger.apply(child, args);
       }); // keep this
     },
-    
+
     showLoadingIndicator: function() {
       var page = this.pageView;
       if (page)
@@ -748,44 +752,44 @@ define('views/BasicView', [
       var pageView = this.getPageView();
       return pageView && pageView._lastPageEvent;
     },
-    
+
     getPageTitle: function() {
       return this.pageView && this.pageView.getPageTitle();
     },
-    
+
     updateMason: function() {
       if (this.mason) {
         var args = [this._bounds];
         if (this._viewBrick)
           args.push([this._viewBrick])
-        
+
         this.mason.resize.apply(this.mason, args);
         return true;
-      }        
+      }
     },
-    
+
     _onViewportDimensionsChanged: function() {
       this.invalidateSize();
     },
-    
+
     invalidateSize: function() {
       Q.read(this._recheckDimensions, this);
     },
-    
+
     _recheckDimensions: function() {
       if (this.el && this.mason && this._updateSize()) {
         this.trigger('resized');
         if (this._viewBrick)
           this.buildViewBrick();
-        
+
         return this.updateMason();
       }
     },
-    
+
 //    _onActive: function() {
 //      if (this.active)
 //        return;
-//      
+//
 //      this.active = true;
 //      this.triggerChildren('active');
 //      this._updateHashInfo();
@@ -795,17 +799,17 @@ define('views/BasicView', [
     _onActive: function() {
       if (this.active)
         return;
-      
+
       var renderArgs = this._renderArgs,
           refreshArgs = this._refreshArgs;
-      
+
       if (this.mason) {
         this.mason.wake();
 //        DOM.queueRender(this.el, DOM.opaqueStyle);
         if (this._draggable)
           this.addDraggable();
       }
-      
+
       this.active = true;
       this._renderArgs = this._refreshArgs = null;
       this.triggerChildren('active');
@@ -820,7 +824,7 @@ define('views/BasicView', [
     _onInactive: function() {
       if (!this.active)
         return;
-      
+
       this.active = false;
       if (this._draggable)
         Physics.disconnectDraggable(this.getContainerBodyId());
@@ -829,14 +833,14 @@ define('views/BasicView', [
 //        this.mason.sleep();
 //        DOM.queueRender(this.el, DOM.transparentStyle);
 //      }
-      
-      this.triggerChildren('inactive');      
+
+      this.triggerChildren('inactive');
     },
-    
+
     turnOffPhysics: function() {
       if (this.mason && !this.isActive())
         this.mason.sleep();
-      
+
       var children = this.children;
       if (children) {
         for (var id in children) {
@@ -848,49 +852,49 @@ define('views/BasicView', [
     isActive: function() {
 //      if (this.active)
 //        return true;
-//      
+//
 //      var view = this.parentView;
 //      while (view) {
 //        if (view.active)
 //          return true;
-//        
+//
 //        view = view.parentView;
 //      }
-//      
+//
 //      return false;
       return this.active || (this.pageView && this.pageView.isActive());
     },
-  
+
     isChildOf: function(view) {
       var parent = this.parentView;
       while (parent) {
         if (view === parent)
           return true;
-        
+
         parent = parent.parentView;
       }
-      
+
       return false;
     },
-    
+
     isGeo: function() {
       var isGeo,
           role = U.getUserRole(),
           locProp = U.getCloneOf(this.vocModel, 'Locatable.latitude')[0] || U.getCloneOf(this.vocModel, 'Shape.shape')[0],
           allowRoles = locProp && this.vocModel.properties[locProp].allowRoles;
-      
+
       if (this.collection) {
         return this.collection.isOneOf(["Locatable", "Shape"]) &&
                (!allowRoles || U.isUserInRole(role, allowRoles));
       }
       else {
         var res = this.resource;
-        return ((res.isA("Locatable") && res.get('latitude') && res.get('longitude')) || 
-               (res.isA("Shape") && res.get('shapeJson'))) && 
+        return ((res.isA("Locatable") && res.get('latitude') && res.get('longitude')) ||
+               (res.isA("Shape") && res.get('shapeJson'))) &&
                (!allowRoles || U.isUserInRole(role, allowRoles, res));
       }
     },
-    
+
     assign: function (selector, view, renderOptions) {
       var selectors;
       if (_.isObject(selector)) {
@@ -900,37 +904,37 @@ define('views/BasicView', [
         selectors = {};
         selectors[selector] = view;
       }
-      
-      if (!selectors) 
+
+      if (!selectors)
         return;
 
       for (var selector in selectors) {
         var el = this.$(selector);
         selectors[selector].setElement(el instanceof NodeList ? el[0] : el).render(renderOptions);
       }
-      
+
 //      Q.read(function() {
 //        for (var selector in selectors) {
 //          selectors[selector].setElement(this.$(selector));
 //        }
-//        
-//        for (var selector in selectors) {      
+//
+//        for (var selector in selectors) {
 //          selectors[selector].render(renderOptions);
 //        }
-//      }, this);      
+//      }, this);
     },
-    
+
     finalize: function () {
     },
 
 //    isPortrait: function() {
 //      return window.innerHeight > window.innerWidth;
 //    },
-//    
+//
 //    isLandscape: function() {
 //      return !this.isPortrait();
 //    },
-    
+
     padding: function(horizontal) {
       var padding = this.el.$padding();
       return horizontal ? padding.left + padding.right : padding.top + padding.bottom;
@@ -939,12 +943,12 @@ define('views/BasicView', [
 //      var padding = this.el.$css('padding') || "0px";
 //      var onePadding = this.el.$css('padding-' + one) || "0px",
 //          twoPadding = this.el.$css('padding-' + two) || "0px";
-//      
+//
 //      padding = parseFloat(padding);
-//      return (parseFloat(onePadding) || padding) 
+//      return (parseFloat(onePadding) || padding)
 //           + (parseFloat(twoPadding) || padding);
     },
-    
+
     innerHeight: function() {
       return this.el.clientHeight ? this.el.clientHeight - this.padding(false) : this.parentView ? this.parentView.innerHeight() - this.padding(false) : null;
     },
@@ -952,7 +956,7 @@ define('views/BasicView', [
     innerWidth: function() {
       return this.el.clientWidth ? this.el.clientWidth - this.padding(true) : this.parentView ? this.parentView.innerWidth() - this.padding(true) : null;
     },
-    
+
     restyle: function() {
 //      if (G.isJQM()) {
 //        this.$el.find('ul[data-role]').listview();
@@ -962,11 +966,11 @@ define('views/BasicView', [
 ////      this.$el.page();
 //      }
     },
-    
+
     getHashInfo: function() {
       return _.clone(this._hashInfo);
     },
-    
+
     isCacheable: function() {
       return true;
     },
@@ -974,7 +978,7 @@ define('views/BasicView', [
     isPortrait: function() {
       return this.getOrientation() == 'portrait';
     },
-    
+
     isLandscape: function() {
       return this.getOrientation() == 'landscape';
     },
@@ -983,7 +987,7 @@ define('views/BasicView', [
 ////      var computedStyle = window.getComputedStyle()
 //      return this.$el.offset();
 //    },
-    
+
     getTitle: function() {
       if (this.resource)
         return U.getDisplayName(this.resource);
@@ -992,7 +996,7 @@ define('views/BasicView', [
       else
         return "Unknown";
     },
-    
+
 //    isInViewport: function() {
 //      return this.el && U.isInViewport(this.el);
 //    },
@@ -1002,27 +1006,27 @@ define('views/BasicView', [
 //    },
 //
 //    // <debug>
-//    logVisibility: function() {      
+//    logVisibility: function() {
 //      var numVisible = 0,
 //          numPartiallyVisible = 0,
 //          numInvisible = 0;
-//      
+//
 //      _.each(this.children, function(child) {
 //        child.logVisibility();
 //        var isVisible = child.isInViewport(),
 //            isPartiallyVisible = child.isAtLeastPartiallyInViewport();
-//        
+//
 //        isVisible ? numVisible++ && numPartiallyVisible++ : numInvisible++;
-//        child.log('visibility', '"{0}" is {1}visible'.format(child.getTitle(), isVisible ? '' : 
+//        child.log('visibility', '"{0}" is {1}visible'.format(child.getTitle(), isVisible ? '' :
 //                                                                                 isPartiallyVisible ? 'partially ' : 'in'));
 //      });
 //    },
 //    // </debug>
-  
+
     getPreviousHash: function() {
       return this.getPageView().source;
     },
-    
+
     getOrientation: function() {
       var viewport = G.viewport;
       return viewport.height > viewport.width ? 'portrait' : 'landscape';
@@ -1031,7 +1035,7 @@ define('views/BasicView', [
     navigate: function(fragment, options) {
       Events.trigger('navigate', fragment, options);
     },
-    
+
     log: function() {
       if (G.DEBUG) {
         var args = _.toArray(arguments);
@@ -1051,46 +1055,46 @@ define('views/BasicView', [
         if (child.resource == res)
           return child;
       }
-      
+
       return undefined;
     },
-    
+
     findResourceByCid: function(cid) {
       if (this.resource && this.resource.cid == cid)
         return this.resource;
-      
+
       for (var childId in this.children) {
         var res = this.children[childId].findResourceByCid(cid);
         if (res)
           return res;
       }
-  
+
       return undefined;
     },
-    
+
     findResourceByUri: function(uri) {
       if (this.resource && this.resource.getUri() == uri)
         return this.resource;
-      
+
       for (var childId in this.children) {
         var res = this.children[childId].findResourceByUri(uri);
         if (res)
           return res;
       }
-  
+
       return undefined;
     },
-    
+
     on: function() {
       var args = arguments;
       if (args.length == 2) {
         args = _.toArray(args);
         args.push(this);
       }
-        
+
       return backboneOn.apply(this, args);
     },
-    
+
     doesModelSubclass: function(clName) {
       var supers = this['extends'];
       return !!(supers && supers.length && (~supers.indexOf(clName) || (!/\^http:\/\//.test(clName) && ~supers.indexOf(U.getLongUri1(clName)))));
@@ -1100,7 +1104,7 @@ define('views/BasicView', [
       var interfaces = this['implements'];
       return !!(interfaces && ~interfaces.indexOf(iface));
     },
-    
+
     unobserveMutations: function() {
       if (this._mutationObserver) {
         this._mutationObserver.disconnect();
@@ -1126,13 +1130,13 @@ define('views/BasicView', [
         }));
       } else {
         this.el.addEventListener('DOMSubtreeModified', callback, true);
-      }      
+      }
     },
-    
+
     getFetchPromise: function() {
       return this.pageView && this.pageView.getFetchPromise();
     },
-    
+
     toggleVisibility: function(off) {
       if (this.el) {
         if (off)
@@ -1141,7 +1145,7 @@ define('views/BasicView', [
           this.el.style.opacity = 1;
       }
     },
-    
+
     getScrollbarId: function() {
       return 'scrollbar-' + this.getBodyId();
     },
@@ -1199,27 +1203,27 @@ define('views/BasicView', [
 //      }
 //      else
         this._outerHeight = el.$outerHeight();
-        
+
 //      if (el.scrollWidth > el.offsetWidth) {
 //        margin = margin || el.$margin();
 //        this._outerWidth = el.scrollWidth + margin.left + margin.right;
 //      }
 //      else
         this._outerWidth = el.$outerWidth();
-      
+
       if (this._outerWidth)
         this._width = Math.min(this._outerWidth, viewport.width);
       else
         this._width = viewport.width > this._offsetLeft ? viewport.width - this._offsetLeft : viewport.width;
-      
+
       if (this._outerHeight)
         this._height = Math.min(this._outerHeight, viewport.height);
       else
         this._height = viewport.height > this._offsetTop ? viewport.height - this._offsetTop : viewport.height;
-          
+
       if (this._width != oldWidth || this._height != oldHeight)
         doUpdate = true;
-      
+
       if (this._outerWidth != oldOuterWidth || this._outerHeight != oldOuterHeight) {
         doUpdate = true;
 //        this._viewBrick.vertices = [
@@ -1229,49 +1233,49 @@ define('views/BasicView', [
 //          {x: 0, y: 0}
 //        ];
       }
-      
-//      this._bounds = [this._offsetLeft, this._offsetTop, 
+
+//      this._bounds = [this._offsetLeft, this._offsetTop,
 //                      this._offsetLeft + this._width, this._offsetTop + this._height];
-      
+
       this._bounds[0] = this._bounds[1] = 0;
       this._bounds[2] = this._width;
       this._bounds[3] = this._height;
-      
+
 //      if (doUpdate && this._viewBrick)
 //        this.buildViewBrick();
-//      
+//
 //      if (this._horizontal) {
 //        if (this._width > viewport.width)
 //          this.log("BAD BAD BAD BAD WIDTH for " + this.TAG + ": " + this._width);
 //      }
 //      else {
 //        if (this._height > viewport.height)
-//          this.log("BAD BAD BAD BAD HEIGHT for " + this.TAG + ": " + this._height);        
+//          this.log("BAD BAD BAD BAD HEIGHT for " + this.TAG + ": " + this._height);
 //      }
-        
+
       return doUpdate;
     },
-    
+
     _onPhysicsMessage: function() {
       // override me
     },
-    
+
 //    addBrick: function(el, id) {
 //      var brick = this.buildBrick({
 //        id: id,
 //        el: el
 //      });
-//      
+//
 //      Physics.here.addBody(el, id);
 //      this.addBricksToWorld([brick]);
 //      return brick;
 //    },
-    
-    addToWorld: function(options, addViewBrick) {      
+
+    addToWorld: function(options, addViewBrick) {
 //      var viewport = G.viewport;
       if (this.mason)
         return;
-      
+
       this._updateSize();
       var self = this,
           containerId = this.getContainerBodyId(),
@@ -1285,16 +1289,16 @@ define('views/BasicView', [
           _id: scrollbarId,
           vertices: Physics.getRectVertices(this._scrollbarThickness, this._scrollbarThickness)
         }, _.omit(this.getContainerBodyOptions(), 'style'));
-        
+
         Physics.there.addBody('convex-polygon', scrollbarOptions, scrollbarId);
       }
-      
 
-      options = options || {};      
+
+      options = options || {};
       _.defaults(options, {
         slidingWindow: false,
         container: containerId,
-        scrollbar: scrollbarId, 
+        scrollbar: scrollbarId,
         bounds: this._bounds,
         flexigroup: this._flexigroup ? this.getFlexigroupId() : false,
         scrollerType: this._scrollerType
@@ -1310,15 +1314,15 @@ define('views/BasicView', [
 
       if (addViewBrick)
         this.addViewBrick();
-      
+
 //      this.observeMutations(null, this._onMutation);
     },
-    
+
     _onMutation: function(mutations) {
       var i = mutations.length,
           recheck = false,
           m;
-      
+
       while (i--) {
         m = mutations[i];
         if (!m.target.classList.contains("scrollbar")) {
@@ -1326,22 +1330,22 @@ define('views/BasicView', [
           break;
         }
       }
-      
+
       if (!recheck)
         return;
-      
+
       if (this._mutationTimeout) {
         if (resetTimeout(this._mutationTimeout))
           return;
         else
           clearTimeout(this._mutationTimeout);
       }
-      
+
       this._mutationTimeout = setTimeout(this.invalidateSize, 20);
 //      if (this.mason && this._updateSize()) {
 //        this.updateMason();
 //      }
-//      
+//
 //      var self = this;
 //      mutations.forEach(function(mutation) {
 //        if (self.mason && self._updateSize() {
@@ -1349,7 +1353,7 @@ define('views/BasicView', [
 //        }
 //      });
     },
-    
+
     getContainerBodyOptions: function() {
       var options = this._containerBodyOptions = this._containerBodyOptions || {};
       options._id = this.getContainerBodyId();
@@ -1358,23 +1362,23 @@ define('views/BasicView', [
       options.y = 0;
       if (!options.style)
         options.style = {};
-      
+
       _.extend(options.style, this.style);
       return options;
     },
-    
+
     setStyle: function(style) {
       Physics.there.style(this.getContainerBodyId(), style);
     },
-    
+
     getMaxOpacity: function() {
       return DOM.maxOpacity;
     },
-    
+
     addContainerBodyToWorld: function() {
       if (this._addedContainerBodyToWorld)
         return;
-      
+
       this._addedContainerBodyToWorld = true;
       var id = this.getContainerBodyId(),
           railArgs,
@@ -1383,7 +1387,7 @@ define('views/BasicView', [
             args: ['point', this.getContainerBodyOptions()]
           }],
           x1, x2, y1, y2;
-      
+
       if (this._rail) {
         if (this._rail instanceof Array)
           railArgs = this._rail;
@@ -1391,31 +1395,31 @@ define('views/BasicView', [
           railArgs = [id, 1, 0];
         else
           railArgs = [id, 0, 1];
-        
+
         chain.push({
           method: 'addRail',
           args: railArgs
         });
       }
-      
+
       if (this._flexigroup) {
          Physics.there.addBody('point', _.defaults({
            _id: this.getFlexigroupId()
          }, this.getContainerBodyOptions()));
       }
-      
-      Physics.here.addBody(this.el, id);      
+
+      Physics.here.addBody(this.el, id);
       Physics.there.chain(chain);
-      
+
 //      Physics.there.addBody('point', this.getContainerBodyOptions(), id);
       if (this._draggable)
         this.addDraggable();
     },
-    
+
     getViewBrick: function() {
       return this._viewBrick;
     },
-    
+
     buildViewBrick: function() {
       if (!this._viewBrick) {
         this._viewBrick = {
@@ -1423,34 +1427,34 @@ define('views/BasicView', [
           style: {}
         };
       }
-      
+
       if (this.resource)
         this._viewBrick.resource = this.resource;
-      
+
       if (this.style)
         _.extend(this._viewBrick.style, this.style);
-      
+
       return this.buildBrick(this._viewBrick, true);
     },
-    
+
     buildBrick: function(options, thisView) {
       var brick = options,
           v,
-          width, 
+          width,
           height;
-      
+
 //      brick.fixed = !this._flexigroup;
       brick.mass = _.has(brick, 'mass') ? brick.mass : 0.1;
       brick.restitution = _.has(brick, 'restitution') ? brick.restitution : 0.3;
-      brick.lock = brick.lock || {};      
-      
+      brick.lock = brick.lock || {};
+
       if (thisView) {
         width = this._outerWidth;
         height = this._outerHeight;
         brick._id = this.getBodyId();
         if (this.resource)
           brick._uri = U.getShortUri(this.resource.getUri(), this.vocModel);
-        
+
         // HACK
         if (this._dragAxis)
           brick.lock[_.oppositeAxis(this._dragAxis)] = 0;
@@ -1470,29 +1474,29 @@ define('views/BasicView', [
           brick.offset.y = brick.el.offsetTop;
           delete brick.el;
         }
-        
+
         if (brick.resource)
           brick._uri = U.getShortUri(brick.resource.getUri(), brick.resource.vocModel);
       }
-      
+
 //      if (_.has(brick, 'resource')) {
 //        brick._uri = U.getShortUri(brick.resource.getUri(), brick.resource.vocModel);
         delete brick.resource;
 //      }
-      
+
       // vertices
       brick.vertices = Physics.updateRectVertices(brick.vertices, width, height);
       return brick;
     },
-    
+
     addViewBrick: function() {
 //      Physics.here.addBody(this.el, this.getBodyId());
       this.addBricksToWorld([this.buildViewBrick()]);
-      
-      // TODO: get rid of this when we make everything into bricks 
+
+      // TODO: get rid of this when we make everything into bricks
       this.mason.setLimit(this._numBricks);
     },
-    
+
     addBricksToWorld: function(bricks, atTheHead) {
       this._numBricks += bricks.length;
       this.mason.addBricks(bricks, atTheHead);
@@ -1502,6 +1506,56 @@ define('views/BasicView', [
     removeFromWorld: function() {
       Physics.there.removeBody(this.getBodyId());
       this._addedToWorld = false;
+    },
+
+    restoreCollapsables: function() {
+      if (this._unfolded && this._unfolded.length)
+        this.$(this._unfolded.join(',')).$addClass('unfolded');
+    },
+
+    toggleCollapsed: function(e) {
+      if (e.target.tagName.toLowerCase() == 'a')
+        return;
+
+      Events.stopEvent(e);
+      this.toggleCollapsedEl(e.selectorTarget);
+      return;
+    },
+
+    getCollapsable: function() {
+      return this.$('[data-display="collapsed"]');
+    },
+
+    getCollapsed: function() {
+      return this.$('[data-display="collapsed"]:not(.unfolded)');
+    },
+
+    getUnfolded: function() {
+      return this.$('.unfolded[data-display="collapsed"]');
+    },
+
+    toggleCollapsedEl: function(el) {
+      this._unfolded = this._unfolded || [];
+      var isUnfolded = el.$hasClass('unfolded'),
+          shortname = el.$data('shortname'),
+          selector = shortname ? '[data-shortname="{0}"]'.format(shortname) : el.$hasClass('other') ? '.other' : null;
+
+      if (selector)
+        selector = '[data-display="collapsed"]' + selector;
+
+      if (isUnfolded) {
+        el.$removeClass('unfolded');
+        if (selector)
+          Array.remove(this._unfolded, selector);
+      }
+      else {
+        el.$addClass('unfolded');
+
+        if (selector)
+          _.pushUniq(this._unfolded, selector);
+      }
+
+      this.getPageView().invalidateSize();
     }
   }, {
     displayName: 'BasicView',
@@ -1529,14 +1583,14 @@ define('views/BasicView', [
           ifaces = preinit['implements'],
           supers = preinit['extends'],
           clonedProps = preinit.clonedProperties;
-          
+
       if (interfaceProps) {
         for (var iface in interfaceProps) {
           if (U.isA(vocModel, iface)) {
             ifaces.push(iface);
             var props = interfaceProps[iface],
                 cloned = clonedProps[iface] = {};
-            
+
             if (props) {
               for (var i = 0, n = props.length; i < n; i++) {
                 var prop = props[i];
@@ -1550,7 +1604,7 @@ define('views/BasicView', [
           }
         }
       }
-      
+
       _.pushUniq(superclasses, vocModel.type);
       if (superclasses) {
         for (var i = 0, len = superclasses.length; i < len; i++) {
@@ -1559,20 +1613,20 @@ define('views/BasicView', [
 //            var sIdx = sCl.indexOf('/');
 //            if (~sIdx)
 //              sCl = sCl.slice(sIdx + 1);
-          
+
             supers.push(sCl);
           }
         }
       }
-      
+
       return this.extend(preinit);
     },
-    
+
     clickDataHref: function(e) {
       Events.stopEvent(e);
       Events.trigger('navigate', e.selectorTarget.$data('href'));
-    }    
+    }
   });
 
-  return BasicView; 
+  return BasicView;
 });

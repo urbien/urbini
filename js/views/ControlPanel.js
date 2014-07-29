@@ -1,8 +1,8 @@
 //'use strict';
 define('views/ControlPanel', [
   'globals',
-  'underscore', 
-  'events', 
+  'underscore',
+  'events',
   'utils',
   'views/BasicView',
   'vocManager',
@@ -17,32 +17,33 @@ define('views/ControlPanel', [
   function getBacklinkSub(vocModel, bl) {
     if (vocModel.shortName == 'Tradle' && bl == 'indicators')
       return 'feeds';
-    
+
     return bl;
   };
 
   function shouldPaintOverlay(res, blProp) {
     if (!res)
       return false;
-    
+
     if (res.isAssignableFrom('commerce/trading/Tradle') && blProp.shortName == 'notifications')
       return false;
-    
+
     return true;
   };
-  
+
   var CLICK_INDICATOR = 'Click an indicator to create a rule. <br /><br /> Swipe from right to left on rules or indicators for a list of actions.';
-  
+
   return BasicView.extend({
     tagName: "tr",
     autoFinish: false,
     initialize: function(options) {
-      _.bindAll(this, 'render', 'refresh', 'add', 'insertInlineScroller', 'removeInlineScroller', 'toggleInlineScroller', 'doRenderFT', 'paintOverlay', 'showOverlay', 'hideOverlays'); // fixes loss of context for 'this' within methods
+      _.bindAll(this, 'render', 'refresh', 'add', 'insertInlineScroller', 'removeInlineScroller', 'toggleInlineScroller', 'doRenderFT',
+                      'restoreCollapsables', 'paintOverlay', 'showOverlay', 'hideOverlays'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
       this.makeTemplate('inlineListItemTemplate', 'inlineListItemTemplate', type);
-      
+
 //      this.makeTemplate('comment-item', 'commentItemTemplate', type);
       this.makeTemplate('cpTemplate', '_cpTemplate', type);
       this.makeTemplate('cpMainGroupTemplate', 'cpMainGroupTemplate', type);
@@ -54,12 +55,12 @@ define('views/ControlPanel', [
       this._backlinkInfo = {};
       return this;
     },
-    
+
     modelEvents: {
       'inlineList': 'update',
       'change': 'update'
     },
-    
+
     events: {
 //      'click a[data-shortName]': 'click',
       'click [data-cancel]': 'cancel',
@@ -82,14 +83,14 @@ define('views/ControlPanel', [
 //        ,
 //      'click': 'click'
     },
-    
+
     myEvents: {
       'inactive': 'delayedHideOverlays'
     },
-    
+
     delayedHideOverlays: function() {
       var self = this;
-      setTimeout(function() {          
+      setTimeout(function() {
         self.hideOverlays();
       }, 100);
     },
@@ -97,7 +98,7 @@ define('views/ControlPanel', [
     hideOverlays: function() {
       this.$('.anim-overlay-active').$removeClass('anim-overlay-active');
     },
-    
+
     paintOverlay: function(li) {
       var blProp = this.vocModel.properties[li.$data('backlink')],
           vocModel = U.getModel(blProp.range),
@@ -105,37 +106,40 @@ define('views/ControlPanel', [
           res = U.getResource(uri),
           overlay = li.$('.anim-overlay')[0],
           overlayHTML;
-      
+
+      if (!res)
+        return U.getResourcePromise(uri).done(this.paintOverlay.bind(this, li));
+
       if (!shouldPaintOverlay(this.resource, blProp))
         return false;
-        
+
       var actions = {
         cancel: res.isA('Cancellable') && !res.get('Cancellable.cancelled'),
         edit: !U.isAssignableFrom(vocModel, 'commerce/trading/Rule', 'commerce/trading/TradleIndicator'),
         add: U.isPropEditable(res, blProp),
         comment: res.isA('CollaborationPoint') // || this.resource.isA('CollaborationPoint')
       };
-      
+
       if (!_.any(actions, function(v, k) { return v }))
         return false;
-      
+
       if (!this.actionsOverlayTemplate)
         this.makeTemplate('actionsOverlayTemplate', 'actionsOverlayTemplate', this.vocModel.type);
-      
+
       overlayHTML = this.actionsOverlayTemplate({
         _uri: uri,
         actions: actions,
         active: li.$hasClass('anim-overlay-active')
       });
-      
+
       if (overlay)
         overlay.$remove();
-      
+
       li.$prepend(overlayHTML);
       overlay = li.$('.anim-overlay')[0];
       return true;
     },
-    
+
     onswiperight: function(e) {
       this.hideOverlays();
     },
@@ -143,7 +147,7 @@ define('views/ControlPanel', [
     onswipeleft: function(e) {
       var self = this,
           li = getLi(e.selectorTarget);
-      
+
       this.hideOverlays();
       if (this.paintOverlay(li)) {
         setTimeout(function() {
@@ -151,12 +155,12 @@ define('views/ControlPanel', [
         }, 1);
       }
     },
-    
+
     showOverlay: function(li) {
 //      li.$('.anim-overlay').$addClass('anim-overlay-active');
       li.$addClass('anim-overlay-active');
     },
-    
+
     actionCancel: function(e) {
       this.cancel(e);
     },
@@ -166,7 +170,7 @@ define('views/ControlPanel', [
       var li = getLi(e.target),
           backlink = li.$data('backlink'),
           isTradle = this.vocModel.shortName == 'Tradle';
-      
+
       if (isTradle && backlink == 'tradleRules') {
         U.alert(CLICK_INDICATOR);
         return;
@@ -182,7 +186,7 @@ define('views/ControlPanel', [
       this.hideOverlays();
       var li = getLi(e.target),
           uri = U.getResource(li.$data('uri'));
-      
+
       Events.trigger('navigate', U.makeMobileUrl('edit', uri));
     },
 
@@ -191,7 +195,7 @@ define('views/ControlPanel', [
       var li = getLi(e.target),
           res = U.getResource(li.$data('uri')),
           vocModel;
-      
+
       if (!res.isA('CollaborationPoint'))
         res = this.resource;
 
@@ -203,7 +207,7 @@ define('views/ControlPanel', [
 
       this.addToBacklink(this.vocModel.properties[U.getCloneOf(vocModel, 'CollaborationPoint.comments')]);
     },
-    
+
     cancel: function(e) {
       Events.stopEvent(e);
       var li = getLi(e.selectorTarget);
@@ -211,16 +215,16 @@ define('views/ControlPanel', [
         debugger;
         return;
       }
-      
+
       var uri = li.$data('uri'),
           res,
           getRes;
-      
+
       if (!uri) {
         debugger;
         return;
       }
-      
+
       res = U.getResource(uri);
       if (res)
         getRes = G.getResolvedPromise();
@@ -231,44 +235,44 @@ define('views/ControlPanel', [
           });
         });
       }
-      
+
       getRes.done(function() {
         res.cancel({
           redirect: false
         });
       });
     },
-    
+
 //    click: function(e) {
 //      var t = e.target;
 //      while (t && t.tagName != 'A') {
 //        t = t.parentNode;
 //      }
-//      
+//
 //      if (!t)
 //        return;
 //      this.prop = this.vocModel.properties[t.$data('propname')];
 //      if (prop)
 //        G.log(this.TAG, "Recording step for tour: selector = 'propName'; " + " value = '" + t.$data('propname') + "'");
 //    },
-    
+
     cpTemplate: function(data) {
       var action = 'list',
-          params = { 
-            $title: data.title 
+          params = {
+            $title: data.title
           };
-      
+
       params[data.backlink] = data._uri;
       if (U.isPropEditable(this.resource, data.prop, U.getUserRole()) && !data.prop.lookupFrom && !U.getBacklinkCount(this.resource, data.shortName)) {
         params.$backLink = data.backlink;
         action = 'make';
       }
-      
+
       data.params = params;
       data.action = action;
       return this._cpTemplate(data);
     },
-    
+
     _addNoIntersection: function(prop, target) {
       var params = {
         '$backLink': prop.backLink,
@@ -281,16 +285,16 @@ define('views/ControlPanel', [
 
       if (title)
         params.$title = title;
-      
+
       params[prop.backLink] = this.resource.getUri();
       if (U.isAssignableFrom(this.vocModel, 'commerce/trading/TradleFeed') && prop.range.endsWith('commerce/trading/Rule')) {
         _.extend(params, this.resource.pick('eventClass', 'eventClassRangeUri', 'feed', 'tradle', 'feed.displayName'));
       }
-      
+
       Events.trigger('navigate', U.makeMobileUrl('make', prop.range, params));
       this.log('add', 'user wants to add to backlink');
     },
-    
+
 //    lookupFrom: function(e) {
 //      var data = e.selectorTarget.dataset,
 //          res = this.resource,
@@ -305,8 +309,8 @@ define('views/ControlPanel', [
 //            },
 //            action: 'make'
 //          };
-//      
-//      return Voc.getModels([base.range, toProp.range]).then(function(baseModel, blModel) {          
+//
+//      return Voc.getModels([base.range, toProp.range]).then(function(baseModel, blModel) {
 //        if (U.isA(blModel, 'Templatable')) {
 //          var bl = baseModel.properties[lookupFrom[1]];
 //          var params = U.filterObj(info.params, U.isModelParameter);
@@ -315,11 +319,11 @@ define('views/ControlPanel', [
 //          info.params[bl.backLink] = baseVal;
 //          info.params.$template = _.param(params);
 //        }
-//        
+//
 //        if (U.isA(model, 'Folder') && U.isA(blModel, 'FolderItem')) {
 //          var rootFolder = U.getCloneOf(blModel, 'FolderItem.rootFolder')[0],
 //              parentFolder = U.getCloneOf(model, 'Folder.parentFolder')[0];
-//          
+//
 //          if (rootFolder && parentFolder) {
 //            rootFolder = blModel.properties[rootFolder];
 //            parentFolder = model.properties[parentFolder];
@@ -334,24 +338,24 @@ define('views/ControlPanel', [
 //        return info;
 //      });
 //    },
-    
+
     clickInlined: function(e) {
       var link = e.selectorTarget,
           dataBL = link.$data('backlink');
-      
+
       if (dataBL == 'tradleRules') {
         Events.stopEvent(e);
         U.alert(CLICK_INDICATOR);
         return;
       }
-      
+
       if (dataBL != 'indicators' || !this.vocModel.type.endsWith('commerce/trading/Tradle')) {
         var href = link.$data('href') || link.href;
         if (href)
           Events.trigger('navigate', href);
         else
           Events.stopEvent(e);
-        
+
         return;
       }
 
@@ -390,7 +394,7 @@ define('views/ControlPanel', [
         subClassOf = 'commerce/trading/NumericRule';
         break;
       }
-      
+
       if (isEnum || propType == 'Link' || propType == 'YesNo') { // no subclasses
 //        var params = _.extend(U.filterObj(this.resource.attributes, U.isNativeModelParameter), props);
         params.$title = indicator.get('feed.displayName') + ' ' + U.getDisplayName(indicator) + ' IS...';
@@ -398,39 +402,39 @@ define('views/ControlPanel', [
         Events.trigger('navigate', U.makeMobileUrl('make', subClassOf, params));
         return;
       }
-      
+
       Events.trigger('navigate', U.makeMobileUrl('chooser', 'system/designer/WebClass', {
         subClassOfUri: G.defaultVocPath + subClassOf,
         $createInstance: 'y',
         $props: _.param(params),
         $title: indicator.get('feed.displayName') + ' ' + U.getDisplayName(indicator)
-      }));      
+      }));
     },
-    
+
     add: function(e) {
 //      var t = e.target;
 //      while (t && t.tagName != 'A') {
 //        t = t.parentNode;
 //      }
-//      
+//
 //      if (!t)
 //        return;
-//      
+//
 //      Events.stopEvent(e);
       var t = e.selectorTarget;
       if (t.tagName != 'A')
         return;
-      
+
       Events.stopEvent(e);
 //      if ($(t).parents('.__dragged__').length)
 //        return;
-      
+
       var shortName = t.$data('shortname');
       this.addToBacklink(this.vocModel.properties[shortName], t);
     },
-    
+
     addToBacklink: function(prop, t) {
-      var self = this,       
+      var self = this,
           setLinkTo = prop.setLinkTo;
 //      ,
 //          count = U.getBacklinkCount(this.resource, shortName);
@@ -439,56 +443,56 @@ define('views/ControlPanel', [
 //        Events.trigger('navigate', t.href);
 //        return;
 //      }
-      
+
 //      this.log("Recording step for tour: selector = 'data-shortname'; value = '" + shortName + "'");
       if (setLinkTo) {
         shortName = setLinkTo;
         prop = this.vocModel.properties[shortName];
       }
-      
+
 //      G.log(this.TAG, "Recording step for tour: selector = 'data-shortname'; value = '" + shortName + "'");
 
       Voc.getModels(prop.range).done(function() {
         var pModel = U.getModel(prop.range);
-        if (!U.isAssignableFrom(pModel, 'Intersection')) { 
+        if (!U.isAssignableFrom(pModel, 'Intersection')) {
           self._addNoIntersection(prop, t);
           return;
         }
-        
+
         var a = U.getCloneOf(pModel, 'Intersection.a')[0];
         var b = U.getCloneOf(pModel, 'Intersection.b')[0];
         if (!a  &&  !b) {
           self._addNoIntersection(prop, t);
           return;
         }
-        
+
         var meta = pModel.properties,
             title = self.hashParams.$title,
             propA = meta[a],
             propB = meta[b],
             aUri = a == prop.backLink ? self.resource.get('_uri') : null,
             bUri = !aUri  &&  b == prop.backLink ? self.resource.get('_uri') : null;
-        
+
         if (!title)
           title = U.makeHeaderTitle(self.resource.get('davDisplayName'), pModel.displayName);
-        
+
         if (!aUri  &&  !bUri) {
           self._addNoIntersection(prop, t);
           return;
         }
-        
+
         if (!aUri && propA.readOnly || !bUri && propB.readOnly) {
           self._addNoIntersection(prop, t);
           return;
         }
-        
+
         var uri = aUri == null ? bUri : aUri;
         var rtype = aUri == null ? propA.range : propB.range;
         var params = {
           $forResource: uri,
           $propA: a,
           $propB: b,
-          $type:  pModel.type, 
+          $type:  pModel.type,
           $title: title
         };
 
@@ -502,9 +506,9 @@ define('views/ControlPanel', [
 //          '-makeId': G.nextId(),
 //          '$title': t.$data('title')
 //        };
-//  
+//
 //        params[prop.backLink] = self.resource.getUri();
-//        
+//
 //        self.router.navigate('make/{0}?{1}'.format(encodeURIComponent(prop.range), _.param(params)), {trigger: true});
 //        G.log(self.TAG, 'add', 'user wants to add to backlink');
       });
@@ -523,21 +527,21 @@ define('views/ControlPanel', [
           isRule = U.isAssignableFrom(listVocModel, 'commerce/trading/Rule'),
           isIndicator = U.isAssignableFrom(listVocModel, 'commerce/trading/TradleIndicator'),
           isTrade = U.isAssignableFrom(listVocModel, 'commerce/trading/Order'),
-          canAdd = !isRule && U.canAddToBacklink(this.resource, prop), // don't allow add other than by clicking individual indicators 
+          canAdd = !isRule && U.canAddToBacklink(this.resource, prop), // don't allow add other than by clicking individual indicators
           linkToEdit = U.isAssignableFrom(listVocModel, G.commonTypes.WebProperty, 'commerce/trading/Notification'),
           action = linkToEdit ? 'edit' : 'view',
           template;
-      
+
       if (isRule && !this.compareIndicatorsTemplate)
         this.makeTemplate('inlineCompareIndicatorsRuleTemplate', 'compareIndicatorsTemplate', listVocModel.type);
-      
+
       template = isRule ? this.compareIndicatorsTemplate : this.inlineListItemTemplate;
       if (list.length && isCancelable) {
         canceledProp = listMeta[U.getCloneOf(listVocModel, 'Cancellable.cancelled')[0]];
         isCancelable = canceledProp && U.isPropEditable(list.models[0], canceledProp);
       }
 
-      if (!list.length) {  
+      if (!list.length) {
           if ((isTrade && !this.resource.inlineLists['orders'].length)  ||  (isRule  && !this.resource.inlineLists['tradleRules'].length)) {
             U.addToFrag(frag, this.propGroupsDividerTemplate({
               value: propDisplayName, // + (isRule ? ' <span style="color:#3777a1;text-transform:none;text-align:center;font-weight:normal">(no rules yet)</span>' : ''),
@@ -551,29 +555,29 @@ define('views/ControlPanel', [
               shortName: getBacklinkSub(vocModel, name),
               style: "font-weight:bold;font-size:3rem;opacity:.5;color:#3777a1;background:#eee;text-align:center;"
             }));
-            
+
             return;
         }
 //        return;
       }
 
-      
+
       var gr, isBB = G.isBB(), isTopcoat = G.isTopcoat(), prop = meta[name], isBootstrap = G.isBootstrap();
-      
+
       var displayCollapsed = prop.displayCollapsed;
       if (isIndicator) {
         var rulesList = this.resource.getInlineList('tradleRules');
         displayCollapsed = rulesList && rulesList.length;
       }
-      
+
       if (list.length || canAdd) {
         if (displayCollapsed  &&  list.length) {
           if (isBB)
-            gr = '<section id="' + name + '" data-display="collapsed">'; 
+            gr = '<section data-shortname="' + name + '" data-display="collapsed">';
           else if (isTopcoat)
-            gr = '<li id="' + name + '" data-display="collapsed topcoat-list__item" ' +  (G.coverImage ? 'style="text-shadow:none;background:' + G.coverImage.color + ';color: ' + G.coverImage.background + ';"' : '') + '><h3><i class="ui-icon-plus-sign"></i>&#160;' + prop.displayName + '</h3><ul class="topcoat-list__container hidden">';
+            gr = '<li data-shortname="' + name + '" data-display="collapsed topcoat-list__item" ' +  (G.coverImage ? 'style="text-shadow:none;background:' + G.coverImage.color + ';color: ' + G.coverImage.background + ';"' : '') + '><h3><i class="ui-icon-plus-sign"></i>&#160;' + prop.displayName + '</h3><ul class="topcoat-list__container">';
           else if (isBootstrap)
-            gr = '<li id="' + name + '" data-display="collapsed"><h3 style="font-size:18px;"><i class="ui-icon-plus-sign"></i>&#160;' + prop.displayName + '</h3><ul class="list-group-container hidden">';
+            gr = '<li data-shortname="' + name + '" data-display="collapsed"><h3 style="font-size:18px;"><i class="ui-icon-plus-sign"></i>&#160;' + prop.displayName + '</h3><ul class="list-group-container">';
 
           gr += this.propGroupsDividerTemplate({
             value: propDisplayName,
@@ -582,9 +586,9 @@ define('views/ControlPanel', [
             style: prop.propertyStyle,
             displayCollapsed: displayCollapsed
           });
-          if (isBB) 
-            gr += '<ul class="hidden">';
-          
+          if (isBB)
+            gr += '<ul>';
+
         }
         else {
           U.addToFrag(frag, this.propGroupsDividerTemplate({
@@ -608,31 +612,31 @@ define('views/ControlPanel', [
 //          }));
 //        return;
 //      }
-      
+
       var hasImages;
       for (var i = 0, l = resources.length; i < l; i++) {
         var iRes = resources[i],
             params = {
               viewId: this.cid,
-              comment: iRes.comment, 
+              comment: iRes.comment,
               _problematic: iRes.get('_error'),
               name: U.getDisplayName(iRes),
               backlink: name
             },
             grid = U.getCols(iRes, 'grid', true);
-            
+
 //        if (isRule) {
 ////          var uri = iRes.getUri(),
 ////              type = U.getTypeUri(uri);
-////          
+////
 ////          if (/ThanIndicator/.test(type)) {
 ////            if (!this.compareIndicatorsTemplate)
 ////              this.makeTemplate('inlineCompareIndicatorsRuleTemplate', 'compareIndicatorsTemplate', listVocModel.type);
-//            
+//
 //            template = this.compareIndicatorsTemplate;
 ////          }
 //        }
-        if (isTrade) { 
+        if (isTrade) {
 //          var title = iRes.get('title');
 //          if (title) {
 //            var idx = title.indexOf(":");
@@ -685,7 +689,7 @@ define('views/ControlPanel', [
             var rm = U.getModel(U.getLongUri1(range));
             if (U.isA(rm, 'ImageResource')) {
               var rmeta = rm.properties;
-              var imgP = imageP  &&  imageP.indexOf('Featured') == -1 ? U.getCloneOf(rm, 'ImageResource.smallImage') : U.getCloneOf(rm, 'ImageResource.mediumImage'); 
+              var imgP = imageP  &&  imageP.indexOf('Featured') == -1 ? U.getCloneOf(rm, 'ImageResource.smallImage') : U.getCloneOf(rm, 'ImageResource.mediumImage');
               maxDim = imgP  &&  rmeta[imgP].maxImageDimension;
               var clip = U.clipToFrame(80, 80, w, h, maxDim);
               if (clip) {
@@ -711,9 +715,9 @@ define('views/ControlPanel', [
         else {
           if (grid) {
             var gridCols = '';
-            for (var row in grid) 
+            for (var row in grid)
               gridCols += grid[row].value;
-            
+
             params.gridCols = gridCols;
           }
           if (U.isA(listVocModel, 'ImageResource')) {
@@ -727,11 +731,11 @@ define('views/ControlPanel', [
                 var oH;
                 if (oW)
                   oH = U.getCloneOf(listVocModel, 'ImageResource.originalHeight');
-                
+
                 if (oW  &&  oH  &&  (typeof iRes.get(oW) != 'undefined' &&  typeof  iRes.get(oH) != 'undefined')) {
-                  
+
 //                  this.$el.addClass("image_fitted");
-//                  
+//
                   var dim = U.fitToFrame(80, 80, iRes.get(oW) / iRes.get(oH));
                   params.width = dim.w;
                   params.height = dim.h;
@@ -750,14 +754,14 @@ define('views/ControlPanel', [
             canceled: iRes.get(canceledProp.shortName)
           }
         }
-        
+
         if (isRule) {
           params.href = '#';
           params.noclick = true;
         }
         else
           params.href = U.makePageUrl(action, iRes.getUri(), { $title: params.name });
-        
+
         params.resource = iRes;
         if (params.img)
           hasImages = true;
@@ -780,12 +784,12 @@ define('views/ControlPanel', [
         U.addToFrag(frag, gr);
       }
     },
-    
+
 //    addInlineList: function(list) {
 //      this.inlined = this.inlined || [];
 //      if (~this.inlined.indexOf(list))
 //        return;
-//      
+//
 //      var self = this;
 //      _.each(['updated', 'added', 'reset', 'removed'], function(event) {
 //        self.stopListening(list, event);
@@ -794,36 +798,36 @@ define('views/ControlPanel', [
 //          var options = {
 //            force: true
 //          };
-//          
+//
 //          options[event] = true;
 //          self.refresh(resources, options);
 //        });
 //      });
 //    },
-    
+
     toggleInlineScroller: function(e) {
       var pName = e.selectorTarget.$data('propname');
       var li = e.selectorTarget,
           pName = li.$data('propname'),
           info = this._backlinkInfo[pName];
-      
+
       if (info && info.scroller)
         this.removeInlineScroller(e);
       else
         this.insertInlineScroller(e);
     },
-    
+
     removeInlineScroller: function(e) {
       e.gesture.preventDefault();
       e.gesture.stopPropagation();
       e.gesture.stopDetect();
       e.stopPropagation();
-      
+
       var self = this,
           li = e.selectorTarget,
           pName = li.$data('propname'),
           info = this._backlinkInfo[pName];
-      
+
       if (info.scroller) {
         info.scroller.mason.destroy(true, function() {
           info.scroller.mason = null;
@@ -832,7 +836,7 @@ define('views/ControlPanel', [
           for (var i = 0; i < info.originalContent.length; i++) {
             li.appendChild(info.originalContent[i]);
           }
-          
+
           self.removeChild(info.scroller);
           info.scroller = null;
           info.originalContent = null;
@@ -848,16 +852,16 @@ define('views/ControlPanel', [
       var li = e.selectorTarget,
           pName = li.$data('propname'),
           info = this._backlinkInfo[pName];
-      
+
       if (!info || !info.scroller) {
         // TODO - check count, if 0, don't bother or throw up an error message
         if (!info)
           this._backlinkInfo[pName] = {};
-            
+
         this._insertInlineScroller(li, pName);
       }
     },
-    
+
     _insertInlineScroller: function(li, pName) {
       var self = this,
           prop = this.vocModel.properties[pName],
@@ -867,35 +871,35 @@ define('views/ControlPanel', [
           params = {},
           list,
           info = this._backlinkInfo[pName];
-      
+
       function fail() {
         // TODO: tell user
       };
-      
+
       params[prop.backLink] = this.resource.getUri();
-      
+
       modelPromise.done(function(blModel) {
         if (!U.isA(blModel, 'ImageResource'))
           return fail();
-        
+
         list = new ResourceList(null, {
           model: blModel,
           params: params
         });
-        
+
         list.fetch({
           success: listDfd.resolve,
           error: listDfd.reject
         });
       }).fail(fail);
-      
+
       $.when(viewPromise, listDfd.promise()).done(function(HorizontalListView) {
         if (!list.length)
           return fail();
 
         var headerId = pName + '-gal-header',
             galleryId = pName + '-gal';
-        
+
         info.originalContent = li.childNodes.$slice();
         li.innerHTML = _.template("<div id=\"{{= headerId }}\" style=\"top: -3px;\" data-role=\"footer\" data-theme=\"{{= G.theme.photogrid }}\" class=\"thumb-gal-header\"><h3>{{= title }}</h3></div>" +
         		                      "<div id=\"{{= galleryId }}\" data-inset=\"true\" data-filter=\"false\" class=\"thumb-gal\"></div>")({
@@ -904,24 +908,24 @@ define('views/ControlPanel', [
           galleryId: galleryId,
           title: U.getPropDisplayName(prop)
         });
-        
+
 
         info.scroller = new HorizontalListView({
           el: li.$('#' + galleryId)[0],
-          model: list, 
+          model: list,
           parentView: self
         });
-        
+
         info.scroller.render();
         self.addChild(info.scroller);
       }).fail(fail);
     },
-    
+
     refresh: function(res, options) {
       options = options || {};
       if (options.partOfUpdate)
         return;
-      
+
       var collection, modified;
       if (U.isCollection(arguments[0])) {
         collection = arguments[0];
@@ -929,12 +933,12 @@ define('views/ControlPanel', [
         if (collection != this.resource.collection || !_.contains(modified, this.resource.getUri()))
           return this;
       }
-      
+
       this.render();
 //      this._queueTask(this._refreshListview, this);
     },
-    
-//    _refreshListview: function() {      
+
+//    _refreshListview: function() {
 //      if (!this.$el.hasClass('ui-listview'))
 //        this.$el.trigger('create');
 //      else {
@@ -949,7 +953,7 @@ define('views/ControlPanel', [
         this.toggleVisibility(true);
         invisible = true;
       }
-      
+
       var self = this;
       return this.getFetchPromise().done(function() {
         self.renderHelper(options);
@@ -957,12 +961,12 @@ define('views/ControlPanel', [
           self.toggleVisibility();
       });
     },
-    
+
     renderFT: _.debounce(function() {
       if (!this.isMainGroup)
         this.fetchFTArticles().done(this.doRenderFT);
     }, 500),
-    
+
     fetchFTArticles: function() {
       console.log("FETCHING FINANCIAL TIMES ARTICLES");
       return U.ajax({url: G.serverName + "/ftTradle?uri=" + encodeURIComponent(this.resource.getUri()), type: "GET"});
@@ -1010,35 +1014,35 @@ define('views/ControlPanel', [
 //        "modelVersion":"1"
 //      }]);
     },
-    
+
     doRenderFT: function(resultsO) {
       if (!resultsO)
         return;
-      
+
       var results = resultsO['results'];
       if (!results || !results.length)
         return;
-      
+
       if (!this.ftItemTemplate)
         this.makeTemplate('ftItemTemplate', 'ftItemTemplate');
-        
+
       var frag = document.createDocumentFragment();
-      
+
       U.addToFrag(frag, this.propGroupsDividerTemplate({
         value: 'Related Financial Times Articles',
         add: false,
-        'class': 'ftItem' 
+        'class': 'ftItem'
       }));
 
       for (var i = 0; i < results.length; i++) {
         U.addToFrag(frag, this.ftItemTemplate(results[i]));
       }
-      
+
       this.el.$('.ftItem').$remove();
       this.el.appendChild(frag);
       this.getPageView().invalidateSize();
     },
-    
+
     renderHelper: function(options) {
       var self = this;
       var res = this.resource;
@@ -1047,16 +1051,16 @@ define('views/ControlPanel', [
       var meta = vocModel.properties;
       if (!meta)
         return this;
-      
+
       var json = this.getBaseTemplateData(); //res.toJSON();
       var atts = res.attributes;
       var frag = document.createDocumentFragment();
-  
+
       var mainGroup = U.getArrayOfPropertiesWith(meta, "mainGroup");
       if (this.isMainGroup  &&  !mainGroup.length)
         return;
-      
-      var isHorizontal;      
+
+      var isHorizontal;
       var isTradle = U.isAssignableFrom(this.vocModel, 'Tradle');
       if (this.isMainGroup && !this.dontStyle) {
         if ((!U.isA(this.vocModel, 'ImageResource')  &&  !U.isA(this.vocModel, 'Intersection')) ||  isTradle) {
@@ -1072,10 +1076,10 @@ define('views/ControlPanel', [
           this.el.$css("min-width", "130px");
         }
       }
-      var isChat = window.location.hash.indexOf('#chat') == 0; 
+      var isChat = window.location.hash.indexOf('#chat') == 0;
       var mainGroupArr = mainGroup &&  mainGroup.length ? mainGroup[0]['propertyGroupList'].splitAndTrim(',') : null;
       var propGroups = this.isMainGroup &&  mainGroup ?  mainGroup : U.getArrayOfPropertiesWith(meta, "propertyGroupList");
-      
+
       propGroups = propGroups.sort(function(a, b) {return a.index < b.index});
       var backlinks = U.getBacklinks(meta);
 //      var displayInline = !this.isMainGroup && U.getPropertiesWith(this.vocModel.properties, [{name: "displayInline", value: true}, {name: "backLink"}]);
@@ -1093,7 +1097,7 @@ define('views/ControlPanel', [
 //          _.each(displayInline, function(prop, name) {
 //            _.pushUniq(ranges, U.getTypeUri(prop.range));
 //          });
-//          
+//
 //          Voc.getModels(ranges).done(function() {
 //            _.each(displayInline, function(prop, name) {
 //              var params = U.getListParams(res, prop);
@@ -1105,18 +1109,18 @@ define('views/ControlPanel', [
 //                self.addInlineList(inlineList);
 //                return;
 //              }
-//              
+//
 //              function onsuccess() {
 ////                if (firstTime) {
 ////                  firstTime = false;
 ////                }
-//                
+//
 //                if (!inlineList.isFetching() && !inlineList.isOutOfResources()) // get them all!
 //                  inlineList.getNextPage(fetchOptions);
 //                else
 //                  self.refresh();
 //              };
-//              
+//
 //              var fetchOptions = {
 //                  success: onsuccess,
 //                  error: function() {
@@ -1124,14 +1128,14 @@ define('views/ControlPanel', [
 //                  }
 //                },
 //                currentlyInlined = res.inlineLists || {};
-//              
+//
 //              inlineList = new ResourceList(null, {model: listModel, params: params});
 //              if (!res._settingInlineList && !currentlyInlined[name])
 //                res.setInlineList(name, inlineList);
-//              
+//
 //              self.addInlineList(inlineList);
 //              inlineList.fetch(fetchOptions);
-//              
+//
 //              self.listenTo(Events, 'preparingModelForDestruction.' + inlineList.cid, function() {
 //                Events.trigger('saveModelFromUntimelyDeath.' + inlineList.cid);
 //              });
@@ -1139,9 +1143,9 @@ define('views/ControlPanel', [
 //          });
 //        }
 //      }
-      
+
       var backlinksWithCount = backlinks ? U.getPropertiesWith(backlinks, "count") : null;
-      
+
       var role = U.getUserRole();
       var displayedProps = {};
       var idx = 0;
@@ -1172,7 +1176,7 @@ define('views/ControlPanel', [
         for (var name in res.inlineLists) {
           list.push(this.vocModel.properties[name]);
         }
-        
+
         var props = _.sortBy(list, function(prop) {
           return prop.dataProviderPropertyIndex;
         });
@@ -1180,9 +1184,9 @@ define('views/ControlPanel', [
         for (var i=0; i<props.length; i++) {
           var name = props[i].shortName;
           this.renderInlineList(name, res.inlineLists[name], frag, displayedProps);
-        }        
+        }
       }
-      
+
       if (propGroups.length) {
         var tmpl_data = {};
         for (var i = 0; i < propGroups.length; i++) {
@@ -1190,7 +1194,7 @@ define('views/ControlPanel', [
           if (!this.isMainGroup  &&  grMeta.mainGroup)
             continue;
           var avoidDisplaying = grMeta.avoidDisplayingInView;
-           
+
           var pgName = U.getPropDisplayName(grMeta);
           var props = grMeta.propertyGroupList.split(",");
           groupNameDisplayed = false;
@@ -1198,7 +1202,7 @@ define('views/ControlPanel', [
             var p = props[j].trim();
             if (!/^[a-zA-Z]/.test(p))
               continue;
-            
+
             var prop = meta[p];
             if (!prop || prop.displayInline || displayedProps[p] || !_.has(backlinks, p))
               continue;
@@ -1208,22 +1212,22 @@ define('views/ControlPanel', [
               continue;
             if (!U.isPropVisible(res, prop))
               continue;
-  
+
             displayedProps[p] = true;
             if (avoidDisplaying)
               continue;
 
             var n = U.getPropDisplayName(prop);
-            var range = prop.range; 
+            var range = prop.range;
             var isPropEditable = U.isPropEditable(res, prop, role);
-            
+
             var doShow = false;
             var cnt;
             var pValue = this.resource.get(p); //json[p];
-            if (!_.has(atts, p)) { 
+            if (!_.has(atts, p)) {
               var count = pValue ? pValue.count : 0;
               cnt = count > 0 ? count : 0;
-              
+
               if (cnt != 0 || isPropEditable)
                 doShow = true;
 //              U.addToFrag(frag, this.cpTemplateNoValue({name: n}));
@@ -1238,8 +1242,8 @@ define('views/ControlPanel', [
 //                U.addToFrag(frag, this.cpTemplateNoValue({name: n}));
 //              else
             }
-            
-            if (!doShow) 
+
+            if (!doShow)
               continue;
 
             if (cnt == 1  && prop.displayInline  &&  prop.maxCardinality  == cnt) {
@@ -1250,11 +1254,11 @@ define('views/ControlPanel', [
               U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName, style: prop.propertyStyle}));
               groupNameDisplayed = true;
             }
-            
-//              var uri = U.getShortUri(res.getUri(), vocModel); 
+
+//              var uri = U.getShortUri(res.getUri(), vocModel);
             var uri = res.getUri();
             var t = U.makeHeaderTitle(title, n);
-            if (colorIdx == color.length) 
+            if (colorIdx == color.length)
               colorIdx = 0;
             var icon;
             if (prop.displayInline) {
@@ -1263,7 +1267,7 @@ define('views/ControlPanel', [
             }
             else
               icon = prop['icon'];
-            
+
             tmpl_data.prop = prop;
             tmpl_data.icon = null;
             tmpl_data.range = range;
@@ -1301,7 +1305,7 @@ define('views/ControlPanel', [
               if (isPropEditable)
                 U.addToFrag(frag, this.cpTemplate(tmpl_data));
               else
-                U.addToFrag(frag, this.cpTemplateNoAdd(tmpl_data));                
+                U.addToFrag(frag, this.cpTemplateNoAdd(tmpl_data));
             }
 //              if (isPropEditable)
 //                U.addToFrag(frag, this.cpTemplate({propName: p, name: n, value: cnt, _uri: res.getUri()}));
@@ -1313,39 +1317,39 @@ define('views/ControlPanel', [
       if (!this.isMainGroup) {
         groupNameDisplayed = false;
         var tmpl_data = {};
-        var cnt = 0;        
+        var cnt = 0;
         for (var p in meta) {
           cnt++;
           if (!/^[a-zA-Z]/.test(p))
             continue;
-          
+
           var prop = meta[p];
-          if (prop.displayInline || _.has(displayedProps, p) || !_.has(backlinks, p))  
+          if (prop.displayInline || _.has(displayedProps, p) || !_.has(backlinks, p))
             continue;
-          
+
           if (prop['app']  &&  (!currentAppProps  || currentAppProps.indexOf(p) == -1))
             continue;
-          
+
           if (mainGroupArr  &&  ~mainGroupArr.indexOf(p))
             continue;
-          
+
           var count = -1;
           if (_.has(atts, p + 'Count')) {
             count = atts[p + 'Count'];
             json[p] = {count: count};
           }
-          
+
 //          if (!_.has(backlinks, p)) {
 //            var idx;
-//            if (p.length <= 5  ||  p.indexOf('Count') != p.length - 5) 
+//            if (p.length <= 5  ||  p.indexOf('Count') != p.length - 5)
 //              continue;
-//            
+//
 //            var pp = p.substring(0, p.length - 5);
-//            if (_.has(displayedProps, pp))  
+//            if (_.has(displayedProps, pp))
 //              continue;
-//            
+//
 //            var pMeta = meta[pp];
-//            if (!pMeta  ||  !pMeta.backLink || atts[pp]) 
+//            if (!pMeta  ||  !pMeta.backLink || atts[pp])
 //              continue;
 //            count = atts[p];
 ////            p = pp;
@@ -1353,7 +1357,7 @@ define('views/ControlPanel', [
 //            json[pp] = {count: count};
 //            p = pp;
 //          }
-          
+
           hasValue = _.has(atts, p);
           if (count == -1) {
             if (!prop)
@@ -1371,10 +1375,10 @@ define('views/ControlPanel', [
                 continue;
             }
           }
-                
+
           if (!U.isPropVisible(res, prop))
             continue;
-    
+
           var isPropEditable = U.isPropEditable(res, prop, role);
           var doShow = false;
           var n = U.getPropDisplayName(prop);
@@ -1401,7 +1405,7 @@ define('views/ControlPanel', [
   //            U.addToFrag(frag, this.cpTemplateNoAdd({propName: p, name: n, value: cnt, _uri: res.getUri()}));
   //          var range = U.getClassName(prop.range);
             var range = prop.range;
-  //          var uri = U.getShortUri(res.getUri(), vocModel); 
+  //          var uri = U.getShortUri(res.getUri(), vocModel);
             var uri = res.getUri();
             var t = title + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + n;
             tmpl_data.prop = prop;
@@ -1416,7 +1420,7 @@ define('views/ControlPanel', [
             tmpl_data.prop = prop;
             if (prop.propertyStyle)
               tmpl_data.style = prop.propertyStyle;
-              
+
             var bl = prop.backLinkSortDescending;
             if (bl) {
               tmpl_data['$order'] = bl;
@@ -1426,11 +1430,11 @@ define('views/ControlPanel', [
             if (isPropEditable)
               U.addToFrag(frag, this.cpTemplate(tmpl_data));
             else
-              U.addToFrag(frag, this.cpTemplateNoAdd(tmpl_data));            
+              U.addToFrag(frag, this.cpTemplateNoAdd(tmpl_data));
           }
         }
       }
-      
+
 //      if (this.hashParams.$tour) {
 //        var s = this.$el.find(this.hashParams.$tourS + '=' + this.hashParams.$tourV);
 //        s.css('class', 'hint--left');
@@ -1445,7 +1449,7 @@ define('views/ControlPanel', [
 //        if (!this.innerHTML.startsWith('<i'))
 //          this.innerHTML = '<i class="ui-icon-ban-circle"></i> ' + this.innerHTML;
 //      });
-      
+
 //      if (G.isJQM()) {
 //        this.$el.trigger('create');
 ////        if (this.el.$hasClass('ui-listview'))  //this.rendered &&
@@ -1464,7 +1468,9 @@ define('views/ControlPanel', [
 
         if (isTradle)
           this.renderFT();
-        
+
+        if (this.rendered)
+          this.restoreCollapsables();
 //        this.addToWorld(null, false);
 //        this.addToWorld({
 //          slidingWindow: true
@@ -1473,20 +1479,20 @@ define('views/ControlPanel', [
 //        Q.read(function() {
 //          var self = this,
 //              id;
-//          
+//
 //          this.propBricks = this.$('[data-propname],header').$map(function(el) {
 //            id = el.$data('propname') || el.innerText;
 //            Physics.here.addBody(el, id);
 //            return self.buildBrick({
 //              _id: id,
 //              el: el
-//            });            
+//            });
 //          });
-//          
+//
 //          this.addBricksToWorld(this.propBricks);
 //        }, this);
       }, this);
-      
+
       return this;
     }
   }, {
