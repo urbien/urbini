@@ -1627,7 +1627,6 @@ define('globals', function() {
       }
     },
 
-    DEV_PACKAGE_PATH: 'http://' + Lablz._serverName + '/voc/dev/',
     localTime: new Date().getTime(),
     online: !!navigator.onLine,
     setOnline: function(online) {
