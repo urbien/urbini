@@ -22,8 +22,8 @@ html {
   min-height: 100%;
   margin: 0;
   padding: 0;
-  -webkit-box-sizing: border-box; 
-     -moz-box-sizing: border-box; 
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
           box-sizing: border-box;
 }
 
@@ -72,7 +72,7 @@ table.c1 td.b1 { white-space: nowrap; }
 table.c1 { margin-top: 20px;}
 table.c1 td.b1, .section table.c1 td.bb1 { padding: 0px 15px 0px 15px; }
 a h4, h4 {font-size: 22px; line-height: 24px; font-weight:bold;margin-bottom: 3px;margin-top:13px;color: #fff}
- a {/*color: #757575;*/ text-decoration: none;} 
+ a {/*color: #757575;*/ text-decoration: none;}
 h2 {font-size: 28px; line-height: 34px; margin-top: 3px; font-weight:normal;}
 
 .p { padding: 0; margin: 0; }
@@ -94,12 +94,12 @@ h2 {font-size: 28px; line-height: 34px; margin-top: 3px; font-weight:normal;}
   color: #eee; padding-top:5px;
 }
 
-body { 
+body {
   -webkit-font-smoothing: antialiased;
-  margin: 0; 
-  height:99.9%; 
-  font-size:12px; 
-  /*background-color: #fff;*/ 
+  margin: 0;
+  height:99.9%;
+  font-size:12px;
+  /*background-color: #fff;*/
 /*The Helvetica/Arial-based sans serif stack:
   font-family: Frutiger, "Frutiger Linotype", Univers, Calibri, "Gill Sans", "Gill Sans MT", "Myriad Pro", Myriad, "DejaVu Sans Condensed", "Liberation Sans", "Nimbus Sans L", Tahoma, Geneva, "Helvetica Neue", Helvetica, Arial, sans-serif;
  */
@@ -108,8 +108,10 @@ font-family: Corbel, "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", "Dej
  * */
 /*The Trebuchet-based sans serif stack:
  * */
-font-family: "Segoe UI", Candara, "Bitstream Vera Sans", "DejaVu Sans", "Bitstream Vera Sans", "Trebuchet MS", Verdana, "Verdana Ref", sans-serif;
+  font-family: "Segoe UI", Candara, "Bitstream Vera Sans", "DejaVu Sans", "Bitstream Vera Sans", "Trebuchet MS", Verdana, "Verdana Ref", sans-serif;
   color: #757575;
+  background-image: url(../images/bg/0040g2.png);
+  background-repeat: repeat;
 }
 
 .demo {
@@ -117,7 +119,7 @@ font-family: "Segoe UI", Candara, "Bitstream Vera Sans", "DejaVu Sans", "Bitstre
   top:0;
   left:0;
   right:0;
-  min-height: 100%; 
+  min-height: 100%;
 }
 
 .demo-1 body:after {
@@ -140,11 +142,11 @@ font-family: "Segoe UI", Candara, "Bitstream Vera Sans", "DejaVu Sans", "Bitstre
                      translateY(-50%);
 }
 
-.vcenteredA {  
+.vcenteredA {
   position: absolute;
 }
 
-.vcenteredR {  
+.vcenteredR {
   position: relative;
 }
 
@@ -225,14 +227,14 @@ font-family: "Segoe UI", Candara, "Bitstream Vera Sans", "DejaVu Sans", "Bitstre
 .nav li {
   position: relative;
   display: inline-block;
-  margin-right: -4px; 
+  margin-right: -4px;
   /* See: http://css-tricks.com/fighting-the-space-between-inline-block-elements/ */
 }
 
 .nav li:before {
   content: "";
   display: block;
-/*  
+/*
   border-top: 1px solid #ddd;
   border-bottom: 1px solid #fff;
 */
@@ -247,10 +249,10 @@ font-family: "Segoe UI", Candara, "Bitstream Vera Sans", "DejaVu Sans", "Bitstre
   display: block;
   background-color: #f7f7f7;
   background-image: -webkit-gradient(linear, left top, left bottom, from(#f7f7f7), to(#e7e7e7));
-  background-image: -webkit-linear-gradient(top, #f7f7f7, #e7e7e7); 
-  background-image: -moz-linear-gradient(top, #f7f7f7, #e7e7e7); 
-  background-image: -ms-linear-gradient(top, #f7f7f7, #e7e7e7); 
-  background-image: -o-linear-gradient(top, #f7f7f7, #e7e7e7); 
+  background-image: -webkit-linear-gradient(top, #f7f7f7, #e7e7e7);
+  background-image: -moz-linear-gradient(top, #f7f7f7, #e7e7e7);
+  background-image: -ms-linear-gradient(top, #f7f7f7, #e7e7e7);
+  background-image: -o-linear-gradient(top, #f7f7f7, #e7e7e7);
   color: #a7a7a7;
   margin: 36px;
   width: 144px;
@@ -393,11 +395,11 @@ font-family: "Segoe UI", Candara, "Bitstream Vera Sans", "DejaVu Sans", "Bitstre
   z-index: -1;
   width: 100%;
   height: 100%;
-  -webkit-filter: blur(4px) contrast(0.4) brightness(1.4); 
+  -webkit-filter: blur(4px) contrast(0.4) brightness(1.4);
   -o-filter: blur(4px); -ms-filter: blur(4px); filter: blur(4px);
   filter: url("data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1"><filter><feGaussianBlur in="SourceGraphic" stdDeviation="2" /></filter></svg>");
   background: -moz-element(#homePage) no-repeat: fixed;
-  
+
   opacity: 0.4;
   padding: 8px;
   top: -8px;
@@ -427,12 +429,12 @@ body > .section:not([data-role="page"]) {
 /* END FONT */
 
 .cta, .section.dark a.cta, .section.light a.cta {
-  -webkit-box-sizing: border-box; 
-     -moz-box-sizing: border-box; 
+  -webkit-box-sizing: border-box;
+     -moz-box-sizing: border-box;
           box-sizing: border-box;
 
   cursor: pointer;
-	border: none; 
+	border: none;
   display:inline-block;
 
   color: #fff;
@@ -471,7 +473,7 @@ body > .section:not([data-role="page"]) {
 @media only screen and (max-width: 480px) {
   .section {
     padding: 0 10px;
-  }  
+  }
 }
 
 #homePage .menuItems {
@@ -529,7 +531,7 @@ body > .section:not([data-role="page"]) {
   }
 }
 
-.dark .paging i {
+.dark .paging i, .contrast {
   color: #FFA989;
 }
 
@@ -537,8 +539,8 @@ body > .section:not([data-role="page"]) {
   color: #2e3b4e;
 }
 
-.section .col i { 
-  max-width: 100%; 
+.section .col i {
+  max-width: 100%;
   font-size: 96px;
 }
 
@@ -583,7 +585,7 @@ body > .section:not([data-role="page"]) {
   .section-content {
     padding: 40px 0 0;
   }
-  
+
   .group {
     margin-top: 40px;
   }
@@ -609,7 +611,7 @@ body > .section:not([data-role="page"]) {
   #homePage .logo {
     font-size: 200px;
   }
-  
+
   #homePage h1 {
     font-size: 70px;
   }
@@ -624,7 +626,7 @@ body > .section:not([data-role="page"]) {
     margin-top: 60px;
     margin-bottom: 60px;
   }
-  
+
   #homePage .title-block {
     margin-top: 50px;
   }
@@ -757,7 +759,7 @@ body > .section:not([data-role="page"]) {
   top: -4px;
   left: 0;
   position: absolute;
-}    
+}
 
 .pricing-section h4 {
   margin-bottom: 15px;
@@ -773,7 +775,7 @@ body > .section:not([data-role="page"]) {
 
 .pricing-section .col {
   min-height: 450px;
-}  
+}
 
 #homePage .section .span_1_of_4 {
   /*min-height: 500px;*/
@@ -808,7 +810,7 @@ body > .section:not([data-role="page"]) {
   padding-bottom: 10px;
 }
 
-.pricing-item i.ui-icon-ok { 
+.pricing-item i.ui-icon-ok {
   font-size: 20px;
 }
 
@@ -856,15 +858,15 @@ body > .section:not([data-role="page"]) {
 }
 
 .videoHolder {
-  width:100%; 
-  box-sizing:border-box; 
-  overflow:hidden; 
+  width:100%;
+  box-sizing:border-box;
+  overflow:hidden;
   position:absolute;
 }
 
 .video-container {
   padding-bottom: 56.25%;
-  padding-top: 30px; 
+  padding-top: 30px;
   height: 0;
 }
 
@@ -877,12 +879,12 @@ body > .section:not([data-role="page"]) {
   width: 100%;
   height: 100%;
 }
-  
+
 @media only screen and (min-width: 480px) {
   .section .span_1_of_4, .section .span_1_of_3 {
     min-height: 400px;
   }
-  
+
   .pricing-section .span_1_of_3 {
     min-height: 550px;
   }
@@ -892,25 +894,25 @@ body > .section:not([data-role="page"]) {
   .pricing-item {
     margin:0 auto;
   }
-  
+
   .pricing-title {
     margin-left: 30px;
   }
-  
+
   .pricing-items {
     margin-bottom: 60px;
   }
-  
+
   .col .cta {
     padding: 15px 30px;
   }
 }
 
 .homePageMenu {
-  width: 100%; 
+  width: 100%;
   margin-top: 36px;
-  padding: 0; 
-  text-align:center; 
+  padding: 0;
+  text-align:center;
   position:absolute;
 }
 

@@ -29,15 +29,19 @@ html {
 }
 [data-type="list"] {
   padding: 0;
-  background: #efefef;
+  background: none;
+  /*background: #efefef;*/
 }
+
 [data-type="list"] li p:first-of-type {
   font-size:1.6rem;
 }
 [data-type="list"] header {
   padding: 0.5rem 0rem;
-  border-bottom: solid 1px #aaa;
-  background: #ddd;
+  border: 0;
+/*  border-bottom: solid 1px #aaa;
+  background: rgba(221, 221, 221, 0.5);*/
+  color: inherit;
 }
 [data-type="list"] .editList header {
   padding: 0.5rem 0rem 0.5rem 1rem;
@@ -49,7 +53,7 @@ html {
 }
 /*
 .headerDiv {
-  line-height: 32px; 
+  line-height: 32px;
 }
 */
 #name h4 {
@@ -82,7 +86,7 @@ html {
 }
 
 .headerUl li i {
-  font-size:2.8rem; 
+  font-size:2.8rem;
 }
 
 .headerUl li:last-child {
@@ -95,22 +99,25 @@ html {
   min-height:3.2rem;
 }
 
-#resourceView li, #cpView li {
-  border-bottom: 1px solid #d3d3d3;
+.resourceView li, #cpView li {
+  /*border-bottom: 1px solid #d3d3d3;*/
   padding: 0 10px;
+  /*border: 0;*/
+  border-radius: 1rem;
+  margin-bottom: 1rem;
 }
+
+#resourceView li:last-child, #cpView li:last-child {
+  margin-bottom: 0
+}
+
 #resourceView header, #cpView header {
   padding: 10px;
 }
 #cpView header {
-  background: #ddd;
-  border-bottom: 1px solid #aaa;
+  /*background: rgba(221, 221, 221, 0.5);
+  border-bottom: 1px solid #aaa;*/
 }
-/*
-#buttons {
-  margin-top: -15px;
-}
-*/
 
 button {
   border-radius: 1rem;
@@ -136,17 +143,17 @@ button {
   font-size: 1.8rem;
   padding: 1px 0.5rem;
 /*  padding: 1rem; */
-  text-align:left; 
+  text-align:left;
   background:none;
   font-weight: 700;
   width: 90%;
-  height: auto; 
+  height: auto;
 }
 #mainGroup div {
   height: 30px;
 }
 #mainGroup {
-  width:48%; 
+  width:48%;
   float:right;
   overflow:hidden;
   /*
@@ -159,11 +166,11 @@ button {
   padding-top: 0;
   margin: 0 1.5rem;
 }
- 
+
  #cpView > li[data-viewid] > p {
    padding-top: 0;
  }
- 
+
 #cpView > li[data-viewid] a {
   width: 100%;
   height: 100%;
@@ -172,21 +179,21 @@ button {
   position:absolute;
   margin-top:-1rem;
   font-size:1.4rem;
-  
-  height:3rem; 
+
+  height:3rem;
   display:inline-block;
-  
+
   background:#eee;
   right: 0;
   top: 0;
   padding: 1px 7px;
   border-radius:1rem;
-  
+
 }
 
 section[data-type="sidebar"] {
   color: #cccccc;
-  width: 21rem; 
+  width: 21rem;
   text-shadow: none;
 }
 section[data-type="sidebar"] > ul > li {
@@ -208,7 +215,7 @@ section[data-type="sidebar"] >  ul > header {
   padding-top: 1rem;
   padding-left: 1.3rem;
   font-weight: normal;
-  font-size: 18px; 
+  font-size: 18px;
   line-height: 2rem;
   border-bottom: 1px solid #596068;
 }
@@ -228,7 +235,7 @@ section[data-type="sidebar"] >  ul > header {
 .mi {
   min-height:42px;
   font-size:18px;
-  font-weight: normal; 
+  font-weight: normal;
 }
 
 .mi1 {
@@ -244,16 +251,13 @@ section[data-type="sidebar"]:after, .header section[role="region"] > header:firs
 #sidebar div {
   font-size: 1.6rem;
 }
-.masonry-brick div[data-viewid] {
-  border-bottom: 1px solid #eee;
 
-}
 #sidebar div.masonry-brick {
   cursor: pointer;
 }
 .home {
-  float:right; 
-  position:relative; 
+  float:right;
+  position:relative;
   font-size: 22px;
   margin-top:-40px;
   margin-right:15px;
@@ -291,6 +295,7 @@ div.ui-input-text, input.ui-input-text, textarea {
   padding: 0.7rem;
   border: 1px solid #bbb;
   font-size: 1.6rem;
+  box-sizing: border-box;
 }
 
 textarea {
@@ -310,20 +315,17 @@ fieldset {
 }
 
 [data-type="list"] #cpView > li, #resourceView > li {
-  min-height: 4rem; 
+  min-height: 4rem;
 }
 [data-type="list"] li {
-  min-height: 6rem; 
-  height: auto; 
+  min-height: 6rem;
+  height: auto;
   width:auto;
 }
 [data-display="collapsed"] li {
   min-height: inherit;
 }
 
-[class="scrollable"] {
-  background: #f9f9f9;
-}
 .editList a {
   cursor:pointer;
 }
@@ -336,8 +338,8 @@ fieldset {
 .editList li {
 /*
   min-height: 2rem;
-  padding: 0.5rem 1.5rem; 
-*/ 
+  padding: 0.5rem 1.5rem;
+*/
   min-height: 4rem;
   font-size: 1.6rem;
 }
@@ -367,12 +369,12 @@ fieldset {
   input[data-date="true"] {
     width: auto;
   }
-  
+
 }
 
 fieldset div {
   margin: 1rem -.5px 0 -.5rem;
-} 
+}
 
 fieldset#submitBtns {
   text-align:center;
@@ -401,7 +403,7 @@ a {
 }
 #login_popup .popup {
   background: #ccc;
-  border:1px solid #aaa; 
+  border:1px solid #aaa;
   border-radius:1rem;
 }
 
@@ -426,7 +428,7 @@ a {
   height:100%;
 }
 .cp i {
-  z-index:1001; 
+  z-index:1001;
   position:absolute;
   top:1rem;
   right:0.5rem;
@@ -525,7 +527,7 @@ section#login_popup {
     margin-left: 0rem;
     margin-right: 4px;
   }
-  
+
   .header2 label.pack-switch input + span {
     margin: -1.1rem 0 0 -1.7rem;
     width: 3.1rem;

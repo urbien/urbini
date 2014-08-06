@@ -3,7 +3,6 @@ body {
   padding: 0px;
   width: 100%;
   height: 100%;
-  position: absolute;
 }
 
 #input[required]::before {
@@ -15,13 +14,13 @@ body {
 span.comment {
   color: #888;
   font-weight: normal;
-  font-size: 12px;  
+  font-size: 12px;
 }
 
 label.req::after {
   content: " *";
   font-weight: bold;
-  color: #f66;  
+  color: #f66;
 }
 
 .problematic {
@@ -29,7 +28,7 @@ label.req::after {
 }
 
 .problematic:before {
-  content: "\f06a  "; 
+  content: "\f06a  ";
   font-family: FontAwesome;
   color: #f66;
 }
@@ -39,10 +38,10 @@ label.req::after {
   margin: 0 auto;
 }
 
-#label.missing  {  
-  color:#FF0000;  
-  font-weight:bold;  
-}  
+#label.missing  {
+  color:#FF0000;
+  font-weight:bold;
+}
 .resourceProp {font-weight: normal}
 .map {
   width: 100%;
@@ -51,8 +50,8 @@ label.req::after {
 }
 
 .other {
-  padding:0; 
-  border:0;border-collapse:collapse 
+  padding:0;
+  border:0;border-collapse:collapse
 }
 
 .red {
@@ -75,7 +74,7 @@ label.error {
 
 @media screen and (orientation: portrait) {
   label.error { margin-left: 0; display: block; }
-/*  .nab .anab .galleryItem_css3 img { min-width: 310px; margin-left: -20px;margin-top: -11px;} */ 
+/*  .nab .anab .galleryItem_css3 img { min-width: 310px; margin-left: -20px;margin-top: -11px;} */
 }
 
 @media screen and (orientation: landscape) {
@@ -214,7 +213,7 @@ border: #7F7F7F solid 4px;
 }
 
 .bubble-right:after {
-  border-width: 4px 10px 4px 0;  
+  border-width: 4px 10px 4px 0;
   left: -10px;
   border-color: transparent #000;
 }
@@ -269,7 +268,7 @@ border: #7F7F7F solid 4px;
   #text-align: center;
 }
 
-@media (max-width: 480px) {  
+@media (max-width: 480px) {
   .chat-holder {margin: 10px 0px 0px 0px;}
   #chatDiv {padding: 0}
 }
@@ -283,7 +282,7 @@ video {
 }
 
 video.localVideo {
-  border: 5px solid #AAA;  
+  border: 5px solid #AAA;
 }
 
 .parentCenter {
@@ -315,7 +314,7 @@ video.localVideo {
 }
 /*
 .videoChat video {
-  border: 5px solid #AAA; 
+  border: 5px solid #AAA;
 }
 */
 .myVideo-overlay video {
@@ -327,7 +326,7 @@ video.localVideo {
 
 /*
 video.remoteVideo:after {
-  content: "\f057"; 
+  content: "\f057";
   font-family: FontAwesome;
   color: #fff;
   font-size: 20px;
@@ -346,8 +345,8 @@ video.remoteVideo:after {
   overflow: hidden;
 }
 
-.video-container iframe,  
-.video-container object,  
+.video-container iframe,
+.video-container object,
 .video-container embed {
   position: absolute;
   top: 0;
@@ -543,7 +542,7 @@ video.remoteVideo:after {
 }
 
 .navbarUl .ui-btn-inner { font-size: 0px; }
- 
+
 .med.user_pic {
   width: 50px;
 /*  height: 50px; */

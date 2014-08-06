@@ -7,14 +7,20 @@ DOMReady.add( function () {
       head = d.head,
       mc = d.createElement('div'),
       mp = d.createElement('div'),
-      mph = d.createElement('div');
+      mph = d.createElement('div'),
+      logoH = d.createElement('div'),
+      logo = d.createElement('div');
   
   d.title = l.currentApp.title;
   mc.className = 'modal-cover';
   mp.className = 'modal-popups vcenteredA';
+  logoH.className = 'globalLogo';
+  logo.className = 'ui-icon-tradle';
+  logoH.appendChild(logo);
 
   d.body.appendChild(mc);
   d.body.appendChild(mp);
+  d.body.appendChild(logoH);
 
   if (localStorage  &&  localStorage.getItem) {
     try {

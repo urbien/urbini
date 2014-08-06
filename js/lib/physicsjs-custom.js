@@ -916,7 +916,7 @@ var Decorator = Physics.util.decorator = function Decorator( type, baseProto ){
 // inside: src/math/gjk.js
 
 /**
- * Gilbert–Johnson–Keerthi object collison algorithm
+ * Gilbert?Johnson?Keerthi object collison algorithm
  * For general information about GJK see: 
  *  - http://www.codezealot.org/archives/88
  *  - http://mollyrocket.com/849
@@ -4534,7 +4534,7 @@ Physics.behavior('verlet-constraints', function( parent ){
 
             isObj = Physics.util.isObject( cstrOrId );
 
-            type = (isObj) ? cstrOrId.type : cstrOrId.substr(0, 3);
+            type = (isObj) ? cstrOrId.type : cstrOrId.slice(0, 3);
             constraints = ( type === 'ang' ) ? this._angleConstraints : this._distanceConstraints;
 
             if ( isObj ){

@@ -35,7 +35,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
                             0, 1, 0, 0,
                             0, 0, 1, 0,
                             0, 0, 0, 1];
-  
+
       zeroVector = [0, 0, 0],
       numDraggables = 0,
       DRAGGABLES = {}, // id to DragProxy
@@ -101,8 +101,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       PREFIX = {
         transform: 'matrix3d('
       },
-      SUFFIX = {          
-        transform: ')'        
+      SUFFIX = {
+        transform: ')'
       },
       SEPARATOR = {
         transform: ', '
@@ -131,7 +131,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //        separator: SEPARATOR,
         values: STYLE_NUM_VALUES
       };
-      
+
 //      ,
 //      STYLE_MAP = ['opacity', 'translation', 'rotation'];
 
@@ -145,19 +145,19 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   function isPageKey(keyCode) {
     return keyCode == Keys.PAGE_UP || keyCode == Keys.PAGE_DOWN;
   }
-  
+
   function adjustForScreen(dragMag) {
     var v = G.viewport;
     if (v.height < 640)
       dragMag /= 2;
-    
-    return dragMag;    
+
+    return dragMag;
   };
-  
+
   function getPageDragMag() {
     return adjustForScreen(PAGE_VECTOR_MAG);
   };
-  
+
   function getArrowDragMag() {
     return adjustForScreen(ARROW_KEY_VECTOR_MAG);
   };
@@ -179,6 +179,34 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     }
   };
 
+  function dragLogo() {
+    var logo = document.$('.globalLogo')[0],
+        w = 200,
+        h = 200,
+        id = 'logo';
+
+    HERE.addBody(logo, id);
+/*        THERE.addBody('convex-polygon', { 
+      _id: id, 
+      vertices: [
+        {x: 0, y: h},
+        {x: w, y: h},
+        {x: w, y: 0},
+        {x: 0, y: 0}
+      ]
+    });
+*/
+    THERE.addBody('point', { 
+      _id: id,
+      style: {
+        opacity: 1
+      }
+    });
+
+    Physics.addDraggable(logo, id);
+    THERE.rpc(null, 'stopAt', ['logo', 1000, 100, 0]);
+  }
+
 //  function getDragAlongAxis(vector, axis) {
 //    switch (axis) {
 //    case 'x':
@@ -187,7 +215,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //      vector[0] = vector[2] = 0;
 //    default:
 //      return drag;
-//    }    
+//    }
 //  };
 
   // prevent click on capture phase
@@ -200,25 +228,25 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       G.enableClick();
       return false;
     }
-    else {
-      if (G.support.pushState) {
-        var t = e.target,
-            href;
-        
-        if (!t.tagName != 'A')
-          t = t.$closest('a');
-        
-        if (t) {
-          e.preventDefault();
-          if (canNavigate(t))
-            Events.trigger('navigate', t.href);
-        }
-      }
-      
-      log('events', 'ALLOWING CLICK', _.now());
-    }
+    // else {
+    //   if (G.support.pushState) {
+    //     var t = e.target,
+    //         href;
+
+    //     if (!t.tagName != 'A')
+    //       t = t.$closest('a');
+
+    //     if (t) {
+    //       e.preventDefault();
+    //       if (canNavigate(t))
+    //         Events.trigger('navigate', t.href);
+    //     }
+    //   }
+
+    //   log('events', 'ALLOWING CLICK', _.now());
+    // }
   }, true);
-  
+
   function canNavigate(a) {
     return a.href && !a.href.startsWith('javascript:') && !a.href.endsWith('#') && a.target != '#';
   }
@@ -226,22 +254,22 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   document.addEventListener('click', function(e) {
     if (e.defaultPrevented)
       return;
-    
+
     var a = e.target,
         tagName = a.tagName,
         href = a.$attr('href'),
         absoluteHref = a.href,
         dataHref = a.$data('href');
-    
+
     if (href == '#' && dataHref) {
       Events.stopEvent(e);
       Events.trigger('navigate', dataHref);
       return;
     }
-    
+
     if (tagName != 'A')
       return;
-    
+
     if (href == '#') {
       Events.stopEvent(e);
       return;
@@ -253,7 +281,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           window.location.href = absoluteHref;
           return;
         }
-        
+
         Events.stopEvent(e);
         Events.trigger('navigate', href);
         return;
@@ -272,22 +300,25 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       window.scrollTo(0, 1);
     }
   };
-  
+
 //  window.scrollTo(0, 1);
-  
+
   hammer.on('touchstart', function(e) {
     G.enableClick();
   });
-  
+
 //  hammer.on('tap', disableClick);
-  
+
   function backupDragHandler(e) {
+    if (DRAG_LOCK)
+      return;
+
     G.disableClick();
     var draggable,
         rejects,
         twiceRejects,
         i;
-    
+
     for (var id in DRAGGABLES) {
       draggable = DRAGGABLES[id];
       if (draggable.isOn() && isDragAlongAxis(e.type, draggable.axis)) {
@@ -298,7 +329,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         else {
           if (!rejects)
             rejects = [];
-          
+
           rejects.push(draggable);
         }
       }
@@ -311,11 +342,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       if (e.target.contains(draggable.getElement())) {
         if (draggable._ondrag.apply(draggable, arguments) !== false)
           return;
-      }      
+      }
       else {
         if (!twiceRejects)
           twiceRejects = [];
-        
+
         twiceRejects.push(draggable);
       }
     }
@@ -331,7 +362,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     // oh well, we tried harder than they deserve
     e.preventDefault();
   };
-  
+
   hammer.on('dragleft dragright dragup dragdown', backupDragHandler);
   hammer.on('dragend', function(e) {
     var draggable;
@@ -340,7 +371,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       if (draggable.isOn())
         draggable._ondragend.apply(draggable, arguments);
     }
-    
+
     e.preventDefault();
   });
 
@@ -348,23 +379,23 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     e.preventDefault(); // prevent browser context menu on mac/mobile
   });
 
-  function tickMonitor(lastFrameDuration) {      
+  function tickMonitor(lastFrameDuration) {
     var keepTicking = false;
     if (numDraggables) {
       for (var id in DRAGGABLES) {
         keepTicking = DRAGGABLES[id].tick() || keepTicking;
       }
     }
-    
+
     if (!keepTicking) {
       FrameWatch.stopListeningToTick(tickMonitor);
       return;
     }
 
-    
+
 //    if (LOCK_STEP) {
 //      var newNow = _.now(),
-//      delay = TIMESTEP > newNow - NOW;    
+//      delay = TIMESTEP > newNow - NOW;
 //      if (!delay) {
 //        newNow = NOW;
 //        PHYSICS_TIME += TIMESTEP;
@@ -372,12 +403,12 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //      }
 //    }
   };
-  
+
   function dragOnTick() {
     if (!FrameWatch.hasTickListener(tickMonitor))
       FrameWatch.listenToTick(tickMonitor);
   };
-  
+
 //  function enableClick() {
 //    G.enableClick();
 //  };
@@ -393,7 +424,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   function isScrollable(el) {
 //    if (isSVG(el))
 //      return false;
-    
+
     switch (el.tagName) {
       case 'TEXTAREA':
         return false;
@@ -410,11 +441,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     e.stopPropagation();
 //    e.preventDefault();
   };
-  
+
   function dragend(draggable, v, coast) {
     THERE.dragend(v, draggable.getId(), !coast);
   };
-  
+
   function drag(draggable, v, pages) {
     if (pages && draggable.isPaged()) {
       getLayoutManagers(draggable.getId()).map(function(l) {
@@ -428,21 +459,21 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     else
       THERE.drag(v, draggable.getId());
   }
-  
+
   function getLayoutManagers(/* ids */) {
     var i = arguments.length,
         manager,
         managers = [];
-        
+
     while (i--) {
       manager = ID_TO_LAYOUT_MANAGER[arguments[i]];
       if (manager)
         managers.push(manager);
     }
-    
+
     return managers;
   };
-  
+
   Events.on('pageDown', function(pages) {
     simulateKeyPress(Keys.PAGE_DOWN, {
       pages: pages || 1
@@ -454,17 +485,17 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       pages: pages || 1
     });
   });
-  
+
   function simulateKeyPress(code, params) {
     KeyHandler._onKeyDown(_.defaults({
       keyCode: code
     }, params));
-    
+
     KeyHandler._onKeyUp(_.defaults({
       keyCode: code
     }, params));
   };
-  
+
   KeyHandler = {
     _keyHeld: null,
     _dragged: zeroVector.slice(),
@@ -487,11 +518,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         return this._onKeyDown.call(this, e);
       case 'keyup':
         return this._onKeyUp.call(this, e);
-      default: 
+      default:
         debugger;
       }
     },
-    
+
     getDragDirection: function(keyCode) {
       switch (keyCode) {
       case Keys.PAGE_UP: // page up
@@ -514,11 +545,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         throw "key does not correspond to a direction";
       }
     },
-    
+
     _onKeyDown: function(e) {
       if (!numDraggables)
         return;
-      
+
       var keyCode = U.getKeyEventCode(e),
           vector = this._dragged,
           viewport = G.viewport,
@@ -527,49 +558,55 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           dir,
           draggable,
           isPage = isPageKey(keyCode);
-          
+
+      if (isPage || keyCode == Keys.DOWN || keyCode == Keys.UP) {
+        var el = document.activeElement;
+        if (el && el.tagName == 'INPUT' && el.type == 'text')
+          el.blur();
+      }
+
       if (this._keyHeld && this._keyHeld != keyCode)
         return;
-      
+
       switch (keyCode) {
       case Keys.INPUT_METHOD_PROCESSING:
         return;
       case Keys.PAGE_UP: // page up
         if (this._keyHeld)
           return;
-      
+
         vector[0] = vector[1] = getPageDragMag();
         break;
       case Keys.PAGE_DOWN: // page down
         if (this._keyHeld)
           return;
-        
+
         vector[0] = vector[1] = -getPageDragMag();
         break;
       case Keys.END: // end
         if (this._keyHeld)
           return;
-        
+
         var managers = getLayoutManagers.apply(null, _.keys(DRAGGABLES)),
             i = managers.length;
-        
+
         while (i--) {
           managers[i].end();
         }
-        
-        return; 
+
+        return;
       case Keys.HOME: // home
         if (this._keyHeld)
           return;
-        
+
         var managers = getLayoutManagers.apply(null, _.keys(DRAGGABLES)),
             i = managers.length;
-        
+
         while (i--) {
           managers[i].home();
         }
-        
-        return; 
+
+        return;
       case Keys.LEFT: // left arrow
         this._coast = true;
         vector[0] = getArrowDragMag();
@@ -588,8 +625,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         break;
       default:
         return;
-      }        
-      
+      }
+
       dir = this.getDragDirection(keyCode);
       this._keyHeld = keyCode;
       var endV = isPage ? mult(vector, 2) : mult(vector.slice(), 0.5);
@@ -601,14 +638,14 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         }
       }
     },
-    
+
     _onKeyUp: function(e) {
       var keyCode = U.getKeyEventCode(e);
       if (this._keyHeld && keyCode == this._keyHeld) {
 //        var isPage = isPageKey(keyCode);
 //        var draggable,
 //            dir = this.getDragDirection(keyCode);
-//        
+//
 //        for (var id in DRAGGABLES) {
 //          draggable = DRAGGABLES[id];
 //          if (draggable.isOn() && isDragAlongAxis(dir, draggable.axis)) {
@@ -626,24 +663,24 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       }
     }
   };
-  
+
   document.addEventListener('keydown', KeyHandler);
   document.addEventListener('keyup', KeyHandler)
-  
+
   // from Sly.js
   var scrolling = {
     last: 0,
     delta: 0,
     resetTime: 200
   };
-  
+
   function normalizeWheelDelta(event) {
     scrolling.curDelta = event.wheelDelta ? -event.wheelDelta / 120 : event.detail / 3;
     time = +new Date();
     if (scrolling.last < time - scrolling.resetTime) {
       scrolling.delta = 0;
     }
-    
+
     scrolling.last = time;
     scrolling.delta += scrolling.curDelta;
     if (Math.abs(scrolling.delta) < 1) {
@@ -652,10 +689,10 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       scrolling.finalDelta = Math.round(scrolling.delta / 1);
       scrolling.delta %= 1;
     }
-    
+
     return scrolling.finalDelta;
   };
-  
+
   MouseWheelHandler = {
     _vector: [0, 0, 0],
     handleEvent: function(e) {
@@ -663,7 +700,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //        console.log("1. MOUSE WHEEL FAIL");
         return;
       }
-      
+
       var target = e.target,
           draggable,
           el,
@@ -674,7 +711,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           delta,
           args,
           rejects = [];
-      
+
       for (var id in DRAGGABLES) {
         draggable = DRAGGABLES[id];
         el = draggable.getElement();
@@ -683,7 +720,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           break;
         }
       }
-      
+
       if (!dragEl) {
         for (var id in DRAGGABLES) {
           draggable = DRAGGABLES[id];
@@ -692,14 +729,14 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
             dragEl = el;
             break;
           }
-        }        
+        }
       }
-      
+
       if (!dragEl) {
 //        console.debug("2. MOUSE WHEEL FAIL", e.target);
         return;
       }
-      
+
       axis = draggable.getAxis();
       v = MouseWheelHandler._vector;
       v[0] = v[1] = 0;
@@ -712,11 +749,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         dragend(draggable, mult(v, 10), false); // if true, will prevent coast
 //      }
 //      else
-//        console.log("1. NOT ENDING DRAG");        
+//        console.log("1. NOT ENDING DRAG");
     }
   };
 
-//  hammer.on("mousewheel", function(ev) { 
+//  hammer.on("mousewheel", function(ev) {
 //    // create some hammerisch eventData
 //    var self = this;
 //    var eventType = MOUSE_WHEEL_TIMEOUT ? 'mousemove' : 'mousedown';
@@ -726,7 +763,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 ////    _.extend(ev, eventData);
 ////    Hammer.detection.startDetect(hammer, ev);
 ////
-////    // you should calculate the zooming over here, 
+////    // you should calculate the zooming over here,
 ////    // should be something like wheelDelta * the current scale level, or something...
 //////    eventData.scale = ev.wheelDelta;
 ////
@@ -740,7 +777,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //      else
 //        hammer.trigger("dragup", eventData);
 //    }
-//      
+//
 //    if (!resetTimeout(MOUSE_WHEEL_TIMEOUT)) {
 //      MOUSE_WHEEL_TIMEOUT = setTimeout(function() {
 //        MOUSE_WHEEL_TIMEOUT = null;
@@ -754,7 +791,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //    // prevent scrolling
 //    ev.preventDefault();
 //  });
-  
+
   if (isMoz) {
     // Firefox
     document.addEventListener("DOMMouseScroll", MouseWheelHandler, true);
@@ -768,14 +805,14 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   function isEqual(v1, v2) {
     return v1[0] == v2[0] && v1[1] == v2[1] && v1[2] == v2[2];
   };
-  
+
   function zero(v) {
     v[0] = 0;
     v[1] = 0;
     v[2] = 0;
     return v;
   };
-  
+
   function sub(v1, v2) {
     v1[0] -= v2[0];
     v1[1] -= v2[1];
@@ -793,12 +830,12 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   function absCeil(n, ceil) {
     return (n < 0 ? -1 : 1) * Math.min(Math.abs(n), ceil);
   };
-  
+
   function ceil(v, ceil) {
     for (var i = 0; i < v.length; i++) {
       var sign = v[i] < 0 ? -1 : 1,
           mag = Math.abs(v[i]);
-      
+
       v[i] = sign * Math.min(mag, typeof ceil == 'object' ? ceil[i] : ceil);
     }
 
@@ -811,7 +848,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     v1[2] *= c;
     return v1;
   };
-  
+
   // End VECTOR functions
 
   function calcBounds() {
@@ -831,7 +868,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       }
     });
   };
-  
+
   function addCallback(callback) {
     var cbId = _.uniqueId('physicsCallback');
     callbacks[cbId] = callback;
@@ -854,26 +891,26 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       }
     }
   };
-  
+
 //  function renderOld() {
-//    THERE.rpc(null, 'render'); // signal readiness for next set of render data    
+//    THERE.rpc(null, 'render'); // signal readiness for next set of render data
 //    for (var id in UNRENDERED) {
 //      renderBody(id, UNRENDERED[id]);
 //    }
-//    
+//
 //    invokeListeners(renderListeners.render['']);
 //    UNRENDERED = {};
 //  };
-  
+
   function render() {
 //    console.log("RENDERING");
     worker.postMessage({
       method: 'render'
     });
-    
+
     var id,
         buffers = [];
-    
+
     for (id in UNRENDERED) {
       renderBody(id, UNRENDERED[id], buffers);
     }
@@ -886,11 +923,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       }, buffers);
     }
   };
-  
+
   function renderBody(id, style, buffers) {
-    /* UNRENDERED: { // map of body id to css property values in order of STYLE_ORDER array, with as many values per property as specified by STYLE_NUM_VALUES 
+    /* UNRENDERED: { // map of body id to css property values in order of STYLE_ORDER array, with as many values per property as specified by STYLE_NUM_VALUES
     *   'ListPage.view12': []
-    * } 
+    * }
     */
 
     var el = ID_TO_EL[id],
@@ -906,7 +943,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         ignore,
         subVal,
         j;
-        
+
     if (el) {
 //      throw "no element found for id " + id;
       for (i = 0, l = style.length, propIdx = 0; i < l; propIdx++) { // i is incremented in inner loop
@@ -928,27 +965,27 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
             continue;
           }
         }
-        
+
         for (j = 0; j < numVals; i++, j++) {
           if (j)
             val += separator;
-      
+
           subVal = style[i];
-          if ((ignore = subVal == Infinity) || 
+          if ((ignore = subVal == Infinity) ||
               (remove = isNaN(subVal))) {
             i += numVals - j;
             break;
           }
-          
+
           if (fix)
             subVal = subVal.toFixed(10);
-          
+
           if (unit)
             subVal += unit;
-          
+
           val += subVal;
         }
-        
+
         if (remove)
           el.style.removeProperty(prefixed);
         else if (!ignore) {
@@ -956,13 +993,13 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           el.style[prefixed] = val;
         }
       }
-      
+
       invokeListeners(renderListeners.render[id], el); //, oldTransform, transform);
     }
-    
+
     buffers.push(style.buffer);
   };
-  
+
 //  function renderBodyOld(id, style) {
 //    var el = ID_TO_EL[id],
 //        propVal,
@@ -981,7 +1018,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //
 //    if (!el)
 //      return false;
-//    
+//
 //    oldTransform = ID_TO_LAST_TRANSFORM[id] || IDENTITY_TRANSFORM;
 //    for (var prop in style) {
 //      if (TRANSFORM_PROPS.indexOf(prop) == -1) {
@@ -992,7 +1029,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //          el.style[DOM.prefix(prop)] = propVal;
 //      }
 //    }
-//    
+//
 //    transform = style.transform;
 //    if (transform) {
 //      if (FORCE_GPU)
@@ -1001,14 +1038,14 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //        el.style.top = transform[13] + 'px';
 //        el.style.left = transform[12] + 'px';
 //      }
-//        
+//
 ////        oldTransition = ID_TO_LAST_TRANSITION[id] || '';
 ////        if (oldTransition)
 ////          el.style[TRANSITION_PROP] = ID_TO_LAST_TRANSITION[id] = '';
-//      
+//
 //      invokeListeners(renderListeners.render[id], el, oldTransform, transform);
 //    }
-//      
+//
 ////      if (!transform)
 ////        continue;
 ////
@@ -1021,10 +1058,10 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 ////        if (scale) {
 ////          if (!_.isEqual(scale, DEFAULT_SCALE)) {
 ////            transformStr = 'scale3d(' + scale[0] + ', ' + scale[1] + ', ' + scale[2] + ')';
-////            if (_.isEqual(scale, MIN_SCALE)) 
+////            if (_.isEqual(scale, MIN_SCALE))
 ////              translate = null;
 ////          }
-////          
+////
 ////          oldScale = oldTransform.scale || DEFAULT_SCALE;
 ////          dsx = scale[0] - oldScale[0];
 ////          dsy = scale[1] - oldScale[1];
@@ -1036,7 +1073,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 ////        }
 ////        else
 ////          scale = DEFAULT_SCALE;
-////        
+////
 ////        if (translate) {
 ////          transformStr = 'matrix3d(' + scale[0] + ', 0, 0, 0, 0, ' + scale[1] + ', 0, 0, 0, 0, ' + scale[2] + ', 0, ';
 //////        transformStr = 'translate(';
@@ -1050,15 +1087,15 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 ////          invokeListeners(renderListeners.translate.x[id], el, dtx);
 ////          invokeListeners(renderListeners.translate.y[id], el, dty);
 ////          invokeListeners(renderListeners.translate.z[id], el, dtz);
-////        }          
+////        }
 ////      }
-////        
+////
 //////      else {
 //////        transformStr += '0, 0, 0';
 ////////        transformStr += '0px, 0px)';
 //////      }
-//////      
-////      
+//////
+////
 ////      // ROTATION
 ////      if (rotate) {
 ////        // TODO: all axes, no need for now
@@ -1070,10 +1107,10 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 ////          transformStr += ' rotateY(' + rotate[1].toFixed(10) + unit +')';
 ////        if (rotate[2])
 ////          transformStr += ' rotateZ(' + rotate[2].toFixed(10) + unit +')';
-////        
+////
 //////        if (rotate[2])
 //////          transformStr += 'rotate(' + rotate[2].toFixed(10) + 'rad)'; // for now, only around Z axis
-////        
+////
 ////        oldRotate = oldTransform.rotate || ZERO_ROTATION;
 //////        drx = rotate[0] - oldRotate[0];
 //////        dry = rotate[1] - oldRotate[1];
@@ -1083,7 +1120,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //////        invokeListeners(renderListeners.rotate.y[id], dry);
 ////        invokeListeners(renderListeners.rotate.z[id], drz);
 ////      }
-////      
+////
 ////      if (transformStr != null) {
 ////        el.style[TRANSFORM_PROP] = transformStr;
 ////        el.style[TRANSITION_PROP] = '';
@@ -1093,11 +1130,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //////          el.style.transition = '';
 //////          el.style['transform-origin'] = '0% 0%';
 //////        }
-////        
+////
 ////      }
-////      
+////
 //////      el.style[TRANSFORM_PROP] = 'matrix3d(' + transform.join(',') + ')';
-////      
+////
 ////      invokeListeners(renderListeners.render[id], el, oldTransform, transform);
 //
 //    ID_TO_LAST_TRANSFORM[id] = transform;
@@ -1111,14 +1148,14 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       if (draggable.drag) {
         if (draggable != currentDraggable)
           log("DRAG CROSSED OVER FROM ONE DRAGGABLE ELEMENT TO ANOTHER");
-          
+
         dragOnTick();
         draggable.drag = false;
         draggable.dragEnd = true; // queue up drag end
       }
     }
   };
-  
+
   /**
    * currently only sends drag data once a frame (maybe it should send every time it gets a drag event)
    * TODO: make it work for nested draggables
@@ -1132,22 +1169,22 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       this.dragEventName = axis == 'x' ? 'dragleft dragright' : 'dragup dragdown';
     else
       this.dragEventName = 'drag';
-    
+
     this.touchPos = zeroVector.slice();
     this.touchPosOld = zeroVector.slice();
     this.tmp = zeroVector.slice();
     this.dragVector = zeroVector.slice();
     this.lastDragVector = zeroVector.slice();
     this.offset = zeroVector.slice();
-    
-    this.drag = false;      
+
+    this.drag = false;
     this._ondrag = this._ondrag.bind(this);
     this._ondragend = this._ondragend.bind(this);
 //    this.hammer = hammerOrElement instanceof Hammer.Instance ? hammerOrElement : new Hammer(hammerOrElement);
 //    this.hammer = hammer;
     this.connect();
   };
-    
+
   DragProxy.prototype = {
     _onmouseout: function(e) {
       if (this.drag) {// && this.hammer) {
@@ -1168,20 +1205,20 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //          e.stopImmediatePropagation();
 //          return false;
 //        }
-        
+
         return true;
       }
     },
-    
+
     _ondrag: function(e) {
       if (!this._canHandle(e))
         return false;
-      
+
       G.disableClick();
       var gesture = e.gesture,
           center = gesture.center,
           touch = e.gesture.touches[0];
-        
+
       stopDragEvent(e);
       dragOnTick();
       if (this.drag) {
@@ -1192,7 +1229,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       else {
         this.drag = true;
         DRAG_LOCK = this.id; // lock this gesture
-        
+
         this.touchPos[0] = touch.pageX;
         this.touchPos[1] = touch.pageY;
         Array.copy(this.touchPos, this.tmp);
@@ -1201,13 +1238,13 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           this.tmp[0] -= adjustForScreen(gesture.deltaX / 2);
         if (this.axis != 'x')
           this.tmp[1] -= adjustForScreen(gesture.deltaY / 2);
-        
+
         if (this.tmp[0] == this.tmp[1] && this.tmp[0] == 0)
           return false;
-        
+
         Array.copy(this.tmp, this.touchPosOld);
       }
-      
+
       Array.copy(this.touchPos, this.tmp);
       sub(this.tmp, this.touchPosOld);
       add(this.dragVector, this.tmp);
@@ -1223,29 +1260,29 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 
       stopDragEvent(e);
       DRAG_LOCK = null;
-      endAllDrags(this);      
+      endAllDrags(this);
       return false;
     },
 
 //    //  add(this.dragVector, mult(this.tmp, 0.5)); // do we need this? And if so, why??
-//    _ondrag: function(e) {    
+//    _ondrag: function(e) {
 //      log("DRAG", this.dragVector[1]);
 //      THERE.drag(this.dragVector, DRAGGABLES);
 //      Array.copy(this.dragVector, this.lastDragVector);
 //      zero(this.dragVector);
 //    },
-//    
+//
 //    _ondragend: function(e) {
 //      e.gesture.preventDefault();
 //      log("DRAGEND", this.lastDragVector[1]);
-//      THERE.dragend(this.lastDragVector, DRAGGABLES);        
+//      THERE.dragend(this.lastDragVector, DRAGGABLES);
 //      zero(this.lastDragVector);
 //    },
-//    
+//
 //    //_onswipe: function(e) {
 //    //  this.log('swipe');
 //    //},
-//    
+//
 
     connect: function() {
       if (!this._connected) {
@@ -1255,7 +1292,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         el.$on('dragend', this._ondragend);
       }
     },
-    
+
     disconnect: function() {
       if (this._connected) {
         this._connected = false;
@@ -1264,15 +1301,15 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         el.$off('dragend', this._ondragend);
       }
     },
-    
+
     isOn: function() {
       return this._connected;
     },
-    
+
     tick: function( data ) {
       if (!this.isOn() || (!this.drag && !this.dragEnd))
         return false;
-            
+
       if (this.dragEnd) {
         this.dragEnd = false;
 //        THERE.chain({
@@ -1286,31 +1323,31 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 
         dragend(this, this.lastDragVector);
         zero(this.lastDragVector);
-        
-//        Physics.echo(enableClick); // async and faster than setTimeout 
+
+//        Physics.echo(enableClick); // async and faster than setTimeout
       }
-      
+
       if (this.drag && !isEqual(this.dragVector, zeroVector)) {
 //        log("DRAG, distance: (" + this.dragVector[0] + ", " + this.dragVector[1] + ")");
         drag(this, this.dragVector);
       }
-      
+
       zero(this.dragVector);
       return true;
     },
-    
+
     getElement: function() {
       return this.element;
     },
-    
+
     getAxis: function() {
       return this.axis;
     },
-    
+
     getId: function() {
       return this.id;
     },
-    
+
     isPaged: function() {
       return this.paging;
     }
@@ -1326,7 +1363,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         return _.leaf(renderListeners, event);
     }
   }
-  
+
   Physics = window.Physics = {
     getRailId: function(bodyId) {
       return 'rail-' + bodyId;
@@ -1345,12 +1382,12 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     updateRectVertices: function(vertices, width, height) {
       if (!vertices)
         return Physics.getRectVertices(width, height);
-      
+
       var v0 = vertices[0],
           v1 = vertices[1],
           v2 = vertices[2],
           v3 = vertices[3];
-      
+
       v0.x = v0.y = v1.y = v3.x = 0;
       v1.x = v2.x = width;
       v2.y = v3.y = height;
@@ -1366,20 +1403,20 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         this.there.init();
       }
     },
-    
+
     echo: function(callback) {
       THERE.rpc(null, 'echo', [addCallback(callback)]);
     },
-    
+
 //    addBody: function(id, type, options, el, hammer) {
 //      if (el)
 //        HERE.addBody(el, id);
 //      if (hammer)
 //        this.addDraggable(hammer || el, id);
-//      
+//
 //      THERE.addBody(type, options, id);
 //    },
-    
+
     benchBodies: function(/* ids */) {
       THERE.benchBodies.apply(THERE, arguments);
     },
@@ -1387,7 +1424,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     unbenchBodies: function(/* ids */) {
       THERE.unbenchBodies.apply(THERE, arguments);
     },
-    
+
     addDraggable: function(el, id, axis, paging) {
       var proxy = DRAGGABLES[id];
       if (proxy) {
@@ -1397,10 +1434,10 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         numDraggables++;
         proxy = DRAGGABLES[id] = new DragProxy(el, id, axis, paging);
       }
-      
+
       return proxy;
     },
-    
+
     connectDraggable: function(id) {
       var draggable = DRAGGABLES[id];
       if (draggable) {
@@ -1408,14 +1445,14 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         return draggable;
       }
     },
-    
+
     disconnectDraggable: function(id) {
       var draggable = DRAGGABLES[id];
       if (draggable) {
         draggable.disconnect();
         return draggable;
       }
-      
+
 //      DRAGGABLES = _.difference(DRAGGABLES, _.toArray(arguments));
     },
 
@@ -1441,23 +1478,23 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //        this.disconnectDraggable(id);
 //      }
     },
-    
+
     here: {
       getTransform: function(id) {
         return ID_TO_LAST_TRANSFORM[id];
-      },      
+      },
       on: function(event, id, callback) {
         if (arguments.length == 2) {
           callback = id;
           id = '';
         }
-        
+
         var byEvent = getRenderListeners(event),
             cbs;
-        
+
         if (!byEvent)
           throw "unsupported render event " + event;
-        
+
         cbs = byEvent[id] = byEvent[id] || [];
         cbs.push(callback);
       },
@@ -1470,15 +1507,15 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       off: function(event, id, callback) {
         var byEvent = getRenderListeners(event),
             cbs;
-        
+
         if (!byEvent) {
           for (var event in renderListeners) {
             renderListeners[event] = {};
           }
-          
+
           return;
         }
-        
+
         cbs = byEvent[id];
         if (callback)
           Array.remove(cbs, callback);
@@ -1498,7 +1535,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
               throttle: true,
               last: true
             };
-        
+
         while (i--) {
           styleProp = STYLE_ORDER[i];
           if (!_.has(UNITS, styleProp))
@@ -1512,11 +1549,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           if (!_.has(SEPARATOR, styleProp))
             SEPARATOR[styleProp] = ' ';
         }
-        
+
 //        var clone = _.deepExtend({}, Physics.constants);
 //        for (var i = 0; i < SCROLLER_TYPES.length; i++) {
 //          Physics.constants.byScrollerType[SCROLLER_TYPES[i]] = _.deepExtend({}, clone);
-//        }        
+//        }
 
 //        hammer = new Hammer(document, hammerOptions);
 //        DragProxy.init();
@@ -1531,37 +1568,37 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
               if (MOUSE_OUTED)
                 break;
             }
-            
+
             MOUSE_OUTED = false;
           }
         });
-        
-        worker = G.loadWorker('js/physicsWorker.js');        
+
+        worker = G.loadWorker('js/physicsWorker.js');
         worker.onmessage = function(e) {
           var topic = e.data.topic,
               callback;
-          
+
           switch (topic) {
             case 'render':
 //              if (_.any(UNRENDERED, _.size))
 //                debugger; // should never happen
-                
+
               UNRENDERED = e.data.bodies;
               Q.write(render, this, null, writeOptions);
-              
+
               break;
             case 'callback':
               callback = callbacks[e.data.id];
               if (callback)
                 callback(e.data.data);
-              
+
               delete callbacks[e.data.id];
               break;
             case 'event':
               callback = subscriptions[e.data.id];
               if (callback)
                 callback(e.data.data);
-              
+
               break;
             case 'log':
             case 'debug':
@@ -1569,12 +1606,12 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
               break;
           }
         };
-        
+
         worker.onerror = function(e) {
           debugger;
         };
       },
-      
+
       addBody: function(el, id) {
         ID_TO_EL[id] = el;
       },
@@ -1591,16 +1628,17 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           }
         }
       },
-      
+
       removeBodies: function() {
         _(arguments).map(this.removeBody.bind(this));
       }
     },
-    
+
     there: {
       init: function() {
         window.addEventListener('viewportdimensions', this.updateBounds.bind(this));
         this.postMessage({
+          edgeBounce: !!G.browser.mobile,
           physicsJSUrl: jsBase + (physicsModuleInfo.fullName || physicsModuleInfo.name),
           masonryUrl: jsBase + (masonryModuleInfo.fullName || masonryModuleInfo.name),
           debug: G.DEBUG,
@@ -1608,9 +1646,10 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           constants: CONSTANTS,
           styleInfo: STYLE_INFO
         });
-        
+
         this.updateBounds();
-        this.rpc(null, 'render'); // signal readiness for next set of render data    
+        this.rpc(null, 'render'); // signal readiness for next set of render data
+        //dragLogo();
       },
 
       updateBounds: function() {
@@ -1631,9 +1670,9 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
               method: 'dragend',
               args: [ZERO_VECTOR, id]
             });
-          }          
+          }
         });
-        
+
         if (disconnected.length > 1) {
           chain.push({
             method: 'echo',
@@ -1649,11 +1688,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         */
         return THERE.chain.apply(THERE, chain);
       },
-      
+
       postMessage: function() {
         worker.postMessage.apply(worker, arguments);
       },
-      
+
       subscribe: function(objectName, event, callback) {
         var callbackId = _.uniqueId('physicsCallback');
         callbacks[callbackId] = callback;
@@ -1669,23 +1708,23 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       chain: function() {
         var rpcs = arguments[0] instanceof Array ? arguments[0] : _.toArray(arguments),
             rpc;
-        
+
         for (var i = 0, l = rpcs.length; i < l; i++) {
           rpc = rpcs[i];
           if (rpc.args)
             replaceCallbacks(rpc.args);
         }
-        
+
         worker.postMessage({
           method: 'chain',
           args: rpcs
         });
       },
-      
+
       rpc: function(objectName, method, args) {
         if (args)
           replaceCallbacks(args);
-        
+
 //        G.log("events", "RPC", method, (args ? args.join(",") : ''));
         worker.postMessage({
           object: objectName,
@@ -1693,36 +1732,36 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
           args: args
         });
       },
-      
+
       layout: {
         newLayout: function() {
           return LayoutManager.apply(null, arguments);
         }
       },
-      
+
       set: function(type, constantName, value) {
         var constants;
 //        if (type)
 //          constants = Physics.constants.byScrollerType[type];
 //        else
           constants = Physics.constants;
-        
+
         constants[constantName] = value;
         return this.rpc(null, 'set', _.toArray(arguments));
       }
     }
   };
-  
+
   function LayoutManager(options, callback) {
     if (!(this instanceof LayoutManager))
       return new LayoutManager(options, callback);
-    
+
     ID_TO_LAYOUT_MANAGER[options.container] = this;
     this.id = _.uniqueId('layoutManager');
     this.containerId = options.container;
     THERE.rpc(null, 'layout.init', [this.id, options, addSubscription(callback)]);
   };
-  
+
 //  LayoutManager.prototype = {
 //    resize: function() {
 //      var self = this,
@@ -1733,7 +1772,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //            method: 'resize',
 //            args: args
 //          }];
-//      
+//
 //      if (draggable) {
 //        if (draggable.drag) { // currently dragging
 //          chain.push({
@@ -1749,20 +1788,20 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //          }]
 //        });
 //      }
-//      
+//
 //      return THERE.chain.apply(THERE, chain);
-//    }  
+//    }
 //  };
-  
+
   HERE = Physics.here;
   THERE = Physics.there;
-  
+
   commonMethods.forEach(function(method) {
     THERE[method] = function() {
       return this.rpc(null, method, _.toArray(arguments));
     };
   });
-  
+
   layoutMethods.forEach(function(method) {
     LayoutManager.prototype[method] = function() {
       switch (method) {
@@ -1779,11 +1818,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       case 'isLocked':
         return this._handlingRangeRequest;
       }
-      
+
 //      console.debug.apply(console, ["LIST VIEW CALLING WORKER", method].concat(_.toArray(arguments)));
       return THERE.rpc(this.id, method, _.toArray(arguments));
     };
   });
-  
+
   return Physics;
 });
