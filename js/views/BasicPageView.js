@@ -35,6 +35,7 @@ define('views/BasicPageView', [
 
   var PageView = BasicView.extend({
 //    mixins: [Scrollable],
+    _inactiveFor: 0,
     _autoFetch: true,
     _fetchPromise: null,
     _draggable: true,
@@ -181,30 +182,44 @@ define('views/BasicPageView', [
     },
 
     scrollToTarget: function(e) {
-      var link = e.selectorTarget,
-          selector = fixSelector(link.$data('selector')),
-          target = this.$(selector)[0],
+      var self = this,
+          link = e.selectorTarget,
+          selectors = fixSelector(link.$data('selector')).split(','),
+          target,
           tooltip,
-          direction;
+          direction,
+          delay = 0;
+
+      _.find(selectors, function(selector) {
+        return (target = self.$(selector)[0]);
+      });
 
       if (!target)
         return;
 
-      var collapsed = target.$closest('[data-display="collapsed"]');
+      var collapsed = target.$closest('[data-display="collapsed"]', true);
       if (collapsed && collapsed.$isCollapsed())
         this.toggleCollapsedEl(collapsed);
+      else {
+        collapsed = target.$closest('.slider:not(.slider-active)', true);
+        if (collapsed) {
+          collapsed.$addClass('slider-active');
+          this.invalidateSizeIn(300, 500);
+          delay = 100;
+        }
+      }
 
       Events.stopEvent(e);
       tooltip = link.$data('tooltip');
       direction = link.$data('direction');
       if (tooltip) {
-        this.addTooltip({
+        setTimeout(this.addTooltip.bind(this, {
           el: target,
           tooltip: tooltip,
           direction: direction,
           type: 'info',
           style: 'square'
-        });
+        }), delay);
       }
 
       this.scrollToElement(target, !tooltip);
@@ -251,12 +266,19 @@ define('views/BasicPageView', [
 
     _onActiveView: function(view) {
       if (view !== this) {
+        this._inactiveFor++;
+        // if (this._inactiveFor > 2) {
+        //   this.destroy();
+        // }
+
         if (this.active)
           this.trigger('inactive');
       }
       else {
-        if (!this.active)
+        if (!this.active) {
+          this._inactiveFor = 0;
           this.trigger('active');
+        }
       }
     },
 

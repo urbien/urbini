@@ -7,7 +7,7 @@
 <script type="text/template" id="resource-list">
   <!-- Resource list page -->
   <section id="{{= viewId }}" data-type="sidebar"></section>
-  <section id="{{= viewId + 'r' }}" data-type="sidebar"></section> 
+  <section id="{{= viewId + 'r' }}" data-type="sidebar"></section>
   <!-- div class="headerMessageBar"></div -->
   <div class="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
@@ -25,7 +25,7 @@
     <section  id="sidebar" data-type="list">
     </section>
     <div id="nabs_grid" class="masonry"></div>
-    
+
     <table class="table-stroke" width="100%" style="display:none" id="comments">
     </table>
     <form data-ajax="false" id="mv" action="#">
@@ -36,14 +36,14 @@
         <fieldset data-role="controlgroup" id="mvChooser">
         </fieldset>
       </div>
-    </form>  
+    </form>
     <form data-ajax="false" id="editRlForm" action="#">
       <input type="submit" id="editRlSubmit" value="Submit" />
       <ul data-role="listview" id="editRlList" class="action-list" data-inset="true">
       </ul>
-    </form>  
+    </form>
   </div>
-</script>  
+</script>
 
 <script type="text/template" id="scrollbarTemplate">
   <span id="{{= obj.id || 'scrollbar' + G.nextId() }}" class="scrollbar" style="position:absolute; {{= (obj.width ? 'width:' + width + 'px;' : '') + (obj.height ? 'height:' + height + 'px;' : '') }}">
@@ -53,21 +53,21 @@
 </script>
 
 <script type="text/template" id="resource">
-<!-- Single resource view -->  
+<!-- Single resource view -->
 <section id="{{= viewId }}" data-type="sidebar"></section>
-<section id="{{= viewId + 'r' }}" data-type="sidebar"></section> 
+<section id="{{= viewId + 'r' }}" data-type="sidebar"></section>
 
 <!-- div class="headerMessageBar"></div -->
 <div class="headerDiv"></div>
 <div id="resourceViewHolder">
   <div style="width: 100%;position:relative;padding-right:10px;overflow:hidden;margin-left:0;" class="container_16">
 
-    {{ if (this.isImageCover) { }} 
+    {{ if (this.isImageCover) { }}
       <div id="resourceImage" style="margin:0;position:absolute;z-index:1" class="grid_3"></div>
-      <div data-role="footer" class="thumb-gal-header hidden" 
+      <div data-role="footer" class="thumb-gal-header hidden"
         style="opacity:0.7;position:absolute;top:251px;width:100%;background:#eee;text-shadow:none;color:{{= G.darkColor }};">
         <h3></h3>
-      </div>    
+      </div>
       <div id="mainGroup" style="padding-right:5px;" {{= U.isAssignableFrom(this.vocModel, 'Tradle') ? 'class="grid_10"' : ''}}></div>
     {{ } }}
     {{ if (!this.isImageCover) { }}
@@ -80,26 +80,26 @@
   </div>
   <div id="resourceImageGrid" data-role="content" style="padding: 2px;" class="hidden"></div>
   {{ if (!this.isImageCover) { }}
-    <div data-role="footer" class="thumb-gal-header hidden"><h3></h3></div>    
+    <div data-role="footer" class="thumb-gal-header hidden"><h3></h3></div>
   {{ } }}
-  
+
   <div class="thumb-gal-header hidden"><h3></h3></div>
   <!--div id="photogrid" style="padding: 7px;" data-role="content" class="hidden">
   </div-->
-  
+
   <div id="photogrid" data-inset="true" data-filter="false" class="thumb-gal hidden">
   </div>
   {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
      <div style="padding:10px;"><a data-role="button" class="ui-btn-hover-c" data-icon="heart" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></div>
   {{ } }}
-  
+
   <div class="stockCharts hidden"></div>
   <section data-type="list">
     <ul id="resourceView">
     </ul>
   </section>
   <div id="about" class="hidden" style="padding: 7px;"></div>
-  
+
   {{ if (document.getElementById('other')) { }}
     <!--br/>
     <br/-->
@@ -114,7 +114,7 @@
    <a data-role="button" data-shadow="false" data-icon="edit" id="edit" target="#" style="float:right;" id="edit">{{= loc('edit') }}</a>
 </div-->
 <br/>
-</script>  
+</script>
 
 <script type="text/template" id="feedChooserQuickstartTemplate">
 <div class="quickstart-content">
@@ -129,7 +129,7 @@
     </li>
     <li>
       <a href="#" class="mini-cta" data-selector="section[data-type=&quot;list&quot;]" data-tooltip="Click any of the feeds shown below to see the indicators it provides" data-direction="top">Choose a feed</a> from the filtered down list
-    </li>          
+    </li>
   </ol>
 </div>
 </script>
@@ -142,7 +142,7 @@
   <ol class="quickstart-options">
     <li>
       <a href="#" class="mini-cta" data-selector="section[data-type=&quot;list&quot;]" data-tooltip="Click on a row to choose an indicator" data-direction="top">Choose an indicator</a>
-    </li>          
+    </li>
   </ol>
 </div>
 </script>
@@ -179,19 +179,19 @@
   <ul class="quickstart-options" style="list-style:none;">
     {{ if (currentStep == 0) { }}
     <li>
-      <a class="mini-cta" href="#" data-selector="header [data-shortname=&quot;feeds&quot;] i" data-tooltip="Click here to add indicators" data-direction="left">Add indicators</a> to your tradle.
+      <a class="mini-cta" href="#" data-selector="section[data-backlink=&quot;indicators&quot;]" data-tooltip="Click here to add indicators" data-direction="left">Add indicators</a> to your tradle.
     </li>
-    {{ }                       }}          
+    {{ }                       }}
     {{ if (currentStep == 1) { }}
     <li>
-      <a class="mini-cta" href="#" data-selector="li[data-backlink=&quot;indicators&quot;]" data-tooltip="Click an indicator to make a rule with it" data-direction="top">Create rules</a> out of the indicators you've chosen
+      <a class="mini-cta" href="#" data-selector="li[data-backlink=&quot;indicators&quot;]:nth-child(2),li[data-backlink=&quot;indicators&quot;]:nth-child(1)" data-tooltip="Click an indicator to make a rule with it" data-direction="top">Create rules</a> out of the indicators you've chosen
     </li>
-    {{ }                       }}          
+    {{ }                       }}
     {{ if (currentStep == 2) { }}
     <li>
       <a class="mini-cta" href="#" data-selector="header [data-shortname=&quot;orders&quot;] i" data-tooltip="Click here to add trades" data-direction="left">Add trades</a> to be executed when your tradle fires
     </li>
-    {{ }                       }}          
+    {{ }                       }}
   </ul>
   {{ }                     }}
 
@@ -237,7 +237,7 @@
   <ul class="quickstart-options">
     <li>
       <a href="#" class="mini-cta" data-selector="section[data-type=&quot;list&quot;]" data-tooltip="Click on a row to choose a rule" data-direction="top">Choose a rule</a>
-    </li>          
+    </li>
   </ul>
 </div>
 </script>
@@ -264,35 +264,41 @@
 <script type="text/template" id="inlineListItemTemplate">
 <!-- one row of an inline backlink in view mode -->
 
-
 <li data-viewid="{{= viewId }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}"
 {{ if (isTrade) { }}
-  style="text-align:center;padding:0;border:none;background:#3777a1;border-bottom:1px solid #ddd;" class="trades"
+  style="text-align:center;padding:0;border:none;" class="trades"
 {{ } }}
-  >  
-  <a href="{{= href }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="{{= obj.img || obj.needsAlignment ? '' : 'padding:1rem 0;'}} {{= obj.noclick ? 'cursor:default;' : 'cursor:pointer;' }}">
+  >
+  <a href="{{= href }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="{{= obj.img || obj.needsAlignment ? '' : 'padding:1rem 0;'}} {{= obj.noclick ? 'cursor:default;' : 'cursor:pointer;' }}{{= isTrade ? '' : 'font-size:1.6rem;' }}">
     {{ if (obj.img) { }}
-      <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}" 
-      {{ if (obj.top) { }}  
+      <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}"
+      {{ if (obj.top) { }}
       style="max-height:none;max-width:none;
         left:-{{= left }}px; top:-{{= top }}px;
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
       {{ } }}
-      {{ if (!obj.top) { }}  
+      {{ if (!obj.top) { }}
         style="max-height:80px;max-width:80px;"
       {{ } }}
       data-for="{{= U.getImageAttribute(resource, imageProperty) }}"
       class="lazyImage" />
     {{ } }}
     {{ if (!obj.img  &&  obj.needsAlignment) { }}
-      <img src="{{= G.getBlankImgSrc() }}" height="80" style="vertical-align:middle;"/> 
+      <img src="{{= G.getBlankImgSrc() }}" height="80" style="vertical-align:middle;"/>
     {{ } }}
-    <span style="{{= obj.img || obj.needsAlignment ? 'position:absolute;padding:10px;' : ''}}{{= isTrade ? 'font-size:2.5rem;color:aliceblue;' : 'font-size:1.6rem;' }}font-weight:bold;">{{= obj.gridCols  ? (obj.gridCols.indexOf(name) == -1 ? name + '<br/>' + gridCols : gridCols) : name }}</span>
+    <span style="{{= obj.img || obj.needsAlignment ? 'position:absolute;padding:10px;' : ''}}font-weight:bold;">{{= obj.gridCols  ? (obj.gridCols.indexOf(name) == -1 ? name + '<br/>' + gridCols : gridCols) : name }}</span>
   </a>
   {{ if (typeof comment != 'undefined') { }}
     <p>{{= comment }}</p>
   {{ } }}
 </li>
+</script>
+
+<script type="text/template" id="inlineAddTemplate">
+  <li data-viewid="view7" data-backlink="{{= backlink }}" data-action="add" style="background: rgba(40, 146, 198, 0.25);">
+    <div style="font-size:1.6rem;padding-top:1rem;"><span>{{= hint }}</span></div>
+    <div style="text-decoration:none">{{= action }}</div>
+  </li>
 </script>
 
 <script type="text/template" id="actionsOverlayTemplate">
@@ -330,9 +336,9 @@
 </script>
 
 <script type="text/template" id="inlineCompareIndicatorsRuleTemplate">
-<li data-viewid="{{= viewId }}" data-backlink="{{= backlink }}" data-uri="{{= resource.getUri() }}" style="background:white; padding:0;" class="tradleRules">
+<li data-viewid="{{= viewId }}" data-backlink="{{= backlink }}" data-uri="{{= resource.getUri() }}" style="padding:0;" class="tradleRules">
   {{ var byPercent = ~resource.getUri().indexOf('ByRule?'); }}
-  <div class="cf" style="font-size:1.6rem;font-weight:bold;text-align:center; height: auto; padding:1rem 0; width: 100%">
+  <div class="cf" style="font-size:1.6rem;font-weight:bold;text-align:center; height: auto; padding: 1.5rem 0; width: 100%">
     <div style="float:left; width:40%; height:100%;">
       {{ if (resource.get('feedImage')) { }}
         <img style="padding-left:1rem;float:left;af" src="{{= resource.get('feedImage') }}" />
@@ -351,12 +357,12 @@
     <div style="float:left; width:20%; height:100%; font-size:2.3rem;">
     {{ var op = U.getRuleOperator(resource), lop = op.toLowerCase(); }}
     {{ var cl = lop == 'rose' ? 'ui-icon-arrow-up' : lop == 'fell' ? 'ui-icon-arrow-down' : ''; }}
-      <div style="font-size:4.5rem;color:#2c94c5;" class="{{= cl }}">
+      <div style="font-size:4.5rem;line-height: 4rem;color:#2c94c5;" class="{{= cl }}">
         {{= cl ? '' : op }}
       </div>
       {{ if (byPercent) {   }}
       <div>
-        <span style="font-size:1.5rem;">BY</span> 
+        <span style="font-size:1.5rem;">BY</span>
         {{= resource.get('percentValue') }}%
       </div>
       {{ }                        }}
@@ -385,6 +391,11 @@
     </div>
   </div>
 </li>
+{{ if (!obj.isLast) { }}
+<li class="ruleCombinator" style="border: 0;width: 100%;margin: 0 auto;padding: 0;color: #888;z-index: 2;font-size: 3rem; text-align:center;">
+  <div>-- AND --</div>
+</li>
+{{ }                  }}
 </script>
 
 <script type="text/template" id="socialLinksTemplate">
@@ -407,15 +418,15 @@
   <div class="section-content">
     <div class="title-block">
     {{ var guest = G.currentUser.guest, activated = G.currentUser.isActivated; }}
-    {{ if (guest) { }} 
+    {{ if (guest) { }}
       <span class="section-title">Sign up for early access</span>
       <span class="section-title _2">Get involved now!</span>
     {{ }                                 }}
-    {{ if (activated) { }} 
+    {{ if (activated) { }}
       <span class="section-title">You got early access!</span>
       <span class="section-title _2">See how to make the most of your Tradle membership below</span>
     {{ }                                 }}
-    {{ if (!guest && !activated) { }} 
+    {{ if (!guest && !activated) { }}
       <span class="section-title">There are {{= G.currentUser.numberInLine }} users ahead of you</span>
       <span class="section-title _2">But don't wait, get involved now!</span>
     {{ }                                 }}
@@ -433,7 +444,7 @@
               <a href="#" class="link reqLogin">Login</a> and all links in your address bar become personalized.
             {{ }                            }}
             {{ if (!G.currentUser.guest ) { }}
-            You've signed up 
+            You've signed up
               <span style="color:#00B608;font-size:16px">{{= n }}</span> {{= n == 1 ? 'person' : 'people' }} so far. Link below is an example link you can use.
               <input type="text" style="width:80%; margin: 10px auto; display: block;" onfocus="Lablz.U.selectInputText(arguments[0]);" value="{{= U.getReferrerLink() }}" readonly="readonly" />
             {{ }                            }}
@@ -449,7 +460,7 @@
         <p>
           <strong>Gain influence over priority features</strong>
           <div>
-            Get instant access. Gain right to upvote/downvote <a href="app/Tradle/list/software/crm/Feature">features in our pipeline</a> and suggest new features.  
+            Get instant access. Gain right to upvote/downvote <a href="app/Tradle/list/software/crm/Feature">features in our pipeline</a> and suggest new features.
           </div>
         </p>
         <div>
@@ -470,13 +481,13 @@
         </div>
       </div>
     </div>
-  </div>  
+  </div>
   </div>
 </script>
 
 <script type="text/template" id="articlePageTemplate">
   <section class="menuLeft" data-type="sidebar"></section>
-  <section class="menuRight" data-type="sidebar"></section> 
+  <section class="menuRight" data-type="sidebar"></section>
   <div class="headerDiv" style="padding-top: 10px;">
     <ul class="headerUl">
     </ul>
@@ -487,7 +498,7 @@
 <script type="text/template" id="articleViewTemplate">
   <div class="section-content">
     <div class="title-block">
-      <span class="section-title">{{= title }}</span>  
+      <span class="section-title">{{= title }}</span>
     </div>
     <div style="text-align: left;padding: 30px;">
       {{= body }}
@@ -505,7 +516,7 @@
     {{ for (var i = 0, l = cols.length; i < l; i++)  {               }}
     {{   var col = cols[i];                                          }}
       <div class="col span_1_of_{{= l }}" style="{{= (l < 3 ? 'text-align:center;' : '') + (l == 1 ? 'float:none;width:100%;' : '') }}">
-      {{ if (col.icon) {                                             }} 
+      {{ if (col.icon) {                                             }}
         <i class="{{= col.icon['class'] }}" style="color:{{= col.icon.color }}"></i>
       {{ }                                                           }}
       {{ if (col.img) {                                              }}
@@ -513,31 +524,31 @@
           <img src="{{= col.img }}" style="border-color: #C5E4FF;" />
         </div>
       {{ }                                                           }}
-      {{ if (col.title) {                                            }} 
+      {{ if (col.title) {                                            }}
         <h4 style="font-weight:100;">{{= col.title }}</h4>
       {{ }                                                         }}
-      {{ if (col.subTitle || col.body) {                           }} 
+      {{ if (col.subTitle || col.body) {                           }}
         <p>
-        {{ if (col.subTitle) {                                       }} 
+        {{ if (col.subTitle) {                                       }}
           <strong>{{= col.subTitle }}</strong>
         {{ }                                                         }}
-        {{ if (col.body) {                                           }} 
+        {{ if (col.body) {                                           }}
           <div style="{{= l < 3 ? 'text-align:left;padding: 30px;' : '' }}">{{= col.body }}</div>
         {{ }                                                         }}
         </p>
       {{ }                                                         }}
-      {{ if (col.link) {                                           }} 
+      {{ if (col.link) {                                           }}
         <a href="{{= col.link.href }}" class="{{= col.link.className || 'link' }}">{{= col.link.text }}</a>
       {{ }                                                         }}
       </div>
     {{ }                                                             }}
     </div>
-    {{ if (obj.action) {                                             }} 
+    {{ if (obj.action) {                                             }}
     <div style="text-align:center;">
       <a href="{{= action.href }}" class="cta">{{= action.text }}</a>
     </div>
     {{ }                                                             }}
-  </div>  
+  </div>
 </script>
 
 <script type="text/template" id="pricingPageTemplate">
@@ -562,7 +573,7 @@
             Free
           </h4>
           <div class="pricing-note">
-            Sign up now, no credit card needed 
+            Sign up now, no credit card needed
           </div>
           <div class="pricing-price">
             <span class="pricing-amount">0</span>
@@ -571,18 +582,18 @@
           <ul class="pricing-items">
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">Unlimited public tradles</p>            
+              <p class="pricing-title">Unlimited public tradles</p>
             </li>
-    
+
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">Free 5-day backtesting</p>            
+              <p class="pricing-title">Free 5-day backtesting</p>
             </li>
-    
+
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">Free historical data</p>            
-            </li>  
+              <p class="pricing-title">Free historical data</p>
+            </li>
           </ul>
           <div class="section-footer">
             <a class="cta buy1" href="#">Get Now</a>
@@ -593,29 +604,29 @@
             Small
           </h4>
           <div class="pricing-note">
-            Start making some money 
+            Start making some money
           </div>
-          
+
           <div class="pricing-price">
             <span class="pricing-amount">19</span>
             <span class="pricing-unit">$/mo</span>
           </div>
-    
+
           <ul class="pricing-items">
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">5 private tradles</p>            
+              <p class="pricing-title">5 private tradles</p>
             </li>
-    
+
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">A month of backtesting</p>            
+              <p class="pricing-title">A month of backtesting</p>
             </li>
-    
+
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">1 tradle listed for sale</p>            
-            </li>  
+              <p class="pricing-title">1 tradle listed for sale</p>
+            </li>
           </ul>
           <div class="section-footer">
             <a class="cta buy" data-buyitem="basic" href="pay/?$amount=$19">Buy Now</a>
@@ -628,34 +639,34 @@
           <div class="pricing-note">
             For emerging money managers
           </div>
-          
+
           <div class="pricing-price">
             <span class="pricing-amount">99</span>
             <span class="pricing-unit">$/mo</span>
           </div>
-    
+
           <ul class="pricing-items">
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">25 private tradles</p>            
+              <p class="pricing-title">25 private tradles</p>
             </li>
-    
+
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">A year of backtesting</p>            
+              <p class="pricing-title">A year of backtesting</p>
             </li>
-    
+
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">5 tradles listed for sale</p>            
-            </li>  
+              <p class="pricing-title">5 tradles listed for sale</p>
+            </li>
           </ul>
           <div class="section-footer">
             <a class="cta buy" data-buyitem="pro" href="pay/?$amount=$99">Buy Now</a>
           </div>
         </div>
       </div>
-    </div>  
+    </div>
   </div>
 </script>
 
@@ -680,7 +691,7 @@
             Silver
           </h4>
           <div class="pricing-item-price-note">
-            What you get here is an absolute steal 
+            What you get here is an absolute steal
           </div>
           <div class="pricing-price">
             <span class="pricing-amount">1K</span>
@@ -689,18 +700,18 @@
           <ul class="pricing-items">
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">Monitor clones of your tradle</p>            
+              <p class="pricing-title">Monitor clones of your tradle</p>
             </li>
-    
+
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">Top the sale of any clone you seeded</p>            
+              <p class="pricing-title">Top the sale of any clone you seeded</p>
             </li>
-    
+
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">Access to leaderboard of clones you seeded</p>            
-            </li>  
+              <p class="pricing-title">Access to leaderboard of clones you seeded</p>
+            </li>
           </ul>
           <div class="section-footer">
             <a class="cta buy1" href="pay/?$amount=$1,000">Buy Now</a>
@@ -711,29 +722,29 @@
             Gold
           </h4>
           <div class="pricing-item-price-note">
-            Decrease fundraising costs 
+            Decrease fundraising costs
           </div>
-          
+
           <div class="pricing-price">
             <span class="pricing-amount">10K</span>
             <span class="pricing-unit">$/mo</span>
           </div>
-    
+
           <ul class="pricing-items">
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">Your logo in tradle embeds</p>            
+              <p class="pricing-title">Your logo in tradle embeds</p>
             </li>
-    
+
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">Affiliate sales</p>            
+              <p class="pricing-title">Affiliate sales</p>
             </li>
-    
+
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">Feed packages</p>            
-            </li>  
+              <p class="pricing-title">Feed packages</p>
+            </li>
           </ul>
           <div class="section-footer">
             <a class="cta buy2" href="pay/?$amount=$10,000">Buy Now</a>
@@ -746,34 +757,34 @@
           <div class="pricing-item-price-note">
             For emerging quant funds
           </div>
-          
+
           <div class="pricing-price">
             <span class="pricing-amount">Call</span>
             <span class="pricing-unit"></span>
           </div>
-    
+
           <ul class="pricing-items">
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">Full</p>            
+              <p class="pricing-title">Full</p>
             </li>
-    
+
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">Algo trading</p>            
+              <p class="pricing-title">Algo trading</p>
             </li>
-    
+
             <li class="pricing-item">
               <i class="ui-icon-ok"></i>
-              <p class="pricing-title">Services</p>            
-            </li>  
+              <p class="pricing-title">Services</p>
+            </li>
           </ul>
           <div class="section-footer">
             <a class="cta buy3" href="make/commerce/trading/Lead?$title=Get+a+callback&$editCols=description">Get a callback</a>
           </div>
         </div>
       </div>
-    </div>  
+    </div>
   </div>
 </script>
 
@@ -814,7 +825,7 @@
       {{   }                                             }}
       </div>
       {{ }                                               }}
-    </div>  
+    </div>
   </div>
 </script>
 
@@ -839,7 +850,7 @@
   }
 
   .bookmarkletPage a { color: #1389e5; }
-  
+
   .bookmarkletPage-section h1, .bookmarkletPage-section h2, .bookmarkletPage-section h3, .bookmarkletPage-section h4, .bookmarkletPage-section h5, .bookmarkletPage-section h6 {
     font-size: 16px;
     font-weight: bold;
@@ -925,19 +936,19 @@
 
 <script type="text/template" id="chatPageTemplate">
   <!-- Chat page -->
-  <div id="{{= viewId }}" data-role="panel" data-display="overlay" style="z-index: 3000;" data-theme="a" data-position="right"></div> 
-  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" style="z-index: 3001;" data-theme="a" data-position="right"></div> 
+  <div id="{{= viewId }}" data-role="panel" data-display="overlay" style="z-index: 3000;" data-theme="a" data-position="right"></div>
+  <div id="{{= viewId + 'r' }}" data-role="panel" data-display="overlay" style="z-index: 3001;" data-theme="a" data-position="right"></div>
   <div class="headerDiv"></div>
   <div id="videoChat" class="videoChat">
     <div id="localMedia"></div>
     <div id="remoteMedia"></div>
-  </div>    
+  </div>
   <!--div class="headerMessageBar" style="opacity:0.7"></div-->
   <!--div id="localVideoMonitor" style="z-index:100;width:100%;height:100%;left:0;top:0;position:fixed;">
   </div-->
   <div id="ringtoneHolder" style="visibility: hidden; display: none;">
   </div>
-  
+
   <div id="inChatGoodies" style="width:100%;position:absolute; z-index: 100">
     <div id="inChatBacklinks" style="position:absolute;padding:5px;top:130px;z-index:2000"></div>
     <div id="inChatStats" style="position:relative;"></div>
@@ -966,46 +977,46 @@
       <!--input type="radio" id="chatShareLocBtn" value="off" data-mini="true" />
       <label for="chatShareLocBtn"><i class="ui-icon-map-marker"></i></label-->
       <button id="chatShareLocBtn" data-theme="a" data-mini="true"><i class="ui-icon-map-marker"></i></button>
-    </div>  
+    </div>
     {{ }                     }}
     <div class="floatleft" style="width:40%">
       <input type="text" id="chatMessageInput" class="miniinputheight" value="" data-mini="true" />
-    </div>  
+    </div>
     <div class="floatleft">
       <button id="chatSendBtn" data-theme="a" data-mini="true">{{= loc('send') }}</button>
     </div>
   </div>
   {{ } }}
-</script>  
+</script>
 
 <script type="text/template" id="chatMessageTemplate1">
   <table width="100%">
     <tr>
       {{ if (!obj.info && !obj.self && obj.senderIcon) { }}
-        <td width="1%"><img src="{{= obj.senderIcon }}" height="20" style="margin-right:10px" /></td> 
+        <td width="1%"><img src="{{= obj.senderIcon }}" height="20" style="margin-right:10px" /></td>
       {{ }                 }}
-      
+
       <td width="100%">
         <div class="{{= 'bubble' + (obj.sender ? (obj.self ? '-left' : '-right') : '') }}">
           {{ if (obj.sender) { }}
-            <span class="{{= obj.self ? 'speaker-self' : 'speaker-other' }}">{{= sender }}</span> ({{= time }}): 
+            <span class="{{= obj.self ? 'speaker-self' : 'speaker-other' }}">{{= sender }}</span> ({{= time }}):
           {{ }                 }}
-      
+
           {{ if (obj.info && obj.senderIcon) { }}
-            <img src="{{= obj.senderIcon }}" height="20" style="margin-right:10px" /> 
+            <img src="{{= obj.senderIcon }}" height="20" style="margin-right:10px" />
           {{ }                 }}
-          
+
           <span class="{{= obj.info ? 'chat-info' : obj.self ? 'chat-message-outgoing' : 'chat-message-incoming' }}">
             {{ if (obj['private']) { }}
-              <span class="private-message"><i>{{= '(' + loc('privateMsg') + ')' }}</i></span> 
+              <span class="private-message"><i>{{= '(' + loc('privateMsg') + ')' }}</i></span>
             {{ }                 }}
             {{= obj.sender ? message : '{0} ({1})'.format(message, time) }}
           </span>
         </div>
       </td>
-      
+
       {{ if (!obj.info && obj.self && obj.senderIcon) { }}
-        <td width="1%"><img src="{{= obj.senderIcon }}" height="20" style="margin-left:10px" /></td> 
+        <td width="1%"><img src="{{= obj.senderIcon }}" height="20" style="margin-left:10px" /></td>
       {{ }                 }}
     </tr>
   </table>
@@ -1036,12 +1047,12 @@
           {{ if (obj.info && obj.senderIcon) { }}
          -->
           {{ if (obj.senderIcon) { }}
-            <div class="chat_user"><div><img src="{{= obj.senderIcon }}" class="med user_pic" /></div></div> 
+            <div class="chat_user"><div><img src="{{= obj.senderIcon }}" class="med user_pic" /></div></div>
           {{ }                 }}
-          
+
           <div class="chat_copy">
             {{ if (obj.isPrivate) { }}
-              <p class="private-message"><i> (Private message) </i></p> 
+              <p class="private-message"><i> (Private message) </i></p>
             {{ }                 }}
             <!-- p>{{= obj.sender ? message : '{0} ({1})'.format(message, time) }}</p -->
             <p>{{= message }}</p>
@@ -1058,12 +1069,12 @@
 </script>
 
 <script type="text/template" id="socialNetworkPageTemplate">
-<!-- View where the user can connect various social networks -->  
+<!-- View where the user can connect various social networks -->
   <div id="{{= this.cid }}" data-role="panel" data-display="overlay" data-theme="a" data-position="right"></div>
-  <div id="{{= this.cid + 'r' }}" data-role="panel" data-display="overlay" data-theme="a" data-position="right"></div> 
+  <div id="{{= this.cid + 'r' }}" data-role="panel" data-display="overlay" data-theme="a" data-position="right"></div>
   <div class="headerDiv"></div>
   <div id="socialButtons" style="min-width:200px; margin: 0 auto;"></div>
-</script>  
+</script>
 
 <script type="text/template" id="socialNetButtonTemplate">
   <div class="{{= obj['class'] || '' }}" style="text-align:center;">
@@ -1078,7 +1089,7 @@
 
 <script type="text/template" id="genericOptionsDialogTemplate">
   <div data-role="popup" id="{{= id }}" data-overlay-theme="a" data-theme="c">
-    <ul data-role="listview" data-inset="false" data-theme="d"> 
+    <ul data-role="listview" data-inset="false" data-theme="d">
       <li data-role="divider" data-theme="e" style="font-size: 20px;">{{= title }}</li>
       {{ _.each(options, function(option) { }}
         <li data-icon="false" style="padding:5px 20px;"><a href="{{= option.href || '#' }}" style="font-size: 20px;" id="{{= option.id }}" >{{= option.text }}</a></li>
@@ -1105,7 +1116,7 @@
     <div id="videoChat" class="videoChat">
       <div id="localMedia"></div>
       <div id="remoteMedia"></div>
-    </div>    
+    </div>
   {{ }                }}
 
     <div id="ringtoneHolder" style="visibility: hidden; display: none;">
@@ -1155,23 +1166,23 @@
         <!--input type="radio" id="chatShareLocBtn" value="off" data-mini="true" />
         <label for="chatShareLocBtn"><i class="ui-icon-map-marker"></i></label-->
         <button id="chatShareLocBtn" data-theme="a" data-mini="true"><i class="ui-icon-map-marker"></i></button>
-      </div>  
+      </div>
       {{ }                     }}
       <div class="floatleft" style="width:40%">
         <input type="text" id="chatMessageInput" class="miniinputheight" value="" data-mini="true" />
-      </div>  
+      </div>
       <div class="floatleft">
         <button id="chatSendBtn" data-theme="a" data-mini="true">{{= loc('send') }}</button>
       </div>
     </div>
-    
+
   {{ }                                          }}
   </div>
 </script>
 
 <script type="text/template" id="audioPlayerTemplate">
   <audio controls style="padding:20px 0 5px 13px;">
-{{    _.each(sources, function(source) { }}      
+{{    _.each(sources, function(source) { }}
       <source src="{{= source }}" type="{{= 'audio/' + source.slice(source.lastIndexOf('.') + 1) }}">
       Your browser does not support this audio player
 {{    }); }}
@@ -1179,7 +1190,7 @@
 </script>
 
 <script type="text/template" id="videoPlayerTemplate">
-  <video controls="true" {{= _.has(obj, 'autoplay') ? "autoplay='{0}'".format(autoplay) : '' }} preload="{{= obj.preload ? preload : 'metadata' }}" 
+  <video controls="true" {{= _.has(obj, 'autoplay') ? "autoplay='{0}'".format(autoplay) : '' }} preload="{{= obj.preload ? preload : 'metadata' }}"
   {{= obj.width ? " width='{0}'.format(width)" : '' }}
   {{= obj.height ? " height='{0}'.format(height)" : '' }}
   {{ if (obj.poster) {               }}
@@ -1193,12 +1204,12 @@
 <script type="text/template" id="menuP">
 <!-- Left-side slide-out menu panel -->
 <ul class="menuItems" id="menuItems" style="background:{{= G.darkColor }};"></ul>
-</script>  
+</script>
 
 <script type="text/template" id="rightMenuP">
 <!-- Right-side slide-out menu panel -->
 <ul id="rightMenuItems" class="menuItems" style="background:{{= G.darkColor }};"></ul>
-</script>  
+</script>
 
 <script type="text/template" id="stringPT">
   <!-- Left-side slide-out menu panel -->
@@ -1209,7 +1220,7 @@
     {{= value }}
   {{ } }}
 </script>
-  
+
 <script type="text/template" id="longStringPT">
   {{ if (typeof value != 'undefined' && value.indexOf('<span') == -1) { }}
      <span style="white-space: normal; font-size:16px; color: #777;">{{= value }}</span>
@@ -1288,7 +1299,7 @@
   <!-- one map popup -->
   <ul style="list-style-type:none">
     <li><span><a href="{{= U.makePageUrl('view', uri) }}"> {{= resourceLink }} </a></span></li>
-    {{ _.forEach(rows, function(val, key) { }} 
+    {{ _.forEach(rows, function(val, key) { }}
       <li>{{= key }}: {{= val.value }}</li>
     {{ }); }}
     {{ if (typeof image != 'undefined') { }}
@@ -1304,7 +1315,7 @@
 
 <script type="text/template" id="editListItemTemplate">
   <!-- one row of a list in edit mode -->
-  <input data-formEl="true" name="{{= _uri + '.$.' + editProp }}" value="{{= editPropValue }}" /> 
+  <input data-formEl="true" name="{{= _uri + '.$.' + editProp }}" value="{{= editPropValue }}" />
   {{= viewCols }}
 </script>
 
@@ -1319,15 +1330,15 @@
 {{ if (obj.v_submitToTournament) { }}
   <div style="padding:.7em 10px 0 90px; min-height:59px;position:relative;" data-uri="{{= U.makePageUrl(action, _uri, {'-tournament': v_submitToTournament.uri, '-tournamentName': v_submitToTournament.name}) }}">
 {{ } }}
-  <img data-lazysrc="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : G.getBlankImgSrc() }}"  
-  {{ if (obj.right) { }}  
+  <img data-lazysrc="{{= typeof image != 'undefined' ? (image.indexOf('/Image') == 0 ? image.slice(6) : image) : G.getBlankImgSrc() }}"
+  {{ if (obj.right) { }}
     style="position:absolute;
       left:-{{= left }}px; top:-{{= top }}px;
       clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px); {{= obj.mH ? 'max-height:' + mH + 'px;' : '' }} {{= obj.mW ? 'max-width:' + mW + 'px;' : '' }}"
   {{ } }}
   {{ if (!obj.right && obj.image) { }}
     style="max-height: 80px;position:absolute;max-height: 80px;max-width: 80px;margin-left:-90px; margin-top:-0.7em"
-  {{ } }}  
+  {{ } }}
   data-for="{{= U.getImageAttribute(this.resource, this.imageProperty) }}"
   class="lazyImage" />
   {{= viewCols }}
@@ -1338,7 +1349,7 @@
 <script type="text/template" id="listItemTemplateNoImage">
 <!-- one row on a list page (no image) -->
 <div data-viewid="{{= viewId }}">
-{{ if (!obj.v_submitToTournament) { }}  
+{{ if (!obj.v_submitToTournament) { }}
   <div
   {{ if (obj.isJst) { }}
     style="padding: .7em 10px 10px 0px;"
@@ -1361,11 +1372,11 @@
    {{= price.currency + price.value }}
    {{= price.value < 10 ? '&nbsp;&nbsp;&nbsp;' : price.value < 100 ? '&nbsp;&nbsp;' : price.value < 1000 ? '&nbsp;' : ''}}
  </div>
-{{ } }}  
+{{ } }}
 {{ if (this.resource.isA('Distance')  &&  obj.distance) { }}
   <span class="ui-li-count">{{= distance + ' mi' }}</span>
 {{ } }}
-{{= obj.showCount ? '<span class="ui-li-count">' + obj.showCount.count + '</span>' : '' }} 
+{{= obj.showCount ? '<span class="ui-li-count">' + obj.showCount.count + '</span>' : '' }}
 {{ if (obj.comment) { }}
   <p style="padding:0.5rem 0 0 1.5rem;">{{= comment }}</p>
 {{ } }}
@@ -1378,49 +1389,52 @@
 
 <script type="text/template" id="propGroupsDividerTemplate">
 <!-- row divider / property group header in resource view -->
-<header style="position:relative;{{= obj.style ? obj.style : G.coverImage ? 'color:' + G.coverImage.background + ';' : '' }}" class="{{= obj.class || '' }}">
-{{= obj.displayCollapsed ? '<i class="ui-icon-collapsable"></i> ': '' }}  
-{{= obj.style ? '<div style="padding:1rem;display:inline-block;">' : '' }}
-  {{= value }}
-{{= obj.style ? '</div>' : '' }}
+{{ var sn = obj.shortName ? 'data-shortname="{0}"'.format(shortName) : ''; }}
+<header style="position:relative;{{= obj.style ? obj.style : G.coverImage ? 'color:' + G.coverImage.background + ';' : '' }}" class="{{= obj.class }}" {{= sn }}>
+{{= obj.displayCollapsed ? '<i class="ui-icon-collapsable"></i> ': '' }}
+{{= obj.style && !obj.actionBtn ? '<div style="padding:1rem;display:inline-block;">' : '' }}
+{{= obj.actionBtn ? '<div class="cta" style="width:220px;" ' + sn + '>' : '' }}
+{{= value }}
+{{= obj.style || obj.actionBtn ? '</div>' : '' }}
+
   {{ if (obj.add) { }}
-    <a href="#" class="add cf lightText" style="cursor:pointer; position:absolute; right:10px;color:red;font-weight:bold;font-size:2rem;{{= obj.style ? 'top:2rem;' : '' }}" data-shortname="{{= shortName }}"><i class="ui-icon-plus"></i></a>
+    <a href="#" class="add cf lightText" style="cursor:pointer; position:absolute; right:10px;color:red;font-weight:bold;font-size:2rem;{{= obj.style ? 'top:2rem;' : '' }}" {{= sn }}><i class="ui-icon-plus"></i></a>
   {{ }              }}
 </header>
 </script>
 
 <script type="text/template" id="menuItemTemplate">
 <!-- one item on the left-side slide-out menu panel -->
-<li style="position:relative;{{= obj.image ? 'padding-top: 0;padding-right:0px;' : 'padding-bottom:0px;' }}"  id="{{= obj.id ? obj.id : G.nextId() }}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }} 
+<li style="position:relative;{{= obj.image ? 'padding-top: 0;padding-right:0px;' : 'padding-bottom:0px;' }}"  id="{{= obj.id ? obj.id : G.nextId() }}" {{= obj.cssClass ? ' class="' + cssClass + '"' : '' }}
     {{= (obj.mobileUrl || obj.pageUrl) ? ' data-href="' + (obj.mobileUrl ? G.pageRoot + "/" + mobileUrl : pageUrl) + '"' : '' }} >
-  
-  <!-- {{ if (!obj.homePage) { }} -->   
-  <img src="{{= obj.image || 'icons/blank.png'}}" class="thumb" 
-  {{ if (obj.clip_right) { }}  
+
+  <!-- {{ if (!obj.homePage) { }} -->
+  <img src="{{= obj.image || 'icons/blank.png'}}" class="thumb"
+  {{ if (obj.clip_right) { }}
     style="
       right:-{{= right }}px; top:-{{= top }}px;
       clip:rect({{= top }}px, {{= clip_right }}px, {{= bottom }}px, {{= clip_left }}px);"
   {{ } }}
   {{ if (!obj.clip_right) { }}
-    style="right: 0;"  
+    style="right: 0;"
   {{ } }}
-  /> 
+  />
   <!-- {{ } }} -->
-  <div class="gradientEllipsis mi1" style="min-height:38px;max-width:100%;font-size:18px;margin-left:15px;{{= obj.image ? 'padding-top:10px;' : '' }}" 
+  <div class="gradientEllipsis mi1" style="min-height:38px;max-width:100%;font-size:18px;margin-left:15px;{{= obj.image ? 'padding-top:10px;' : '' }}"
     {{ if (obj.data) {                              }}
     {{   for (var d in data) {                      }}
     {{=    ' data-{0}="{1}"'.format(d, data[d])     }}
     {{   }                                          }}
     {{ }                                            }}
   >
-  
+
   {{ if (obj.icon  &&  obj.homePage) { }}
     <i class="ui-icon-{{= icon }}" style="float-left; font-size: 20px; padding-right: 5px;"></i>
   {{ }               }}
     {{= title }}
     {{= obj.image || title.length < 20 || obj.social  ? '' : '<div class="dimmer">' }}
   </div>
-  
+
   {{ if (obj.icon  &&  !obj.homePage) { }}
     <i class="ui-icon-{{= icon }} home"></i>
   {{ }               }}
@@ -1431,7 +1445,7 @@
 <!-- Notifications item on the left-side slide-out menu panel -->
 <li class="mi" {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }} data-href="{{= pageUrl }}">
   <div style="padding:15px 0 15px 15px;"  id="{{= typeof id === 'undefined' ? G.nextId() : id}}">
-    {{= title }}   {{= obj.newAlerts ? '<span class="acounter">' +  newAlerts + '</span>' : '' }} 
+    {{= title }}   {{= obj.newAlerts ? '<span class="acounter">' +  newAlerts + '</span>' : '' }}
   </div>
 </li>
 </script>
@@ -1439,7 +1453,7 @@
 <script type="text/template" id="homeMenuItemTemplate">
 <!-- app home page menu item -->
 <li {{= obj.icon ? 'data-icon="' + icon + '"' : ''}} {{= typeof cssClass == 'undefined' ? '' : ' class="' + cssClass + '"' }}  id="{{= typeof id == 'undefined' ? 'home123' : id }}">
-  <img src="{{= typeof image != 'undefined' ? image : G.getBlankImgSrc() }}" style="float: right;" /> 
+  <img src="{{= typeof image != 'undefined' ? image : G.getBlankImgSrc() }}" style="float: right;" />
   <a {{= typeof image != 'undefined' ? 'style="margin-left:35px;"' : '' }} target="#">
     {{= title }}
   </a>
@@ -1492,7 +1506,7 @@
      <a {{= prop.lookupFrom ? 'data-lookupFrom=' + prop.lookupFrom : '' }} data-shortName="{{= shortName }}" href="{{= U.makePageUrl(action, range, params) }}" class="cpA">{{= name }}
      </a>
      <div style="color:{{= G.lightColor }};font-weight:bold;background:{{= G.darkColor }};display:inline;position:absolute;right:1rem;font-size: 1.5rem;border-radius:1rem;border: 1px solid {{= G.darkColor }};padding: 0.1rem 0.3rem;">{{= value }}</div>
-</p>     
+</p>
      {{ if (typeof comment != 'undefined') { }}
        <br/><p style="padding: 0.7rem 0;font-size:1.3rem;color:#808080; line-height:1.5rem;">{{= comment }}</p>
      {{ } }}
@@ -1507,17 +1521,17 @@
      {{ params[backlink] = _uri; }}
      {{ if (obj.$order) { params.$orderBy = $order; params.$asc = $asc;} }}
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
-     
+
      <!--span class="ui-li-count">{{= value }}</span></a><a target="#" data-icon="chevron-right" data-iconshadow="false" class="cp" -->
      </a>
      <div style="{{= G.darkColor }}display:inline;position:absolute;right:1rem;font-size: 1.5rem;border-radius:1rem;border: 1px solid {{= G.darkColor }};padding: 0.1rem 0.3rem;">{{= value }}</div>
-</p>     
+</p>
    </li>
 </script>
 
 <script type="text/template" id="priceTemplate">
    <div data-role="button" data-shortName="{{= shortName }}" style="cursor: pointer;text-align:left; background:none; background-color: {{= color }}" href="#">
-     {{= name }}<br/> 
+     {{= name }}<br/>
      <span style="font-size: 20px;cursor:pointer;">{{= shortName == 'discount' ? '' : '$' }}{{= value }}{{= shortName == 'discount' ? '%' : '' }}</span>
    </div>
 </script>
@@ -1528,7 +1542,7 @@
    <a data-role="button" id="buy" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none; background-color: {{= color }}" href="{{= buyUrl }}">
       <span style="float:right;padding-left:3px;">Buy for<br/><span style="font-size: 20px;"> ${{= value }}</span></span><i class="ui-icon-shopping-cart" style="color:red; margin-left: -10px; font-size:35px;top:35%;"></i>
    </a>
-</div>   
+</div>
 </script>
 
 <script type="text/template" id="sellTemplate">
@@ -1537,22 +1551,22 @@
    <a data-role="button" id="sell" data-ajax="false" class="ui-li-has-count" style="text-align:left; background:none;  padding: 6px 0;background-color: {{= background }}; color: {{= color }};" href="#">
       <span style="font-size: 24px; border: none;">Sell</span>
    </a>
-</div>   
+</div>
 </script>
 
 <script type="text/template" id="cpMainGroupTemplate">
 <!-- button for an important backlink on a resource on the resource's view page -->
  {{ var params = {}; }}
  {{ params[backlink] = _uri; }}
- {{ if (!obj.value  &&  !chat) { }}  
+ {{ if (!obj.value  &&  !chat) { }}
    <a role="button" data-shortName="{{= shortName }}" data-title="{{= title }}" style="border:1px solid {{= borderColor }}; background-color: {{= color }}" href="#">
      <span><i class="{{= icon }}"></i>&#160;{{= name }}</span>
    </a>
  {{ } }}
- {{ if (obj.value || obj.chat) { }}  
+ {{ if (obj.value || obj.chat) { }}
    <a role="button" data-propName="{{= shortName }}" style="border:1px solid {{= borderColor }}; background-color: {{= color }}" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
      <span><i class="{{= icon }}"></i>&#160;{{= name }}</span>
-     
+
      <!-- {{= obj.value ? '<span class="counter">' + value + '</span>' :  ''  }} -->
      {{= obj.value ? '<div class="counter">' + value + '</div>' :  ''  }}
    </a>
@@ -1563,12 +1577,12 @@
 <!-- button for an important backlink on a resource on the resource's view page (horizontal mode) -->
  {{ var params = {}; }}
  {{ params[backlink] = _uri; }}
- {{ if (!obj.value) { }}  
+ {{ if (!obj.value) { }}
    <a role="button" data-shortName="{{= shortName }}" style="width:auto;padding:2px 10px;margin:3px;text-align:left; border: 1px solid #ccc;min-width:115px; {{= U.isAssignableFrom(this.vocModel, 'Tradle') ? 'float:right;color:#ddd;' : 'float:left;'}}  background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="#" data-title="{{= title }}">
-      <span><i class="{{= icon }}" style="margin-left:-5px;padding-right:3px;"></i>{{= name }}</span> 
+      <span><i class="{{= icon }}" style="margin-left:-5px;padding-right:3px;"></i>{{= name }}</span>
    </a>
  {{ } }}
- {{ if (obj.value) { }}  
+ {{ if (obj.value) { }}
    <a role="button" data-propName="{{= shortName }}"  style="width:auto;padding:2px 10px;margin:3px;text-align:left; border: 1px solid #ccc;min-width:115px; {{= U.isAssignableFrom(this.vocModel, 'Tradle') ? 'float:right;color:#ddd;' : 'float:left;'}} background:none; text-shadow:0 1px 0 {{= borderColor }}; background-color: {{= color }}; border:1px solid {{= borderColor }};" href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}">
      <!-- {{= obj.icon ? '<i class="' + icon + '" style="font-size:20px;top:35%"></i>' : '' }} -->
      <span>{{= obj.icon ? '<i class="ui-icon-star" style="font-size:20px;top:35%"></i>' : '' }} {{= name }}{{= value != 0 ? '<span style="float:right;color:#000;" class="counter">' + value + '</span>' : ''  }}</span>
@@ -1683,58 +1697,55 @@
     <!-- a href="#" data-rel="back" data-role="button" data-theme="a" data-icon="delete" data-iconpos="notext" class="ui-btn-right"></a -->
     <div data-theme="c" role="main">
       <h4 id="buyMsg">{{= msg }}</h4>
-      <a data-mini="true" data-role="button"  data-inline="true" id="buyLink" href="{{= href }}">{{= loc('buy') }}<span style="display:none;" id="buyName">{{= displayName }}</span></a> 
-      <a data-mini="true" data-role="button"  data-inline="true" id="tryLink" href="{{= href }}">{{= loc('try') }}<span style="display:none;" id="buyName">{{= displayName }}</span></a> 
-      <a data-mini="true" data-role="button"  data-inline="true" id="cancel" data-rel="back">{{= loc('cancel') }}</a> 
+      <a data-mini="true" data-role="button"  data-inline="true" id="buyLink" href="{{= href }}">{{= loc('buy') }}<span style="display:none;" id="buyName">{{= displayName }}</span></a>
+      <a data-mini="true" data-role="button"  data-inline="true" id="tryLink" href="{{= href }}">{{= loc('try') }}<span style="display:none;" id="buyName">{{= displayName }}</span></a>
+      <a data-mini="true" data-role="button"  data-inline="true" id="cancel" data-rel="back">{{= loc('cancel') }}</a>
     </div>
   </div>
 </script>
 
 <script type="text/template" id="emailFormTemplate">
-<div style="padding: 1rem;">
-  <label for="firstName">First name</label>
-  <input type="text" placeholder="First name" name="firstName" value="{{= firstName }}">
-  <label for="lastName">Last name</label>
-  <input type="text" placeholder="Last name" name="lastName" value="{{= lastName }}">
-  <label for="email">Email</label>
-  <input type="text" placeholder="Email address" name="email" value="{{= email }}" required="">
+<div class="emailForm">
+  <input type="text" placeholder="John" name="firstName" value="{{= obj.firstName || '' }}" />
+  <input type="text" placeholder="Doe" name="lastName" value="{{= obj.lastName || '' }}" />
+  <input type="text" required="required" placeholder="johndoe@gmail.com" name="email" value="{{= obj.email || '' }}" />
 </div>
 </script>
 
 <script type="text/template" id="genericDialogTemplate">
   <!--div class="modal-popup" style="height: auto; background:{{= G.lightColor }}; color:{{= G.darkColor }};"-->
-  <div class="modal-popup" style="height: auto; color: black; background: white;{{= obj.media ? 'margin:0;padding:0;width:100%;' : '' }}">
+  <div class="modal-popup" style="height: auto; color: black; background: white;{{= obj.media ? 'margin:0;padding:0;width:100%;' : '' }}{{= obj.style || '' }}">
     {{ if (obj.header) { }}
       <h2 style="margin-bottom: 0; padding: 1rem 1rem; background:#eee; text-align:center;">{{= header }}</h2>
     {{ }                 }}
-    
+
     {{ if (obj.media) { }}
     {{=  obj.media       }}
     {{ }                 }}
-    
+
     {{ if (obj.ok === false && obj.cancel === false && obj.dismissible) { }}
       <div class="closeBtn"></div>
     {{ }                 }}
-  
+
     {{ if (obj.ok || obj.cancel)                     { }}
     <div>
       {{ if (obj.title) { }}
       <h3 style="padding:1rem 1rem; font-weight:100;">{{= title }}</h3>
       {{ }                }}
       {{ if (obj.img) { }}
-        <img src="{{= img }}" style="display:block; width: 100%;" />    
+        <img src="{{= img }}" style="display:block; width: 100%;" />
       {{ }              }}
       {{ if (obj.details) { }}
       <div style="padding:1rem 1rem; width:100%;box-sizing: border-box;">{{= details }}</div>
       {{ }                }}
-      
+
       <div style="text-align:center;">
       {{ if (obj.cancel) { }}
       <a href="#" class="dialogBtn" data-cancel="true">{{= loc(typeof cancel === 'string' ? cancel : 'cancel') }}</a>
       {{ }                 }}
-      
+
       {{ if (obj.ok) { }}
-      <a href="#" class="dialogBtn actionBtn" data-ok="true">{{= loc(typeof ok === 'string' ? ok : 'ok') }}</a>
+      <a href="#" class="{{= obj.cancel ? 'dialogBtn actionBtn' : 'cta' }}" style="{{= obj.cancel ? '' : 'margin:10px;' }}" data-ok="true">{{= loc(typeof ok === 'string' ? ok : 'ok') }}</a>
       {{ }                 }}
       </div>
     </div>
@@ -1795,14 +1806,14 @@
 </script>
 
 <script type="text/template" id="socialConnectButtonTemplate">
-  <li id="login">   
+  <li id="login">
     <a target="#" data-icon="signin"></a>
   </li>
 </script>
 
 <script type="text/template" id="publishBtnTemplate">
   <!-- button to (re-)publish an app, i.e. a glorified 'Save App' button -->
-  <a target="#" data-icon="book" id="publish" data-role="button" data-position="notext">{{= loc(wasPublished ? 'appChangedClickToRepublish' : 'publishAppWhenDone') }}</a>  
+  <a target="#" data-icon="book" id="publish" data-role="button" data-position="notext">{{= loc(wasPublished ? 'appChangedClickToRepublish' : 'publishAppWhenDone') }}</a>
 </script>
 
 <script type="text/template" id="resetTemplateBtnTemplate">
@@ -1870,7 +1881,7 @@
 <script type="text/template" id="headerTemplate">
 <!-- the page header, including buttons and the page title, used for all pages except the home page -->
 <div id="callInProgress"></div>
-<div class="header" {{= obj.style ? style : 'style="background:#efefef;color:' + G.darkColor + '"' }} {{= obj.more || '' }} >
+<div class="header" {{= obj.style ? style : 'style="color:' + G.darkColor + '"' }} {{= obj.more || '' }} >
   <div class="hdr">
   <section role="region">
     <header style="background: none;height:inherit;">
@@ -1880,16 +1891,17 @@
   </section>
   </div>
 </div>
-<div id="buttons" class="header2" style="white-space: nowrap; position:relative; height: 50px; background:{{= G.darkColor }};color:{{= G.lightColor }}">
-  <div class="cf vcenteredR" style="z-index:1; width:20%;float:left;background:inherit;">
+<!--div class="buttons header2" style="background:{{= G.darkColor }};color:{{= G.lightColor }}"-->
+<div class="buttons header2">
+  <div class="cf vcenteredR" style="z-index:1; width:20%;float:left;">
     <span class="placeholder"></span>
     {{ if (this.categories) { }}
        <div style="display:inline-block; margin-left: 5px; font-size: 1.5rem;">
-         <a class="categories lightText" href="#">
+         <a class="categories" href="#">
            <i class="ui-icon-tags"></i>
          </a>
-       </div> 
-    {{ } }} 
+       </div>
+    {{ } }}
     {{= this.moreRanges ? '<div style="margin:10px 0 0 10px; float:left"><a id="moreRanges" data-mini="true" href="#">' + this.moreRangesTitle + '<i class="ui-icon-tags"></i></a></div>' : '' }}
     {{ if (folder) { }}
       <a class="rootFolder actionBtn" style="display: none; padding: 4px 10px; margin-left: 5px; font-size: 1.5rem;" href="#">
@@ -1898,9 +1910,9 @@
       </a>
     {{ }                     }}
   </div>
-  <div id="name" class="cf vcenteredR resTitle" style="z-index:0; width:60%;float:left;background:inherit;" align="center">
-    <h4 id="pageTitle" style="text-overflow: ellipsis; font-weight:normal;color:{{= G.lightColor }};">{{= this.title }}</h4>
-    {{= this.filter ? "<div class='filter'></div>" : "" }}
+  <div id="name" class="cf vcenteredR resTitle" style="z-index:0; width:60%;float:left;
+  " align="center">
+    <h4 id="pageTitle" style="text-overflow: ellipsis; font-weight:normal;">{{= this.title }}</h4>
     <div align="center" class="headerButtons {{= obj.className || '' }}">
       <button style="max-width:200px; display: inline-block;" id="doTryBtn">
         {{ if (obj.tryApp) { }}
@@ -1939,7 +1951,7 @@
       </button>
     </div>
   </div>
-  <div class="cf vcenteredR" style="z-index:1; width:20%;float:left;background:inherit;">
+  <div class="cf vcenteredR" style="z-index:1; width:20%;float:left;">
     {{ if (activatedProp) { }}
       <section class="activatable" style="float: right; display: none;">
         <label class="pack-switch">
@@ -1949,14 +1961,14 @@
       </section>
     {{ }                     }}
     {{ if (this.filter) { }}
-      <div style="margin-right: 5px; float: right;"><a class="filterToggle lightText" href="#"><i class="ui-icon-search"></i></a></div> 
+      <div style="margin-right: 5px; float: right;"><a class="filterToggle" href="#"><i class="ui-icon-search"></i></a></div>
     {{ }                  }}
     <i class="help ui-icon-help" style="{{= this.hasQuickstart() ? '' : 'display:none;' }}"></i>
-    <div style="clear:both;"></div>
   </div>
 </div>
 <div class="physicsConstants" style="display:none; background-color: #606060; color:#FFFFFF; display:none;"></div>
-<div class="subClasses" style="display:none; padding: 5px; background-color:#ddd; display:none;"></div>
+{{= this.filter ? "<div class='filter'></div>" : "" }}
+<div class="subClasses" style="display:none; padding: 5px;"></div>
 <div class="quickstart"></div>
 </script>
 
@@ -1973,15 +1985,15 @@
 <script type="text/template" id="searchTemplate">
   <!-- Filter conditions for complex queries -->
   <div class="searchBar">
-    <input type="text" class="searchInput" style="font-family: tradle" placeholder="&#xe090; Search" />
+    <input type="text" class="searchInput" placeholder=" Search..." />
   </div>
-</script>  
+</script>
 
 <script type="text/template" id="filterTemplate">
   <!-- Filter conditions for complex queries -->
   <ul class="filterConditions" id="filterConditions">
   </ul>
-</script>  
+</script>
 
 <script type="text/template" id="filterConditionTemplate">
 <!--li class="filterCondition {{= obj.cancelable == false ? '' : 'cancelable' }}"-->
@@ -2048,10 +2060,10 @@
 
 <script type="text/template" id="comment-item">
 <td valign="top">
-  <a href="{{= U.makePageUrl('view', submitter) }}" style="position:relative;"> 
-    <img src="{{= obj['submitter.thumb'] }}" 
-    
-      {{ if (obj.top) { }}     
+  <a href="{{= U.makePageUrl('view', submitter) }}" style="position:relative;">
+    <img src="{{= obj['submitter.thumb'] }}"
+
+      {{ if (obj.top) { }}
         style="position:absolute; left:-{{= left }}px; top:-{{= top }}px;
         clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
       {{ } }}
@@ -2066,7 +2078,7 @@
   {{= (typeof description == 'undefined') ? title : description }}
   <br/>
   <a href="#" style="font-size: 12px" class="like"><i class="ui-icon-heart-empty"></i></a>
-  {{ if (obj.votes) { }} 
+  {{ if (obj.votes) { }}
     <span>{{= votes.count ? votes.count : '' }}</span>
   {{ } }}
   <a href="#" style="float:right" id="reply">Reply</a>
@@ -2077,11 +2089,11 @@
   <div class="anab" data-viewid="{{= viewId }}">
     <div class="galleryItem_css3">
       <a href="{{= typeof rUri == 'undefined' ? 'about:blank' : rUri }}">
-        <img data-lazysrc="{{= obj.resourceMediumImage || G.getBlankImgSrc() }}" border="0" 
-        {{ if (typeof imgWidth != 'undefined') { }} 
+        <img data-lazysrc="{{= obj.resourceMediumImage || G.getBlankImgSrc() }}" border="0"
+        {{ if (typeof imgWidth != 'undefined') { }}
          style="width: {{= imgWidth }}px; height:{{= imgHeight }}px;"
          {{ } }}
-        
+
          data-for="{{= U.getImageAttribute(this.resource, 'resourceMediumImage') }}"
          class="lazyImage" />
       </a>
@@ -2112,26 +2124,26 @@
       {{ if (v_showCommentsFor.count) { }}
         <a style="float:right; font-size:12px;" href="{{= U.makePageUrl('list', 'model/portal/Comment', {forum: v_showCommentsFor.uri}) }} "><span class="ui-icon-comment-alt"></span>{{= v_showCommentsFor.count }}</a>
       {{ } }}
-      
+
     {{ } }}
     {{ if (typeof v_showVotesFor != 'undefined') { }}
-      <!--a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}"> 
+      <!--a  data-icon="heart" data-iconpos="notext" data-inline="true" data-role="button" data-mini="true" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}">
       </a -->
       <a class="like" style="float: left" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/aspects/tags/Vote', {vote: 'Like', votable: v_showVotesFor.uri, '-makeId': G.nextId()}) }}">
       {{ if (typeof v_showCommentsFor != 'undefined') { }}
          &#160;&#160;&#8226;
       {{ } }}
-      &#160;&#160;Like 
+      &#160;&#160;Like
       </a>
       {{ if (v_showVotesFor.count) { }}
-      <div style="float:right; font-size:12px;"> 
-        <a href="{{= U.makePageUrl('list', 'aspects/tags/Vote', {votable: v_showVotesFor.uri, $title: davDisplayName + ' liked by'}) }}"><span class="ui-icon-heart-empty"></span>{{= v_showVotesFor.count }}</a> 
+      <div style="float:right; font-size:12px;">
+        <a href="{{= U.makePageUrl('list', 'aspects/tags/Vote', {votable: v_showVotesFor.uri, $title: davDisplayName + ' liked by'}) }}"><span class="ui-icon-heart-empty"></span>{{= v_showVotesFor.count }}</a>
       </div>
       {{ } }}
 <!--          {{ if (v_showVotesFor.count) { }}
              v_showVotesFor.count
           {{ } }}
--->          
+-->
     {{ } }}
     <!--
     {{ if (typeof v_showRenabFor != 'undefined') { }}
@@ -2145,7 +2157,7 @@
 
 <script type="text/template" id="masonry-list-item">
   <!-- a masonry item brick -->
-  
+
   <div class="galleryItem_css3">
     <a href="{{= obj.rUri || 'about:blank' }}">
       <img data-lazysrc="{{= obj.resourceMediumImage || G.blankImgDataUrl }}" {{= obj.width ? 'width="' + width + '"' : '' }} {{= obj.height ? 'height="' + height + '"' : '' }} class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" />
@@ -2173,10 +2185,10 @@
           {{ if (typeof v_showCommentsFor != 'undefined') { }}
              &#160;&#160;&#8226;
           {{ } }}
-          &#160;&#160;Like 
+          &#160;&#160;Like
           </a>
           {{ if (v_showVotesFor.count) { }}
-            <a style="position:absolute;right:10px;" href="{{= U.makePageUrl('list', 'aspects/tags/Vote', {votable: v_showVotesFor.uri, $title: davDisplayName + ' liked by'}) }}"><span class="ui-icon-heart-empty"></span>{{= v_showVotesFor.count }}</a> 
+            <a style="position:absolute;right:10px;" href="{{= U.makePageUrl('list', 'aspects/tags/Vote', {votable: v_showVotesFor.uri, $title: davDisplayName + ' liked by'}) }}"><span class="ui-icon-heart-empty"></span>{{= v_showVotesFor.count }}</a>
           {{ } }}
         {{ } }}
         <!--
@@ -2189,7 +2201,7 @@
     {{ if (obj.v_submitForTournament) { }}
       <div><a  class="b" href="{{= v_submitForTournament }}" data-role="button" data-icon="star" data-theme="e">Submit an entry</a></div>
     {{ } }}
-  </div>     
+  </div>
         {{= typeof isIdea == 'undefined' ? '' : '<p class="ui-li-aside ui-li-desc">Idea</p>'}}
 </script>
 
@@ -2199,7 +2211,7 @@
     {{ if (obj.href) { }}
       <a href="{{= obj.href }}">{{= value }}</a>
     {{ }               }}
-    
+
     {{ if (!obj.href) { }}
       <span>{{= value }}</span>
     {{ }               }}
@@ -2208,7 +2220,7 @@
 
 <script type="text/template" id="fileUpload">
   <!-- a file upload form -->
-  
+
   <form data-ajax="false" id="fileUpload" action="#" method="POST" enctype="multipart/form-data">
     <div data-role="fieldcontain">
       <input {{= rules }} type="file" name="{{= name }}" id="file" />
@@ -2224,14 +2236,14 @@
 <script type="text/template" id="horizontalListItem">
   <a style="position:absolute" href="{{= target }}">
     {{ if (obj.image) { }}
-      <img data-lazysrc="{{= image }}" class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}" 
-      {{ if (obj.right) { }}  
+      <img data-lazysrc="{{= image }}" class="lazyImage" data-for="{{= U.getImageAttribute(this.resource, imageProperty) }}"
+      {{ if (obj.right) { }}
           style="position:absolute; left:-{{= left }}px; top:-{{= top }}px;
           clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);"
       {{ } }}
-      />    
+      />
     {{ }              }}
-  </a> 
+  </a>
   <div class="phOverlay">
     {{= obj.title ? '<h3>{0}</h3>'.format(obj.title) : '' }}
     {{= obj.caption  &&  obj.caption.trim() ? '<p>{0}</p>'.format(obj.caption) : '' }}
@@ -2260,13 +2272,13 @@
       <li style="{{= (item.width ? ';width:' + item.width : '') + (item.height ? ';height:' + item.height : '') + (item.margin ? ';margin:' + item.margin : '') }}">
         <a href="{{= item.target }}">
           {{ if (item.image) { }}
-            <img data-lazysrc="{{= item.image }}" class="lazyImage" data-for="{{= U.getImageAttribute(item, item.imageProperty) }}" />    
+            <img data-lazysrc="{{= item.image }}" class="lazyImage" data-for="{{= U.getImageAttribute(item, item.imageProperty) }}" />
           {{ }              }}
 
           {{= item.title ? '<h3>{0}</h3>'.format(item.title) : '' }}
           {{= item.caption ? '<p>{0}</p>'.format(item.caption) : '' }}
           {{= typeof item.superscript !== 'undefined' ? '<p class="ui-li-aside">{0}</p>'.format(item.superscript) : '' }}
-        </a> 
+        </a>
       </li>
       {{ if (item.arrow) { }}
          <li class="connect" style="padding:0px; border:0;"><i class="ui-icon-chevron-right"></i></li>
@@ -2287,13 +2299,13 @@
   {{ if (msg.icon) {    }}
        <i class="ui-icon-{{= msg.icon }}"></i>
   {{ }                  }}
-  
+
     {{= msg.message }}
-    
+
   {{ if (msg.link) {            }}
        </a>
   {{ }                        }}
-  
+
   {{ if (!msg.link && msg.icon) {    }}
        <i class="ui-icon-{{= msg.icon }}"></i>
   {{ }                               }}
@@ -2308,7 +2320,7 @@
   <div>
     <label for="{{= p }}">{{= p.splitCamelCase(true) }}</label><br/>
     <input type="range" id="{{= p }}" name="{{= p }}" value={{= constants[p] * 100 }} min="1" max="99">
-  </div>  
+  </div>
 {{ }                    }}
   <!--div>
     <label for="degree">Sensitivity</label><br/>
@@ -2373,7 +2385,7 @@
 <script type="text/template" id="resourceEdit">
 <!-- the edit page for any particular resource -->
   <section id="{{= viewId }}" data-type="sidebar"></section>
-  <section id="{{= viewId + 'r' }}" data-type="sidebar"></section> 
+  <section id="{{= viewId + 'r' }}" data-type="sidebar"></section>
 <!--div class="headerMessageBar"></div-->
   <div class="headerDiv"></div>
   <div id="resourceEditView">
@@ -2395,18 +2407,52 @@
     </div>
     {{ }                                                             }}
   </form>
-  
+
   {{ if (U.isAssignableFrom(this.vocModel, U.getLongUri1("model/portal/Comment"))) { }}
     <br/><table class="ui-btn-up-g" width="100%" style="padding: 5px" id="comments">
     </table>
   {{ } }}
-</div>
-</script>
 
+  {{ if (this.hasHistoricalData) { }}
+    <div class="historicalData"></div>
+  {{ } }}
+</div>
 
   <!--div data-role="footer" class="ui-bar" data-theme="d">
      <a data-role="button" data-icon="repeat" id="homeBtn" target="#">Home</a>
   </div-->
+</script>
+
+<script type="text/template" id="historicalDataTemplate">
+<div class="group">
+<h2 style="text-align:center;">Historical Data</h2>
+{{ var numTables = _.size(tables); }}
+{{ for (var indicator in tables) { }}
+{{ var table = tables[indicator], cols = table.cols, resources = table.resources, heading = table.heading; }}
+<table class="span_1_of_{{= numTables }}" data-indicator="{{= indicator }}">
+  {{ if (table.heading) { }}
+    <thead>
+      <tr>
+        <th colspan="{{= _.size(cols) }}">{{= heading }}</th>
+      </tr>
+      <tr>
+         <th data-shortname="{{= cols.date.shortName }}">Date</th>
+         <th data-shortname="{{= cols.value.shortName }}">Value</th>
+      </tr>
+    </thead>
+  {{ } }}
+  <tbody>
+    {{ for (var i = 0, l = resources.length; i < l; i++) { }}
+    {{   var r = resources[i], time = U.getValue(r, cols.date.shortName), val = U.getValue(r, cols.value.shortName); }}
+         <tr>
+           <td data-time="{{= time }}">{{= U.getFormattedDate1(time) }}</td>
+           <td data-value="{{= val }}">{{= val }}</td>
+         </tr>
+    {{ }                                       }}
+  </tbody>
+</table>
+{{ } }}
+</div>
 </script>
 
 <script type="text/template" id="mvListItem">
@@ -2426,7 +2472,7 @@
     <!-- input data-formel="true" type="checkbox" name="interfaceClass.properties" id="{{= id }}" value="{{= interfaceProps }}" {{= typeof _checked === 'undefined' ? '' : 'checked="checked"' }} / -->
     <input data-formel="true" data-mini="true" type="checkbox" {{= obj.disabled ? 'disabled' : '' }} name="interfaceProperties" id="{{= id }}" value="{{= interfaceProps }}" {{= obj._checked ? 'checked="checked"' : '' }} />
     <label for="{{= id }}">
-      {{= davDisplayName }} 
+      {{= davDisplayName }}
       {{= obj.required ? '(Required)' : '' }}
       {{= obj.comment ? '<br><span style="font-size:12px;font-weight:normal;">' + comment + '</span>' : '' }}
     </label>
@@ -2442,7 +2488,7 @@
 <script type="text/template" id="shortEnumPET">
   <fieldset data-role="controlgroup" data-type="horizontal" data-mini="true">
     <legend>{{= name }}</legend>
-    {{ for (var o in options) { }} 
+    {{ for (var o in options) { }}
     {{   var p = options[o], displayName = U.getPropDisplayName(p); }}
          <input type="radio" name="radio-choice-b" name="radio-choice-b" id="{{= id + '.' + displayName }}" {{= rules }} value="{{= displayName }}" {{= typeof value !== 'undefined' && o === value ? 'checked="checked"' : '' }} />
          <label for="{{= id + '.' + displayName }}">{{= displayName }}</label>
@@ -2456,13 +2502,13 @@
   {{ if (obj.name) { }}
     ><label for="{{= id }}" class="ui-input-text" style="{{= isInput ? '' : 'vertical-align:top;' }}color:{{= G.darkColor }};">{{= name }}</label>
     <{{= isInput ? 'input type="text"' : 'textarea rows="3" cols="20" ' }} name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}  class="ui-input-text">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
-  {{ } }} 
+  {{ } }}
   {{ if (!obj.name) { }}
-  style="text-align:center;"><div> 
+  style="text-align:center;"><div>
     <{{= isInput ? 'input type="text"' : 'textarea  rows="10" style="width:95%;"' }} name="{{= shortName }}" id="{{= id }}"  value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}>{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
   </div>
   {{ } }}
-</div>   
+</div>
 </script>
 
 <script type="text/template" id="percentPET">
@@ -2477,7 +2523,7 @@
 <div class="_prim">
   {{ if (name && name.length > 0) { }}
     <label for="{{= id }}" style="color:{{= G.darkColor }}">{{= name }}</label>
-    {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }} 
+    {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
   {{ } }}
   <section>
   <label class="pack-switch" style="right: 2rem;top:0rem;left:auto;position:absolute;color:{{= G.darkColor }};">
@@ -2505,10 +2551,10 @@
   {{ if (name && name.length > 0) { }}
   <label for="{{= id }}" class="select" style="color:{{= G.darkColor }};">{{= name }}</label>
   {{ } }}
-  
+
   <select name="{{= shortName }}" id="{{= id }}" data-mini="true" {{= rules }} >
     {{= value ? '<option value="{0}">{0}</option>'.format(value) : '' }}
-    {{ _.each(options, function(option) { }} 
+    {{ _.each(options, function(option) { }}
     {{   if (option.displayName === value) return; }}
     {{   var val = option.displayName; }}
     <option value="{{= val }}">{{= val }}</option>
@@ -2542,32 +2588,32 @@
     {{ }                   }}
   {{ }                                                                                                                                                                                        }}
 
-  <!-- a target="#"  name="{{= shortName }}" {{= !obj.img ? 'style="padding-top:0.5rem;"' : ''}} class="resourceProp" id="{{= id }}" {{= rules }} --> 
-  <a target="#"  name="{{= shortName }}" style="{{= !obj.img ? '' : 'padding: 0 1.5rem;'}}" class="resourceProp" id="{{= id }}" {{= rules }}> 
-    {{ if (obj.img) { }}    
+  <!-- a target="#"  name="{{= shortName }}" {{= !obj.img ? 'style="padding-top:0.5rem;"' : ''}} class="resourceProp" id="{{= id }}" {{= rules }} -->
+  <a target="#"  name="{{= shortName }}" style="{{= !obj.img ? '' : 'padding: 0 1.5rem;'}}" class="resourceProp" id="{{= id }}" {{= rules }}>
+    {{ if (obj.img) { }}
       <img name="{{= shortName }}" src="{{= img }}" style="
-      
-      {{ if (typeof obj.width != 'undefined') { }}  
+
+      {{ if (typeof obj.width != 'undefined') { }}
           height:{{= height }}px;
           left:-{{= left }}px; top:-{{= top }}px;
           clip:rect({{= top }}px, {{= right }}px, {{= bottom }}px, {{= left }}px);vertical-align
           :middle;"
       {{ } }}
-      {{ if (typeof obj.width == 'undefined') { }}  
+      {{ if (typeof obj.width == 'undefined') { }}
           max-height: 50px;
       {{ } }}
-      
+
       "/>
     {{ }              }}
-    
+
     <label for="{{= id }}" style="font-weight:normal;color:{{= G.darkColor }};">{{= name }}</label>
     {{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ||  value.length == 0 ? '' : value) : displayName }}
     {{ if (!obj.value) { }}
       {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
-    {{ } }} 
+    {{ } }}
     <div class="triangle"></div>
   </a>
-  
+
   <!-- {{= typeof multiValue === 'undefined' ? '' : value }} -->
 </script>
 <script type="text/template" id="telPET">
@@ -2605,7 +2651,7 @@
 
 <script type="text/template" id="multivaluePET">
   <a target="#" name="{{= shortName }}" class="multivalueProp" >{{= typeof displayName === 'undefined' || !displayName ? name : displayName }}
-    {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }} 
+    {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
   </a>
 </script>
 

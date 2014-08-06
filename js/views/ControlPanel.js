@@ -21,6 +21,11 @@ define('views/ControlPanel', [
     return bl;
   };
 
+  function isActionButton(prop) {
+    var dn = U.getPropDisplayName(prop);
+    return ~['IF', 'THEN'].indexOf(dn.toUpperCase());
+  }
+
   function shouldPaintOverlay(res, blProp) {
     if (!res)
       return false;
@@ -31,7 +36,10 @@ define('views/ControlPanel', [
     return true;
   };
 
-  var CLICK_INDICATOR = 'Click an indicator to create a rule. <br /><br /> Swipe from right to left on rules or indicators for a list of actions.';
+  var SLIDER_CL = 'slider';
+  var SLIDER_ACTIVE_CL = 'slider-active';
+  var CLICK_INDICATOR = 'Click an indicator to create a rule with it';
+  var CLICK_INDICATOR1 = 'Click an indicator to create a rule. <br /><br /> Swipe from right to left on rules or indicators for a list of actions.';
 
   return BasicView.extend({
     tagName: "tr",
@@ -43,6 +51,7 @@ define('views/ControlPanel', [
       var type = this.vocModel.type;
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
       this.makeTemplate('inlineListItemTemplate', 'inlineListItemTemplate', type);
+      this.makeTemplate('inlineAddTemplate', 'inlineAddTemplate', type);
 
 //      this.makeTemplate('comment-item', 'commentItemTemplate', type);
       this.makeTemplate('cpTemplate', '_cpTemplate', type);
@@ -79,6 +88,7 @@ define('views/ControlPanel', [
       'click [data-action="add"]': 'actionAdd',
       'click [data-action="edit"]': 'actionEdit',
       'click [data-action="comment"]': 'actionComment',
+      'click header .cta': 'backlinkAction',
       'click .anim-overlay': Events.stopEvent
 //        ,
 //      'click': 'click'
@@ -107,8 +117,12 @@ define('views/ControlPanel', [
           overlay = li.$('.anim-overlay')[0],
           overlayHTML;
 
-      if (!res)
-        return U.getResourcePromise(uri).done(this.paintOverlay.bind(this, li));
+      if (!res) {
+        if (uri)
+          U.getResourcePromise(uri).done(this.paintOverlay.bind(this, li));
+
+        return;
+      }
 
       if (!shouldPaintOverlay(this.resource, blProp))
         return false;
@@ -148,6 +162,9 @@ define('views/ControlPanel', [
       var self = this,
           li = getLi(e.selectorTarget);
 
+      if (!li)
+        return;
+
       this.hideOverlays();
       if (this.paintOverlay(li)) {
         setTimeout(function() {
@@ -172,12 +189,12 @@ define('views/ControlPanel', [
           isTradle = this.vocModel.shortName == 'Tradle';
 
       if (isTradle && backlink == 'tradleRules') {
-        U.alert(CLICK_INDICATOR);
+        U.alert(CLICK_INDICATOR1);
         return;
       }
       else {
         var self = this;
-        this.addToBacklink(this.vocModel.properties[getBacklinkSub(this.vocModel, backlink)]);
+        this.addToBacklink(backlink);
       }
     },
 
@@ -241,6 +258,132 @@ define('views/ControlPanel', [
           redirect: false
         });
       });
+    },
+
+    getIndicatorsBlock: function() {
+      return this.$('section[data-backlink="indicators"]');
+    },
+
+    getTradesBlock: function() {
+      return this.$('section[data-backlink="orders"]');
+    },
+
+    hideIndicators: function(e) {
+      var block = this.getIndicatorsBlock();
+      if (block.length) {
+        block.$removeClass(SLIDER_ACTIVE_CL);
+        var page = this.getPageView();
+        page.invalidateSizeIn(300);
+        page.invalidateSizeIn(500);
+        return true;
+      }
+    },
+
+    // hideTrades: function(e) {
+    //   var block = this.getTradesBlock();
+    //   if (block.length) {
+    //     block.$removeClass(SLIDER_ACTIVE_CL);
+    //     var page = this.getPageView();
+    //     page.invalidateSizeIn(300);
+    //     page.invalidateSizeIn(500);
+    //     return true;
+    //   }
+    // },
+
+    showIndicators: function() {
+      var el = this.getIndicatorsBlock()[0],
+          page = this.getPageView(),
+          li,
+          hasIndicators;
+
+      if (!el)
+        return;
+
+      el.$addClass(SLIDER_ACTIVE_CL);
+      page.invalidateSizeIn(300);
+      page.invalidateSizeIn(500);
+
+      /*
+      page.scrollToElement(el, false);
+      li = el.$('li');
+      if (li.length > 1) {
+        li = li.length > 2 ? li[1] : li[0];
+
+        page.addTooltip({
+          el: li,
+          tooltip: CLICK_INDICATOR,
+          direction: 'bottom',
+          type: 'info',
+          style: 'square'
+        });
+      }
+      */
+
+      return true;
+    },
+
+    // showTrades: function() {
+    //   var el = this.getTradesBlock()[0],
+    //       page = this.getPageView(),
+    //       li,
+    //       hasIndicators;
+
+    //   if (!el)
+    //     return;
+
+    //   el.$addClass(SLIDER_ACTIVE_CL);
+    //   page.invalidateSizeIn(300);
+    //   page.invalidateSizeIn(500);
+    //   return true;
+    // },
+
+    toggleIndicators: function() {
+      var block = this.getIndicatorsBlock()[0];
+      if (!block)
+        return;
+
+      if (block.$hasClass(SLIDER_ACTIVE_CL))
+        this.hideIndicators();
+      else
+        this.showIndicators();
+    },
+
+    toggleTrades: function() {
+      var block = this.getTradesBlock()[0];
+      if (!block)
+        return;
+
+      var add = block.$('li[data-action="add"]')[0];
+      if (add)
+        add.$remove();
+      else {
+        add = this.inlineAddTemplate({
+          backlink: 'orders',
+          hint: 'ADD TRADES TO BE EXECUTED WHEN THIS TRADLE FIRES',
+          action : '+ADD TRADES'
+        });
+
+        block.$append(add);
+      }
+
+      this.getPageView().invalidateSizeIn(300, 500);
+
+      // if (block.$hasClass(SLIDER_ACTIVE_CL))
+      //   this.hideTrades();
+      // else
+      //   this.showTrades();
+    },
+
+    backlinkAction: function(e) {
+      var t = e.selectorTarget,
+          shortName = t.$data('shortname');
+
+      Events.stopEvent(e);
+      if (shortName == 'orders')
+        return this.toggleTrades();
+
+      if (shortName == 'tradleRules')
+        return this.toggleIndicators();
     },
 
 //    click: function(e) {
@@ -341,11 +484,16 @@ define('views/ControlPanel', [
 
     clickInlined: function(e) {
       var link = e.selectorTarget,
-          dataBL = link.$data('backlink');
+          dataBL = link.$data('backlink'),
+          add = link.$data('action') == 'add',
+          isSection = link.tagName == 'SECTION';
+
+      if (add || isSection)
+        return;
 
       if (dataBL == 'tradleRules') {
         Events.stopEvent(e);
-        U.alert(CLICK_INDICATOR);
+        U.alert(CLICK_INDICATOR1);
         return;
       }
 
@@ -370,7 +518,11 @@ define('views/ControlPanel', [
             tradleFeed: indicator.get('tradleFeed'),
             'tradleFeed.displayName': indicator.get('tradleFeed.displayName')
           },
+          rules = this.resource.getInlineList('tradleRules'),
           subClassOf;
+
+      if (rules && rules.length)
+        this.hideIndicators();
 
       switch (propType) {
       case 'Text':
@@ -434,6 +586,7 @@ define('views/ControlPanel', [
     },
 
     addToBacklink: function(prop, t) {
+      prop = this.vocModel.properties[getBacklinkSub(this.vocModel, prop.shortName || prop)];
       var self = this,
           setLinkTo = prop.setLinkTo;
 //      ,
@@ -473,8 +626,12 @@ define('views/ControlPanel', [
             aUri = a == prop.backLink ? self.resource.get('_uri') : null,
             bUri = !aUri  &&  b == prop.backLink ? self.resource.get('_uri') : null;
 
-        if (!title)
-          title = U.makeHeaderTitle(self.resource.get('davDisplayName'), pModel.displayName);
+        if (!title) {
+          if (self.resource.isAssignableFrom('commerce/trading/Tradle') && prop.shortName == 'feeds')
+            title = 'Choose an indicator';
+          else
+            title = U.makeHeaderTitle(self.resource.get('davDisplayName'), pModel.displayName);
+        }
 
         if (!aUri  &&  !bUri) {
           self._addNoIntersection(prop, t);
@@ -514,8 +671,24 @@ define('views/ControlPanel', [
       });
     },
 
-    renderInlineList: function(name, list, frag, displayedProps) {
-      var vocModel = this.vocModel,
+    renderInlineList: function(name, frag, displayedProps) {
+      this._renderInlineList(name, frag, displayedProps);
+      if (name == 'indicators') {
+        var add = this.inlineAddTemplate({
+          backlink: name,
+          hint: '"IF" RULES ARE BUILT WITH INDICATORS',
+          action : '+ADD INDICATORS'
+        });
+
+        U.addToFrag(frag, add);
+      }
+      // else if (name == 'orders') {
+      // }
+    },
+
+    _renderInlineList: function(name, frag, displayedProps) {
+      var list = this.resource.getInlineList(name),
+          vocModel = this.vocModel,
           meta = this.vocModel.properties,
           resources = list.models,
           listVocModel = list.vocModel,
@@ -527,7 +700,14 @@ define('views/ControlPanel', [
           isRule = U.isAssignableFrom(listVocModel, 'commerce/trading/Rule'),
           isIndicator = U.isAssignableFrom(listVocModel, 'commerce/trading/TradleIndicator'),
           isTrade = U.isAssignableFrom(listVocModel, 'commerce/trading/Order'),
-          canAdd = !isRule && U.canAddToBacklink(this.resource, prop), // don't allow add other than by clicking individual indicators
+          addTradeSection = isTrade && function() {
+            var el = document.createElement('section');
+            el.$data('backlink', name);
+            // el.className = [SLIDER_CL, SLIDER_ACTIVE_CL].join(' ');
+            frag.appendChild(el);
+            frag = el;
+          },
+          canAdd = !isRule && !isTrade && U.canAddToBacklink(this.resource, prop), // don't allow add other than by clicking individual indicators
           linkToEdit = U.isAssignableFrom(listVocModel, G.commonTypes.WebProperty, 'commerce/trading/Notification'),
           action = linkToEdit ? 'edit' : 'view',
           template;
@@ -542,27 +722,25 @@ define('views/ControlPanel', [
       }
 
       if (!list.length) {
-          if ((isTrade && !this.resource.inlineLists['orders'].length)  ||  (isRule  && !this.resource.inlineLists['tradleRules'].length)) {
-            U.addToFrag(frag, this.propGroupsDividerTemplate({
-              value: propDisplayName, // + (isRule ? ' <span style="color:#3777a1;text-transform:none;text-align:center;font-weight:normal">(no rules yet)</span>' : ''),
-              add: canAdd,
-              shortName: getBacklinkSub(vocModel, name),
-              style: prop.propertyStyle
-            }));
-            if (isRule)
-            U.addToFrag(frag, this.propGroupsDividerTemplate({
-              value: '(no rules yet)',
-              shortName: getBacklinkSub(vocModel, name),
-              style: "font-weight:bold;font-size:3rem;opacity:.5;color:#3777a1;background:#eee;text-align:center;"
-            }));
+        if ((isTrade && !this.resource.inlineLists['orders'].length)  ||  (isRule  && !this.resource.inlineLists['tradleRules'].length)) {
+          U.addToFrag(frag, this.propGroupsDividerTemplate({
+            value: propDisplayName, // + (isRule ? ' <span style="color:#3777a1;text-transform:none;text-align:center;font-weight:normal">(no rules yet)</span>' : ''),
+            add: canAdd,
+            shortName: getBacklinkSub(vocModel, name),
+            style: prop.propertyStyle,
+            actionBtn: isActionButton(prop)
+          }));
 
-            return;
+          if (isTrade) {
+            addTradeSection();
+          }
+
+          return;
         }
 //        return;
       }
 
-
-      var gr, isBB = G.isBB(), isTopcoat = G.isTopcoat(), prop = meta[name], isBootstrap = G.isBootstrap();
+      var gr = '', isBB = G.isBB(), isTopcoat = G.isTopcoat(), prop = meta[name], isBootstrap = G.isBootstrap();
 
       var displayCollapsed = prop.displayCollapsed;
       if (isIndicator) {
@@ -570,7 +748,7 @@ define('views/ControlPanel', [
         displayCollapsed = rulesList && rulesList.length;
       }
 
-      if (list.length || canAdd) {
+      if (!isIndicator && (list.length || canAdd)) {
         if (displayCollapsed  &&  list.length) {
           if (isBB)
             gr = '<section data-shortname="' + name + '" data-display="collapsed">';
@@ -579,11 +757,15 @@ define('views/ControlPanel', [
           else if (isBootstrap)
             gr = '<li data-shortname="' + name + '" data-display="collapsed"><h3 style="font-size:18px;"><i class="ui-icon-plus-sign"></i>&#160;' + prop.displayName + '</h3><ul class="list-group-container">';
 
+          var style = prop.propertyStyle;
+          if (name == 'indicators')
+            style = (style || '') + ';display:none;';
           gr += this.propGroupsDividerTemplate({
             value: propDisplayName,
             add: canAdd,
             shortName: getBacklinkSub(vocModel, name),
-            style: prop.propertyStyle,
+            style: style,
+            actionBtn: isActionButton(prop),
             displayCollapsed: displayCollapsed
           });
           if (isBB)
@@ -595,12 +777,18 @@ define('views/ControlPanel', [
             value: propDisplayName,
             add: canAdd,
             shortName: getBacklinkSub(vocModel, name),
+            actionBtn: isActionButton(prop),
             style: prop.propertyStyle
           }));
         }
       }
-      if (!list.length)
+
+      if (!list.length && !isTrade)
         return;
+
+      if (isTrade) {
+        addTradeSection();
+      }
 
 //      if (!list.length) {
 //        if (isRule  ||  isTrade)
@@ -762,6 +950,7 @@ define('views/ControlPanel', [
         else
           params.href = U.makePageUrl(action, iRes.getUri(), { $title: params.name });
 
+        params.isLast = (i == l - 1);
         params.resource = iRes;
         if (params.img)
           hasImages = true;
@@ -1052,6 +1241,11 @@ define('views/ControlPanel', [
       if (!meta)
         return this;
 
+      var indicatorsBlock = this.getIndicatorsBlock()[0];
+      var tradesBlock = this.getTradesBlock()[0];
+      var showIndicators = indicatorsBlock && indicatorsBlock.$hasClass(SLIDER_ACTIVE_CL);
+      // var showTrades = tradesBlock && tradesBlock.$hasClass(SLIDER_ACTIVE_CL);
+
       var json = this.getBaseTemplateData(); //res.toJSON();
       var atts = res.attributes;
       var frag = document.createDocumentFragment();
@@ -1181,9 +1375,24 @@ define('views/ControlPanel', [
           return prop.dataProviderPropertyIndex;
         });
 
+        var indicators, trades = 'orders';
         for (var i=0; i<props.length; i++) {
           var name = props[i].shortName;
-          this.renderInlineList(name, res.inlineLists[name], frag, displayedProps);
+          if (name == 'indicators')
+            indicators = name;
+          else
+            this.renderInlineList(name, frag, displayedProps);
+        }
+
+        if (indicators) {
+          var header = frag.$('header[data-shortname="tradleRules"]')[0];
+          if (header) {
+            var el = document.createElement('section');
+            el.$data('backlink', indicators);
+            el.className = 'slider';
+            this.renderInlineList(indicators, el, {});
+            el.$after(header);
+          }
         }
       }
 
@@ -1469,8 +1678,14 @@ define('views/ControlPanel', [
         if (isTradle)
           this.renderFT();
 
-        if (this.rendered)
+        if (this.rendered) {
           this.restoreCollapsables();
+          if (showIndicators)
+            this.showIndicators();
+
+          // if (showTrades)
+          //   this.showTrades();
+        }
 //        this.addToWorld(null, false);
 //        this.addToWorld({
 //          slidingWindow: true

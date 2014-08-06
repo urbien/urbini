@@ -488,10 +488,10 @@ define('views/BasicView', [
       Events.trigger('viewDestroyed', this);
       Events.trigger('viewDestroyed:' + this.cid, this);
 
-      if (this.model)
-        this.stopListening(this.model);
-      if (this.pageView)
-        this.stopListening(this.pageView);
+      // if (this.model)
+      //   this.stopListening(this.model);
+      // if (this.pageView)
+      //   this.stopListening(this.pageView);
 
       this.undelegateAllEvents();
       this.stopListening(); // last cleanup
@@ -1556,6 +1556,12 @@ define('views/BasicView', [
       }
 
       this.getPageView().invalidateSize();
+    },
+
+    invalidateSizeIn: function(/* timeouts */) {
+      for (var i = 0; i < arguments.length; i++) {
+        setTimeout(this.invalidateSize, arguments[i]);
+      }
     }
   }, {
     displayName: 'BasicView',

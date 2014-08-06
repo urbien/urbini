@@ -1,7 +1,7 @@
 //'use strict';
 define('views/Header', [
   'globals',
-  'events', 
+  'events',
   'utils',
   'vocManager',
   'views/BasicView',
@@ -23,7 +23,7 @@ define('views/Header', [
 //    return U.isUserInRole(U.getUserRole(), 'siteOwner');
     return false;
   })();
-  
+
   return BasicView.extend({
 //    viewType: 'any',
     style: {
@@ -31,6 +31,7 @@ define('views/Header', [
 //      zIndex: 10001
     },
     _draggable: false,
+    _showSearchOnLoad: true,
     autoFinish: false,
     template: 'headerTemplate',
     initialize: function(options) {
@@ -45,23 +46,23 @@ define('views/Header', [
 //          G.log(this.TAG, 'events', 'change event received for', U.getDisplayName(this.resource));
           if (options && options.skipRefresh)
             return;
-          
+
           this.refresh();
         }
-        
+
         this.resource.on('change', update, this);
         this.resource.on('inlineList', update, this);
       }
 
       if (this.buttons)
         this.getButtonViews();
-      
+
       var self = this;
       var vocModel = this.vocModel;
       this.on('destroyed', function() {
         self.buttonViews = {};
       });
-    
+
       this.filterParams = {};
       if (this.filter) {
         var type = vocModel && vocModel.type;
@@ -70,9 +71,9 @@ define('views/Header', [
         this.makeTemplate('filterConditionTemplate', 'filterConditionTemplate', type);
         this.makeTemplate('filterConditionInputTemplate', 'filterConditionInputTemplate', type);
       }
-      
+
       this.makeTemplate('physicsConstantsTemplate', 'physicsConstantsTemplate', vocModel && vocModel.type);
-      
+
       if (this.resource && /^view/.test(this.hash) && this.resource.isA('Activatable'))
         this.activatedProp = vocModel.properties[U.getCloneOf(vocModel, 'Activatable.activated')[0]];
 
@@ -84,9 +85,9 @@ define('views/Header', [
 //            forResModel = forRes && U.getModel(forResType),
 //            $params = params.$indicator || params.$params,
 //            forTradle = $params ? _.toQueryParams($params).tradle : params.tradle,
-//            name, 
+//            name,
 //            uri;
-//            
+//
 //        if (forTradle) {
 //          this.folder = {
 //            name: 'Tradle',
@@ -98,14 +99,14 @@ define('views/Header', [
 //            name: forResModel ? forResModel.displayName : forResType.slice(forResType.lastIndexOf('/') + 1).uncamelize(true),
 //            uri: forRes
 //          }
-//          
+//
 //          if (U.getTypeUri(forRes).endsWith('commerce/trading/TradleIndicator')) {
 //            U.getResourcePromise(forRes).done(function(indicator) {
 //              self.folder = {
 //                name: 'Tradle',
 //                uri: indicator.get('tradle')
 //              }
-//              
+//
 //              self.refreshFolder();
 //            });
 //          }
@@ -120,7 +121,7 @@ define('views/Header', [
 //          };
 //        }
 //      }
-      
+
 //      if (this.resource) {
 //        this.listenTo(this.resource, 'change', this.updateQuickstart);
 //        this.listenTo(this.resource, 'inlineList', this.updateQuickstart);
@@ -128,7 +129,7 @@ define('views/Header', [
 
       return this;
     },
-    
+
     getButtonViews: function() {
       /*
       if (this.hashParams['-embed']) {
@@ -145,7 +146,7 @@ define('views/Header', [
       this.makeTemplate(this.template, 'template', type);
       this.makeTemplate('fileUpload', 'fileUploadTemplate', type);
       this.info = this.hashParams['-info'];
-      
+
       var buttons = this.buttons;
       if (!this.hash.startsWith('chat') && res && _.any(_.values(_.pick(commonTypes, 'App', 'Handler', 'Jst')), function(type) { return U.isAssignableFrom(res.vocModel, type); }))
         buttons.publish = true;
@@ -153,29 +154,29 @@ define('views/Header', [
 //        var cOf = U.getCloneOf(this.vocModel, 'Templatable.isTemplate');
 //        if (cOf.length  &&  res.get(cOf[0])) {
 //          var cOf = U.getCloneOf(this.vocModel, 'Templatable.clones');
-//          if (cOf.length) 
+//          if (cOf.length)
 //            buttons.publish = true;
 //        }
 //      }
       else if (vocModel && this.hash.startsWith('chooser')  &&  U.isAssignableFrom(this.vocModel, G.commonTypes.WebClass))
         buttons.publish = true;
-      
+
       var btnOptions = {
-        model: this.model, 
+        model: this.model,
         parentView: this,
         viewId: this.viewId
       };
-      
+
       var reqdButtons = [];
       buttons = U.filterObj(buttons, function(key, val) {
         return val;
       });
-      
+
       for (var btn in buttons) {
         btn = btn.camelize(true); // capitalize first letter
         reqdButtons.push('views/{0}Button'.format(btn));
       }
-      
+
       this.buttonViews = {};
       var self = this;
       this.btnsReq = U.require(reqdButtons, function() {
@@ -183,26 +184,26 @@ define('views/Header', [
         for (var btn in buttons) {
           var model = arguments[i++];
           if (G.isBootstrap())
-            model = model.extend({tagName: 'div'}, {}); 
+            model = model.extend({tagName: 'div'}, {});
 
           self.buttonViews[btn] = self.buttonViews[btn] || self.addChild(new model(btnOptions));
         }
       });
-      
+
       this.ready = $.when(this.btnsReq, this.getFetchPromise());
     },
-    
+
     recalcTitle: function() {
       this.pageTitle = null;
       this.calcTitle();
     },
-    
-    calcTitle: function() {      
+
+    calcTitle: function() {
       if (this.pageTitle != null) {
         this._title = this.title = this.pageTitle;
         return this;
       }
-      
+
       // only use hash the first time
       var hash = this.hash = this.hash || window.location.hash;
       if (hash  &&  hash.charAt(0) == '#')
@@ -214,11 +215,11 @@ define('views/Header', [
         var matches = _.filter(G.tabs, function(t) {
           return t.hash == hash || decodeURIComponent(t.hash) == decHash
         });
-        
+
         if (matches.length)
           title = matches[0].title;
       }
-      
+
       if (!title) {
         if (hash) {
           title = this.hashParams.$title;
@@ -226,7 +227,7 @@ define('views/Header', [
         }
 
         if (!title && res) {
-          if (U.isCollection(res)) 
+          if (U.isCollection(res))
             title = U.getPlural(res);
           else {
             title = U.getDisplayName(res);
@@ -237,7 +238,7 @@ define('views/Header', [
           }
         }
       }
-      
+
       document.title = this._title = title;
       this.title = titleHTML || title;
 
@@ -266,11 +267,11 @@ define('views/Header', [
   //      'click.header'                                 : 'checkHideQuickstart',
         'click.header i.help'                        : 'showQuickstart'
       };
-      
+
       events[TOUCHEND + ' .filterToggle'] = 'toggleFilter'; // input focus trick for mobile browsers (call input.focus() on 'touchend')
       return events;
     })(),
-    
+
 //    modelEvents: {
 //      'change': 'updateQuickstart',
 //      'inlineList': 'updateQuickstart'
@@ -279,53 +280,54 @@ define('views/Header', [
     back: function() {
       Events.trigger('back', 'Back clicked from header');
     },
-    
+
     activate: function(e, force) {
-      e && Events.stopEvent(e);      
+      e && Events.stopEvent(e);
       var self = this;
       U.require('views/ModalDialog').done(function(MD) {
         ModalDialog = MD;
         return self._activate(e, force);
       });
     },
-    
+
     _activate: function(e, force) {
       var params = {},
           res = this.resource,
           pName = this.activatedProp.shortName,
           activating = !this.resource.get(pName);
 
+      function deactivate() {
+        e.selectorTarget.checked = false;
+      };
+
       if (activating && U.isAssignableFrom(this.vocModel, "commerce/trading/Tradle")) {
-        var msg;        
-        
+        var msg;
+
         var defaultTitle = "New tradle";
-        
+
 //        if (G.currentUser.firstName)
 //          defaultTitle += G.currentUser.firstName.substring(0, 1);
 //        if (G.currentUser.lastName)
 //          defaultTitle += G.currentUser.lastName.substring(0, 1);
-//        
-//        defaultTitle += "'s Tradle"; 
+//
+//        defaultTitle += "'s Tradle";
         if (this.resource.get('title') == defaultTitle)
-          msg = 'Please give your Tradle a title';
+          msg = 'Please give your Tradle a title before you activate it';
 //        else if (!this.resource.get('description'))
 //          msg = 'Please give your Tradle a description';
-        
+
         if (msg) {
+          deactivate();
           Events.trigger('navigate', U.makeMobileUrl('edit', this.resource.getUri(), {
             '-info': msg,
             '$editCols': 'title,description'
           }));
-          
+
           return;
         }
       }
-      
+
       if (!force && activating && U.isAssignableFrom(this.vocModel, "commerce/trading/Tradle")) {
-        function undo() {
-          e.selectorTarget.checked = false;
-        };
-        
         var self = this,
             tradle = this.resource,
 //            numNotifications = U.getBacklinkCount(tradle, 'notifications'),
@@ -336,31 +338,31 @@ define('views/Header', [
             dateBacktested = tradle.get('dateBacktested') || 0,
             spinner,
             undoMsg;
-        
+
         if (!numRules)
           undoMsg = "Your Tradle doesn't have any rules yet!";
         else if (!numOrders)// && !numNotifications) {
           undoMsg = "To do a dry run, add at least one trade to your Tradle";
-          
+
         if (undoMsg) {
           U.alert(undoMsg);
-          undo();
+          deactivate();
           return;
         }
-        
+
         if (dateBacktested <= Math.max(dateRulesChanged, dateOrdersChanged)) {
           function hide() {
             ModalDialog.hide();
             if (spinner)
               G.hideSpinner(spinner);
-            
+
             var perf = self.getPageView().$('#expectedPerformance')[0];
             if (perf) {
               self.getPageView().toggleCollapsedEl(perf);
               self.getPageView().scrollToElement(perf);
             }
           }
-          
+
           U.modalDialog({
             id: 'backtestDialog',
             header: 'Dry run the Tradle first?',
@@ -376,7 +378,7 @@ define('views/Header', [
                 timeout: 10000,
                 blockClick: true
               };
-    
+
               G.showSpinner(spinner);
               tradle.save({
                 backtest: true
@@ -394,22 +396,22 @@ define('views/Header', [
               self.activate(null, true); // force
             }
           });
-          
+
           return;
         }
       }
-      
+
       params[this.activatedProp.shortName] = activating;
       this.resource.save(params, {
         userEdit: true,
         redirect: false
       });
     },
-    
+
     changePhysics: function(e) {
       var val = parseInt(e.target.value),
           type = 'verticalMain';
-      
+
       switch (e.target.name) {
       case 'degree':
         val *= -1;
@@ -423,31 +425,31 @@ define('views/Header', [
         val /= 100;
         break;
       }
-      
+
 //      if (this._hashInfo.route == 'view') {
 //        type = 'horizontal';
 //      }
-      
+
       switch (this._hashInfo.route) {
         case 'view':
           var i = friendlyTypes.length;
-          
+
           while (i--) {
             if (U.isAssignableFrom(this.vocModel, friendlyTypes[i])) {
               type = 'horizontal';
               break;
             }
           }
-          
+
         break;
       }
-      
+
       this.log('PHYSICS: ' + e.target.name + ' = ' + val);
       Physics.there.set(type, e.target.name, val);
     },
-    
+
     fileUpload: function(e) {
-      Events.stopEvent(e);      
+      Events.stopEvent(e);
       debugger;
       $('#fileUpload').attr('action', G.serverName + '/mkresource');
 //      var returnUri = $('$returnUri');
@@ -467,27 +469,27 @@ define('views/Header', [
            alert('Submitted');
         },
         error   : function( xhr, err ) {
-           alert('Error');     
+           alert('Error');
         }
       });
-      */    
+      */
 
     },
-    
+
     showMoreRanges: function(e) {
       Events.stopEvent(e);
       if (this.hashParams['$more']) {
-        delete this.hashParams['$more']; 
-        this.hashParams['$less'] = 'y'; 
+        delete this.hashParams['$more'];
+        this.hashParams['$less'] = 'y';
       }
       else {
-        delete this.hashParams['$less']; 
-        this.hashParams['$more'] = 'y'; 
+        delete this.hashParams['$less'];
+        this.hashParams['$more'] = 'y';
       }
-      
+
       Events.trigger('navigate', U.makeMobileUrl('chooser', this.vocModel.type, this.hashParams), {trigger: true, replace: true, forceFetch: true});
     },
-    
+
     showCategories: function(e) {
       Events.stopEvent(e);
       var self = this;
@@ -510,12 +512,12 @@ define('views/Header', [
         Events.trigger('navigate', U.makeMobileUrl('list', self.vocModel.type));
       });
     },
-    
+
     toggleFilter: function(e) {
       Events.stopEvent(e);
       this.filterContainer.$empty();
       this.filterParams = _.pick(this.filterParams, 'type');
-      
+
       switch (this.filterType) {
       case null:
       case undefined:
@@ -540,7 +542,7 @@ define('views/Header', [
         break;
       }
     },
-    
+
     hideFilter: function() {
       this.doFilter();
       this.titleContainer.classList.remove('hidden');
@@ -553,46 +555,46 @@ define('views/Header', [
       // HACK
       this.pageView.listView.doFilter(this.filterParams);
     }, 100),
-    
+
     showSearch: function() {
-      this.titleContainer.classList.add('hidden');
-      
+      //this.titleContainer.classList.add('hidden');
+
       if (showFilter)
         this.filterIcon.className = 'ui-icon-beaker';
       else
         this.filterIcon.className = 'ui-icon-remove';
-        
+
       this.filterContainer.$html(this.searchTemplate(this.getBaseTemplateData()));
       this.filterContainer.classList.remove('hidden');
       this.filterContainer.$('.searchBar input')[0].focus();
 //      this.redelegateEvents();
     },
-    
-    showFilter: function() {      
-      this.titleContainer.classList.add('hidden');
-      
+
+    showFilter: function() {
+      //this.titleContainer.classList.add('hidden');
+
       if (!this.filterProps) {
         this.filterProps = [];
         var meta = this.vocModel.properties,
             first = this.collection.models[0],
             userRole = U.getUserRole(),
             prop;
-        
+
         for (var p in meta) {
           prop = meta[p];
           if (!U.isSystemProp(p) && U.isPrimitiveTypeProp(prop) && U.isPropVisible(first, prop, userRole)) {
-            if (prop.range.toLowerCase().indexOf('date') == -1 && 
+            if (prop.range.toLowerCase().indexOf('date') == -1 &&
                 !prop.notSearchable &&
                 (!prop.cloneOf || prop.cloneOf.indexOf('Distance') == -1))
               this.filterProps.push(prop);
           }
         }
       }
-      
+
       var tmpl_data = _.clone(this.getBaseTemplateData());
       tmpl_data.props = this.filterProps;
 //      tmpl_data.cancelable = false;
-      
+
       this.filter.style.display = 'none';
 //      this.filterIcon.className = 'ui-icon-remove';
       this.filterContainer.$html(this.filterTemplate());
@@ -600,12 +602,12 @@ define('views/Header', [
       this.filterContainer.$('ul')[0].$html(this.filterConditionTemplate(tmpl_data));
 //      this.redelegateEvents();
     },
-    
+
     removeFilterCondition: function(e) {
       var icon = e.selectorTarget,
           parent,
           select;
-      
+
       while (parent = icon.parentNode) {
         if (parent.tagName == 'LI') {
           select = parent.$('select')[0];
@@ -613,19 +615,19 @@ define('views/Header', [
             delete this.collection.params[select.value];
             this.collection.reset();
           }
-          
+
           parent.$remove();
           break;
         }
       }
-      
+
       if (!this.$('.filterCondition').length)
         this.toggleFilter(e);
-        
+
       this.onFilter();
 //      this.redelegateEvents();
     },
-    
+
     addFilterCondition: function(e) {
       var ul = this.filterContainer.$('ul')[0],
           childNodes = ul.childNodes,
@@ -633,7 +635,7 @@ define('views/Header', [
           select,
           condition,
           current = this.$('.propertySelector').$map(function(s) { return s.value });
-      
+
       while (i--) {
         select = childNodes[i].$('.propertySelector')[0];
         if (select.value == NO_PROP) {
@@ -641,11 +643,11 @@ define('views/Header', [
           return;
         }
       }
-      
+
       ul.$append(this.filterConditionTemplate(_.extend({
         props: _.filter(this.filterProps, function(p) {return current.indexOf(p.shortName) == -1})
       }, this.getBaseTemplateData())));
-      
+
       condition = ul.lastChild;
       this.doChangeFilterConditionProperty(condition.$('select')[0], condition.$('.filterConditionInput')[0]);
 //      this.redelegateEvents();
@@ -654,15 +656,15 @@ define('views/Header', [
     changeFilterConditionProperty: function(e) {
       var select = e.selectorTarget,
           input = select.parentNode.$('.filterConditionInput')[0];
-      
+
       this.doChangeFilterConditionProperty(select, input);
 //      this.redelegateEvents();
     },
-    
+
     doChangeFilterConditionProperty: function(select, input) {
       var value = select.value,
           prop;
-      
+
       if (value == NO_PROP)
         input.$empty();
       else {
@@ -672,7 +674,7 @@ define('views/Header', [
           value: U.getDefaultPropValue(prop)
         }, this.getBaseTemplateData())));
       }
-      
+
 //      var evt = document.createEvent("HTMLEvents");
 //      evt.initEvent('change', true, true ); // event type, bubbling, cancelable
 //      input.$('input,select')[0].dispatchEvent(evt);
@@ -683,22 +685,22 @@ define('views/Header', [
       // HACK - JQM does sth weird to prevent focus when we're not using their listfilter widget
       this.filterContainer.focus();
     },
-    
+
     search: _.debounce(function(e) {
       if (e.target.value) {
         var newValue = 'davDisplayName,' + e.target.value;
         if (this.filterParams.$like == newValue)
           return;
-        
+
         this.filterParams.$like = newValue;
       }
       else {
         if (!this.filterParams.$like)
           return;
-        
+
         delete this.filterParams.$like;
       }
-      
+
       this.doFilter();
     }, 20),
 
@@ -709,7 +711,7 @@ define('views/Header', [
           value,
           params = this.filterParams,
           i = filters.length;
-      
+
       while (i--) {
         filter = filters[i];
         propName = filter.$('select')[0].value;
@@ -718,7 +720,7 @@ define('views/Header', [
           params[propName] = value; // U.getFlatValue(this.vocModel.properties[propName], value);
         }
       }
-      
+
       this.doFilter();
     }, 20),
 
@@ -735,34 +737,34 @@ define('views/Header', [
 //      this.restyleNavbar();
       return this;
     },
-    
+
     refreshFolder: function() {
 //      if (!this.folder)
 //        return;
-//      
+//
 //      if (!this.folder.uri) {
-//        this.folder.uri = (this.resource && this.resource.get(this.folder.shortName)) || 
-//                          this.hashParams[this.folder.shortName] || 
+//        this.folder.uri = (this.resource && this.resource.get(this.folder.shortName)) ||
+//                          this.hashParams[this.folder.shortName] ||
 //                          this.hashParams.$rootFolder ||
 //                          this.hashParams.$forResource;
 //      }
-//          
+//
 //      if (!this.folder.uri)
 //        return;
-//      
+//
 //      var rootFolderEl = this.$('.rootFolder')[0];
 //      if (!rootFolderEl)
 //        return;
-//      
+//
 //      rootFolderEl.style.display = 'initial';
 //      rootFolderEl.$('span')[0].textContent = this.folder.name;
 //      rootFolderEl.href = U.makePageUrl('view', this.folder.uri);
     },
-    
+
 //    _getRootFolderHref: function() {
 //      return U.makePageUrl('view', this.rootFolder, rootFolder.params);
 //    },
-    
+
     refreshActivated: function() {
       this._checkActivatable();
       if (this._activatable) {
@@ -773,11 +775,11 @@ define('views/Header', [
         }
       }
     },
-    
+
     _isGeo: function() {
       return !_.isEmpty(_.pick(this.buttons, 'mapIt', 'aroundMe'));
     },
-    
+
     render: function(options) {
       var self = this,
           args = arguments,
@@ -792,19 +794,19 @@ define('views/Header', [
 //              self._rail[4] = -self._outerHeight;
 //              self.updateMason();
 //            });
-            
+
             self.addToWorld(null, false);
-//            Physics.there.trackDrag(self.getContainerBodyId(), 'vel'); // 'pos' for exact tracking, 'vel' for parallax 
-            self.getPageView().listView.onload(function() {              
+//            Physics.there.trackDrag(self.getContainerBodyId(), 'vel'); // 'pos' for exact tracking, 'vel' for parallax
+            self.getPageView().listView.onload(function() {
 //              Physics.there.trackDrag(self.getContainerBodyId(), 'vel', self.pageView.listView.getContainerBodyId()); // 'pos' for exact tracking, 'vel' for parallax
               Physics.there.rpc(self.getPageView().listView.mason.id, 'attachHeader', [self.getContainerBodyId(), 0.02]);
             });
           }
-          
+
           if (!self.resource || self.resource.isLoaded())
             self.updateQuickstart();
 //          if (self.pageView.TAG == 'ListPage') {
-//            self.pageView.listView.onload(function() {              
+//            self.pageView.listView.onload(function() {
 //              Physics.there.track(self.getContainerBodyId(), self.pageView.listView.getContainerBodyId(), 'vel');
 //            });
 //          }
@@ -812,25 +814,25 @@ define('views/Header', [
 //            Physics.there.track(self.getContainerBodyId(), self.pageView.getContainerBodyId(), 'vel');
         });
       }
-      
+
       options = options || {};
       if (!this.buttons || options.buttons) {
         this.buttons = options.buttons;
         this.isGeo = this._isGeo();
         this.getButtonViews();
       }
-        
+
       function doRender() {
         self.renderHelper.apply(self, args);
         self.finish();
         if (G.isBootstrap())
           self.$('.headerUl div').$attr('class', 'navbar-header');
-        if (G.coverImage) 
+        if (G.coverImage)
           self.$('.headerUl a').$forEach(function(elm) {
             elm.style.color = G.coverImage.background;
           });
       };
-      
+
        if (this.btnsReq.state() !== 'pending') {
           doRender();
           doRender = null;
@@ -851,19 +853,19 @@ define('views/Header', [
       var title = this.$('#pageTitle')[0],
           length = this.title.length,
           fontSize;
-      
+
       title.innerHTML = this.title;
       if (length < 20) {
-        
+
       }
       else if (length < 80)
         fontSize = '20px';
       else if (length < 150)
         fontSize = '16px';
-      
+
       if (fontSize)
         title.style['font-size'] = fontSize;
-      
+
 //      $('title').text(this.title);
       this.pageView.trigger('titleChanged', this._title);
     },
@@ -872,20 +874,20 @@ define('views/Header', [
       var commonTypes = G.commonTypes,
           res = this.resource,
           self = this;
-      
+
       if (this.isEdit || this.isChat)
         return;
 
       _.each(SPECIAL_BUTTONS, function(btnName) {
         this[btnName] = false;
       }.bind(this));
-      
+
       if (res  &&  !this.isAbout) {
 //        if (this.isEdit && this.vocModel.type === G.commonTypes.Jst) {
 //          var tName = res.get('templateName');
 //          this.resetTemplate = tName && this.getOriginalTemplate(tName);
 //        }
-      
+
         var user = G.currentUser._uri;
         var isApp = U.isAssignableFrom(this.vocModel, commonTypes.App);
         if (isApp) {
@@ -901,12 +903,12 @@ define('views/Header', [
               this.doTry = true;
             this.forkMe = true;
           }
-        }          
+        }
 //        else if (U.isA(this.vocModel, "Templatable")) {
 //          var cOf = U.getCloneOf(this.vocModel, 'Templatable.isTemplate');
 //          if (cOf.length  &&  res.get(cOf[0])) {
 //            var cOf = U.getCloneOf(this.vocModel, 'Templatable.clones');
-//            if (cOf.length) 
+//            if (cOf.length)
 //              this.forkMe = true;
 //          }
 //        }
@@ -916,7 +918,7 @@ define('views/Header', [
 //          var plugOwner = U.getLongUri1(res.get('submittedBy') || user);
 //          if (user == plugOwner)
             if (!this.resource.isNew())
-              this.testPlug = true;            
+              this.testPlug = true;
           }
           else {
             if (U.isAssignableFrom(this.vocModel, U.getLongUri1("media/publishing/Video"))  &&  this.hashParams['-tournament'])
@@ -925,11 +927,11 @@ define('views/Header', [
         }
       }
     },
-    
+
     renderSpecialButtons: function() {
       if (this.isEdit || this.isChat)
         return;
-      
+
       var self = this;
       SPECIAL_BUTTONS.forEach(function(btn) {
         var el = self.$('#{0}Btn'.format(btn));
@@ -938,7 +940,7 @@ define('views/Header', [
           el.$hide();
         }
       });
-      
+
       var pBtn = this.buttonViews.publish;
       if (this.publish) {
         this.assign('#publishBtn', pBtn);
@@ -950,16 +952,16 @@ define('views/Header', [
         options.forEach(function(option) {
           var method = '$hide',
               selector = '#{0}Btn'.format(option);
-          
+
           if (self[option]) {
             self.assign(selector, pBtn, _.pick(self, option));
             method = '$show';
           }
-          
+
           self.$(selector)[method]();
         });
       }
-      
+
       var hash = window.location.hash;
       var isChooser =  hash  &&  hash.indexOf('#chooser/') == 0;
       if (isChooser  &&  U.isAssignableFrom(this.vocModel, "Image")) {
@@ -969,9 +971,9 @@ define('views/Header', [
         var pr = this.hashParams['$prop'];
         if (forResource  &&  location  &&  pr) {
           var self = this,
-              type = U.getTypeUri(forResource),      
+              type = U.getTypeUri(forResource),
               cModel = U.getModel(type);
-          
+
           if (!cModel) {
             Voc.getModels(type).done(function() {
               cModel = U.getModel(type);
@@ -979,7 +981,7 @@ define('views/Header', [
                 var frag = document.createDocumentFragment(),
                     existing = self.$('#fileUpload')[0],
                     rules = ' data-formEl="true"';
-                
+
                 U.addToFrag(frag, self.fileUploadTemplate({name: pr, forResource: forResource, rules: rules, type: type, location: location, returnUri: returnUri }));
                 if (existing)
                   DOM.replaceChildNodes(existing, frag);
@@ -992,42 +994,42 @@ define('views/Header', [
             var frag = document.createDocumentFragment(),
                 existing = self.$('#fileUpload')[0],
                 rules = ' data-formEl="true"';
-            
+
             U.addToFrag(frag, self.fileUploadTemplate({name: pr, forResource: forResource, rules: rules, type: type, location: location }));
             if (existing)
               DOM.replaceChildNodes(existing, frag);
             else
               self.el.$append(frag);
           }
-          
+
         }
       }
-      
-//      if (!this.publish  &&  !this.doTry  &&  !this.forkMe  &&  !this.testPlug  &&  !this.enterTournament  && ) 
+
+//      if (!this.publish  &&  !this.doTry  &&  !this.forkMe  &&  !this.testPlug  &&  !this.enterTournament  && )
       if (!_.any(SPECIAL_BUTTONS, function(b) { return this[b]; }.bind(this)))
-        this.noButtons = true;      
+        this.noButtons = true;
     },
-    
+
     getPhysicsTemplateData: function() {
       if (!this._physicsTemplateData) {
         this._physicsTemplateData = {
             constants: {}
         };
       }
-      
+
       var constants = this._physicsTemplateData.constants,
           i = editablePhysicsConstants.length,
           cName;
-      
+
       while (i--) {
         cName = editablePhysicsConstants[i];
         constants[cName] = Physics.constants[cName];
       }
-        
+
       if (this.pageView.TAG != 'ListPage') {
         var i = friendlyTypes.length,
             keepTilt = false;
-        
+
         while (i--) {
           if (U.isAssignableFrom(this.vocModel, friendlyTypes[i])) {
             keepTilt = true;
@@ -1038,26 +1040,26 @@ define('views/Header', [
         if (!keepTilt)
           delete constants.tilt;
       }
-        
+
       return this._physicsTemplateData;
     },
-    
+
     renderPhysics: function() {
       this.physicsConstantsEl = this.el.querySelector('.physicsConstants');
       this.physicsConstantsEl.innerHTML = this.physicsConstantsTemplate(this.getPhysicsTemplateData());
     },
-    
+
     restyleNavbar: function() {
       var navbar = this.$('[data-role="navbar"]')[0];
       $(navbar).navbar();
       navbar.classList.remove('ui-mini');
     },
-    
+
     _checkActivatable: function() {
       if (this.activatedProp && this.resource.isLoaded() && !_.has(this, '_activatable'))
         this._activatable = this.activatedProp && U.isPropEditable(this.resource, this.activatedProp);
     },
-    
+
     renderSubclasses: function() {
       if (!this.vocModel.type.endsWith('commerce/trading/Feed'))
         return;
@@ -1065,33 +1067,33 @@ define('views/Header', [
       this.subClassesEl = this.$('.subClasses')[0];
       if (!this.categoriesTemplate)
         this.makeTemplate('subClassesTemplate', 'subClassesTemplate', this.vocModel.type);
-          
+
       if (!this.subClasses) {
         var sCls = this.vocModel.subClasses,
             sCl,
             i = sCls.length;
-        
+
         if (!i)
           return;
-        
+
         this.subClasses = [{
           name: 'All',
           on: true
         }];
-      
+
 //        if (this.vocModel.type.endsWith('commerce/trading/Feed')) {
           this.subClasses.push({
             name: 'Stocks',
             type: U.getLongUri1('commerce/trading/Stock')
           }, {
             name: 'Indexes',
-            type: U.getLongUri1('commerce/trading/Index')            
+            type: U.getLongUri1('commerce/trading/Index')
           }, {
             name: 'Commodities',
-            type: U.getLongUri1('commerce/trading/Commodity')            
+            type: U.getLongUri1('commerce/trading/Commodity')
           }, {
             name: 'Macro',
-            type: U.getLongUri1('commerce/trading/FREDFeed')                        
+            type: U.getLongUri1('commerce/trading/FREDFeed')
           }
           );
 //        }
@@ -1105,7 +1107,7 @@ define('views/Header', [
 //          }
 //        }
       }
-        
+
       this.subClassesEl.$show().$html(this.subClassesTemplate({
         subClasses: this.subClasses
       }));
@@ -1122,14 +1124,14 @@ define('views/Header', [
             _.wipe(filter);
             if (type)
               filter.type = type;
-            
+
             self.doFilter();
             while (i--) {
               var sCl = sCls[i];
               sCl.parentElement.classList[sCl.checked ? 'add' : 'remove']('actionBtn');
             }
           };
-           
+
       input.checked = true;
       this._lastSubClass = input;
       if (sClName != 'All') {
@@ -1137,20 +1139,20 @@ define('views/Header', [
         if (!U.getModel(type)) {
           if (e instanceof Event)
             Events.stopEvent(e);
-          
+
           this._fetchingFilterType = type;
           Voc.getModels(type).done(function() {
             if (input == self._lastSubClass)
               runFilter();
           });
-          
+
           return;
-        }        
+        }
       }
-      
+
       runFilter();
     },
-    
+
     renderHelper: function() {
       var self = this;
 //      var isJQM = G.isJQM(); //!wl  ||  wl == 'Jquery Mobile';
@@ -1162,7 +1164,7 @@ define('views/Header', [
       this.calcSpecialButtons();
       if (this.rendered)
         this.html("");
-      
+
       var isTemplates = this._hashInfo.route == 'templates';
       if (!isTemplates  &&  !res) {
         if (U.isAssignableFrom(this.vocModel, G.commonTypes.WebClass))
@@ -1173,7 +1175,7 @@ define('views/Header', [
           var cOf = U.getCloneOf(this.vocModel, 'Taggable.tags');
           if (cOf.length) {
             if (!this.vocModel.properties[cOf[0]].avoidDisplaying)
-              this.categories = true; 
+              this.categories = true;
           }
         }
       }
@@ -1181,10 +1183,10 @@ define('views/Header', [
         var hash = window.location.hash;
         var isChooser =  hash  &&  hash.indexOf('#chooser/') == 0;
         var prop = this.hashParams['$prop'];
-        if (isChooser  &&  U.isAssignableFrom(this.vocModel, commonTypes.WebClass)  &&  prop /* == 'range'*/) { 
+        if (isChooser  &&  U.isAssignableFrom(this.vocModel, commonTypes.WebClass)  &&  prop /* == 'range'*/) {
           this.moreRanges = true;
           var type = this.hashParams['$type'];
-          
+
           var pname;
           if (type) {
             var pModel = U.getModel(type);
@@ -1202,7 +1204,7 @@ define('views/Header', [
       var tmpl_data = this.getBaseTemplateData();
 
       tmpl_data.activatedProp = this.activatedProp;
-      tmpl_data.folder = this.folder;      
+      tmpl_data.folder = this.folder;
 
 //      tmpl_data.physics = this.getPhysicsConstants(); //Physics.scrollerConstants[this._scrollerType]);
       if (U.isChatPage()) {
@@ -1213,25 +1215,27 @@ define('views/Header', [
 //      if (isJQM) {
 //        if (!this.publish  &&  this.doTry  &&  this.forkMe)
 //          tmpl_data.className = 'ui-grid-b';
-//      }      
+//      }
 
       this.html(this.template(tmpl_data));
       this.titleContainer = this.$('#pageTitle')[0];
       if (this.filter) {
-        this.categories = false; // HACK for now, search is more important at the moment        
+        this.categories = false; // HACK for now, search is more important at the moment
 
         this.getFetchPromise().done(function() {
           if (self.collection.models.length < 10) {
             self.$('.filterToggle')[0].style.display = 'none';
           }
-          else { 
+          else {
             if (self.filter)
               self.filter = self.$('.filterToggle')[0];
-            
+
             if (self.filter) {
               self.filterIcon = self.filter.$('i')[0];
               self.searchIconClass = self.filterIcon.className;
               self.filterContainer = self.$('.filter')[0];
+              if (self._showSearchOnLoad || self.hashParams.$search == 'y')
+                self.toggleFilter();
             }
           }
         });
@@ -1247,30 +1251,30 @@ define('views/Header', [
       var frag = document.createDocumentFragment();
       var btns = this.buttonViews;
       var isMapItToggleable = !!this.collection;
-      
+
 //      var numBtns = _.size(btns);
-      var paintedBtns = [];      
+      var paintedBtns = [];
       REGULAR_BUTTONS.forEach(function(btnName) {
         var btn = btns[btnName];
         if (!btn)
           return;
-        
+
         var btnOptions = {
           force: true
         };
-        
+
         if (btnName === 'mapIt') {
 //          this.isGeo = this.isGeo && this.collection && _.any(this.collection.models, function(m) {  return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'));  });
           if (!self.isGeo)
             return;
-          
+
           btnOptions.toggleable = isMapItToggleable;
         }
-        
+
         paintedBtns.push(btn.el);
         frag.appendChild(btn.render(btnOptions).el);
-      });      
-      
+      });
+
       numBtns = paintedBtns.length;
 //      var cols = btns['publish'] ? numBtns - 1 : numBtns;
       var cols = numBtns;
@@ -1278,9 +1282,9 @@ define('views/Header', [
       for (var i = 0; i < paintedBtns.length; i++) {
         paintedBtns[i].$css('width', btnWidth + '%');
       }
-      
+
       this.$('.headerUl')[0].$html(frag);
-      
+
 //      this.renderError();
       this.renderSpecialButtons();
       this.renderSubclasses();
@@ -1302,20 +1306,20 @@ define('views/Header', [
 //              });
 //            }
 //          }
-//          // this.$el.find('#pageTitle').css('margin-bottom', '0px'); 
+//          // this.$el.find('#pageTitle').css('margin-bottom', '0px');
 //        }
-//      }      
+//      }
       if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges  &&  !this.isEdit /* &&  !G.isBB()*/) {
         this.$('#name.resTitle').$css('padding', '0px');
       }
 //      var wl = G.currentApp.widgetLibrary;
 //      if (isJQM) {
-//        if (this.noButtons) 
+//        if (this.noButtons)
 //          this.$('h4').$css('margin-top', '10px');
 //        else
 //          this.$('h4').$css('margin-top', '4px');
 //      }
-      
+
       for (var btn in btns) {
         var badge = btns[btn].$('.menuBadge');
         if (badge.length) {
@@ -1326,37 +1330,37 @@ define('views/Header', [
         }
       }
       // HACK
-      // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view 
+      // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view
       var header = this.$('.ui-header')[0];
       var barClass = 'ui-bar-c';//{0}'.format(G.theme.header);
       if (header && !header.classList.contains(barClass))
         header.classList.add(barClass);
-      
+
       // END HACK
-      
+
 //      this.refreshCallInProgressHeader();
 //      if (isJQM)
 //        this.restyleNavbar();
       if (G.isTopcoat())
         this.$('li').$attr('class', 'topcoat-button-bar__item');
-      
-      this.finish();      
+
+      this.finish();
       return this;
     },
 
     getQuickstartTemplate: function() {
       if (this.quickstartTemplate)
         return this.quickstartTemplate;
-      
+
       var urlInfo = U.getCurrentUrlInfo(),
           params = urlInfo.params,
           forRes = params.$forResource,
           template;
-      
+
       if (this.resource && this.resource.isAssignableFrom('commerce/trading/Tradle')) {
         var owner = this.resource.get('owner'),
             submittedBy = this.resource.get('submittedBy');
-        
+
         if (G.currentUser._uri == (owner || submittedBy))
           template = 'tradleViewQuickstartTemplate';
       }
@@ -1372,18 +1376,18 @@ define('views/Header', [
             template = 'indicatorVariantChooserQuickstartTemplate';
         }
       }
-      
+
       if (!template)
         return null;
-      
+
       this.makeTemplate(template, 'quickstartTemplate', this.vocModel.type);
       return this.quickstartTemplate;
     },
-    
+
     hasQuickstart: function() {
       if (G.currentApp.appPath != 'Tradle')
         return false;
-      
+
       var route = this._hashInfo.route;
       return (route == 'view' || route == 'chooser') && !!this.getQuickstartTemplate();
     },
@@ -1391,7 +1395,7 @@ define('views/Header', [
     updateQuickstart: _.debounce(function() {
       if (!this.hasQuickstart() || !this.rendered)
         return;
-      
+
       var qst = this.getQuickstartTemplate();
       if (qst) {
         this.quickstart = this.$('.quickstart')[0];
@@ -1399,9 +1403,9 @@ define('views/Header', [
         this.quickstart.$html(this.quickstartTemplate());
         this.showQuickstart();
         this.$('i.help').$show();
-      }      
-    }, 100),    
-    
+      }
+    }, 100),
+
     showQuickstart: function(e) {
       this.getPageView().removeTooltips();
       this.quickstart = this.quickstart || this.$('.quickstart')[0];
@@ -1410,34 +1414,34 @@ define('views/Header', [
 //      if (e)
 //        e._showedQuickstart = true;
     },
-    
+
 //    checkHideQuickstart: function(e) {
 //      if (!this.hasQuickstart() || !this.quickstart || !this.quickstart.$hasClass('quickstart-active') || (e && e._showedQuickstart))
 //        return;
-//      
+//
 //      if (e.target.$closest('.quickstart-active') == null)
 //        this.hideQuickstart(e, true);
 //    },
-    
+
     hideQuickstart: function(e) {
       if (!this.quickstart || !this.el.$hasClass('quickstart-active'))
         return;
-      
+
       if (this.getPageView().TAG == 'ListPage' && arguments.length == 1)
         noTooltip = true;
-        
+
       this.el.$removeClass('quickstart-active');
       this.updateHeaderSize();
-      
+
 //      if (noTooltip)
 //        return;
-//      
+//
 //      var self = this;
 //      setTimeout(function() {
 //        self.getPageView().addTooltip(helpIcon, 'You can always launch Quickstart again by clicking here', 'bottom-left');
 //      }, 300);
     },
-    
+
     updateHeaderSize: _.debounce(function() {
       this.invalidateSize();
       this.getPageView().invalidateSize();

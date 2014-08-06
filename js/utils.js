@@ -739,6 +739,19 @@ define('utils', [
       return _.any(U.getPropCloneOf(prop), _['=='].bind(_, iPropName));
     },
 
+    getSubpropertyOf: function(model, prop) {
+      var meta = model.properties,
+          sProp = ~prop.indexOf('/') ? prop : '/' + prop;
+
+      for (var p in meta) {
+        var prop = meta[p],
+            sub = prop && prop.subPropertyOf;
+
+        if (sub && sub.endsWith(sProp))
+          return prop;
+      }
+    },
+
 //    getLongUri1: function(uri, vocModel) {
 //      console.log("getLongUri1 in: " + uri);
 //      var out = U._getLongUri1(uri, vocModel);
@@ -1836,6 +1849,16 @@ define('utils', [
       return base + (qs ? '?' + qs : '');
     },
 
+    getLists: function() {
+      var lists = [],
+          found = function(l) {
+            lists.push(l);
+          };
+
+      Events.trigger('getLists', found);
+      return lists;
+    },
+
     getResourceList: function(model, query) {
       var list,
           found = function(l) {
@@ -1862,6 +1885,17 @@ define('utils', [
 
       Events.trigger('getCachedView:' + url, found);
       return obj;
+    },
+
+    fetchCurrentUser: function(sync) {
+      var p = G.currentUser._fetchPromise;
+      if (p)
+        return p;
+
+      if (G.currentUser.guest)
+        return G.getRejectedPromise();
+
+      return (G.currentUser._fetchPromise = U.getResourcePromise(G.currentUser._uri, sync));
     },
 
     getResourcePromise: function(uri, sync) {
@@ -2446,7 +2480,10 @@ define('utils', [
     },
 
     getUserReferralParam: function() {
-      return (G.currentUser._ref || (G.currentUser._ref = G.currentUser._uri.split('=')[1]));
+      if (G.currentUser.guest)
+        return null;
+
+      return G.currentUser._ref || (G.currentUser._ref = G.currentUser._uri.split('=')[1]);
     },
 
     makeEditProp: function(res, prop, val, formId) {
@@ -3105,8 +3142,8 @@ define('utils', [
     },
 
 
-    _dateProps: ['ComplexDate', 'date', 'dateTime'],
-    _timeProps: ['Duration', 'years', 'hours', 'minutes', 'seconds'],
+    _dateProps: ['ComplexDate', 'system/fog/ComplexDate', 'date', 'dateTime'],
+    _timeProps: ['system/primitiveTypes/Duration', 'years', 'hours', 'minutes', 'seconds'],
     isDateOrTimeProp: function(prop) {
       return U.isDateProp(prop) || U.isTimeProp(prop);
     },
@@ -4231,6 +4268,9 @@ define('utils', [
     },
     getRoute: function(hash) {
       hash = hash || U.getHash();
+      if (hash.startsWith('http'))
+        hash = hash.slice(hash.indexOf(G.pageRoot) + G.pageRoot.length + 1);
+
       var match = hash.match(/^([a-zA-Z]+)\//);
       return match ? match[1] : '';
 //      var match = (hash || U.getHash()).match(/^view|menu|edit|make|chooser|templates|(chat)([a-zA-Z]+)?/);
@@ -4862,6 +4902,56 @@ define('utils', [
       RIGHT: 39,
       DOWN: 40,
       INPUT_METHOD_PROCESSING: 229
+    },
+
+    isProfileRoute: function() {
+      var urlInfo = U.getCurrentUrlInfo();
+      return (urlInfo.route == 'view' || urlInfo.route == 'edit') && urlInfo.uri == G.currentUser._uri;
+    },
+
+    getDesktopModeUrl: function(url) {
+      var urlInfo = U.getUrlInfo(url || window.location.href),
+          params = urlInfo.params,
+          route = urlInfo.route,
+          type = urlInfo.type,
+          uri = urlInfo.uri,
+          dRoute,
+          dUrl = G.serverName + '/';
+
+      switch (route) {
+        case 'view':
+          dRoute = 'v';
+          break;
+        case 'edit':
+          dRoute = 'e';
+          break;
+        case 'list':
+        case 'chooser':
+          dRoute = 'l';
+          break;
+        default:
+          throw "Unsupported route: " + route;
+      }
+
+      dUrl += dRoute + '/';
+      dUrl += type.slice(type.lastIndexOf('/') + 1);
+
+      switch (dRoute) {
+        case 'v':
+        case 'e':
+          dUrl += '/' + _.values(_.toQueryParams(uri)).join('/');
+          return dUrl;
+        case 'l':
+          // TODO: add params
+          dUrl += '?';
+          for (var p in params) {
+            dUrl += '.{0}_verified=y&.{0}_select={1}&'.format(p, _.encode(params[p]));
+          }
+
+          return dUrl;
+      }
+
+      throw "Unsupported url: " + url;
     }
   };
 
