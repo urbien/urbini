@@ -493,23 +493,23 @@ define('models/Resource', [
         return;
       
       var RL, Voc;
-      U.require(['collections/ResourceList', 'vocManager']).then(function(_RL, _Voc) {
+      U.require(['collections/ResourceList', 'vocManager']).done(function(_RL, _Voc) {
         RL = _RL;
         Voc = _Voc;
-        return Voc.getModels(types);
-      }).then(function() {
-        var bl,
-            list;
-        
-        for (var p in il) {
-          bl = il[p];
-          list = new RL(null, {
-            params: U.getListParams(self, bl),
-            model: U.getModel(bl.range)
-          });
+        Voc.getModels(types).done(function() {
+          var bl,
+              list;
           
-          self.setInlineList(p, list);
-        }
+          for (var p in il) {
+            bl = il[p];
+            list = new RL(null, {
+              params: U.getListParams(self, bl),
+              model: U.getModel(bl.range)
+            });
+            
+            self.setInlineList(p, list);
+          }
+        });
       });
     },
     
@@ -1128,16 +1128,19 @@ define('models/Resource', [
             list.filterAndAddResources([res]);
           }
           else {
-            U.require('collections/ResourceList').done(function(ResourceList) {
-              list = new ResourceList(null, {
-                model: res.vocModel, 
-                params: U.getListParams(self, blProp)
+            (function() {
+              U.require(['collections/ResourceList', 'vocManager']).done(function(ResourceList, Voc) { 
+                Voc.getModels(blProp.range).done(function(blModel) {
+                  list = new ResourceList(null, {
+                    model: blModel, 
+                    params: U.getListParams(self, blProp)
+                  });
+                  
+                  list.filterAndAddResources([res]);              
+                  self.setInlineList(bl, list);
+                });
               });
-              
-              list.filterAndAddResources([res]);              
-              self.setInlineList(bl, list);
-            });
-            
+            })();
 //            if (blVal._list)
 //              Events.trigger('inlineResourceList', this, blProp, blVal._list);
           }
