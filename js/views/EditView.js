@@ -1,8 +1,8 @@
 //'use strict';
 define('views/EditView', [
   'globals',
-  'events', 
-  'error', 
+  'events',
+  'error',
   'utils',
   'vocManager',
   'views/BasicView',
@@ -20,7 +20,7 @@ define('views/EditView', [
   function mobiscroll(scroller) {
     return $.fn.mobiscroll.apply(scroller, _.rest(arguments));
   };
-  
+
   function clearForm(forms) {
     var i = forms.length;
     while (i--) {
@@ -42,12 +42,12 @@ define('views/EditView', [
       }
     }
   };
-  
+
   function isHidden(prop, currentAtts, reqParams, isEdit) {
-    var p = prop.shortName; 
+    var p = prop.shortName;
     return prop.required  &&  currentAtts[p]  &&  prop.containerMember && (isEdit || (reqParams  &&  reqParams[p]));
   };
-  
+
   function getRemoveErrorLabelsFunction(el) {
 //    var parent = el.parentNode;
 //    var parent = el.$closest('form');
@@ -56,7 +56,7 @@ define('views/EditView', [
       var fieldcontain = el.$closest('[data-role="fieldcontain"]');
       if (fieldcontain)
         fieldcontain.$removeClass('invalid');
-      
+
       el.$removeClass('invalid');
     };
   };
@@ -65,52 +65,54 @@ define('views/EditView', [
   return BasicView.extend({
     autoFinish: false,
     initialize: function(options) {
-      var self = this;
 //      _.each(scrollerTypes, function(s) {
 //        self['scroll' + s.camelize(true)] = function(e) {
 //          self.mobiscroll.apply(self, [e, s].concat(_.tail(arguments)));
 //        }
 //      });
-    
-      _.bindAll(this, 'render', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm', 
-                      'onSelected', 'setValues', 'getInputs', 'getValue', 'addProp', 
-//                      'getScrollers', 'scrollDate', 'scrollDuration', 
+
+      _.bindAll(this, 'render', 'refresh', 'submit', 'cancel', 'fieldError', 'set', 'resetForm',
+                      'onSelected', 'setValues', 'getInputs', 'getValue', 'addProp',
+//                      'getScrollers', 'scrollDate', 'scrollDuration',
                       'capturedImage', 'onerror', 'onsuccess', 'onSaveError',
                       'checkAll', 'uncheckAll'); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);
-      var type = this.vocModel.type;
+      var self = this,
+          res = this.resource,
+          type = this.vocModel.type;
+
       this.makeTemplate('propGroupsDividerTemplate', 'propGroupsDividerTemplate', type);
       this.makeTemplate('editRowTemplate', 'editRowTemplate', type);
       this.makeTemplate('hiddenPET', 'hiddenPropTemplate', type);
       this.makeTemplate('buyPopupTemplate', 'popupTemplate', type);
       this.makeTemplate('interfacePropTemplate', 'interfacePropTemplate', type);
       this.reqParams = _.getParamMap(window.location.href);
-      
+
       this.resource.on('change', this.refresh, this);
       this.action = options && options.action || 'edit';
       this.isEdit = this.action === 'edit';
       this.saveOnEdit = options.saveOnEdit;
-      
+
       this.isForInterfaceImplementor = U.isAssignableFrom(this.vocModel, "system/designer/InterfaceImplementor");
       /*
       var modelsDfd = $.Deferred(function(defer) {
         if (self.isForInterfaceImplementor) {
           self._interfaceUri = self.resource.get('interfaceClass.davClassUri') || self.hashParams['interfaceClass.davClassUri'];
           if (!self._interfaceUri)
-            defer.resolve();   
+            defer.resolve();
           Voc.getModels(self._interfaceUri).done(defer.resolve);
         }
         else
-          defer.resolve();        
+          defer.resolve();
       });
       */
       // maybe move this to router
-      
+
       var self = this;
       var codemirrorModes = U.getRequiredCodemirrorModes(this.resource, 'edit');
       var promises = [],
           fetchPromise = this.getFetchPromise();
-      
+
       this._activatedPropName = U.getCloneOf(this.vocModel, 'Activatable.activated')[0];
       this.isCode = !!codemirrorModes.length;
       var codemirrorPromise;
@@ -124,7 +126,7 @@ define('views/EditView', [
       if (U.isAssignableFrom(this.vocModel, 'commerce/trading/EnumRule')) {
         var dfd = $.Deferred(),
             res = this.resource;
-        
+
         promises.push(dfd.promise());
         fetchPromise.done(function() {
           var enumRangeUri = res.get('eventPropertyRangeUri');
@@ -140,9 +142,9 @@ define('views/EditView', [
       if (this.saveOnEdit) {
         this.listenToOnce(Events, 'pageChange', function(from, to) {
           // don't autosave new resources, they have to hit submit on those...or is that weird?
-          if (!this.isChildOf(from) || this.resource.isNew() || U.getHash().startsWith('chooser')) 
+          if (!this.isChildOf(from) || this.resource.isNew() || U.getHash().startsWith('chooser'))
             return;
-          
+
           if (!this._submitted)
             this.submit(null, {fromPageChange: true});
         }.bind(this));
@@ -155,11 +157,11 @@ define('views/EditView', [
 
       this.on('inactive', this.reset, this);
       if (G.online && !this.resource.isNew()) {
-        this.onload(function() {          
+        this.onload(function() {
           this.resource.fetch({ forceFetch: true });
         }, this);
       }
-      
+
       return this;
     },
     events: {
@@ -178,8 +180,8 @@ define('views/EditView', [
       'change input[type="checkbox"]'     :'onSelected',
       'change input[type="date"]'         :'onSelected'
     },
-    
-    /** 
+
+    /**
      * find all non-checked non-disabled checkboxes, check them, trigger jqm to repaint them and trigger a 'change' event so whatever we have tied to it is triggered (for some reason changing the prop isn't enough to trigger it)
      */
     checkAll: function() {
@@ -206,9 +208,9 @@ define('views/EditView', [
     },
 
     capturedImage: function(options) {
-      var prop = options.prop, 
+      var prop = options.prop,
           data = options.data;
-      
+
       var props = {};
       props[prop] = data;
       props[prop + '.displayName'] = 'camera shot';
@@ -221,14 +223,14 @@ define('views/EditView', [
         debugger;
         return;
       }
-      
-      var prop = options.prop, 
+
+      var prop = options.prop,
           data = options.data,
           name = options.name,
           res = this.resource,
           unsetOptions = {
             validate: false,
-            skipRefresh: true, 
+            skipRefresh: true,
             userEdit: true,
             remove: true
           };
@@ -236,22 +238,22 @@ define('views/EditView', [
       var props = {};
       props[prop] = data;
       if (data instanceof Blob) {
-        _.each(['audio', 'video'], function(sub) {          
+        _.each(['audio', 'video'], function(sub) {
           res.unset(prop + '.' + sub, unsetOptions);
         });
       }
       else {
         res.unset(prop, unsetOptions);
         for (var p in data) {
-          props[prop + '.' + p] = data[p]; 
+          props[prop + '.' + p] = data[p];
         }
-        
+
         delete props[prop];
       }
-      
+
       if (name)
         props[prop + '.displayName'] = name;
-      
+
       this.setValues(props, {skipValidation: true, skipRefresh: false});
     },
 
@@ -261,7 +263,7 @@ define('views/EditView', [
           propName = target.$data('prop'),
           prop = self.vocModel.properties[propName],
           isImage = prop.range.endsWith('model/portal/Image');
-            
+
       function makeCameraPopup() {
         Events.stopEvent(e);
         var link = $(target);
@@ -270,17 +272,17 @@ define('views/EditView', [
             self.CameraPopup.destroy();
             self.stopListening(self.CameraPopup);
           }
-          
+
           self.cameraPopup = new CameraPopup({model: self.model, parentView: self, prop: link.data('prop')});
           self.cameraPopup.render();
           self.listenTo(self.cameraPopup, 'image', self.capturedImage);
           self.listenTo(self.cameraPopup, 'video', self.capturedVideo);
-          self.cameraPopup.onload(function() {            
+          self.cameraPopup.onload(function() {
             self.addChild(self.cameraPopup);
           });
-        });        
+        });
       }
-      
+
       function getBlob(file) {
         return $.Deferred(function(defer) {
           if (file instanceof Blob)
@@ -292,7 +294,7 @@ define('views/EditView', [
           }
         }).promise();
       };
-      
+
       function loadFile() {
         var file = target.files[0];
         if (isImage) {
@@ -305,7 +307,7 @@ define('views/EditView', [
           };
 
           // Read in the image file as a data URL.
-          reader.readAsDataURL(file);            
+          reader.readAsDataURL(file);
         }
         else {
           getBlob(file).then(function(blob) {
@@ -317,13 +319,13 @@ define('views/EditView', [
           })
         }
       };
-      
+
       if (G.canWebcam) {
 //        if (!isImage && !G.browser.chrome) {
 //          U.alert({
 //            msg: "Your browser doesn't support recording video"
 //          });
-//          
+//
 //          return;
 //        }
 
@@ -332,10 +334,10 @@ define('views/EditView', [
           return false;
         }
       }
-      
+
       // not using camera popup, using <input type="file" /> possibly with accept="image/*|audio/*|video/*;capture=camera;"
       if (e.type === 'click' && e.selectorTarget.tagName == 'A') {
-        // trigger native file dialog or camera capture 
+        // trigger native file dialog or camera capture
         Events.stopEvent(e);
         var input = $(target).parent().children().find('input[type="file"]');
         input.triggerHandler('click');
@@ -343,14 +345,14 @@ define('views/EditView', [
       else if (e.type === 'change') {
         loadFile();
       }
-      
+
       return false;
     },
-    
+
     disable: function(msg) {
       Events.trigger('info', {info: msg, page: this.getPageView(), persist: true});
     },
-    
+
     getScroller: function(prop, input) {
       var settings = {
         theme: 'ios',
@@ -362,7 +364,7 @@ define('views/EditView', [
         onSelect: this.onSelected,
         input: input
       };
-      
+
       scrollerType = settings.__type = _.find(['date', 'duration'], function(type) {
         return !!input.$data(type);
       });
@@ -376,26 +378,26 @@ define('views/EditView', [
           var val = input.value && parseInt(input.value);
           if (typeof val === 'number')
             mobiscroll(scroller, isDate ? 'setDate' : 'setSeconds', isDate ? new Date(val) : val, true);
-          
+
           break;
       }
-      
+
       return scroller;
     },
 
     mobiscroll: function(e, scrollerType, dontClick) {
       if (this.fetchingScrollers)
         return;
-      
+
       this.fetchingScrollers = true;
       e.target.blur(); // hack to suppress keyboard that would open on this input field
       Events.stopEvent(e);
-      
+
 //      // mobiscrollers don't disappear on their own when you hit the back button
 //      Events.once('pageChange', function() {
 //        $('.jqm, .dw-modal').remove();
 //      });
-      
+
       var self = this;
       var thisName = e.target.name;
       var meta = this.vocModel.properties;
@@ -403,7 +405,7 @@ define('views/EditView', [
       var scrollers = self.getScrollers();
 //      if (_.any(scrollers, function(s) { return s.$data('duration') }))
 //        modules.push('mobiscroll-duration');
-      
+
       U.require('mobiscroll', function() {
         self.loadedScrollers = true;
         self.refreshScrollers();
@@ -421,10 +423,10 @@ define('views/EditView', [
     onChoose: function(e, prop) {
       var hash = window.location.href;
       hash = hash.slice(hash.indexOf('#') + 1);
-      var self = this, 
+      var self = this,
           commonTypes = G.commonTypes,
-          vocModel = this.vocModel; 
-      
+          vocModel = this.vocModel;
+
       return function(options) {
         Events.trigger('handlingChoice');
         var chosenRes;
@@ -434,23 +436,23 @@ define('views/EditView', [
           chosenRes =  options.resource;
         else
           chosenRes = options;
-        
+
         G.log(this.TAG, 'testing', chosenRes.attributes);
         var props = {};
         var link = e.target;
 //        if (!isBuy  &&  chosenRes.isA('Buyable')  &&  this.$el.find('.buyButton')) {
 //  //        Events.trigger('buy', this.model);
 //          var price = chosenRes.get('price');
-//          if (price  &&  price.value) { 
+//          if (price  &&  price.value) {
 //            Events.stopEvent(e);
 //            var $popup = $('#buy_popup');
 //            var dn = U.getDisplayName(chosenRes);
 //            var msg = 'Try ' + chosenRes.vocModel.displayName + ': ' + dn + 'for free for 3 days'; // + ' for ' + price.currency + price.value;
-//            var href = chosenRes.getUri();          
+//            var href = chosenRes.getUri();
 //            var html = this.popupTemplate({href: href, msg: msg, displayName: dn, title: 'New ' + chosenRes.vocModel.displayName});
 //            if ($popup.length == 0) {
 //              G.activePage.$append(html);
-//              
+//
 //    //          $('body').append(html);
 //              $popup = document.getElementById('buy_popup');
 //            }
@@ -460,13 +462,13 @@ define('views/EditView', [
 //              document.getElementById('tryLink').href = href;
 //              document.getElementById('buyName').$html(dn);
 //            }
-//            
+//
 //            $popup.trigger('create');
 //            $popup.popup().popup("open");
 //            return;
 //          }
 //        }
-        
+
         var uri = chosenRes.getUri();
         props[prop] = uri;
         var resName = U.getDisplayName(chosenRes);
@@ -491,23 +493,23 @@ define('views/EditView', [
             }
             if (this.resource.getUri() == cUri) {
               var themeSwatch = chosenRes.get('swatch');
-              if (themeSwatch  &&  !G.theme.swatch != themeSwatch) 
+              if (themeSwatch  &&  !G.theme.swatch != themeSwatch)
                 G.theme.swatch = themeSwatch;
             }
           }
         }
-        
+
         Events.trigger('back', 'returning from chooser to edit view');
 //        this.router.navigate(hash, {trigger: true, replace: true});
       }.bind(this);
 //      G.Router.changePage(self.parentView);
       // set text
     },
-    
+
     onChooseMulti: function (e, prop)  {
       var link = e.target,
           self = this;
-      
+
       return function(res, atts) {
         self.setValues(atts, {skipValidation: true, skipRefresh: false});
         self.setResourceInputValue(link, atts[prop + '.displayName']);
@@ -524,18 +526,18 @@ define('views/EditView', [
         prop = e.selectorTarget.parentElement.name;
       }
 
-//      Events.off('chose:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
+//      Events.off('chose:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch
 //      this.listenTo(Events, 'chose:' + prop, this.onChoose(e, prop));
-      this.stopListening(Events, 'chose:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
-      this.stopListening(Events, 'choseMulti:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
+      this.stopListening(Events, 'chose:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch
+      this.stopListening(Events, 'choseMulti:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch
       this.listenTo(Events, 'chose:' + prop, this.onChoose(e, prop));
       this.listenTo(Events, 'choseMulti:' + prop, this.onChooseMulti(e, prop));
       Events.trigger('loadChooser', this.resource, this.vocModel.properties[prop], e);
-      
+
 //      var self = this;
 //      var vocModel = this.vocModel, type = vocModel.type, res = this.resource, uri = res.getUri();
 //      var pr = vocModel.properties[prop];
-//      Events.off('chooser:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch 
+//      Events.off('chooser:' + prop); // maybe Events.once would work better, so we don't have to wear out the on/off switch
 //      this.listenTo(Events, 'chooser:' + prop, this.onChoose(e, prop));
 //      var params = {};
 //      if (pr.where) {
@@ -554,13 +556,13 @@ define('views/EditView', [
 //            }
 //          }
 //        }
-//        
+//
 //        if (!pr.multiValue  &&  !U.isAssignableFrom(vocModel, G.commonTypes.WebProperty)) {
 //          params.$prop = prop;
 //          return this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), params), {trigger: true});
 //        }
 //      }
-//      
+//
 //      if (pr.multiValue) {
 //        var prName = pr.displayName;
 //        if (!prName)
@@ -575,18 +577,18 @@ define('views/EditView', [
 //        }
 //        else
 //          params.$forResource = uri;
-//        
+//
 //        params.$title = U.makeHeaderTitle(vocModel.displayName, prName);
 //        var mvList = (e.selectorTarget.text || e.target.textContent).trim(); //e.target.innerText;
 //        mvList = mvList.slice(U.getPropDisplayName(pr).length + 1);
 //        params['$' + prop] = mvList;
 //        var typeUri = U.getTypeUri(pr.lookupFromType);
 //        typeUri = G.classMap[typeUri] ? G.classMap[typeUri] : typeUri;
-//        
+//
 //        this.router.navigate(U.makeMobileUrl('chooser', typeUri, params), {trigger: true});
 //        return;
 //      }
-//      if (U.isAssignableFrom(vocModel, G.commonTypes.WebProperty)) { 
+//      if (U.isAssignableFrom(vocModel, G.commonTypes.WebProperty)) {
 //        var title = U.getQueryParams(window.location.hash)['$title'];
 //        var t;
 //        if (!title)
@@ -605,7 +607,7 @@ define('views/EditView', [
 //
 //        if (vocModel.type.endsWith('BacklinkProperty')) {
 //          var pf = G.currentApp._uri; //U.getLongUri1(res.get('parentFolder'));
-//          if (G.currentUser.guest) 
+//          if (G.currentUser.guest)
 //            _.extend(rParams, {parentFolder: pf});
 //          else {
 //            var params = {parentFolder: pf, creator: '_me'};
@@ -619,7 +621,7 @@ define('views/EditView', [
 //        this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
 //        return;
 //      }
-//      if (this.isForInterfaceImplementor) { 
+//      if (this.isForInterfaceImplementor) {
 //        var rParams = {
 //            $prop: pr.shortName,
 //            $type:  this.vocModel.type,
@@ -660,8 +662,8 @@ define('views/EditView', [
 //          }
 //        }
 //      }
-//      
-//      
+//
+//
 //      this.router.navigate(U.makeMobileUrl('chooser', U.getTypeUri(pr.range), rParams), {trigger: true});
 //        var w = pr.where;
 //        var wOr =  pr.whereOr;
@@ -669,9 +671,9 @@ define('views/EditView', [
 //          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)), {trigger: true});
 //        else {
 //          var s = w || wOr;
-//            
+//
 //          s = w.replace(' ', '').replace('==', '=').replace('!=', '=!');
-//          s = w ? w.replace('&&', '&') : wOr; 
+//          s = w ? w.replace('&&', '&') : wOr;
 //          this.router.navigate('chooser/' + encodeURIComponent(U.getTypeUri(pr.range)) + '?' + (w ? '$and=' : '$or=') + encodeURIComponent(s), {trigger: true});
 //        }
     },
@@ -688,7 +690,7 @@ define('views/EditView', [
     getScrollers: function() {
       return this.getForm().$('.' + scrollerClass);
     },
-    
+
     refreshScrollers: function() {
       if (this.loadedScrollers) {
         var meta = this.vocModel.properties;
@@ -707,7 +709,7 @@ define('views/EditView', [
 
       this.$(_.keys(errors).map(function(e) {return '[data-role="fieldcontain"][data-shortname="{0}"]'.format(e)}).join(',')).$addClass('invalid');
 //      this.$(_.keys(errors).map(function(e) {return '[name="{0}"]'.format(e)}).join(',')).$addClass('invalid');
-      
+
 //      var badInputs = [];
 ////      var errDiv = this.getForm().$('div[name="errors"]');
 ////      errDiv.$empty();
@@ -718,7 +720,7 @@ define('views/EditView', [
 //          madeError = false,
 //          input,
 //          i;
-//      
+//
 //      for (name in errors) {
 //        input = null;
 //        msg = errors[name];
@@ -731,7 +733,7 @@ define('views/EditView', [
 //            break;
 //          }
 //        }
-//        
+//
 //        var id;
 //        if (input) {
 //          badInputs.push(input);
@@ -742,7 +744,7 @@ define('views/EditView', [
 //            madeError = true;
 //          }
 //        }
-//        
+//
 //        if (!madeError) {
 //          var label = document.createElement('label');
 //          label.innerHTML = msg;
@@ -756,40 +758,40 @@ define('views/EditView', [
 //        }
 //      }
     },
-    
+
 //    redirect: function(options) {
 //      if (!this.isActive()) // already redirected
 //        return;
-//      
+//
 //      Events.trigger('redirectAfterWriteOp', this.resource, options);
 ////      redirectAfterWriteOp(this.resource, options);
 //    },
-    
+
     getAtt: function(att) {
 //      var edits = res.getUnsavedChanges();
       var result = {}, displayName;
 //      if (_.has(edits, att)) {
-//        result.value = edits[att];        
+//        result.value = edits[att];
 //        displayName = edits[att + '.displayName'];
 //      }
 //      else {
         result.value = this.resource.get(att);
         displayName = U.getValueDisplayName(this.resource, att);
 //      }
-      
+
       if (_.isUndefined(result.value))
         return undefined;
-      
+
       if (displayName)
         result.displayName = displayName;
-      
+
       return result;
     },
-    
+
     getValue: function(input) {
 //      var jInput = $(input);
       var val;
-      
+
       var p = this.vocModel.properties[input.name];
       if (_.contains(input.classList, switchClass)) {
         if (input.type == 'checkbox')
@@ -806,13 +808,13 @@ define('views/EditView', [
           val = parseInt(input.value);
       }
 //      else if (p && U.isTimeProp(p))
-//        val = parseTime(input.value);        
+//        val = parseTime(input.value);
       else
         val = input.tagName === 'A' ? this.getResourceInputValue(input) : input.value;
 
       return val;
     },
-    
+
     submitInputs: function() {
       var allGood = true;
       var changed = _.filter(this.inputs, function(input) {return input.$data('modified') === true});
@@ -822,7 +824,7 @@ define('views/EditView', [
         if (!allGood)
           return false;
       }
-      
+
       return true;
     },
 
@@ -830,11 +832,11 @@ define('views/EditView', [
       if (this.rendered)
         this.getInputs().$attr('disabled', null);
     },
-    
+
     isSubmitted: function() {
       return this._submitted;
     },
-    
+
     submit: function(e, options) {
       if (!this.isActive() || this.isSubmitted())
         return;
@@ -843,48 +845,48 @@ define('views/EditView', [
         U.alert("You have errors in the fields with red borders");
         return;
       }
-      
+
       if (G.currentUser.guest) {
         // TODO; save to db before making them login? To prevent losing data entry
         Events.trigger('req-login', {
           returnUri: U.getPageUrl(this.action, this.vocModel.type, res.attributes),
           dismissible: false
         });
-        
+
         return;
       }
-      
-      var res = this.resource, 
+
+      var res = this.resource,
           uri = res.getUri(),
           returnUri = this.hashParams.$returnUri;
-      
+
       if (!this.isEdit && uri) {
 //        this.incrementBLCount();
 //        this.redirect({forceFetch: true});
         return;
       }
-      
+
       var allGood = this.submitInputs();
       if (!allGood)
         return;
-      
+
       this._submitted = true;
 //      var inputs = U.isAssignableFrom(this.vocModel, "Intersection") ? this.getInputs() : this.inputs;
       var inputs = this.getInputs();
-      inputs.$attr('disabled', true).$filter(function(input) { 
-//        return !input.classList.contains(scrollerClass) && 
-        return !input.classList.contains(switchClass) && input.$data('name') != 'interfaceProperties'; 
+      inputs.$attr('disabled', true).$filter(function(input) {
+//        return !input.classList.contains(scrollerClass) &&
+        return !input.classList.contains(switchClass) && input.$data('name') != 'interfaceProperties';
       });
-      
-//      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceProperties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case 
-//      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceClass.properties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case 
+
+//      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceProperties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case
+//      inputs = inputs.not('.' + scrollerClass).not('.' + switchClass).not('[name="interfaceClass.properties"]'); // HACK, nuke it when we generalize the interfaceClass.properties case
       var self = this,
-          action = this.action, 
-          url = G.apiUrl, 
-          form = this.form, 
+          action = this.action,
+          url = G.apiUrl,
+          form = this.form,
           vocModel = this.vocModel,
           meta = vocModel.properties;
-      
+
       var unsaved = res.getUnsavedChanges();
       var atts = {};
       // TODO: get rid of this whole thing, resource.getUnsavedChanges() should have all the changes (except for those with default values, like select lists)
@@ -893,7 +895,7 @@ define('views/EditView', [
         var name = input.name;
         if (_.isUndefined(name))
           continue;
-        
+
         val = this.getValue(input);
 //        if (name.indexOf('_select') == -1  ||  !meta[name.substring(0, name.length - 7)].multiValue) {
 //          atts[name] = val;
@@ -919,7 +921,7 @@ define('views/EditView', [
 //        else //if (!_.has(unsaved, name) && val)
 //          atts[name] = val;
       }
-      
+
       switch (action) {
         case 'make':
           url += 'm/' + encodeURIComponent(vocModel.type);
@@ -928,38 +930,38 @@ define('views/EditView', [
           url += 'e/' + encodeURIComponent(res.getUri());
           break;
       }
-      
+
       atts = U.mapObj(atts, function(att, val) {
         return att.endsWith("_select") ? [att.match(/(.*)_select$/)[1], val.join(',')] : [att, val];
       });
-      
+
       atts = _.extend({}, res.getUnsavedChanges(), atts);
       if (!res.isNew() && _.isEmpty(atts)) {
         if (options && options.fromPageChange)
           return;
-                
+
 //        if (returnUri) {
 //          var nextUrlInfo = U.getUrlInfo(returnUri),
 //              currentUrlInfo = U.getCurrentUrlInfo();
-//              
-//          if (nextUrlInfo.route != currentUrlInfo.route || 
-//              nextUrlInfo.type != currentUrlInfo.type || 
-//              nextUrlInfo.uri != currentUrlInfo.uri || 
+//
+//          if (nextUrlInfo.route != currentUrlInfo.route ||
+//              nextUrlInfo.type != currentUrlInfo.type ||
+//              nextUrlInfo.uri != currentUrlInfo.uri ||
 //              _.isEqual(U.filterObj(nextUrlInfo.params, U.isNativeModelParameter), U.filterObj(currentUrlInfo.params, U.isNativeModelParameter))) {
 //            Events.trigger('navigate', returnUri);
 //            return;
 //          }
 //        }
-        
+
         var prevHash = this.getPreviousHash();
         if (prevHash && !prevHash.startsWith('chooser/'))
           Events.trigger('back', 'going back from edit view (after submit with no properties set by the user) 1');
         else
           Events.trigger('navigate', U.makeMobileUrl('view', this.resource));
-        
+
         return;
       }
-      
+
       var errors = res.validate(atts, {validateAll: true, skipRefresh: true});
       if (typeof errors === 'undefined') {
         // TRADLE APP HACK
@@ -971,7 +973,7 @@ define('views/EditView', [
           this.onerror(res, { name: err });
           return;
         }
-        
+
         this.setValues(atts, {skipValidation: true});
         this.onsuccess();
         self.getInputs().$attr('disabled', false);
@@ -982,17 +984,17 @@ define('views/EditView', [
     cancel: function(e) {
       if (!this.isActive())
         return;
-      
+
       if (this.action === 'edit') {
         this.resource.resetUnsavedChanges();
         this.resource.set(this.originalResource);
       }
-       
+
       Events.trigger('cancel' + this.action.capitalizeFirst(), this.resource);
       this._canceled = this._submitted = true;
 //      Events.trigger('back');
     },
-    
+
     onSaveError: function(resource, xhr, options) {
       this._submitted = false;
       var err;
@@ -1001,20 +1003,20 @@ define('views/EditView', [
         xhr = resource;
         resource = null;
       }
-      
+
       this.getInputs().$attr('disabled', false);
       var code = xhr ? xhr.code || xhr.status : 0;
       if (!code || xhr.statusText === 'error') {
         Errors.errDialog({msg: 'There was en error with your request, please try again', delay: 100});
         return;
       }
-      
+
       var error = U.getJSON(xhr.responseText);
       var msg = error && error.details;
       // TODO: undo this hack
       if (msg && msg.startsWith("You don't have enough funds")) {
         Errors.errDialog({msg: "You don't have enough funds on your account, please make a deposit", delay: 100});
-        var successUrl = window.location.href; 
+        var successUrl = window.location.href;
         setTimeout(function() {
           var params = {
             toAccount: G.currentUser._uri,
@@ -1022,12 +1024,12 @@ define('views/EditView', [
             successUrl: successUrl
 //            successUrl: G.serverName + '/' + G.pageRoot + '#aspects%2fcommerce%2fTransaction?transactionType=Deposit&$orderBy=dateSubmitted&$asc=0'
           };
-          
+
           Events.trigger('navigate', 'make/aspects%2fcommerce%2fTransaction?' + _.param(params));
         }, 2000);
         return;
       }
-      
+
       switch (code) {
         case 401:
           Events.trigger('req-login', {
@@ -1052,7 +1054,7 @@ define('views/EditView', [
           break;
       }
     },
-    
+
     onsuccess: function() {
       var self = this, res = this.resource;
       var unsaved = res.getUnsavedChanges();
@@ -1061,7 +1063,7 @@ define('views/EditView', [
         if (/^[a-zA-Z]+/.test(p) && this.originalResource[p] != unsaved[p])
           props[p] = unsaved[p];
       }
-      
+
 //      _.extend({}, this.originalResource, U.filterObj(res.getUnsavedChanges(), function(name, val) {return /^[a-zA-Z]+/.test(name)})); // starts with a letter
 //      var props = atts;
       if (this.isEdit && _.isEmpty(props)) {
@@ -1070,17 +1072,18 @@ define('views/EditView', [
         Events.trigger('back', 'going back from edit view (after submit with no properties set by the user) 2');
         return;
       }
-            
+
       var sync = !U.canAsync(this.vocModel),
           spinner = {
             content: 'Saving...',
             name: 'saving-resource'
-          };
-    
+          },
+          setEmail = G.online && res.isAssignableFrom('commerce/urbien/Urbien') && props.email;
+
       if (sync) {
         G.showSpinner(spinner);
       }
-        
+
       res.save(props, {
         sync: sync,
         redirect: true,
@@ -1090,15 +1093,19 @@ define('views/EditView', [
           self.getInputs().$attr('disabled', false);
           res._setLastFetchOrigin(null);
           self.disable('Changes submitted');
-//          self.redirect();
           if (sync)
             G.hideSpinner(spinner);
-        }, 
-//        skipRefresh: true,
+
+          if (setEmail) {
+            Events.once('pageChange', function() {
+              U.alert("We sent a verification email to <span class='contrast'>{0}</span>, please check your inbox and verify this address.".format(setEmail));
+            });
+          }
+        },
         error: self.onSaveError
       });
     },
-    
+
     onerror: function(res, errors) {
       this._submitted = false;
       this.fieldError.apply(this, arguments);
@@ -1109,7 +1116,7 @@ define('views/EditView', [
     refresh: function(data, options) {
       if (options && options.skipRefresh)
         return;
-      
+
       var collection, modified;
       if (U.isCollection(data)) {
         collection = data;
@@ -1120,22 +1127,22 @@ define('views/EditView', [
 
       if (this.loadedScrollers) {
         this.getScrollers().$forEach(function(scroller) {
-          mobiscroll(scroller, 'destroy');        
+          mobiscroll(scroller, 'destroy');
         });
       }
-      
+
       this.render();
 //      this.refreshScrollers();
     },
-    
+
     onSelected: function(e) {
-      var atts = {}, 
-          res = this.resource, 
+      var atts = {},
+          res = this.resource,
           input;
-      
+
 //      if (arguments.length > 1)
 //        e = arguments[1];
-      
+
       if (this.isForInterfaceImplementor && input.type === 'checkbox') {
         var checked = input.checked;
 //        var val = res.get('interfaceClass.properties');
@@ -1151,18 +1158,18 @@ define('views/EditView', [
           this.setValues(input.name, props.join(','));
 //          this.setValues('interfaceClass.properties', props.join(','));
         }
-          
+
         return;
       }
-      
+
 //      if (arguments.length > 1) {
 //        var val = arguments[0],
 //            scroller = arguments[1],
 //            settings = scroller.settings,
 //            name = settings.shortName;
-//        
+//
 //        input = settings.input;
-//        
+//
 //        switch (settings.__type) {
 //          case 'date': {
 //            atts[name] = new Date(val).getTime();
@@ -1183,14 +1190,14 @@ define('views/EditView', [
 //        }
 //      }
 //      else {
-      
+
         input = e.target;
         atts[input.name] = this.getValue(input);
 //      }
 
       this.setValues(atts, {onValidationError: this.fieldError, onValidated: getRemoveErrorLabelsFunction(input)});
     },
-    
+
     setValues: function(key, val, options) {
       var atts;
       if (_.isObject(key)) {
@@ -1199,20 +1206,20 @@ define('views/EditView', [
       } else {
         (atts = {})[key] = val;
       }
-      
+
       if (this._canceled)
         return false;
-      
+
       options = options || {};
       var res = this.resource,
-          onValidated = options.onValidated,      
+          onValidated = options.onValidated,
           onInvalid = options.onValidationError,
           meta = res.vocModel.properties,
           errors = {};
-      
+
       if (onInvalid)
         res.once('invalid', onInvalid);
-      
+
       for (var p in atts) {
         var prop = meta[p];
         if (!U.validateValue(prop, atts[p])) {
@@ -1221,29 +1228,29 @@ define('views/EditView', [
           return false;
         }
       }
-      
+
       var set = res.set(atts, _.extend({
         validate: true,
-        skipRefresh: true, 
+        skipRefresh: true,
         userEdit: true
       }, options));
-      
+
       if (set)
         onValidated && onValidated();
-      
+
       if (onInvalid)
         res.off('invalid', onInvalid);
-      
+
       return set;
     },
 
     addProp: function(info) {
       var prop = info.prop,
           p = prop.shortName;
-      
+
       if (p == this._activatedPropName)
         return;
-      
+
       if (p == 'value' && U.isAssignableFrom(this.vocModel, 'commerce/trading/EnumRule')) {
         var enumModel = U.getEnumModel(this.resource.get('eventPropertyRangeUri'));
         prop = info.prop = _.extend({}, prop, {
@@ -1251,31 +1258,31 @@ define('views/EditView', [
           "range": "enum"
         });
       }
-      
+
       if (isHidden(prop, info.params, info.reqParams, info.isEdit)) {
         var rules = ' data-formEl="true"',
             longUri = U.getLongUri1(info.params[p]);
-        
+
         U.addToFrag(info.frag, this.hiddenPropTemplate({
-          value: longUri, 
-          shortName: p, 
-          id: info.formId, 
-          rules: rules 
-        }));        
+          value: longUri,
+          shortName: p,
+          id: info.formId,
+          rules: rules
+        }));
       }
       else {
         var pInfo = U.makeEditProp(this.resource, prop, this.getAtt(p), info.formId);
         U.addToFrag(info.frag, this.editRowTemplate(pInfo));
       }
-      
+
       info.displayedProps.push(p);
     },
-    
+
 //    addProp: function(info) {
 //      var p = info.name;
 //      if (!/^[a-zA-Z]/.test(p) || info.displayedProps[p])
 //        return;
-//      
+//
 //      var prop = info.prop;
 //      if (!prop) {
 ////        delete json[p];
@@ -1287,10 +1294,10 @@ define('views/EditView', [
 //          var longUri = U.getLongUri1(info.params[p]);
 //          U.addToFrag(info.frag, this.hiddenPropTemplate({value: longUri, shortName: p, id: info.formId, rules: rules }));
 //        }
-//        
+//
 //        return;
 //      }
-//      
+//
 //      if (_.has(info.backlinks, p))
 //        return;
 //      if (U.isCloneOf(prop, "Cancellable.cancelled", this.vocModel)) {
@@ -1301,7 +1308,7 @@ define('views/EditView', [
 //      var res = this.resource;
 //      if (!willShow(res, prop, info.userRole))
 //        return;
-//      
+//
 //      info.displayedProps[p] = true;
 //      var pInfo = U.makeEditProp(this.resource, prop, this.getAtt(p), info.formId);
 //      if (!info.groupNameDisplayed  &&  info.propertyGroupName) {
@@ -1320,10 +1327,10 @@ define('views/EditView', [
       input.$data('uri', value);
     },
     isCameraRequired: function() {
-      var res = this.resource, 
+      var res = this.resource,
           vocModel = this.vocModel,
           meta = vocModel.properties;
-      
+
       if (res.isA("VideoResource")) {
         var videoProp = U.getCloneOf(vocModel, "VideoResource.video")[0];
         if (videoProp && !res.get(videoProp))
@@ -1342,21 +1349,21 @@ define('views/EditView', [
       })) {
         return true;
       }
-      
+
       return false;
     },
-    
+
     getForm: function() {
       return this.form || (this.form = this.$('form')[0]);
     },
-    
+
     /**
      * @return select list, checkbox, radio button, all other non-text and non-resource-ranged property inputs
      */
     render: function() {
       var self = this,
           args = arguments;
-      
+
       this.ready.done(function() {
         G.showSpinner(spinner);
         self.renderHelper.apply(self, args);
@@ -1364,7 +1371,7 @@ define('views/EditView', [
         self.finish();
       });
     },
-    
+
     renderHelper: function(options) {
       var self = this;
       var args = arguments;
@@ -1372,19 +1379,19 @@ define('views/EditView', [
       var meta = vocModel.properties;
       if (!meta)
         return this;
-      
+
       var res = this.resource;
       if (!this.originalResource)
         this.originalResource = U.filterObj(res.attributes, function(p, val) {
           var prop = meta[p];
-          return prop && !prop.backLink && U.isModelParameter(p); 
+          return prop && !prop.backLink && U.isModelParameter(p);
         });
-      
+
       var type = res.type,
           reqParams = this.hashParams,
           editCols = reqParams['$editCols'],
           frag = document.createDocumentFragment(),
-          displayedProps = [],//    
+          displayedProps = [],//
           params = U.filterObj(this.action === 'make' ? res.attributes : res.changed, U.isModelParameter),
           formId = G.nextId(),
           userRole = U.getUserRole(),
@@ -1393,25 +1400,25 @@ define('views/EditView', [
           grouped = props.grouped,
           ungrouped = props.ungrouped,
           state = {
-            values: res.attributes, 
-            userRole: userRole, 
-            frag: frag, 
-            displayedProps: displayedProps, 
-            params: params, 
-            backlinks: editableProps.backlinks, 
+            values: res.attributes,
+            userRole: userRole,
+            frag: frag,
+            displayedProps: displayedProps,
+            params: params,
+            backlinks: editableProps.backlinks,
             formId: formId
           };
-      
+
       if (grouped.length) {
         var reqd = U.getPropertiesWith(meta, [{
-            name: "required", 
+            name: "required",
             value: true
           }, {
-            name: "readOnly", 
+            name: "readOnly",
             values: [undefined, false]
           }]),
-          
-          init = this.originalResource;      
+
+          init = this.originalResource;
 
         for (var i = 0; i < grouped.length; i++) {
           var groupInfo = grouped[i],
@@ -1427,46 +1434,46 @@ define('views/EditView', [
           }
 
           for (var j = 0; j < props.length; j++) {
-            var p = props[j]; 
+            var p = props[j];
             this.addProp(_.extend(state, {
-              name: p, 
-              prop: meta[p] 
+              name: p,
+              prop: meta[p]
             }));
           }
         }
-        
+
         for (var p in reqd) {
           if (_.isUndefined(init[p]) && !_.contains(displayedProps, p)) {
             this.addProp(_.extend(state, {
-              name: p, 
+              name: p,
               prop: reqd[p]
             }));
           }
-        }        
+        }
       }
-      
+
       for (var p in reqParams) {
         var prop = meta[p];
         if (prop  &&  !_.contains(displayedProps, p)) {//  &&  (!editCols && !editCols[p])) {
 //          _.extend(state, {
-//            name: p, 
-//            prop: meta[p], 
+//            name: p,
+//            prop: meta[p],
 //            val: reqParams[p]
 //          });
           var h =  '<input data-formEl="true" type="hidden" name="' + p + '" value="' + reqParams[p] + '"/>';
           U.addToFrag(state.frag, h);
           displayedProps.push(p);
-        }        
+        }
 //        this.addProp(state);
       }
-        
-        
-      var returnUri = reqParams['$returnUri']; 
+
+
+      var returnUri = reqParams['$returnUri'];
       if (returnUri) {
         var h =  '<input data-formEl="true" type="hidden" name="$returnUri" value="' + returnUri + '"/>';
         U.addToFrag(state.frag, h);
       }
-      
+
       if (!grouped.length || editCols) {
         for (var i = 0; i < ungrouped.length; i++) {
           var p = ungrouped[i];
@@ -1475,8 +1482,8 @@ define('views/EditView', [
           state.isEdit = self.isEdit;
           self.addProp(state);
         }
-      }        
-      
+      }
+
       this.ul = this.$('#fieldsList').$html(frag)[0];
 //      if (G.isJQM()) {
 //        if (this.ul.$hasClass('ui-listview')) {
@@ -1490,7 +1497,7 @@ define('views/EditView', [
 
       var doc = document;
       var form = this.form = this.getForm();
-      
+
       if (this.isForInterfaceImplementor) {
 //        var start = +new Date();
         var iCl = res.get('interfaceClass.davClassUri');
@@ -1503,7 +1510,7 @@ define('views/EditView', [
             var imeta = _.toArray(m.properties).sort(function(a, b) {
               return a.mustImplement ? -1 : 1;
             });
-            
+
             var interfaceProperties = self.resource.get('interfaceProperties');
             var ip = interfaceProperties ? interfaceProperties.split(',') : [];
             var props = '';
@@ -1511,23 +1518,23 @@ define('views/EditView', [
               var prop = p.shortName;
               if (!prop  ||  !/^[a-zA-Z]/.test(prop)  ||  prop == 'davDisplayName' ||  prop == 'davGetLastModified')
                 return;
-              
+
               if (p.mustImplement || ip.indexOf(prop) != -1)
                 props += prop + ',';
-              
+
               U.addToFrag(frag, self.interfacePropTemplate({
-                davDisplayName: U.getPropDisplayName(p), 
+                davDisplayName: U.getPropDisplayName(p),
                 _checked: p.mustImplement || _.contains(ip, prop) ? 'y' : undefined,
                 disabled: p.mustImplement,
                 required: p.mustImplement,
-                interfaceProps: prop, 
+                interfaceProps: prop,
                 comment: p.comment
               }));
             });
-            
+
             props = props.slice(0, props.length - 1);
             self.setValues('interfaceProperties', props);
-            
+
             self.ul1 = self.$('#interfaceProps').$html(frag)[0];
 //            if (G.isJQM()) {
 //              if (self.ul1.$hasClass('ui-listview'))
@@ -1535,12 +1542,12 @@ define('views/EditView', [
 //              else
 //                $(self.ul1).trigger('create');
 //            }
-          
+
 //            self.redelegateEvents();
 //            var checkboxes = self.form.querySelectorAll('input[type="checkbox"]'),
 //                checkbox,
 //                i = checkboxes.length;
-//            
+//
 //            while (i--) {
 //              checkbox = checkboxes[i];
 //              checkbox.addEventListener('change', self.onSelected);
@@ -1549,18 +1556,18 @@ define('views/EditView', [
           });
         }
       }
-      
+
 //        this.$ul.listview('refresh');
       var inputs = this.inputs = this.getInputs(); //form.find('input');
       var initInputs = function(inputs) {
         inputs.$forEach(function(input) {
 //          if (input.$hasClass(scrollerClass))
 //            return;
-          
+
           var validated = getRemoveErrorLabelsFunction(input);
           var setValues = _.debounce(function() {
             self.setValues(input.name, input.value, {
-              onValidated: validated, 
+              onValidated: validated,
               onValidationError: self.fieldError
             });
           }, 200);
@@ -1568,24 +1575,24 @@ define('views/EditView', [
           input.$on('input', function() {
             if (input.$data('codemirror'))
               return;
-            
+
             input.$data('modified', true);
             setValues.apply(this, arguments);
           });
-          
+
           input.$on('blur', setValues);
         });
 //        $in.keyup(onFocusout);
       };
 
-      initInputs(inputs);        
+      initInputs(inputs);
       var reqd = form.$('[required]'),
           numReqd = reqd.length;
-      
+
       while (numReqd--) {
         form.$('label[for="{0}"]'.format(reqd[numReqd].id)).$addClass('req');
       }
-      
+
       var selects = form.getElementsByTagName('select'),
           select,
           numSelects = selects.length;
@@ -1593,22 +1600,22 @@ define('views/EditView', [
       while (numSelects--) {
         select = selects[numSelects];
         select.addEventListener('change', this.onSelected);
-        
+
         // set initial values on resource
         var name = select.name,
             value;
-        
+
         if (_.isUndefined(res.get(name)) || this.isForInterfaceImplementor)
           continue;
-        
+
         if ((value = select.value) != null)
           this.setValues(name, value);
       }
-      
+
 //      form.getElementsByTagName('input').$on('keydown', this._onKeyDownInInput); // end of function
       var edits = res.getUnsavedChanges();
       form.getElementsByClassName('resourceProp').$forEach(function(resProp) {
-        // TODO: disable resource chooser buttons for image range properties that have cameraOnly annotation      
+        // TODO: disable resource chooser buttons for image range properties that have cameraOnly annotation
         var name = resProp.name;
         var prop = meta[name];
 //        var $this = $(this);
@@ -1616,13 +1623,13 @@ define('views/EditView', [
           var span = document.createElement('span');
           span.innerHTML = '<i> (only live photo allowed)</i>';
           span.$after(resProp.querySelector('label'));
-          
+
           resProp.addEventListener('click', function(e) {
             Events.stopEvent(e);
             var matched = self.$('[data-prop="{0}"]'.format(name)),
                 match,
                 i = matched.length;
-            
+
             while (i--) {
               match = matched[i];
               match.$trigger('click',  {
@@ -1642,21 +1649,21 @@ define('views/EditView', [
         var value = res.get(name);
         if (_.isUndefined(value))
           value = resProp.value;
-        
+
         self.setResourceInputValue(resProp, value);
       });
-      
+
 //      if (_.size(displayedProps) === 1) {
 //        var prop = meta[_.getFirstProperty(displayedProps)];
 //        if (Templates.getPropTemplate(prop, true) === 'resourcePET') {
 //          this.$('a[name="' + prop.shortName + '"]').trigger('click');
 //        }
 //      }
-      
+
       if (this.isCode && CodeMirror) {
         this.attachCodeMirror();
       }
-      
+
       if (!this.rendered) {
         if (this.action === 'make' && this.isCameraRequired()) {
           this.listenTo(Events, 'pageChange', function() {
@@ -1669,9 +1676,9 @@ define('views/EditView', [
           }.bind(this));
         }
       }
-        
+
       // only trigger the first you find
-//      _.any(['[data-date]', '[data-duration]','[data-enum]'], function(scrollerType) { 
+//      _.any(['[data-date]', '[data-duration]','[data-enum]'], function(scrollerType) {
 //        var scrollers = self.$(scrollerType);
 //        if (scrollers.length) {
 //          var scrollerWithValue = _.find(scrollers, function(s) { return !!s.value });
@@ -1682,14 +1689,14 @@ define('views/EditView', [
 //          }
 //        }
 //      });
-      
+
 //      form.find('fieldset input[type="checkbox"]').$forEach(function() {
 //        form.find('label[for="{0}"]'.format(this.id)).addClass('req');
 //      });
 
       return this;
     },
-    
+
     attachCodeMirror: function() {
       this.makeTemplate('resetTemplateBtnTemplate', 'resetTemplate', this.vocModel.type);
       var form = this.form;
@@ -1698,7 +1705,7 @@ define('views/EditView', [
       var meta = this.vocModel.properties;
       var isTemplate = this.vocModel.type === G.commonTypes.Jst;
       var textareas = this.$('textarea[data-code]');
-      
+
       _.each(textareas, function(textarea) {
         var code = textarea.$data('code');
         var propName = textarea.name;
@@ -1715,7 +1722,7 @@ define('views/EditView', [
             break;
           }
         }
-        
+
         editor = CodeMirror.fromTextArea(textarea, {
           dragDrop: false, // doesn't play nice with hammer
           mode: mode,
@@ -1724,20 +1731,20 @@ define('views/EditView', [
           viewportMargin: Infinity,
           tabSize: 2
         });
-        
+
         // TODO: fix this so it can save changes as you type, but not lose focus
         editor.on('change', Q.debounce(function() {
           var newVal = editor.getValue();
           view.setValues(propName, newVal);
         }, 500));
-        
+
         var prop = meta[propName];
         var defaultText;
         if (isTemplate)
           defaultText = view.getOriginalTemplate(res.get('templateName')) || U.DEFAULT_HTML_PROP_VALUE;
         else
           defaultText = U['DEFAULT_{0}_PROP_VALUE'.format(code.toUpperCase())];
-        
+
         var changeHandler;
         if (defaultText) {
           var reset = $.parseHTML(view.resetTemplate())[0];
@@ -1750,7 +1757,7 @@ define('views/EditView', [
             reset.querySelector('.ui-btn-text').innerText = resetText;
             editor.off('change', resetHandler);
           };
-          
+
           reset.addEventListener('click', function(e) {
             editor.off('change', resetHandler);
             Events.stopEvent(e);
@@ -1759,14 +1766,14 @@ define('views/EditView', [
             editor.setValue(newValue);
             didReset = !didReset;
             reset.querySelector('.ui-btn-text').innerText = didReset ? 'Undo reset' : resetText;
-            if (didReset)    
+            if (didReset)
               editor.on('change', resetHandler);
           });
-          
+
           reset.$after(textarea.nextSibling);
           if (reset.button)
             reset.button();
-          
+
           if (defaultText === textarea.value) {
             reset.classList.add('ui-disabled');
             changeHandler = function(from, to, text, removed, next) {
@@ -1774,10 +1781,10 @@ define('views/EditView', [
                 reset.classList.remove('ui-disabled')
                 editor.off('change', changeHandler);
               }
-            };                
+            };
           }
         }
-        
+
         changeHandler && editor.on('change', changeHandler);
         setTimeout(function() {
           // sometimes the textarea will have invisible letters, or be of a tiny size until you type in it. This is a preventative measure that seems to work
@@ -1785,11 +1792,11 @@ define('views/EditView', [
           editor.scrollIntoView({line: 0, ch: 0});
           textarea.focus();
         }, 50);
-        
+
         $.data(textarea, 'codemirror', editor);
       });
     },
-    
+
     onKeyDownInInput: function() {
       // track enter key
       var keycode = (event.keyCode ? event.keyCode : (event.which ? event.which : event.charCode));
@@ -1800,11 +1807,11 @@ define('views/EditView', [
             name = input.name,
             value = input.value,
             parent = input.parentNode;
-        
+
         var didSet = this.setValues(name, value, {onValidated: getRemoveErrorLabelsFunction(input), onValidationError: this.fieldError});
         if (didSet)
           this.submit();
-        
+
         return false;
       } else  {
         return true;
@@ -1812,5 +1819,5 @@ define('views/EditView', [
     }
   }, {
     displayName: 'EditView'
-  });  
+  });
 });

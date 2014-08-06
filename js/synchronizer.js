@@ -5,7 +5,7 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
       RESOLVED_PROMISE = G.getResolvedPromise(),
       REJECTED_PROMISE = G.getRejectedPromise(),
       REF_STORE;
-  
+
   function getLastFetchedTimestamp(resOrJson) {
     return U.getValue(resOrJson, '_lastFetchedOn') || U.getValue(resOrJson, 'davGetLastModified');
   };
@@ -17,7 +17,7 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
   };
 
   //////////////////// SYNCHRONIZER /////////////////
-   
+
   function Synchronizer(method, data, options) {
     this.method = method;
     this.options = options;
@@ -26,23 +26,23 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
 
   Synchronizer.prototype.sync = function() {
     return this['_' + this.method]();
-  };  
-  
+  };
+
   Synchronizer.prototype._isUpdate = function() {
     throw "This function must be overridden";
   };
-  
+
   Synchronizer.prototype._setLastFetched = function() {
     if (this.info.lastFetchedOn) {
       var ifMod = {
         "If-Modified-Since": new Date(this.info.lastFetchedOn).toUTCString()
       };
-      
+
       this.options.headers = this.options.headers || {};
       _.extend(this.options.headers, ifMod);
     }
   }
-  
+
   Synchronizer.prototype._delayedFetch = function() {
     return this._fetchFromServer(100);
   };
@@ -51,10 +51,10 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
     var self = this,
         options = this.options,
         url = options.url,
-        dfd, 
+        dfd,
         promise,
         isResource;
-    
+
     dfd = this.data.getFetchDeferred(url);
     if (dfd) {
       if (!dfd._delayed)
@@ -68,17 +68,17 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
       dfd = $.Deferred();
       promise = dfd.promise();
       isResource = U.isModel(this.data);
-      
+
       if (!isResource)
         this.data.setFetchDeferred(url, dfd);
       else
-        this.data.setFetchDeferred(dfd);      
-    
+        this.data.setFetchDeferred(dfd);
+
       promise.always(function() {
-        this.data.clearFetchDeferred(url);      
-      }.bind(this)).then(this._success, this._error);
+        self.data.clearFetchDeferred(url);
+      }).done(this._success).fail(this._error);
     }
-    
+
     if (!G.online) {
       dfd.rejectWith(this.data, [null, {code: 0, type: 'offline', details: 'This action requires you to be online'}, options]);
       return;
@@ -93,7 +93,7 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
       dfd.rejectWith(this.data, [this.data, {code: 204}, this.options]);
       return;
     }
-  
+
     if (this._isUpdate() && !this._isForceFetch())
       this._setLastFetched();
 
@@ -102,47 +102,47 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
       dfd._delayed = true;
       return promise;
     }
-    
+
     var intermediatePromise;
-    if (this._isSyncRequest() || !G.hasWebWorkers)
-      intermediatePromise = this._defaultSync();
-    else {
+    // if (this._isSyncRequest() || !G.hasWebWorkers)
+    //   intermediatePromise = this._defaultSync();
+    // else {
       intermediatePromise = U.ajax({
         url: options.url,
-        type: 'GET', 
+        type: 'GET',
         headers: options.headers,
         'for': this.data
       });
-    }
-      
+    // }
+
     intermediatePromise.done(function(data, status, xhr) {
       dfd.resolveWith(self.data, [data, status, xhr]);
     }).fail(function(xhr, status, msg) {
   //    if (xhr.status === 304)
   //      return;
-      
+
       log('error', 'failed to get resources from url', options.url, msg);
       dfd.rejectWith(this.data, [null, xhr, options]);
     });
-  
+
     return promise;
   };
-      
+
   Synchronizer.prototype._defaultSync = function() {
 //    if (this._isSyncRequest())
 //      this.options.timeout = 10000;
-    
+
     var self = this,
         tName = 'sync ' + this.options.url;
-    
+
 //    G.startedTask(tName);
 //    this.options.success = function() {
 //      G.finishedTask(tName);
 //    }
-    
+
     return Backbone.defaultSync(this.method, this.data, this.options);
   };
-  
+
   Synchronizer.prototype._queryDB = function() {
     throw "This function must be overridden";
   };
@@ -154,7 +154,7 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
   Synchronizer.prototype._preProcess = function() {
     if (this.info)
       return true;
-    
+
     var self = this;
     this.data._dirty = 0;
     this.info = {
@@ -168,15 +168,15 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
     this.info.isUpdate = this._isUpdate();
     if (this.info.isUpdate)
       this.info.lastFetchedOn = this._getLastFetchedOn();
-    
+
     this._error = this.options.error || function(model, err, options) {
       log('error', 'failed to {0} {1}'.format(self.method, self._getKey()));
     };
-    
+
     this._success = this.options.success || function(resp, status, xhr) {
       log('error', 'success: {0} {1}'.format(self.method, self._getKey()));
     };
-    
+
     return true;
   };
 
@@ -185,35 +185,35 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
       return this.info[infoProp];
     };
   });
-  
+
   _.each(['now', 'vocModel', 'lastFetchedOn'], function(infoProp) {
     Synchronizer.prototype['_get' + infoProp.capitalizeFirst()] = function() {
       return this.info[infoProp];
     };
   });
-  
+
   Synchronizer.prototype._read = function(options) {
     var self = this,
         keepGoing = this._preProcess(),
         promise;
-    
+
     if (!keepGoing)
       return keepGoing;
-    
+
     if (this._isForceFetch())
       return this._fetchFromServer();
-    
+
     promise = this._queryDB().then(function(results) {
       self.options.sync = false;
       self.data._setLastFetchOrigin('db');
       log('db', "got resources from db: " + self.info.vocModel.type);
       self._onDBSuccess(results);
     }, this._onDBError.bind(this));
-    
+
     promise._url = this.options.url;
     return promise;
   };
-  
+
   Synchronizer.prototype._onDBSuccess = function(results) {
     throw "This function must be overridden";
   };
@@ -221,10 +221,10 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
   Synchronizer.prototype.canFetchFromServer = function() {
     throw "This function must be overridden";
   },
-  
+
   Synchronizer.prototype._onDBError = function(err) {
     if (this.options.dbOnly)
-      this._error(this.data, {type: 'not_found'}, this.options);            
+      this._error(this.data, {type: 'not_found'}, this.options);
     else if (G.online) {
       if (!this.canFetchFromServer()) {
         debugger;
@@ -243,12 +243,12 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
 
   Synchronizer.getLastFetched = function(obj, now) {
     now = now || G.currentServerTime();
-    if (!obj) 
+    if (!obj)
       return now;
-    
+
     var ts,
         type = U.getObjectType(obj).toLowerCase();
-    
+
     switch (type) {
       case '[object array]':
         ts = _.reduce(obj, function(memo, next)  {
@@ -262,16 +262,16 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
         ts = obj;
         break;
     }
-  
+
     return ts || 0;
   };
-  
+
   Synchronizer.isStale = function(timestamp, now) {
     return !timestamp || now - timestamp > MAX_DATA_AGE;
   };
-  
+
   Synchronizer.addItems = function(classUri, items) {
-    var IDB = IndexedDBModule.getIDB();    
+    var IDB = IndexedDBModule.getIDB();
     if (!IDB.hasStore(classUri)) {
       var dfd = $.Deferred();
       U.require('resourceManager').done(function(RM) {
@@ -279,7 +279,7 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
           Synchronizer.addItems(classUri, items).done(dfd.resolve).fail(dfd.reject);
         }).fail(dfd.reject);
       }).fail(dfd.reject);
-      
+
       return dfd.promise();
     }
 
@@ -290,13 +290,13 @@ define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 
         items[i] = U.isModel(item) ? item.toJSON() : item;
       }
     }
-    
+
     return IDB.put(classUri, items);
   };
 
   Synchronizer.init = _.once(function() {
     REF_STORE = G.getRefStoreInfo();
   });
-  
+
   return Synchronizer;
 });

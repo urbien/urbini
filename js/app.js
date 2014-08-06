@@ -387,15 +387,15 @@ define('app', [
     if (!G.currentUser.guest)
       tabs = tabs.concat({hash: 'view/profile'});
 
-    promises = _.map(tabs, function(tab) {
-      var promise = hashToResourceOrList(tab.hash);
+    promises = tabs.map(function(tab) {
+      var promise = hashToResourceOrList(tab.hash),
+          dfd;
+
       if (promise.state() == 'rejected')
         return G.getRejectedPromise();
 
-      return promise.then(function(data) {
-        var fetchDfd = $.Deferred(),
-            isList = U.isCollection(data);
-
+      dfd = $.Deferred();
+      promise.done(function(data) {
         Events.trigger('cache' + (U.isModel(data) ? 'Resource' : 'List'), data);
         data.fetch({
           params: {
@@ -403,15 +403,15 @@ define('app', [
           },
           success: function() {
             if (!data.isFetching())
-              fetchDfd.resolve();
+              dfd.resolve();
           },
           error: function() {
-            fetchDfd.reject();
+            dfd.reject();
           }
         });
-
-        return fetchDfd.promise();
       });
+
+      return dfd.promise();
     });
 
 //    if (Voc.isDelayingModelsFetch())
@@ -419,62 +419,69 @@ define('app', [
   };
 
   function askForEmail() {
-//    Events.trigger('navigate', U.makeMobileUrl('edit', G.currentUser._uri, {
-//      '-info': 'Complete your registration',
-//      $editCols: 'firstName, lastName, email',
-//      $returnUri: U.getHash()
-//    }));
+    var msg = 'Please provide an email address where you would like to receive notifications';
+    if (U.isProfileRoute()) {
+      U.alert(msg);
+      return;
+    }
 
-    var getContactModel = Voc.getModels(U.getTypeUri(G.currentUser._uri)),
-        spinner,
-        hide = function() {
-          ModalDialog.hide();
-          if (spinner)
-            G.hideSpinner(spinner);
-        };
+    Events.trigger('navigate', U.makeMobileUrl('edit', G.currentUser._uri, {
+      '-gluedInfo': msg,
+      $editCols: 'email',
+      $returnUri: U.getHash()
+    }));
 
-    U.modalDialog({
-      id: 'completeRegistrationDialog',
-      header: 'Complete your registration',
-//      title: 'Click <b>Activate</b> to activate your Tradle without a dry run',
-      details: _.template(Templates.get('emailFormTemplate'))(G.currentUser),
-//      bgImg: 'http://mark.urbien.com/urbien/images/tradle/target-practice-orange.png',
-      ok: 'Submit',
-      cancel: false,
-      onok: function onok() {
-        debugger;
-        var data = {};
-        document.$('.modal-popup form input').$forEach(function(input) {
-          data[input.name] = data[input.value];
-        });
+//     var getContactModel = Voc.getModels(U.getTypeUri(G.currentUser._uri)),
+//         spinner,
+//         hide = function() {
+//           ModalDialog.hide();
+//           if (spinner)
+//             G.hideSpinner(spinner);
+//         };
 
-        spinner = {
-          name: 'saveEmail',
-          timeout: 10000,
-          blockClick: true
-        };
+//     U.modalDialog({
+//       id: 'completeRegistrationDialog',
+//       header: 'Complete your registration',
+//       style: 'width:300px;',
+// //      title: 'Click <b>Activate</b> to activate your Tradle without a dry run',
+//       details: _.template(Templates.get('emailFormTemplate'))(G.currentUser),
+// //      bgImg: 'http://mark.urbien.com/urbien/images/tradle/target-practice-orange.png',
+//       ok: 'Submit',
+//       cancel: false,
+//       onok: function onok() {
+//         debugger;
+//         var data = {};
+//         document.$('.modal-popup input').$forEach(function(input) {
+//           data[input.name] = input.value;
+//         });
 
-        G.showSpinner(spinner);
-        getContactModel.done(function(model) {
-          var currentUser = new model(G.currentUser);
-          currentUser.save(data, {
-            sync: true,
-            redirect: false,
-            success: hide,
-            error: function() {
-              debugger;
-              hide();
-            }
-          });
-        }).fail(function() {
-          debugger;
-          hide();
-        });
-      },
-      oncancel: function oncancel() {
-        hide();
-      }
-    });
+//         spinner = {
+//           name: 'saveEmail',
+//           timeout: 10000,
+//           blockClick: true
+//         };
+
+//         G.showSpinner(spinner);
+//         getContactModel.done(function(model) {
+//           var currentUser = new model(G.currentUser);
+//           currentUser.save(data, {
+//             sync: true,
+//             redirect: false,
+//             success: hide,
+//             error: function() {
+//               debugger;
+//               hide();
+//             }
+//           });
+//         }).fail(function() {
+//           debugger;
+//           hide();
+//         });
+//       },
+//       oncancel: function oncancel() {
+//         hide();
+//       }
+//     });
   };
 
   function doPostStartTasks() {
@@ -841,11 +848,7 @@ define('app', [
       else
         Backbone.history.start();
 
-//      if (!G.currentUser.guest && !G.currentUser.email && new Date().getTime() - G.currentUser.dateRegistered < 24 * 3600000)
-//        askForEmail();
-
       Events.on('askForEmail', askForEmail);
-
       dfd.resolve();
     }).promise();
   }

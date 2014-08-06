@@ -477,7 +477,10 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         }
       },
 
-      $closest: function(selector) {
+      $closest: function(selector, includeSelf) {
+        if (includeSelf && this.$matches(selector))
+          return this;
+
         var parent = this;
         while ((parent = parent.parentNode) && parent != doc) {
           if (parent.$matches(selector))
