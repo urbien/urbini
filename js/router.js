@@ -2009,7 +2009,7 @@ define('router', [
               $('div.ui-page-active #buttons #name').css('background', bg);
 //              if (view.collection  &&  liBg)
 //                $('div.ui-page-active #sidebar li').css('background', liBg);
-              $('div.ui-page-active #pageTitle').css('color', c);
+              $('div.ui-page-active .pageTitle').css('color', c);
               c = $('[data-role="page"]').css('color');
 //              $('div.ui-page-active #sidebar span').css('color', c);
               G.theme.descColor = c.charAt(0) == '#' ? U.colorLuminance(c, 0.7) : U.colorLuminanceRGB(c, 0.7);
@@ -2021,7 +2021,7 @@ define('router', [
 //              $('div.ui-page-active .hdr').css('background', U.colorLuminanceRGB(bg, -0.1));
 //            var c = $('.ui-body-' + swatch + ' .ui-link').css('color');
 //            if (c  &&  c.indexOf('rgb(') != -1)
-//              $('div.ui-page-active #pageTitle').css('color', c);
+//              $('div.ui-page-active .pageTitle').css('color', c);
 //            }
         }
 */

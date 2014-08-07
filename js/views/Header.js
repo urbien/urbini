@@ -850,7 +850,7 @@ define('views/Header', [
     refreshTitle: function() {
       this.recalcTitle();
       this.titleContainer.innerHTML = this.title;
-      var title = this.$('#pageTitle')[0],
+      var title = this.$('.pageTitle')[0],
           length = this.title.length,
           fontSize;
 
@@ -1218,7 +1218,7 @@ define('views/Header', [
 //      }
 
       this.html(this.template(tmpl_data));
-      this.titleContainer = this.$('#pageTitle')[0];
+      this.titleContainer = this.$('.pageTitle')[0];
       if (this.filter) {
         this.categories = false; // HACK for now, search is more important at the moment
 
@@ -1306,7 +1306,7 @@ define('views/Header', [
 //              });
 //            }
 //          }
-//          // this.$el.find('#pageTitle').css('margin-bottom', '0px');
+//          // this.$el.find('.pageTitle').css('margin-bottom', '0px');
 //        }
 //      }
       if (!this.noButtons  &&  !this.categories  &&  !this.moreRanges  &&  !this.isEdit /* &&  !G.isBB()*/) {
@@ -1326,7 +1326,7 @@ define('views/Header', [
 //          if (G.isJQM())
 //            badge.$css('left', Math.floor(btnWidth/2) + '%');
 //          else
-            badge.$css('left', '50%');
+            //badge.$css('left', '50%');
         }
       }
       // HACK

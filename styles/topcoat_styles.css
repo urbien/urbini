@@ -15,7 +15,7 @@ a.resourceProp {
 .topcoat-button--large {
   font-size: 1.7rem;
   text-shadow: none;
-} 
+}
 li {
   position: relative;
 }
@@ -89,8 +89,8 @@ li {
 }
 button.topcoat-button-bar__button--large {
   width:100%;
-} 
-h4#pageTitle  {
+}
+h4.pageTitle  {
   margin-top:0;
 }
 .topcoat-list__header {
@@ -103,14 +103,14 @@ h4#pageTitle  {
   margin: 0;
 }
 .editList .topcoat-list__header {
-  padding: 0.5rem 0 0 1.5rem; 
+  padding: 0.5rem 0 0 1.5rem;
 }
 a {
   color: #333333;
 }
 #login_popup .popup {
   background: #ccc;
-  border:1px solid #aaa; 
+  border:1px solid #aaa;
   border-radius:1rem;
 }
 
@@ -135,7 +135,7 @@ a {
 }
 
 .cp i {
-  z-index:1001; 
+  z-index:1001;
   position:absolute;
   top:1rem;
   right:1.75rem;
@@ -197,9 +197,9 @@ a {
   margin: 0 auto;
 }
 #cameraCancelBtn i {
-  position: absolute; 
-  border-radius: 1rem; 
-  font-size: 2.8rem; 
+  position: absolute;
+  border-radius: 1rem;
+  font-size: 2.8rem;
   top: -2.5rem;
   right: -2rem;
 }
@@ -239,7 +239,7 @@ a {
 }
 
 .editList li {
-  padding: 0.5rem 1.5rem; 
+  padding: 0.5rem 1.5rem;
   min-height: 3rem;
   font-size: 1.6rem;
   border-bottom: 1px solid #ccc;
@@ -254,7 +254,7 @@ a {
 
 fieldset div {
   margin: 1rem -.5px 0 -.5rem;
-} 
+}
 #mvChooser {
   border: none;
 }
@@ -346,7 +346,7 @@ fieldset .listPage .topcoat-list__container, #sidebar.topcoat-list__container {
   cursor: pointer;
 }
 .topcoat-list__item {
-  position: relative;  
+  position: relative;
 }
 .topcoat-button:focus,
 .topcoat-button--quiet:focus,
@@ -375,11 +375,11 @@ fieldset .listPage .topcoat-list__container, #sidebar.topcoat-list__container {
   width:auto;
   float:left;
   font-weight: bold;
-  text-align:left; 
-  border: 1px solid #ccc; 
-  min-width:115px; 
+  text-align:left;
+  border: 1px solid #ccc;
+  min-width:115px;
   background:none;
-} 
+}
 
 .hmg {
   margin: 10px 5px 10px 5px;

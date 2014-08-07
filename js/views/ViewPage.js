@@ -21,17 +21,17 @@ define('views/ViewPage', [
 //      this.resource.on('change', this.render, this);
       var self = this,
           res = this.resource;
-      
+
 //      this.$el.on('page_show', function() {
 //        setTimeout(self.pageChange, 1000);
 //      });
-      
+
       if (options.style)
         _.extend(this.style, options.style);
-      
+
       this.makeTemplate('resource', 'template', this.vocModel.type);
       this.viewId = options.viewId;
-      
+
       var commonTypes = G.commonTypes;
       this.headerButtons = {
         back: true,
@@ -48,14 +48,14 @@ define('views/ViewPage', [
         parentView: this,
         isAbout: isAbout
       }
-        
+
       this.header = new Header(_.extend({
         viewId: this.cid
       }, commonParams));
-      
+
       this.addChild(this.header);
 
-      
+
       if (!this.isAbout  &&  !U.isAssignableFrom(this.vocModel, 'Tradle')) {
         var viewType, viewDiv;
         if (res.isA('Intersection')) {
@@ -69,9 +69,9 @@ define('views/ViewPage', [
         if (!this.imgDiv) {
           viewType = 'views/ResourceImageView';
           this.imgDiv = 'div#resourceImage';
-        }        
+        }
       }
-      
+
       var self = this;
 //      var readyDfd = $.Deferred();
 //      this.ready = readyDfd.promise();
@@ -79,16 +79,16 @@ define('views/ViewPage', [
 //        success: readyDfd.resolve,
 //        error: readyDfd.reject
 //      });
-      
+
       this.imgReadyDfd = $.Deferred();
       this.imgReady = this.imgReadyDfd.promise();
       if (viewType) {
         U.require(viewType, function(viewMod) {
           self.imageView = new viewMod(_.extend({
-            el: self.$(self.imgDiv)[0], 
+            el: self.$(self.imgDiv)[0],
             arrows: false
           }, commonParams));
-          
+
           self.addChild(self.imageView);
           self.imgReadyDfd.resolve();
 //          self._onViewportDimensionsChanged();
@@ -105,22 +105,22 @@ define('views/ViewPage', [
 //          self.chatDfd.resolve();
 //        });
 //      }
-      
+
 //      this.cpMain = new ControlPanel(_.extend(commonParams, {el: $('div#mainGroup', this.el), isMainGroup: true}));
       if (!isAbout) {
         this.cpMain = new ControlPanel(_.extend({isMainGroup: true}, commonParams));
         this.addChild(this.cpMain);
         this.cp = new ControlPanel(_.extend({isMainGroup: false}, commonParams));
         this.addChild(this.cp);
-      }  
-      
+      }
+
       this.isPurchasable = res.isOneOf(["ItemListing","Buyable"]);
-//      if (this.isPurchasable) { 
+//      if (this.isPurchasable) {
 //        this.buyGroup = new ResourceView(_.extend({isBuyGroup: true}, commonParams));
 //        this.addChild(this.buyGroup);
 //      }
       this.isImageCover = U.isA(this.vocModel, 'ImageCover')  &&  U.getCloneOf(this.vocModel, 'ImageCover.coverPhoto');
-        
+
       this.resourceView = new ResourceView(commonParams);
       this.addChild(this.resourceView);
       this.photogridDfd = $.Deferred();
@@ -130,7 +130,7 @@ define('views/ViewPage', [
 //      if (_.size(inlineXBacklinks)) {
 //        this.doInlineBacklinks(inlineXBacklinks);
 //      }
-      
+
       var isApp = U.isAssignableFrom(res, commonTypes.App);
       var isUrbien = U.isAssignableFrom(res, commonTypes.Urbien);
       var isArtist = U.isAssignableFrom(res, U.getTypeUri('classifieds/movies/Artist')) || res.type.endsWith("/Artist");
@@ -180,19 +180,19 @@ define('views/ViewPage', [
                 model: friendModel,
                 title: title //U.getDisplayName(res) + "'s " + U.getPlural(friendName)
               });
-              
+
               self.friends.fetch({
                 success: function() {
                   if (!self.photogrid && self.friends.size()) {
-                    var photogridEl = self.el.$('#photogrid')[0];
-                    photogridEl.classList.remove('hidden');
+                    var photogridEl = self.el.$('.photogrid')[0];
+                    photogridEl.$show();
                     self.photogrid = new HorizontalListView({
                       el: photogridEl,
-                      model: self.friends, 
-                      parentView: self, 
+                      model: self.friends,
+                      parentView: self,
                       source: uri
                     });
-                    
+
 //                    self.photogrid = new PhotogridView({model: self.friends, parentView: self, source: uri, swipeable: true});
                     self.addChild(self.photogrid);
                     self.photogridDfd.resolve();
@@ -202,7 +202,7 @@ define('views/ViewPage', [
                 }
               });
             });
-            
+
             if (self.resource.isAssignableFrom("model/workflow/Alert") && !self.resource.get('markedAsRead')) {
               self.resource.save({
                 markedAsRead: true
@@ -213,7 +213,7 @@ define('views/ViewPage', [
           });
         });
       }
-      
+
       this.listenTo(Events, "mapReady", this.showMapButton);
       this.getFetchPromise().done(this.resource.fetchInlinedLists);
     },
@@ -236,10 +236,10 @@ define('views/ViewPage', [
 //            self.inlineXBacklinks.push(bl);
 //          }
 //        });
-//        
+//
 //        if (this.inlineXBacklinks.length) {
 //          require(['collections/ResourceList', 'views/PhotogridView'], function(ResourceList, PhotogridView) {
-//            _.each(self.inlineXBacklinks, function() {                
+//            _.each(self.inlineXBacklinks, function() {
 //              self.friends = new ResourceList(null, {
 //                params: {
 //                  $or: U.getQueryString({friend1: uri, friend2: uri}, {delimiter: '||'})
@@ -247,7 +247,7 @@ define('views/ViewPage', [
 //                model: U.getModel(friendType),
 //                title: 'Friends' //U.getDisplayName(res) + "'s " + U.getPlural(friendName)
 //              });
-//              
+//
 //              self.friends.fetch({
 //                success: function() {
 //                  if (self.friends.size()) {
@@ -274,16 +274,16 @@ define('views/ViewPage', [
 //        ,
 //      'pagechange': 'pageChange'
     },
-    
+
     pageChange: function(e) {
       if (this.hashParams.$tour) {
         var selector = '[' + this.hashParams.$tourSelector + ']';
-        
+
         var elm = this.$(selector);
         var direction = this.hashParams.$tourD;
         if (!direction)
           direction = 'left';
-        
+
         elm.classList.add('hint--' + direction + ' hint--always');
         elm.$data('hint', this.hashParams.$tourM);
       }
@@ -306,31 +306,31 @@ define('views/ViewPage', [
       options = options || {};
       if (!this.rendered && !options.mock)
         this.addToWorld(null, true); // auto-add view page brick
-      
+
       var self = this,
           res = this.resource;
           viewTag = this.isAbout  &&  this.isApp ? '#about' : '#resourceView',
           views = {};
-      
+
       this.html(this.template(this.getBaseTemplateData()));
       this.photogridPromise.done(function() {
         self.assign({
-          '#photogrid': self.photogrid
+          '.photogrid': self.photogrid
         }, options);
-        
+
         self.photogrid.onload(Q.write.bind(Q, function() {
           var pHeader = self.$('.thumb-gal-header')[0];
           var h3 = pHeader.querySelector('h3');
           if (h3)
             h3.innerHTML = self.friends.title;
-          
+
           pHeader.classList.remove('hidden');
           self.getPageView().invalidateSize();
 //          self.invalidateSize();
         }));
       });
 
-//      this.chatPromise && this.chatPromise.done(function() {        
+//      this.chatPromise && this.chatPromise.done(function() {
 //        var chatbox = self.$('div#chatbox');
 //        self.assign({
 //          'div#chatbox': self.chat
@@ -344,11 +344,11 @@ define('views/ViewPage', [
         if (this.cpMain)
           views['#mainGroup'] = this.cpMain;
       }
- 
+
 //      var isGeo = this.isGeo();
 //      this.headerButtons.aroundMe = isGeo;
-      
-      
+
+
       this.assign('.headerDiv', this.header, _.extend({buttons: this.headerButtons}, options));
       this.assign(views);
       this.imgReady.done(function() {
@@ -359,16 +359,16 @@ define('views/ViewPage', [
         this.getFetchPromise().done(function() {
           if (res.get('price') == null)
             return;
-          
-          var purchasesBLProp; 
+
+          var purchasesBLProp;
           self.buyGroup = new ResourceView(_.extend({isBuyGroup: true}, self.commonChildViewParams));
           self.addChild(self.buyGroup);
-          
+
           if (res.isA("ItemListing"))
             purchasesBLProp = U.getCloneOf(self.vocModel, "ItemListing.ordersPlaced")[0];
           else if (res.isA("Buyable"))
             purchasesBLProp = U.getCloneOf(self.vocModel, "Buyable.orderItems")[0];
-          
+
           if (purchasesBLProp) {
             self.isBuyGroup = true;
 //            self.purchasesBLProp = purchasesBLProp;
@@ -378,33 +378,33 @@ define('views/ViewPage', [
           else
             self.isBuyGroup = false;
         });
-      }     
+      }
 
       if (!this.isAbout) {
         if (G.currentUser.guest) {
           this.$('#edit').$hide();
         }
-      }       
-      
+      }
+
 //      this.el.$data('theme', G.theme.swatch);
-//      if (G.theme.backgroundImage) 
+//      if (G.theme.backgroundImage)
 //        this.$('#resourceViewHolder').$css('background-image', 'url(' + G.theme.backgroundImage +')');
 
       this.$('#chatbox').$hide();
-            
+
 //      this.onload(function() {
 //        Q.write(function() {
 //          if (!self.el.parentNode) {
 //            document.body.appendChild(self.el);
 //            self.addToWorld(null, true); // auto-add view page brick
 //          }
-//        
+//
 //        });
 //      });
-      
+
       return this;
     },
-    
+
 //    _sizeProps: ['_outerHeight', '_outerWidth', '_width', '_height', '_bounds'],
 //    _updateSize: function() {
 //      if (!this.resourceView.rendered)
@@ -412,7 +412,7 @@ define('views/ViewPage', [
 //      else
 //        return BasicPageView.prototype._updateSize.call(this, this.$('#resourceViewHolder')[0]);
 //    },
-    
+
     onLoadedImage: function(callback, context) {
       return this.imageView ? this.imageView.onload(callback, context) : G.getRejectedPromise();
     }

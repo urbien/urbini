@@ -16,7 +16,7 @@ body {
     -ms-user-select: none;
         user-select: none;
     text-overflow: ellipsis;
-    max-width: 960px;
+    max-width: 1040px;
     margin: 0 auto;
 }
 [data-role="page"] {
@@ -25,19 +25,20 @@ body {
   width: 100%;
   position: absolute;
   border: 0;
-  background-color: none;/*rgba(255, 255, 255, 0.5);*/
-  min-height: 100%;
+  /*background-color: rgba(255, 255, 255, 0.25);
+  height: 100%;*/
   overflow:hidden;
-  padding: 0 5px;
+  min-height: 100%;
+  padding: 0;
   box-sizing: border-box;
 }
 
-@media all and (min-width:1000px) {
+@media all and (min-width:960px) {
   [data-role="page"] {
-    margin: 0 auto;
     max-width: 960px;
-    border-left: 2px dashed;
-    border-right: 2px dashed;
+    margin: 0 4rem;
+/*    border-left: 2px dashed;
+    border-right: 2px dashed;*/
   }
 }
 
@@ -195,7 +196,7 @@ table.modP {
 .aList { padding:15px 0px 0px 0px; background: #f7f5f7;}
 .renab, .nab .pLink {color: #757575;}
 
-h3#pageTitle {margin: 10px 0 7px 0;}
+h3.pageTitle {margin: 10px 0 7px 0;}
 .boardsTitle, .nabTitle {margin-left: 10px; padding-top: 5px; font-size: 16pt; color: #cb2027; }
 .boardsTitle a { color: #f47414; }
 
@@ -389,8 +390,10 @@ div.nabBtn {
 
 .menuBadge {
   position: absolute;
-  top: -30px;
-  left: 8px;
+  top: 1.5rem;
+  right: -0.5rem;
+/*  top: -30px;
+  left: 8px;*/
   font-size: 12px;
 }
 
@@ -459,7 +462,7 @@ div.nabBtn {
   white-space: nowrap;
   overflow-x: hidden;
 }
-.gradientEllipsis .dimmer {
+.dimmer {
   position: absolute;
   right: 0;
   top: 0;
@@ -540,6 +543,7 @@ div.nabBtn {
 .thumb-gal {
   padding: 0px 0px 0px 0px;
   width: 100%;
+  max-width: 960px;
   white-space: nowrap;
 }
 section[id^="view"] {
@@ -699,8 +703,15 @@ section[id^="view"] {
   visibility: hidden;
 }
 
-#pageTitle {
+.pageTitle {
   margin: 0;
+}
+
+#name h4 {
+  font-weight:normal;
+/*  margin: 15px 0 7px 0; */
+  font-size:3rem;
+  color:#2892c6;
 }
 
 .menuItems {
@@ -803,7 +814,7 @@ section[id^="view"] {
   width: 90%;
 }
 
-#photogrid {
+.photogrid {
   padding-top: 5px;
 }
 
@@ -943,6 +954,14 @@ section[id^="view"] {
   margin: 0;
 }
 
+.headerUl li:first-child {
+  text-align: left;
+}
+
+.headerUl li:last-child {
+  text-align: right;
+}
+
 .section div.intro { font-size: 18px; line-height: 26px; color: #aaaaaa;}
 
 /* MODAL DIALOG */
@@ -1014,10 +1033,10 @@ section[id^="view"] {
 
 .modal-cover {
   position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
+  width: 120%;
+  height: 120%;
+  top: -10%;
+  left: -10%;
   z-index: -1;
   visibility: hidden;
   opacity: 0;
@@ -1554,7 +1573,7 @@ li.anim-overlay-active {
 
 .buttons i.help {
   opacity: 1;
-  color: #eee;
+  color: #aaa;
   -webkit-transform: scale(1);
      -moz-transform: scale(1);
       -ms-transform: scale(1);
@@ -1682,43 +1701,8 @@ li.invalid[data-role="fieldcontain"] {
   padding: 1rem;
 }
 
-.globalLogo {
-  position:absolute;
-  font-size: 350px;
-  color: #ccc;
-  right: 0;
-  opacity: 0.2;
-  /*
-  top: 0;
-  -webkit-transform: translateX(100%);
-     -moz-transform: translateX(100%);
-      -ms-transform: translate(100%);
-          transform: translateX(100%);
-*/
-
-  top: 50%;
-  -webkit-transform: translateX(0) translateY(-50%);
-     -moz-transform: translateX(0) translateY(-50%);
-      -ms-transform: translate(0) translateY(-50%);
-          transform: translateX(0) translateY(-50%);
-
-  text-align: center;
-  width: 100%;
-
-  -webkit-transition-duration: 1s;
-     -moz-transition-duration: 1s;
-      -ms-transition-duration: 1s;
-          transition-duration: 1s;
-}
-
-@media all and (min-width: 600px) {
-  .globalLogo {
-    font-size: 500px;
-  }
-}
-
 section[data-backlink] {
-  font-size: 2.5rem;
+  font-size: 1.6rem;
   margin-bottom: 1rem;
   font-weight: bold;
   text-align: center;
@@ -1729,17 +1713,11 @@ section[data-backlink="indicators"] li:not([data-action="add"]) {
   border: 2px dashed #888;
 }
 
-@media all and (min-width: 600px) {
-  section[data-backlink] {
-    font-size: 4.5rem;
-  }
-}
-
 section[data-backlink] li, li[data-backlink="tradleRules"] {
   cursor: pointer;
   border: 0;
   border-radius: 1rem;
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.4);
 /*
 
   text-align: center;
@@ -1748,12 +1726,32 @@ section[data-backlink] li, li[data-backlink="tradleRules"] {
   */
 }
 
+.drawer-tab-left {
+  border-radius: 0 1rem 1rem 0;
+}
+
+a[data-backlink] {
+  font-size: 2.5rem;
+}
+
+@media all and (min-width: 600px) {
+  a[data-backlink] {
+    font-size: 3.5rem;
+  }
+}
+
 #cpView li[data-backlink="tradleRules"] {
   margin-bottom:0;
 }
 
 section[data-backlink] li:last-child {
   margin-bottom: 0
+}
+
+.tradleFeed {
+  text-decoration:none;
+  font-weight: 100;
+  font-size:1.4rem;
 }
 
 .slider {
@@ -1777,9 +1775,16 @@ section[data-backlink] li:last-child {
 
 .buttons {
   margin: 1rem 0;
-  border-radius: 1rem;
-  /*background: rgba(0, 0, 114, 0.5);*/
+  /*border-radius: 1rem;*/
+  /*background: rgba(0, 0, 114, 0.5);
   background: rgba(40, 146, 198, 0.70);
+  background: rgba(255, 255, 255, 0.4);*/
+  background-image: linear-gradient(left, rgba(255, 255, 255, 0.1) 0%, rgba(40, 146, 198, 0.1) 50%, rgba(255, 255, 255, 0.1) 100%);
+  background-image: -webkit-gradient(linear, left bottom, right bottom, color-stop(0%, rgba(255, 255, 255, 0.1)), color-stop(50%, rgba(40, 146, 198, 0.1)), color-stop(100%,rgba(255, 255, 255, 0.1)));
+  background-image: -webkit-linear-gradient(left, rgba(255, 255, 255, 0.1) 0%, rgba(40, 146, 198, 0.1) 50%, rgba(255, 255, 255, 0.1) 100%);
+  background-image: -moz-linear-gradient(left, rgba(255, 255, 255, 0.1) 0%, rgba(40, 146, 198, 0.1) 50%, rgba(255, 255, 255, 0.1) 100%);
+  background-image: -o-linear-gradient(left, rgba(255, 255, 255, 0.1) 0%, rgba(40, 146, 198, 0.1) 50%, rgba(255, 255, 255, 0.1) 100%);
+  background-image: -ms-linear-gradient(left, rgba(255, 255, 255, 0.1) 0%, rgba(40, 146, 198, 0.1) 50%, rgba(255, 255, 255, 0.1) 100%);
   white-space: nowrap;
   position: relative;
   height: 50px;

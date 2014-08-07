@@ -12,10 +12,10 @@ define('views/HorizontalListView', [
   var mixins = [];
 //  if (G.lazifyImages)
 //    mixins.unshift(LazyImageLoader);
-  
+
   return ResourceListView.extend({
     mixins: mixins,
-    className: 'thumb-gal',
+    className: 'photogrid thumb-gal',
 //    _renderedIntersectionUris: null,
 //    _scrollableOptions: {
 //      axis: 'X',
@@ -25,12 +25,12 @@ define('views/HorizontalListView', [
     style: {
 //      visibility: 'hidden',
       opacity: 0,
-      height:'115px', // 150 + 5 for scrollbar
+//      height:'115px', // 150 + 5 for scrollbar
       perspective: '300px'
 //          ,
 //        'padding-top': '3px'
     },
-      
+
 //    _horizontal: true,
     _dragAxis: 'x',
     _scrollAxis: 'x',
@@ -41,7 +41,7 @@ define('views/HorizontalListView', [
 //      _.bindAll(this, 'renderItem');
       ResourceListView.prototype.initialize.apply(this, arguments);
       _.extend(this.options, {
-        horizontal: true, 
+        horizontal: true,
         gutterWidthHorizontal: 5,
         gutterWidthVertical: 0,
         tilt: false,
@@ -52,7 +52,7 @@ define('views/HorizontalListView', [
         stretchRow: false,
         stretchCol: false
       });
-      
+
       delete this.options['gutterWidth'];
 //      this._renderedIntersectionUris = [],
       _.extend(this, options);
@@ -62,24 +62,24 @@ define('views/HorizontalListView', [
 //      this._renderedIntersectionUris.length = 0;
 //      return ResourceListView.prototype.refresh.apply(this, arguments);
 //    },
-    
+
     preRender: function() {
       try {
         if (!this._prerendered) {
           var source = this.parentView.resource,
               vocModel = this.vocModel,
               first = this.collection.models[0];
-          
+
           this.isIntersection = U.isA(vocModel, 'Intersection');
-//          this._isIntersectingWithCollection = source && 
-//                                               this.isIntersection && 
+//          this._isIntersectingWithCollection = source &&
+//                                               this.isIntersection &&
 //                                               source.vocModel.type == U.getTypeUri(first.get('Intersection.a') || first.get('Intersection.b'));
         }
       } finally {
         return ResourceListView.prototype.preRender.apply(this, arguments);
-      }    
+      }
     },
-    
+
     preinitializeItem: function(res) {
       var source = this.parentView.resource;
       return HorizontalListItemView.preinitialize({
@@ -88,23 +88,23 @@ define('views/HorizontalListView', [
         source: source && source.getUri()
       });
     },
-    
+
     postRender: function() {
       if (!this._visible) {
         this.setStyle({
           opacity: this.getMaxOpacity(),
           visibility: null
         });
-        
+
         this._visible = true;
         this.el.$data('viewid', this.cid);
 //        this.el.style.height = '150px';
 //        if (G.isJQM())
 //          this.$el.trigger("create");
-        
+
         this.getPageView().invalidateSize();
       }
-      
+
       return ResourceListView.prototype.postRender.apply(this, arguments);
     }
   }, {

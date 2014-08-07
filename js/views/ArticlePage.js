@@ -5,11 +5,12 @@ define('views/ArticlePage', [
   'views/RightMenuButton'
 ], function(U, BasicPageView, BackButton, MenuButton) {
   var ICON_COLORS = ['#fd865a', '#77FFAE', '#6798F0', '#C703A7'];
-  
+
   return BasicPageView.extend({
     autoFinish: false,
     style: {
-      background: 'white'
+      background: 'rgba(255, 255, 255, 0.5)',
+      height: '100%'
     },
     initialize: function(options) {
       options = options || {};
@@ -21,19 +22,19 @@ define('views/ArticlePage', [
       if (this.resource)
         this.resource.on('change', this.render, this);
       else if (this.collection)
-        this.collection.on('reset', this.render, this);      
+        this.collection.on('reset', this.render, this);
     },
-    
+
     render: function() {
       var self = this,
           args = arguments;
-      
+
       this.getFetchPromise().done(function() {
         self.renderHelper.apply(self, args);
         self.finish();
       });
     },
-    
+
     renderHelper: function(options) {
       options = options ? _.clone(options) : {};
       if (!this.rendered)
@@ -46,44 +47,44 @@ define('views/ArticlePage', [
             model: this.model,
             parentView: this
           };
-          
+
         this.backBtn = new BackButton(common);
         this.menuBtn = new MenuButton(common);
-            
+
         this.addChild(this.backBtn);
-        this.addChild(this.menuBtn);        
-        this.body = this.$('.section')[0];
+        this.addChild(this.menuBtn);
+        this.body = this.$('.articleBody')[0];
         this.btns = this.$('.headerUl')[0];
-        
+
         if (options.theme == 'dark') {
           //this.el.style.backgroundColor = '#2e3b4e';
           this.body.$addClass('dark');
         }
         else {
-          //this.el.style.backgroundColor = '#fff';          
+          //this.el.style.backgroundColor = '#fff';
           this.body.$addClass('light');
         }
       }
-        
-      this.btns.$empty();      
+
+      this.btns.$empty();
       var frag = document.createDocumentFragment();
       [this.backBtn, this.menuBtn].forEach(function(v) {
         var el = v.render().el;
         el.style.width = '50%';
         frag.appendChild(el);
       });
-      
+
       this.btns.$html(frag);
-      
+
       var data = options.data || this.getData();
       this.body.$html(this.colTemplate(_.extend(this.getBaseTemplateData(), data)));
     },
-    
+
     getData: function() {
       var cols = [];
       if (!this.resource)
         throw "unsupported";
-        
+
       if (U.isAssignableFrom(this.vocModel, 'model/portal/Section'))
         return this.getSectionData(this.resource);
       else if (this.resource.isA('Submission'))
@@ -91,7 +92,7 @@ define('views/ArticlePage', [
       else
         throw "unsupported";
     },
-    
+
     getSectionData: function() {
       var section = this.resource,
           cols = [],
@@ -105,14 +106,14 @@ define('views/ArticlePage', [
               link: section.get('actionButtonLink')
             }
           };
-      
+
       for (var i = 1; i < 5; i++) {
         var title = section.get('title' + i),
             link;
-        
+
         if (!title)
           break;
-        
+
         link = section.get('item' + i + 'Link');
         cols.push({
           icon: {
@@ -128,10 +129,10 @@ define('views/ArticlePage', [
           }
         })
       }
-      
+
       return data;
     },
-    
+
     getSubmissionData: function() {
       var submitterProp = U.getCloneOf(this.vocModel, 'Submission.submittedBy')[0],
           submitter = this.resource.get(submitterProp),
@@ -141,10 +142,10 @@ define('views/ArticlePage', [
           byLine = submitterName ? 'by ' + submitterName + '<br />' : '',
           date = this.resource.get('Submission.dateSubmitted'),
           dateLine = date ? '({0})'.format(U.toMDYString(date)) : '';
-      
+
       if (submitter)
         moreOfType[submitterProp] = submitter;
-      
+
       return {
         title: this.resource.get('Submission.subject'),
         subTitle: byLine + dateLine,

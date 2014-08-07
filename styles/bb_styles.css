@@ -56,12 +56,7 @@ html {
   line-height: 32px;
 }
 */
-#name h4 {
-  font-weight:normal;
-/*  margin: 15px 0 7px 0; */
-  font-size:2.3rem;
-  color:#eee;
-}
+
 .hdr {
   width:100%;
   height:32px;
@@ -99,7 +94,7 @@ html {
   min-height:3.2rem;
 }
 
-.resourceView li, #cpView li {
+#resourceView li, #cpView li {
   /*border-bottom: 1px solid #d3d3d3;*/
   padding: 0 10px;
   /*border: 0;*/
@@ -475,12 +470,12 @@ section#login_popup {
 }
 #rightMenuBtn {
   position: relative;
+  right: 1rem;
 }
-.menuBadge {
+/*.menuBadge {
   left: 50%;
   top:  0.5rem;
 }
-/*
 .resourceProp {
   font-size:1.6rem;
   cursor:pointer;

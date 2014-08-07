@@ -534,7 +534,7 @@ define('views/BasicPageView', [
     },
 
     getPageTitle: function() {
-      var title = this.$('#pageTitle');
+      var title = this.$('.pageTitle');
       return title.length ? title[0].innerText : this.hashParams.$title || G.currentApp.title;
     },
 

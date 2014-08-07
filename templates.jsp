@@ -54,6 +54,7 @@
 
 <script type="text/template" id="resource">
 <!-- Single resource view -->
+{{ var isTradle = this.resource.isAssignableFrom('commerce/trading/Tradle'); }}
 <section id="{{= viewId }}" data-type="sidebar"></section>
 <section id="{{= viewId + 'r' }}" data-type="sidebar"></section>
 
@@ -87,7 +88,7 @@
   <!--div id="photogrid" style="padding: 7px;" data-role="content" class="hidden">
   </div-->
 
-  <div id="photogrid" data-inset="true" data-filter="false" class="thumb-gal hidden">
+  <div data-inset="true" data-filter="false" class="photogrid thumb-gal hidden" style="height: 115px;">
   </div>
   {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
      <div style="padding:10px;"><a data-role="button" class="ui-btn-hover-c" data-icon="heart" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></div>
@@ -95,17 +96,12 @@
 
   <div class="stockCharts hidden"></div>
   <section data-type="list">
-    <ul id="resourceView">
+    <ul id="{{= isTradle ? 'cpView' : 'resourceView' }}">
     </ul>
   </section>
   <div id="about" class="hidden" style="padding: 7px;"></div>
-
-  {{ if (document.getElementById('other')) { }}
-    <!--br/>
-    <br/-->
-  {{ } }}
   <section data-type="list">
-    <ul id="cpView">
+    <ul id="{{= isTradle ? 'resourceView' : 'cpView' }}">
     </ul>
   </section>
 </div>
@@ -269,7 +265,7 @@
   style="text-align:center;padding:0;border:none;" class="trades"
 {{ } }}
   >
-  <a href="{{= href }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="{{= obj.img || obj.needsAlignment ? '' : 'padding:1rem 0;'}} {{= obj.noclick ? 'cursor:default;' : 'cursor:pointer;' }}{{= isTrade ? '' : 'font-size:1.6rem;' }}">
+  <a href="{{= href }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="{{= obj.img || obj.needsAlignment ? '' : 'padding:1rem 0;'}} {{= obj.noclick ? 'cursor:default;' : 'cursor:pointer;' }}{{= isTrade ? 'font-size:inherit;' : '' }}">
     {{ if (obj.img) { }}
       <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}"
       {{ if (obj.top) { }}
@@ -348,7 +344,7 @@
       </div>
       <div>
         {{ if (resource.get('tradleFeed')) { }}
-        <a style="text-decoration:none; font-weight: 100;font-size:1.4rem;" href="{{= U.makeMobileUrl('view', resource.get('tradleFeed')) }}">
+        <a class="tradleFeed" href="{{= U.makeMobileUrl('view', resource.get('tradleFeed')) }}">
           {{= resource.get('tradleFeed.displayName') }}
         </a>
         {{ }                               }}
@@ -377,7 +373,7 @@
       </div>
       <div>
         {{ if (resource.get('compareWithTradleFeed')) { }}
-        <a href="{{= U.makeMobileUrl('view', resource.get('compareWithTradleFeed')) }}" style="text-decoration:none; font-weight: 100;">
+        <a href="{{= U.makeMobileUrl('view', resource.get('compareWithTradleFeed')) }}" class="tradleFeed">
           {{= resource.get('compareWithTradleFeed.displayName') }}
         </a>
         {{ }                               }}
@@ -400,7 +396,7 @@
 
 <script type="text/template" id="socialLinksTemplate">
 <!-- Social Links -->
-<li class="socialLinks" style="font-weight: normal;color:#3777a1;">
+<div class="socialLinks" style="font-weight: normal;color:#3777a1;">
   {{ var owner = this.resource.get('owner'), submittedBy = this.resource.get('submittedBy'), user = G.currentUser._uri, isOwner = user && user == (owner || submittedBy); }}
   {{ if (user && (user == owner || user == submittedBy)) { }}
     <a class="socialAction" href="{{= U.makePageUrl('edit', this.resource.getUri(), {$editCols: 'activated,title,description,isPublic'}) }}"><span class="ui-icon-edit" data-url="{{= uri }}">&#160;EDIT</span></a>
@@ -410,11 +406,20 @@
   {{ } }}
   <a href="{{= U.makePageUrl('view', uri + '&$clone=y') }}" class="socialAction" data-url="{{= uri }}"><span class="ui-icon-fork">&#160;CLONE</span></a>
   <a href="{{= G.serverName }}/widget/embed.html?uri={{= encodeURIComponent(uri) }}" class="socialAction" data-url="{{= uri }}"><span class="ui-icon-embed">&#160;EMBED</span></a>
-</li>
+</div>
 </script>
 
 <script type="text/template" id="privateBetaPageTemplate">
-  <div class="section light" id="section_bg">
+<div class="section light" id="section_bg">
+  <section id="viewHome" data-type="sidebar"></section>
+  <section id="viewHomer" data-type="sidebar"></section>
+  <div class="headerHP" style="position:absolute;top:0px;width: 100%;">
+    <section id="viewHome" class="menuLeft" data-type="sidebar" style="position:absolute;height:100%;opacity:0.95;background:#2d2d2d;visibility:hidden;z-index:10001"></section>
+    <div id="hpRightPanel" style="font-size:30px; cursor: pointer; float: right; margin-right: 5px;">
+      <span style="cursor:pointer; font-size: 30px;vertical-align:middle;"><i style="color:#7aaac3;padding:5px 0;" class="ui-icon-reorder"></i></span>
+    </div>
+  </div>
+
   <div class="section-content">
     <div class="title-block">
     {{ var guest = G.currentUser.guest, activated = G.currentUser.isActivated; }}
@@ -482,17 +487,19 @@
       </div>
     </div>
   </div>
-  </div>
+</div>
 </script>
 
 <script type="text/template" id="articlePageTemplate">
   <section class="menuLeft" data-type="sidebar"></section>
   <section class="menuRight" data-type="sidebar"></section>
-  <div class="headerDiv" style="padding-top: 10px;">
-    <ul class="headerUl">
-    </ul>
+  <div class="section">
+    <div class="headerDiv">
+      <ul class="headerUl">
+      </ul>
+    </div>
+    <div class="articleBody"></div>
   </div>
-  <div class="section"></div>
 </script>
 
 <script type="text/template" id="articleViewTemplate">
@@ -1739,7 +1746,7 @@
       <div style="padding:1rem 1rem; width:100%;box-sizing: border-box;">{{= details }}</div>
       {{ }                }}
 
-      <div style="text-align:center;">
+      <div style="text-align:center;height:100%;">
       {{ if (obj.cancel) { }}
       <a href="#" class="dialogBtn" data-cancel="true">{{= loc(typeof cancel === 'string' ? cancel : 'cancel') }}</a>
       {{ }                 }}
@@ -1910,9 +1917,8 @@
       </a>
     {{ }                     }}
   </div>
-  <div id="name" class="cf vcenteredR resTitle" style="z-index:0; width:60%;float:left;
-  " align="center">
-    <h4 id="pageTitle" style="text-overflow: ellipsis; font-weight:normal;">{{= this.title }}</h4>
+  <div id="name" class="cf vcenteredR resTitle" style="z-index:0; width:60%;float:left;height:100%;" align="center">
+    <h4 class="pageTitle vcenteredR" style="text-overflow: ellipsis; overflow: hidden; font-weight:normal; line-height: inherit;">{{= this.title }}</h4>
     <div align="center" class="headerButtons {{= obj.className || '' }}">
       <button style="max-width:200px; display: inline-block;" id="doTryBtn">
         {{ if (obj.tryApp) { }}
@@ -1953,7 +1959,7 @@
   </div>
   <div class="cf vcenteredR" style="z-index:1; width:20%;float:left;">
     {{ if (activatedProp) { }}
-      <section class="activatable" style="float: right; display: none;">
+      <section class="activatable" style="float: right; display: none; margin-left: 3px;">
         <label class="pack-switch">
           <input type="checkbox" name="{{= activatedProp.shortName }}" class="formElement boolean" {{= this.resource.get(activatedProp.shortName) ? 'checked="checked"' : '' }} />
           <span></span>

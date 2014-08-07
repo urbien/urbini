@@ -62,10 +62,10 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
     }).replace(/-/, '');
   };
 
-  function fireResizeEvent() {
+  function fireResizeEvent(force) {
     var v = G.viewport,
-        heightChanged = window.innerHeight !== v.height,
-        widthChanged = window.innerWidth !== v.width;
+        heightChanged = force || window.innerHeight !== v.height,
+        widthChanged = force || window.innerWidth !== v.width;
 
     if (heightChanged || widthChanged) {
       saveViewportSize();
@@ -103,8 +103,19 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
   }
 
   function saveViewportSize() {
-    var viewport = G.viewport;
-    viewport.width = window.innerWidth;
+    var viewport = G.viewport,
+        pageStyle = window.getComputedStyle($('[data-role="page"]')[0]),
+        maxWidth;
+
+    if (!pageStyle)
+      setTimeout(fireResizeEvent.bind(null, true), 100);
+    else
+      maxWidth = pageStyle.maxWidth && pageStyle.maxWidth.match(/\d+/);
+
+    if (maxWidth)
+      viewport.width = parseInt(maxWidth[0]);
+    else
+      viewport.width = window.innerWidth;
     viewport.height = window.innerHeight;
 //    var viewport = G.viewport,
 //        width = window.innerWidth,

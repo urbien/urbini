@@ -815,6 +815,11 @@ define('utils', [
       }
     },
 
+    getClassMapping: function(type) {
+      type = U.getTypeUri(type);
+      return G.classMap[type] || type;
+    },
+
     getClassName: function(uri) {
       if (uri.startsWith(G.apiUrl))
         uri = decodeURIComponent(uri.slice(G.apiUrl.length));

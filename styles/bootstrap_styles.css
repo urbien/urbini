@@ -55,7 +55,7 @@ li {
 #menuItems i, #rightMenuItems i {
   float: right;
   font-size: 18px;
-  
+
 }
 #menuItems, #rightMenuItems {
   background: #2d2d2d;
@@ -66,7 +66,7 @@ li {
   right: 0;
   position: absolute;
   top:0;
-*/  
+*/
 }
 #menuItems li, #rightMenuItems li {
 /*  padding-top: 1rem; */
@@ -88,7 +88,7 @@ li {
 #cpView {
   font-size:16px;
 }
-h4#pageTitle  {
+h4.pageTitle  {
   margin-top:0;
 }
 a {
@@ -99,7 +99,7 @@ a:hover {
 }
 #login_popup .popup {
   background: #ccc;
-  border:1px solid #aaa; 
+  border:1px solid #aaa;
   border-radius:1rem;
 }
 
@@ -122,13 +122,13 @@ a:hover {
 }
 
 .cp i {
-  z-index:1001; 
+  z-index:1001;
   position:absolute;
   top:4px;
   right:1rem;
   font-size:22px;
 }
-.ui-icon-plus-sign:before, .ui-icon-chevron-left:before, .ui-icon-map-marker:before { 
+.ui-icon-plus-sign:before, .ui-icon-chevron-left:before, .ui-icon-map-marker:before {
   margin-top:0;
 }
 /*
@@ -185,11 +185,11 @@ a:hover {
   font-weight: bold;
   width:auto;
   margin:5px;
-  text-align:left; 
+  text-align:left;
   border: 1px solid #ccc;
   min-width:130px;
   width: 100%;
-} 
+}
 #mainGroup {
   position: absolute;
   top: 0.3rem;
@@ -353,14 +353,14 @@ checkbox.form-control {
   margin: 0 auto;
 }
 #cameraCancelBtn i {
-  position: absolute; 
-  border-radius: 1rem; 
-  font-size: 2.8rem; 
+  position: absolute;
+  border-radius: 1rem;
+  font-size: 2.8rem;
   top: -2.5rem;
   right: -2rem;
 }
 
-div.nabBtn { 
+div.nabBtn {
   padding-bottom:25px;
 }
 .phOverlay {
@@ -371,7 +371,7 @@ div.nabBtn {
   margin-top:10px;
 }
 .resourceProp, .select {
-  padding: 1.5rem; 
+  padding: 1.5rem;
 }
 #resourceEditView .list-group-item {
   padding: 0;
