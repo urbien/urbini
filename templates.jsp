@@ -345,9 +345,11 @@
       </div>
       <div>
         {{ if (resource.get('tradleFeed')) { }}
-        <a class="tradleFeed" href="{{= U.makeMobileUrl('view', resource.get('tradleFeed')) }}">
+        {{ var feed =  resource.get('feed'); }}
+        {{ var isIndexOrStock = feed.indexOf('/Index?') != -1 || feed.indexOf('/Stock?') != -1; }} 
+        <div class="tradleFeed" {{= isIndexOrStock ? 'style="font-size:4rem;line-height:3rem;font-weight:bold;"' : '' }}><!-- href="{{= U.makeMobileUrl('view', resource.get('tradleFeed')) }}"-->
           {{= resource.get('tradleFeed.displayName') }}
-        </a>
+        </div>
         {{ }                               }}
       </div>
     </div>
@@ -374,9 +376,11 @@
       </div>
       <div>
         {{ if (resource.get('compareWithTradleFeed')) { }}
-        <a href="{{= U.makeMobileUrl('view', resource.get('compareWithTradleFeed')) }}" class="tradleFeed">
+        {{ var cmpFeed =  resource.get('compareWithFeed'); }}
+        {{ var isIndexOrStock = cmpFeed.indexOf('/Index?') != -1 || cmpFeed.indexOf('/Stock?') != -1; }} 
+        <div {{= isIndexOrStock ? 'style="font-size:4rem;line-height:3rem;font-weight:bold;"' : '' }}  class="tradleFeed"> <!--href="{{= U.makeMobileUrl('view', resource.get('compareWithTradleFeed')) }}" class="tradleFeed"-->
           {{= resource.get('compareWithTradleFeed.displayName') }}
-        </a>
+        </div>
         {{ }                               }}
       </div>
     {{ }                        }}
