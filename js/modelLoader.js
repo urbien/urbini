@@ -1,11 +1,11 @@
 define('modelLoader', [
-  'globals', 
-  'underscore', 
-  'events', 
-  'utils', 
-  'models/Resource', 
-  'collections/ResourceList', 
-//  'apiAdapter', 
+  'globals',
+  'underscore',
+  'events',
+  'utils',
+  'models/Resource',
+  'collections/ResourceList',
+//  'apiAdapter',
   'indexedDB',
   'lib/fastdom'
 ], function(G, _, Events, U, Resource, ResourceList, /*API,*/ IndexedDBModule, Q) {
@@ -44,18 +44,18 @@ define('modelLoader', [
         throw new Error("invalid format for 'models' parameter: " + JSON.stringify(models));
       }
     }
-    
+
     for (var i = 0, len = models.length; i < len; i++) {
       var uri = models[i],
           mapped = G.classMap[uri];
-      
+
       if (mapped)
         models[i] = mapped;
     }
-    
+
     return models;
   }
-      
+
   function ModelRequestCollector() {
     var dfd, promise, collected = [];
     this.reset = function() {
@@ -68,16 +68,16 @@ define('modelLoader', [
       _.each(models, function(model) {
         _.pushUniq(collected, model);
       });
-      
+
       if (options.wait) {
         delete options.wait;
       }
-      
+
       if (options.debounce) {
         // debounce, fetch in bulk
         if (this._fetchMoreModelsTimeout)
           clearTimeout(this._fetchMoreModelsTimeout);
-        
+
         this._fetchMoreModelsTimeout = setTimeout(this.execute, options.debounce);
         delete options.debounce;
       }
@@ -87,24 +87,24 @@ define('modelLoader', [
         return resultDfd.resolve.apply(resultDfd, _.map(models, U.getModel));
       });
     };
-    
+
     this.execute = function(options) {
       if (options)
         delete options.go;
-      
+
       _getModels(collected, options);
       return makeModelsPromise(collected).done(dfd.resolve).fail(dfd.reject).always(this.reset);
     };
-    
+
     this.getModels = function(models, options) {
       _getModels(models, options);
       return makeModelsPromise(models);
     };
-    
+
     this.length = function() {
       return collected.length;
     };
-    
+
     _.bindAll(this, 'execute');
     this.reset();
   }
@@ -113,39 +113,39 @@ define('modelLoader', [
     models = normalizeModels(models, options);
     return getModels(models, options);
   }
-  
+
   function makeModelsPromise(types) {
     var modelToPromiseObj = {},
         promises = [],
         overallPromise;
 
-    for (var i = 0; i < types.length; i++) {      
+    for (var i = 0; i < types.length; i++) {
       var type = types[i],
           promise = /*modelToPromiseObj[type] =*/ getModelPromise(type) || makeModelPromise(type);
-      
+
       promises.push(promise);
     }
-    
+
     return $.whenAll.apply($, promises);
 //    return _.extend(modelToPromiseObj, _.pick(overallPromise, 'promise', 'done', 'fail', 'then', 'always', 'state'));
   }
-  
+
   function makeModelPromise(type) {
     var dfd = $.Deferred(),
         promise = dfd.promise(),
         existing = MODEL_PROMISES[type];
-    
+
     MODEL_PROMISES[type] = {
       deferred: dfd,
       promise: promise
     };
-    
+
     if (existing && existing.promise.state() == 'pending') {
       // whichever one finishes first
       existing.promise.done(dfd.resolve).fail(dfd.reject);
       promise.done(existing.deferred.resolve).fail(existing.deferred.reject);
     }
-    
+
     return promise;
   }
 
@@ -158,21 +158,31 @@ define('modelLoader', [
     function found(cb) {
       cb(model);
     };
-    
+
     var promiseInfo = MODEL_PROMISES[model.type],
-        prefix = model.alwaysInlined ? 'getInlineResourceModel:' : 
+        prefix = model.alwaysInlined ? 'getInlineResourceModel:' :
                    model.enumeration ? 'getEnumModel:' : 'getModel:';
-    
+
     Events.off(prefix + model.type);
     Events.off(prefix + model.shortName);
     Events.on(prefix + model.type, found);
     Events.on(prefix + model.shortName, found);
-    
+    for (var type in G.classMap) {
+      var mType = G.classMap[type];
+      if (mType == model.type) {
+        var sn = type.slice(type.lastIndexOf('/') + 1);
+        Events.off(prefix + type);
+        Events.off(prefix + sn);
+        Events.on(prefix + type, found);
+        Events.on(prefix + sn, found);
+      }
+    }
+
     if (!promiseInfo) {
       makeModelPromise(model.type);
       return gotModel(model);
     }
-    
+
     cache(model);
     promiseInfo.deferred.resolve(model);
   }
@@ -186,7 +196,7 @@ define('modelLoader', [
   function sortModelsByStatus(types, options) {
     if (!IDB)
       IDB = IndexedDBModule.getIDB();
-    
+
     var missingOrStale = {},
         mightBeStale = {infos: {}, models: {}},
         willLoad = [],
@@ -194,14 +204,14 @@ define('modelLoader', [
         promises = [],
         source = preferredStorage,
         isIDB = false;
-    
+
     if (!IDB)
       source = 'localStorage';
-    
+
     isIDB = source === 'indexedDB';
     function require(type) {
       missingOrStale[type] = {};
-    }    
+    }
 
     _.each(types, function(type) {
       var requireType = require.bind(null, type);
@@ -209,15 +219,15 @@ define('modelLoader', [
         requireType();
         return;
       }
-      
+
       var getMetadata = getModelMetadataFromStorage.bind(null, type, source),
           getData = getModelFromStorage.bind(null, type, source),
           info = G.modelsMetadata[type] || G.linkedModelsMetadata[type] || {},
 //          modelDfd = $.Deferred(),
 //          modelPromise = modelDfd.promise();
           promise;
-      
-      // check if we have any timestamp info on this model      
+
+      // check if we have any timestamp info on this model
       promise = getMetadata().then(function(storedInfo) {
         var getDataPromise;
         if (info.lastModified) {
@@ -235,24 +245,24 @@ define('modelLoader', [
             }
           }
         }
-        
+
         // can't do this right away because we need to know that we actually have it in localStorage
-        return (getDataPromise || getData()).then(function(jModel) {            
+        return (getDataPromise || getData()).then(function(jModel) {
           if (jModel) {
             mightBeStale.infos[type] = {
               lastModified: storedInfo.lastModified || 0
             };
-          
+
             mightBeStale.models[type] = jModel;
           }
           else
             requireType();
         });
       }, requireType);
-      
+
       promises.push(promise);
     });
-    
+
     return $.Deferred(function(defer) {
       $.whenAll.apply($, promises).always(function() {
         defer.resolve({
@@ -266,45 +276,45 @@ define('modelLoader', [
       });
     }).promise();
   }
-  
+
   function fetchModels(models, options) {
     if (_.isEmpty(models))
       return G.getResolvedPromise();
-    
+
     var promise = $.Deferred(function(defer) {
       if (!G.online)
         return defer.rejectWith(this, [null, {type: 'offline'}, options]);
 
       var modelsCsv = JSON.stringify(models),
           ajaxSettings = _.extend({
-            url: G.modelsUrl, 
-            data: {models: modelsCsv}, 
+            url: G.modelsUrl,
+            data: {models: modelsCsv},
             type: 'POST'
           });
-      
+
       U.ajax(ajaxSettings, 'fetchModels').done(function(data, status, xhr) {
         if (xhr.status === 304)
           return defer.resolve();
-        
+
         if (!data)
           return defer.rejectWith(this, [xhr, status, options]);
-        
+
         if (data.error)
           return defer.rejectWith(this, [xhr, data.error, options]);
-        
+
         defer.resolve(data);
       }).fail(defer.reject);
     }).promise();
-    
+
     promise.fail(function() {
       for (var type in models) {
         didntGetModel(type);
       }
     });
-    
+
     return promise;
   }
-  
+
   function getModels(models, options) {
     options = options || {};
     if (options.wait || options.debounce)
@@ -320,7 +330,7 @@ define('modelLoader', [
     var filtered = [],
         force = options.force,
         overallPromise;
-        
+
     models.forEach(function(type) {
       var promise = !force && getModelPromise(type);
       if (!promise || promise.state() == 'rejected') {
@@ -331,7 +341,7 @@ define('modelLoader', [
         filtered.push(type);
       }
     });
-    
+
     if (!filtered.length)
       return;
     if (!G.hasLocalStorage && G.dbType === 'none')
@@ -346,23 +356,23 @@ define('modelLoader', [
             infoClone.have = [];
             fetchAndLoadModels(infoClone, _.extend({}, options));
           });
-          
+
           var loading = _.union(modelsInfo.have || [], _.values(modelsInfo.mightBeStale.models));
           loadModels(loading, !force);
         }
       });
-    }    
+    }
   }
 
   function fetchAndLoadModels(modelsInfo, options) {
     var mightBeStale = modelsInfo.mightBeStale || {},
         modelsToGet = _.extend({}, modelsInfo.need, mightBeStale.infos);
-    
-    loadModels(modelsInfo.have, true);  
+
+    loadModels(modelsInfo.have, true);
     fetchModels(modelsToGet, options).done(function(data) {
       parseAndLoadModels(data, modelsInfo);
     });
-    
+
     return makeModelsPromise(modelsInfo.getAllTypes());
   }
 
@@ -373,7 +383,7 @@ define('modelLoader', [
       if (m.type == model.type)
         return m;
     }
-    
+
     return null;
   }
 
@@ -381,14 +391,14 @@ define('modelLoader', [
     var collision = getCached(model);
     if (collision)
       MODEL_CACHE.remove(collision);
-    
+
     MODEL_CACHE.push(model);
   }
-  
+
   function parseAndLoadModels(data, modelsInfo) {
     modelsInfo = modelsInfo || {};
     var mightBeStale = modelsInfo.mightBeStale || {};
-    
+
     G.checkVersion(data);
     if (!data) {
       // "need" should be empty
@@ -398,16 +408,16 @@ define('modelLoader', [
         return;
 //              throw new Error("missing needed models: " + JSON.stringify(_.map(missingOrStale, function(m) {return m.type || m})));
       }
-      
+
       return loadModels(_.values(mightBeStale.models), true);
     }
-    
+
     var mz = data.models || [],
         more = data.linkedModelsMetadata;
-    
+
     if (isNaN(data.lastModified) || isNaN(G.lastModified))
       debugger;
-    
+
     G.lastModified = Math.max(data.lastModified || 0, G.lastModified || 0);
     G.classUsage = _.union(G.classUsage, _.map(data.classUsage, U.getTypeUri));
     if (more) {
@@ -415,21 +425,21 @@ define('modelLoader', [
         return [U.getLongUri1(type), meta];
       }));
     }
-    
+
     if (data.classMap)
       _.extend(G.classMap, data.classMap);
-    
+
     var newModels = [],
         loadedTypes = [],
         updatedTypes = [],
         notStale = [];
-    
+
     for (var i = 0; i < mz.length; i++) {
       var newModel = mz[i],
           type = newModel.type,
           existing,
           isUpdated;
-      
+
       newModel.lastModified = newModel.lastModified ? Math.max(G.lastModified, newModel.lastModified) : G.lastModified;
       existing = getCached(newModel);
       if (existing) {
@@ -443,18 +453,18 @@ define('modelLoader', [
         _.pushUniq(newModels, newModel);
       }
     }
-    
+
     for (var p in mightBeStale.models) {
       var model = mightBeStale.models[p];
       if (!_.contains(loadedTypes, model.type))
         notStale.push(model);
     }
-    
+
     var changedModels = _.union(newModels, notStale);
-    
-    loadModels(changedModels); 
+
+    loadModels(changedModels);
     Q.defer(30, 'nonDom', storeModels.bind(null, newModels));
-    
+
     Events.trigger('newPlugs', data.plugs);
     if (updatedTypes.length)
       Events.trigger('modelsChanged', updatedTypes);
@@ -465,7 +475,7 @@ define('modelLoader', [
     models.sort(function(a, b) {
       return a.enumeration ? -1 : 1;
     });
-    
+
     for (var i = 0, len = models.length; i < len; i++) {
       var model = models[i];
       if (!preventOverwrite || !U.getModel(model.type)) {
@@ -473,7 +483,7 @@ define('modelLoader', [
         loadModel(model);
       }
     }
-    
+
     return makeModelsPromise(_.pluck(models, 'type'));
   }
 
@@ -483,7 +493,7 @@ define('modelLoader', [
 ////    else
 ////      Q.whenIdle('nonDom', _loadModel, null, [m]);
 //  }
-  
+
   function loadModel(m) {
     if (m.enumeration)
       m = loadEnumModel(m);
@@ -500,11 +510,11 @@ define('modelLoader', [
   function loadEnumModel(m) {
     return m;
   }
-  
+
   function loadNonEnumModel(m) {
     if (!m.prototype)
       m = Resource.extend({}, m);
-    
+
 //    if (m.adapter)
 //      setupAdapter(m);
 
@@ -516,10 +526,10 @@ define('modelLoader', [
           return U.getLongUri1(i);
       });
     }
-    
+
     var type = m.type = U.getTypeUri(m.type),
         isCustomModel = U.isAnAppClass(m);
-    
+
     if (isCustomModel && !m.enumeration && !m.alwaysInlined) {
       var meta = m.properties;
       for (var p in meta) {
@@ -531,7 +541,7 @@ define('modelLoader', [
 //            readOnly: true
 //          };
 //        }
-        
+
         if (prop.displayName) {
           var sn = prop.shortName;
           prop.altName = p;
@@ -540,40 +550,40 @@ define('modelLoader', [
         }
       }
     }
-    
+
     m.prototype.parse = Resource.prototype.parse;
     m.prototype.validate = Resource.prototype.validate;
     if (!m.enumeration) {
       _.defaults(m.properties, Resource.properties);
       _.extend(m.properties, U.systemProps);
     }
-    
+
     m.superClasses = _.map(m.superClasses, function(type) {
       if (/\//.test(type))
         return U.getLongUri1(type);
       else
         return G.defaultVocPath + 'system/fog/' + type;
     });
-      
+
     m.prototype.initialize = getInit.call(m);
 //    Q.whenIdle('nonDom', function triggerInitPlugs() {
     Q.nonDom(function triggerInitPlugs() {
       Events.trigger('initPlugs', type);
     });
-    
+
     return m;
   }
-  
+
 //  function setupAdapter(m) {
 //    var appProviderType = U.getLongUri1("model/social/AppProviderAccount"),
 //        appConsumerType = U.getLongUri1("model/social/AppConsumerAccount");
-//    
+//
 //    if (!U.getModel(appProviderType) || !U.getModel(appConsumerType)) {
-//      // wait till those models (and the associated resource lists - app.js getAppAccounts()) are initialized 
+//      // wait till those models (and the associated resource lists - app.js getAppAccounts()) are initialized
 //      ModelLoader.getModels([appProviderType, appConsumerType]).done(loadModel.bind(null, m));
 //      return;
 //    }
-//    
+//
 //    var currentApp = G.currentApp,
 //        consumers = currentApp.dataConsumerAccounts,
 //        providers = currentApp.dataProviders,
@@ -583,8 +593,8 @@ define('modelLoader', [
 //        // HACK!!!!! //
 ////        provider = providers && providers.where({
 ////          app: m.app
-////        }, true);      
-//        provider = providers && providers.models[0];      
+////        }, true);
+//        provider = providers && providers.models[0];
 //        // END HACK //
 //
 //
@@ -594,18 +604,18 @@ define('modelLoader', [
 //      m.API = new API(consumer, provider);
 //      m.adapter = new Function('Events', 'Globals', 'ResourceList', 'Utils', 'Cache', 'API', "return " + m.adapter)(Events, G, ResourceList, U, C, m.API);
 //    }
-//    
+//
 ////    if (provider == null)
-////      throw new Error("The app whose data you are trying to use does not share its data");          
-////        
+////      throw new Error("The app whose data you are trying to use does not share its data");
+////
 ////    if (consumer == null)
 ////      throw new Error("This app is not configured to consume data from app '{0}'".format(provider.app));
 //  }
-  
+
   function getInit() {
     var self = this;
-    return function() { 
-      self.__super__.initialize.apply(this, arguments); 
+    return function() {
+      self.__super__.initialize.apply(this, arguments);
     }
   }
 
@@ -613,7 +623,7 @@ define('modelLoader', [
     var enums = getEnumsFromStorage();
     if (!enums)
       return;
-    
+
     ENUMS = JSON.parse(enums);
     for (var type in ENUMS) {
       makeModelPromise(type);
@@ -625,7 +635,7 @@ define('modelLoader', [
     models = models || MODEL_CACHE;
     if (!models.length)
       return;
-  
+
     storageType = storageType || preferredStorage;
     var notUsingLocalStorage = storageType == 'localStorage' && !G.hasLocalStorage;
     if (notUsingLocalStorage) {
@@ -637,7 +647,7 @@ define('modelLoader', [
       else
         storage = 'localStorage';
     }
-    
+
     var enumModels = {};
     for (var i = 0, len = models.length; i < len; i++) {
       var modelJson = models[i];
@@ -646,7 +656,7 @@ define('modelLoader', [
       else
         storeModel(modelJson, storageType);
     }
-    
+
     if (_.size(enumModels)) {
 //      var enums = getEnumsFromStorage();
 //      enums = enums ? JSON.parse(enums) : {};
@@ -654,7 +664,7 @@ define('modelLoader', [
         ENUMS = enumModels;
       else
         _.extend(ENUMS, enumModels);
-      
+
       storeEnums(ENUMS, storageType);
     }
   }
@@ -672,7 +682,7 @@ define('modelLoader', [
     G.localStorage.del('metadata:' + uri);
     G.localStorage.del(type);
   }
-  
+
   function getModelStorageURL(uri) {
     return MODEL_PREFIX + uri;
   }
@@ -680,18 +690,18 @@ define('modelLoader', [
   function getModelMetadataStorageURL(uri) {
     return MODEL_PREFIX + 'metadata:' + uri;
   }
- 
+
   function getModelMetadataFromStorage(uri, source) {
     if (source === 'indexedDB')
       return getModelFromStorage(uri, source);
-          
+
     return getItemFromStorage(getModelMetadataStorageURL(uri), source);
   }
 
   function getModelFromStorage(uri, source) {
     return getItemFromStorage(getModelStorageURL(uri), source);
   }
-  
+
   function getItemFromStorage(url, source) {
     return G.getCached(url, source, MODEL_STORE.name).then(function(data) {
       if (typeof data == 'string') {
@@ -701,34 +711,34 @@ define('modelLoader', [
           debugger;
         }
       }
-      
+
       if (!data || typeof data !== 'object')
         return G.getRejectedPromise();
-      
+
       return data;
-    });    
+    });
   }
 
   function storeModel(modelJson, storageType) {
     var type = modelJson.type,
         data = {},
         metadata = {};
-    
+
     if (storageType == 'localStorage') {
       metadata[getModelMetadataStorageURL(type)] = {
         lastModified: modelJson.lastModified
       };
-      
+
       G.putCached(metadata, {
         storage: storageType
       });
     }
-    
+
     var tempData = U.filterObj(modelJson, U.isMetaParameter);
     _.each(_.keys(tempData), function(prop) {
       delete modelJson[prop];
     });
-    
+
     data[getModelStorageURL(type)] = modelJson;
     G.putCached(data, {
       storage: storageType,
@@ -736,15 +746,15 @@ define('modelLoader', [
     }).always(function() {
       _.extend(modelJson, tempData);
     });
-    
-    
-    
+
+
+
 //    setTimeout(function() {
 //      var type = modelJson.type;
 //      G.localStorage.putAsync(getModelMetadataStorageURL(type), {
 //        lastModified: modelJson.lastModified
 //      });
-//      
+//
 //      G.localStorage.putAsync(getModelStorageURL(type), JSON.stringify(modelJson));
 //      _.pushUniq(G.storedModelTypes, type);
 //    }, 100);
@@ -768,7 +778,7 @@ define('modelLoader', [
     },
     storeModels: storeModels
   };
-  
+
   _.extend(ModelLoader, Backbone.Events);
   return ModelLoader;
 });
