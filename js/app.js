@@ -244,7 +244,7 @@ define('app', [
     if (G.currentUser.guest)
       return;
 
-    if (!G.currentAppInstall) { // TODO: should really check if resource has _allow == true
+    if (!G.currentUser.appInstall) { // TODO: should really check if resource has _allow == true
       Events.on('appInstall', function(appInstall) {
         if (appInstall.get('allow'))
           setupPushNotifications();

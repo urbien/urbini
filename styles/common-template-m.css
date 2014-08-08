@@ -29,16 +29,25 @@ body {
   height: 100%;*/
   overflow:hidden;
   min-height: 100%;
-  padding: 0;
+  padding: 0 2%;
   box-sizing: border-box;
+}
+
+section[data-type="sidebar"] {
+  width: 104.1%; /* to offset the page's padding of 2% */
 }
 
 @media all and (min-width:960px) {
   [data-role="page"] {
     max-width: 960px;
     margin: 0 4rem;
+    padding: 0 1%;
 /*    border-left: 2px dashed;
     border-right: 2px dashed;*/
+  }
+
+  [data-type="sidebar"] {
+    width: 102.1%; /* to offset the page's padding of 1% */
   }
 }
 
@@ -1775,13 +1784,25 @@ section[data-backlink] li:last-child {
   /*background: rgba(0, 0, 114, 0.5);
   background: rgba(40, 146, 198, 0.70);
   background: rgba(255, 255, 255, 0.4);*/
+  white-space: nowrap;
+  position: relative;
+  height: 50px;
+}
+
+.colorCenterGradient {
   background-image: linear-gradient(left, rgba(255, 255, 255, 0.1) 0%, rgba(40, 146, 198, 0.1) 50%, rgba(255, 255, 255, 0.1) 100%);
   background-image: -webkit-gradient(linear, left bottom, right bottom, color-stop(0%, rgba(255, 255, 255, 0.1)), color-stop(50%, rgba(40, 146, 198, 0.1)), color-stop(100%,rgba(255, 255, 255, 0.1)));
   background-image: -webkit-linear-gradient(left, rgba(255, 255, 255, 0.1) 0%, rgba(40, 146, 198, 0.1) 50%, rgba(255, 255, 255, 0.1) 100%);
   background-image: -moz-linear-gradient(left, rgba(255, 255, 255, 0.1) 0%, rgba(40, 146, 198, 0.1) 50%, rgba(255, 255, 255, 0.1) 100%);
   background-image: -o-linear-gradient(left, rgba(255, 255, 255, 0.1) 0%, rgba(40, 146, 198, 0.1) 50%, rgba(255, 255, 255, 0.1) 100%);
   background-image: -ms-linear-gradient(left, rgba(255, 255, 255, 0.1) 0%, rgba(40, 146, 198, 0.1) 50%, rgba(255, 255, 255, 0.1) 100%);
-  white-space: nowrap;
-  position: relative;
-  height: 50px;
+}
+
+.colorBorderGradient {
+  background-image: linear-gradient(left, rgba(40, 146, 198, 0.1) 0%, rgba(255, 255, 255, 0.1) 33%, rgba(255, 255, 255, 0.1) 66%, rgba(40, 146, 198, 0.1) 100%);
+  background-image: -webkit-gradient(linear, left bottom, right bottom, color-stop(0%, rgba(40, 146, 198, 0.1)), color-stop(33%, rgba(255, 255, 255, 0.1)), color-stop(66%%, rgba(255, 255, 255, 0.1)), color-stop(100%, rgba(40, 146, 198, 0.1) 0%));
+  background-image: -webkit-linear-gradient(left, rgba(40, 146, 198, 0.1) 0%, rgba(255, 255, 255, 0.1) 33%, rgba(255, 255, 255, 0.1) 66%, rgba(40, 146, 198, 0.1) 100%);
+  background-image: -moz-linear-gradient(left, rgba(40, 146, 198, 0.1) 0%, rgba(255, 255, 255, 0.1) 33%, rgba(255, 255, 255, 0.1) 66%, rgba(40, 146, 198, 0.1) 100%);
+  background-image: -o-linear-gradient(left, rgba(40, 146, 198, 0.1) 0%, rgba(255, 255, 255, 0.1) 33%, rgba(255, 255, 255, 0.1) 66%, rgba(40, 146, 198, 0.1) 100%);
+  background-image: -ms-linear-gradient(left, rgba(40, 146, 198, 0.1) 0%, rgba(255, 255, 255, 0.1) 33%, rgba(255, 255, 255, 0.1) 66%, rgba(40, 146, 198, 0.1) 100%);
 }

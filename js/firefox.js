@@ -151,7 +151,7 @@ define('firefox', ['globals', 'events', 'utils', 'collections/ResourceList', 'vo
 //    var installedApps = G.currentUser.installedApps,
 //        currentApp = G.currentApp,
 //        channelId = G.pushChannelId,
-      var appInstall = G.currentAppInstall,
+      var appInstall = G.currentUser.appInstall,
           channels = G.currentApp.pushChannels,
           endpointList = new ResourceList(G.currentUser.pushEndpoints, {
           model: pushEndpointModel,

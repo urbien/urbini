@@ -21,7 +21,6 @@ define('views/MenuPanel', [
     style: {
       opacity: 0,
       display: 'table',
-      width: '100%',
       background: 'none',
       visibility: 'visible',
       'transform-origin': '100% 0%'
@@ -40,15 +39,15 @@ define('views/MenuPanel', [
     initialize: function(options) {
       var self = this,
           type = this.modelType;
-      
+
       _.bindAll(this, 'show', 'hide');
       BasicView.prototype.initialize.apply(this, arguments);
       this.tagName = options.tagName;
       this.makeTemplate('menuItemTemplate', 'menuItemTemplate', type);
       this.makeTemplate('propGroupsDividerTemplate', 'groupHeaderTemplate', type);
       this.viewId = options.viewId;
-      this.isPanel = true;      
-      
+      this.isPanel = true;
+
       this.onload(function() {
         self.addToWorld(null, true);
 //        Physics.there.rpc(null, 'squeezeAndStretch', [self.getContainerRailBodyId(), self.getContainerBodyId()]);
@@ -61,26 +60,26 @@ define('views/MenuPanel', [
 //        if (!self.isHidden() && !self._transitioning)
 //          self.hide(e);
 //      }, true);
-//      
+//
 //      this.once('destroy', function() {
 //        document.$off('click', hide);
 //      }, this);
     },
-    
+
     pageEvents: {
       'page_beforehide': 'hide',
       'page_hide': 'destroy',
       'tap': 'hide'
     },
-    
+
 //    windowEvents: {
 //      'viewportdimensions': '_resizePanel'
 //    },
-    
+
     isHidden: function() {
       return this._hidden;
     },
-    
+
     _finishTransition: function() {
       this._transitioning = false;
       if (this._repositionAfterTransition) {
@@ -88,13 +87,13 @@ define('views/MenuPanel', [
         this._repositionPanel();
       }
     },
-    
+
     show: function(e) {
       var self = this;
       if (this._hidden) {
         if (e)
           Events.stopEvent(e);
-        
+
 //        if (this.ulWidth == G.viewport.width) {
 //          var self = this;
 //          // HACK!!
@@ -104,12 +103,12 @@ define('views/MenuPanel', [
 //            else
 //              setTimeout(tryAgain, 50);
 //          }, 50);
-//          
+//
 //          return;
 //        }
-        
+
         var accActionId = _.uniqueId('accAction');
-        
+
         this._hidden = false;
         this._transitioning = true;
         Physics.there.chain(
@@ -121,28 +120,28 @@ define('views/MenuPanel', [
             }]
           },
           {
-            method: 'teleport', 
+            method: 'teleport',
             args: [this.getContainerRailBodyId(), this.ulWidth]
           },
 //          {
-//            method: 'accelerateTo', 
+//            method: 'accelerateTo',
 //            args: [{
 //              actionId: accActionId,
-//              body: this.getContainerRailBodyId(), 
-//              x: 0, 
+//              body: this.getContainerRailBodyId(),
+//              x: 0,
 //              a: this._acceleration,
 //              drag: this._drag
 //            }]
 //          },
           {
-            method: 'snapTo', 
+            method: 'snapTo',
             args: [{
               actionId: accActionId,
               body: this.getContainerRailBodyId(),
               stiffness: this._stiffness,
               damping: this._damping,
               drag: this._drag,
-              x: 0 
+              x: 0
             }]
           },
           {
@@ -159,7 +158,7 @@ define('views/MenuPanel', [
             }]
           }
         );
-        
+
         Physics.here.once('render', this.getContainerBodyId(), function() {
           self._finishTransition();
           Q.write(function() {
@@ -173,7 +172,7 @@ define('views/MenuPanel', [
       if (!this._hidden) {
         if (e)
           Events.stopEvent(e);
-        
+
         var self = this,
             accActionId = _.uniqueId('accAction');
 
@@ -188,8 +187,8 @@ define('views/MenuPanel', [
             method: 'snapTo',
             args: [{
 //              actionId: accActionId,
-              body: this.getContainerRailBodyId(), 
-              x: this.ulWidth, 
+              body: this.getContainerRailBodyId(),
+              x: this.ulWidth,
               stiffness: this._stiffness,
               damping: this._damping,
               drag: this._drag,
@@ -200,7 +199,7 @@ define('views/MenuPanel', [
                   'z-index': 0,
                   visibility: 'hidden'
                 });
-                
+
                 Q.write(function() {
                   self.ul.style.visibility = 'hidden';
                 });
@@ -221,11 +220,11 @@ define('views/MenuPanel', [
             }]
           }
         );
-        
+
         return true;
       }
     },
-    
+
     _updateSize: function() {
       var viewport = G.viewport,
           height = this.ulHeight = parseInt(this.ul.style.height || 0),
@@ -236,7 +235,7 @@ define('views/MenuPanel', [
         if (!resetTimeout(this._measureMenuTimeout))
           this._measureMenuTimeout = setTimeout(this._updateSize.bind(this), 50); // HACK - ul is full screen width on first check
       }
-      
+
       this.ulWidth = outerWidth;
       if (this._outerWidth != viewport.width || this._outerHeight != outerHeight || height != viewport.height) {
         this._bounds[0] = this._bounds[1] = 0;
@@ -246,7 +245,7 @@ define('views/MenuPanel', [
         Q.write(function() {
           this.ul.style.height = viewport.height + 'px'; // to keep the menu the same height as the screen
         }, this);
-        
+
         return true;
       }
     },
@@ -260,7 +259,7 @@ define('views/MenuPanel', [
 //      this.buildViewBrick();
 //      this.updateMason();
 //    },
-    
+
     repositionPanel: function() {
       if (this._transitioning)
         this._repositionAfterTransition = true;
@@ -271,16 +270,16 @@ define('views/MenuPanel', [
     getBodyId: function() {
       return BasicView.prototype.getBodyId.apply(this, arguments) + '-' + this.TAG;
     },
-    
+
     getContainerBodyOptions: function() {
       var options = BasicView.prototype.getContainerBodyOptions.apply(this, arguments);
-      
+
       // make sure it starts just offscreen
       options.x = G.viewport.width;
 //      options.lock.y = 0;
       return options;
     }
-  }, 
+  },
   {
     displayName: 'MenuPanel'
   });

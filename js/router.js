@@ -1031,7 +1031,8 @@ define('router', [
           current = hashInfo.url,
           replaceWith = current,
           isProfile = U.isProfileRoute(),
-          ref = U.getUserReferralParam();
+          ref = U.getUserReferralParam(),
+          appInstall = G.currentUser.appInstall;
 
       if (replaceWith.length < G.appUrl.length)
         replaceWith = G.appUrl;
@@ -1060,7 +1061,7 @@ define('router', [
 //        if (G.currentApp.forceInstall || isWriteRoute) {
 //          installationState = AppAuth.getAppInstallationState(); //hashInfo.type);
 //          if (!installationState.allowed) {
-        if ((G.currentApp.forceInstall || isWriteRoute) && !G.currentUser.installedThisApp) {
+        if ((G.currentApp.forceInstall || isWriteRoute) && !appInstall) {
           if (G.currentUser.guest) {
             this._requestLogin();
             return false;
@@ -1072,7 +1073,7 @@ define('router', [
         }
       }
 
-      if (G.currentApp.isInPrivateBeta && !G.currentUser.isActivated) {
+      if (G.currentApp.isInPrivateBeta && (!appInstall || !appInstall.activated)) {
         // obviously not meant as security, if someone really wants to browse the site, let them
         if (route != 'home' && route != 'static' && publicTypes.indexOf(type) == -1) {
           if (G.currentUser.guest) {
