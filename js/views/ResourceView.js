@@ -78,8 +78,7 @@ define('views/ResourceView', [
     },
 
     events: {
-      'click': 'click',
-      'click .socialLinks .ui-icon-twitter': 'share'
+      'click': 'click'
     },
 
     modelEvents: {
@@ -90,26 +89,6 @@ define('views/ResourceView', [
     update1: function() {
       console.log('UPDATE, QUEUING', this.TAG);
       this.update.apply(this, arguments);
-    },
-
-    share: function(e) {
-//      var twitterLink = this.resource && this.resource.get('twitterLink');
-//      if (twitterLink) {
-//        Events.trigger('navigate', twitterLink);
-//        return;
-//      }
-
-      if (!this.resource.get('isPublic')) {
-        Events.stopEvent(e);
-        Events.trigger('navigate', U.makeMobileUrl('edit', this.resource.getUri(), {
-          '-info': 'Before you can share this tradle, edit it to make it public',
-          $editCols: 'isPublic'
-        }));
-      }
-//      this.getPageView().addTooltip({
-//        el: this.$('.socialLinks .ui-icon-edit')[0],
-//        tooltip: 'Before you can share this tradle, edit it to make it public'
-//      });
     },
 
     pageEvents: {
@@ -343,13 +322,6 @@ define('views/ResourceView', [
         }
       }
 
-      var showingSocialLinks;
-      if (this.isTradle  &&  !G.currentUser.guest) {
-        showingSocialLinks = true;
-        this.makeTemplate('socialLinksTemplate', 'socialTemplate', this.vocModel.type);
-        U.addToFrag(frag, this.socialTemplate.call(this, {uri: this.resource.getUri()}));
-      }
-
       var displayedProps = {};
       var idx = 0;
       var groupNameDisplayed;
@@ -537,7 +509,7 @@ define('views/ResourceView', [
       }
       */
 
-      if (!showingSocialLinks && _.isEmpty(displayedProps))
+      if (_.isEmpty(displayedProps))
         this.el.$hide();
       else
         this.el.$show();

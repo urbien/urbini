@@ -251,12 +251,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     return a.href && !a.href.startsWith('javascript:') && !a.href.endsWith('#') && a.target != '#';
   }
 
-  document.addEventListener('click', function(e) {
+  document.$on('click', 'a', function(e) {
     if (e.defaultPrevented)
       return;
 
-    var a = e.target,
-        tagName = a.tagName,
+    var a = e.selectorTarget,
         href = a.$attr('href'),
         absoluteHref = a.href,
         dataHref = a.$data('href');
@@ -266,9 +265,6 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       Events.trigger('navigate', dataHref);
       return;
     }
-
-    if (tagName != 'A')
-      return;
 
     if (href == '#') {
       Events.stopEvent(e);
@@ -287,7 +283,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         return;
       }
     }
-  }, false);
+  });
 
 //  // re-enable click on bubble phase
 //  document.addEventListener('click', enableClick);

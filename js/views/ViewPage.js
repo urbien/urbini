@@ -9,6 +9,8 @@ define('views/ViewPage', [
   'views/ControlPanel',
   'lib/fastdom'
 ], function(G, U, Events, BasicPageView, Header, ResourceView, ControlPanel, Q) {
+  var SOCIAL_LINKS_SELECTOR = '.socialLinks';
+
   return BasicPageView.extend({
     clicked: false,
     className: 'scrollable',
@@ -20,7 +22,8 @@ define('views/ViewPage', [
       BasicPageView.prototype.initialize.apply(this, arguments);
 //      this.resource.on('change', this.render, this);
       var self = this,
-          res = this.resource;
+          res = this.resource,
+          isTradle = res.isAssignableFrom('commerce/trading/Tradle');
 
 //      this.$el.on('page_show', function() {
 //        setTimeout(self.pageChange, 1000);
@@ -56,7 +59,7 @@ define('views/ViewPage', [
       this.addChild(this.header);
 
 
-      if (!this.isAbout  &&  !U.isAssignableFrom(this.vocModel, 'Tradle')) {
+      if (!this.isAbout  &&  !isTradle) {
         var viewType, viewDiv;
         if (res.isA('Intersection')) {
           var aFeatured = U.getCloneOf(this.vocModel, 'Intersection.aFeatured')[0];
@@ -214,6 +217,17 @@ define('views/ViewPage', [
         });
       }
 
+      this.hasSocialLinks = isTradle && !G.currentUser.guest;
+      if (this.hasSocialLinks) {
+        self.socialLinksPromise = U.require('views/SocialLinksView', function(viewMod) {
+          self.socialLinks = new viewMod(_.extend({
+            el: self.$(SOCIAL_LINKS_SELECTOR)[0]
+          }, commonParams));
+
+          self.addChild(self.socialLinks);
+        });
+      }
+
       this.listenTo(Events, "mapReady", this.showMapButton);
       this.getFetchPromise().done(this.resource.fetchInlinedLists);
     },
@@ -295,6 +309,7 @@ define('views/ViewPage', [
       Events.trigger('navigate', here.slice(0, here.indexOf('#')));
       return this;
     },
+    
     edit: function(e) {
       Events.stopEvent(e);
 //      e.preventDefault();
@@ -354,6 +369,12 @@ define('views/ViewPage', [
       this.imgReady.done(function() {
         self.assign(self.imgDiv, self.imageView, options);
       });
+
+      if (this.hasSocialLinks) {
+        this.socialLinksPromise.done(function() {
+          self.assign(SOCIAL_LINKS_SELECTOR, self.socialLinks, options);
+        });
+      }
 
       if (!options.mock && this.isPurchasable && !this.buyGroup && this.el.querySelector('#buyGroup')) {
         this.getFetchPromise().done(function() {

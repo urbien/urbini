@@ -90,6 +90,7 @@
 
   <div data-inset="true" data-filter="false" class="photogrid thumb-gal hidden" style="height: 115px;">
   </div>
+  {{= this.hasSocialLinks ? '<div class="socialLinks"></div>' : '' }}
   {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
      <div style="padding:10px;"><a data-role="button" class="ui-btn-hover-c" data-icon="heart" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></div>
   {{ } }}
@@ -185,7 +186,7 @@
     {{ }                       }}
     {{ if (currentStep == 2) { }}
     <li>
-      <a class="mini-cta" href="#" data-selector="header [data-shortname=&quot;orders&quot;] i" data-tooltip="Click here to add trades" data-direction="left">Add trades</a> to be executed when your tradle fires
+      <a class="mini-cta" href="#" data-selector="li[data-backlink=&quot;orders&quot;],header[data-shortname=&quot;orders&quot;]" data-tooltip="Click here to add trades" data-direction="bottom">Add trades</a> to be executed when your tradle fires
     </li>
     {{ }                       }}
   </ul>
@@ -197,17 +198,17 @@
     {{ if (name == 'New tradle') { }}
       <!-- if there's no description and we're not ready to activate yet -->
       <li>
-        <a class="mini-cta" href="#" data-selector=".socialLinks .ui-icon-edit" data-tooltip="Click here to edit the name and description" data-direction="bottom">Name</a> your tradle
+        <a class="mini-cta" href="#" data-selector=".socialLinks .ui-icon-edit" data-tooltip="Click here to edit the name and description" data-direction="top">Name</a> your tradle
       </li>
     {{ }                                        }}
     {{ if (!isPublic && nRules) { }}
       <li>
-        Make your tradle <a class="mini-cta" href="#" data-selector=".socialLinks .ui-icon-edit" data-tooltip="Click to edit, then flip the 'Public' switch to 'On'" data-direction="bottom">Public</a> to share it with the world
+        Make your tradle <a class="mini-cta" href="#" data-selector=".socialLinks .ui-icon-edit" data-tooltip="Click to edit, then flip the 'Public' switch to 'On'" data-direction="top">Public</a> to share it with the world
       </li>
     {{ }                                        }}
     {{ if (isPublic) { }}
       <li>
-        <a class="mini-cta" href="#" data-selector=".socialLinks .ui-icon-twitter" data-tooltip="Click here whenever you want to Tweet your tradle" data-direction="bottom">Tweet</a> your tradle
+        <a class="mini-cta" href="#" data-selector=".socialLinks .ui-icon-twitter" data-tooltip="Click here whenever you want to Tweet your tradle" data-direction="top">Tweet</a> your tradle
       </li>
     {{ }                                        }}
     {{ if (!activated && nRules) { }}
@@ -265,7 +266,7 @@
   style="text-align:center;padding:0;border:none;" class="trades"
 {{ } }}
   >
-  <a href="{{= href }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="{{= obj.img || obj.needsAlignment ? '' : 'padding:1rem 0;'}} {{= obj.noclick ? 'cursor:default;' : 'cursor:pointer;' }}{{= isTrade ? 'font-size:inherit;' : '' }}">
+  <a href="{{= href }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="{{= obj.img || obj.needsAlignment ? '' : 'padding:1rem 0;'}} {{= obj.noclick ? 'cursor:default;' : 'cursor:pointer;' }}{{= isTrade ? 'font-size:inherit;' : 'font-size:1.6rem' }}">
     {{ if (obj.img) { }}
       <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}"
       {{ if (obj.top) { }}
@@ -291,7 +292,7 @@
 </script>
 
 <script type="text/template" id="inlineAddTemplate">
-  <li data-viewid="view7" data-backlink="{{= backlink }}" data-action="add" style="background: rgba(40, 146, 198, 0.25);">
+  <li data-viewid="view7" data-backlink="{{= backlink }}" data-action="add" style="background: rgba(40, 146, 198, 0.25);" class="{{= obj.class || '' }}">
     <div style="font-size:1.6rem;padding-top:1rem;"><span>{{= hint }}</span></div>
     <div style="text-decoration:none">{{= action }}</div>
   </li>
@@ -388,7 +389,7 @@
   </div>
 </li>
 {{ if (!obj.isLast) { }}
-<li class="ruleCombinator" style="border: 0;width: 100%;margin: 0 auto;padding: 0;color: #888;z-index: 2;font-size: 3rem; text-align:center;">
+<li class="ruleCombinator" style="border: 0;width: 100%;margin: 0 auto;padding: 0;color: #888;z-index: 2;font-size: 2rem; text-align:center;min-height: initial;">
   <div>-- AND --</div>
 </li>
 {{ }                  }}
@@ -396,7 +397,6 @@
 
 <script type="text/template" id="socialLinksTemplate">
 <!-- Social Links -->
-<div class="socialLinks" style="font-weight: normal;color:#3777a1;">
   {{ var owner = this.resource.get('owner'), submittedBy = this.resource.get('submittedBy'), user = G.currentUser._uri, isOwner = user && user == (owner || submittedBy); }}
   {{ if (user && (user == owner || user == submittedBy)) { }}
     <a class="socialAction" href="{{= U.makePageUrl('edit', this.resource.getUri(), {$editCols: 'activated,title,description,isPublic'}) }}"><span class="ui-icon-edit" data-url="{{= uri }}">&#160;EDIT</span></a>
@@ -406,7 +406,6 @@
   {{ } }}
   <a href="{{= U.makePageUrl('view', uri + '&$clone=y') }}" class="socialAction" data-url="{{= uri }}"><span class="ui-icon-fork">&#160;CLONE</span></a>
   <a href="{{= G.serverName }}/widget/embed.html?uri={{= encodeURIComponent(uri) }}" class="socialAction" data-url="{{= uri }}"><span class="ui-icon-embed">&#160;EMBED</span></a>
-</div>
 </script>
 
 <script type="text/template" id="privateBetaPageTemplate">
@@ -1892,7 +1891,7 @@
   <div class="hdr">
   <section role="region">
     <header style="background: none;height:inherit;">
-    <ul class="headerUl" style="position:relative;">
+    <ul class="headerUl {{= U.getCurrentUrlInfo().route }}Header" style="position:relative;">
     </ul>
     </header>
   </section>

@@ -366,7 +366,7 @@ define('views/ControlPanel', [
         block.$append(add);
       }
 
-      this.getPageView().invalidateSizeIn(300, 500);
+      this.getPageView().invalidateSize();
 
       // if (block.$hasClass(SLIDER_ACTIVE_CL))
       //   this.hideTrades();
@@ -682,8 +682,8 @@ define('views/ControlPanel', [
 
         U.addToFrag(frag, add);
       }
-      // else if (name == 'orders') {
-      // }
+      else if (name == 'orders') {
+      }
     },
 
     _renderInlineList: function(name, frag, displayedProps) {

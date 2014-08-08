@@ -356,7 +356,7 @@ define('views/Header', [
             if (spinner)
               G.hideSpinner(spinner);
 
-            var perf = self.getPageView().$('#expectedPerformance')[0];
+            var perf = self.getPageView().$('.expectedPerformance')[0];
             if (perf) {
               self.getPageView().toggleCollapsedEl(perf);
               self.getPageView().scrollToElement(perf);
@@ -1320,15 +1320,15 @@ define('views/Header', [
 //          this.$('h4').$css('margin-top', '4px');
 //      }
 
-      for (var btn in btns) {
-        var badge = btns[btn].$('.menuBadge');
-        if (badge.length) {
-//          if (G.isJQM())
-//            badge.$css('left', Math.floor(btnWidth/2) + '%');
-//          else
-            //badge.$css('left', '50%');
-        }
-      }
+//       for (var btn in btns) {
+//         var badge = btns[btn].$('.menuBadge');
+//         if (badge.length) {
+// //          if (G.isJQM())
+// //            badge.$css('left', Math.floor(btnWidth/2) + '%');
+// //          else
+//             //badge.$css('left', '50%');
+//         }
+//       }
       // HACK
       // this hack is to fix loss of ui-bar-... class loss on header subdiv when going from masonry view to single resource view
       var header = this.$('.ui-header')[0];

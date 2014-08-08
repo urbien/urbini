@@ -1,15 +1,18 @@
 //'use strict';
 define('views/SaveButton', [
-  'underscore', 
+  'underscore',
   'utils',
-  'events', 
+  'events',
   'globals',
-  'views/BasicView' 
+  'views/BasicView'
 ], function(_, U, Events, G, BasicView) {
   return BasicView.extend({
     templateName: 'saveButtonTemplate',
     tagName: 'li',
-    id: 'save',
+    className: 'saveBtn',
+    style: {
+      'text-align': 'center'
+    },
     events: {
       'click': 'save'
     },
@@ -25,7 +28,7 @@ define('views/SaveButton', [
       return this;
     },
     render: function(options) {
-      this.html(this.template());      
+      this.html(this.template());
       return this;
     }
   }, {

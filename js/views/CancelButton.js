@@ -1,15 +1,18 @@
 //'use strict';
 define('views/CancelButton', [
-  'underscore', 
+  'underscore',
   'utils',
-  'events', 
+  'events',
   'globals',
-  'views/BasicView' 
+  'views/BasicView'
 ], function(_, U, Events, G, BasicView) {
   return BasicView.extend({
     templateName: 'cancelButtonTemplate',
     tagName: 'li',
-    id: 'cancel',
+    className: 'cancelBtn',
+    style: {
+      'text-align': 'center'
+    },
     events: {
       'click': 'cancel'
     },
@@ -25,7 +28,7 @@ define('views/CancelButton', [
       return this;
     },
     render: function(options) {
-      this.html(this.template());      
+      this.html(this.template());
       return this;
     }
   }, {

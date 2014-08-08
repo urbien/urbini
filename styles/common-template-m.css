@@ -1450,6 +1450,7 @@ li.anim-overlay-active {
   left:0;
   opacity: 0.7;
   background-color: rgba(255, 255, 255, 0.7);
+  border-radius: 0 1rem 1rem 0;
 }
 
 .drawer-tab-left:hover {
@@ -1494,13 +1495,16 @@ li.anim-overlay-active {
   font-size:1.5rem;
   padding-bottom:1rem;
 }
+
 .socialLinks {
   text-align: center;
 /*  background: rgba(255, 255, 255, 0.5);*/
-  font-weight: bold;
   min-height:3rem;
+  font-weight: normal;
 }
+
 .socialLinks > a.socialAction {
+  color:#3777a1;
   display: inline-block;
   font-size: 2rem;
   margin: 1rem 1rem;
@@ -1702,7 +1706,7 @@ li.invalid[data-role="fieldcontain"] {
 }
 
 section[data-backlink] {
-  font-size: 1.6rem;
+  font-size: 2.5rem;
   margin-bottom: 1rem;
   font-weight: bold;
   text-align: center;
@@ -1711,6 +1715,12 @@ section[data-backlink] {
 
 section[data-backlink="indicators"] li:not([data-action="add"]) {
   border: 2px dashed #888;
+}
+
+@media all and (min-width: 600px) {
+  section[data-backlink] {
+    font-size: 4rem;
+  }
 }
 
 section[data-backlink] li, li[data-backlink="tradleRules"] {
@@ -1724,20 +1734,6 @@ section[data-backlink] li, li[data-backlink="tradleRules"] {
   font-weight: bold;
   font-size: 1.6rem;
   */
-}
-
-.drawer-tab-left {
-  border-radius: 0 1rem 1rem 0;
-}
-
-a[data-backlink] {
-  font-size: 2.5rem;
-}
-
-@media all and (min-width: 600px) {
-  a[data-backlink] {
-    font-size: 3.5rem;
-  }
 }
 
 #cpView li[data-backlink="tradleRules"] {
