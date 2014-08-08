@@ -884,7 +884,7 @@ define('app', [
     var props = {
       endpoint: endpoint,
       channelName: channel,
-      appInstall: G.currentAppInstall,
+      appInstall: G.currentUser.appInstall,
       browser: G.browser.name.capitalizeFirst()
     };
 

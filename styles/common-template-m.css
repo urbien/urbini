@@ -829,7 +829,7 @@ section[id^="view"] {
 
 .header2 i {
   font-size:20px;
-  color: #eee;
+  color: #aaa;
 }
 
 @media only screen and (min-width: 480px) {
@@ -1586,7 +1586,6 @@ li.anim-overlay-active {
 
 .buttons i.help {
   opacity: 1;
-  color: #aaa;
   -webkit-transform: scale(1);
      -moz-transform: scale(1);
       -ms-transform: scale(1);

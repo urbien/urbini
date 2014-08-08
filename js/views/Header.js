@@ -24,6 +24,28 @@ define('views/Header', [
     return false;
   })();
 
+  function getAppInstall() {
+    return U.getResource(U.getLongUri1(G.currentUser.appInstall._uri)) || G.currentUser.appInstall;
+  }
+
+  function saveQuickstartSettings(hide) {
+    hide = !!hide;
+    if (G.currentUser.appInstall && G.currentUser.appInstall._hideQuickstart != hide) {
+      Voc.getModels(G.commonTypes.AppInstall).done(function(aiModel) {
+        var appInstall = U.getResource(U.getLongUri1(G.currentUser.appInstall._uri)) || new aiModel(G.currentUser.appInstall);
+        appInstall.save({
+          hideQuickstart: !!hide
+        }, {
+          userEdit: true
+        });
+      });
+    }
+  };
+
+  function isQuickstartVisible() {
+    return !U.getValue(getAppInstall(), 'hideQuickstart');
+  };
+
   return BasicView.extend({
 //    viewType: 'any',
     style: {
@@ -1393,8 +1415,13 @@ define('views/Header', [
     },
 
     updateQuickstart: _.debounce(function() {
-      if (!this.hasQuickstart() || !this.rendered)
+      if (!this.hasQuickstart() || !this.rendered) 
         return;
+
+      if (!isQuickstartVisible()) {
+        this._quickstartNeedsUpdate = true;
+        return;
+      }
 
       var qst = this.getQuickstartTemplate();
       if (qst) {
@@ -1407,10 +1434,18 @@ define('views/Header', [
     }, 100),
 
     showQuickstart: function(e) {
+      saveQuickstartSettings();
+      if (this._quickstartNeedsUpdate) {
+        delete this._quickstartNeedsUpdate;
+        this.updateQuickstart();
+        return;
+      }
+
       this.getPageView().removeTooltips();
       this.quickstart = this.quickstart || this.$('.quickstart')[0];
       this.el.$addClass('quickstart-active');
       this.updateHeaderSize();
+
 //      if (e)
 //        e._showedQuickstart = true;
     },
@@ -1427,6 +1462,7 @@ define('views/Header', [
       if (!this.quickstart || !this.el.$hasClass('quickstart-active'))
         return;
 
+      saveQuickstartSettings(true);
       if (this.getPageView().TAG == 'ListPage' && arguments.length == 1)
         noTooltip = true;
 
