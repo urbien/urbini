@@ -1972,7 +1972,7 @@
     {{ if (this.filter) { }}
       <div style="margin-right: 5px; float: right;"><a class="filterToggle" href="#"><i class="ui-icon-search"></i></a></div>
     {{ }                  }}
-    <i class="help ui-icon-help"></i>
+    <i class="help ui-icon-help" style="{{= this.hasQuickstart() ? '' : 'display:none;' }}"></i>
   </div>
 </div>
 <div class="physicsConstants" style="display:none; background-color: #606060; color:#FFFFFF; display:none;"></div>

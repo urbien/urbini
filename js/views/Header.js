@@ -1418,19 +1418,16 @@ define('views/Header', [
       if (!this.hasQuickstart() || !this.rendered) 
         return;
 
+      this.$('i.help').$show();
       if (!isQuickstartVisible()) {
         this._quickstartNeedsUpdate = true;
         return;
       }
 
-      var qst = this.getQuickstartTemplate();
-      if (qst) {
-        this.quickstart = this.$('.quickstart')[0];
+      this.quickstart = this.$('.quickstart')[0];
 //      this.helpIcon = this.$('i.help')[0];
-        this.quickstart.$html(this.quickstartTemplate());
-        this.showQuickstart();
-        this.$('i.help').$show();
-      }
+      this.quickstart.$html(this.quickstartTemplate());
+      this.showQuickstart();
     }, 100),
 
     showQuickstart: function(e) {
