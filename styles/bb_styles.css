@@ -188,7 +188,6 @@ button {
 
 section[data-type="sidebar"] {
   color: #cccccc;
-  width: 21rem;
   text-shadow: none;
 }
 section[data-type="sidebar"] > ul > li {

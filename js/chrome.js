@@ -129,7 +129,7 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
       Events.on('messageToApp', sendMessageToApp);
 //      var currentApp = G.currentApp,
       var channelId = G.pushChannelId,
-          appInstall = G.currentAppInstall,      
+          appInstall = G.currentUser.appInstall,      
           endpointList = new ResourceList(G.currentUser.pushEndpoints, {
             model: U.getModel(G.commonTypes.PushEndpoint),
             query: _.param({

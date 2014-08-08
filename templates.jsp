@@ -425,7 +425,7 @@
 
   <div class="section-content">
     <div class="title-block">
-    {{ var guest = G.currentUser.guest, activated = G.currentUser.isActivated; }}
+    {{ var guest = G.currentUser.guest, appInstall = G.currentUser.appInstall, activated = appInstall.activated; }}
     {{ if (guest) { }}
       <span class="section-title">Sign up for early access</span>
       <span class="section-title _2">Get involved now!</span>
@@ -435,7 +435,7 @@
       <span class="section-title _2">See how to make the most of your Tradle membership below</span>
     {{ }                                 }}
     {{ if (!guest && !activated) { }}
-      <span class="section-title">There are {{= G.currentUser.numberInLine }} users ahead of you</span>
+      <span class="section-title">There are {{= appInstall.numberInLine }} users ahead of you</span>
       <span class="section-title _2">But don't wait, get involved now!</span>
     {{ }                                 }}
     </div>
@@ -446,7 +446,7 @@
         <p>
           <strong>Get access & the invites to give away</strong>
           <div>
-            {{ var n = G.currentUser.referredInstalls || 0; }}
+            {{ var n = appInstall.referredInstallsCount || 0; }}
             Post any Tradle URL anywhere online and earn rewards on signups and sales you facilitate.
             {{ if (G.currentUser.guest ) { }}
               <a href="#" class="link reqLogin">Login</a> and all links in your address bar become personalized.
@@ -1902,7 +1902,7 @@
   </div>
 </div>
 <!--div class="buttons header2" style="background:{{= G.darkColor }};color:{{= G.lightColor }}"-->
-<div class="buttons header2">
+<div class="buttons colorCenterGradient header2">
   <div class="cf vcenteredR" style="z-index:1; width:20%;float:left;">
     <span class="placeholder"></span>
     {{ if (this.categories) { }}
@@ -1972,7 +1972,7 @@
     {{ if (this.filter) { }}
       <div style="margin-right: 5px; float: right;"><a class="filterToggle" href="#"><i class="ui-icon-search"></i></a></div>
     {{ }                  }}
-    <i class="help ui-icon-help" style="{{= this.hasQuickstart() ? '' : 'display:none;' }}"></i>
+    <i class="help ui-icon-help"></i>
   </div>
 </div>
 <div class="physicsConstants" style="display:none; background-color: #606060; color:#FFFFFF; display:none;"></div>
