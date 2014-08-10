@@ -28,7 +28,7 @@ define('views/HomePage', [
 //      'tap #installApp'    : 'installApp'
       'click .cta': 'getStarted'
     },
-    
+
     getStarted: function(e) {
       Events.stopEvent(e);
       var t = e.selectorTarget;
@@ -36,17 +36,17 @@ define('views/HomePage', [
         Events.trigger('navigate', t.href);
         return;
       }
-      
+
       if (G.currentApp.appPath == 'Tradle') {
         Events.trigger('navigate', U.makeMobileUrl('make', 'commerce/trading/Tradle'));
         return;
       }
-      
+
       if (G.currentUser.guest) {
-        Events.trigger('req-login', { 
+        Events.trigger('req-login', {
           dismissible: true
         });
-        
+
         return;
       }
       else {
@@ -56,7 +56,7 @@ define('views/HomePage', [
           Events.trigger('navigate', U.makeMobileUrl('view', 'profile'));
       }
     },
-    
+
     installApp: function(e) {
       Events.stopEvent(e);
       if (G.hasFFApps) {
@@ -65,16 +65,16 @@ define('views/HomePage', [
         });
       }
     },
-    
+
 //    click: function(e) {
 //      if (!this.rendered)
 //        this._lastClick = e;
 //    },
-//    
+//
 //    rightMenu: function(e) {
 //      var id = e.target.id,
 //          self = this;
-//      
+//
 //      if (!id)
 //        return;
 //      if (!id.startsWith('hpRightPanel'))
@@ -84,7 +84,7 @@ define('views/HomePage', [
 //        self.menuPanel = new MP({
 //          viewId: 'viewHome'
 //        });
-//        
+//
 //        self.addChild(self.menuPanel);
 //        self.menuPanel.render();
 //      });
@@ -92,7 +92,7 @@ define('views/HomePage', [
 //    leftMenu: function(e) {
 ////      var id = e.target.id,
 ////          self = this;
-////      
+////
 ////      if (!id)
 ////        return;
 ////      if (!id.startsWith('hpRightPanel'))
@@ -101,57 +101,57 @@ define('views/HomePage', [
 ////        return this.rightMenu(e);
 //////      if (!this.$('#' + this.viewId).length)
 //////        return;
-////      
+////
 ////      Events.stopEvent(e);
 ////      U.require(["views/MainMenuPanel"]).done(function(MP) {
 ////        self.menuPanel = new MP({viewId: 'viewHome'});
 ////        self.addChild(self.menuPanel);
 ////        self.menuPanel.render();
 ////      });
-//      
+//
 //    },
-    
+
     render: function(options) {
+    //   var self = this;
+    //   return U.require('views/RightMenuButton').done(function(rmb) {
+    //     MenuButton = rmb;
+    //     self.renderHelper(options);
+    //     self.finish();
+    //   });
+    // },
+
+    // renderHelper: function(options) {
       var self = this;
-      return U.require('views/RightMenuButton').done(function(rmb) {
-        MenuButton = rmb;
-        self.renderHelper(options);
-        self.finish();
-      });
-    },
-    
-    renderHelper: function(options) {
-      var self = this;
-      
+
       if (!this.rendered) {
         this.addToWorld(null, true);
 //      this.$el.trigger('page_beforeshow');
-        
+
         // only allow tap and hold events, click muddies the waters
-        this.menuBtnEl = this.el.$('#hpRightPanel')[0];
-        this.menuBtn = new MenuButton({
-          el: this.menuBtnEl,
-          pageView: this,
-          viewId: this.viewId,
-          homePage: true
-        });
-        
-        this.menuBtn.render();
+        // this.menuBtnEl = this.el.$('#hpRightPanel')[0];
+        // this.menuBtn = new MenuButton({
+        //   el: this.menuBtnEl,
+        //   pageView: this,
+        //   viewId: this.viewId,
+        //   homePage: true
+        // });
+
+        // this.menuBtn.render();
 //        menuBtnEl.$on('click', function(e) {
 //          e.preventDefault();
 //        });
       }
 //      var item = $('#homePage');
 //      item.css('display', 'block');
-//      if (!item || item.length == 0) { 
+//      if (!item || item.length == 0) {
 //        var itemS = G.haslocalStorage  &&  G.localStorage.get('homePage');
-//        if (itemS) { 
+//        if (itemS) {
 //          $(itemS).css('display:none');
 //          $(itemS).appendTo('body');
 ////          $(itemS).appendTo('#page');
 //        }
 //      }
-      
+
 //      if (this.$el.attr("data-stretch"))
 //        this.$el.anystretch();
 
@@ -164,17 +164,17 @@ define('views/HomePage', [
           self.removeInstallBtn();
         });
       }
-      else 
+      else
         this.removeInstallBtn();
-      
+
       document.title = G.currentApp.title;
       return this;
     },
-        
+
     removeInstallBtn: function() {
       this.$('#installApp').$remove();
     },
-    
+
     _updateSize: function() {
       var outerWidth = this.el.$outerWidth(),
           height = this.el.$outerHeight(),
@@ -190,7 +190,7 @@ define('views/HomePage', [
         this._bounds[3] = this._height;
         return true;
       }
-      
+
       return doUpdate;
     }
   }, {

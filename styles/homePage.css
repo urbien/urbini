@@ -472,11 +472,13 @@ body > .section:not([data-role="page"]) {
   margin-bottom: 10px;
 }
 
+/*
 @media only screen and (max-width: 480px) {
   .section {
     padding: 0 10px;
   }
 }
+*/
 
 #homePage .menuItems {
   -webkit-filter: brightness(0.8);
@@ -777,6 +779,7 @@ body > .section:not([data-role="page"]) {
 
 .pricing-section .col {
   min-height: 450px;
+  background: rgba(255, 255, 255, 0.6);
 }
 
 #homePage .section .span_1_of_4 {
@@ -912,7 +915,7 @@ body > .section:not([data-role="page"]) {
 
 .homePageMenu {
   width: 100%;
-  margin-top: 36px;
+  margin-top: 50px;
   padding: 0;
   text-align:center;
   position:absolute;
@@ -920,7 +923,11 @@ body > .section:not([data-role="page"]) {
 
 .headerMenuItem {
   color: #7aaac3;
-  padding: 10px;
+  padding-right: 10px;
+}
+
+.headerMenuItem:last-child {
+  padding-right: 0px;
 }
 
 .headerMenuActiveItem {
@@ -981,4 +988,11 @@ body > .section:not([data-role="page"]) {
   width: 100%;
   height: 100%;
   box-sizing: border-box;
+}
+
+.pseudoBG:after {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-image: attr(data-bg);
 }

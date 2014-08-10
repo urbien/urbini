@@ -765,6 +765,9 @@ define('utils', [
         return uri;
       }
 
+      if (/^http:\/\//.test(uri))
+        return uri;
+
       var patterns = U.uriPatternMap;
       for (var i = 0, len = patterns.length; i < len; i++) {
         var pattern = patterns[i],
@@ -790,7 +793,6 @@ define('utils', [
 
     getTypeUri: function(typeName, hint) {
       if (typeName.indexOf('/') != -1) {
-
         var type;
         if (typeName.startsWith('http://'))
           type = typeName;
@@ -1096,6 +1098,11 @@ define('utils', [
 
     splitRequestFirstHalf: '$gridCols,$images,$displayNameElm,$alwaysReturnToClient',  // change these together
     setSplitRequest: function(vocModel) {        // change these together
+      if (G.splitListRequest === false) {
+        vocModel.splitRequest = false;
+        return;
+      }
+
       var meta = vocModel.properties,
           gridCols = U.getGridColsMeta(vocModel),
           imageProps = U.getPropsRanged(vocModel, G.commonTypes.Image), //U.getClonedProps(vocModel, 'ImageResource'),
@@ -2967,8 +2974,14 @@ define('utils', [
      * @param name: name or resource
      */
     getPlural: function(name) {
-      if (U.isModel(name) || U.isCollection(name)) {
-        var pName = name.vocModel.pluralName;
+      var vocModel = typeof name == 'function' ? name :
+                        U.isModel(name) || U.isCollection(name) ? name.vocModel : null;
+
+      if (vocModel) {
+        if (vocModel.vocModel)
+          vocModel = vocModel.vocModel;
+
+        var pName = vocModel.pluralName;
         if (pName)
           return pName;
 
@@ -4137,26 +4150,24 @@ define('utils', [
     deposit: function(params) {
       return $.Deferred(function(defer) {
         var trType = G.commonTypes.Transaction;
-        U.require('vocManager').done(function(Voc) {
-          Voc.getModels(trType).done(function() {
-            var transactionModel = U.getModel(trType);
-            var transaction = new transactionModel(params);
-            transaction.save(null, {
-              sync: !U.canAsync(trType),
-              success: function() {
-                defer.resolve(transaction);
-              },
-              error: function(trans, err, options) {
-                var err = err.responseText || err;
-                if (typeof err === 'string') {
-                  try {
-                    err = JSON.parse(err);
-                  } catch (e) {}
-                }
-
-                defer.reject(err);
+        Voc.getModels(trType).done(function() {
+          var transactionModel = U.getModel(trType);
+          var transaction = new transactionModel(params);
+          transaction.save(null, {
+            sync: !U.canAsync(trType),
+            success: function() {
+              defer.resolve(transaction);
+            },
+            error: function(trans, err, options) {
+              var err = err.responseText || err;
+              if (typeof err === 'string') {
+                try {
+                  err = JSON.parse(err);
+                } catch (e) {}
               }
-            });
+
+              defer.reject(err);
+            }
           });
         });
       }).promise();
@@ -4957,6 +4968,47 @@ define('utils', [
       }
 
       throw "Unsupported url: " + url;
+    },
+
+    getAppInstall: function() {
+      var appInstall = G.currentUser.appInstall;
+      if (appInstall)
+        return U.getResource(U.getLongUri1(appInstall._uri)) || appInstall;
+
+      return null;
+    },
+
+    saveQuickstartSettings: function(hide) {
+      hide = !!hide;
+      var appInstall = G.currentUser.appInstall;
+      if (appInstall && appInstall._hideQuickstart != hide) {
+        appInstall.hideQuickstart = hide;
+        U.getModels(G.commonTypes.AppInstall).done(function(aiModel) {
+          appInstall = U.getResource(U.getLongUri1(appInstall._uri)) || new aiModel(appInstall);
+          appInstall.save({
+            hideQuickstart: hide
+          }, {
+            userEdit: true
+          });
+        });
+      }
+    },
+
+    isQuickstartAutohidden: function() {
+      var appInstall = U.getAppInstall();
+      return !appInstall || U.getValue(appInstall, 'hideQuickstart');
+    },
+
+    addBackAndMenu: function(el) {
+      var back = U.template('backButtonTemplate')(),
+          menu = U.template('rightMenuButtonTemplate')(),
+          buttons = U.template('headerButtonsTemplate')(),
+          frag = document.createDocumentFragment();
+
+      frag.$html(buttons);
+      frag.$('.headerLeft')[0].$html(back);
+      frag.$('.headerRight')[0].$html(menu);
+      el.$html(frag);
     }
   };
 

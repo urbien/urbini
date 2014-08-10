@@ -11,7 +11,7 @@ define('views/Header', [
 ], function(G, Events, U, Voc, BasicView, Physics, DOM, Q) {
   var TOUCHEND = G.browser.touch ? 'touchend' : 'click';
   var SPECIAL_BUTTONS = ['enterTournament', 'forkMe', 'publish', 'doTry', 'testPlug', 'resetTemplate', 'installApp'];
-  var REGULAR_BUTTONS = ['back', 'cancel', 'save', 'mapIt', 'add', 'video', 'chat', 'login', 'rightMenu'];
+  var REGULAR_BUTTONS = ['back', 'cancel', 'save', 'mapIt', 'add', 'video', 'chat', 'login', 'rightMenu', 'help'];
   var commonTypes = G.commonTypes;
   var friendlyTypes = [G.commonTypes.Urbien, 'http://urbien.com/voc/dev/ImpressBackup/Movie', 'http://urbien.com/voc/dev/ImpressBackup/Artist', 'model/social/App'];
   var searchModeTypes = ['commerce/trading/Feed', 'commerce/trading/Event'].map(U.getTypeUri);
@@ -23,28 +23,6 @@ define('views/Header', [
 //    return U.isUserInRole(U.getUserRole(), 'siteOwner');
     return false;
   })();
-
-  function getAppInstall() {
-    return U.getResource(U.getLongUri1(G.currentUser.appInstall._uri)) || G.currentUser.appInstall;
-  }
-
-  function saveQuickstartSettings(hide) {
-    hide = !!hide;
-    if (G.currentUser.appInstall && G.currentUser.appInstall._hideQuickstart != hide) {
-      Voc.getModels(G.commonTypes.AppInstall).done(function(aiModel) {
-        var appInstall = U.getResource(U.getLongUri1(G.currentUser.appInstall._uri)) || new aiModel(G.currentUser.appInstall);
-        appInstall.save({
-          hideQuickstart: !!hide
-        }, {
-          userEdit: true
-        });
-      });
-    }
-  };
-
-  function isQuickstartVisible() {
-    return !U.getValue(getAppInstall(), 'hideQuickstart');
-  };
 
   return BasicView.extend({
 //    viewType: 'any',
@@ -76,18 +54,18 @@ define('views/Header', [
         this.resource.on('inlineList', update, this);
       }
 
-      if (this.buttons)
-        this.getButtonViews();
-
       var self = this;
       var vocModel = this.vocModel;
+      var type = vocModel && vocModel.type;
+
+      this.makeTemplate(this.template, 'template', type);
+      this.makeTemplate('headerButtonsTemplate', 'headerButtonsTemplate', type);
       this.on('destroyed', function() {
         self.buttonViews = {};
       });
 
       this.filterParams = {};
       if (this.filter) {
-        var type = vocModel && vocModel.type;
         this.makeTemplate('searchTemplate', 'searchTemplate', type);
         this.makeTemplate('filterTemplate', 'filterTemplate', type);
         this.makeTemplate('filterConditionTemplate', 'filterConditionTemplate', type);
@@ -152,68 +130,77 @@ define('views/Header', [
       return this;
     },
 
-    getButtonViews: function() {
-      /*
-      if (this.hashParams['-embed']) {
-        this.btnsReq = G.getResolvedPromise();
-        return;
-      }
-      */
-      var res = this.resource;
-      var vocModel = this.vocModel;
-      var type = vocModel && vocModel.type;
-      this.calcSpecialButtons();
-      this.isGeo = this._isGeo();
-//      _.extend(this, options);
-      this.makeTemplate(this.template, 'template', type);
-      this.makeTemplate('fileUpload', 'fileUploadTemplate', type);
-      this.info = this.hashParams['-info'];
+    getButtonTemplate: function(button) {
+      var name = button + 'ButtonTemplate';
+      if (!this[name])
+        this.makeTemplate(name, name, this.vocModel.type);
 
-      var buttons = this.buttons;
-      if (!this.hash.startsWith('chat') && res && _.any(_.values(_.pick(commonTypes, 'App', 'Handler', 'Jst')), function(type) { return U.isAssignableFrom(res.vocModel, type); }))
-        buttons.publish = true;
-//      else if (res  &&  U.isA(this.vocModel, 'Templatable')) {
-//        var cOf = U.getCloneOf(this.vocModel, 'Templatable.isTemplate');
-//        if (cOf.length  &&  res.get(cOf[0])) {
-//          var cOf = U.getCloneOf(this.vocModel, 'Templatable.clones');
-//          if (cOf.length)
-//            buttons.publish = true;
-//        }
-//      }
-      else if (vocModel && this.hash.startsWith('chooser')  &&  U.isAssignableFrom(this.vocModel, G.commonTypes.WebClass))
-        buttons.publish = true;
-
-      var btnOptions = {
-        model: this.model,
-        parentView: this,
-        viewId: this.viewId
-      };
-
-      var reqdButtons = [];
-      buttons = U.filterObj(buttons, function(key, val) {
-        return val;
-      });
-
-      for (var btn in buttons) {
-        btn = btn.camelize(true); // capitalize first letter
-        reqdButtons.push('views/{0}Button'.format(btn));
-      }
-
-      this.buttonViews = {};
-      var self = this;
-      this.btnsReq = U.require(reqdButtons, function() {
-        var i = 0;
-        for (var btn in buttons) {
-          var model = arguments[i++];
-          if (G.isBootstrap())
-            model = model.extend({tagName: 'div'}, {});
-
-          self.buttonViews[btn] = self.buttonViews[btn] || self.addChild(new model(btnOptions));
-        }
-      });
-
-      this.ready = $.when(this.btnsReq, this.getFetchPromise());
+      return this[name];
     },
+
+//     getButtonViews: function() {
+//       /*
+//       if (this.hashParams['-embed']) {
+//         this.btnsReq = G.getResolvedPromise();
+//         return;
+//       }
+//       */
+
+//       var res = this.resource;
+//       var vocModel = this.vocModel;
+//       var type = vocModel && vocModel.type;
+//       this.calcSpecialButtons();
+//       this.isGeo = this._isGeo();
+// //      _.extend(this, options);
+//       this.makeTemplate(this.template, 'template', type);
+//       this.makeTemplate('fileUpload', 'fileUploadTemplate', type);
+//       this.info = this.hashParams['-info'];
+
+//       var buttons = this.buttons;
+//       if (!this.hash.startsWith('chat') && res && _.any(_.values(_.pick(commonTypes, 'App', 'Handler', 'Jst')), function(type) { return U.isAssignableFrom(res.vocModel, type); }))
+//         buttons.publish = true;
+// //      else if (res  &&  U.isA(this.vocModel, 'Templatable')) {
+// //        var cOf = U.getCloneOf(this.vocModel, 'Templatable.isTemplate');
+// //        if (cOf.length  &&  res.get(cOf[0])) {
+// //          var cOf = U.getCloneOf(this.vocModel, 'Templatable.clones');
+// //          if (cOf.length)
+// //            buttons.publish = true;
+// //        }
+// //      }
+//       else if (vocModel && this.hash.startsWith('chooser')  &&  U.isAssignableFrom(this.vocModel, G.commonTypes.WebClass))
+//         buttons.publish = true;
+
+//       var btnOptions = {
+//         model: this.model,
+//         parentView: this,
+//         viewId: this.viewId
+//       };
+
+//       var reqdButtons = [];
+//       buttons = U.filterObj(buttons, function(key, val) {
+//         return val;
+//       });
+
+//       for (var btn in buttons) {
+//         btn = btn.camelize(true); // capitalize first letter
+//         reqdButtons.push('views/{0}Button'.format(btn));
+//       }
+
+//       this.buttonViews = {};
+//       var self = this;
+//       this.btnsReq = U.require(reqdButtons, function() {
+//         var i = 0;
+//         for (var btn in buttons) {
+//           var model = arguments[i++];
+//           if (G.isBootstrap())
+//             model = model.extend({tagName: 'div'}, {});
+
+//           self.buttonViews[btn] = self.buttonViews[btn] || self.addChild(new model(btnOptions));
+//         }
+//       });
+
+//       this.ready = $.when(this.btnsReq, this.getFetchPromise());
+//     },
 
     recalcTitle: function() {
       this.pageTitle = null;
@@ -273,7 +260,6 @@ define('views/Header', [
         'change #fileUpload'                         : 'fileUpload',
         'change .physicsConstants input'             : 'changePhysics',
         'click .categories'                          : 'showCategories',
-        'click .back'                                : 'back',
   //      'click #installApp'         : 'installApp',
         'click #moreRanges'                          : 'showMoreRanges',
         'click .filterCondition i.ui-icon-remove-sign, .filterCondition i.ui-icon-remove': 'removeFilterCondition',
@@ -285,9 +271,10 @@ define('views/Header', [
         'change .filterConditionInput select'        : 'onFilter',
         'change .filterConditionInput input'         : 'onFilter',
         'click .subClass'                            : 'onChoseSubClass',
+        'click .searchBar .ui-icon-cancel'           : 'toggleFilter',
         'click.header .quickstart .ui-icon-remove'   : 'hideQuickstart',
-  //      'click.header'                                 : 'checkHideQuickstart',
-        'click.header i.help'                        : 'showQuickstart'
+        'click i.help'                               : 'showQuickstart'
+  //      'click.header'                                 : 'checkHideQuickstart'
       };
 
       events[TOUCHEND + ' .filterToggle'] = 'toggleFilter'; // input focus trick for mobile browsers (call input.focus() on 'touchend')
@@ -298,10 +285,6 @@ define('views/Header', [
 //      'change': 'updateQuickstart',
 //      'inlineList': 'updateQuickstart'
 //    },
-
-    back: function() {
-      Events.trigger('back', 'Back clicked from header');
-    },
 
     activate: function(e, force) {
       e && Events.stopEvent(e);
@@ -537,19 +520,17 @@ define('views/Header', [
 
     toggleFilter: function(e) {
       Events.stopEvent(e);
-      this.filterContainer.$empty();
+      // this.filterContainer.$empty();
       this.filterParams = _.pick(this.filterParams, 'type');
 
       switch (this.filterType) {
       case null:
       case undefined:
-        this.filterType = 'simple';
         this.showSearch();
 //        this.redelegateEvents();
         break;
       case 'simple':
         if (showFilter) {
-          this.filterType = 'complex';
           this.showFilter();
 //          this.redelegateEvents();
           break;
@@ -558,18 +539,18 @@ define('views/Header', [
           // fall through, don't show complex filter
         }
       case 'complex':
-        this.filterType = null;
-        this.filter.style.display = 'inline-block';
         this.hideFilter();
         break;
       }
     },
 
     hideFilter: function() {
+      this.filterType = null;
       this.doFilter();
-      this.titleContainer.classList.remove('hidden');
-      this.filterIcon.className = this.searchIconClass;
-      this.filterContainer.classList.add('hidden');
+      // this.titleContainer.classList.remove('hidden');
+      this.el.$removeClass('search-active');
+      // this.filterIcon.className = this.searchIconClass;
+      // this.filterContainer.classList.add('hidden');
 //      this.redelegateEvents();
     },
 
@@ -578,23 +559,38 @@ define('views/Header', [
       this.pageView.listView.doFilter(this.filterParams);
     }, 100),
 
+    initFilter: function() {
+      if (!this.filterContainer) {
+        // this.filterIcon = this.filter.$('i')[0];
+        // this.searchIconClass = this.filterIcon.className;
+        this.filterContainer = this.$('.filter')[0];
+      }
+    },
+
     showSearch: function() {
+      this.initFilter();
       //this.titleContainer.classList.add('hidden');
+      // if (showFilter)
+      //   this.filterIcon.className = 'ui-icon-beaker';
+      // else
+      //   this.filterIcon.className = 'ui-icon-remove';
 
-      if (showFilter)
-        this.filterIcon.className = 'ui-icon-beaker';
-      else
-        this.filterIcon.className = 'ui-icon-remove';
-
+      this.filterType = 'simple';
+      this.el.$addClass('search-active');
       this.filterContainer.$html(this.searchTemplate(this.getBaseTemplateData()));
-      this.filterContainer.classList.remove('hidden');
-      this.filterContainer.$('.searchBar input')[0].focus();
+      // this.filterContainer.classList.remove('hidden');
+      this.getSearchInput().focus();
 //      this.redelegateEvents();
     },
 
-    showFilter: function() {
-      //this.titleContainer.classList.add('hidden');
+    getSearchInput: function() {
+      return this.filterContainer.$('.searchBar input')[0];
+    },
 
+    showFilter: function() {
+      debugger;
+      //this.titleContainer.classList.add('hidden');
+      this.filterType = 'complex';
       if (!this.filterProps) {
         this.filterProps = [];
         var meta = this.vocModel.properties,
@@ -617,10 +613,10 @@ define('views/Header', [
       tmpl_data.props = this.filterProps;
 //      tmpl_data.cancelable = false;
 
-      this.filter.style.display = 'none';
+      // this.filter.style.display = 'none';
 //      this.filterIcon.className = 'ui-icon-remove';
       this.filterContainer.$html(this.filterTemplate());
-      this.filterContainer.classList.remove('hidden');
+      // this.filterContainer.classList.remove('hidden');
       this.filterContainer.$('ul')[0].$html(this.filterConditionTemplate(tmpl_data));
 //      this.redelegateEvents();
     },
@@ -751,13 +747,40 @@ define('views/Header', [
       this.refreshTitle();
       this.refreshActivated();
       this.refreshFolder();
+      this.refreshButtons();
       this.calcSpecialButtons();
       this.renderSpecialButtons();
-      this.updateQuickstart();
+      this._updateQuickstart();
 //      this.error = null;
 //      this.renderError();
 //      this.restyleNavbar();
       return this;
+    },
+
+    refreshButtons: function(el) {
+      el = el || this.$('.headerUl')[0];
+      var self = this,
+          buttons = this.buttons,
+          left = el.$('.headerLeft')[0],
+          right = el.$('.headerRight')[0],
+          isEditPage = ~buttons.indexOf('save');
+
+      left.$empty();
+      right.$empty();
+      if (this.hasQuickstart() && buttons.indexOf('help') == -1)
+        buttons.splice(1, 0, 'help');
+
+      left.$append(this.getButtonTemplate(buttons[0])());
+      right.$append(_.rest(buttons).map(function(btn) {
+        return self.getButtonTemplate(btn)();
+      }).join(''));
+
+      if (isEditPage) {
+        left.style.textAlign = right.style.textAlign = 'center';
+        if (~buttons.indexOf('help')) {
+          this.$('.titleHeaderL')[0].$append(right.$('.helpBtn')[0]);
+        }
+      }
     },
 
     refreshFolder: function() {
@@ -826,7 +849,7 @@ define('views/Header', [
           }
 
           if (!self.resource || self.resource.isLoaded())
-            self.updateQuickstart();
+            self._updateQuickstart();
 //          if (self.pageView.TAG == 'ListPage') {
 //            self.pageView.listView.onload(function() {
 //              Physics.there.track(self.getContainerBodyId(), self.pageView.listView.getContainerBodyId(), 'vel');
@@ -841,32 +864,33 @@ define('views/Header', [
       if (!this.buttons || options.buttons) {
         this.buttons = options.buttons;
         this.isGeo = this._isGeo();
-        this.getButtonViews();
+        // this.getButtonViews();
       }
 
-      function doRender() {
+      // function doRender() {
         self.renderHelper.apply(self, args);
         self.finish();
         if (G.isBootstrap())
           self.$('.headerUl div').$attr('class', 'navbar-header');
-        if (G.coverImage)
-          self.$('.headerUl a').$forEach(function(elm) {
-            elm.style.color = G.coverImage.background;
-          });
-      };
+        // if (G.coverImage) {
+        //   self.$('.headerUl a').$forEach(function(elm) {
+        //     elm.style.color = G.coverImage.background;
+        //   });
+        // }
+      // };
 
-       if (this.btnsReq.state() !== 'pending') {
-          doRender();
-          doRender = null;
-        }
-      if (this.ready.state() == 'pending') {
-        this.ready.done(function() {
-          if (doRender)
-            doRender();
-          else
-            self.refresh();
-        });
-      }
+      //  if (this.btnsReq.state() !== 'pending') {
+      //     doRender();
+      //     doRender = null;
+      //   }
+      // if (this.ready.state() == 'pending') {
+      //   this.ready.done(function() {
+      //     if (doRender)
+      //       doRender();
+      //     else
+      //       self.refresh();
+      //   });
+      // }
     },
 
     refreshTitle: function() {
@@ -951,6 +975,9 @@ define('views/Header', [
     },
 
     renderSpecialButtons: function() {
+      if (true) // for now
+        return;
+
       if (this.isEdit || this.isChat)
         return;
 
@@ -1142,7 +1169,9 @@ define('views/Header', [
           sCls = this.subClassesEl.$('input[type="radio"]'),
           filter = this.filterParams,
           i = sCls.length,
+          model,
           runFilter = function() {
+            self.updateSearchBar(model);
             _.wipe(filter);
             if (type)
               filter.type = type;
@@ -1158,14 +1187,17 @@ define('views/Header', [
       this._lastSubClass = input;
       if (sClName != 'All') {
         var type = input.$data('type');
-        if (!U.getModel(type)) {
+        model = U.getModel(type);
+        if (!model) {
           if (e instanceof Event)
             Events.stopEvent(e);
 
           this._fetchingFilterType = type;
-          Voc.getModels(type).done(function() {
-            if (input == self._lastSubClass)
+          Voc.getModels(type).done(function(m) {
+            if (input == self._lastSubClass) {
+              model = m;
               runFilter();
+            }
           });
 
           return;
@@ -1173,6 +1205,15 @@ define('views/Header', [
       }
 
       runFilter();
+    },
+
+    updateSearchBar: function(model) {
+      var searchPlaceholder = ' Search';
+      if (model)
+        searchPlaceholder += ' ' + U.getPlural(model);
+
+      searchPlaceholder += '...';
+      this.getSearchInput().$attr('placeholder', searchPlaceholder);
     },
 
     renderHelper: function() {
@@ -1246,22 +1287,20 @@ define('views/Header', [
 
         this.getFetchPromise().done(function() {
           if (self.collection.models.length < 10) {
-            self.$('.filterToggle')[0].style.display = 'none';
+            self.$('.filterToggle').$hide();
           }
           else {
             if (self.filter)
               self.filter = self.$('.filterToggle')[0];
 
             if (self.filter) {
-              self.filterIcon = self.filter.$('i')[0];
-              self.searchIconClass = self.filterIcon.className;
-              self.filterContainer = self.$('.filter')[0];
               if (self._showSearchOnLoad || self.hashParams.$search == 'y')
-                self.toggleFilter();
+                self.showSearch();
             }
           }
         });
       }
+
       this.renderPhysics();
       this.refreshTitle();
       this.refreshActivated();
@@ -1271,39 +1310,41 @@ define('views/Header', [
       this.getPageView().el.$data('title', this.pageTitle);
 //      pageData.theme = G.theme.list;
       var frag = document.createDocumentFragment();
-      var btns = this.buttonViews;
+      frag.$append(this.headerButtonsTemplate());
+      // var btns = this.buttonViews;
       var isMapItToggleable = !!this.collection;
 
 //      var numBtns = _.size(btns);
       var paintedBtns = [];
-      REGULAR_BUTTONS.forEach(function(btnName) {
-        var btn = btns[btnName];
-        if (!btn)
-          return;
+      this.refreshButtons(frag);
 
-        var btnOptions = {
-          force: true
-        };
+//       REGULAR_BUTTONS.forEach(function(btnName) {
+//         var btn = btns[btnName];
+//         if (!btn)
+//           return;
 
-        if (btnName === 'mapIt') {
-//          this.isGeo = this.isGeo && this.collection && _.any(this.collection.models, function(m) {  return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'));  });
-          if (!self.isGeo)
-            return;
+//         var btnOptions = {
+//           force: true
+//         };
 
-          btnOptions.toggleable = isMapItToggleable;
-        }
+//         if (btnName === 'mapIt') {
+// //          this.isGeo = this.isGeo && this.collection && _.any(this.collection.models, function(m) {  return !_.isUndefined(m.get('latitude')) || !_.isUndefined(m.get('shapeJson'));  });
+//           if (!self.isGeo)
+//             return;
 
-        paintedBtns.push(btn.el);
-        frag.appendChild(btn.render(btnOptions).el);
-      });
+//           btnOptions.toggleable = isMapItToggleable;
+//         }
 
-      numBtns = paintedBtns.length;
-//      var cols = btns['publish'] ? numBtns - 1 : numBtns;
-      var cols = numBtns;
-      var btnWidth = Math.round(100 * (100/cols))/100;
-      for (var i = 0; i < paintedBtns.length; i++) {
-        paintedBtns[i].$css('width', btnWidth + '%');
-      }
+//         paintedBtns.push(btn.el);
+//         frag.appendChild(btn.render(btnOptions).el);
+//       });
+
+      // numBtns = paintedBtns.length;
+      // var cols = numBtns;
+      // var btnWidth = Math.round(100 * (100/cols))/100;
+      // for (var i = 0; i < paintedBtns.length; i++) {
+      //   paintedBtns[i].$css('width', btnWidth + '%');
+      // }
 
       this.$('.headerUl')[0].$html(frag);
 
@@ -1381,9 +1422,10 @@ define('views/Header', [
 
       if (this.resource && this.resource.isAssignableFrom('commerce/trading/Tradle')) {
         var owner = this.resource.get('owner'),
-            submittedBy = this.resource.get('submittedBy');
+            submittedBy = this.resource.get('submittedBy'),
+            uri = G.currentUser._uri;
 
-        if (G.currentUser._uri == (owner || submittedBy))
+        if (uri == (owner || submittedBy))
           template = 'tradleViewQuickstartTemplate';
       }
       else if (urlInfo.route == 'chooser') {
@@ -1415,26 +1457,28 @@ define('views/Header', [
     },
 
     updateQuickstart: _.debounce(function() {
-      if (!this.hasQuickstart() || !this.rendered) 
+      this._updateQuickstart();
+    }, 100),
+
+    _updateQuickstart: function() {
+      if (!this.hasQuickstart() || !this.rendered)
         return;
 
-      this.$('i.help').$show();
-      if (!isQuickstartVisible()) {
+      if (U.isQuickstartAutohidden()) {
         this._quickstartNeedsUpdate = true;
         return;
       }
 
       this.quickstart = this.$('.quickstart')[0];
-//      this.helpIcon = this.$('i.help')[0];
       this.quickstart.$html(this.quickstartTemplate());
       this.showQuickstart();
-    }, 100),
+    },
 
     showQuickstart: function(e) {
-      saveQuickstartSettings();
+      U.saveQuickstartSettings();
       if (this._quickstartNeedsUpdate) {
         delete this._quickstartNeedsUpdate;
-        this.updateQuickstart();
+        this._updateQuickstart();
         return;
       }
 
@@ -1459,7 +1503,7 @@ define('views/Header', [
       if (!this.quickstart || !this.el.$hasClass('quickstart-active'))
         return;
 
-      saveQuickstartSettings(true);
+      U.saveQuickstartSettings(true);
       if (this.getPageView().TAG == 'ListPage' && arguments.length == 1)
         noTooltip = true;
 

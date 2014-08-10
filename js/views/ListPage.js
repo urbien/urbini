@@ -1,20 +1,20 @@
 //'use strict';
 define('views/ListPage', [
   'globals',
-  'events', 
+  'events',
   'utils',
   'error',
   'vocManager',
   'views/BasicPageView',
-  'views/ResourceListView', 
+  'views/ResourceListView',
   'views/Header',
   'lib/fastdom',
   'domUtils'
 ], function(G, Events, U, Errors, Voc, BasicPageView, ResourceListView, Header, Q, DOM) {
   var MapView,
       SPECIAL_INTERSECTIONS = [G.commonTypes.Handler, G.commonTypes.Friend, U.getLongUri1('model/social/NominationForConnection') /*, commonTypes.FriendApp*/],
-      CAN_SHOW_ADD_BUTTON = false;
-  
+      CAN_SHOW_ADD_BUTTON = true;
+
   function getLinearGradient(r, g, b) {
     var rgb = r + ',' + g + ',' + b;
     return 'linear-gradient(to bottom, rgba({0},1) 0%, rgba({0},0.15) 25%, rgba({0},0) 50%, rgba({0},0.15) 75%, rgba({0},1) 100%)'.format(rgb);
@@ -27,20 +27,9 @@ define('views/ListPage', [
     _autoFetch: false,
     autoFinish: false,
     _draggable: false,
-    _scrollbar: false, 
-    style: {
-//      'background-image': 'linear-gradient(#5187c4, #1c2f45, #1c2f45, #5187c4)',
-//      'background-image': 'linear-gradient(rgba(255,0,0,1), rgba(255,255,255,0), rgba(255,255,255,0), rgba(255,0,0,1))',
-//      'background-image': DOM.prefix('radial-gradient') + '(circle, #FFFFFF, #000000)',
-//      'background-image': 'linear-gradient(rgba(255,0,0,0.5), rgba(255,255,255,0), rgba(255,255,255,0), rgba(255,0,0,0.5))',
-//      'background-image': 'linear-gradient(rgba(255,0,0,1) 0%, rgba(255,255,255,0) 50%, rgba(255,255,255,0), rgba(255,0,0,1) 100%)',
-//      'background-image': 'linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,0.85) 30%, rgba(255,255,255,1) 50%, rgba(255,255,255,0.8) 70%, rgba(255,255,255,0) 100%)',
-    
-//    'backgroundColor': 'white'
-    // gradient
-//      'background-image': getLinearGradient(100, 100, 100),
-//      'background-size': 'auto 200%',
-//      'background-position': '0 50%'
+    _scrollbar: false,
+    attributes: {
+      'data-action': 'list'
     },
     initialize: function(options) {
       _.bindAll(this, 'render', 'home', 'submit', 'swipeleft', 'click', 'swiperight', 'setMode'/*, 'orientationchange', '_buildMockViewPage', '_getViewPageImageInfo'*/);
@@ -53,19 +42,19 @@ define('views/ListPage', [
       var rl = this.collection;
       var filtered = this.filteredCollection = rl.clone();
       var readyDfd = $.Deferred();
-      
+
       var commonParams = {
         model: filtered,
         parentView: this
       };
-      
+
       var vocModel = this.vocModel;
       var type = vocModel.type;
       this.makeTemplate(this.template, 'template', type);
       var viewMode = vocModel.viewMode;
       var isList = this.isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
-      var isChooser = this._hashInfo.route == 'chooser';  
-      var isMasonry = this.isMasonry = !isChooser  &&  U.isMasonryModel(vocModel); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
+      var isChooser = this._hashInfo.route == 'chooser';
+      var isMasonry = this.isMasonry = !isChooser  &&  U.isMasonryModel(vocModel); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel);
       var isOwner = !G.currentUser.guest  &&  G.currentUser._uri == G.currentApp.creator;
       this.isSpecialIntersection = _.contains(SPECIAL_INTERSECTIONS, type);
       /*
@@ -86,13 +75,13 @@ define('views/ListPage', [
       var showAddButton;
       if (CAN_SHOW_ADD_BUTTON && !this.vocModel.adapter  &&  !isChooser  &&  !isMV  &&  !U.isA(this.vocModel, 'GenericMessage')) {
         if (this.vocModel['skipAccessControl']) {
-          showAddButton = type.endsWith('/App')                      || 
+          showAddButton = type.endsWith('/App')                      ||
                           U.isAnAppClass(vocModel)                       ||
                           vocModel.properties['autocreated'];
 //                            U.isUserInRole(U.getUserRole(), 'siteOwner');
           if (!showAddButton) {
             var p = U.getContainerProperty(vocModel);
-            if (!p) 
+            if (!p)
               showAddButton = U.isUserInRole(U.getUserRole(), 'siteOwner');
             else if (params[p]) {
               var self = this;
@@ -110,10 +99,10 @@ define('views/ListPage', [
           }
         }
   //                           (vocModel.skipAccessControl  &&  (isOwner  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'))));
-        if (showAddButton) { 
+        if (showAddButton) {
           if (U.isAssignableFrom(this.vocModel, "Assessment"))
             showAddButton = false;
-          else if (U.isA(this.vocModel, "Reference")  &&  U.isAnAppClass(vocModel.type))  
+          else if (U.isA(this.vocModel, "Reference")  &&  U.isAnAppClass(vocModel))
             showAddButton = false;
           else if (U.isA(this.vocModel, "Intersection")) {
             showAddButton = false;
@@ -133,7 +122,7 @@ define('views/ListPage', [
           Voc.getModels("model/social/App").done(function() {
             var m = U.getModel("App");
             var arr = U.getPropertiesWith(m.properties, [{name: "backLink"}, {name: 'range', values: type}], true);
-            if (arr  &&  arr.length  &&  !arr[0].readOnly /*&&  U.isPropEditable(null, arr[0], userRole)*/)  
+            if (arr  &&  arr.length  &&  !arr[0].readOnly /*&&  U.isPropEditable(null, arr[0], userRole)*/)
               showAddButton = true;
           });
         }
@@ -143,8 +132,8 @@ define('views/ListPage', [
           for (var p in params) {
             var prop = vocModel.properties[p],
                 val = params[p];
-            
-            if (!prop  ||  !prop.containerMember) 
+
+            if (!prop  ||  !prop.containerMember)
               continue;
             wasContainer = true;
             var type = U.getLongUri1(prop.range);
@@ -163,7 +152,7 @@ define('views/ListPage', [
               if (!b.readOnly  &&  U.getLongUri1(b.range) == vocModel.type)
                 bl.push(b);
             }
-            
+
             if (bl.length > 0) {
               showAddButton = true;
               break;
@@ -173,24 +162,16 @@ define('views/ListPage', [
             showAddButton = true;
         }
       }
-      
+
       if (this.hashParams.$indicator) {
-        this.headerButtons = {
-//          back: true,
-          save: true,
-          cancel: true
-        }
+        this.headerButtons = ['cancel', 'save'];
       }
       else {
-        this.headerButtons = {
-          back: true,
-          add: showAddButton,
-  //        aroundMe: isGeo,
-  //        mapIt: isGeo, // no maps for now
-  //        menu: true,
-  //        login: G.currentUser.guest,
-          rightMenu: true //!G.currentUser.guest,
-        };
+        this.headerButtons = ['back', 'search'];
+        if (showAddButton)
+          this.headerButtons.push('add');
+
+        this.headerButtons.push('rightMenu');
       }
 
       this.header = new Header(_.extend({
@@ -198,9 +179,9 @@ define('views/ListPage', [
         viewId: this.cid,
         filter: true
       }, commonParams));
-      
+
       this.addChild(this.header);
-      
+
       var isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
       var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, U.getLongUri1('model/portal/Comment'));
 
@@ -215,66 +196,110 @@ define('views/ListPage', [
 //        listViewType = 'MasonryListView';
       else
         listViewType = 'ResourceListView';
-      
+
       this.ready = readyDfd.promise();
       U.require('views/' + listViewType).done(function(listViewCl) {
         self.listView = new listViewCl(_.extend({mode: self.mode, displayMode: isMasonry || isModification ? 'masonry' : 'vanillaList'}, self.options, commonParams));
         self.addChild(self.listView);
         readyDfd.resolve();
       });
-      
+
       this.canSearch = !this.isSpecialIntersection; // for now - search + photogrid results in something HORRIBLE, try it if you're feeling brave
-      
+
       // setup filtering
 //      this.listenTo(filtered, 'endOfList', function() {
 //        self.pageView.trigger('endOfList');
 //      });
-//      
+//
 //      this.listenTo(filtered, 'reset', function() {
 //        self.pageView.trigger('newList');
 //      });
-      
+
 //      this.onload(this.buildMockViewPage, this);
     },
-    
+
     setMode: function(mode) {
       if (!G.LISTMODES[mode])
         throw new Error('this view doesn\'t have a mode ' + mode);
-      
+
       this.mode = mode;
       if (this.listView)
         this.listView.setMode(mode);
     },
-    
+
     events: {
       'click'            : 'click',
 //      'click #nextPage'  : 'getNextPage',
       'click #homeBtn'   : 'home',
-      'submit'            : 'submit'
+      'submit'            : 'submit',
+      'click .add'        : 'add'
     },
-    
+
     myEvents: {
       'userSaved': 'submit',
       'userCanceled': 'cancelMulti'
     },
-    
-    cancelMulti: function(e) {  
+
+    add: function(e) {
+      Events.stopEvent(e);
+//      Events.trigger('back');
+//      window.history.back();
+      var colParams = U.getQueryParams(this.collection),
+          meta = this.vocModel.properties;
+
+      colParams = colParams ? _.clone(colParams) : {};
+      colParams['-makeId'] = G.nextId();
+      var params = _.getParamMap(window.location.href);
+      if (params['$type']) {
+        var forClass = U.isA(this.vocModel, "Referenceable") ? U.getCloneOf(this.vocModel, 'Referenceable.forClass') : (U.isA(this.vocModel, "Reference") ? U.getCloneOf(this.vocModel, 'Reference.forClass') : null);
+        if (forClass  &&  forClass.length)
+          colParams[forClass[0]] = params['$type'];
+      }
+      if (!U.isAssignableFrom(this.vocModel, 'Intersection')) {
+        this.router.navigate('make/' + encodeURIComponent(this.vocModel.type) + '?' + _.param(colParams), {trigger: true});
+        return this;
+      }
+
+      var a = U.getCloneOf(this.vocModel, 'Intersection.a')[0];
+      var b = U.getCloneOf(this.vocModel, 'Intersection.b')[0];
+      var aUri = colParams[a];
+      var bUri = colParams[b];
+      if (!aUri  &&  !bUri) {
+        this.router.navigate('make/' + encodeURIComponent(this.vocModel.type) + '?' + _.param(colParams), {trigger: true});
+        return this;
+      }
+
+      var title = this.hashParams['$title'] || this.getPageTitle(),
+          prop = meta[aUri ? b : a],
+          params = _.extend({
+            $propA: a,
+            $propB: b,
+            $forResource: aUri || bUri,
+            $type: this.vocModel.type,
+            $title: title
+          }, U.getWhereParams(prop));
+
+      this.router.navigate('chooser/' + encodeURIComponent(prop.range) + "?" + _.param(params) , {trigger: true});
+      return this;
+    },
+
+    cancelMulti: function(e) {
       e && Events.stopEvent(e);
       Events.trigger('back', 'canceled multi chooser');
     },
-    
+
 //    windowEvents: {
 //      'orientationchange' : 'orientationchange',
 //      'resize'            : 'orientationchange'
 //    },
-    
+
 //    orientationchange: function(e) {
-////      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;  
-////      var isMasonry = this.isMasonry = !isChooser  &&  U.isMasonryModel(this.vocModel); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel); 
+////      var isChooser = window.location.hash  &&  window.location.hash.indexOf('#chooser/') == 0;
+////      var isMasonry = this.isMasonry = !isChooser  &&  U.isMasonryModel(this.vocModel); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel);
 //      if (this.isMasonry) {
 //        Events.stopEvent(e);
 //        Events.trigger('refresh', {model: this.model}); //, checked: checked});
-//      } 
+//      }
 //    },
     submit: function(e) {
 //      Events.stopEvent(e);
@@ -291,17 +316,17 @@ define('views/ListPage', [
 //      Errors.errDialog({msg: 'Choose first and then submit', delay: 100});
       return;
 /*
-      if (!editList) { 
+      if (!editList) {
         Errors.errDialog({msg: 'Choose first and then submit', delay: 100});
         return;
       }
-      
+
       for (var i=0; i<editList.length; i++) {
         var name = editList[i].name;
         var idx = name.indexOf('.$.');
         var uri = name.substring(0, idx);
         var propName = name.substring(idx + 3);
-        
+
         var props = {propName: editList[i].value};
         var res = this.collection.models[i];
         res.save(props, {
@@ -313,31 +338,31 @@ define('views/ListPage', [
             var a = 'here we are';
           }
         });
-      }  
+      }
       this.router.navigate(hash, {trigger: true, replace: true});
       */
 //      this.redirect({trigger: true, replace: true, removeFromView: true});
-    }, 
+    },
     home: function() {
       var here = window.location.href;
       Events.trigger('navigate', here.slice(0, here.indexOf('#')));
       return this;
     },
-    
+
 //    getNextPage: function() {
 //      if (this.isActive())
 //        this.listView && this.listView.getNextPage();
 //    },
   //  nextPage: function(e) {
-  //    Events.trigger('nextPage', this.resource);    
+  //    Events.trigger('nextPage', this.resource);
   //  },
 //    tap: Events.defaultTapHandler,
-    
+
     click: function(e) {
       this.clicked = true;
       var buyLink;
       var tryLink;
-      
+
 //      var tId = e.target.id;
 //      if (tId && tId == 'mvSubmit') {
 //        var form = $(e.target).closest('form');
@@ -353,7 +378,7 @@ define('views/ListPage', [
       }
 
       Events.stopEvent(e);
-      
+
       var uri = buyLink.length ? $(buyLink[0]).attr('href') :  $(tryLink[0]).attr('href');
       var models = this.model.models;
       var res = $.grep(models, function(item) {
@@ -379,7 +404,7 @@ define('views/ListPage', [
     render: function() {
       var args = arguments,
           self = this;
-      
+
       return this.ready.done(function() {
         Q.write(self.renderHelper, self, args);
       });
@@ -392,16 +417,16 @@ define('views/ListPage', [
             '.headerDiv': this.header
           },
           filter;
-      
+
 //      this.$el.attr("data-scrollable", "true");
       tmpl_data.isMasonry = this.isMasonry;
       this.html(this.template(tmpl_data));
-      
+
       views[this.listContainer] = this.listView;
       this.assign(views);
-        
+
       if (!this.mapView && this.isGeo) {
-        Events.once('mapIt', function() {          
+        Events.once('mapIt', function() {
           U.require('views/MapView', function(MV) {
             MapView = MV;
             self.mapView = new MapView({
@@ -409,14 +434,14 @@ define('views/ListPage', [
               parentView: self
             });
             self.addChild(self.mapView);
-            self.assign('#mapHolder', self.mapView);  
+            self.assign('#mapHolder', self.mapView);
           });
         });
-      }      
+      }
 
 //      this.mapReady && this.mapReady.done(function() {
 //      }.bind(this));
-      
+
       if (!this.isMV)
         this.$('#mv').$hide();
       if (!this.isEdit)
@@ -426,7 +451,7 @@ define('views/ListPage', [
 //        this.listView.$el.find('ul').removeClass('grid-listview');
 //      }
       this.$('#sidebarDiv').$css('clear', 'both');
-//      if (G.theme.backgroundImage) { 
+//      if (G.theme.backgroundImage) {
 //        this.$('#sidebarDiv').$css('background-image', 'url(' + G.theme.backgroundImage +')');
 //      }
       if (!this.isMasonry)
@@ -442,29 +467,29 @@ define('views/ListPage', [
           });
         });
       }
-      
+
 //      this.addToWorld(null, true);
       this.finish();
       return this;
     }
-    
+
 //    ,
 //    buildMockViewPage: function() {
 //      var self = this,
 //          imgRes;
-//          
+//
 //      if (!this.mockViewPage && U.isA(this.vocModel, 'ImageResource'))
 //        $.when(U.require('views/ViewPage'), this.getFetchPromise()).done(function(ViewPage) {
 //          if (imgRes = self.collection.find(function(res) { return !!res.get('ImageResource.mediumImage') }))
 //            self._buildMockViewPage(ViewPage, imgRes);
 //        });
 //    },
-//    
+//
 //    _buildMockViewPage: function(ViewPage, imgRes) {
 //      var self = this,
 //          img,
 //          vpInfo;
-//      
+//
 //      this.mockViewPage = new ViewPage({
 //        style: {
 //          opacity: DOM.maxOpacity
@@ -472,13 +497,13 @@ define('views/ListPage', [
 //        mock: true,
 //        model: imgRes
 //      });
-//      
+//
 //      this.mockViewPage.render({
 //        mock: true,
 //        force: true
 //      });
-//      
-//      this.mockViewPage.onLoadedImage(function() {        
+//
+//      this.mockViewPage.onLoadedImage(function() {
 //        img = this.mockViewPage.$('#resourceImage img')[0];
 //        this._viewPageImg = img;
 //        if (img)
@@ -487,20 +512,20 @@ define('views/ListPage', [
 //          debugger; // should never happen
 //      }, this);
 //    },
-//    
+//
 //    _getViewPageImageInfo: function() {
 //      var offset = this._viewPageImg.$offset();
 //      if (!offset.top)
 //        return setTimeout(this._getViewPageImageInfo, 50);
-//        
+//
 //      this.viewPageInfo = {
 //        imageTop: offset.top,
 //        imageLeft: offset.left
 //      };
-//      
+//
 //      this.mockViewPage.destroy();
 //    },
-//    
+//
 //    getViewPageInfo: function() {
 //      return this.viewPageInfo;
 //    }

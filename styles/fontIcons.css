@@ -149,6 +149,18 @@
   content: "\e095"; /*plus-sign*/
 }
 
+.ui-icon-menu:before {
+  content: "\e60b";
+}
+
+.ui-icon-save:before {
+  content: "\e116";
+}
+
+.ui-icon-cancel:before {
+  content: "\e117";
+}
+
 .unfolded .ui-icon-collapsable:before {
   content: "\e041";
 }

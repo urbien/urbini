@@ -280,22 +280,6 @@ define('collections/ResourceList', [
         this.trigger('updated', [resource]);
     },
 
-    onSyncedResource: function(resource) {
-//      var newUri = resource.getUri();
-//      self._byId[newUri] = self._byId[uri]; // HACK? we need to replace the internal models cache mapping to use the new uri
-//      delete self._byId[uri];
-      var newUri = resource.getUri();
-      var matches = _.filter(this.models, function(m) {
-        return m.getUri() == newUri;
-      });
-
-      if (matches.length > 1) {
-        this.models.splice(this.models.indexOf(resource), 1);
-        this.length--;
-        this.trigger('removed');
-      }
-    },
-
     /**
      * assumes unsorted collection
      */
@@ -594,11 +578,11 @@ define('collections/ResourceList', [
       this.setupSearch();
     },
 
-    remove: function() {
+    remove: function(models, options) {
       var l = this.models.length;
       Backbone.Collection.prototype.remove.apply(this, arguments);
       if (this.models.length < l) {
-        this.trigger('removed');
+        this.trigger('removed', models);
         return true;
       }
 

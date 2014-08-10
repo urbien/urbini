@@ -13,7 +13,6 @@ define('views/ViewPage', [
 
   return BasicPageView.extend({
     clicked: false,
-    className: 'scrollable',
 //    style: {
 //      overflow: 'visible' // because resourceViewHolder is absolutely positioned, so we can't use the size of the container (this view) as a natural boundary
 //    },
@@ -36,12 +35,7 @@ define('views/ViewPage', [
       this.viewId = options.viewId;
 
       var commonTypes = G.commonTypes;
-      this.headerButtons = {
-        back: true,
-//        menu: true,
-//        chat: res.isA("ChatRoom"),
-        rightMenu: true //!G.currentUser.guest,
-      };
+      this.headerButtons = ['back', 'rightMenu'];
 
       var params = _.getParamMap(window.location.hash);
       var isApp = this.isApp = U.isAssignableFrom(res, commonTypes.App);
@@ -50,7 +44,7 @@ define('views/ViewPage', [
         model: res,
         parentView: this,
         isAbout: isAbout
-      }
+      };
 
       this.header = new Header(_.extend({
         viewId: this.cid
@@ -111,8 +105,8 @@ define('views/ViewPage', [
 
 //      this.cpMain = new ControlPanel(_.extend(commonParams, {el: $('div#mainGroup', this.el), isMainGroup: true}));
       if (!isAbout) {
-        this.cpMain = new ControlPanel(_.extend({isMainGroup: true}, commonParams));
-        this.addChild(this.cpMain);
+        // this.cpMain = new ControlPanel(_.extend({isMainGroup: true}, commonParams));
+        // this.addChild(this.cpMain);
         this.cp = new ControlPanel(_.extend({isMainGroup: false}, commonParams));
         this.addChild(this.cp);
       }
@@ -309,7 +303,7 @@ define('views/ViewPage', [
       Events.trigger('navigate', here.slice(0, here.indexOf('#')));
       return this;
     },
-    
+
     edit: function(e) {
       Events.stopEvent(e);
 //      e.preventDefault();

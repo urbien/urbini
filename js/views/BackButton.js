@@ -9,7 +9,6 @@ define('views/BackButton', [
   return BasicView.extend({
     templateName: 'backButtonTemplate',
     tagName: 'li',
-    id: 'back',
     events: {
       'click': 'back'
     },

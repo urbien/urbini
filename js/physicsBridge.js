@@ -186,8 +186,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         id = 'logo';
 
     HERE.addBody(logo, id);
-/*        THERE.addBody('convex-polygon', { 
-      _id: id, 
+/*        THERE.addBody('convex-polygon', {
+      _id: id,
       vertices: [
         {x: 0, y: h},
         {x: w, y: h},
@@ -196,7 +196,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       ]
     });
 */
-    THERE.addBody('point', { 
+    THERE.addBody('point', {
       _id: id,
       style: {
         opacity: 1
@@ -257,8 +257,15 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 
     var a = e.selectorTarget,
         href = a.$attr('href'),
+        event = a.$data('event'),
         absoluteHref = a.href,
         dataHref = a.$data('href');
+
+    if (event) {
+      Events.stopEvent(e);
+      Events.trigger(event, e);
+      return;
+    }
 
     if (href == '#' && dataHref) {
       Events.stopEvent(e);
@@ -282,6 +289,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         Events.trigger('navigate', href);
         return;
       }
+      else
+        debugger;
     }
   });
 

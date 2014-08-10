@@ -66,7 +66,7 @@ define('views/ControlPanel', [
     },
 
     modelEvents: {
-      'inlineList': 'update',
+      'inlineList': 'updateInlineList',
       'change': 'update'
     },
 
@@ -96,6 +96,19 @@ define('views/ControlPanel', [
 
     myEvents: {
       'inactive': 'delayedHideOverlays'
+    },
+
+    updateInlineList: function(res, propName, event, arg) {
+      if (event == 'removed') {
+        if (arg) {
+          if (U.isModel(arg))
+            arg = [arg];
+
+          arg.map(this.stopListening);
+        }
+      }
+
+      this.update();
     },
 
     delayedHideOverlays: function() {
@@ -255,7 +268,8 @@ define('views/ControlPanel', [
 
       getRes.done(function() {
         res.cancel({
-          redirect: false
+          redirect: false,
+          skipRefresh: true
         });
       });
     },
@@ -514,6 +528,7 @@ define('views/ControlPanel', [
           propType = indicator.get('propertyType'),
           params = {
             indicator: indicator.getUri(),
+            feed: indicator.get('feed'),
             tradle: indicator.get('tradle'),
             tradleFeed: indicator.get('tradleFeed'),
             'tradleFeed.displayName': indicator.get('tradleFeed.displayName')
@@ -521,8 +536,7 @@ define('views/ControlPanel', [
           rules = this.resource.getInlineList('tradleRules'),
           subClassOf;
 
-      if (rules && rules.length)
-        this.hideIndicators();
+      this.hideIndicators();
 
       switch (propType) {
       case 'Text':
@@ -1112,7 +1126,7 @@ define('views/ControlPanel', [
 
     refresh: function(res, options) {
       options = options || {};
-      if (options.partOfUpdate)
+      if (options.partOfUpdate || options.skipRefresh)
         return;
 
       var collection, modified;
@@ -1365,9 +1379,11 @@ define('views/ControlPanel', [
         }.bind(this));
       });
 
-      if (!this.isMainGroup && !_.isEmpty(res.inlineLists)) {
-        var list = [];
-        for (var name in res.inlineLists) {
+      if (!this.isMainGroup && !_.isEmpty(res.getInlineLists())) {
+        var list = [],
+            inline = res.getInlineLists();
+
+        for (var name in inline) {
           list.push(this.vocModel.properties[name]);
         }
 

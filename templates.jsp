@@ -6,8 +6,8 @@
 <!-- Templates -->
 <script type="text/template" id="resource-list">
   <!-- Resource list page -->
-  <section id="{{= viewId }}" data-type="sidebar"></section>
-  <section id="{{= viewId + 'r' }}" data-type="sidebar"></section>
+  <section id="{{= viewId }}" data-type="sidebar" class="menuLeft" ></section>
+  <section id="{{= viewId + 'r' }}" data-type="sidebar" class="menuRight" ></section>
   <!-- div class="headerMessageBar"></div -->
   <div class="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
@@ -55,8 +55,8 @@
 <script type="text/template" id="resource">
 <!-- Single resource view -->
 {{ var isTradle = this.resource.isAssignableFrom('commerce/trading/Tradle'); }}
-<section id="{{= viewId }}" data-type="sidebar"></section>
-<section id="{{= viewId + 'r' }}" data-type="sidebar"></section>
+<section id="{{= viewId }}" data-type="sidebar" class="menuLeft"></section>
+<section id="{{= viewId + 'r' }}" data-type="sidebar" class="menuRight"></section>
 
 <!-- div class="headerMessageBar"></div -->
 <div class="headerDiv"></div>
@@ -176,7 +176,7 @@
   <ul class="quickstart-options" style="list-style:none;">
     {{ if (currentStep == 0) { }}
     <li>
-      <a class="mini-cta" href="#" data-selector="section[data-backlink=&quot;indicators&quot;]" data-tooltip="Click here to add indicators" data-direction="left">Add indicators</a> to your tradle.
+      <a class="mini-cta" href="#" data-selector="section[data-backlink=&quot;indicators&quot;]" data-tooltip="Click here to add indicators" data-direction="bottom">Add indicators</a> to your tradle.
     </li>
     {{ }                       }}
     {{ if (currentStep == 1) { }}
@@ -346,7 +346,7 @@
       <div>
         {{ if (resource.get('tradleFeed')) { }}
         {{ var feed =  resource.get('feed'); }}
-        {{ var isIndexOrStock = feed.indexOf('/Index?') != -1 || feed.indexOf('/Stock?') != -1; }} 
+        {{ var isIndexOrStock = /\/(?:Index|Stock)/.test(feed); }}
         <div class="tradleFeed" {{= isIndexOrStock ? 'style="font-size:4rem;line-height:3rem;font-weight:bold;"' : '' }}><!-- href="{{= U.makeMobileUrl('view', resource.get('tradleFeed')) }}"-->
           {{= resource.get('tradleFeed.displayName') }}
         </div>
@@ -356,7 +356,7 @@
     <div style="float:left; width:20%; height:100%; font-size:2.3rem;">
     {{ var op = U.getRuleOperator(resource), lop = op.toLowerCase(); }}
     {{ var cl = lop == 'rose' ? 'ui-icon-arrow-up' : lop == 'fell' ? 'ui-icon-arrow-down' : ''; }}
-      <div style="font-size:4.5rem;line-height: 4rem;color:#2c94c5;" class="{{= cl }}">
+      <div class="ruleOperator ruleOperator{{= (lop.length > 3 ? 'Long' : 'Short') + ' ' + cl }}">
         {{= cl ? '' : op }}
       </div>
       {{ if (byPercent) {   }}
@@ -377,7 +377,7 @@
       <div>
         {{ if (resource.get('compareWithTradleFeed')) { }}
         {{ var cmpFeed =  resource.get('compareWithFeed'); }}
-        {{ var isIndexOrStock = cmpFeed.indexOf('/Index?') != -1 || cmpFeed.indexOf('/Stock?') != -1; }} 
+        {{ var isIndexOrStock = cmpFeed.indexOf('/Index?') != -1 || cmpFeed.indexOf('/Stock?') != -1; }}
         <div {{= isIndexOrStock ? 'style="font-size:4rem;line-height:3rem;font-weight:bold;"' : '' }}  class="tradleFeed"> <!--href="{{= U.makeMobileUrl('view', resource.get('compareWithTradleFeed')) }}" class="tradleFeed"-->
           {{= resource.get('compareWithTradleFeed.displayName') }}
         </div>
@@ -401,31 +401,29 @@
 
 <script type="text/template" id="socialLinksTemplate">
 <!-- Social Links -->
-  {{ var owner = this.resource.get('owner'), submittedBy = this.resource.get('submittedBy'), user = G.currentUser._uri, isOwner = user && user == (owner || submittedBy); }}
+  {{ var r = this.resource, uri = r.getUri(), owner = r.get('owner'), submittedBy = r.get('submittedBy'), user = G.currentUser._uri, isOwner = user && user == (owner || submittedBy); }}
   {{ if (user && (user == owner || user == submittedBy)) { }}
-    <a class="socialAction" href="{{= U.makePageUrl('edit', this.resource.getUri(), {$editCols: 'activated,title,description,isPublic'}) }}"><span class="ui-icon-edit" data-url="{{= uri }}">&#160;EDIT</span></a>
+    <a class="socialAction" href="{{= U.makePageUrl('edit', r.getUri(), {$editCols: 'activated,title,description,isPublic'}) }}"><span class="ui-icon-edit" data-url="{{= uri }}">&#160;EDIT</span></a>
   {{ } }}
-  {{ if (U.getBacklinkCount(this.resource, 'tradleRules')) { }}
-    <a href="{{= U.getTwitterLink(this.resource) }}" class="socialAction" data-url="{{= uri }}"><span class="ui-icon-twitter" target="_blank">&#160;TWEET</span></a>
+  {{ if (U.getBacklinkCount(r, 'tradleRules')) { }}
+    <a href="{{= U.getTwitterLink(r) }}" class="socialAction" data-url="{{= uri }}"><span class="ui-icon-twitter" target="_blank">&#160;TWEET</span></a>
   {{ } }}
   <a href="{{= U.makePageUrl('view', uri + '&$clone=y') }}" class="socialAction" data-url="{{= uri }}"><span class="ui-icon-fork">&#160;CLONE</span></a>
   <a href="{{= G.serverName }}/widget/embed.html?uri={{= encodeURIComponent(uri) }}" class="socialAction" data-url="{{= uri }}"><span class="ui-icon-embed">&#160;EMBED</span></a>
 </script>
 
 <script type="text/template" id="privateBetaPageTemplate">
-<div class="section light" id="section_bg">
-  <section id="viewHome" data-type="sidebar"></section>
-  <section id="viewHomer" data-type="sidebar"></section>
-  <div class="headerHP" style="position:absolute;top:0px;width: 100%;">
-    <section id="viewHome" class="menuLeft" data-type="sidebar" style="position:absolute;height:100%;opacity:0.95;background:#2d2d2d;visibility:hidden;z-index:10001"></section>
-    <div id="hpRightPanel" style="font-size:30px; cursor: pointer; float: right; margin-right: 5px;">
-      <span style="cursor:pointer; font-size: 30px;vertical-align:middle;"><i style="color:#7aaac3;padding:5px 0;" class="ui-icon-reorder"></i></span>
-    </div>
+<div class="section" id="section_bg" style="padding: 0 1rem;">
+  <section id="viewHome" data-type="sidebar" class="menuLeft"></section>
+  <section id="viewHomer" data-type="sidebar" class="menuRight"></section>
+  <div class="headerDiv">
+    <ul class="headerUl">
+    </ul>
   </div>
 
   <div class="section-content">
     <div class="title-block">
-    {{ var guest = G.currentUser.guest, appInstall = G.currentUser.appInstall, activated = appInstall.activated; }}
+    {{ var guest = G.currentUser.guest, appInstall = G.currentUser.appInstall || {}, activated = appInstall && appInstall.activated; }}
     {{ if (guest) { }}
       <span class="section-title">Sign up for early access</span>
       <span class="section-title _2">Get involved now!</span>
@@ -439,7 +437,7 @@
       <span class="section-title _2">But don't wait, get involved now!</span>
     {{ }                                 }}
     </div>
-    <div class="group">
+    <div class="group highlightCols">
       <div class="col span_1_of_3">
         <i class="ui-icon-users"></i>
         <h4 style="font-weight:100;">Sign up 3 people</h4>
@@ -494,8 +492,8 @@
 </script>
 
 <script type="text/template" id="articlePageTemplate">
-  <section class="menuLeft" data-type="sidebar"></section>
-  <section class="menuRight" data-type="sidebar"></section>
+  <section class="menuLeft" data-type="sidebar" class="menuLeft"></section>
+  <section class="menuRight" data-type="sidebar" class="menuRight"></section>
   <div class="section">
     <div class="headerDiv">
       <ul class="headerUl">
@@ -562,14 +560,12 @@
 </script>
 
 <script type="text/template" id="pricingPageTemplate">
-  <div class="section light" id="section_bg">
-    <section id="viewHome" data-type="sidebar"></section>
-    <section id="viewHomer" data-type="sidebar"></section>
-    <div class="headerHP" style="position:absolute;top:0px;width: 100%;">
-      <section id="viewHome" class="menuLeft" data-type="sidebar" style="position:absolute;height:100%;opacity:0.95;background:#2d2d2d;visibility:hidden;z-index:10001"></section>
-      <div id="hpRightPanel" style="font-size:30px; cursor: pointer; float: right; margin-right: 5px;">
-        <span style="cursor:pointer; font-size: 30px;vertical-align:middle;"><i style="color:#7aaac3;padding:5px 0;" class="ui-icon-reorder"></i></span>
-      </div>
+  <div class="section" id="section_bg" style="padding: 0 1rem;">
+    <section id="viewHome" data-type="sidebar" class="menuLeft"></section>
+    <section id="viewHomer" data-type="sidebar" class="menuRight"></section>
+    <div class="headerDiv">
+      <ul class="headerUl">
+      </ul>
     </div>
     <div class="section-content" style="margin:0 auto;">
       <div class="title-block">
@@ -681,13 +677,13 @@
 </script>
 
 <script type="text/template" id="pricing1PageTemplate">
-  <div class="section light" id="section_bg">
-    <section id="viewHome" data-type="sidebar"></section>
-    <section id="viewHomer" data-type="sidebar"></section>
+  <div class="section" id="section_bg">
+    <section id="viewHome" data-type="sidebar" class="menuLeft"></section>
+    <section id="viewHomer" data-type="sidebar" class="menuRight"></section>
     <div class="headerHP" style="position:absolute;top:0px;width: 100%;">
       <section id="viewHome" class="menuLeft" data-type="sidebar" style="position:absolute;height:100%;opacity:0.95;background:#2d2d2d;visibility:hidden;z-index:10001"></section>
       <div id="hpRightPanel" style="font-size:30px; cursor: pointer; float: right; margin-right: 5px;">
-        <span style="cursor:pointer; font-size: 30px;vertical-align:middle;"><i style="color:#7aaac3;padding:5px 0;" class="ui-icon-reorder"></i></span>
+        <span style="cursor:pointer; font-size: 30px;vertical-align:middle;"><i style="color:#7aaac3;padding:5px 0;" class="ui-icon-menu"></i></span>
       </div>
     </div>
     <div class="section-content" style="margin:0 auto;">
@@ -799,7 +795,7 @@
 </script>
 
 <script type="text/template" id="advisorsPageTemplate">
-  <div class="section light" id="section_bg">
+  <div class="section" id="section_bg">
     <div class="section-content" style="margin:0 auto; padding-left:20px;padding-right:20px;">
       <div class="title-block">
         <h1 class="section-title">Our Advisors</h1>
@@ -1515,7 +1511,7 @@
 <p>
      <a {{= prop.lookupFrom ? 'data-lookupFrom=' + prop.lookupFrom : '' }} data-shortName="{{= shortName }}" href="{{= U.makePageUrl(action, range, params) }}" class="cpA">{{= name }}
      </a>
-     <div style="color:{{= G.lightColor }};font-weight:bold;background:{{= G.darkColor }};display:inline;position:absolute;right:1rem;font-size: 1.5rem;border-radius:1rem;border: 1px solid {{= G.darkColor }};padding: 0.1rem 0.3rem;">{{= value }}</div>
+     <div class="backlinkCount addToBacklink">{{= value }}</div>
 </p>
      {{ if (typeof comment != 'undefined') { }}
        <br/><p style="padding: 0.7rem 0;font-size:1.3rem;color:#808080; line-height:1.5rem;">{{= comment }}</p>
@@ -1534,7 +1530,7 @@
 
      <!--span class="ui-li-count">{{= value }}</span></a><a target="#" data-icon="chevron-right" data-iconshadow="false" class="cp" -->
      </a>
-     <div style="{{= G.darkColor }}display:inline;position:absolute;right:1rem;font-size: 1.5rem;border-radius:1rem;border: 1px solid {{= G.darkColor }};padding: 0.1rem 0.3rem;">{{= value }}</div>
+     <div class="backlinkCount">{{= value }}</div>
 </p>
    </li>
 </script>
@@ -1605,14 +1601,19 @@
   <div id="map" class="map" data-role="none"></div>
 </script>
 
+<script type="text/template" id="headerButtonsTemplate">
+  <li class="headerLeft"></li>
+  <li class="headerRight"></li>
+</script>
+
 <script type="text/template" id="saveButtonTemplate">
 <!-- header button for saving changes -->
-<a target="#"><i class="ui-icon-ok"style="margin-left:-.7rem;padding-right:.7rem;color:#666;"></i><span style="position:absolute;top:7px;">Save</span></a>
+<a href="#" class="saveBtn"><i class="ui-icon-save"style="margin-left:-.7rem;padding-right:.7rem;color:#666;"></i><span class="headerFormBtn">Done</span></a>
 </script>
 
 <script type="text/template" id="cancelButtonTemplate">
 <!-- header button for canceling changes -->
-<a target="#"><i class="ui-icon-remove" style="margin-left:-.7rem;padding-right:.7rem;color:#666;"></i><span style="position:absolute;top:7px;">Cancel</span></a>
+<a href="#" class="cancelBtn"><i class="ui-icon-cancel" style="margin-left:-.7rem;padding-right:.7rem;color:#666;"></i><span class="headerFormBtn">Cancel</span></a>
 </script>
 
 <script type="text/template" id="mapItButtonTemplate">
@@ -1622,7 +1623,17 @@
 
 <script type="text/template" id="backButtonTemplate">
 <!-- The UI back button (not the built-in browser one) -->
-<a target="#" class="back" style="color: {{= G.darkColor }};"><i class="ui-icon-chevron-left"></i></a>
+<a href="#" data-event="back"><i class="ui-icon-chevron-left"></i></a>
+</script>
+
+<script type="text/template" id="searchButtonTemplate">
+<!-- The UI back button (not the built-in browser one) -->
+<a href="#" class="filterToggle"><i class="ui-icon-search"></i></a>
+</script>
+
+<script type="text/template" id="helpButtonTemplate">
+<!-- The UI back button (not the built-in browser one) -->
+<a href="#" class="helpBtn"><i class="ui-icon-help help"></i></a>
 </script>
 
 <script type="text/template" id="chatButtonTemplate">
@@ -1639,12 +1650,12 @@
 
 <script type="text/template" id="addButtonTemplate">
 <!-- button used for creating new resources -->
-<a target="#"><i class="ui-icon-plus" style="color: {{= G.darkColor }};"></i></a>
+<a href="#" class="add"><i class="ui-icon-plus" style="color: {{= G.darkColor }};"></i></a>
 </script>
 
 <script type="text/template" id="rightMenuButtonTemplate">
 <!-- button that toggles the object properties panel -->
-<a target="#" style="cursor: pointer; color: {{= G.darkColor }};"><i class="{{= obj.icon || 'ui-icon-reorder' }}"></i></a><!-- {{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }} -->
+<a target="#" style="cursor: pointer;"><i class="{{= obj.icon || 'ui-icon-menu' }}"></i></a><!-- {{= (obj.title ? title : 'Properties') + '<span class="menuBadge">{0}</span>'.format(obj.count || '') }} -->
   {{= !this.viewId  ||  this.viewId.indexOf('viewHome') != -1 ? '' : '<span class="menuBadge">{0}</span>'.format(obj.newAlerts || '') }}
 </span>
 </script>
@@ -1890,12 +1901,13 @@
 
 <script type="text/template" id="headerTemplate">
 <!-- the page header, including buttons and the page title, used for all pages except the home page -->
+<!--div class="headerBG"></div-->
 <div id="callInProgress"></div>
 <div class="header" {{= obj.style ? style : 'style="color:' + G.darkColor + '"' }} {{= obj.more || '' }} >
   <div class="hdr">
-  <section role="region">
+  <section>
     <header style="background: none;height:inherit;">
-    <ul class="headerUl {{= U.getCurrentUrlInfo().route }}Header" style="position:relative;">
+    <ul class="headerUl" style="position:relative;">
     </ul>
     </header>
   </section>
@@ -1903,7 +1915,7 @@
 </div>
 <!--div class="buttons header2" style="background:{{= G.darkColor }};color:{{= G.lightColor }}"-->
 <div class="buttons colorCenterGradient header2">
-  <div class="cf vcenteredR" style="z-index:1; width:20%;float:left;">
+  <!--div class="cf vcenteredR" style="z-index:1; width:20%;float:left;">
     <span class="placeholder"></span>
     {{ if (this.categories) { }}
        <div style="display:inline-block; margin-left: 5px; font-size: 1.5rem;">
@@ -1919,10 +1931,10 @@
         <span>{{= folder.name }}</span>
       </a>
     {{ }                     }}
-  </div>
-  <div id="name" class="cf vcenteredR resTitle" style="z-index:0; width:60%;float:left;height:100%;" align="center">
-    <h4 class="pageTitle vcenteredR" style="text-overflow: ellipsis; overflow: hidden; font-weight:normal; line-height: inherit;">{{= this.title }}</h4>
-    <div align="center" class="headerButtons {{= obj.className || '' }}">
+  </div-->
+  <div id="name" class="cf vcenteredR resTitle" style="z-index:0; width:100%;float:left;height:100%;" align="center">
+    <h4 class="pageTitle vcenteredR" style="text-overflow: ellipsis; overflow: hidden; font-weight:normal; line-height: inherit;max-width:85%;">{{= this.title }}</h4>
+    <!--div align="center" class="headerButtons {{= obj.className || '' }}">
       <button style="max-width:200px; display: inline-block;" id="doTryBtn">
         {{ if (obj.tryApp) { }}
             {{= tryApp }}
@@ -1958,9 +1970,9 @@
             {{= resetTemplate }}
         {{ } }}
       </button>
-    </div>
+    </div-->
   </div>
-  <div class="cf vcenteredR" style="z-index:1; width:20%;float:left;">
+  <div class="cf vcenteredR titleHeaderL" style="z-index:1; float:left;">
     {{ if (activatedProp) { }}
       <section class="activatable" style="float: right; display: none; margin-left: 3px;">
         <label class="pack-switch">
@@ -1969,15 +1981,11 @@
         </label>
       </section>
     {{ }                     }}
-    {{ if (this.filter) { }}
-      <div style="margin-right: 5px; float: right;"><a class="filterToggle" href="#"><i class="ui-icon-search"></i></a></div>
-    {{ }                  }}
-    <i class="help ui-icon-help" style="{{= this.hasQuickstart() ? '' : 'display:none;' }}"></i>
   </div>
 </div>
 <div class="physicsConstants" style="display:none; background-color: #606060; color:#FFFFFF; display:none;"></div>
-{{= this.filter ? "<div class='filter'></div>" : "" }}
 <div class="subClasses" style="display:none; padding: 5px;"></div>
+{{= this.filter ? "<div class='filter'></div>" : "" }}
 <div class="quickstart"></div>
 </script>
 
@@ -1995,6 +2003,7 @@
   <!-- Filter conditions for complex queries -->
   <div class="searchBar">
     <input type="text" class="searchInput" placeholder=" Search..." />
+    <i class="ui-icon-cancel vcenteredA" style="right: 0.5rem; font-size: 2rem; cursor: pointer;"></i>
   </div>
 </script>
 
@@ -2318,7 +2327,7 @@
   {{ if (!msg.link && msg.icon) {    }}
        <i class="ui-icon-{{= msg.icon }}"></i>
   {{ }                               }}
-       <i class="ui-icon-remove closeparent" style="position:absolute;right:5px"></i>
+       <i class="ui-icon-remove closeparent" style="position:absolute;top:0;right:5px;cursor:pointer;"></i>
      </span>
 {{  });                           }}
 
@@ -2393,8 +2402,8 @@
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">
 <!-- the edit page for any particular resource -->
-  <section id="{{= viewId }}" data-type="sidebar"></section>
-  <section id="{{= viewId + 'r' }}" data-type="sidebar"></section>
+  <section id="{{= viewId }}" data-type="sidebar" class="menuLeft"></section>
+  <section id="{{= viewId + 'r' }}" data-type="sidebar" class="menuRight"></section>
 <!--div class="headerMessageBar"></div-->
   <div class="headerDiv"></div>
   <div id="resourceEditView">
@@ -2523,7 +2532,7 @@
 <script type="text/template" id="percentPET">
 <div class="_prim">
   <label for="{{= id }}"  class="ui-input-text" >{{= name }}</label>
-  <input type="range" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '0' }}" {{= rules }} data-mini="true" max="100" min="0" style="width:65%;vertical-align:middle;" onchange="document.getElementById(event.target.id + '_text').innerHTML = event.target.value + '%';"/>
+  <input type="range" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '0' }}" {{= rules }} data-mini="true" max="100" min="0" style="width:65%;vertical-align:middle;" onchange="document.getElementById(this.id + '_text').innerHTML = this.value + '%';"/>
   <div id="{{= id }}_text" style="display:inline-block;vertical-align:middle;padding-left:.5rem;font-size:2rem;color:#7aaac3;font-weight:bold;"></div>
 </div>
 </script>
@@ -2535,7 +2544,7 @@
     {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
   {{ } }}
   <section>
-  <label class="pack-switch" style="right: 2rem;top:0rem;left:auto;position:absolute;color:{{= G.darkColor }};">
+  <label class="pack-switch" style="right: 0;top:0rem;left:auto;position:absolute;color:{{= G.darkColor }};">
     <input type="checkbox" {{= prop.editDisabled ? 'disabled="disabled"' : '' }} name="{{= shortName }}" id="{{= id }}" class="formElement boolean" {{= obj.value ? 'checked="checked"' : '' }} />
     <span style="top:2rem"></span>
   </label>

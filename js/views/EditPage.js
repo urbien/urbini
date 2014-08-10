@@ -16,7 +16,6 @@ define('views/EditPage', [
   var editParams = ['action', 'viewId'];
   return BasicPageView.extend({
     autoFinish: false,
-    className: 'scrollable',
     initialize: function(options) {
       _.bindAll(this, 'render', 'edit', 'home', 'set', 'resetForm');
       BasicPageView.prototype.initialize.apply(this, arguments);
@@ -52,16 +51,7 @@ define('views/EditPage', [
       }
 
       var isGeo = this.isGeo();
-      this.buttons = {
-//        back: true,
-        save: true,
-        cancel: true
-//        ,
-//        menu: true,
-//        login: G.currentUser.guest,
-//        rightMenu: !G.currentUser.guest
-      };
-
+      this.buttons = ['cancel', 'save'];
       this.header = new Header({
         model: res,
   //      pageTitle: this.pageTitle || res.get('davDisplayName'),
@@ -109,7 +99,9 @@ define('views/EditPage', [
       'click #edit'   : 'edit',
 //      'click': 'click',
       'click #homeBtn': 'home',
-      'click .historicalData [data-value]': 'onChoseHistoricalValue'
+      'click .historicalData [data-value]': 'onChoseHistoricalValue',
+      'click .saveBtn': 'submit',
+      'click .cancelBtn': 'cancel'
     },
 
     myEvents: {

@@ -23,7 +23,8 @@ define('views/SocialLinksView', [
     },
 
     render: function() {
-      this.html(this.socialTemplate.call(this, {uri: this.resource.getUri()}));
+      if (this.el)
+        this.html(this.socialTemplate());
     },
 
     share: function(e) {

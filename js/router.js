@@ -1082,7 +1082,10 @@ define('router', [
           }
 
           if (!isProfile) {
-            Events.trigger('navigate', 'static/privateBetaPageTemplate', {replace: true});
+            Events.trigger('navigate', 'static/privateBetaPageTemplate?' + _.param({
+              '-info': "Oops! {0} is still in private beta and this feature is only available to activated users. <br /><br />".format(G.currentApp.title)
+            }), {replace: true});
+
             return false;
           }
         }

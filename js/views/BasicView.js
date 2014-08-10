@@ -389,6 +389,11 @@ define('views/BasicView', [
       }
     },
 
+    tryRender: function() {
+      if (this.el)
+        this.render.apply(this, arguments);
+    },
+
     _render: function(rOptions) {
   //    this.log('render', 'page title:', this.getPageTitle());
       rOptions = rOptions || {};
@@ -431,6 +436,9 @@ define('views/BasicView', [
     update: function() {
 //      if (!this._update) {
 //        this._update = _.debounce(function() {
+      if (!this.el)
+        return;
+
       var now = _.now();
       clearTimeout(this._updateTimeout);
       if (this._lastUpdateTime && now - this._lastUpdateTime < this._updatePeriod) {

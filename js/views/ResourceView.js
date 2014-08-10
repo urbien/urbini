@@ -86,11 +86,6 @@ define('views/ResourceView', [
       'inlineList': 'update'
     },
 
-    update1: function() {
-      console.log('UPDATE, QUEUING', this.TAG);
-      this.update.apply(this, arguments);
-    },
-
     pageEvents: {
       'click .dc-chart .reset': 'resetStockChart'
     },
@@ -491,6 +486,7 @@ define('views/ResourceView', [
 
   //    var j = {"props": json};
   //    this.$el.html(html);
+
       this.el.$html(frag);
       if (drawGauges)
         this.drawGauges();

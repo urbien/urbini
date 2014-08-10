@@ -1,16 +1,13 @@
 define('views/ArticlePage', [
   'utils',
-  'views/BasicPageView',
-  'views/BackButton',
-  'views/RightMenuButton'
-], function(U, BasicPageView, BackButton, MenuButton) {
+  'views/BasicPageView'
+], function(U, BasicPageView) {
   var ICON_COLORS = ['#fd865a', '#77FFAE', '#6798F0', '#C703A7'];
 
   return BasicPageView.extend({
     autoFinish: false,
     style: {
-      background: 'rgba(255, 255, 255, 0.5)',
-      height: '100%'
+      background: 'rgba(255, 255, 255, 0.5)'
     },
     initialize: function(options) {
       options = options || {};
@@ -48,11 +45,6 @@ define('views/ArticlePage', [
             parentView: this
           };
 
-        this.backBtn = new BackButton(common);
-        this.menuBtn = new MenuButton(common);
-
-        this.addChild(this.backBtn);
-        this.addChild(this.menuBtn);
         this.body = this.$('.articleBody')[0];
         this.btns = this.$('.headerUl')[0];
 
@@ -67,14 +59,7 @@ define('views/ArticlePage', [
       }
 
       this.btns.$empty();
-      var frag = document.createDocumentFragment();
-      [this.backBtn, this.menuBtn].forEach(function(v) {
-        var el = v.render().el;
-        el.style.width = '50%';
-        frag.appendChild(el);
-      });
-
-      this.btns.$html(frag);
+      U.addBackAndMenu(this.btns);
 
       var data = options.data || this.getData();
       this.body.$html(this.colTemplate(_.extend(this.getBaseTemplateData(), data)));

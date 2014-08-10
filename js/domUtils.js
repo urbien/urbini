@@ -104,7 +104,8 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
 
   function saveViewportSize() {
     var viewport = G.viewport,
-        pageStyle = window.getComputedStyle($('[data-role="page"]')[0]),
+        page = $('[data-role="page"]')[0],
+        pageStyle = page && window.getComputedStyle(page),
         maxWidth;
 
     if (!pageStyle)

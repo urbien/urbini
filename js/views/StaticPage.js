@@ -4,9 +4,8 @@ define('views/StaticPage', [
   'utils',
   'events',
   'views/BasicPageView',
-  'views/Header',
-  'views/RightMenuButton'
-], function(G, U, Events, BasicPageView, Header, MenuButton) {
+  'views/Header'
+], function(G, U, Events, BasicPageView, Header) {
   return BasicPageView.extend({
     style: {
       // background: 'rgba(255, 255, 255, 0.5)',
@@ -24,17 +23,9 @@ define('views/StaticPage', [
         this.el.$html(this.template(this.templateData));
 
       if (!this.rendered) {
-        var menuBtnEl = this.el.querySelector('#hpRightPanel');
-        if (menuBtnEl) {
-          this.menuBtn = new MenuButton({
-            el: menuBtnEl,
-            pageView: this,
-            viewId: this.viewId,
-            homePage: true
-          });
-
-          this.menuBtn.render();
-        }
+        var headerUl = this.$('.headerUl')[0];
+        if (headerUl)
+          U.addBackAndMenu(headerUl);
 
         this.addToWorld(null, true);
       }

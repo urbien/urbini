@@ -1921,6 +1921,8 @@ define('globals', function() {
       return stack.join(separator);
     },
 
+    splitListRequest: true,
+
 //    mainWorkerName: 'main',
     maxXhrWorkers: 4,
     numXhrWorkers: 0,

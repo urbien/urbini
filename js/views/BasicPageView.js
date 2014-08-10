@@ -1,4 +1,4 @@
-//'use strict';
+  //'use strict';
 define('views/BasicPageView', [
   'globals',
   'underscore',
@@ -17,7 +17,10 @@ define('views/BasicPageView', [
   var MESSAGE_BAR_TYPES = ['info', 'error', 'tip', 'countdown'],
       pageEvents = ['page_show', 'page_hide', 'page_beforeshow'],
       doc = document,
-      viewport = G.viewport;
+      viewport = G.viewport,
+      MainMenuPanel,
+      ContextMenuPanel;
+
 //  ,
 //      mixins = [];
 //      mixins = [Scrollable];
@@ -43,6 +46,7 @@ define('views/BasicPageView', [
     _scrollbar: true,
     _flexigroup: false,
     viaHammer: true,
+    className: 'paddedPage',
     attributes: {
       'data-role': 'page'
     },
@@ -160,7 +164,136 @@ define('views/BasicPageView', [
       'click.page .pgDown': 'pageDown',
       'click.page .pgUp': 'pageUp',
       'click.page [data-selector]': 'scrollToTarget',
-      'click.page .closeBtn': 'closeDialog'
+      'click.page .closeBtn': 'closeDialog',
+      'tap .ui-icon-menu': 'openMainMenu',
+      'hold .ui-icon-menu': 'openContextMenu',
+      'click.page .saveBtn': '_defSave',
+      'click.page .cancelBtn': '_defCancel'
+    },
+
+    _defSave: function() {
+      this.trigger('userSaved');
+    },
+
+    _defCancel: function() {
+      this.trigger('userCanceled');
+    },
+
+    _openMainMenu: function(e) {
+      var self = this;
+//      var p = this.mainMenuEl; //$('#' + this.viewId);
+//      // HACK
+//      var tagName = (p  &&  p.tagName.toLowerCase() == 'section') ? 'nav' : 'div';
+
+//      if (!this.initialmainMenuStyle)
+//        this.initialmainMenuStyle = p[0].style;
+      if (this.mainMenuPanel) {
+        if (G.isJQM())
+          $(this.mainMenuEl).panel('open');
+        this.mainMenuPanel.show(e);
+//        this.mainMenuEl.style.visibility = 'visible';
+      }
+      else {
+        this.mainMenuPanel = new MainMenuPanel({viewId: this.viewId, model: this.model, el: this.mainMenuEl, parentView: this.getPageView()});
+        this.mainMenuPanel.render();
+        this.mainMenuPanel.on('destroyed', function del() {
+          self.mainMenuPanel.off('destroyed', del);
+//          self.mainMenuPanel.hide(); //hideLeftPanel();
+          delete self.mainMenuPanel;
+        });
+      }
+
+      return this;
+    },
+
+    openMainMenu: function(e) {
+      this.initMenus();
+      Events.stopEvent(e);
+      if (!this.mainMenuEl) {
+        if (this.contextMenuEl)
+          this.contextMenu.apply(this, arguments);
+
+        return;
+      }
+
+      var self = this;
+      if (MainMenuPanel)
+        return this._openMainMenu(e);
+      else {
+        U.require('views/MainMenuPanel', function(mp) {
+          MainMenuPanel = mp;
+          self._openMainMenu(e);
+        });
+      }
+
+      return this;
+    },
+
+    _openContextMenu: function(e) {
+//      var p = this.contextMenuEl; //$('#' + this.viewId + 'r');
+//      // HACK
+//      var tagName = (G.isBB()  ||  G.isBootstrap()) ? 'nav' : 'div';
+//      if (!this.initialcontextMenuStyle)
+//        this.initialcontextMenuStyle = p[0].style;
+
+      if (this.contextMenuPanel) {
+        if (G.isJQM())
+          $(this.contextMenuEl).panel('open');
+        this.contextMenuPanel.show(e);
+//        this.contextMenuEl.style.visibility = 'visible';
+      }
+      else {
+        var self = this;
+        this.contextMenuPanel = new ContextMenuPanel({viewId: this.viewId, model: this.model, el: this.contextMenuEl, parentView: this.getPageView()});
+        this.contextMenuPanel.render();
+        this.contextMenuPanel.on('destroyed', function del() {
+          self.contextMenuPanel.off('destroyed', del);
+//          self.contextMenuPanel.hide(); //hideRightPanel();
+          delete self.contextMenuPanel;
+        });
+      }
+    },
+
+    openContextMenu: function(e) {
+      this.initMenus();
+      Events.stopEvent(e);
+      if (!this.contextMenuEl) {
+        if (this.mainMenuEl)
+          this.mainMenu.apply(this, arguments);
+
+        return;
+      }
+
+      if (G.currentUser.guest)
+        return;
+
+      if (ContextMenuPanel)
+        return this._openContextMenu(e);
+      else {
+        var self = this;
+        U.require('views/ContextMenuPanel', function(rmp) {
+          ContextMenuPanel = rmp;
+          self._openContextMenu(e);
+        });
+      }
+
+      return this;
+    },
+
+    initMenus: function() {
+      if (this._initializedMenus)
+        return;
+
+      this._initializedMenus = true;
+      this.mainMenuEl = this.$('.menuLeft')[0];
+      this.contextMenuEl = this.$('.menuRight')[0];
+    },
+
+    findMenuBadge: function() {
+      if (!this.viewId  ||  this.viewId.indexOf('viewHome') == 0)
+        return;
+      if (!this.menuBadge)
+        this.menuBadge = (G.isBootstrap() ? this.$('.badge') : G.isTopcoat() ? this.$('.topcoat-notification') : this.$('.menuBadge'))[0];
     },
 
     closeDialog: function(e) {

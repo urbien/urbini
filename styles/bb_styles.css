@@ -60,34 +60,9 @@ html {
 .hdr {
   width:100%;
   height:32px;
-  padding: 6px 0 3px 0;
-}
-
-.headerUl  {
-  display:block;
-  max-width:100%;
-  list-style:none;
-  padding:0;
 }
 
 .headerUl s { color: #757575 }
-.headerUl li {
-  font-size:28px;
-  float:left;
-  text-align:center;
-  margin:auto;
-  cursor: pointer;
-  height:100%;
-}
-
-.headerUl li i {
-  font-size:2.8rem;
-}
-
-.headerUl li:last-child {
-  border-right: none;
-}
-
 [data-type="list"] li.u-noimg {
   cursor:pointer;
   padding:0.5rem;
@@ -189,6 +164,7 @@ button {
 section[data-type="sidebar"] {
   color: #cccccc;
   text-shadow: none;
+  width: 100%;
 }
 section[data-type="sidebar"] > ul > li {
   border-bottom: 1px solid #000000;
@@ -469,7 +445,6 @@ section#login_popup {
 }
 #rightMenuBtn {
   position: relative;
-  right: 1rem;
 }
 /*.menuBadge {
   left: 50%;

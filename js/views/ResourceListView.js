@@ -69,7 +69,6 @@ define('views/ResourceListView', [
     _scrollable: false, // is set to true when the content is bigger than the container
 //    _lastRangeEventSeq: -Infinity,
 //    _lastPrefetchEventSeq: -Infinity,
-    className: 'scrollable',
     style: {
       opacity: DOM.maxOpacity,
 //      position: 'absolute',

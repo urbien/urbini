@@ -1797,7 +1797,7 @@ define('views/EditView', [
       });
     },
 
-    onKeyDownInInput: function() {
+    onKeyDownInInput: function(event) {
       // track enter key
       var keycode = (event.keyCode ? event.keyCode : (event.which ? event.which : event.charCode));
       if (keycode == 13) { // keycode for enter key
