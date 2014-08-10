@@ -1038,6 +1038,25 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
       }
     },
 
+    isEllipsisActive: function(el) {
+/*
+      var active,
+          style = window.getComputedStyle(el),
+          preStyle = _.pick(style, 'maxWidth', 'text-overflow', 'overflow'),
+          preWidth = el.offsetWidth;
+
+      for (var p in preStyle) {
+        el.$css(p, null);
+      }
+
+      active = el.offsetWidth > preWidth;
+      el.$css(preStyle);
+      return active;
+    */
+
+     return Math.abs(el.scrollWidth - el.offsetWidth) > 1;
+   },
+
     _replacements: [[/&/g, "&amp;"], [/"/g, "&quot;"], [/</g, "&lt;"], [/>/g, "&gt;"]],
     escape: function(text) {
       if (typeof text !== 'string')
@@ -1493,5 +1512,5 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
     showStyle: SHOW_STYLE
   };
 
-  return DOM;
+  return (Lablz.DOM = DOM);
 });

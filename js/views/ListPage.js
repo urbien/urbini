@@ -165,6 +165,7 @@ define('views/ListPage', [
 
       if (this.hashParams.$indicator) {
         this.headerButtons = ['cancel', 'save'];
+        this.el.$data('action', 'make');
       }
       else {
         this.headerButtons = ['back', 'search'];

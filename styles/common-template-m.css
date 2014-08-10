@@ -50,6 +50,10 @@ body {
   padding: 0 1rem;
 }
 
+#cpView, #resourceView {
+  margin: 0 5px;
+}
+
 @media all and (min-width:1040px) {
   [data-role="page"] {
     max-width: 960px;
@@ -72,6 +76,10 @@ body {
 */
   .paddedPage .headerDiv {
     padding: 0;
+  }
+
+  #cpView, #resourceView {
+    margin: 0;
   }
 }
 
@@ -1899,10 +1907,6 @@ section[data-backlink] li, li[data-backlink="tradleRules"] {
 
 #cpView li[data-backlink="tradleRules"] {
   margin-bottom:0;
-}
-
-#cpView, #resourceView {
-  padding: 0 0.5rem;
 }
 
 section[data-backlink] li:last-child {

@@ -122,7 +122,7 @@
     <li>
       <a href="#" class="mini-cta" data-selector=".subClass:nth-child(2)" data-tooltip="Choose one of these feed categories" data-direction="bottom">Choose a category</a>
       OR
-      <a href="#" class="mini-cta" data-selector=".ui-icon-search,.searchInput" data-tooltip="Click here to search for a feed by name" data-direction="bottom-left">Search by name</a>
+      <a href="#" class="mini-cta" data-selector=".search-active .searchBar,.headerDiv .ui-icon-search" data-tooltip="Click here to search for a feed by name" data-direction="bottom-left">Search by name</a>
     </li>
     <li>
       <a href="#" class="mini-cta" data-selector="section[data-type=&quot;list&quot;]" data-tooltip="Click any of the feeds shown below to see the indicators it provides" data-direction="top">Choose a feed</a> from the filtered down list
@@ -148,7 +148,7 @@
 <div class="quickstart-content">
   <i class="ui-icon-remove"></i>
   <h2>Quickstart</h2>
-  <h3>You're almost done! This indicator has technicals. Choose one or more to add to your Tradle, then click the <i style="font-size: 20px; border: 1px solid; padding: 0 4px; margin: 5px;" class="ui-icon-ok" style="font-size:20px;"></i>icon at the top of the page</h3>
+  <h3>You're almost done! This indicator has technicals. Choose one or more to add to your Tradle, then click <a href="#" style="font-size:15px;font-weight: normal;" class="mini-cta" data-selector=".saveBtn" data-direction="bottom" data-tooltip="Over here!">Done</a> up top</h3>
 </div>
 </script>
 

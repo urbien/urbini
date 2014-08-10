@@ -273,7 +273,8 @@ define('views/Header', [
         'click .subClass'                            : 'onChoseSubClass',
         'click .searchBar .ui-icon-cancel'           : 'toggleFilter',
         'click.header .quickstart .ui-icon-remove'   : 'hideQuickstart',
-        'click i.help'                               : 'showQuickstart'
+        'click i.help'                               : 'showQuickstart',
+        'click .pageTitle'                           : 'onClickTitle'
   //      'click.header'                                 : 'checkHideQuickstart'
       };
 
@@ -411,6 +412,15 @@ define('views/Header', [
         userEdit: true,
         redirect: false
       });
+    },
+
+    onClickTitle: function(e) {
+      var el = e.selectorTarget;
+      if (!DOM.isEllipsisActive(el))
+        return;
+
+      Events.stopEvent(e);
+      U.alert(el.textContent);
     },
 
     changePhysics: function(e) {

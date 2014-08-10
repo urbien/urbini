@@ -4981,12 +4981,11 @@ define('utils', [
     saveQuickstartSettings: function(hide) {
       hide = !!hide;
       var appInstall = G.currentUser.appInstall;
-      if (appInstall && appInstall._hideQuickstart != hide) {
+      if (appInstall && appInstall.hideQuickstart != hide) {
         appInstall.hideQuickstart = hide;
-        U.getModels(G.commonTypes.AppInstall).done(function(aiModel) {
-          appInstall = U.getResource(U.getLongUri1(appInstall._uri)) || new aiModel(appInstall);
-          appInstall.save({
-            hideQuickstart: hide
+        U.getResourcePromise(U.getLongUri1(appInstall._uri)).done(function(res) {
+          res.save({
+            hideQuickstart: appInstall.hideQuickstart
           }, {
             userEdit: true
           });
