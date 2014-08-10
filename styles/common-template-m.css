@@ -1901,6 +1901,10 @@ section[data-backlink] li, li[data-backlink="tradleRules"] {
   margin-bottom:0;
 }
 
+#cpView, #resourceView {
+  padding: 0 0.5rem;
+}
+
 section[data-backlink] li:last-child {
   margin-bottom: 0
 }
