@@ -41,7 +41,6 @@ define('views/ResourceListItemView', [
 //      this.listenTo(this.resource, 'saved', this.render);
       if (!this.isEdit)
         this.makeTemplate('listItemTemplate', 'template', this.vocModel.type, true); // don't fall back to default, we want to know if no template was found for this type
-      
 //      this.makeTemplate('likesAndComments', 'likesAndComments', this.vocModel.type);
       if (this.template) 
         this.isCommonTemplate = false;
@@ -68,6 +67,10 @@ define('views/ResourceListItemView', [
           this.makeTemplate('listItemTemplateNoImage', 'template', this.vocModel.type);
           classes += ' u-noimg';
         }
+      }
+      if (U.isAssignableFrom(this.vocModel, 'FREDSeries')) {
+        this.makeTemplate('fredSeriesListItemTemplate', 'template', this.vocModel.type);
+        this.addViewColsToJson = true;
       }
       
       this.className = classes;
@@ -425,7 +428,7 @@ define('views/ResourceListItemView', [
         }
       }
 
-      var viewCols = this.getViewCols(json);
+      var viewCols = this.addViewColsToJson ? this.getViewCols(json, true) : this.getViewCols(json);
       var dn;
       if (this.hashParams.$createInstance == 'y')
         dn = m.get('label');
@@ -638,7 +641,7 @@ define('views/ResourceListItemView', [
       }  
     },
     
-    getViewCols: function(json) {
+    getViewCols: function(json, addToJson) {
       if (this.hashParams.$createInstance == 'y')
         return null;      
 
@@ -647,7 +650,16 @@ define('views/ResourceListItemView', [
           vocModel = res.vocModel,
           meta = this.vocModel.properties,
           viewCols = '';
-      
+
+      if (addToJson) {
+        for (var i=0; i<this.gridCols.length; i++) {
+          var p = this.gridCols[i];
+          var val = res.get(p);
+          if (val)
+            json[p] = val;
+        }
+        return;
+      }
       var grid = this.gridCols ? U.makeCols(res, this.gridCols) : U.getCols(res, 'grid', true);
       if (!grid) 
         return viewCols;
