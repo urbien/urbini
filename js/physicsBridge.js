@@ -34,8 +34,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       IDENTITY_TRANSFORM = [1, 0, 0, 0,
                             0, 1, 0, 0,
                             0, 0, 1, 0,
-                            0, 0, 0, 1];
-
+                            0, 0, 0, 1],
       zeroVector = [0, 0, 0],
       numDraggables = 0,
       DRAGGABLES = {}, // id to DragProxy
@@ -951,7 +950,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 
     if (el) {
 //      throw "no element found for id " + id;
-      for (i = 0, l = style.length, propIdx = 0; i < l; propIdx++) { // i is incremented in inner loop
+      for (var i = 0, l = style.length, propIdx = 0; i < l; propIdx++) { // i is incremented in inner loop
         j = 0;
         prop = STYLE_ORDER[propIdx];
         prefixed = DOM.prefix(prop);

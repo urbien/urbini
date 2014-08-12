@@ -1627,7 +1627,7 @@ define('utils', [
       else
         keys.sort();
 
-      for (i = 0; i < keys.length; i++) {
+      for (var i = 0; i < keys.length; i++) {
         keys[i] = keys[i] + '=' + _.encode(paramMap[keys[i]]);
       }
 

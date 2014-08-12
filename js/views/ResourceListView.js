@@ -199,7 +199,7 @@ define('views/ResourceListView', [
     },
 
     setBrickLimit: function(limit) {
-      this.mason.setLimit(limit || this.collection.getTotal() || this.collection.length);
+      this.mason.setLimit(limit !== undefined ? limit : this.collection.getTotal() || this.collection.length);
       this.mason['continue']();
     },
 

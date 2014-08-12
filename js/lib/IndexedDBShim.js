@@ -100,7 +100,7 @@ var cleanInterface = false;
                     delete this[i];
                 }
             }
-            for (i = 0; i < this._items.length; i++) {
+            for (var i = 0; i < this._items.length; i++) {
                 this[i] = this._items[i];
             }
         }

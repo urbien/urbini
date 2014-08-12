@@ -1235,12 +1235,17 @@ define('views/Header', [
     },
 
     updateSearchBar: function(model) {
-      var searchPlaceholder = ' Search';
+      var input = this.getSearchInput(),
+          searchPlaceholder = ' Search';
+
+      if (!input)
+        return;
+
       if (model)
         searchPlaceholder += ' ' + U.getPlural(model);
 
       searchPlaceholder += '...';
-      this.getSearchInput().$attr('placeholder', searchPlaceholder);
+      input.$attr('placeholder', searchPlaceholder);
     },
 
     renderHelper: function() {
