@@ -467,11 +467,11 @@ define('views/Header', [
       Events.stopEvent(e);
       debugger;
       $('#fileUpload').attr('action', G.serverName + '/mkresource');
-//      var returnUri = $('$returnUri');
+//      var returnUri = $('[$returnUri]');
 //      if (returnUri) {
 //        var fn = $(':file').value;
 //        var idx = fn.lastIndexOf('/');
-//        $('$returnUri').attr('value', returnUri + '&originalImage=' + encodeURIComponent(G.pageRoot + '/wf/' + params['$location']) + fn.slice(idx));
+//        returnUri.attr('value', returnUri + '&originalImage=' + encodeURIComponent(G.pageRoot + '/wf/' + params['$location']) + fn.slice(idx));
 //      }
       document.forms["fileUpload"].submit();
       /*
@@ -790,6 +790,23 @@ define('views/Header', [
         if (~buttons.indexOf('help')) {
           this.$('.titleHeaderL')[0].$append(right.$('.helpBtn')[0]);
         }
+      }
+
+      if (this.filter) {
+        this.categories = false; // HACK for now, search is more important at the moment
+        right.$('.filterToggle').$hide();
+        this.getFetchPromise().done(function() {
+          if (self.collection.models.length > 10) {
+            self.$('.filterToggle').$show();
+            if (self.filter)
+              self.filter = self.$('.filterToggle')[0];
+
+            if (self.filter) {
+              if (self._showSearchOnLoad || self.hashParams.$search == 'y')
+                self.showSearch();
+            }
+          }
+        });
       }
     },
 
@@ -1292,25 +1309,6 @@ define('views/Header', [
 
       this.html(this.template(tmpl_data));
       this.titleContainer = this.$('.pageTitle')[0];
-      if (this.filter) {
-        this.categories = false; // HACK for now, search is more important at the moment
-
-        this.getFetchPromise().done(function() {
-          if (self.collection.models.length < 10) {
-            self.$('.filterToggle').$hide();
-          }
-          else {
-            if (self.filter)
-              self.filter = self.$('.filterToggle')[0];
-
-            if (self.filter) {
-              if (self._showSearchOnLoad || self.hashParams.$search == 'y')
-                self.showSearch();
-            }
-          }
-        });
-      }
-
       this.renderPhysics();
       this.refreshTitle();
       this.refreshActivated();
@@ -1327,7 +1325,6 @@ define('views/Header', [
 //      var numBtns = _.size(btns);
       var paintedBtns = [];
       this.refreshButtons(frag);
-
 //       REGULAR_BUTTONS.forEach(function(btnName) {
 //         var btn = btns[btnName];
 //         if (!btn)

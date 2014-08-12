@@ -3,6 +3,7 @@ html {
 }
 
 #homePage {
+  margin: 0 auto;
   height: 100%;
   width: 100%;
   padding: 0;
@@ -10,6 +11,8 @@ html {
   background-image: none;
 /*  text-shadow: 0 1px 0 #000;*/
   overflow: visible;
+  margin: 0;
+  max-width: initial;
 }
 
 #homePage section[data-type="sidebar"] {
@@ -295,81 +298,6 @@ font-family: Corbel, "Lucida Grande", "Lucida Sans Unicode", "Lucida Sans", "Dej
   cursor: pointer;min-height: 42px; padding-bottom:0px;border-bottom:1px solid #000;
 }
 
-@font-face {
-  font-family: 'customFont';
-  src: url('fonts/customFont.eot');
-}
-
-@font-face {
-  font-family: 'customFont';
-  src: url(data:application/x-font-ttf;charset=utf-8;base64,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) format('truetype');
-  font-weight: normal;
-  font-style: normal;
-}
-
-.b1 span:first-child, .b1 i, #hpRightPanel i, #hpLeftPanel i {
-  font-family: 'customFont';
-  speak: none;
-  font-style: normal;
-  font-weight: normal;
-  font-variant: normal;
-  text-transform: none;
-  line-height: 1;
-
-  /* Better Font Rendering =========== */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-.icon-star:before {
-  content: "\e600";
-}
-.icon-eye:before {
-  content: "\e601";
-}
-.icon-book:before {
-  content: "\e602";
-}
-.icon-user:before {
-  content: "\e603";
-}
-.icon-menu:before {
-  content: "\e604";
-}
-.icon-menu2:before {
-  content: "\e605";
-}
-.icon-plus:before {
-  content: "\e606";
-}
-.icon-cart:before {
-  content: "\e607";
-}
-.icon-aid:before {
-  content: "\e608";
-}
-.icon-credit:before {
-  content: "\e609";
-}
-.icon-star:before {
-  content: "\e60a";
-}
-.icon-star2:before {
-  content: "\e60b";
-}
-.icon-cart:before {
-  content: "\e60c";
-}
-.icon-backward:before {
-  content: "\e60d";
-}
-.icon-enter:before {
-  content: "\e60e";
-}
-.icon-exit:before {
-  content: "\e60f";
-}
-
 #dashboard-menu {
   position: relative;
 }
@@ -622,6 +550,10 @@ body > .section:not([data-role="page"]) {
 
   #homePage h2 {
     font-size: 18px;
+  }
+
+  #homePage .flip-container {
+    height: 200px;
   }
 }
 
@@ -995,4 +927,151 @@ body > .section:not([data-role="page"]) {
   top: 0;
   left: 0;
   background-image: attr(data-bg);
+}
+
+.bg-video {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+@keyframes flip {
+  0% {
+    transform: rotateY(0deg);
+  }
+  20% {
+    transform: rotateY(0deg);
+  }
+  30% {
+    transform: rotateY(180deg);
+  }
+  70% {
+    transform: rotateY(180deg);
+  }
+  80% {
+    transform: rotateY(360deg);
+  }
+  100% {
+    transform: rotateY(360deg);
+  }
+}
+
+@-webkit-keyframes flip {
+  0% {
+    -webkit-transform: rotateY(0deg);
+  }
+  20% {
+    -webkit-transform: rotateY(0deg);
+  }
+  30% {
+    -webkit-transform: rotateY(180deg);
+  }
+  70% {
+    -webkit-transform: rotateY(180deg);
+  }
+  80% {
+    -webkit-transform: rotateY(360deg);
+  }
+  100% {
+    -webkit-transform: rotateY(360deg);
+  }
+}
+
+@-moz-keyframes flip {
+  0% {
+    -moz-transform: rotateY(0deg);
+  }
+  20% {
+    -moz-transform: rotateY(0deg);
+  }
+  30% {
+    -moz-transform: rotateY(180deg);
+  }
+  70% {
+    -moz-transform: rotateY(180deg);
+  }
+  80% {
+    -moz-transform: rotateY(360deg);
+  }
+  100% {
+    -moz-transform: rotateY(360deg);
+  }
+}
+
+@-ms-keyframes flip {
+  0% {
+    -ms-transform: rotateY(0deg);
+  }
+  20% {
+    -ms-transform: rotateY(0deg);
+  }
+  30% {
+    -ms-transform: rotateY(180deg);
+  }
+  70% {
+    -ms-transform: rotateY(180deg);
+  }
+  80% {
+    -ms-transform: rotateY(360deg);
+  }
+  100% {
+    -ms-transform: rotateY(360deg);
+  }
+}
+
+.flip-5s {
+  -webkit-animation: 5s flip 2 ease-in-out;
+     -moz-animation: 5s flip 2 ease-in-out;
+      -ms-animation: 5s flip 2 ease-in-out;
+          animation: 5s flip 2 ease-in-out;
+}
+
+.flip-container {
+  perspective: 1000px;
+  -webkit-perspective: 1000px;
+  -moz-perspective: 1000px;
+  -ms-perspective: 1000px;
+}
+
+.flip-container {
+  position: relative;
+  text-align:center;
+  height: 100px;
+}
+
+.flipper {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  left: 0;
+  top: 0;
+  -webkit-transform-style: preserve-3d;
+  -moz-transform-style: preserve-3d;
+  -ms-transform-style: preserve-3d;
+  transform-style: preserve-3d;
+  backface-visibility: hidden; /* for FF */
+}
+
+/* hide back of pane during swap */
+.front, .back {
+  display: block;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  position: absolute;
+}
+
+/* front pane, placed above back */
+.front {
+  z-index: 2;
+}
+
+/* back, initially hidden pane */
+.back {
+  -webkit-transform: rotateY(180deg);
+  -moz-transform: rotateY(180deg);
+  -ms-transform: rotateY(180deg);
+  transform: rotateY(180deg);
 }

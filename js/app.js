@@ -1010,9 +1010,7 @@ define('app', [
 //      }, options);
 
       var onDismiss;
-      var returnUri = options.returnUri || U.getReturnUrl(),
-          returnUriHash = options.returnUriHash;
-
+      var returnUri = options.returnUri || U.getReturnUrl(true); // get absolute returnUri
       var signupUrl = "{0}/social/socialsignup".format(G.serverName);
       if (returnUri.startsWith(signupUrl)) {
         G.log(App.TAG, 'error', 'avoiding redirect loop and scrapping returnUri -- 1');
@@ -1027,8 +1025,7 @@ define('app', [
             url: U.buildSocialNetOAuthUrl({
               net: net,
               action: 'Login',
-              returnUri: returnUri,
-              returnUriHash: returnUriHash
+              returnUri: returnUri
             })
           };
         }
@@ -1075,13 +1072,17 @@ define('app', [
     var defaults = {returnUri: ''}; //encodeURIComponent(G.serverName + '/' + G.pageRoot)};
     Events.on('logout', function(options) {
       options = _.extend({}, defaults, options);
-      var url = G.serverName + '/j_security_check?j_signout=true';
+      // var url = G.serverName + '/j_security_check?' + _.param({
+      //   j_signout:true,
+      //   returnUri: window.location.href
+      // });
+
+      // Events.trigger('navigate', url);
       U.ajax({
-        url: url,
+        url: G.serverName + '/j_security_check?j_signout=true',
         type: 'GET',
         success: function() {
             // may be current page is not public so go to home page (?)
-          window.location.hash = options.returnUri;
           window.location.reload();
         }
       });

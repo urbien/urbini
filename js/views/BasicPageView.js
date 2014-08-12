@@ -46,7 +46,6 @@ define('views/BasicPageView', [
     _scrollbar: true,
     _flexigroup: false,
     viaHammer: true,
-    className: 'paddedPage',
     attributes: {
       'data-role': 'page'
     },
@@ -111,13 +110,17 @@ define('views/BasicPageView', [
       var render = this.render;
       this.render = function() {
         if (!this.el.parentNode)
-          document.body.appendChild(this.el);
+          doc.body.appendChild(this.el);
 
         render.apply(self, arguments);
 //        self.checkError();
         if (G.callInProgress)
           self.createCallInProgressHeader(G.callInProgress);
       };
+
+      this.listenTo(Events, 'getCachedView:' + U.simplifyUrl(window.location.href), function(cb) {
+        cb(self);
+      });
 
       if (this.model) {
         if (this.resource) {
@@ -144,10 +147,6 @@ define('views/BasicPageView', [
           }, options.fetchOptions));
         }
       }
-
-      this.listenTo(Events, 'getCachedView:' + U.simplifyUrl(window.location.href), function(cb) {
-        cb(self);
-      });
     },
 
     events: {
@@ -171,12 +170,12 @@ define('views/BasicPageView', [
       'click.page .cancelBtn': '_defCancel'
     },
 
-    _defSave: function() {
-      this.trigger('userSaved');
+    _defSave: function(e) {
+      this.trigger('userSaved', e);
     },
 
-    _defCancel: function() {
-      this.trigger('userCanceled');
+    _defCancel: function(e) {
+      this.trigger('userCanceled', e);
     },
 
     _openMainMenu: function(e) {
@@ -418,6 +417,11 @@ define('views/BasicPageView', [
     _onActive: function() {
 //      this.trigger('active');
       var self = this;
+      if (this.TAG == 'HomePage')
+        doc.body.$removeClass('mw1040-mauto');
+      else
+        doc.body.$addClass('mw1040-mauto');
+
       BasicView.prototype._onActive.apply(this, arguments);
       var onload = function() {
 //        self.addToWorld(true);

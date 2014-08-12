@@ -106,17 +106,23 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
     var viewport = G.viewport,
         page = $('[data-role="page"]')[0],
         pageStyle = page && window.getComputedStyle(page),
-        maxWidth;
+        maxWidth,
+        width;
 
     if (!pageStyle)
       setTimeout(fireResizeEvent.bind(null, true), 100);
     else
-      maxWidth = pageStyle.maxWidth && pageStyle.maxWidth.match(/\d+/);
+      maxWidth = pageStyle.maxWidth && pageStyle.maxWidth.match(/(\d+)([a-zA-Z%]+)/);
 
-    if (maxWidth)
-      viewport.width = parseInt(maxWidth[0]);
+    if (maxWidth) {
+      width = parseInt(maxWidth[1]);
+      if (maxWidth[2] == '%')
+        width *= window.innerWidth / 100;
+    }
     else
-      viewport.width = window.innerWidth;
+      width = window.innerWidth;
+
+    viewport.width = width;
     viewport.height = window.innerHeight;
 //    var viewport = G.viewport,
 //        width = window.innerWidth,

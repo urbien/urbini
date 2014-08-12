@@ -602,7 +602,9 @@ define('views/ControlPanel', [
     addToBacklink: function(prop, t) {
       prop = this.vocModel.properties[getBacklinkSub(this.vocModel, prop.shortName || prop)];
       var self = this,
-          setLinkTo = prop.setLinkTo;
+          setLinkTo = prop.setLinkTo,
+          shortName = prop.shortName;
+      
 //      ,
 //          count = U.getBacklinkCount(this.resource, shortName);
 //

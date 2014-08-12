@@ -1272,8 +1272,7 @@ define('router', [
           params = hashInfo.params;
 
       this._requestLogin({
-        returnUri: params && params.$returnUri || G.appUrl,
-        returnUriHash: params && params.$returnUriHash,
+        returnUri: params.$returnUri || G.appUrl,
         dismissible: false
 //        ,
 //        onDismiss: function() {
@@ -1666,7 +1665,7 @@ define('router', [
 //        G.activePage = toView.el;
 //      });
 
-      transOptions.transition = G.browser.mobile ? (transOptions.via ? 'zoomInTo' : 'snap') : 'immediate';//'slide';
+      transOptions.transition = G.browser.mobile && !G.viewport.isAtMaxWidth() ? (transOptions.via ? 'zoomInTo' : 'snap') : 'immediate';//'slide';
 //      transOptions.transition = transOptions.via ? 'rotateAndZoomInTo' : 'snap';
       Transitioner.transition(transOptions).done(function() {
 //        if (changePageOptions.replace || (fromView && /^make|edit/.test(fromView.hash) && fromView.isSubmitted()))
