@@ -1150,7 +1150,9 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
         var technicals = valueRes.get('technicals').replace(/, /ig, ',');
         Events.trigger('navigate', U.makeMobileUrl('chooser', 'commerce/trading/Technical', {
           $in: 'label,' + technicals + ',Raw Value,Previous Value',
-          $indicator: _.param(tfParams)
+          $indicator: _.param(tfParams),
+          $orderBy: 'label',
+          $asc: 1
         }));
 
         return;
@@ -1179,6 +1181,8 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
         title += ' ' + U.getDisplayName(valueRes);
         Events.trigger('navigate', U.makeMobileUrl('chooser', G.commonTypes.WebClass, {
           $or: U.makeOrGroup(_.param({$and: and1}), _.param({$and: and2})),
+          $orderBy: 'name',
+          $asc: 1,
           $indicator: _.param(tfParams),
           $gridCols: 'label',
           $title: title
