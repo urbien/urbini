@@ -265,9 +265,14 @@
 {{ if (isTrade) { }}
   style="text-align:center;padding:0;border:none;" class="trades"
 {{ } }}
-  >
-  <a href="{{= href }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="{{= obj.img || obj.needsAlignment ? '' : 'padding:1rem 0;'}} {{= obj.noclick ? 'cursor:default;' : 'cursor:pointer;' }}{{= isTrade ? 'font-size:inherit;' : 'font-size:1.6rem' }}">
-    {{ if (obj.img) { }}
+ >
+ <!--
+{{ if (isIndicator  &&  obj.img) { }}
+  <div style="width:80px; height: 80px; opacity:.3; float:left; margin-top: 10px; display:inline-block;background-repeat:no-repeat;background-image:url({{= img.indexOf('/Image') == 0 ? img.slice(6) : img }});"></div>
+{{ } }}
+  -->
+  <a href="{{= href }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="{{= (!isIndicator  &&  obj.img) || obj.needsAlignment ? '' : 'padding:1rem 0;'}} {{= obj.noclick ? 'cursor:default;' : 'cursor:pointer;' }}{{= isTrade ? 'font-size:inherit;' : 'font-size:1.6rem' }}">
+    {{ if (!isIndicator  &&  obj.img) { }}
       <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}"
       {{ if (obj.top) { }}
       style="max-height:none;max-width:none;
@@ -280,10 +285,10 @@
       data-for="{{= U.getImageAttribute(resource, imageProperty) }}"
       class="lazyImage" />
     {{ } }}
-    {{ if (!obj.img  &&  obj.needsAlignment) { }}
+    {{ if ((isIndicator  ||  !obj.img)  &&  obj.needsAlignment) { }}
       <img src="{{= G.getBlankImgSrc() }}" height="80" style="vertical-align:middle;"/>
     {{ } }}
-    <span style="{{= obj.img || obj.needsAlignment ? 'position:absolute;padding:10px;' : ''}}font-weight:bold;">{{= obj.gridCols  ? (obj.gridCols.indexOf(name) == -1 ? name + '<br/>' + gridCols : gridCols) : name }}</span>
+    <span style="{{= (!isIndicator  &&  obj.img) || obj.needsAlignment ? 'position:absolute;padding:10px;' : ''}}font-weight:bold;">{{= obj.gridCols  ? (obj.gridCols.indexOf(name) == -1 ? name + '<br/>' + gridCols : gridCols) : name }}</span>
   </a>
   {{ if (typeof comment != 'undefined') { }}
     <p>{{= comment }}</p>
@@ -346,9 +351,10 @@
       <div>
         {{ if (resource.get('tradleFeed')) { }}
         {{ var feed =  resource.get('feed'); }}
-        {{ var isIndexOrStock = /\/(?:Index|Stock)/.test(feed); }}
+        {{ var isStock = feed  &&  feed.indexOf('/Stock?') != -1; }}
+        {{ var isIndexOrStock = resource.get('tradleFeed.displayName').charAt(0) == '^' || isStock; }} 
         <div class="tradleFeed" {{= isIndexOrStock ? 'style="font-size:4rem;line-height:3rem;font-weight:bold;"' : '' }}><!-- href="{{= U.makeMobileUrl('view', resource.get('tradleFeed')) }}"-->
-          {{= resource.get('tradleFeed.displayName') }}
+          {{= isStock ? feed.substring(feed.lastIndexOf('=') + 1) : resource.get('feed.displayName') }}
         </div>
         {{ }                               }}
       </div>
@@ -377,9 +383,10 @@
       <div>
         {{ if (resource.get('compareWithTradleFeed')) { }}
         {{ var cmpFeed =  resource.get('compareWithFeed'); }}
-        {{ var isIndexOrStock = cmpFeed.indexOf('/Index?') != -1 || cmpFeed.indexOf('/Stock?') != -1; }}
+        {{ var isStock = cmpFeed  &&  cmpFeed.indexOf('/Stock?') != -1; }}
+        {{ var isIndexOrStock = cmpFeed.charAt(0) == '^' || isStock }} 
         <div {{= isIndexOrStock ? 'style="font-size:4rem;line-height:3rem;font-weight:bold;"' : '' }}  class="tradleFeed"> <!--href="{{= U.makeMobileUrl('view', resource.get('compareWithTradleFeed')) }}" class="tradleFeed"-->
-          {{= resource.get('compareWithTradleFeed.displayName') }}
+          {{= isStock ? cmpFeed.substring(cmpFeed.lastIndexOf('=') + 1) : resource.get('compareWithFeed.displayName') }}
         </div>
         {{ }                               }}
       </div>
@@ -410,10 +417,12 @@
   {{ } }}
   <a href="{{= U.makePageUrl('view', uri + '&$clone=y') }}" class="socialAction" data-url="{{= uri }}"><span class="ui-icon-fork">&#160;CLONE</span></a>
   <a href="{{= G.serverName }}/widget/embed.html?uri={{= encodeURIComponent(uri) }}" class="socialAction" data-url="{{= uri }}"><span class="ui-icon-embed">&#160;EMBED</span></a>
+  <!--a href="{{= G.serverName }}/widget/embed.html?-embed=y&uri={{= encodeURIComponent(uri) }}" class="socialAction" data-url="{{= uri }}"><span class="ui-icon-embed">&#160;EMBED</span></a-->
+</li>
 </script>
 
 <script type="text/template" id="privateBetaPageTemplate">
-<div class="section" id="section_bg" style="padding: 0 1rem;">
+<div class="section" id="section_bg">
   <section id="viewHome" data-type="sidebar" class="menuLeft"></section>
   <section id="viewHomer" data-type="sidebar" class="menuRight"></section>
   <div class="headerDiv">
@@ -421,9 +430,9 @@
     </ul>
   </div>
 
-  <div class="section-content">
+  <div class="section-content" style="padding: 0 1rem;">
     <div class="title-block">
-    {{ var guest = G.currentUser.guest, appInstall = G.currentUser.appInstall || {}, activated = appInstall && appInstall.activated; }}
+    {{ var guest = G.currentUser.guest, appInstall = G.currentUser.appInstall || {}, activated = appInstall.activated; }}
     {{ if (guest) { }}
       <span class="section-title">Sign up for early access</span>
       <span class="section-title _2">Get involved now!</span>
@@ -560,14 +569,14 @@
 </script>
 
 <script type="text/template" id="pricingPageTemplate">
-  <div class="section" id="section_bg" style="padding: 0 1rem;">
+  <div class="section" id="section_bg">
     <section id="viewHome" data-type="sidebar" class="menuLeft"></section>
     <section id="viewHomer" data-type="sidebar" class="menuRight"></section>
     <div class="headerDiv">
       <ul class="headerUl">
       </ul>
     </div>
-    <div class="section-content" style="margin:0 auto;">
+    <div class="section-content" style="margin:0 auto;padding: 0 1rem;">
       <div class="title-block">
         <h1 class="section-title">Pricing for Individuals</h1>
         <h3 class="section-title _2">Creating and running tradles</h3>
@@ -799,7 +808,7 @@
     <div class="section-content" style="margin:0 auto; padding-left:20px;padding-right:20px;">
       <div class="title-block">
         <h1 class="section-title">Our Advisors</h1>
-        <h3 class="section-title _2">We sneeze and they bless us</h3>
+        <h3 class="section-title _2">Building the value for clients and shareholders with these industry experts</h3>
       </div>
       {{ for (var i = 0; i < advisors.length / 4; i++) { }}
       <div class="pricing-section group">
@@ -1389,6 +1398,19 @@
 {{ if (obj.defaultValue) { }}
   <div style="margin-left: 2rem;">({{= defaultValue.name }}: {{= defaultValue.value }})</div>
 {{ }                       }}
+</div>
+</div>
+</script>
+
+<script type="text/template" id="fredSeriesListItemTemplate">
+<!-- one row on a list page (no image) -->
+<div data-viewid="{{= viewId }}">
+  <div style="padding: 1.25rem 1rem;">
+<div class="frTitle">{{= davDisplayName }}</div>
+<div><span style="color:#928d8d;">Frequency</span>&#160;<span style="font-weight:bold;">{{= obj.frequency }}</span></div>
+<div><span style="color:#928d8d;">Units</span>&#160;<span style="font-weight:bold;">{{= obj.units }}</span></div>
+<div><span style="font-size:1.2rem;padding-top:.7rem">{{= obj.seasonalAdjustment }}</span></div>
+
 </div>
 </div>
 </script>
