@@ -428,7 +428,7 @@ define('app', [
     Events.trigger('navigate', U.makeMobileUrl('edit', G.currentUser._uri, {
       '-gluedInfo': msg,
       $editCols: 'email',
-      $returnUri: U.getHash()
+      $returnUri: U.getReturnUrl()
     }));
 
 //     var getContactModel = Voc.getModels(U.getTypeUri(G.currentUser._uri)),
@@ -996,13 +996,21 @@ define('app', [
       if (!options.offline)
         options.offline = G.localize('youreOfflinePleaseLogin');
 
+      if (!options.online) {
+        var params = U.getCurrentUrlInfo().params,
+            msg = params['-error'] || params['-info'] || params['-gluedError'] || params['-gluedInfo'];
+
+        if (msg)
+          options.online = msg;
+      }
+
 //      options = _.extend({
 //        online: G.localize('login'),
 //        offline: G.localize('youreOfflinePleaseLogin')
 //      }, options);
 
       var onDismiss;
-      var returnUri = options.returnUri || window.location.href,
+      var returnUri = options.returnUri || U.getReturnUrl(),
           returnUriHash = options.returnUriHash;
 
       var signupUrl = "{0}/social/socialsignup".format(G.serverName);
