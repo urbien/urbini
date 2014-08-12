@@ -11,7 +11,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
   var redirecter,
       interfaceImplementorType = 'system/designer/InterfaceImplementor',
       connectionType = G.commonTypes.Connection,
-      CHOOSE_INDICATOR = 'Choose an indicator';
+      CHOOSE_INDICATOR = 'Choose an indicator',
       CHOOSE_INDICATOR_FOR = CHOOSE_INDICATOR + ' for',
       CHOOSE_VALUES_FOR = 'Choose value(s) for',
       CLICK_INDICATOR_TO_CREATE_RULE = 'Click an indicator to create a rule with it',

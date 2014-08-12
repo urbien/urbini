@@ -26,6 +26,7 @@ define('utils', [
       VIDEO_ATTS = ['loop', 'preload', 'controls', 'autoplay', 'class', 'style'],
       ModalDialog,
       $w,
+      SOCIAL_SIGNUP_HOME = G.serverName + '/social/socialsignup',
       articleModeTypes = [
        'software/crm/Feature',
        'media/publishing/Article',
@@ -491,6 +492,17 @@ define('utils', [
       }
 
       return false;
+    },
+
+    getReturnUrl: function(abs) {
+      var url = U.getRelativeURL();
+      if (/\/login/.test(url))
+        return G.appUrl;
+
+      if (abs)
+        url = G.appUrl + '/' + url;
+
+      return url;
     },
 
     getModelType: function(hash) {
@@ -970,17 +982,14 @@ define('utils', [
       return promise;
     },
 
-    _socialSignupHome: G.serverName + '/social/socialsignup', ///m/' + G.currentApp.appPath,
     buildSocialNetOAuthUrl: function(options) {
       options = options || {};
       var net = options.net,
           action = options.action,
           returnUri = options.returnUri,
-          returnUriHash = options.returnUriHash,
           params = {
             actionType: action,
 //            returnUri: returnUri,
-//            returnUriHash: returnUriHash,
             socialNet: net.socialNet,
             appPath: G.currentApp.appPath
           },
@@ -990,16 +999,12 @@ define('utils', [
       if (regCode)
         params.regCode = regCode;
 
-      if (returnUriHash)
-        params.returnUriHash = returnUriHash;
-      else if (returnUri) {
-        returnUri = !returnUriHash && (returnUri || window.location.href);
-        params.returnUri = returnUri;
-      }
+      if (returnUri)
+        params.returnUri = returnUri || U.getReturnUrl(true);
 
       state = U.getQueryString(params, {sort: true}); // sorted alphabetically
       if (action === 'Disconnect') {
-        return U._socialSignupHome + '?' + state;
+        return SOCIAL_SIGNUP_HOME + '?' + state;
       };
 
       var params;
@@ -1011,7 +1016,7 @@ define('utils', [
           scope: net.settings,
           display: 'touch', // 'page',
           state: state,
-          redirect_uri: U._socialSignupHome,
+          redirect_uri: SOCIAL_SIGNUP_HOME,
           response_type: 'code',
           client_id: net.appId || net.appKey
         };
@@ -1622,7 +1627,7 @@ define('utils', [
       else
         keys.sort();
 
-      for (i = 0; i < keys.length; i++) {
+      for (var i = 0; i < keys.length; i++) {
         keys[i] = keys[i] + '=' + _.encode(paramMap[keys[i]]);
       }
 
@@ -3073,6 +3078,10 @@ define('utils', [
 
         return decode ? decodeURIComponent(hash) : hash;
       }
+    },
+
+    getRelativeURL: function() {
+      return U.getHash.apply(U, arguments);
     },
 
 //    flattenModelJson: function(m, vocModel, preserve) {

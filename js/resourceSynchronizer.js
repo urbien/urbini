@@ -308,7 +308,7 @@ define('resourceSynchronizer', [
         type = U.getTypeUri(uri),
         id = ref.id,
         vocModel = U.getModel(type),
-        props = vocModel.properties;
+        props = vocModel.properties,
         stores = [REF_STORE.name];
 
     if (!IDB.hasStore(type)) {

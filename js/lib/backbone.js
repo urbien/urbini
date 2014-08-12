@@ -1529,6 +1529,7 @@
 
   function carefulExtend(target /*, source1, source2, ...*/) {
     var prop,
+        source,
         newVal,
         oldVal,
         newValType,

@@ -2198,7 +2198,12 @@ define('globals', function() {
       }
     },
 
-    viewport: { width: null, height: null },
+    viewport: {
+      width: null,
+      height: null,
+      maxWidth: 960,
+      isAtMaxWidth: function() { return G.viewport.width >= G.viewport.maxWidth }
+    },
     DEFAULT_TRADLE_NAME: 'New tradle'
   });
 

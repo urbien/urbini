@@ -5,7 +5,7 @@
 
 <!-- Templates -->
 <script type="text/template" id="resource-list">
-  <!-- Resource list page -->
+<!-- Resource list page -->
   <section id="{{= viewId }}" data-type="sidebar" class="menuLeft" ></section>
   <section id="{{= viewId + 'r' }}" data-type="sidebar" class="menuRight" ></section>
   <!-- div class="headerMessageBar"></div -->
@@ -106,11 +106,6 @@
     </ul>
   </section>
 </div>
-<!--div data-role="footer" class="ui-bar">
-   <a data-role="button" data-shadow="false" data-icon="repeat" id="homeBtn" target="#">Home</a>
-   <a data-role="button" data-shadow="false" data-icon="edit" id="edit" target="#" style="float:right;" id="edit">{{= loc('edit') }}</a>
-</div-->
-<br/>
 </script>
 
 <script type="text/template" id="feedChooserQuickstartTemplate">
@@ -181,7 +176,7 @@
     {{ }                       }}
     {{ if (currentStep == 1) { }}
     <li>
-      <a class="mini-cta" href="#" data-selector="li[data-backlink=&quot;indicators&quot;]:nth-child(2),li[data-backlink=&quot;indicators&quot;]:nth-child(1)" data-tooltip="Click an indicator to make a rule with it" data-direction="top">Create rules</a> out of the indicators you've chosen
+      <a class="mini-cta" href="#" data-selector="li[data-backlink=&quot;indicators&quot;]:nth-child(1)" data-tooltip="Click an indicator to make a rule with it" data-direction="bottom">Create rules</a> out of the indicators you've chosen
     </li>
     {{ }                       }}
     {{ if (currentStep == 2) { }}
@@ -1798,7 +1793,7 @@
 
 <script type="text/template" id="loginPopupTemplate">
 {{ if (obj.msg) { }}
-<span class="headerMessageBar" style="z-index: 100000; background: yellow;">
+<span class="headerMessageBar">
   {{= msg }}
 </span>
 {{ }              }}
@@ -2268,7 +2263,7 @@
       <input name="-$action" type="hidden" value="upload" />
       <input name="type" type="hidden" value="{{= type }}" />
       <input name="location" type="hidden" value="{{= G.serverName + '/wf/' + location }}" />
-      <input name="$returnUri" type="hidden" value="{{= window.location.href }}" />
+      <input name="$returnUri" type="hidden" value="{{= U.getReturnUrl() }}" />
     </div>
   </form>
 </script>
@@ -2538,14 +2533,14 @@
 
 <script type="text/template" id="stringPET">
 <div class="_prim"
-  {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 250; }}
+  {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 250, tag = isInput ? 'input' : 'textarea'; }}
   {{ if (obj.name) { }}
     ><label for="{{= id }}" class="ui-input-text" style="{{= isInput ? '' : 'vertical-align:top;' }}color:{{= G.darkColor }};">{{= name }}</label>
-    <{{= isInput ? 'input type="text"' : 'textarea rows="3" cols="20" ' }} name="{{= shortName }}" id="{{= id }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}  class="ui-input-text">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
+    <{{= isInput ? 'input type="text"' : 'textarea rows="3" cols="20" ' }} name="{{= shortName }}" id="{{= id }}" placeholder="{{= prop.sample || '' }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}  class="ui-input-text">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= tag }}>
   {{ } }}
   {{ if (!obj.name) { }}
   style="text-align:center;"><div>
-    <{{= isInput ? 'input type="text"' : 'textarea  rows="10" style="width:95%;"' }} name="{{= shortName }}" id="{{= id }}"  value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}>{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= isInput  ? 'input' :  'textarea' }}>
+    <{{= isInput ? 'input type="text"' : 'textarea  rows="10" style="width:95%;"' }} name="{{= shortName }}" id="{{= id }}" placeholder="{{= prop.sample || '' }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}>{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= tag }}>
   </div>
   {{ } }}
 </div>
@@ -2607,7 +2602,7 @@
 <script type="text/template" id="moneyPET">
 <div class="_prim">
   <label for="{{= id }}" class="ui-input-text" style="color:{{= G.darkColor }}; white-space:nowrap;">{{= name }} <b>{{= typeof value.currency === 'undefined' ? '($)' : value.currency }}</b></label>
-  <input type="text" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '' }}" {{= rules }} class="ui-input-text"></input>
+  <input type="text" placeholder="{{= prop.sample || 75 }}" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '' }}" {{= rules }} class="ui-input-text"></input>
 </div>
 </script>
 

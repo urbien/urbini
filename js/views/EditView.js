@@ -838,6 +838,9 @@ define('views/EditView', [
     },
 
     submit: function(e, options) {
+      if (e)
+        Events.stopEvent(e);
+
       if (!this.isActive() || this.isSubmitted())
         return;
 

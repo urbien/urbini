@@ -1,23 +1,21 @@
 body {
-    overflow: hidden;
-    -webkit-margin-before: 0;
-    -webkit-margin-after: 0;
-    -webkit-perspective: 1000px;
-            perspective: 1000px;
-    -webkit-text-size-adjust: none;
-    -webkit-touch-callout: none;
-    -webkit-tap-highlight-color:rgba(0,0,0,0);
-    -webkit-backface-visibility: hidden;
-    -webkit-transform-style: preserve-3d;
-    -moz-transform-style: preserve-3d;
-         transform-style: preserve-3d;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-        user-select: none;
-    text-overflow: ellipsis;
-    max-width: 1040px;
-    margin: 0 auto;
+  overflow: hidden;
+  -webkit-margin-before: 0;
+  -webkit-margin-after: 0;
+  -webkit-perspective: 1000px;
+          perspective: 1000px;
+  -webkit-text-size-adjust: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color:rgba(0,0,0,0);
+  -webkit-backface-visibility: hidden;
+  -webkit-transform-style: preserve-3d;
+  -moz-transform-style: preserve-3d;
+       transform-style: preserve-3d;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+   -ms-user-select: none;
+       user-select: none;
+  text-overflow: ellipsis;
 }
 
 [data-role="page"] {
@@ -33,18 +31,10 @@ body {
   box-sizing: border-box;
 }
 
-/*.paddedPage {
-  padding: 0 1rem;
+.mw1040-mauto {
+  max-width: 1040px;
+  margin: 0 auto;
 }
-
-.paddedPage section[data-type="sidebar"] {
-}
-*/
-/*.paddedPage .headerMessageBar {
-  margin: 0 -2%;
-  width: 104%;
-}
-*/
 
 .paddedPage .headerDiv {
   padding: 0 1rem;
@@ -58,22 +48,8 @@ body {
   [data-role="page"] {
     max-width: 960px;
     margin: 0 40px;
-/*    border-left: 2px dashed;
-    border-right: 2px dashed;*/
   }
 
-/*  .paddedPage, .paddedPage section[data-type="sidebar"] {
-    padding: 0 2%;
-  }
-
-  .paddedPage section[data-type="sidebar"] {
-    width: 104%;
-  }
-*/
-/*  .paddedPage .headerMessageBar {
-    width: 102%;
-  }
-*/
   .paddedPage .headerDiv {
     padding: 0;
   }
@@ -425,10 +401,15 @@ div.nabBtn {
   border: 1px solid black;
   color:#000;
   display: block;
+  z-index: 100000;
+  background: yellow;
 }
 
 .modal-popups .headerMessageBar {
-  margin: 0 4% 2%;
+  margin: 0 auto 2rem;
+  width: 480px;
+  color: white;
+  background: rgba(0, 0, 0, 0.5);
 }
 
 .headerMessageBar.errorMessageBar {
@@ -617,11 +598,12 @@ div.nabBtn {
 
 
 .thumb-gal {
-  padding: 0px 0px 0px 0px;
+  padding: 0;
   width: 100%;
   max-width: 960px;
   white-space: nowrap;
 }
+
 section[id^="view"] {
   position: absolute;
   height: 100%;
@@ -773,7 +755,8 @@ section[id^="view"] {
   z-index:10001;
   position: relative;
   opacity: 0.8;
-  margin-top: 1rem;
+  /*margin-top: 1rem;*/
+  padding: 10px 10px 0;
   box-sizing: border-box;
 }
 
@@ -1053,6 +1036,7 @@ section[id^="view"] {
 .headerUl  {
   display:block;
   max-width:100%;
+  margin: 0;
   list-style:none;
 /*  margin: 0 1rem;*/
   padding: 0;/* 0.5rem;*/
@@ -1102,6 +1086,7 @@ section[id^="view"] {
 
 .headerFormBtn {
   font-size: 1.5rem;
+  vertical-align: top;
 }
 
 .saveBtn, .cancelBtn {
@@ -1115,6 +1100,7 @@ section[id^="view"] {
 
   .headerFormBtn {
     font-size: 2.5rem;
+    vertical-align: bottom;
   }
 }
 
@@ -1824,6 +1810,7 @@ li.invalid[data-role="fieldcontain"] {
 
 .unfolded[data-display="collapsed"] ul {
   display: inherit;
+  margin-top: 10px;
 }
 
 .emailForm {

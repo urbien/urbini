@@ -336,6 +336,7 @@ define('views/BasicView', [
 //      this.log('refresh', 'page title:', this.getPageTitle());
 //      this._queueTask(this._doRefresh, this, arguments);
       if (this.isActive()) {
+        delete this._refreshArgs;
         this._doRefresh.apply(this, arguments);
 //        if (rOptions.delegateEvents !== false)
 //          this.redelegateEvents();
@@ -398,6 +399,7 @@ define('views/BasicView', [
   //    this.log('render', 'page title:', this.getPageTitle());
       rOptions = rOptions || {};
       if (rOptions.force || this.isActive()) {
+        delete this._renderArgs;
         var result = this._doRender.apply(this, arguments);
         if (this.autoFinish !== false)
           this.finish(rOptions);
