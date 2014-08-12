@@ -805,8 +805,9 @@ define('models/Resource', [
 //      if (uriChanged)
 //        props._uri = uri;
 
-      if (!options.silent && !hasNonMetaProps(props))
-        options.silent = true;
+      if (!options.silent && !hasNonMetaProps(props)) {
+        options = _.defaults({silent: true}, options); // avoid changing passed-in options obj, but DO call set with silent: true
+      }
 
       var result = Backbone.Model.prototype.set.call(this, props, options);
 //      if (uriChanged)

@@ -825,7 +825,8 @@ define('views/ControlPanel', [
               comment: iRes.comment,
               _problematic: iRes.get('_error'),
               name: U.getDisplayName(iRes),
-              backlink: name
+              backlink: name,
+              isIndicator: isIndicator
             },
             grid = U.getCols(iRes, 'grid', true);
 

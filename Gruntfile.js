@@ -1,24 +1,40 @@
 module.exports = function(grunt) {
 
   var jsFiles = ['Gruntfile.js'],
-      cssFiles = [];
-  
+      cssFiles = [],
+      fs = require('fs');
+
   (function buildJSFileList(jsFiles) {
     var loadBundle = function(bundle) {
       var i = bundle.length,
               fileInfo,
               filePath;
-      
+
       while (i--) {
         fileInfo = bundle[i];
         filePath = typeof fileInfo == 'object' ? fileInfo.path : fileInfo;
         if (/\.js$/.test(filePath))
           jsFiles.push('js/' + filePath);
-        else if (/\.css$/.test(filePath))
-          cssFiles.push('js/' + filePath);
-      }      
+        else if (/\.css$/.test(filePath)) {
+          if (/\.min\.css$/.test(filePath))
+            continue;
+
+          var path = 'js/' + filePath,
+              minPath = path.replace('.css', '.min.css'),
+              mtime = fs.lstatSync(path).mtime.getTime(),
+              minStats = fs.existsSync(minPath) && fs.lstatSync(minPath);
+
+          if (!minStats || mtime > minStats.mtime.getTime()) {
+            cssFiles.push(path);
+            if (/leaflet/.test(filePath))
+              console.log("minifying: " + path);
+          }
+          //else
+          //  console.log("not minifying: " + path, "unmodified");
+        }
+      }
     };
-    
+
     var bundles = grunt.file.readJSON('bundles.json');
     for (var name in bundles) {
       var bundle = bundles[name];
@@ -31,7 +47,7 @@ module.exports = function(grunt) {
         loadBundle(bundle);
     }
   })(jsFiles);
-  
+
   grunt.initConfig({
     jshint: {
       files: jsFiles,
@@ -44,8 +60,8 @@ module.exports = function(grunt) {
           document: true,
           '_': true
         },
-        asi: true,      
-        boss: true,     
+        asi: true,
+        boss: true,
         funcscope: true,
         loopfunc: true,
         eqnull: true,
@@ -67,7 +83,7 @@ module.exports = function(grunt) {
     uglify: {
       compress: {
         expand: true,
-        src: jsFiles, 
+        src: jsFiles,
         dest: 'test/',
         ext: '.min.js',
         flatten: false,
@@ -82,12 +98,12 @@ module.exports = function(grunt) {
       }
     }
   });
-  
+
 //  grunt.loadNpmTasks('grunt-contrib-jshint');
 //  grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('grunt-contrib-cssmin');
 //  grunt.loadNpmTasks('grunt-contrib-concat');
- 
+
   grunt.task.registerTask('default', [/*'jshint', 'uglify',*/ 'cssmin']);
 };
 /*
@@ -106,8 +122,8 @@ module.exports = function(grunt) {
       }
     },
   grunt.loadNpmTasks('grunt-bower-task');
-  
+
   grunt.renameTask("bower", "bowerInstall");
-  
+
   grunt.loadNpmTasks('grunt-bower');
 */

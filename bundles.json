@@ -108,9 +108,9 @@
       "views/HistoricalDataView.js",
       "views/SocialLinksView.js",
       "../styles/leaflet/leaflet.css",
-      "../styles/leaflet/MarkerCluster.Default.css",
-      "../styles/leaflet/leaflet.ie.css",
-      "../styles/leaflet/MarkerCluster.Default.ie.css",
+      "../styles/leaflet/MarkerClusterDefault.css",
+      "../styles/leaflet/leafletIE.css",
+      "../styles/leaflet/MarkerClusterDefaultIE.css",
       "../styles/codemirror.css"
    ],
    "appcache":[
@@ -145,14 +145,6 @@
          "lib/form-elements.css",
          "../styles/bootstrap_styles.css",
          "../templates_bootstrap.jsp"
-      ],
-      "jqm":[
-         "jqm-config.js",
-         "lib/jquery.mobile-1.3.2.js",
-         "lib/jquery.mobile-1.3.2.min.css",
-         "lib/jquery.mobile.theme-1.3.2.min.css",
-         "lib/jquery.mobile.structure-1.3.2.min.css",
-         "../styles/jqm_styles.css"
       ]
    }
 }
