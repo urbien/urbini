@@ -187,6 +187,7 @@ define('models/Resource', [
 
     setDefaults: function() {
       var vocModel = this.vocModel,
+          meta = vocModel.properties,
           urlInfo = U.getCurrentUrlInfo(),
           action = urlInfo.action,
           isEdit = action == 'make' || action == 'edit',
@@ -291,7 +292,45 @@ define('models/Resource', [
           this.where = conditions;
       }
 
+      if (_.isEmpty(defaults))
+        return;
+
+      for (var p in defaults) {
+        var dnProp = p + '.displayName',
+            prop,
+            dn,
+            uri,
+            res;
+
+        if (_.has(defaults, dnProp))
+          continue;
+
+        prop = meta[p];
+        if (!prop || !U.isResourceProp(prop))
+          continue;
+
+        uri = defaults[p];
+        res = U.getResource(uri);
+        if (res) {
+          dn = res.getDisplayName();
+        }
+        else {
+          if (uri == '_me')
+            uri = defaults[p] = G.currentUser._uri;
+
+          if (uri == G.currentUser._uri)
+            dn = G.currentUser.davDisplayName;
+        }
+
+        if (dn)
+          defaults[dnProp] = dn;
+      }
+
       this.set(defaults, {silent: true, defaults: true});
+    },
+
+    getDisplayName: function() {
+      return U.getDisplayName(this);
     },
 
     onUriChanged: function() {
