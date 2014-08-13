@@ -59,7 +59,8 @@ html {
 
 .section.dark, .section.dark .section-title {
   background-color: #2e3b4e;
-  color: #ffddcc;
+  /*color: #ffddcc;*/
+  color: #FFA989;
 }
 
 .section.dark h4, .section.dark a {
@@ -397,7 +398,6 @@ body > .section:not([data-role="page"]) {
 .section .cta {
   width: 220px;
   max-width: 90%;
-  margin-bottom: 10px;
 }
 
 /*
@@ -451,6 +451,7 @@ body > .section:not([data-role="page"]) {
   cursor: pointer;
   display: inline;
   font-size: 20px;
+  padding: 10px 20px;
 }
 
 .section:last-child .pgDown, .section:first-child .pgUp {
@@ -557,7 +558,7 @@ body > .section:not([data-role="page"]) {
   }
 }
 
-@media only screen and (min-width: 800px) and (min-height: 600px) {
+/*@media only screen and (min-width: 800px) and (min-height: 600px) {
   .group {
     margin-top: 60px;
     margin-bottom: 60px;
@@ -567,7 +568,7 @@ body > .section:not([data-role="page"]) {
     margin-top: 50px;
   }
 }
-
+*/
 .section a {
 /*  padding-bottom: 3px;
   color: #7aaac3;
@@ -872,7 +873,7 @@ body > .section:not([data-role="page"]) {
     text-align:center;
     padding-left: 0;
   }
-  
+
   .headerMenuItem {
     padding: 10px;
   }
@@ -1090,11 +1091,11 @@ body > .section:not([data-role="page"]) {
 }
 
 #homePage .subtitle {
-  width: 100%; 
-  padding: 20px 30px 0; 
-  color: #7aaac3; 
+  width: 100%;
+  padding: 20px 30px 0;
+  color: #7aaac3;
   margin-top: -34px;
-  box-sizing: border-box; 
+  box-sizing: border-box;
   line-height:24px;
 }
 

@@ -347,7 +347,7 @@
         {{ if (resource.get('tradleFeed')) { }}
         {{ var feed =  resource.get('feed'); }}
         {{ var isStock = feed  &&  feed.indexOf('/Stock?') != -1; }}
-        {{ var isIndexOrStock = resource.get('tradleFeed.displayName').charAt(0) == '^' || isStock; }} 
+        {{ var isIndexOrStock = resource.get('tradleFeed.displayName').charAt(0) == '^' || isStock; }}
         <div class="tradleFeed" {{= isIndexOrStock ? 'style="font-size:4rem;line-height:3rem;font-weight:bold;"' : '' }}><!-- href="{{= U.makeMobileUrl('view', resource.get('tradleFeed')) }}"-->
           {{= isStock ? feed.substring(feed.lastIndexOf('=') + 1) : resource.get('feed.displayName') }}
         </div>
@@ -379,7 +379,7 @@
         {{ if (resource.get('compareWithTradleFeed')) { }}
         {{ var cmpFeed =  resource.get('compareWithFeed'); }}
         {{ var isStock = cmpFeed  &&  cmpFeed.indexOf('/Stock?') != -1; }}
-        {{ var isIndexOrStock = cmpFeed.charAt(0) == '^' || isStock }} 
+        {{ var isIndexOrStock = cmpFeed.charAt(0) == '^' || isStock }}
         <div {{= isIndexOrStock ? 'style="font-size:4rem;line-height:3rem;font-weight:bold;"' : '' }}  class="tradleFeed"> <!--href="{{= U.makeMobileUrl('view', resource.get('compareWithTradleFeed')) }}" class="tradleFeed"-->
           {{= isStock ? cmpFeed.substring(cmpFeed.lastIndexOf('=') + 1) : resource.get('compareWithFeed.displayName') }}
         </div>
@@ -1804,14 +1804,12 @@
       <div class="encircled">
         <i class="big_symbol ui-icon-facebook"></i>
       </div>
-      <br />
       <span>Login with Facebook</span>
     </td>
     <td class="twitter">
       <div class="encircled">
         <i class="big_symbol ui-icon-twitter"></i>
       </div>
-      <br />
       <span>Login with Twitter</span>
     </td>
   </tr>
@@ -1820,7 +1818,6 @@
       <div class="encircled">
         <i class="big_symbol ui-icon-linkedin"></i>
       </div>
-      <br />
       <span>Login with LinkedIn</span>
     </td>
   </tr>
@@ -1829,14 +1826,12 @@
       <div class="encircled">
         <i class="big_symbol ui-icon-google-plus"></i>
       </div>
-      <br />
       <span>Login with Google+</span>
     </td>
     <td class="live">
       <div class="encircled">
         <i class="big_symbol ui-icon-windows-live"></i>
       </div>
-      <br />
       <span>Login with Live</span>
     </td>
   </tr>

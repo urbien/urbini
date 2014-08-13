@@ -1137,11 +1137,22 @@ section[id^="view"] {
 
 .social-login .encircled {
   margin: auto;
+  margin-bottom: 10px;
 }
 
 .social-login td {
   width: 50%;
-  padding: 20px 20px 20px 20px;
+  padding: 10px;
+}
+
+@media all and (min-height: 450px) {
+  .social-login td {
+    padding: 20px;
+  }
+
+  .social-login .encircled {
+    margin-bottom: 20px;
+  }
 }
 
 .facebook {
@@ -1873,16 +1884,16 @@ section[data-backlink="indicators"] li:not([data-action="add"]) {
   border: 2px dashed #888;
 }
 #sidebar .frTitle {
-  font-size:2rem; 
+  font-size:2rem;
   padding-bottom:.8rem;
 }
 @media all and (min-width: 600px) {
   section[data-backlink] {
     font-size: 4rem;
   }
-  #sidebar .frTitle { 
-     font-size:2.4rem; 
-     padding-bottom:.8rem; 
+  #sidebar .frTitle {
+     font-size:2.4rem;
+     padding-bottom:.8rem;
    }
 }
 
