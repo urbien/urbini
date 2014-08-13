@@ -1887,6 +1887,8 @@ define('globals', function() {
         G._logArray.length = Math.max(100 - txt.length, 0);
         console.log((css ? '%c ' : '') + txt + G._logArray.join(' ') + d.toUTCString().slice(17, 25) + ':' + d.getUTCMilliseconds(), css ? 'background: ' + (typeTrace.bg || '#FFF') + '; color: ' + (typeTrace.color || '#000') : '');
       }
+
+      G._logArray.length = 0;
     },
 
     linkCSS: function(url) {

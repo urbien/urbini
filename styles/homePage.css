@@ -380,7 +380,12 @@ body > .section:not([data-role="page"]) {
 /*  font-size: 16px;*/
   border: none;
   border-radius: 5px;
-  background:#2892c6;
+  background:rgba(40, 146, 198, 1);
+}
+
+.cta.disabled  {
+  background: rgba(40, 146, 198, 0.5);
+  cursor: default;
 }
 
 .mini-cta {
@@ -895,28 +900,12 @@ body > .section:not([data-role="page"]) {
 }
 
 .globalLogo {
-  position:absolute;
   font-size: 300px;
   color: #ccc;
   right: 0;
   opacity: 0.2;
-  /*
-  top: 0;
-  -webkit-transform: translateX(100%);
-     -moz-transform: translateX(100%);
-      -ms-transform: translate(100%);
-          transform: translateX(100%);
-*/
-
-  top: 50%;
-  -webkit-transform: translateX(0) translateY(-50%);
-     -moz-transform: translateX(0) translateY(-50%);
-      -ms-transform: translate(0) translateY(-50%);
-          transform: translateX(0) translateY(-50%);
-
   text-align: center;
   width: 100%;
-
   -webkit-transition-duration: 1s;
      -moz-transition-duration: 1s;
       -ms-transition-duration: 1s;

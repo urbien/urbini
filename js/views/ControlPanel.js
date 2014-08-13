@@ -21,11 +21,6 @@ define('views/ControlPanel', [
     return bl;
   };
 
-  function isActionButton(prop) {
-    var dn = U.getPropDisplayName(prop);
-    return ~['IF', 'THEN'].indexOf(dn.toUpperCase());
-  }
-
   function shouldPaintOverlay(res, blProp) {
     if (!res)
       return false;
@@ -604,7 +599,7 @@ define('views/ControlPanel', [
       var self = this,
           setLinkTo = prop.setLinkTo,
           shortName = prop.shortName;
-      
+
 //      ,
 //          count = U.getBacklinkCount(this.resource, shortName);
 //
@@ -687,6 +682,13 @@ define('views/ControlPanel', [
       });
     },
 
+    isActionButton: function(prop) {
+      var dn = U.getPropDisplayName(prop);
+      return ~['IF', 'THEN'].indexOf(dn.toUpperCase()) && {
+        editable: U.isPropEditable(this.resource, prop)
+      };
+    },
+
     renderInlineList: function(name, frag, displayedProps) {
       this._renderInlineList(name, frag, displayedProps);
       if (name == 'indicators') {
@@ -698,8 +700,8 @@ define('views/ControlPanel', [
 
         U.addToFrag(frag, add);
       }
-      else if (name == 'orders') {
-      }
+      // else if (name == 'orders') {
+      // }
     },
 
     _renderInlineList: function(name, frag, displayedProps) {
@@ -745,7 +747,7 @@ define('views/ControlPanel', [
             add: canAdd,
             shortName: getBacklinkSub(vocModel, name),
             style: prop.propertyStyle,
-            actionBtn: isActionButton(prop)
+            actionBtn: this.isActionButton(prop)
           }));
 
           if (isTrade) {
@@ -768,7 +770,7 @@ define('views/ControlPanel', [
       if (!isIndicator && (list.length || canAdd)) {
         if (displayCollapsed  &&  list.length) {
           if (isBB)
-            gr = '<section data-shortname="' + name + '" data-display="collapsed" style="cursor:pointer;">'; 
+            gr = '<section data-shortname="' + name + '" data-display="collapsed" style="cursor:pointer;">';
           else if (isTopcoat)
             gr = '<li data-shortname="' + name + '" data-display="collapsed topcoat-list__item" ' +  (G.coverImage ? 'style="text-shadow:none;background:' + G.coverImage.color + ';color: ' + G.coverImage.background + ';"' : '') + '><h3><i class="ui-icon-plus-sign"></i>&#160;' + prop.displayName + '</h3><ul class="topcoat-list__container">';
           else if (isBootstrap)
@@ -782,7 +784,7 @@ define('views/ControlPanel', [
             add: canAdd,
             shortName: getBacklinkSub(vocModel, name),
             style: style,
-            actionBtn: isActionButton(prop),
+            actionBtn: this.isActionButton(prop),
             displayCollapsed: displayCollapsed
           });
           if (isBB)
@@ -794,7 +796,7 @@ define('views/ControlPanel', [
             value: propDisplayName,
             add: canAdd,
             shortName: getBacklinkSub(vocModel, name),
-            actionBtn: isActionButton(prop),
+            actionBtn: this.isActionButton(prop),
             style: prop.propertyStyle
           }));
         }
@@ -973,7 +975,7 @@ define('views/ControlPanel', [
 //        else {
 //          if (isNotification  &&  iRes.get('davDisplayName') == "null")
 //            iRes.attributes.davDisplayName = 'Please choose how you want to be notified';
-//        
+//
 //          params.href = U.makePageUrl(action, iRes.getUri(), { $title: params.name });
 //        }
         params.resource = iRes;

@@ -1416,7 +1416,7 @@
 <header style="position:relative;{{= obj.style ? obj.style : G.coverImage ? 'color:' + G.coverImage.background + ';' : '' }}" class="{{= obj.class }}" {{= sn }}>
 {{= obj.displayCollapsed ? '<i class="ui-icon-collapsable"></i> ': '' }}
 {{= obj.style && !obj.actionBtn ? '<div style="padding:1rem;display:inline-block;">' : '' }}
-{{= obj.actionBtn ? '<div class="cta" style="width:220px;" ' + sn + '>' : '' }}
+{{= obj.actionBtn ? '<div class="cta' + (actionBtn.editable ? '' : ' disabled') + '" style="width:220px;" ' + sn + '>' : '' }}
 {{= value }}
 {{= obj.style || obj.actionBtn ? '</div>' : '' }}
 
