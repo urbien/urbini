@@ -1514,6 +1514,9 @@ define('globals', function() {
       e.stopImmediatePropagation();
     },
     showSpinner: function(options) {
+      if (document.$)
+        document.$('.spinner_bg').$remove();
+      
       options = options || {};
       if (typeof options === 'string')
         options = {name: options};
