@@ -714,6 +714,7 @@ define('views/ControlPanel', [
           propDisplayName = U.getPropDisplayName(prop),
           canceledProp,
           isRule = U.isAssignableFrom(listVocModel, 'commerce/trading/Rule'),
+          isNotification = U.isAssignableFrom(listVocModel, 'commerce/trading/Notification'),
           isIndicator = U.isAssignableFrom(listVocModel, 'commerce/trading/TradleIndicator'),
           isTrade = U.isAssignableFrom(listVocModel, 'commerce/trading/Order'),
           addTradeSection = isTrade && function() {
@@ -767,7 +768,7 @@ define('views/ControlPanel', [
       if (!isIndicator && (list.length || canAdd)) {
         if (displayCollapsed  &&  list.length) {
           if (isBB)
-            gr = '<section data-shortname="' + name + '" data-display="collapsed">';
+            gr = '<section data-shortname="' + name + '" data-display="collapsed" style="cursor:pointer;">'; 
           else if (isTopcoat)
             gr = '<li data-shortname="' + name + '" data-display="collapsed topcoat-list__item" ' +  (G.coverImage ? 'style="text-shadow:none;background:' + G.coverImage.color + ';color: ' + G.coverImage.background + ';"' : '') + '><h3><i class="ui-icon-plus-sign"></i>&#160;' + prop.displayName + '</h3><ul class="topcoat-list__container">';
           else if (isBootstrap)
@@ -968,16 +969,24 @@ define('views/ControlPanel', [
           params.href = U.makePageUrl(action, iRes.getUri(), { $title: params.name });
 
         params.isLast = (i == l - 1);
+//        // HACK for today
+//        else {
+//          if (isNotification  &&  iRes.get('davDisplayName') == "null")
+//            iRes.attributes.davDisplayName = 'Please choose how you want to be notified';
+//        
+//          params.href = U.makePageUrl(action, iRes.getUri(), { $title: params.name });
+//        }
         params.resource = iRes;
         if (params.img)
           hasImages = true;
         else if (hasImages)
           params.needsAlignment = true;
         params.isTrade = isTrade;
+        params.isIndicator = isIndicator;
         if (displayCollapsed)
           gr += template.call(this, params);
         else
-          U.addToFrag(frag, template.call(this, params));
+        U.addToFrag(frag, template.call(this, params));
         displayedProps[name] = true;
         this.stopListening(iRes, 'change', this.update);
         this.listenTo(iRes, 'change', this.update);
@@ -1169,7 +1178,7 @@ define('views/ControlPanel', [
     },
 
     renderFT: _.debounce(function() {
-      if (!this.isMainGroup)
+      if (!this.isMainGroup  &&  this.resource.getInlineList('tradleRules')  &&  this.resource.getInlineList('tradleRules').length)
         this.fetchFTArticles().done(this.doRenderFT);
     }, 500),
 
@@ -1530,8 +1539,17 @@ define('views/ControlPanel', [
                 U.addToFrag(frag, this.cpMainGroupTemplate(tmpl_data));
             }
             else {
-              if (isPropEditable)
-                U.addToFrag(frag, this.cpTemplate(tmpl_data));
+              if (isPropEditable) {
+                if (U.isCloneOf(prop, 'Templatable.clones', this.vocModel)) {
+                  if (U.isCloneOf(prop, 'Templatable.clones', this.vocModel)) {
+                    if  (cnt > 0)
+                      U.addToFrag(frag, this.cpTemplateNoAdd(tmpl_data));
+                  }
+                  U.addToFrag(frag, this.cpTemplateNoAdd(tmpl_data));
+                }
+                else
+                  U.addToFrag(frag, this.cpTemplate(tmpl_data));
+              }
               else
                 U.addToFrag(frag, this.cpTemplateNoAdd(tmpl_data));
             }
@@ -1655,8 +1673,14 @@ define('views/ControlPanel', [
               tmpl_data['$asc'] = 0;
             }
 //            var common = {range: range, shortName: p, backlink: prop.backLink, value: cnt, _uri: uri, title: t, comment: comment, name: n};
-            if (isPropEditable)
-              U.addToFrag(frag, this.cpTemplate(tmpl_data));
+            if (isPropEditable) {
+              if (U.isCloneOf(prop, 'Templatable.clones', this.vocModel)) {
+                if  (cnt > 0)
+                  U.addToFrag(frag, this.cpTemplateNoAdd(tmpl_data));
+              }
+              else
+                U.addToFrag(frag, this.cpTemplate(tmpl_data));
+            }
             else
               U.addToFrag(frag, this.cpTemplateNoAdd(tmpl_data));
           }

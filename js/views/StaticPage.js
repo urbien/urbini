@@ -7,10 +7,6 @@ define('views/StaticPage', [
   'views/Header'
 ], function(G, U, Events, BasicPageView, Header) {
   return BasicPageView.extend({
-    style: {
-      // background: 'rgba(255, 255, 255, 0.5)',
-      height: '100%'
-    },
     initialize: function(options) {
       options = options || {};
       BasicPageView.prototype.initialize.call(this, options);

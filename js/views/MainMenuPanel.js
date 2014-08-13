@@ -180,9 +180,9 @@ define('views/MainMenuPanel', [
 
       if (this.resource && U.isAssignableFrom(this.vocModel, 'commerce/trading/Tradle')) {
         html += this.menuItemTemplate({
-          title: this.loc("embed"),
-          id: 'embed',
-          pageUrl: G.serverName + '/widget/embed.html?uri=' + encodeURIComponent(resOrCol.getUri())
+          title: this.loc("embed"), 
+          id: 'embed', 
+          pageUrl: G.serverName + '/widget/embed.html?-embed=y&uri=' + encodeURIComponent(resOrCol.getUri()) 
         });
       }
 

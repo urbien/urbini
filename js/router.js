@@ -510,6 +510,13 @@ define('router', [
                 company: 'BWG Strategy LLC',
                 linkedin: 'https://www.linkedin.com/profile/view?id=10934599',
                 featured: 'https://media.licdn.com/mpr/mpr/wc_240_240/p/1/005/040/38f/08b3c9d.jpg'
+              },
+              {
+                davDisplayName: 'David D. Postolski, Esq.',
+                title: 'IP and Patent Attorney', 
+                company: 'Gearhart Law, LLC',
+                linkedin: 'https://www.linkedin.com/in/davidpostolski',
+                featured: 'https://media.licdn.com/mpr/mpr/wc_200_200/p/7/005/021/2cb/05dcbfb.jpg'
               }
             ]
           };
@@ -1178,6 +1185,9 @@ define('router', [
     },
 
     checkIfEmailRequired: function() {
+      if (true)
+        return; // for now
+      
       if (G.currentUser.email)
         return;
 

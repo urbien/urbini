@@ -6,9 +6,6 @@ define('views/ArticlePage', [
 
   return BasicPageView.extend({
     autoFinish: false,
-    style: {
-      background: 'rgba(255, 255, 255, 0.5)'
-    },
     initialize: function(options) {
       options = options || {};
       _.bindAll(this, 'render');

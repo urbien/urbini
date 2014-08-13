@@ -970,7 +970,7 @@ define('views/EditView', [
         // TRADLE APP HACK
         if (res.get('isPublic') && res.isAssignableFrom('commerce/trading/Tradle') && res.get('title') == G.DEFAULT_TRADLE_NAME) {
           this.$('input[name="isPublic"]')[0].checked = false;
-          res.set('isPublic', false, {silent: true});
+          res.set('isPublic', false, {silent: true, userEdit: true});
           var err = 'Please give your tradle a real name';
           U.alert(err);
           this.onerror(res, { name: err });

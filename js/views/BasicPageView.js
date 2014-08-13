@@ -258,7 +258,7 @@ define('views/BasicPageView', [
       Events.stopEvent(e);
       if (!this.contextMenuEl) {
         if (this.mainMenuEl)
-          this.mainMenu.apply(this, arguments);
+          this.openMainMenu.apply(this, arguments);
 
         return;
       }

@@ -847,10 +847,11 @@ body > .section:not([data-role="page"]) {
 
 .homePageMenu {
   width: 100%;
-  margin-top: 50px;
-  padding: 0;
-  text-align:center;
+  padding-left: 12px;
+  padding-top: 12px;
   position:absolute;
+  top: 0;
+  left: 0;
 }
 
 .headerMenuItem {
@@ -866,15 +867,29 @@ body > .section:not([data-role="page"]) {
   color: inherit;
 }
 
-@media only screen and (min-width: 480px) {
+@media all and (min-width: 380px) {
+  .homePageMenu {
+    text-align:center;
+    padding-left: 0;
+  }
+  
   .headerMenuItem {
+    padding: 10px;
+  }
+}
+
+@media all and (min-width: 600px) {
+  .headerMenuItem {
+    font-size: 14px;
     padding: 20px;
   }
 }
 
-@media only screen and (min-width: 600px) {
-  .headerMenuItem {
-    font-size: 14px;
+@media all and (min-height: 480px) {
+  .homePageMenu {
+    margin-top: 50px;
+    padding-top: 0;
+    text-align:center;
   }
 }
 
@@ -1072,4 +1087,19 @@ body > .section:not([data-role="page"]) {
   -moz-transform: rotateY(180deg);
   -ms-transform: rotateY(180deg);
   transform: rotateY(180deg);
+}
+
+#homePage .subtitle {
+  width: 100%; 
+  padding: 20px 30px 0; 
+  color: #7aaac3; 
+  margin-top: -34px;
+  box-sizing: border-box; 
+  line-height:24px;
+}
+
+@media all and (min-height: 400px) {
+  #homePage .subtitle {
+    padding-bottom: 20px;
+  }
 }

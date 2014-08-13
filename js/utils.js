@@ -2410,7 +2410,7 @@ define('utils', [
         return false;
 
       if (!G.domainRegExp.test(url))
-        return false;
+        return true;
 
       return url.slice(url.indexOf(G._serverName), G._serverName.length + 1).startsWith(G.pageRoot);
     },
@@ -4897,8 +4897,11 @@ define('utils', [
 //        hashtags = 'tradle';
 
         var orders = res.getInlineList('orders');
-        if (orders && orders.length)
-          text += ' ' + _.uniq(orders.pluck('security').map(function(uri) { return '$' + _.decode(uri.split('=')[1]) })).join(',');
+        if (orders && orders.length) {
+          orders = _.compact(_.uniq(orders.pluck('security')));
+          if (orders.length)
+            text += ' ' + orders.map(function(uri) { return '$' + _.decode(uri.split('=')[1]) }).join(',');
+        }
       }
       else {
         url = U.makePageUrl('view', res);

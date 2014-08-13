@@ -127,8 +127,10 @@ var commands = {
     try {
       xhr = sendXhr(options);
     } catch (err) {
-      debugger;
-      console && console.debug(err);
+//      debugger;
+      if (console && typeof console.debug == 'function')
+        console.debug(err);
+      
       postMessage({
         responseHeaders: [],
         status: err.code, 

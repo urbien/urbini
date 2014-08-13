@@ -1872,11 +1872,18 @@ section[data-backlink] {
 section[data-backlink="indicators"] li:not([data-action="add"]) {
   border: 2px dashed #888;
 }
-
+#sidebar .frTitle {
+  font-size:2rem; 
+  padding-bottom:.8rem;
+}
 @media all and (min-width: 600px) {
   section[data-backlink] {
     font-size: 4rem;
   }
+  #sidebar .frTitle { 
+     font-size:2.4rem; 
+     padding-bottom:.8rem; 
+   }
 }
 
 section[data-backlink] li, li[data-backlink="tradleRules"] {
@@ -1971,6 +1978,7 @@ section[data-backlink] li:last-child {
   font-size:4.5rem;
   line-height: 4rem;
   color:#2c94c5;
+  margin-top:0.5rem;
 }
 
 .ruleOperatorLong {

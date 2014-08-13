@@ -277,10 +277,9 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       return;
     }
     else if (href) {
-      Events.stopEvent(e);
       if (canNavigate(a)) {
         if (U.isExternalUrl(absoluteHref)) {
-          window.location.href = absoluteHref;
+          window.open(absoluteHref, '_blank');
           return;
         }
 
@@ -288,8 +287,10 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         Events.trigger('navigate', href);
         return;
       }
-      else
+      else {
+        Events.stopEvent(e);
         debugger;
+      }
     }
   });
 
@@ -512,8 +513,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         case 'TEXTAREA':
           return;
         case 'INPUT':
-          var keyCode = U.getKeyEventCode(e);
-          if (!isPageKey(keyCode))
+          if (!isPageKey(U.getKeyEventCode(e)))
             return;
       }
 
