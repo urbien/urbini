@@ -1210,6 +1210,12 @@ define('views/Header', [
             }
           };
 
+      if (this.$('.search-active').length) {
+        var search = this.getSearchInput();
+        if (search)
+          search.focus();
+      }
+
       input.checked = true;
       this._lastSubClass = input;
       if (sClName != 'All') {
