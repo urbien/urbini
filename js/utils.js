@@ -4415,7 +4415,8 @@ define('utils', [
       var url;
       if (e instanceof Event) {
         Events.stopEvent(e);
-        url = e.selectorTarget.href;
+        var t = e.selectorTarget;
+        url = t.$attr('href') || url.$data('href');
       }
       else
         url = e;

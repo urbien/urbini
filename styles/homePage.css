@@ -559,6 +559,7 @@ body > .section:not([data-role="page"]) {
   }
 
   #homePage .flip-container {
+    width: 200px;
     height: 200px;
   }
 }
@@ -1095,12 +1096,12 @@ body > .section:not([data-role="page"]) {
   -moz-perspective: 1000px;
   -ms-perspective: 1000px;
   perspective: 1000px;
-}
-
-.flip-container {
   position: relative;
   text-align:center;
   height: 100px;
+  width: 100px;
+  cursor: pointer;
+  display: inline-block;
 }
 
 .flipper {
