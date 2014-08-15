@@ -81,6 +81,7 @@ define('templates', [
       "phone": "telPET",
       "mobilePhone": "telPET",
       "emailAddress": "emailPET",
+      "times": "timesPET",
       "date": "datePET",
       "ComplexDate": "datePET",
       "Duration": "datePET",
