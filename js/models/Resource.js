@@ -976,8 +976,10 @@ define('models/Resource', [
     isA: function(interfaceName) {
       return U.isA(this.vocModel, interfaceName);
     },
-    isAssignableFrom: function(classNameOrType) {
-      return U.isAssignableFrom(this, classNameOrType);
+    isAssignableFrom: function() {
+      var args = _.toArray(arguments);
+      args.unshift(this);
+      return U.isAssignableFrom.apply(U, args);
     },
     _updateLastFetched: function() {
       this.set('_lastFetchedOn', G.currentServerTime(), {silent: true});

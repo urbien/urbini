@@ -161,33 +161,8 @@ button {
 
 }
 
-section[data-type="sidebar"] {
-  color: #cccccc;
-  text-shadow: none;
-  width: 100%;
-}
-section[data-type="sidebar"] > ul > li {
-  border-bottom: 1px solid #000000;
-}
-
 [data-type="list"] header:before {
   border:none;
-}
-
-section[data-type="sidebar"] >  ul > header {
-  position: relative;
-  z-index: 10;
-  height: 3rem;
-  color: #333;
-  background: #ddd; /*url(drawer/images/ui/header.png) repeat-x left bottom / 100% auto;*/
-  font-family: Tahoma, Helvetica, Ariel, sans-serif;
-
-  padding-top: 1rem;
-  padding-left: 1.3rem;
-  font-weight: normal;
-  font-size: 18px;
-  line-height: 2rem;
-  border-bottom: 1px solid #596068;
 }
 
 .acounter {
@@ -215,7 +190,7 @@ section[data-type="sidebar"] >  ul > header {
   margin-left:15px;
 }
 
-section[data-type="sidebar"]:after, .header section[role="region"] > header:first-child:after {
+sidebar:after, .header section[role="region"] > header:first-child:after {
   background: none;
 }
 #sidebar div {

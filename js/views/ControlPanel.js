@@ -34,7 +34,7 @@ define('views/ControlPanel', [
   var SLIDER_CL = 'slider';
   var SLIDER_ACTIVE_CL = 'slider-active';
   var CLICK_INDICATOR = 'Click an indicator to create a rule with it';
-  var CLICK_INDICATOR1 = 'Click an indicator to create a rule. <br /><br /> Swipe from right to left on rules or indicators for a list of actions.';
+  var CLICK_INDICATOR1 = 'To remove this rule, swipe right to left.<br /><br />If you\'re looking for indicators, click the large "IF" button above';
 
   return BasicView.extend({
     tagName: "tr",
@@ -83,7 +83,7 @@ define('views/ControlPanel', [
       'click [data-action="add"]': 'actionAdd',
       'click [data-action="edit"]': 'actionEdit',
       'click [data-action="comment"]': 'actionComment',
-      'click header .cta': 'backlinkAction',
+      'click header .cta:not(.disabled)': 'backlinkAction',
       'click .anim-overlay': Events.stopEvent
 //        ,
 //      'click': 'click'
@@ -616,8 +616,7 @@ define('views/ControlPanel', [
 
 //      G.log(this.TAG, "Recording step for tour: selector = 'data-shortname'; value = '" + shortName + "'");
 
-      Voc.getModels(prop.range).done(function() {
-        var pModel = U.getModel(prop.range);
+      Voc.getModels(prop.range).done(function(pModel) {
         if (!U.isAssignableFrom(pModel, 'Intersection')) {
           self._addNoIntersection(prop, t);
           return;
@@ -667,6 +666,15 @@ define('views/ControlPanel', [
         var where = aUri == null ? propA.where : propB.where;
         if (where)
           _.extend(params, U.getQueryParams(where));
+
+/*        if (!params.$orderBy && U.isA(pModel, 'ImageResource')) {
+          var imgProp = U.getCloneOf(pModel, 'ImageResource.originalImage')[0];
+          if (imgProp) {
+            params.$orderBy = imgProp;
+            params.$asc = 0;
+          }
+        }
+*/
         Events.trigger('navigate', U.makeMobileUrl('chooser', rtype, params), {trigger: true});
         G.log(self.TAG, 'add', 'user wants to add to backlink');
 //        var params = {

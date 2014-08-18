@@ -1515,8 +1515,15 @@ define('utils', [
      * @params (resource or resource.attributes, [model or model.properties])
      */
     getDisplayName: function(resource, vocModel) {
-      if (resource instanceof Backbone.Model && !resource.isLoaded())
+      if (resource instanceof Backbone.Model && !resource.isLoaded()) {
+        if (resource.isAssignableFrom('commerce/trading/Rule')) {
+          var dn = U.getRuleDisplayName(resource, vocModel);
+          if (dn)
+            return dn;
+        }
+
         return resource.vocModel.displayName;
+      }
 
       var dn = U.getValue(resource, 'davDisplayName');
       if (dn) {
@@ -1577,6 +1584,52 @@ define('utils', [
       }
 
       return (dn || vocModel.displayName).trim();
+    },
+
+    getRuleDisplayName: function(rule, model) {
+      model = model || rule.vocModel;
+      var dn1 = rule.get('indicator.displayName'),
+          op = U.getRuleOperator(rule),
+          atts = rule.attributes;
+
+      if (!dn1)
+        return;
+
+      parts = [dn1, op];
+      if (rule.get('compareWith')) {
+        var dn2 = rule.get('compareWith.displayName'),
+            percent = rule.get('percentValue');
+
+        if (dn2) {
+          parts.push(dn2);
+          if (rule.vocModel.shortName.endsWith('ByRule')) {
+            parts.push('by', percent !== undefined ? percent + '%' : '...');
+          }
+        }
+      }
+      else {
+        var val;
+        _.find(['string', 'double', 'enum', 'boolean'], function(type) {
+          var p = type + 'Value';
+          if (_.has(atts, p)) {
+            val = atts[p];
+            return true;
+          }
+        });
+
+        if (val === undefined) {
+          if (_.has(atts, 'percentValue'))
+            val = (rule.get('percentValue') || 0) + '%';
+          else if (_.has(atts, 'resourceValue'))
+            val = rule.get('resourceValue.displayName');
+          else if (_.has(atts, 'dateValue'))
+            val = U.getFormattedDate1(rule.get('dateValue'));
+        }
+
+        parts.push(val == undefined ? '...' : val);
+      }
+
+      return parts.join(' ');
     },
 
     getTemplate: function() {
@@ -4416,7 +4469,7 @@ define('utils', [
       if (e instanceof Event) {
         Events.stopEvent(e);
         var t = e.selectorTarget;
-        url = t.$attr('href') || url.$data('href');
+        url = t.$attr('href') || t.$data('href');
       }
       else
         url = e;
@@ -4841,9 +4894,11 @@ define('utils', [
       if (op)
         return op;
 
-      var vocModel = rule.vocModel;
-      var type = U.getTypeUri(rule.getUri());
-      var numeric = U.isNumericRuleType(type);
+      var vocModel = rule.vocModel,
+          uri = rule.getUri(),
+          type = uri ? U.getTypeUri(uri) : vocModel.type,
+          numeric = U.isNumericRuleType(type);
+
       if (numeric) {
         if (numeric[1])
           return numeric[1];

@@ -1812,6 +1812,8 @@ li.anim-overlay-active {
 
 li.invalid[data-role="fieldcontain"] {
   border: 3px solid red;
+  border-left: 0;
+  border-right: 0;
   background: rgba(255,0,0,0.2);
 }
 
@@ -2008,3 +2010,7 @@ section[data-backlink] li:last-child {
   }
 }
 
+.propertyComment {
+  font-style: italic;
+  font-size: 12px;
+}

@@ -12,6 +12,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 //      UNRENDERED,
       hammerOptions = {},
       hammer = new Hammer(document.body, hammerOptions),
+      dHammer = new Hammer(document, hammerOptions),
       Physics,
       HERE,
       THERE,
@@ -441,8 +442,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   };
 
   function stopDragEvent(e) {
-    e.gesture.preventDefault();
-    e.gesture.stopPropagation();
+    if (e.gesture) {
+      e.gesture.preventDefault();
+      e.gesture.stopPropagation();
+    }
+
     e.stopPropagation();
 //    e.preventDefault();
   };

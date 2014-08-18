@@ -19,7 +19,8 @@ define('views/BasicPageView', [
       doc = document,
       viewport = G.viewport,
       MainMenuPanel,
-      ContextMenuPanel;
+      ContextMenuPanel,
+      DESTOY_WHEN_INACTIVE_FOR = 3;
 
 //  ,
 //      mixins = [];
@@ -159,7 +160,7 @@ define('views/BasicPageView', [
       'swiperight.page': 'swiperight',
       'swipeleft.page': 'swipeleft',
       'click.page .videoLauncher': U.launchVideo,
-      'click.page .reqLogin': function(e) { Events.stopEvent(e); Events.trigger('req-login', {dismissible: true}) },
+      'click.page .reqLogin': function(e) { Events.stopEvent(e); Events.trigger('req-login', {dismissible: true}); },
       'click.page .pgDown': 'pageDown',
       'click.page .pgUp': 'pageUp',
       'click.page [data-selector]': 'scrollToTarget',
@@ -399,12 +400,13 @@ define('views/BasicPageView', [
     _onActiveView: function(view) {
       if (view !== this) {
         this._inactiveFor++;
-        // if (this._inactiveFor > 2) {
-        //   this.destroy();
-        // }
-
         if (this.active)
           this.trigger('inactive');
+        else {
+          if (this._inactiveFor > DESTOY_WHEN_INACTIVE_FOR) {
+            this.destroy();
+          }
+        }
       }
       else {
         if (!this.active) {
