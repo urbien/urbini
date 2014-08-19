@@ -668,7 +668,7 @@ define('utils', [
 
     isResourceProp: function(prop) {
       return prop && !prop.backLink && prop.range && (prop.range == 'Resource' ||
-                                                     (!prop.range.endsWith('/Percent')  &&  prop.range.indexOf('/') != -1 && !U.isInlined(prop)));
+                                                     (!U.isPercentProp(prop)  &&  prop.range.indexOf('/') != -1 && !U.isInlined(prop)));
     },
 //    getSortProps: function(model) {
 //      var meta = this.model.__proto__.constructor.properties;
@@ -2804,7 +2804,7 @@ define('utils', [
 //      uri: 'system/primitiveTypes',
       strings: ['String', 'longString'],
       dates: ['date', 'dateTime', 'ComplexDate', 'system/fog/ComplexDate', 'Money', 'model/company/Money'],
-      floats: ['float', 'double', 'Percent', 'm', 'm2', 'km', 'km2', 'g', 'kg'],
+      floats: ['float', 'double', 'Percent', 'system/primitiveTypes/Percent', 'm', 'm2', 'km', 'km2', 'g', 'kg'],
       ints: ['int', 'long', 'Duration', 'ComplexDate', 'dateTime', 'date']
     },
 
@@ -3181,7 +3181,7 @@ define('utils', [
       }
 
       var value = val.value;
-      if (value) {
+      if (value !== undefined) {
         if (range.indexOf("/") === -1)
           return value;
         return typeof value !== 'string' ? value : value.indexOf('/') === -1 ? value : U.getLongUri1(value);
@@ -3238,6 +3238,10 @@ define('utils', [
 
     isTimeProp: function(prop) {
       return U.isXProp(prop, U._timeProps);
+    },
+
+    isPercentProp: function(prop) {
+      return prop.facet == 'Percent' || prop.facet == 'system/primitiveTypes/Percent';
     },
 
     isXProp: function(prop, propShortNameSet) {
@@ -4571,10 +4575,26 @@ define('utils', [
         cols[dnIdx] = 'davDisplayName';
 
       var props = vocModel.properties;
-      return _.filter(cols, function(c) {
+      cols = _.filter(cols, function(c) {
         var p = props[c];
         return p && !p.backLink && !_.contains(U._forbiddenIndexNames, c.toLowerCase());
       });
+
+      if (/voc\/dev\/(?:Technicals|FRED)\//.test(vocModel.type)) {
+        for (var p in props) {
+          var prop = props[p];
+          if (U.isDateOrTimeProp(prop))
+            _.pushUniq(cols, p);
+        }
+      }
+
+      for (var p in props) {
+        var prop = props[p];
+        if (prop.sortAscending || prop.sortDescending)
+          _.pushUniq(cols, p);
+      }
+
+      return cols;
     },
 
     isMasonryModel: function(vocModel) {
@@ -4917,7 +4937,7 @@ define('utils', [
       if (U.isNumericRuleType(type)) {
         var val = rule.get('doubleValue');
         if (val !== undefined)
-          return val;
+          return Math.abs(val) > 10000 ? val.toExponential() : val;
 
         val = rule.get('percentValue');
         if (val !== undefined)
@@ -4933,6 +4953,10 @@ define('utils', [
         return rule.get('resourceValue.displayName');
       else
         throw "unsupported";
+    },
+
+    isHeterogeneousEvent: function(model) {
+      return U.isAssignableFrom(model, 'commerce/trading/StockEvent', 'commerce/trading/CommodityEvent', 'commerce/trading/IndexEvent');
     },
 
     getTwitterLink: function(res) {
