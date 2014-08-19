@@ -171,7 +171,7 @@
   <ul class="quickstart-options" style="list-style:none;">
     {{ if (currentStep == 0) { }}
     <li>
-      <a class="mini-cta" href="#" data-selector="section[data-backlink=&quot;indicators&quot;]" data-tooltip="Click here to add indicators" data-direction="bottom">Add indicators</a> to your tradle.
+      <a class="mini-cta" href="#" data-selector="header[data-shortname=&quot;tradleRules&quot;]" data-tooltip="Click here to add indicators" data-direction="top" data-offset-top="-15">Add indicators</a> to your tradle.
     </li>
     {{ }                       }}
     {{ if (currentStep == 1) { }}
@@ -2469,7 +2469,7 @@
     {{   var r = resources[i], time = U.getValue(r, cols.date.shortName), val = U.getValue(r, cols.value.shortName); }}
          <tr>
            <td data-time="{{= time }}">{{= U.getFormattedDate1(time) }}</td>
-           <td data-value="{{= val }}">{{= val }}</td>
+           <td data-value="{{= val }}">{{= Math.abs(val) > 10000 ? val.toExponential() : val }}</td>
          </tr>
     {{ }                                       }}
   </tbody>
@@ -2542,8 +2542,8 @@
 <script type="text/template" id="percentPET">
 <div class="_prim">
   <label for="{{= id }}"  class="ui-input-text" >{{= name }}</label>
-  <input type="range" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '0' }}" {{= rules }} data-mini="true" max="100" min="0" style="width:65%;vertical-align:middle;" onchange="document.getElementById(this.id + '_text').innerHTML = this.value + '%';"/>
-  <div id="{{= id }}_text" style="display:inline-block;vertical-align:middle;padding-left:.5rem;font-size:2rem;color:#7aaac3;font-weight:bold;"></div>
+  <input type="range" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : 0 }}" {{= rules }} data-mini="true" max="100" min="0.00" step="0.01" style="width:65%;vertical-align:middle;"/>
+  <div id="{{= id }}_text" style="display:inline-block;vertical-align:middle;padding-left:.5rem;font-size:2rem;color:#7aaac3;font-weight:bold;">{{= (obj.value ? value : 0) + '%' }}</div>
 </div>
 </script>
 
@@ -2551,7 +2551,6 @@
 <div class="_prim">
   {{ if (name && name.length > 0) { }}
     <label for="{{= id }}" style="color:{{= G.darkColor }}">{{= name }}</label>
-    {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
   {{ } }}
   <section>
   <label class="pack-switch" style="right: 0;top:0rem;left:auto;position:absolute;color:{{= G.darkColor }};">
@@ -2559,7 +2558,6 @@
     <span style="top:2rem"></span>
   </label>
   </section>
-<!--  {{= typeof comment == 'undefined' ? '' : '<span class="comment">' + comment + '</span>' }} -->
 </div>
 </script>
 
@@ -2636,9 +2634,6 @@
 
     <label for="{{= id }}" style="font-weight:normal;color:{{= G.darkColor }};">{{= name }}</label>
     {{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ||  value.length == 0 ? '' : value) : displayName }}
-    {{ if (!obj.value) { }}
-      {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
-    {{ } }}
     <div class="triangle"></div>
   </a>
 
@@ -2678,8 +2673,8 @@
 </script>
 
 <script type="text/template" id="multivaluePET">
-  <a target="#" name="{{= shortName }}" class="multivalueProp" >{{= typeof displayName === 'undefined' || !displayName ? name : displayName }}
-    {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
+  <a target="#" name="{{= shortName }}" class="multivalueProp" >
+    {{= typeof displayName === 'undefined' || !displayName ? name : displayName }}
   </a>
 </script>
 

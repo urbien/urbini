@@ -314,6 +314,7 @@ div.nabBtn {
   padding: 5px 5px;
   font-size: 2rem;
   box-sizing: border-box;
+  border: 2px solid rgba(40, 146, 198, 0.5);
 }
 
 .searchInput::-webkit-input-placeholder:before {   font-family: 'tradle'; content: "\e090"; }
@@ -2011,6 +2012,8 @@ section[data-backlink] li:last-child {
 }
 
 .propertyComment {
-  font-style: italic;
+  color: #888;
+  font-weight: normal;
   font-size: 12px;
+  font-style: italic;
 }

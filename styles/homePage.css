@@ -565,7 +565,7 @@ body > .section:not([data-role="page"]) {
 
   #homePage .flip-container {
     width: 200px;
-    height: 200px;
+    height: 320px;
   }
 }
 
@@ -1103,7 +1103,7 @@ body > .section:not([data-role="page"]) {
   perspective: 1000px;
   position: relative;
   text-align:center;
-  height: 100px;
+  height: 170px;
   width: 100px;
   cursor: pointer;
   display: inline-block;

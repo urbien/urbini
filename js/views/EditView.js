@@ -181,6 +181,17 @@ define('views/EditView', [
       'change input[type="date"]'         :'onSelected'
     },
 
+    onRangeChange: function(input) {
+      var text = input.nextElementSibling,
+          val;
+
+      if (text) {
+        val = this.getValue(input);
+        this.setValues(input.name, val);
+        text.innerHTML = val + '%';
+      }
+    },
+
     /**
      * find all non-checked non-disabled checkboxes, check them, trigger jqm to repaint them and trigger a 'change' event so whatever we have tied to it is triggered (for some reason changing the prop isn't enough to trigger it)
      */
@@ -791,7 +802,6 @@ define('views/EditView', [
     getValue: function(input) {
 //      var jInput = $(input);
       var val;
-
       var p = this.vocModel.properties[input.name];
       if (_.contains(input.classList, switchClass)) {
         if (input.type == 'checkbox')
@@ -806,6 +816,13 @@ define('views/EditView', [
           val = Date.parse(input.value);
         else
           val = parseInt(input.value);
+      }
+      else if (U.isPercentProp(p)) {
+        // var text = input.nextElementSibling;
+        // if (text)
+        //   val = parseFloat(text.textContent.trim().replace('%', '') || 0);
+        // else
+          val = parseFloat(input.value || "0");
       }
 //      else if (p && U.isTimeProp(p))
 //        val = parseTime(input.value);
@@ -1151,10 +1168,10 @@ define('views/EditView', [
 //        var val = res.get('interfaceClass.properties');
         var val = res.get(input.name);
         var props = val.split(',');
-        var idx = props.indexOf(input.value);
+        var idx = props.indexOf(this.getValue(input));
         if (idx == -1 && checked)
 //          this.setValues('interfaceClass.properties', val += ',' + input.value);
-          this.setValues(input.name, val += ',' + input.value);
+          this.setValues(input.name, val += ',' + this.getValue(input));
 
         else if (idx != -1 && !checked) {
           props.splice(idx, 1);
@@ -1238,8 +1255,10 @@ define('views/EditView', [
         userEdit: true
       }, options));
 
-      if (set)
+      if (set) {
         onValidated && onValidated();
+        // console.log("SET VALUES: ", arguments);
+      }
 
       if (onInvalid)
         res.off('invalid', onInvalid);
@@ -1567,13 +1586,22 @@ define('views/EditView', [
 //          if (input.$hasClass(scrollerClass))
 //            return;
 
+          // if (input.type == 'range')
+          //   return;
+
           var validated = getRemoveErrorLabelsFunction(input);
-          var setValues = _.debounce(function() {
-            self.setValues(input.name, input.value, {
+          var setValues = function() {
+            if (input.type == 'range')
+              self.onRangeChange(input);
+
+            self.setValues(input.name, self.getValue(input), {
               onValidated: validated,
               onValidationError: self.fieldError
             });
-          }, 200);
+          };
+
+          if (input.type != 'range')
+            setValues = _.debounce(setValues, 200);
 
           input.$on('input', function() {
             if (input.$data('codemirror'))
@@ -1808,7 +1836,7 @@ define('views/EditView', [
         Events.stopEvent(event);
         var input = event.target,
             name = input.name,
-            value = input.value,
+            value = this.getValue(input),
             parent = input.parentNode;
 
         var didSet = this.setValues(name, value, {onValidated: getRemoveErrorLabelsFunction(input), onValidationError: this.fieldError});
