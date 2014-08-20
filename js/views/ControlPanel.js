@@ -523,6 +523,7 @@ define('views/ControlPanel', [
           propType = indicator.get('propertyType'),
           params = {
             indicator: indicator.getUri(),
+            eventPropertyRangeUri: indicator.get('eventPropertyRangeUri'),
             feed: indicator.get('feed'),
             tradle: indicator.get('tradle'),
             tradleFeed: indicator.get('tradleFeed'),
@@ -564,12 +565,33 @@ define('views/ControlPanel', [
         return;
       }
 
-      Events.trigger('navigate', U.makeMobileUrl('chooser', 'system/designer/WebClass', {
+      var ruleParams = {
         subClassOfUri: G.defaultVocPath + subClassOf,
         $createInstance: 'y',
         $props: _.param(params),
         $title: indicator.get('feed.displayName') + ' ' + U.getDisplayName(indicator)
-      }));
+      };
+
+      var indicators = this.resource.getInlineList('indicators'),
+          showCompareWithRules = false;
+
+      if (indicators) {
+        var byPropertyType = _.countBy(indicators.models, function(r) {
+          return r.get('propertyType');
+        });
+
+        for (var t in byPropertyType) {
+          if (byPropertyType[t] > 1) {
+            showCompareWithRules = true;
+            break;
+          }
+        }
+      }
+
+      if (!showCompareWithRules)
+        ruleParams.$notin = 'davClassUri,' + U.getTypeUri('commerce/trading/MoreThanIndicatorByRule') + ',' + U.getTypeUri('commerce/trading/LessThanIndicatorByRule');
+
+      Events.trigger('navigate', U.makeMobileUrl('chooser', 'system/designer/WebClass', ruleParams));
     },
 
     add: function(e) {
