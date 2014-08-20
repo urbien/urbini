@@ -1082,8 +1082,9 @@ define('app', [
         url: G.serverName + '/j_security_check?j_signout=true',
         type: 'GET',
         success: function() {
-            // may be current page is not public so go to home page (?)
-          window.location.reload();
+          // may be current page is not public so go to home page (?)
+          // force refresh
+          window.location.href = G.appUrl;
         }
       });
     });
