@@ -62,16 +62,11 @@ define('views/MainMenuPanel', [
       this.hide();
       return;
     },
+    
     home: function(e) {
       Events.stopEvent(e);
-      var here = window.location.href;
-      var t = e.target;
-      while (t.tagName.toLowerCase() != 'li')
-        t = t.parentNode;
-
-//      G.log(this.TAG, "Recording step for tour: selector = 'id'; value = '" + t.id + "'");
-      if (t.id == 'home123')
-        Events.trigger('navigate', G.serverName + '/' + G.pageRoot);
+      if (e.selectorTarget.id == 'home123')
+        Events.trigger('navigate', 'home/');
       else
         Events.trigger('navigate', G.serverName + '/app/UrbienApp');
 
