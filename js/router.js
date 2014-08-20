@@ -403,7 +403,8 @@ define('router', [
           currentView = this.currentView;
 
       if (!homePage) {
-        if (currentView && currentView.getHashInfo().route == 'home') {
+        if (currentView && currentView.TAG == 'HomePage') {
+          debugger;
           currentView.destroy(true); // don't nuke contents
           this._previousView = this.currentView = null;
         }
@@ -1340,7 +1341,7 @@ define('router', [
         return this;
 
       res = cachedView && cachedView.resource || U.getResource(uri);
-      if (res && !res.loaded)
+      if (res && !res.isLoaded())
         res = null;
 
 //      var newUri = res && res.getUri();

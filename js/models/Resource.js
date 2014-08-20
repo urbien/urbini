@@ -29,12 +29,6 @@ define('models/Resource', [
     G.log.apply(G, args);
   };
 
-  function hasNonMetaProps(atts) {  // we have some real props here, not just meta props
-    return atts && _.any(_.keys(atts), function(key) {
-      return /^[a-zA-Z]/.test(key)
-    });
-  };
-
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(atts, options) {
@@ -57,7 +51,7 @@ define('models/Resource', [
 //      if (atts)
 //        this.parse(atts);
 
-      if (this.loaded)
+      if (this.isLoaded())
         this.announceNewResource(options);
 
 //      if (commonTypes.App == this.type) {
@@ -102,12 +96,15 @@ define('models/Resource', [
     },
 
     isLoaded: function() {
-      return this.loaded;
+      if (!this._loaded)
+        this.checkIfLoaded();
+
+      return this._loaded;
     },
 
     _load: function(options) {
-      if (!this.loaded) {
-        this.loaded = true;
+      if (!this._loaded) {
+        this._loaded = true;
         this.trigger('load');
       }
     },
@@ -574,7 +571,7 @@ define('models/Resource', [
 //      if (!this.get('_uri') && resp._uri)
 //        this.set('_uri', U.getLongUri1(resp._uri));
 
-      if (this._getLastFetchOrigin() === 'db' || !hasNonMetaProps(resp))
+      if (this._getLastFetchOrigin() === 'db' || !U.hasNonMetaProps(resp))
         return resp;
 
       if (!options.parse && this.lastFetchOrigin !== 'server')
@@ -825,7 +822,7 @@ define('models/Resource', [
 
       }
 
-      if (this.loaded && displayNameChanged) {
+      if (this.isLoaded() && displayNameChanged) {
         var displayNameProps = _.defaults({}, props, this.attributes);
         delete displayNameProps.davDisplayName;
         var newDisplayName = U.getDisplayName(displayNameProps, this.vocModel);
@@ -844,7 +841,7 @@ define('models/Resource', [
 //      if (uriChanged)
 //        props._uri = uri;
 
-      if (!options.silent && !hasNonMetaProps(props)) {
+      if (!options.silent && !U.hasNonMetaProps(props)) {
         options = _.defaults({silent: true}, options); // avoid changing passed-in options obj, but DO call set with silent: true
       }
 
@@ -1211,7 +1208,7 @@ define('models/Resource', [
     },
 
     checkIfLoaded: function() {
-      if (!this.loaded && this.getUri() && hasNonMetaProps(this.attributes))
+      if (!this._loaded && this.getUri() && U.hasNonMetaProps(this.attributes))
         this._load();
     },
 

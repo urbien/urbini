@@ -1905,7 +1905,7 @@ define('utils', [
       var base = url.slice(0, qIdx),
           qs = url.slice(qIdx + 1),
           match = qs.match(/&?-\w+=[^&]+&?/ig);
-
+      
       if (!match)
         return url;
 
@@ -1954,6 +1954,18 @@ define('utils', [
           };
 
       Events.trigger('getCachedView:' + url, found);
+      if (!obj) {
+        // check alternate home page urls
+        if (url.indexOf(G._serverName + '/' + G.pageRoot + '/home/') < 10) {
+          url = url.replace('/home/', '/');
+          Events.trigger('getCachedView:' + url, found);          
+        }          
+        else if (url.lastIndexOf('/') == url.indexOf(G.pageRoot) + G.pageRoot.length) {
+          url = url.replace(G.pageRoot, G.pageRoot + '/home');
+          Events.trigger('getCachedView:' + url, found);          
+        }
+      }
+      
       return obj;
     },
 
@@ -1970,7 +1982,7 @@ define('utils', [
 
     getResourcePromise: function(uri, sync) {
       var res = U.getResource(uri);
-      if (res) {
+      if (res && res.isLoaded()) {
         if (!sync || U.isTempUri(uri))
           return U.resolvedPromise(res);
       }
@@ -4514,6 +4526,19 @@ define('utils', [
 
     isMetaParameter: function(param) {
       return param != tempIdParam && /^[$-_]+/.test(param);
+    },
+
+    hasNonMetaProps: function(atts) {
+      // we have some real props here, not just meta props
+      if (atts) {
+        if (U.isModel(atts))
+          atts = atts.attributes;
+
+        for (var key in atts) {
+          if (U.isModelParameter(key))
+            return true;
+        }
+      }
     },
 
     isNativeModelParameter: function(param) {

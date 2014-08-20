@@ -21,7 +21,7 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
       return this.info.lastFetchedOn;
 
     var resources = this.data.models;
-    return resources.length && resources[0].loaded && Synchronizer.getLastFetched(this.data.models, this._getNow());
+    return resources.length && resources[0].isLoaded() && Synchronizer.getLastFetched(this.data.models, this._getNow());
   };
 
   CollectionSynchronizer.prototype._queryDB = function() {

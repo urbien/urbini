@@ -656,7 +656,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
           valPrefix = '!';
         }
 
-        if (val.startsWith("$this")) { // TODO: fix String.prototyep.startsWith in utils.js to be able to handle special (regex) characters in regular strings
+        if (val.startsWith("$this")) { // TODO: fix String.prototype.startsWith in utils.js to be able to handle special (regex) characters in regular strings
           if (val === '$this')
             params[p] = valPrefix + res.getUri();
           else {
