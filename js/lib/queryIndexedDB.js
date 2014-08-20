@@ -21,7 +21,7 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
         return IndexQuery(name, op, arguments);
       };
     }
-    
+
     return {
       all:     queryMaker("all"), // for sorting
       eq:      queryMaker("eq"),
@@ -38,16 +38,30 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
           values = arguments[0];
         else
           values = Array.prototype.slice.call(arguments);
-        
+
         var query = IndexQuery(name, "eq", [values.shift()]);
         while (values.length) {
           query = query.or(IndexQuery(name, "eq", [values.shift()]));
         }
         return query;
+      },
+      noneof:  function oneof() {
+        var values;
+        if (Object.prototype.toString.call(arguments[0]) === '[object Array]')
+          values = arguments[0];
+        else
+          values = Array.prototype.slice.call(arguments);
+
+        var query = IndexQuery(name, "neq", [values.shift()]);
+        while (values.length) {
+          query = query.and(IndexQuery(name, "neq", [values.shift()]));
+        }
+
+        return query;
       }
     }
   }
-    
+
   /**
    * Create a request that will receive a result array.
    *
@@ -58,35 +72,35 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
     var op = keyOnly ? "getAllKeys" : "getAll";
     return queryFunc(store, op).promise();
   }
-  
+
   /**
    * Provide a generic way to create a query object from a query function.
    * Depending on the implementation of that query function, the query could
    * produce results from an index, combine results from other queries, etc.
    */
   function Query(queryFunc, toString) {
-  
+
     var query = {
-  
+
       // Sadly we need to expose this to make Intersection and Union work :(
       _queryFunc: queryFunc,
-      
+
       and: function and(query2) {
         return Intersection(query, query2);
       },
-  
+
       or: function or(query2) {
         return Union(query, query2);
       },
-  
+
       getAll: function getAll(store) {
         return ResultRequest(store, queryFunc, false);
       },
-  
+
       getAllKeys: function getAllKeys(store) {
         return ResultRequest(store, queryFunc, true);
       },
-      
+
       sort: function(column, reverse) {
         if (typeof column === 'function')
           this.sortFunction = column;
@@ -103,23 +117,23 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
         this.limit = limit;
         return this;
       },
-      
+
       setOffset: function(offset) {
         this.offset = offset;
-        return this;        
+        return this;
       },
-      
+
       setPrimaryKey: function(pKey) {
         this.primaryKey = pKey;
         return this;
       },
-      
+
       toString: toString
     };
-    
+
     return query;
   }
-  
+
   /**
    * Create a query object that queries an index.
    */
@@ -131,7 +145,7 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
       op = "eq";
       negate = true;
     }
-  
+
     function makeRange() {
       var range;
       switch (op) {
@@ -160,7 +174,7 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
           range = [values[0], values[1], false, false];
           break;
       }
-      
+
       return range;
     }
 
@@ -174,7 +188,7 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
         var qOffset = query.offset,
             direction = query.direction || direction,
             sort = query.sortFunction;
-        
+
         var index = store.index(indexName);
         var range = makeRange();
         var request = typeof range !== 'undefined' ? index[op](range, direction) : index[op](undefined, direction);
@@ -203,41 +217,41 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
           debugger;
           defer.reject.apply(arguments);
         });
-      });      
+      });
     }
-  
+
     var args = arguments;
     function toString() {
       return "IndexQuery(" + Array.prototype.slice.call(args).toSource().slice(1, -1) + ")";
     }
-  
+
     var query = Query(queryIndex, toString);
     return query;
   }
 
   var SetOps = {
     Intersection: {
-      name: 'Intersection', 
+      name: 'Intersection',
       op: arrayIntersect
-    }, 
+    },
     Union: {
-      name: 'Union', 
+      name: 'Union',
       op: arrayUnion
     }
   };
-  
+
   function SetOperation(setOp) {
     return function(query1, query2) {
       var query;
       function queryFunc(store, op) {
-        var q1 = query1._queryFunc(store, op), 
+        var q1 = query1._queryFunc(store, op),
             q2 = query2._queryFunc(store, op);
-        
+
         return $.when(q1, q2).then(function(results1, results2) {
           var sort = query.sortFunction,
               unsorted = setOp.op(results1, results2, query1.primaryKey || query2.primaryKey),
               sorted = sort ? unsorted.sort() : unsorted;
-              
+
           return arrayLimit(arrayOffset(sorted, query.offset), query.limit);
         }, function(err) {
           debugger;
@@ -245,33 +259,33 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
           debugger;
         });
       }
-  
+
       function toString() {
         return setOp.name + "(" + query1.toString() + ", " + query2.toString() + ")";
       }
-      
+
       return (query = Query(queryFunc, toString));
     }
   }
-  
+
   /**
    * Create a query object that performs the intersection of two given queries.
    */
   function Intersection(query1, query2) {
     return SetOperation(SetOps.Intersection)(query1, query2);
   }
-  
+
   /**
    * Create a query object that performs the union of two given queries.
    */
   function Union(query1, query2) {
     return SetOperation(SetOps.Union)(query1, query2);
   }
-  
+
   function arraySub(minuend, subtrahend, primaryKey) {
     if (!minuend.length || !subtrahend.length)
       return minuend;
-    
+
     primaryKey = primaryKey || DEFAULT_PRIMARY_KEY;
 //    var minKeys = primaryKey ? primaryKeys(minuend, primaryKey) : minuend;
     var subKeys = primaryKeys(subtrahend, primaryKey);
@@ -286,7 +300,7 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
       return foo;
     if (offset > foo.length)
       return [];
-    
+
     return Array.removeFromTo(foo, 0, offset);
   }
 
@@ -304,25 +318,25 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
     if (!bar.length) {
       return foo;
     }
-    
+
     return foo.concat(arraySub(bar, foo));
   }
-  
+
   function primaryKeys(items, key) {
     var keys = [];
     for (var i = 0; i < items.length; i++) {
       keys.push(items[i][key]);
     }
-    
+
     return keys;
   }
-  
+
   function arrayIntersect(foo, bar, primaryKey) {
     if (!foo.length)
       return foo;
     if (!bar.length)
       return bar;
-    
+
     primaryKey = primaryKey || DEFAULT_PRIMARY_KEY;
 //    var fooKeys = primaryKey ? primaryKeys(foo, primaryKey) : foo;
 //    var barKeys = primaryKey ? primaryKeys(bar, primaryKey) : bar;
@@ -332,7 +346,7 @@ define('queryIndexedDB', ['jqueryIndexedDB'], function() {
       return barKeys.indexOf(item) != -1;
     });
   }
-  
+
   return {
 //    init: init,
     Index: Index,
