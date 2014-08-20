@@ -171,7 +171,7 @@
   <ul class="quickstart-options" style="list-style:none;">
     {{ if (currentStep == 0) { }}
     <li>
-      <a class="mini-cta" href="#" data-selector="header[data-shortname=&quot;tradleRules&quot;]" data-tooltip="Click here to add indicators" data-direction="top" data-offset-top="-15">Add indicators</a> to your tradle.
+      <a class="mini-cta" href="#" data-selector="header[data-shortname=&quot;tradleRules&quot;]" data-tooltip="Click here to add indicators" data-direction="top" data-offset-top="-20">Add indicators</a> to your tradle.
     </li>
     {{ }                       }}
     {{ if (currentStep == 1) { }}
