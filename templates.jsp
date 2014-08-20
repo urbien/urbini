@@ -1409,7 +1409,7 @@
 <header style="position:relative;{{= obj.style ? obj.style : G.coverImage ? 'color:' + G.coverImage.background + ';' : '' }}" class="{{= obj.class }}" {{= sn }}>
 {{= obj.displayCollapsed ? '<i class="ui-icon-collapsable"></i> ': '' }}
 {{= obj.style && !obj.actionBtn ? '<div style="padding:1rem;display:inline-block;">' : '' }}
-{{= obj.actionBtn ? '<div class="cta' + (actionBtn.editable ? '' : ' disabled') + '" style="width:220px;" ' + sn + '>' : '' }}
+{{= obj.actionBtn ? '<div class="cta' + (actionBtn.editable ? '' : ' disabled') + '"style="width:220px;' + (obj.indicatorsCount ? 'padding-bottom: 5px;' : '') + '" ' + sn + '>' : '' }}
 {{= value }}
 {{= obj.style || obj.actionBtn ? '</div>' : '' }}
 
@@ -2544,6 +2544,15 @@
   <label for="{{= id }}"  class="ui-input-text" >{{= name }}</label>
   <input type="range" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : 0 }}" {{= rules }} data-mini="true" max="100" min="0.00" step="0.01" style="width:65%;vertical-align:middle;"/>
   <div id="{{= id }}_text" style="display:inline-block;vertical-align:middle;padding-left:.5rem;font-size:2rem;color:#7aaac3;font-weight:bold;">{{= (obj.value ? value : 0) + '%' }}</div>
+</div>
+</script>
+
+<script type="text/template" id="timesPET">
+<div class="_prim">
+  <label for="{{= id }}"  class="ui-input-text" >{{= name }}</label>
+  {{= obj.releaseFrequency ? '<div>' + releaseFrequency  + '</div>' : ''}} 
+  <input type="range" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '0' }}" {{= rules }} data-mini="true" max="100" min="0" style="width:65%;vertical-align:middle;" onchange="document.getElementById(this.id + '_text').innerHTML = this.value;"/>
+  <div id="{{= id }}_text" style="display:inline-block;vertical-align:middle;padding-left:.5rem;font-size:2rem;color:#7aaac3;font-weight:bold;"></div>
 </div>
 </script>
 
