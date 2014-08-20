@@ -21,11 +21,6 @@ define('views/ControlPanel', [
     return bl;
   };
 
-  function isActionButton(prop) {
-    var dn = U.getPropDisplayName(prop);
-    return ~['IF', 'THEN'].indexOf(dn.toUpperCase());
-  }
-
   function shouldPaintOverlay(res, blProp) {
     if (!res)
       return false;
@@ -39,7 +34,7 @@ define('views/ControlPanel', [
   var SLIDER_CL = 'slider';
   var SLIDER_ACTIVE_CL = 'slider-active';
   var CLICK_INDICATOR = 'Click an indicator to create a rule with it';
-  var CLICK_INDICATOR1 = 'Click an indicator to create a rule. <br /><br /> Swipe from right to left on rules or indicators for a list of actions.';
+  var CLICK_INDICATOR1 = 'To remove this rule, swipe right to left.<br /><br />If you\'re looking for indicators, click the large "IF" button above';
 
   return BasicView.extend({
     tagName: "tr",
@@ -88,7 +83,7 @@ define('views/ControlPanel', [
       'click [data-action="add"]': 'actionAdd',
       'click [data-action="edit"]': 'actionEdit',
       'click [data-action="comment"]': 'actionComment',
-      'click header .cta': 'backlinkAction',
+      'click header .cta:not(.disabled)': 'backlinkAction',
       'click .anim-overlay': Events.stopEvent
 //        ,
 //      'click': 'click'
@@ -426,6 +421,7 @@ define('views/ControlPanel', [
       }
 
       data.params = params;
+      _.copyInto(params, data, '$orderBy', '$asc');
       data.action = action;
       return this._cpTemplate(data);
     },
@@ -528,6 +524,7 @@ define('views/ControlPanel', [
           propType = indicator.get('propertyType'),
           params = {
             indicator: indicator.getUri(),
+            eventPropertyRangeUri: indicator.get('eventPropertyRangeUri'),
             feed: indicator.get('feed'),
             tradle: indicator.get('tradle'),
             tradleFeed: indicator.get('tradleFeed'),
@@ -569,12 +566,33 @@ define('views/ControlPanel', [
         return;
       }
 
-      Events.trigger('navigate', U.makeMobileUrl('chooser', 'system/designer/WebClass', {
+      var ruleParams = {
         subClassOfUri: G.defaultVocPath + subClassOf,
         $createInstance: 'y',
         $props: _.param(params),
         $title: indicator.get('feed.displayName') + ' ' + U.getDisplayName(indicator)
-      }));
+      };
+
+      var indicators = this.resource.getInlineList('indicators'),
+          showCompareWithRules = false;
+
+      if (indicators) {
+        var byPropertyType = _.countBy(indicators.models, function(r) {
+          return r.get('propertyType');
+        });
+
+        for (var t in byPropertyType) {
+          if (byPropertyType[t] > 1) {
+            showCompareWithRules = true;
+            break;
+          }
+        }
+      }
+
+      if (!showCompareWithRules)
+        ruleParams.$notin = 'davClassUri,' + U.getTypeUri('commerce/trading/MoreThanIndicatorByRule') + ',' + U.getTypeUri('commerce/trading/LessThanIndicatorByRule');
+
+      Events.trigger('navigate', U.makeMobileUrl('chooser', 'system/designer/WebClass', ruleParams));
     },
 
     add: function(e) {
@@ -604,7 +622,7 @@ define('views/ControlPanel', [
       var self = this,
           setLinkTo = prop.setLinkTo,
           shortName = prop.shortName;
-      
+
 //      ,
 //          count = U.getBacklinkCount(this.resource, shortName);
 //
@@ -621,8 +639,7 @@ define('views/ControlPanel', [
 
 //      G.log(this.TAG, "Recording step for tour: selector = 'data-shortname'; value = '" + shortName + "'");
 
-      Voc.getModels(prop.range).done(function() {
-        var pModel = U.getModel(prop.range);
+      Voc.getModels(prop.range).done(function(pModel) {
         if (!U.isAssignableFrom(pModel, 'Intersection')) {
           self._addNoIntersection(prop, t);
           return;
@@ -672,6 +689,15 @@ define('views/ControlPanel', [
         var where = aUri == null ? propA.where : propB.where;
         if (where)
           _.extend(params, U.getQueryParams(where));
+
+/*        if (!params.$orderBy && U.isA(pModel, 'ImageResource')) {
+          var imgProp = U.getCloneOf(pModel, 'ImageResource.originalImage')[0];
+          if (imgProp) {
+            params.$orderBy = imgProp;
+            params.$asc = 0;
+          }
+        }
+*/
         Events.trigger('navigate', U.makeMobileUrl('chooser', rtype, params), {trigger: true});
         G.log(self.TAG, 'add', 'user wants to add to backlink');
 //        var params = {
@@ -687,6 +713,13 @@ define('views/ControlPanel', [
       });
     },
 
+    isActionButton: function(prop) {
+      var dn = U.getPropDisplayName(prop);
+      return ~['IF', 'THEN'].indexOf(dn.toUpperCase()) && {
+        editable: U.isPropEditable(this.resource, prop)
+      };
+    },
+
     renderInlineList: function(name, frag, displayedProps) {
       this._renderInlineList(name, frag, displayedProps);
       if (name == 'indicators') {
@@ -698,8 +731,8 @@ define('views/ControlPanel', [
 
         U.addToFrag(frag, add);
       }
-      else if (name == 'orders') {
-      }
+      // else if (name == 'orders') {
+      // }
     },
 
     _renderInlineList: function(name, frag, displayedProps) {
@@ -745,7 +778,7 @@ define('views/ControlPanel', [
             add: canAdd,
             shortName: getBacklinkSub(vocModel, name),
             style: prop.propertyStyle,
-            actionBtn: isActionButton(prop)
+            actionBtn: this.isActionButton(prop)
           }));
 
           if (isTrade) {
@@ -768,7 +801,7 @@ define('views/ControlPanel', [
       if (!isIndicator && (list.length || canAdd)) {
         if (displayCollapsed  &&  list.length) {
           if (isBB)
-            gr = '<section data-shortname="' + name + '" data-display="collapsed" style="cursor:pointer;">'; 
+            gr = '<section data-shortname="' + name + '" data-display="collapsed" style="cursor:pointer;">';
           else if (isTopcoat)
             gr = '<li data-shortname="' + name + '" data-display="collapsed topcoat-list__item" ' +  (G.coverImage ? 'style="text-shadow:none;background:' + G.coverImage.color + ';color: ' + G.coverImage.background + ';"' : '') + '><h3><i class="ui-icon-plus-sign"></i>&#160;' + prop.displayName + '</h3><ul class="topcoat-list__container">';
           else if (isBootstrap)
@@ -782,7 +815,7 @@ define('views/ControlPanel', [
             add: canAdd,
             shortName: getBacklinkSub(vocModel, name),
             style: style,
-            actionBtn: isActionButton(prop),
+            actionBtn: this.isActionButton(prop),
             displayCollapsed: displayCollapsed
           });
           if (isBB)
@@ -794,7 +827,7 @@ define('views/ControlPanel', [
             value: propDisplayName,
             add: canAdd,
             shortName: getBacklinkSub(vocModel, name),
-            actionBtn: isActionButton(prop),
+            actionBtn: this.isActionButton(prop),
             style: prop.propertyStyle
           }));
         }
@@ -973,7 +1006,7 @@ define('views/ControlPanel', [
 //        else {
 //          if (isNotification  &&  iRes.get('davDisplayName') == "null")
 //            iRes.attributes.davDisplayName = 'Please choose how you want to be notified';
-//        
+//
 //          params.href = U.makePageUrl(action, iRes.getUri(), { $title: params.name });
 //        }
         params.resource = iRes;
@@ -1522,7 +1555,7 @@ define('views/ControlPanel', [
               tmpl_data.style = prop.propertyStyle;
             var bl = prop.backLinkSortDescending;
             if (bl) {
-              tmpl_data['$order'] = bl;
+              tmpl_data['$orderBy'] = bl;
               tmpl_data['$asc'] = 0;
             }
             if (isTradle)
@@ -1667,11 +1700,15 @@ define('views/ControlPanel', [
             if (prop.propertyStyle)
               tmpl_data.style = prop.propertyStyle;
 
-            var bl = prop.backLinkSortDescending;
+            var bld = prop.backLinkSortDescending,
+                bla = prop.backLinkSortAscending,
+                bl = bla || bld;
+
             if (bl) {
-              tmpl_data['$order'] = bl;
-              tmpl_data['$asc'] = 0;
+              tmpl_data['$orderBy'] = bl;
+              tmpl_data['$asc'] = !!bla;
             }
+
 //            var common = {range: range, shortName: p, backlink: prop.backLink, value: cnt, _uri: uri, title: t, comment: comment, name: n};
             if (isPropEditable) {
               if (U.isCloneOf(prop, 'Templatable.clones', this.vocModel)) {

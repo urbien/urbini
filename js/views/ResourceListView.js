@@ -391,9 +391,9 @@ define('views/ResourceListView', [
         this.mason.setLimit(this.collection.getTotal());
 
       var displayed = this._displayedRange;
-//      if (event.type != 'less' && !_.isEqual(event.info.range, displayed))
-//        debugger;
-      
+      if (event.type == 'more' && !_.isEqual(event.info.range, displayed))
+        debugger;
+
       switch (event.type) {
         case 'range':
           if (displayed.to > displayed.from)
@@ -452,13 +452,13 @@ define('views/ResourceListView', [
 //            displayed.to -= (to - from);
             this.setDisplayedRange(displayed.from, displayed.to - (to - from));
           }
-          
-//          if (!_.isEqual(event.info.range, displayed))
-//            debugger;
-//          
-//          if (!_.isEqual(projected, displayed))
-//            debugger;
-//          
+
+          if (!_.isEqual(event.info.range, displayed))
+            debugger;
+
+          if (!_.isEqual(projected, displayed))
+            debugger;
+
 //          console.debug("3. REMOVED BRICKS, new range: ", displayed);
           this.mason['continue']();
           return;

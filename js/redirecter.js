@@ -656,7 +656,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
           valPrefix = '!';
         }
 
-        if (val.startsWith("$this")) { // TODO: fix String.prototyep.startsWith in utils.js to be able to handle special (regex) characters in regular strings
+        if (val.startsWith("$this")) { // TODO: fix String.prototype.startsWith in utils.js to be able to handle special (regex) characters in regular strings
           if (val === '$this')
             params[p] = valPrefix + res.getUri();
           else {
@@ -792,11 +792,15 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
     if (this.isChooserFastForwarded()) {
       if (!rParams['$title']) {
         if (prop.shortName == 'compareWith') {
-          var title = res.get('tradleFeed.displayName');
-          if (title)
-            title += ' ';
+          var title = U.getCurrentUrlInfo().params.$title;
+          if (!title) {
+            title = res.get('indicator.displayName') || res.get('tradleFeed.displayName');
+            if (title)
+              title += ' ';
 
-          title += vocModel.displayName;
+            title += vocModel.displayName;
+          }
+
           rParams['$title'] = title;
         }
         else
@@ -1064,7 +1068,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
 
 
           if (iParams.name && name != 'RawValue') {
-            iParams.name = iParams.name + ' ' + (isTechnical ? U.getDisplayName(vRes) : vRes.get('label'));
+            iParams.name = iParams.name + ' (' + (isTechnical ? U.getDisplayName(vRes) : vRes.get('label')) + ')';
           }
 
           indicator = new iModel(iParams);
@@ -1111,8 +1115,10 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
     if (params.$createInstance == 'y') {
       var props = params.$props;
       props = props ? U.getQueryParams(props) : {};
-      if (params.$title)
-        props.$title = params.$title + ' ' + valueRes.get('label');
+      if (params.$title) {
+        var label = valueRes.get('label').replace('&lt;one of your other indicators&gt;', '_____');
+        props.$title = params.$title + ' ' + label;
+      }
 
       if (props.indicator)
         props.compareWith = '!' + props.indicator;

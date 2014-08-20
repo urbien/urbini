@@ -144,13 +144,7 @@ define('router', [
         self.goHome();
       });
 
-      Events.on('navigate', function(fragment, options) {
-        if (~fragment.indexOf('#'))
-          debugger;
-
-        self.navigate.apply(self, [fragment, _.defaults(options || {}, {trigger: true, replace: false})]);
-      });
-
+      Events.on('navigate', this.navigate.bind(this));
       Events.on('pageChange', function(prev, current) {
         self.backClicked = self.firstPage = false;
 //        if (G.DEBUG)
@@ -321,7 +315,6 @@ define('router', [
         options = hashInfo.options;
       }
 
-
       options = options || {};
       var adjustedOptions = _.extend({}, this.defaultOptions, _.pick(options, 'forceFetch', 'errMsg', 'info', 'replace', 'postChangePageRedirect', 'via')),
           hashInfo = G.currentHashInfo,
@@ -362,7 +355,7 @@ define('router', [
         this.nextTransition = options.transition;
 
       try {
-        Backbone.Router.prototype.navigate.call(this, fragment, options);
+        Backbone.Router.prototype.navigate.call(this, fragment, adjustedOptions);
       } finally {
         if (options.trigger == false)
           this.updateHashInfo();
@@ -410,7 +403,8 @@ define('router', [
           currentView = this.currentView;
 
       if (!homePage) {
-        if (currentView && currentView.getHashInfo().route == 'home') {
+        if (currentView && currentView.TAG == 'HomePage') {
+          debugger;
           currentView.destroy(true); // don't nuke contents
           this._previousView = this.currentView = null;
         }
@@ -513,7 +507,7 @@ define('router', [
               },
               {
                 davDisplayName: 'David D. Postolski, Esq.',
-                title: 'IP and Patent Attorney', 
+                title: 'IP and Patent Attorney',
                 company: 'Gearhart Law, LLC',
                 linkedin: 'https://www.linkedin.com/in/davidpostolski',
                 featured: 'https://media.licdn.com/mpr/mpr/wc_200_200/p/7/005/021/2cb/05dcbfb.jpg'
@@ -1187,7 +1181,7 @@ define('router', [
     checkIfEmailRequired: function() {
       if (true)
         return; // for now
-      
+
       if (G.currentUser.email)
         return;
 
@@ -1346,8 +1340,8 @@ define('router', [
       if (!model)
         return this;
 
-      res = cachedView ? cachedView.resource : U.getResource(uri);
-      if (res && !res.loaded)
+      res = cachedView && cachedView.resource || U.getResource(uri);
+      if (res && !res.isLoaded())
         res = null;
 
 //      var newUri = res && res.getUri();
@@ -1679,12 +1673,12 @@ define('router', [
 //      transOptions.transition = transOptions.via ? 'rotateAndZoomInTo' : 'snap';
       Transitioner.transition(transOptions).done(function() {
 //        if (changePageOptions.replace || (fromView && /^make|edit/.test(fromView.hash) && fromView.isSubmitted()))
-        if (fromView && Modules.EditPage && fromView instanceof Modules.EditPage && fromView.isSubmitted())
-          fromView.destroy();
-//          Events.trigger('uncacheView', fromView); // destroy
-
-        if (fromView && fromView.el)
-          fromView.el.$trigger('page_hide');
+        if (fromView) {
+          if (Modules.EditPage && fromView instanceof Modules.EditPage && fromView.isSubmitted())
+            fromView.destroy();
+          else if (fromView.el)
+            fromView.el.$trigger('page_hide');
+        }
 
         toView.el.$trigger('page_show');
         G.$activePage = toView.$el;

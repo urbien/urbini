@@ -6,8 +6,8 @@
 <!-- Templates -->
 <script type="text/template" id="resource-list">
 <!-- Resource list page -->
-  <section id="{{= viewId }}" data-type="sidebar" class="menuLeft" ></section>
-  <section id="{{= viewId + 'r' }}" data-type="sidebar" class="menuRight" ></section>
+  <sidebar class="menuLeft" ></sidebar>
+  <sidebar class="menuRight" ></sidebar>
   <!-- div class="headerMessageBar"></div -->
   <div class="headerDiv"></div>
   <div id="mapHolder" data-role="none"></div>
@@ -55,8 +55,8 @@
 <script type="text/template" id="resource">
 <!-- Single resource view -->
 {{ var isTradle = this.resource.isAssignableFrom('commerce/trading/Tradle'); }}
-<section id="{{= viewId }}" data-type="sidebar" class="menuLeft"></section>
-<section id="{{= viewId + 'r' }}" data-type="sidebar" class="menuRight"></section>
+<sidebar class="menuLeft"></sidebar>
+<sidebar class="menuRight"></sidebar>
 
 <!-- div class="headerMessageBar"></div -->
 <div class="headerDiv"></div>
@@ -171,7 +171,7 @@
   <ul class="quickstart-options" style="list-style:none;">
     {{ if (currentStep == 0) { }}
     <li>
-      <a class="mini-cta" href="#" data-selector="section[data-backlink=&quot;indicators&quot;]" data-tooltip="Click here to add indicators" data-direction="bottom">Add indicators</a> to your tradle.
+      <a class="mini-cta" href="#" data-selector="header[data-shortname=&quot;tradleRules&quot;]" data-tooltip="Click here to add indicators" data-direction="top" data-offset-top="-20">Add indicators</a> to your tradle.
     </li>
     {{ }                       }}
     {{ if (currentStep == 1) { }}
@@ -261,11 +261,6 @@
   style="text-align:center;padding:0;border:none;" class="trades"
 {{ } }}
  >
- <!--
-{{ if (isIndicator  &&  obj.img) { }}
-  <div style="width:80px; height: 80px; opacity:.3; float:left; margin-top: 10px; display:inline-block;background-repeat:no-repeat;background-image:url({{= img.indexOf('/Image') == 0 ? img.slice(6) : img }});"></div>
-{{ } }}
-  -->
   <a href="{{= href }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="{{= (!isIndicator  &&  obj.img) || obj.needsAlignment ? '' : 'padding:1rem 0;'}} {{= obj.noclick ? 'cursor:default;' : 'cursor:pointer;' }}{{= isTrade ? 'font-size:inherit;' : 'font-size:1.6rem' }}">
     {{ if (!isIndicator  &&  obj.img) { }}
       <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}"
@@ -345,11 +340,11 @@
       </div>
       <div>
         {{ if (resource.get('tradleFeed')) { }}
-        {{ var feed =  resource.get('feed'); }}
-        {{ var isStock = feed  &&  feed.indexOf('/Stock?') != -1; }}
-        {{ var isIndexOrStock = resource.get('tradleFeed.displayName').charAt(0) == '^' || isStock; }} 
+        {{ var feed =  resource.get('feed') || ''; }}
+        {{ var isStock = ~feed.indexOf('/Stock?'); }}
+        {{ var isIndexOrStock = isStock || resource.get('tradleFeed.displayName').charAt(0) == '^'; }}
         <div class="tradleFeed" {{= isIndexOrStock ? 'style="font-size:4rem;line-height:3rem;font-weight:bold;"' : '' }}><!-- href="{{= U.makeMobileUrl('view', resource.get('tradleFeed')) }}"-->
-          {{= isStock ? feed.substring(feed.lastIndexOf('=') + 1) : resource.get('feed.displayName') }}
+          {{= isStock ? feed.slice(feed.lastIndexOf('=') + 1) : resource.get('feed.displayName') }}
         </div>
         {{ }                               }}
       </div>
@@ -377,11 +372,11 @@
       </div>
       <div>
         {{ if (resource.get('compareWithTradleFeed')) { }}
-        {{ var cmpFeed =  resource.get('compareWithFeed'); }}
-        {{ var isStock = cmpFeed  &&  cmpFeed.indexOf('/Stock?') != -1; }}
-        {{ var isIndexOrStock = cmpFeed.charAt(0) == '^' || isStock }} 
+        {{ var cmpFeed =  resource.get('compareWithFeed') || ''; }}
+        {{ var isStock = ~cmpFeed.indexOf('/Stock?'); }}
+        {{ var isIndexOrStock = isStock || cmpFeed.charAt(0) == '^'; }}
         <div {{= isIndexOrStock ? 'style="font-size:4rem;line-height:3rem;font-weight:bold;"' : '' }}  class="tradleFeed"> <!--href="{{= U.makeMobileUrl('view', resource.get('compareWithTradleFeed')) }}" class="tradleFeed"-->
-          {{= isStock ? cmpFeed.substring(cmpFeed.lastIndexOf('=') + 1) : resource.get('compareWithFeed.displayName') }}
+          {{= isStock ? cmpFeed.slice(cmpFeed.lastIndexOf('=') + 1) : resource.get('compareWithFeed.displayName') }}
         </div>
         {{ }                               }}
       </div>
@@ -418,8 +413,8 @@
 
 <script type="text/template" id="privateBetaPageTemplate">
 <div class="section" id="section_bg">
-  <section id="viewHome" data-type="sidebar" class="menuLeft"></section>
-  <section id="viewHomer" data-type="sidebar" class="menuRight"></section>
+  <sidebar class="menuLeft"></sidebar>
+  <sidebar class="menuRight"></sidebar>
   <div class="headerDiv">
     <ul class="headerUl">
     </ul>
@@ -496,8 +491,8 @@
 </script>
 
 <script type="text/template" id="articlePageTemplate">
-  <section class="menuLeft" data-type="sidebar" class="menuLeft"></section>
-  <section class="menuRight" data-type="sidebar" class="menuRight"></section>
+  <sidebar class="menuLeft" class="menuLeft"></sidebar>
+  <sidebar class="menuRight" class="menuRight"></sidebar>
   <div class="section">
     <div class="headerDiv">
       <ul class="headerUl">
@@ -565,8 +560,8 @@
 
 <script type="text/template" id="pricingPageTemplate">
   <div class="section" id="section_bg">
-    <section id="viewHome" data-type="sidebar" class="menuLeft"></section>
-    <section id="viewHomer" data-type="sidebar" class="menuRight"></section>
+    <sidebar class="menuLeft"></sidebar>
+    <sidebar class="menuRight"></sidebar>
     <div class="headerDiv">
       <ul class="headerUl">
       </ul>
@@ -682,13 +677,11 @@
 
 <script type="text/template" id="pricing1PageTemplate">
   <div class="section" id="section_bg">
-    <section id="viewHome" data-type="sidebar" class="menuLeft"></section>
-    <section id="viewHomer" data-type="sidebar" class="menuRight"></section>
-    <div class="headerHP" style="position:absolute;top:0px;width: 100%;">
-      <section id="viewHome" class="menuLeft" data-type="sidebar" style="position:absolute;height:100%;opacity:0.95;background:#2d2d2d;visibility:hidden;z-index:10001"></section>
-      <div id="hpRightPanel" style="font-size:30px; cursor: pointer; float: right; margin-right: 5px;">
-        <span style="cursor:pointer; font-size: 30px;vertical-align:middle;"><i style="color:#7aaac3;padding:5px 0;" class="ui-icon-menu"></i></span>
-      </div>
+    <sidebar class="menuLeft"></sidebar>
+    <sidebar class="menuRight"></sidebar>
+    <div class="headerDiv" style="position:absolute;top:0px;width: 100%;">
+      <ul class="headerUl">
+      </ul>
     </div>
     <div class="section-content" style="margin:0 auto;">
       <div class="title-block">
@@ -1416,7 +1409,7 @@
 <header style="position:relative;{{= obj.style ? obj.style : G.coverImage ? 'color:' + G.coverImage.background + ';' : '' }}" class="{{= obj.class }}" {{= sn }}>
 {{= obj.displayCollapsed ? '<i class="ui-icon-collapsable"></i> ': '' }}
 {{= obj.style && !obj.actionBtn ? '<div style="padding:1rem;display:inline-block;">' : '' }}
-{{= obj.actionBtn ? '<div class="cta" style="width:220px;" ' + sn + '>' : '' }}
+{{= obj.actionBtn ? '<div class="cta' + (actionBtn.editable ? '' : ' disabled') + '" style="width:220px;" ' + sn + '>' : '' }}
 {{= value }}
 {{= obj.style || obj.actionBtn ? '</div>' : '' }}
 
@@ -1542,7 +1535,7 @@
 <p>
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
-     {{ if (obj.$order) { params.$orderBy = $order; params.$asc = $asc;} }}
+     {{ _.copyInto(params, obj, '$orderBy', '$asc'); }}
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
 
      <!--span class="ui-li-count">{{= value }}</span></a><a target="#" data-icon="chevron-right" data-iconshadow="false" class="cp" -->
@@ -1804,14 +1797,12 @@
       <div class="encircled">
         <i class="big_symbol ui-icon-facebook"></i>
       </div>
-      <br />
       <span>Login with Facebook</span>
     </td>
     <td class="twitter">
       <div class="encircled">
         <i class="big_symbol ui-icon-twitter"></i>
       </div>
-      <br />
       <span>Login with Twitter</span>
     </td>
   </tr>
@@ -1820,7 +1811,6 @@
       <div class="encircled">
         <i class="big_symbol ui-icon-linkedin"></i>
       </div>
-      <br />
       <span>Login with LinkedIn</span>
     </td>
   </tr>
@@ -1829,14 +1819,12 @@
       <div class="encircled">
         <i class="big_symbol ui-icon-google-plus"></i>
       </div>
-      <br />
       <span>Login with Google+</span>
     </td>
     <td class="live">
       <div class="encircled">
         <i class="big_symbol ui-icon-windows-live"></i>
       </div>
-      <br />
       <span>Login with Live</span>
     </td>
   </tr>
@@ -2419,8 +2407,8 @@
 <!-- EDIT TEMPLATES -->
 <script type="text/template" id="resourceEdit">
 <!-- the edit page for any particular resource -->
-  <section id="{{= viewId }}" data-type="sidebar" class="menuLeft"></section>
-  <section id="{{= viewId + 'r' }}" data-type="sidebar" class="menuRight"></section>
+  <sidebar class="menuLeft"></sidebar>
+  <sidebar class="menuRight"></sidebar>
 <!--div class="headerMessageBar"></div-->
   <div class="headerDiv"></div>
   <div id="resourceEditView">
@@ -2481,7 +2469,7 @@
     {{   var r = resources[i], time = U.getValue(r, cols.date.shortName), val = U.getValue(r, cols.value.shortName); }}
          <tr>
            <td data-time="{{= time }}">{{= U.getFormattedDate1(time) }}</td>
-           <td data-value="{{= val }}">{{= val }}</td>
+           <td data-value="{{= val }}">{{= Math.abs(val) > 10000 ? val.toExponential() : val }}</td>
          </tr>
     {{ }                                       }}
   </tbody>
@@ -2517,7 +2505,12 @@
 
 <script type="text/template" id="editRowTemplate">
   <!-- one property row in edit mode -->
-  <li data-role="fieldcontain" data-shortname="{{= prop.shortName }}">{{= value }}</li>
+  <li data-role="fieldcontain" data-shortname="{{= prop.shortName }}">
+    {{= value }}
+    {{ if (prop.comment) { }}
+      <div class="_prim propertyComment">{{= prop.comment }}</div>
+    {{ }                   }}
+  </li>
 </script>
 
 <script type="text/template" id="shortEnumPET">
@@ -2549,8 +2542,8 @@
 <script type="text/template" id="percentPET">
 <div class="_prim">
   <label for="{{= id }}"  class="ui-input-text" >{{= name }}</label>
-  <input type="range" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '0' }}" {{= rules }} data-mini="true" max="100" min="0" style="width:65%;vertical-align:middle;" onchange="document.getElementById(this.id + '_text').innerHTML = this.value + '%';"/>
-  <div id="{{= id }}_text" style="display:inline-block;vertical-align:middle;padding-left:.5rem;font-size:2rem;color:#7aaac3;font-weight:bold;"></div>
+  <input type="range" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : 0 }}" {{= rules }} data-mini="true" max="100" min="0.00" step="0.01" style="width:65%;vertical-align:middle;"/>
+  <div id="{{= id }}_text" style="display:inline-block;vertical-align:middle;padding-left:.5rem;font-size:2rem;color:#7aaac3;font-weight:bold;">{{= (obj.value ? value : 0) + '%' }}</div>
 </div>
 </script>
 
@@ -2558,7 +2551,6 @@
 <div class="_prim">
   {{ if (name && name.length > 0) { }}
     <label for="{{= id }}" style="color:{{= G.darkColor }}">{{= name }}</label>
-    {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
   {{ } }}
   <section>
   <label class="pack-switch" style="right: 0;top:0rem;left:auto;position:absolute;color:{{= G.darkColor }};">
@@ -2566,7 +2558,6 @@
     <span style="top:2rem"></span>
   </label>
   </section>
-<!--  {{= typeof comment == 'undefined' ? '' : '<span class="comment">' + comment + '</span>' }} -->
 </div>
 </script>
 
@@ -2602,7 +2593,7 @@
 <script type="text/template" id="moneyPET">
 <div class="_prim">
   <label for="{{= id }}" class="ui-input-text" style="color:{{= G.darkColor }}; white-space:nowrap;">{{= name }} <b>{{= typeof value.currency === 'undefined' ? '($)' : value.currency }}</b></label>
-  <input type="text" placeholder="{{= prop.sample || 75 }}" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '' }}" {{= rules }} class="ui-input-text"></input>
+  <input type="text" placeholder="{{= prop.sample || 'e.g. 75' }}" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '' }}" {{= rules }} class="ui-input-text"></input>
 </div>
 </script>
 
@@ -2643,9 +2634,6 @@
 
     <label for="{{= id }}" style="font-weight:normal;color:{{= G.darkColor }};">{{= name }}</label>
     {{= typeof displayName === 'undefined' || !displayName ? (typeof value === 'undefined' ||  value.length == 0 ? '' : value) : displayName }}
-    {{ if (!obj.value) { }}
-      {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
-    {{ } }}
     <div class="triangle"></div>
   </a>
 
@@ -2685,8 +2673,8 @@
 </script>
 
 <script type="text/template" id="multivaluePET">
-  <a target="#" name="{{= shortName }}" class="multivalueProp" >{{= typeof displayName === 'undefined' || !displayName ? name : displayName }}
-    {{= typeof comment == 'undefined' ? '' : '<br/><span class="comment">' + comment + '</span>' }}
+  <a target="#" name="{{= shortName }}" class="multivalueProp" >
+    {{= typeof displayName === 'undefined' || !displayName ? name : displayName }}
   </a>
 </script>
 

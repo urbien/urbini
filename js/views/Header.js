@@ -65,6 +65,7 @@ define('views/Header', [
       });
 
       this.filterParams = {};
+      this.searchMeta = this.collection && U.filterObj(this.collection.params, U.isMetaParameter);
       if (this.filter) {
         this.makeTemplate('searchTemplate', 'searchTemplate', type);
         this.makeTemplate('filterTemplate', 'filterTemplate', type);
@@ -214,9 +215,10 @@ define('views/Header', [
       }
 
       // only use hash the first time
-      var hash = this.hash = this.hash || window.location.hash;
-      if (hash  &&  hash.charAt(0) == '#')
-        hash = hash.slice(1);
+      if (!this.hash)
+        this.hash = window.location.hash;
+
+      var hash = this.hash;
       var res = this.model;
       var title, titleHTML;
       if (hash && G.tabs) {
@@ -1192,6 +1194,7 @@ define('views/Header', [
     onChoseSubClass: function(e) {
       var self = this,
           input = e.selectorTarget.$('input')[0],
+          type = input.$data('type'),
           sClName = input.value,
           sCls = this.subClassesEl.$('input[type="radio"]'),
           filter = this.filterParams,
@@ -1199,10 +1202,27 @@ define('views/Header', [
           model,
           runFilter = function() {
             self.updateSearchBar(model);
-            _.wipe(filter);
+            for (var p in filter) {
+              if (U.isNativeModelParameter(p))
+                delete filter[p];
+            }
+
             if (type)
               filter.type = type;
 
+            filter.$offset = 0;
+/*            if (self.searchMeta.$orderBy) {
+              var p = U.getSubpropertyOf(model, self.searchMeta.$orderBy);
+              if (p) {
+                filter.$orderBy = p.shortName;
+                filter.$asc = self.searchMeta.$asc;
+              }
+              else {
+                delete filter.$orderBy;
+                delete filter.$asc;
+              }
+            }
+*/
             self.doFilter();
             while (i--) {
               var sCl = sCls[i];
@@ -1218,8 +1238,9 @@ define('views/Header', [
 
       input.checked = true;
       this._lastSubClass = input;
-      if (sClName != 'All') {
-        var type = input.$data('type');
+      if (sClName == 'All')
+        model = this.vocModel;
+      else {
         model = U.getModel(type);
         if (!model) {
           if (e instanceof Event)

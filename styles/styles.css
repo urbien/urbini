@@ -11,12 +11,6 @@ body {
   color: #f66;
 }
 
-span.comment {
-  color: #888;
-  font-weight: normal;
-  font-size: 12px;
-}
-
 label.req::after {
   content: " *";
   font-weight: bold;

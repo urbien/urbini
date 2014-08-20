@@ -19,7 +19,8 @@ define('views/BasicPageView', [
       doc = document,
       viewport = G.viewport,
       MainMenuPanel,
-      ContextMenuPanel;
+      ContextMenuPanel,
+      DESTOY_WHEN_INACTIVE_FOR = 3;
 
 //  ,
 //      mixins = [];
@@ -159,7 +160,7 @@ define('views/BasicPageView', [
       'swiperight.page': 'swiperight',
       'swipeleft.page': 'swipeleft',
       'click.page .videoLauncher': U.launchVideo,
-      'click.page .reqLogin': function(e) { Events.stopEvent(e); Events.trigger('req-login', {dismissible: true}) },
+      'click.page .reqLogin': function(e) { Events.stopEvent(e); Events.trigger('req-login', {dismissible: true}); },
       'click.page .pgDown': 'pageDown',
       'click.page .pgUp': 'pageUp',
       'click.page [data-selector]': 'scrollToTarget',
@@ -320,6 +321,9 @@ define('views/BasicPageView', [
           target,
           tooltip,
           direction,
+          offset,
+          ol,
+          ot,
           delay = 0;
 
       _.find(selectors, function(selector) {
@@ -328,6 +332,15 @@ define('views/BasicPageView', [
 
       if (!target)
         return;
+
+      ot = link.$data('offset-top');
+      ot = ot ? parseInt(ot) : 0;
+      ol = link.$data('offset-left');
+      ol = ol ? parseInt(ol) : 0;
+      offset = {
+        top: ot,
+        left: ol
+      };
 
       var collapsed = target.$closest('[data-display="collapsed"]', true);
       if (collapsed && collapsed.$isCollapsed())
@@ -350,7 +363,8 @@ define('views/BasicPageView', [
           tooltip: tooltip,
           direction: direction,
           type: 'info',
-          style: 'square'
+          style: 'square',
+          offset: offset
         }), delay);
       }
 
@@ -399,12 +413,13 @@ define('views/BasicPageView', [
     _onActiveView: function(view) {
       if (view !== this) {
         this._inactiveFor++;
-        // if (this._inactiveFor > 2) {
-        //   this.destroy();
-        // }
-
         if (this.active)
           this.trigger('inactive');
+        else {
+          if (this._inactiveFor > DESTOY_WHEN_INACTIVE_FOR) {
+            this.destroy();
+          }
+        }
       }
       else {
         if (!this.active) {
@@ -622,10 +637,13 @@ define('views/BasicPageView', [
           el = options.el,
           tooltip = options.tooltip,
           direction = options.direction || 'left',
+          offset = options.offset || { top: 0, left: 0 },
+          ol = offset.left || 0,
+          ot = offset.top || 0,
           type = options.type || 'info',
           style = options.style || 'square',
           pos = this.getTooltipPos(el),
-          posStyle = 'top:' + pos.top + ';left:' + pos.left + ';',
+          posStyle = 'top:' + (parseFloat(pos.top.match(/[\d.]+/)[0]) + ot) + 'px;left:' + (parseFloat(pos.left.match(/[\d.]+/)[0]) + ol) + 'px;',
           page = this.el,
           tooltipEl,
           classes = ['always', direction, type, style].map(function(cl) {
@@ -652,13 +670,16 @@ define('views/BasicPageView', [
 
       var events = ['tap', 'drag'];
       events.map(function(event) {
-        document.addEventListener(event, function removeTooltips() {
+        function removeTooltips() {
           events.map(function(event) {
-            document.removeEventListener(event, removeTooltips, true);
+            document.$off(event, removeTooltips, true);
           });
 
           self.removeTooltips();
-        }, true);
+        };
+
+        document.$on(event, removeTooltips, true);
+        self.on('destroyed', document.$off.bind(document, removeTooltips));
       });
     },
 
@@ -773,6 +794,7 @@ define('views/BasicPageView', [
 
     _onDestroyed: function() {
 //      this.removeFromWorld();
+      console.log("DESTROYED: " + this.TAG + this.cid);
       return BasicView.prototype._onDestroyed.apply(this, arguments);
     },
 

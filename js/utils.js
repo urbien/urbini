@@ -668,7 +668,7 @@ define('utils', [
 
     isResourceProp: function(prop) {
       return prop && !prop.backLink && prop.range && (prop.range == 'Resource' ||
-                                                     (!prop.range.endsWith('/Percent')  &&  prop.range.indexOf('/') != -1 && !U.isInlined(prop)));
+                                                     (!U.isPercentProp(prop)  &&  prop.range.indexOf('/') != -1 && !U.isInlined(prop)));
     },
 //    getSortProps: function(model) {
 //      var meta = this.model.__proto__.constructor.properties;
@@ -1515,8 +1515,15 @@ define('utils', [
      * @params (resource or resource.attributes, [model or model.properties])
      */
     getDisplayName: function(resource, vocModel) {
-      if (resource instanceof Backbone.Model && !resource.isLoaded())
+      if (resource instanceof Backbone.Model && !resource.isLoaded()) {
+        if (resource.isAssignableFrom('commerce/trading/Rule')) {
+          var dn = U.getRuleDisplayName(resource, vocModel);
+          if (dn)
+            return dn;
+        }
+
         return resource.vocModel.displayName;
+      }
 
       var dn = U.getValue(resource, 'davDisplayName');
       if (dn) {
@@ -1577,6 +1584,52 @@ define('utils', [
       }
 
       return (dn || vocModel.displayName).trim();
+    },
+
+    getRuleDisplayName: function(rule, model) {
+      model = model || rule.vocModel;
+      var dn1 = rule.get('indicator.displayName'),
+          op = U.getRuleOperator(rule),
+          atts = rule.attributes;
+
+      if (!dn1)
+        return;
+
+      parts = [dn1, op];
+      if (rule.get('compareWith')) {
+        var dn2 = rule.get('compareWith.displayName'),
+            percent = rule.get('percentValue');
+
+        if (dn2) {
+          parts.push(dn2);
+          if (rule.vocModel.shortName.endsWith('ByRule')) {
+            parts.push('by', percent !== undefined ? percent + '%' : '...');
+          }
+        }
+      }
+      else {
+        var val;
+        _.find(['string', 'double', 'enum', 'boolean'], function(type) {
+          var p = type + 'Value';
+          if (_.has(atts, p)) {
+            val = atts[p];
+            return true;
+          }
+        });
+
+        if (val === undefined) {
+          if (_.has(atts, 'percentValue'))
+            val = (rule.get('percentValue') || 0) + '%';
+          else if (_.has(atts, 'resourceValue'))
+            val = rule.get('resourceValue.displayName');
+          else if (_.has(atts, 'dateValue'))
+            val = U.getFormattedDate1(rule.get('dateValue'));
+        }
+
+        parts.push(val == undefined ? '...' : val);
+      }
+
+      return parts.join(' ');
     },
 
     getTemplate: function() {
@@ -1901,6 +1954,18 @@ define('utils', [
           };
 
       Events.trigger('getCachedView:' + url, found);
+      if (!obj) {
+        // check alternate home page urls
+        if (url.indexOf(G._serverName + '/' + G.pageRoot + '/home/') < 10) {
+          url = url.replace('/home/', '/');
+          Events.trigger('getCachedView:' + url, found);
+        }
+        else if (url.lastIndexOf('/') == url.indexOf(G.pageRoot) + G.pageRoot.length) {
+          url = url.replace(G.pageRoot, G.pageRoot + '/home');
+          Events.trigger('getCachedView:' + url, found);
+        }
+      }
+
       return obj;
     },
 
@@ -1917,7 +1982,7 @@ define('utils', [
 
     getResourcePromise: function(uri, sync) {
       var res = U.getResource(uri);
-      if (res) {
+      if (res && res.isLoaded()) {
         if (!sync || U.isTempUri(uri))
           return U.resolvedPromise(res);
       }
@@ -2751,7 +2816,7 @@ define('utils', [
 //      uri: 'system/primitiveTypes',
       strings: ['String', 'longString'],
       dates: ['date', 'dateTime', 'ComplexDate', 'system/fog/ComplexDate', 'Money', 'model/company/Money'],
-      floats: ['float', 'double', 'Percent', 'm', 'm2', 'km', 'km2', 'g', 'kg'],
+      floats: ['float', 'double', 'Percent', 'system/primitiveTypes/Percent', 'm', 'm2', 'km', 'km2', 'g', 'kg'],
       ints: ['int', 'long', 'Duration', 'ComplexDate', 'dateTime', 'date']
     },
 
@@ -3128,7 +3193,7 @@ define('utils', [
       }
 
       var value = val.value;
-      if (value) {
+      if (value !== undefined) {
         if (range.indexOf("/") === -1)
           return value;
         return typeof value !== 'string' ? value : value.indexOf('/') === -1 ? value : U.getLongUri1(value);
@@ -3185,6 +3250,10 @@ define('utils', [
 
     isTimeProp: function(prop) {
       return U.isXProp(prop, U._timeProps);
+    },
+
+    isPercentProp: function(prop) {
+      return prop.facet == 'Percent' || prop.facet == 'system/primitiveTypes/Percent';
     },
 
     isXProp: function(prop, propShortNameSet) {
@@ -4415,7 +4484,8 @@ define('utils', [
       var url;
       if (e instanceof Event) {
         Events.stopEvent(e);
-        url = e.selectorTarget.href;
+        var t = e.selectorTarget;
+        url = t.$attr('href') || t.$data('href');
       }
       else
         url = e;
@@ -4456,6 +4526,19 @@ define('utils', [
 
     isMetaParameter: function(param) {
       return param != tempIdParam && /^[$-_]+/.test(param);
+    },
+
+    hasNonMetaProps: function(atts) {
+      // we have some real props here, not just meta props
+      if (atts) {
+        if (U.isModel(atts))
+          atts = atts.attributes;
+
+        for (var key in atts) {
+          if (U.isModelParameter(key))
+            return true;
+        }
+      }
     },
 
     isNativeModelParameter: function(param) {
@@ -4517,10 +4600,32 @@ define('utils', [
         cols[dnIdx] = 'davDisplayName';
 
       var props = vocModel.properties;
-      return _.filter(cols, function(c) {
+      cols = _.filter(cols, function(c) {
         var p = props[c];
         return p && !p.backLink && !_.contains(U._forbiddenIndexNames, c.toLowerCase());
       });
+
+      if (/voc\/dev\/(?:Technicals|FRED)\//.test(vocModel.type)) {
+        for (var p in props) {
+          var prop = props[p];
+          if (U.isDateOrTimeProp(prop))
+            _.pushUniq(cols, p);
+        }
+      }
+
+      for (var p in props) {
+        var prop = props[p];
+        if (prop.sortAscending || prop.sortDescending)
+          _.pushUniq(cols, p);
+      }
+
+      if (U.isA(vocModel, 'Submission')) {
+        var date = U.getCloneOf(vocModel, 'Submission.dateSubmitted')[0];
+        if (date)
+          _.pushUniq(cols, date);
+      }
+
+      return cols;
     },
 
     isMasonryModel: function(vocModel) {
@@ -4840,9 +4945,11 @@ define('utils', [
       if (op)
         return op;
 
-      var vocModel = rule.vocModel;
-      var type = U.getTypeUri(rule.getUri());
-      var numeric = U.isNumericRuleType(type);
+      var vocModel = rule.vocModel,
+          uri = rule.getUri(),
+          type = uri ? U.getTypeUri(uri) : vocModel.type,
+          numeric = U.isNumericRuleType(type);
+
       if (numeric) {
         if (numeric[1])
           return numeric[1];
@@ -4861,7 +4968,7 @@ define('utils', [
       if (U.isNumericRuleType(type)) {
         var val = rule.get('doubleValue');
         if (val !== undefined)
-          return val;
+          return Math.abs(val) > 10000 ? val.toExponential() : val;
 
         val = rule.get('percentValue');
         if (val !== undefined)
@@ -4877,6 +4984,10 @@ define('utils', [
         return rule.get('resourceValue.displayName');
       else
         throw "unsupported";
+    },
+
+    isHeterogeneousEvent: function(model) {
+      return U.isAssignableFrom(model, 'commerce/trading/StockEvent', 'commerce/trading/CommodityEvent', 'commerce/trading/IndexEvent');
     },
 
     getTwitterLink: function(res) {

@@ -314,6 +314,7 @@ div.nabBtn {
   padding: 5px 5px;
   font-size: 2rem;
   box-sizing: border-box;
+  border: 2px solid rgba(40, 146, 198, 0.5);
 }
 
 .searchInput::-webkit-input-placeholder:before {   font-family: 'tradle'; content: "\e090"; }
@@ -1137,11 +1138,22 @@ section[id^="view"] {
 
 .social-login .encircled {
   margin: auto;
+  margin-bottom: 10px;
 }
 
 .social-login td {
   width: 50%;
-  padding: 20px 20px 20px 20px;
+  padding: 10px;
+}
+
+@media all and (min-height: 450px) {
+  .social-login td {
+    padding: 20px;
+  }
+
+  .social-login .encircled {
+    margin-bottom: 20px;
+  }
 }
 
 .facebook {
@@ -1801,6 +1813,8 @@ li.anim-overlay-active {
 
 li.invalid[data-role="fieldcontain"] {
   border: 3px solid red;
+  border-left: 0;
+  border-right: 0;
   background: rgba(255,0,0,0.2);
 }
 
@@ -1873,16 +1887,16 @@ section[data-backlink="indicators"] li:not([data-action="add"]) {
   border: 2px dashed #888;
 }
 #sidebar .frTitle {
-  font-size:2rem; 
+  font-size:2rem;
   padding-bottom:.8rem;
 }
 @media all and (min-width: 600px) {
   section[data-backlink] {
     font-size: 4rem;
   }
-  #sidebar .frTitle { 
-     font-size:2.4rem; 
-     padding-bottom:.8rem; 
+  #sidebar .frTitle {
+     font-size:2.4rem;
+     padding-bottom:.8rem;
    }
 }
 
@@ -1997,3 +2011,9 @@ section[data-backlink] li:last-child {
   }
 }
 
+.propertyComment {
+  color: #888;
+  font-weight: normal;
+  font-size: 12px;
+  font-style: italic;
+}

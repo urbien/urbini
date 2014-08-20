@@ -29,12 +29,6 @@ define('models/Resource', [
     G.log.apply(G, args);
   };
 
-  function hasNonMetaProps(atts) {  // we have some real props here, not just meta props
-    return atts && _.any(_.keys(atts), function(key) {
-      return /^[a-zA-Z]/.test(key)
-    });
-  };
-
   var Resource = Backbone.Model.extend({
     idAttribute: "_uri",
     initialize: function(atts, options) {
@@ -57,7 +51,7 @@ define('models/Resource', [
 //      if (atts)
 //        this.parse(atts);
 
-      if (this.loaded)
+      if (this.isLoaded())
         this.announceNewResource(options);
 
 //      if (commonTypes.App == this.type) {
@@ -102,12 +96,15 @@ define('models/Resource', [
     },
 
     isLoaded: function() {
-      return this.loaded;
+      if (!this._loaded)
+        this.checkIfLoaded();
+
+      return this._loaded;
     },
 
     _load: function(options) {
-      if (!this.loaded) {
-        this.loaded = true;
+      if (!this._loaded) {
+        this._loaded = true;
         this.trigger('load');
       }
     },
@@ -187,6 +184,7 @@ define('models/Resource', [
 
     setDefaults: function() {
       var vocModel = this.vocModel,
+          meta = vocModel.properties,
           urlInfo = U.getCurrentUrlInfo(),
           action = urlInfo.action,
           isEdit = action == 'make' || action == 'edit',
@@ -291,7 +289,45 @@ define('models/Resource', [
           this.where = conditions;
       }
 
+      if (_.isEmpty(defaults))
+        return;
+
+      for (var p in defaults) {
+        var dnProp = p + '.displayName',
+            prop,
+            dn,
+            uri,
+            res;
+
+        if (_.has(defaults, dnProp))
+          continue;
+
+        prop = meta[p];
+        if (!prop || !U.isResourceProp(prop))
+          continue;
+
+        uri = defaults[p];
+        res = U.getResource(uri);
+        if (res) {
+          dn = res.getDisplayName();
+        }
+        else {
+          if (uri == '_me')
+            uri = defaults[p] = G.currentUser._uri;
+
+          if (uri == G.currentUser._uri)
+            dn = G.currentUser.davDisplayName;
+        }
+
+        if (dn)
+          defaults[dnProp] = dn;
+      }
+
       this.set(defaults, {silent: true, defaults: true});
+    },
+
+    getDisplayName: function() {
+      return U.getDisplayName(this);
     },
 
     onUriChanged: function() {
@@ -535,7 +571,7 @@ define('models/Resource', [
 //      if (!this.get('_uri') && resp._uri)
 //        this.set('_uri', U.getLongUri1(resp._uri));
 
-      if (this._getLastFetchOrigin() === 'db' || !hasNonMetaProps(resp))
+      if (this._getLastFetchOrigin() === 'db' || !U.hasNonMetaProps(resp))
         return resp;
 
       if (!options.parse && this.lastFetchOrigin !== 'server')
@@ -786,7 +822,7 @@ define('models/Resource', [
 
       }
 
-      if (this.loaded && displayNameChanged) {
+      if (this.isLoaded() && displayNameChanged) {
         var displayNameProps = _.defaults({}, props, this.attributes);
         delete displayNameProps.davDisplayName;
         var newDisplayName = U.getDisplayName(displayNameProps, this.vocModel);
@@ -805,7 +841,7 @@ define('models/Resource', [
 //      if (uriChanged)
 //        props._uri = uri;
 
-      if (!options.silent && !hasNonMetaProps(props)) {
+      if (!options.silent && !U.hasNonMetaProps(props)) {
         options = _.defaults({silent: true}, options); // avoid changing passed-in options obj, but DO call set with silent: true
       }
 
@@ -937,8 +973,10 @@ define('models/Resource', [
     isA: function(interfaceName) {
       return U.isA(this.vocModel, interfaceName);
     },
-    isAssignableFrom: function(classNameOrType) {
-      return U.isAssignableFrom(this, classNameOrType);
+    isAssignableFrom: function() {
+      var args = _.toArray(arguments);
+      args.unshift(this);
+      return U.isAssignableFrom.apply(U, args);
     },
     _updateLastFetched: function() {
       this.set('_lastFetchedOn', G.currentServerTime(), {silent: true});
@@ -1170,7 +1208,7 @@ define('models/Resource', [
     },
 
     checkIfLoaded: function() {
-      if (!this.loaded && this.getUri() && hasNonMetaProps(this.attributes))
+      if (!this._loaded && this.getUri() && U.hasNonMetaProps(this.attributes))
         this._load();
     },
 

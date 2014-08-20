@@ -10,12 +10,13 @@ DOMReady.add( function () {
       mph = d.createElement('div'),
       logoH = d.createElement('div'),
       logo = d.createElement('div'),
-      bg = d.createElement('div');
+      bg = d.createElement('div'),
+      va = 'vcenteredA';
 
   d.title = l.currentApp.title;
   mc.className = 'modal-cover';
-  mp.className = 'modal-popups vcenteredA';
-  logoH.className = 'globalLogo';
+  mp.className = 'modal-popups ' + va;
+  logoH.className = 'globalLogo ' + va;
   logo.className = 'ui-icon-tradle';
   logoH.appendChild(logo);
   bg.className = 'appBG';

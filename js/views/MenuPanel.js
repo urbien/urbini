@@ -55,15 +55,10 @@ define('views/MenuPanel', [
         self.show();
       });
 
-//      document.$on('click', function hide(e) {
-////        if (G.canClick())
-//        if (!self.isHidden() && !self._transitioning)
-//          self.hide(e);
-//      }, true);
-//
-//      this.once('destroy', function() {
-//        document.$off('click', hide);
-//      }, this);
+      document.$on('tap', this.hide);
+      this.on('destroy', function() {
+        document.$off('tap', self.hide);
+      });
     },
 
     pageEvents: {

@@ -62,13 +62,35 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
     }).replace(/-/, '');
   };
 
+  function getWindowWidth() {
+    var page = $('[data-role="page"]')[0],
+        pageStyle = page && window.getComputedStyle(page),
+        maxWidth,
+        width;
+
+    if (pageStyle)
+      maxWidth = pageStyle.maxWidth && pageStyle.maxWidth.match(/(\d+)([a-zA-Z%]+)/);
+
+    if (maxWidth) {
+      width = parseInt(maxWidth[1]);
+      if (maxWidth[2] == '%')
+        width *= window.innerWidth / 100;
+    }
+    else
+      width = window.innerWidth;
+
+    return width;
+  };
+
   function fireResizeEvent(force) {
     var v = G.viewport,
-        heightChanged = force || window.innerHeight !== v.height,
-        widthChanged = force || window.innerWidth !== v.width;
+        width = getWindowWidth(),
+        height = window.innerHeight,
+        heightChanged = force || v.height != height,
+        widthChanged = force || v.width != width;
 
     if (heightChanged || widthChanged) {
-      saveViewportSize();
+      saveViewportSize(width, height);
       G.triggerEvent(window, "debouncedresize");
       G.triggerEvent(window, "viewportdimensions");
 //      window.dispatchEvent(new Event('debouncedresize'));
@@ -102,56 +124,9 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
     G.triggerEvent(window, "viewportdimensions");
   }
 
-  function saveViewportSize() {
-    var viewport = G.viewport,
-        page = $('[data-role="page"]')[0],
-        pageStyle = page && window.getComputedStyle(page),
-        maxWidth,
-        width;
-
-    if (!pageStyle)
-      setTimeout(fireResizeEvent.bind(null, true), 100);
-    else
-      maxWidth = pageStyle.maxWidth && pageStyle.maxWidth.match(/(\d+)([a-zA-Z%]+)/);
-
-    if (maxWidth) {
-      width = parseInt(maxWidth[1]);
-      if (maxWidth[2] == '%')
-        width *= window.innerWidth / 100;
-    }
-    else
-      width = window.innerWidth;
-
-    viewport.width = width;
-    viewport.height = window.innerHeight;
-//    var viewport = G.viewport,
-//        width = window.innerWidth,
-//        height = window.innerHeight,
-//        oldWidth = 0,
-//        oldHeight = 0,
-//        changed = false;
-//
-//    if (viewport) {
-//      oldWidth = viewport.width;
-//      oldHeight = viewport.height;
-//    }
-//    else
-//      viewport = G.viewport = {};
-//
-//    if (oldWidth !== width) {
-//      viewport.width = width;
-//      changed = true;
-//    }
-//    if (oldHeight !== height) {
-//      viewport.height = height;
-//      changed = true;
-//    }
-//
-//    if (changed)
-//      console.log("Viewport size changed from " + oldWidth + 'x' + oldHeight + ', to ' + width + 'x' + height);
-//
-//    return changed;
-//    Events.trigger('viewportResize', viewport);
+  function saveViewportSize(w, h) {
+    G.viewport.width = w || getWindowWidth();
+    G.viewport.height = h || window.innerHeight;
   }
 
   function $wrap(el) {
@@ -163,6 +138,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
   }
 
   saveViewportSize();
+  Events.once('pageChange', fireResizeEvent);
 //  window.addEventListener('orientationchange', saveViewportSize);
 //  window.addEventListener('debouncedresize', saveViewportSize);
 

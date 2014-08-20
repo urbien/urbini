@@ -50,10 +50,10 @@ define('views/HistoricalDataView', [
 
   function toTable(list, indicator, cols) {
     return {
-      heading: U.getDisplayName(indicator).replace('Previous Value', '').trim(),
+      heading: U.getDisplayName(indicator).replace('Previous Value', '').replace('()', '').trim(),
       cols: cols,
       resources: list.models
-    }
+    };
   };
 
   return BasicView.extend({
@@ -84,7 +84,11 @@ define('views/HistoricalDataView', [
       else {
         table.order = shortname;
         // this.historicalData.sortBy(this._sortBy);
-        table.resources = _.sortBy(table.resources, function(obj) { return obj[shortname]; });
+        var sorted = _.sortBy(table.resources, function(obj) { return obj[shortname]; });
+        if (_.isEqual(sorted, table.resources))
+          sorted.reverse();
+
+        table.resources = sorted;
       }
 
       this.render();
@@ -158,6 +162,9 @@ define('views/HistoricalDataView', [
                 };
 
             params[valProp] = '!null';
+            if (U.isHeterogeneousEvent(model)) {
+              params[U.getSubpropertyOf(model, 'feed').shortName] = indicator.get('feed');
+            }
 
             var list = new ResourceList(null, {
               model: model,
@@ -182,6 +189,12 @@ define('views/HistoricalDataView', [
       });
 
       return (this._historicalDataPromise = dfd.promise());
+    },
+
+    drawChart: function() {
+      this.chartLibsPromise = U.require(['dc', 'crossfilter', 'colorbrewer', 'd3', 'stockCharts']).done(function(_DC, _Crossfilter, _Colorbrewer, _D3, _StockCharts) {
+        StockCharts = _StockCharts;
+      });
     },
 
     render: function() {
