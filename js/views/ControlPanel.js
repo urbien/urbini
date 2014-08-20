@@ -421,6 +421,7 @@ define('views/ControlPanel', [
       }
 
       data.params = params;
+      _.copyInto(params, data, '$orderBy', '$asc');
       data.action = action;
       return this._cpTemplate(data);
     },
@@ -1554,7 +1555,7 @@ define('views/ControlPanel', [
               tmpl_data.style = prop.propertyStyle;
             var bl = prop.backLinkSortDescending;
             if (bl) {
-              tmpl_data['$order'] = bl;
+              tmpl_data['$orderBy'] = bl;
               tmpl_data['$asc'] = 0;
             }
             if (isTradle)
@@ -1699,11 +1700,15 @@ define('views/ControlPanel', [
             if (prop.propertyStyle)
               tmpl_data.style = prop.propertyStyle;
 
-            var bl = prop.backLinkSortDescending;
+            var bld = prop.backLinkSortDescending,
+                bla = prop.backLinkSortAscending,
+                bl = bla || bld;
+
             if (bl) {
-              tmpl_data['$order'] = bl;
-              tmpl_data['$asc'] = 0;
+              tmpl_data['$orderBy'] = bl;
+              tmpl_data['$asc'] = !!bla;
             }
+
 //            var common = {range: range, shortName: p, backlink: prop.backLink, value: cnt, _uri: uri, title: t, comment: comment, name: n};
             if (isPropEditable) {
               if (U.isCloneOf(prop, 'Templatable.clones', this.vocModel)) {

@@ -47,7 +47,7 @@
   var _ = function(obj) {
     if (typeof obj == 'string')
       debugger;
-    
+
     if (obj instanceof _) return obj;
     if (!(this instanceof _)) return new _(obj);
     this._wrapped = obj;
@@ -1502,7 +1502,7 @@
   };
 
   // Deferred helper
-  _d.when = function( subordinate /* , ..., subordinateN */ ) { 
+  _d.when = function( subordinate /* , ..., subordinateN */ ) {
     var i = 0,
       resolveValues = _.toArray(arguments),
       length = resolveValues.length;
@@ -1567,12 +1567,12 @@
   String.prototype.trim = function(){
     return (this.replace(/^[\s\xA0]+/, "").replace(/[\s\xA0]+$/, ""));
   };
-  
+
   String.prototype.startsWith = function(str) {
 //    return (this.match("^"+str)==str);
     return this.slice(0, str.length) === str;
   };
-  
+
   String.prototype.camelize = function(capitalFirst) {
     return this.replace(/(?:^\w|[A-Z]|\b\w)/g, function(letter, index) {
       return capitalFirst || index != 0 ? letter.toUpperCase() : letter.toLowerCase();
@@ -1584,16 +1584,16 @@
       return str.replace(/\s/g, '');
     });
   };
-  
+
   String.prototype.uncamelize = function(capitalFirst) {
     var str = this.replace(/[A-Z]/g, ' $&').trim().toLowerCase();
-    return capitalFirst ? str.slice(0, 1).toUpperCase() + str.slice(1) : str; 
+    return capitalFirst ? str.slice(0, 1).toUpperCase() + str.slice(1) : str;
   };
 
   String.prototype.capitalizeFirst = function() {
     return this.slice(0, 1).toUpperCase() + this.slice(1);
   };
-  
+
   String.prototype.splitCamelCase = function(capitalFirst) {
       // insert a space before all caps
     var split = this.replace(/([A-Z])/g, ' $1');
@@ -1607,14 +1607,14 @@
 
   String.prototype.format = function() {
     var args = arguments;
-    return this.replace(/{(\d+)}/g, function(match, number) { 
+    return this.replace(/{(\d+)}/g, function(match, number) {
       return typeof args[number] != 'undefined'
         ? args[number]
         : match
       ;
     });
   };
-  
+
   _.extend(Array, {
     copy: function (from, to) {
       var i = from.length;
@@ -1625,15 +1625,15 @@
     prepend: function(arr, more) {
       var orgLen = arr.length,
           addLen = more.length;
-          
+
       arr.length = orgLen + addLen;
       while (orgLen--) {
         arr[orgLen + addLen] = arr[orgLen];
       }
-      
+
       while (addLen--) {
         arr[addLen] = more[addLen];
-      }    
+      }
     },
     remove: function(array /* items */) {
       for (var i = 1, len = arguments.length; i < len; i++) {
@@ -1650,12 +1650,12 @@
 //            for (var j = idx, arrLen = array.length - 1; j < arrLen; j++) {
 //              array[j] = array[j + 1];
 //            }
-//            
+//
 //            array.length = arrLen;
           }
         }
       }
-      
+
       return array;
     },
 
@@ -1681,10 +1681,10 @@
 
     peek: function(array) {
       return array[array.length - 1];
-    }    
-  });  
+    }
+  });
 
-  
+
   function index(obj, i) {
     return obj[i];
   };
@@ -1697,18 +1697,18 @@
     toQueryParams: function(string, separator) {
       if (!string)
         return {};
-          
+
       var match = string.trim().match(/([^?#]*)(#.*)?$/);
-      if (!match) 
+      if (!match)
         return {};
-      
+
       return match[1].split(separator || '&').reduce(function(hash, pair) {
         if ((pair = pair.split('='))[0]) {
           var key = _.decode(pair.shift()),
               value = pair.length > 1 ? pair.join('=') : pair[0];
-              
+
           if (value != undefined) value = _.decode(value);
-          
+
           if (key in hash) {
             if (!_.isArray(hash[key])) hash[key] = [hash[key]];
             hash[key].push(value);
@@ -1718,11 +1718,11 @@
         return hash;
       }, {});
     },
-    
+
     inArray: function(el, arr) { // compatibility with jquery
       return arr.indexOf(el);
     },
-    
+
     param: function param(obj) {
       var parts = [];
       for (var i in obj) {
@@ -1730,7 +1730,7 @@
           parts.push(encodeURIComponent(i) + "=" + _.encode(obj[i]));
         }
       }
-      
+
       return parts.join("&");//.replace(r20, "+");
     },
 //    partial: function(fn) {
@@ -1742,33 +1742,33 @@
 //      args.unshift(null);
 //      return fn.bind.apply(fn, args);
 //    },
-//    
+//
 //    partialWith: function(fn, context) {
 ////      var args = slice.call(arguments, 2);
 ////      return function() {
 ////        return fn.apply(context, args.concat(_.toArray(arguments)));
 ////      };
 //    },
-    
+
     negate: function(fn, context) {
       return function() {
         return !fn.apply(context || this, arguments);
       }
     },
-    
+
     isPromise: function(obj) {
       return obj && typeof obj.then == 'function';
     },
-    
+
     index: index,
     setProperty: function(obj, prop, val) {
       obj[prop] = val;
     },
-    
+
     deepExtend: function(obj) {
       var parentRE = /#{\s*?_\s*?}/,
           slice = Array.prototype.slice;
-     
+
       for (var i = 1, num = arguments.length; i < num; i++) {
         var source = arguments[i];
         for (var prop in source) {
@@ -1800,19 +1800,19 @@
           }
         }
       }
-      
+
       return obj;
     },
-    
+
     leaf: function(obj, path, separator) {
       if (typeof obj == 'undefined' || !obj)
         return undefined;
 
-      separator = separator || '.'; 
+      separator = separator || '.';
       var lastSep = path.lastIndexOf(separator),
           parent,
           child;
-      
+
       if (lastSep == -1)
         return obj[path];
       else {
@@ -1821,15 +1821,15 @@
           child = parent[path.slice(lastSep + separator.length)];
         } catch (err) {
           return undefined;
-        }        
+        }
       }
-      
+
       if (typeof child == 'function')
         return child.bind(parent);
       else
         return child;
     },
-    
+
 //    deepExtend: function(obj) {
 //      _.each(slice.call(arguments, 1), function(source) {
 //        for (var prop in source) {
@@ -1840,7 +1840,7 @@
 //        }
 //      });
 //    },
-   
+
     getObjectType: function(o) {
       return Object.prototype.toString.call(o);
     },
@@ -1850,20 +1850,20 @@
 //      for (var i = 1, num = arguments.length; i < num; i++) {
 //        var source = arguments[i];
 //        for (var p in source) {
-//          var val = source[p], 
+//          var val = source[p],
 //              org = obj[p];
-//          
+//
 //          if (_.has(source, p) && !_.has(obj, p)) {
 //            obj[p] = val && _.getObjectType(val) == '[object Object]' ? _.deepExtend({}, val) : val;
 //            continue;
 //          }
-//            
+//
 //          if (_.isObject(val) && _.isObject(org))
 //            _.deepExtend(org, val);
 //          else
 //            obj[p] = val;
 //        }
-//        
+//
 //        return obj;
 //      }
 ////      });
@@ -1872,28 +1872,28 @@
     validatePhone: function(phone) {
       return /^(\+?\d{0,3})\s*((\(\d{3}\)|\d{3})\s*)?\d{3}(-{0,1}|\s{0,1})\d{2}(-{0,1}|\s{0,1})\d{2}$/.test(phone);
     },
-    
+
     validateZip: function(zip) {
       return /^\d{5}|\d{5}-\d{4}$/.test(zip);
     },
-    
-    validateEmail: function(email) { 
+
+    validateEmail: function(email) {
       return /^([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x22([^\x0d\x22\x5c\x80-\xff]|\x5c[\x00-\x7f])*\x22))*\x40([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d)(\x2e([^\x00-\x20\x22\x28\x29\x2c\x2e\x3a-\x3c\x3e\x40\x5b-\x5d\x7f-\xff]+|\x5b([^\x0d\x5b-\x5d\x80-\xff]|\x5c[\x00-\x7f])*\x5d))*$/.test( email );
     },
-    
+
     getParamMap: function(str, delimiter) {
       var qIdx = str.indexOf('?');
       return _.toQueryParams(~qIdx ? str.slice(qIdx + 1) : str, delimiter);
-    },    
-    
+    },
+
     encode: function(str) {
       return encodeURIComponent(str).replace(r3a, ':').replace(r2f, '/').replace(r2c, ',').replace(r20, '+').replace(singleQuote, '%27');
     },
-    
+
     decode: function(str) {
       return decodeURIComponent(str.replace(/\+/g, '%20'));
     },
-        
+
     pushUniq: function(arr) {
       var items = concat.apply([], slice.call(arguments, 1));
       for (var i = 0; i < items.length; i++) {
@@ -1902,17 +1902,17 @@
           arr.push(item);
       }
     },
-   
+
     intersects: function(arr1, arr2) {
       var i = arr1.length;
       while (i--) {
         if (~arr2.indexOf(arr1[i]))
           return true;
       }
-      
+
       return false;
     },
-    
+
     getFirstProperty: function(obj) {
       for (var name in obj) {
         return name;
@@ -1924,12 +1924,12 @@
         return obj[name];
       }
     },
-   
+
     randomString: function(length) {
       var random = (Math.random() * new Date().getTime()).toString(36).toUpperCase().replace(/\./g, '');
       return length ? random.slice(0, length) : random;
     },
-   
+
     wipe: function(obj) {
       for (var p in obj) {
         if (obj.hasOwnProperty(p))
@@ -1944,7 +1944,7 @@
       }
     },
 
-    /** 
+    /**
      * From http://eloquentjavascript.net/chapter6.html
      */
     "<": function(a, b){return a < b;},
@@ -1958,8 +1958,8 @@
     "!": function(a){return !a;},
     "!=": function(a, b){return a != b;},
     "!==": function(a, b){return a !== b;},
-      /* and so on */  
-    
+      /* and so on */
+
     getHTMLComments: function(str) {
       var matches = str.match(__htmlCommentRegex);
       return matches && matches.slice(1);
@@ -1985,7 +1985,7 @@
               .replace(/</g, '&lt;')
               .replace(/>/g, '&gt;');
     },
-  
+
     htmlUnescape: function(value){
         return String(value)
             .replace(/&quot;/g, '"')
@@ -1994,7 +1994,7 @@
             .replace(/&gt;/g, '>')
             .replace(/&amp;/g, '&');
     },
-    
+
     /**
      * extends to[methodName] to first call from[methodName] and only then itself
      */
@@ -2012,17 +2012,17 @@
         }
       }
     },
-    
+
     proxyPromise: function(proxy, promise) {
       var i = promiseFunctions.length,
           fn;
-      
+
       while (i--) {
         fn = promiseFunctions[i];
         proxy[fn] = promise[fn].bind(promise);
       }
     },
-    
+
     oppositeAxis: function(axis) {
       switch (axis) {
       case 'x':
@@ -2037,20 +2037,20 @@
         throw "unsupported axis " + axis;
       }
     },
-  
+
 //    size: function(obj) {
 //      var size = 0, key;
 //      for (key in obj) {
 //        if (obj.hasOwnProperty(key)) size++;
 //      }
-//      
+//
 //      return size;
 //    },
 
     isArguments: function(obj) {
       return _.getObjectType(obj) == '[object Arguments]';
     },
-    
+
     toTimedFunction: function(obj, name, thresh) {
       var fn = name ? obj[name] : obj;
       function timed() {
@@ -2058,28 +2058,28 @@
             frame = window.fastdom.frameNum,
             result,
             time;
-        
+
         function measure() {
           time = _.now() - now;
           if (!thresh || time > thresh)
-            console.log("function", name, "took", time, "millis", window.fastdom.frameNum - frame, "frames");          
+            console.log("function", name, "took", time, "millis", window.fastdom.frameNum - frame, "frames");
         };
-        
+
         result = fn.apply(this, arguments);
         if (_.isPromise(result))
           result.always(measure);
         else
           measure();
-        
+
         return result;
       };
-      
+
       if (name)
         obj[name] = timed;
-      
+
       return timed;
     },
-    
+
     // from lodash
     isEmpty: function(value) {
       if (!value) {
@@ -2095,17 +2095,18 @@
       }
       return true;
     },
-    
+
     now: window.performance ? window.performance.now.bind(window.performance) : Date.now.bind(Date),
-    
-    copyInto: function(to, from /*props list*/) {
+
+    copyInto: function(to, from /*[, props list]*/) {
       for (var i = 2, l = arguments.length; i < l; i++) {
         var p = arguments[i];
-        to[p] = from[p];
+        if (_.has(from, p))
+          to[p] = from[p];
       }
     }
   });
-              
+
   // AMD define happens at the end for compatibility with AMD loaders
   // that don't enforce next-turn semantics on modules.
   if (typeof define === 'function' && define.amd) {
@@ -2121,7 +2122,7 @@
   window.$ = function(selector, context) {
     if (selector == document || selector == window || selector instanceof HTMLElement || selector instanceof HTMLCollection || selector instanceof Node || selector instanceof NodeList)
       return selector;
-    
+
     context = context || document;
     try {
       return context.querySelectorAll.apply(context, arguments);
@@ -2129,18 +2130,18 @@
       debugger;
     }
   };
-  
+
   "extend Deferred when".split(" ").forEach(function(name) {
     $[name] = _[name].bind(_);
   });
   /* remove after jQuery removal migration -- END */
-  
-  
+
+
   var ArrayProto = Array.prototype,
     slice = ArrayProto.slice,
     root = this,
-    moduleMap = {}, 
-    defineMap = {}, 
+    moduleMap = {},
+    defineMap = {},
     require,
     domReady = $.Deferred(function(defer) {
       DOMReady.add(defer.resolve);
@@ -2155,7 +2156,7 @@
     config = {
       baseUrl: ''
     };
-    
+
 
   function getRealName(name) {
     var paths = config.paths;
@@ -2182,7 +2183,7 @@
       node.removeEventListener(name, func, false);
     }
   }
-    
+
   /**
   * @param name - name of the module - currently required
   * TODO: allow anonymous define modules
@@ -2190,12 +2191,12 @@
   function define(name, deps, cb) {
     if (typeof name !== 'string')
       throw new Error("this loader library doesn't support anonymous 'define' statements (yet)");
-    
+
     if (arguments.length == 2) {
       cb = deps;
       deps = null;
     }
-  
+
     // if (!name) {
       // var node = currentlyAddingScript; // || getInteractiveScript();
       // if (node)
@@ -2203,28 +2204,28 @@
       // else
         // debugger;
     // }
-        
+
     var url = toUrl(name);
     var dfd = moduleMap[url] = moduleMap[url] || $.Deferred();
     defineMap[name] = true;
-    
+
     function _define() {
       dfd.resolve(cb.apply(root, arguments));
     }
-    
+
     if (deps && deps.length)
       require(deps, _define);
     else
       _define();
-    
+
 //    require(deps, function() {
 //      dfd.resolve(cb.apply(root, arguments));
 //    });
   }
-  
+
   /**
   * feel free to override, but make sure to return a Promise
-  **/ 
+  **/
   function load(name, url) {
     return $.Deferred(function(defer) {
       url = url || require.toUrl(name);
@@ -2246,7 +2247,7 @@
         removeListener(node, defer.reject, 'error');
         defer.resolve();
       };
-      
+
       if (node.attachEvent &&!(node.attachEvent.toString && node.attachEvent.toString().indexOf('[native code') < 0) && !isOpera) {
 //        useInteractive = true;
         node.attachEvent('onreadystatechange', success);
@@ -2254,12 +2255,12 @@
         node.addEventListener('load', success, false);
         node.addEventListener('error', defer.reject, false);
       }
-      
+
       node.src = url;
       head.appendChild(node);
     }).promise();
   }
-  
+
   function require(modules, cb) {
     modules = modules ? (_.isArray(modules) ? modules : [modules]) : [];
     var promise, prereqs = [];
@@ -2268,7 +2269,7 @@
         prereqs.push(domReady);
         return;
       }
-      
+
       var url = toUrl(name);
       var dfd = moduleMap[url];
       if (!dfd) {
@@ -2276,7 +2277,7 @@
         var shim = config.shim && config.shim[name],
             deps = shim && (shim.deps || shim),
             exports = shim && shim.exports;
-          
+
         if (shim) {// non AMD
           require(deps).done(function() {
             require.load(name).done(function() {
@@ -2290,7 +2291,7 @@
         else {
           require.load(name).done(function() {
             if (dfd.state() == 'pending') {
-              if (arguments.length) 
+              if (arguments.length)
                 dfd.resolve.apply(dfd, arguments);
               else if (!defineMap[name]) // will be resolved via define
                 dfd.resolve();
@@ -2303,7 +2304,7 @@
       prereq._name = name;
       prereqs.push(prereq);
     });
-    
+
     promise = $.when.apply($, prereqs);
     var called = false;
     if (cb) {
@@ -2314,22 +2315,22 @@
         }
       });
     }
-    
+
     return promise;
   }
-  
+
   require.config = function(cfg) {
     _.extend(config, cfg);
   };
-  
+
   require.getConfig = function() {
     return config;
   };
-  
+
   define.amd = {
     jQuery: true
-  };  
-  
+  };
+
   define('underscore', function() {
     return _;
   });
@@ -2346,12 +2347,12 @@
     if (idx>=0) {
       config.baseUrl = main.slice(0, idx + 1);
     }
-    
-    var s = doc.createElement('script'); 
+
+    var s = doc.createElement('script');
     s.type = 'text/javascript';
     s.charset = 'utf-8';
     s.async = true;
-    s.src = main; 
+    s.src = main;
     head.appendChild(s);
   }
 })(_, undefined);

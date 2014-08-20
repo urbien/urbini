@@ -1535,7 +1535,7 @@
 <p>
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
-     {{ if (obj.$order) { params.$orderBy = $order; params.$asc = $asc;} }}
+     {{ _.copyInto(params, obj, '$orderBy', '$asc'); }}
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
 
      <!--span class="ui-li-count">{{= value }}</span></a><a target="#" data-icon="chevron-right" data-iconshadow="false" class="cp" -->

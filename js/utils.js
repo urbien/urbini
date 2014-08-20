@@ -1905,7 +1905,7 @@ define('utils', [
       var base = url.slice(0, qIdx),
           qs = url.slice(qIdx + 1),
           match = qs.match(/&?-\w+=[^&]+&?/ig);
-      
+
       if (!match)
         return url;
 
@@ -1958,14 +1958,14 @@ define('utils', [
         // check alternate home page urls
         if (url.indexOf(G._serverName + '/' + G.pageRoot + '/home/') < 10) {
           url = url.replace('/home/', '/');
-          Events.trigger('getCachedView:' + url, found);          
-        }          
+          Events.trigger('getCachedView:' + url, found);
+        }
         else if (url.lastIndexOf('/') == url.indexOf(G.pageRoot) + G.pageRoot.length) {
           url = url.replace(G.pageRoot, G.pageRoot + '/home');
-          Events.trigger('getCachedView:' + url, found);          
+          Events.trigger('getCachedView:' + url, found);
         }
       }
-      
+
       return obj;
     },
 
@@ -4617,6 +4617,12 @@ define('utils', [
         var prop = props[p];
         if (prop.sortAscending || prop.sortDescending)
           _.pushUniq(cols, p);
+      }
+
+      if (U.isA(vocModel, 'Submission')) {
+        var date = U.getCloneOf(vocModel, 'Submission.dateSubmitted')[0];
+        if (date)
+          _.pushUniq(cols, date);
       }
 
       return cols;
