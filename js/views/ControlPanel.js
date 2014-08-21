@@ -518,20 +518,25 @@ define('views/ControlPanel', [
       }
 
       Events.stopEvent(e);
-      var indicator = this.resource.getInlineList('indicators').get(link.$data('uri')),
+      var indicators = this.resource.getInlineList('indicators'),
+          indicator = indicators.get(link.$data('uri')),
           propRange = indicator.get('eventPropertyRangeUri'),
+          eventRange = indicator.get('eventClassRangeUri'),
           isEnum = /\/EnumProperty$/.test(propRange),
           propType = indicator.get('propertyType'),
           params = {
             indicator: indicator.getUri(),
-            eventPropertyRangeUri: indicator.get('eventPropertyRangeUri'),
             feed: indicator.get('feed'),
             tradle: indicator.get('tradle'),
             tradleFeed: indicator.get('tradleFeed'),
             'tradleFeed.displayName': indicator.get('tradleFeed.displayName')
           },
-          rules = this.resource.getInlineList('tradleRules'),
           subClassOf;
+
+      if (propRange)
+        params.eventPropertyRangeUri = propRange;
+      if (eventRange)
+        params.eventClassRangeUri = eventRange;
 
       this.hideIndicators();
 
@@ -573,24 +578,22 @@ define('views/ControlPanel', [
         $title: indicator.get('feed.displayName') + ' ' + U.getDisplayName(indicator)
       };
 
-      var indicators = this.resource.getInlineList('indicators'),
-          showCompareWithRules = false;
+      var showCompareWithRules = indicators.any(function(i) {
+        return i != indicator && i.get('eventPropertyRangeUri') == propRange && i.get('eventClassRangeUri') == eventRange;
+      });
 
-      if (indicators) {
-        var byPropertyType = _.countBy(indicators.models, function(r) {
-          return r.get('propertyType');
-        });
+      if (!showCompareWithRules) {
+        // ruleParams.$notin = 'name,MoreThanIndicatorByRule,LessThanIndicatorByRule';
+        // ruleParams.$and = 'davClassUri=' + _.encode('!' + U.getTypeUri('commerce/trading/MoreThanIndicatorByRule')) + '&' +
+        //                   'davClassUri=' + _.encode('!' + U.getTypeUri('commerce/trading/LessThanIndicatorByRule'));
 
-        for (var t in byPropertyType) {
-          if (byPropertyType[t] > 1) {
-            showCompareWithRules = true;
-            break;
-          }
-        }
+        ruleParams.$and = 'name=' + _.encode('!MoreThanIndicatorByRule') + '&' +
+                          'name=' + _.encode('!LessThanIndicatorByRule');
+
+        // HACK!
+        // ruleParams.name = "!MoreThanIndicatorByRule";
+        // ruleParams.davClassUri = "!" + U.getTypeUri('commerce/trading/LessThanIndicatorByRule');
       }
-
-      if (!showCompareWithRules)
-        ruleParams.$notin = 'davClassUri,' + U.getTypeUri('commerce/trading/MoreThanIndicatorByRule') + ',' + U.getTypeUri('commerce/trading/LessThanIndicatorByRule');
 
       Events.trigger('navigate', U.makeMobileUrl('chooser', 'system/designer/WebClass', ruleParams));
     },

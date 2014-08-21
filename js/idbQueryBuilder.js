@@ -11,27 +11,27 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'events', 'indexedD
       'IN:': 'oneof'
     },
     IDB;
-  
+
   function getIDB() {
     return IDB || (IDB = IndexedDBModule.getIDB(G.serverName));
   }
-  
+
   function buildOrQuery(orClause, vocModel, indexNames) {
     orClause = orClause.split('||');
     indexNames = indexNames || U.getIndexNames(vocModel);
-    
+
     var query;
     for (var i = 0; i < orClause.length; i++) {
       var part = orClause[i],
           pair = _.map(part.split('='), _.decode);
-      
+
       if (pair.length != 2)
         return null;
-      
-      var name = pair[0], 
-          val = pair[1], 
+
+      var name = pair[0],
+          val = pair[1],
           subQuery;
-      
+
       if (name === '$or') { // TODO: parse $and inside $or
         subQuery = buildOrQuery(val, vocModel, indexNames);
       }
@@ -44,32 +44,32 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'events', 'indexedD
       else {
         if (!_.contains(indexNames, name))
           return null;
-          
+
         subQuery = buildSubQuery(name, val, vocModel, indexNames);
       }
-      
+
       if (!subQuery)
         return null;
-      
+
       query = query ? query.or(subQuery) : subQuery;
     }
-    
+
     return query;
   }
-    
+
   /**
    * @param val value or a combination of operator and value, e.g. ">=7"
    */
   function buildSubQuery(name, val, vocModel, indexNames) {
     if (!_.contains(indexNames, name))
       return null;
-    
+
     var clause = parseAPIClause(name, val),
         Index = getIDB().queryByIndex;
-    
+
     if (!clause)
       return null;
-    
+
     switch (name) {
     case '$or':
     case '$and':
@@ -77,19 +77,19 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'events', 'indexedD
       var apiQuery = U.parseAPIQuery(val, U.whereParams[name]);
       if (!apiQuery)
         return null;
-      
+
       _.each(apiQuery, function(param) {
         var subq = buildSubQuery(param.name, param.value, vocModel, indexNames);
         query = query ? query[qOp](subq) : subq;
       });
-      
+
       return query;
     case '$in':
       var commaIdx = val.indexOf(',');
       name = val.slice(0, commaIdx);
       if (!_.contains(indexNames, name))
         return null;
-        
+
       val = val.slice(commaIdx + 1).split(',');
       return Index(name).oneof.apply(null, val);
     case '$like':
@@ -97,13 +97,13 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'events', 'indexedD
       name = val.slice(0, commaIdx);
       if (!_.contains(indexNames, name))
         return null;
-      
+
       val = val.slice(commaIdx + 1);
       return Index(name).betweeq(val, val + '\uffff');
     }
-    
-    
-    var op = operatorMap[clause.op];      
+
+
+    var op = operatorMap[clause.op];
     var props = vocModel.properties;
     val = clause.value;
     var prop = props[name];
@@ -119,15 +119,15 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'events', 'indexedD
     val = U.getTypedValue(vocModel, name, val);
     return Index(name)[op](val); // Index(name)[op].apply(this, op === 'oneof' ? val.split(',') : [val]);
   }
-  
+
   function buildQuery(data, filter) {
     if (U.isModel(data))
       return false;
-    
+
     var Index = getIDB().queryByIndex,
-        query, 
-        orderBy, 
-        asc, 
+        query,
+        orderBy,
+        asc,
         defaultOp = 'eq',
         collection = data,
         vocModel = collection.vocModel,
@@ -136,12 +136,12 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'events', 'indexedD
         filter = filter || U.getQueryParams(collection),
         orClause = params && params.$or,
         indexNames = U.getIndexNames(vocModel);
-    
+
     if (params) {
       orderBy = params.$orderBy;
       asc = !_.has(params, '$asc') || U.isTrue(params.$asc);
     }
-    
+
     if (orderBy) {
       var prop = meta[orderBy];
       orderBy = prop && [prop];
@@ -155,7 +155,7 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'events', 'indexedD
 //          }
       }
     }
-    
+
     if (!orderBy && _.isEmpty(filter) && !orClause)
       return false;
 
@@ -172,33 +172,33 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'events', 'indexedD
         delete filter.$or;
       }
     }
-    
+
     var positionProps = U.getPositionProps(vocModel);
     var latLonQuery, lat, lon, latProp, lonProp;
     if (_.size(positionProps) && _.size(_.pick(filter, _.values(positionProps)))) {
       var radius = positionProps.radius && filter[positionProps.radius];
       radius = isNaN(radius) ? G.defaults.radius : parseFloat(radius); // km
-        
-      latProp = positionProps.latitude, 
+
+      latProp = positionProps.latitude,
       lonProp = positionProps.longitude;
       lat = filter[latProp];
       lon = filter[lonProp];
-      
+
       if (/^-?\d+/.test(lat)) {
-        var latRadius = radius / 110; // 1 deg latitude is roughly 110 km 
+        var latRadius = radius / 110; // 1 deg latitude is roughly 110 km
         lat = parseFloat(lat);
         latLonQuery = Index(latProp).betweeq(lat - latRadius, lat + latRadius);
       }
       if (/^-?\d+/.test(lon)) {
-        var lonRadius = radius / 85; // 1 deg longitude is roughly 85km at latitude 40 deg, otherwise this is very inaccurate  
-        lon = parseFloat(lon);          
+        var lonRadius = radius / 85; // 1 deg longitude is roughly 85km at latitude 40 deg, otherwise this is very inaccurate
+        lon = parseFloat(lon);
         latLonQuery = Index(lonProp).betweeq(lon - lonRadius, lon + lonRadius);
       }
-      
-      delete filter[latProp]; 
+
+      delete filter[latProp];
       delete filter[lonProp];
     }
-    
+
     for (var name in filter) {
 //        var name = modelParams[i];
       var subQuery = buildSubQuery(name, filter[name], vocModel, indexNames);
@@ -207,12 +207,12 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'events', 'indexedD
 //        subQuery.setPrimaryKey('_uri');
       query = query ? query.and(subQuery) : subQuery;
     }
-    
+
     if (latLonQuery)
       query = query ? query.and(latLonQuery) : latLonQuery;
-    
+
     if (orderBy && orderBy.length) {
-      if (query) {  
+      if (query) {
         var distanceProp = positionProps.distance;
         for (var i = 0; i < orderBy.length; i++) {
           var oProp = orderBy[i].shortName;
@@ -232,23 +232,23 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'events', 'indexedD
       }
       else
         query = Index(orderBy[0].shortName).all().setDirection(asc ? IDBCursor.NEXT : IDBCursor.PREV);
-      
+
 //        }
 //        else
 //          query = query ? query.sort(orderBy, !asc) : Index(orderBy, asc ? IDBCursor.NEXT : IDBCursor.PREV).all();
     }
-    
+
     if (!query)
       return false;
-    
+
     if (!_.isUndefined(params.$offset)) {
       query.setOffset(parseInt(params.$offset));
     }
-    
+
     if (!_.isUndefined(params.$limit)) {
       query.setLimit(parseInt(params.$limit));
     }
-    
+
     return query;
   }
 
@@ -270,13 +270,13 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'events', 'indexedD
       val = arguments[2];
       break;
     }
-      
+
     if (numArgs != 3) {
       if (opVal) {
         opVal = opVal.match(/^([>=<!]{0,2})(.+)$/);
         if (!opVal || opVal.length != 3)
           return null;
-        
+
         op = opVal[1] || U.DEFAULT_WHERE_OPERATOR;
         val = opVal[2];
       }
@@ -285,17 +285,17 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'events', 'indexedD
         val = '';
       }
     }
-    
+
     if (op === '!')
       op = '!=';
     else if (op === '=')
       op = '==';
-      
+
     if (name.startsWith('$')) {
 //      var whereParam = U.filterObj(U.whereParams, function(param, delimiter) {
 //        return name.startsWith(param);
 //      });
-//      
+//
 //      if (_.size(whereParam)) {
 //        whereParam = _.getFirstProperty(whereParam);
 //        var subClause = val.split('=');
@@ -307,21 +307,21 @@ define('idbQueryBuilder', ['globals', 'underscore', 'utils', 'events', 'indexedD
 //          val = sVal;
 //        }
 //      }
-//      else 
+//      else
       if (name.startsWith('$this.')) {
         debugger;
         name = name.slice(6);
       }
     }
-      
+
     return {
-      name: name, 
-      op: op || U.DEFAULT_WHERE_OPERATOR, 
+      name: name,
+      op: op || U.DEFAULT_WHERE_OPERATOR,
       value: val
     };
   }
 
   return {
-    buildQuery: buildQuery    
+    buildQuery: buildQuery
   };
 });

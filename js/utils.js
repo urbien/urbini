@@ -2735,7 +2735,7 @@ define('utils', [
       return G.pageRoot + '#' + mobileUrl;
     },
     _apiMetaParams: [
-      "$select", "$omit", "$orderBy", "$groupBy", "$limit", "$backlinks", "$callback", "$asc", "$page", "$offset", "$strict", "$map", "$and", "$or", "$like", "$in", "$blCounts",
+      "$select", "$omit", "$orderBy", "$groupBy", "$limit", "$backlinks", "$callback", "$asc", "$page", "$offset", "$strict", "$map", "$and", "$or", "$like", "$in", "$notin", "$blCounts",
       "$minify", "$mobile", "$where",  "$prettyPrint",  "$returnMade", "$grab", "$multiValue", "$request", "$oauth1", "$oauth2", "$prop", "$type", "$forResource", "$filter", "$interfaceClass",
       "$returnUri", "$apiKeyName", "$url", "$chooser", "$action"
     ],
