@@ -526,14 +526,17 @@ define('views/ControlPanel', [
           propType = indicator.get('propertyType'),
           params = {
             indicator: indicator.getUri(),
-            eventPropertyRangeUri: propRange,
-            eventClassRangeUri: eventRange,
             feed: indicator.get('feed'),
             tradle: indicator.get('tradle'),
             tradleFeed: indicator.get('tradleFeed'),
             'tradleFeed.displayName': indicator.get('tradleFeed.displayName')
           },
           subClassOf;
+
+      if (propRange)
+        params.eventPropertyRangeUri = propRange;
+      if (eventRange)
+        params.eventClassRangeUri = eventRange;
 
       this.hideIndicators();
 

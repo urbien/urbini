@@ -88,7 +88,7 @@ define('views/MainMenuPanel', [
 
       if ((href = this.tabs[text]) != null) {
         this.hide();
-        e.originalEvent.preventDefault();
+        Events.stopEvent(e);
         Events.trigger('navigate', U.replaceParam(href, '$title', text));
         return;
       }

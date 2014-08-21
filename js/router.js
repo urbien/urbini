@@ -316,7 +316,7 @@ define('router', [
       }
 
       options = options || {};
-      var adjustedOptions = _.extend({}, this.defaultOptions, _.pick(options, 'forceFetch', 'errMsg', 'info', 'replace', 'postChangePageRedirect', 'via')),
+      var adjustedOptions = _.extend({}, this.defaultOptions, _.pick(options, 'forceFetch', 'errMsg', 'info', 'trigger', 'replace', 'postChangePageRedirect', 'via')),
           hashInfo = G.currentHashInfo,
           pageRoot = G.pageRoot;
 
