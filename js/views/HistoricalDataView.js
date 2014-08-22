@@ -48,9 +48,13 @@ define('views/HistoricalDataView', [
     };
   }
 
+  function cleanIndicatorName(indicator) {
+    return U.getDisplayName(indicator).replace('Previous Value', '').replace('()', '').trim();
+  }
+
   function toTable(list, indicator, cols) {
     return {
-      heading: U.getDisplayName(indicator).replace('Previous Value', '').replace('()', '').trim(),
+      heading: cleanIndicatorName(indicator),
       cols: cols,
       resources: list.models
     };
@@ -58,11 +62,11 @@ define('views/HistoricalDataView', [
 
   return BasicView.extend({
     autoFinish: false,
-    template: 'historicalDataTemplate',
     initialize: function(options) {
       _.bindAll(this, 'render', 'renderHelper');
       BasicView.prototype.initialize.apply(this, arguments);
-      this.makeTemplate(this.template, 'template', this.vocModel.type);
+      this._isComparison = this.vocModel.shortName.endsWith('ByRule');
+      this.makeTemplate(this._isComparison ? 'historicalDataTemplate1' : 'historicalDataTemplate', 'template', this.vocModel.type);
     },
 
     events: {
@@ -70,25 +74,28 @@ define('views/HistoricalDataView', [
     },
 
     sortBy: function(e) {
-      var shortname = e.selectorTarget.$data('shortname'),
+      var shortName = e.selectorTarget.$data('shortname'),
           indicator = e.selectorTarget.$closest('table').$data('indicator'),
           table = this.historicalDataTables[indicator];
 
-      this._sortBy(table, shortname);
+      if (table)
+        this._sortBy(table, shortName);
     },
 
-    _sortBy: function(table, shortname) {
-      if (table.order == shortname) {
+    _sortBy: function(table, shortName) {
+      if (table.order == shortName) {
         table.resources.reverse();
       }
       else {
-        table.order = shortname;
+        table.order = shortName;
         // this.historicalData.sortBy(this._sortBy);
-        var sorted = _.sortBy(table.resources, function(obj) { return obj[shortname]; });
-        if (_.isEqual(sorted, table.resources))
-          sorted.reverse();
+        table.resources.sort(function(a, b) {
+          return a.get(shortName) - b.get(shortName);
+        });
 
-        table.resources = sorted;
+        // if (_.isEqual(sorted, table.resources))
+        //   sorted.reverse();
+        // table.resources = sorted;
       }
 
       this.render();
@@ -161,7 +168,9 @@ define('views/HistoricalDataView', [
                   $asc: false
                 };
 
-            params[valProp] = '!null';
+            if (U.isAssignableFrom(model, 'commerce/trading/Event'))
+              params[valProp] = '!null';
+
             if (U.isHeterogeneousEvent(model)) {
               params[U.getSubpropertyOf(model, 'feed').shortName] = indicator.get('feed');
             }
@@ -172,14 +181,29 @@ define('views/HistoricalDataView', [
             });
 
             list.fetch({
+              params: {
+                $limit: 100
+              },
               success: function() {
                 if (list.length) {
                   self.historicalDataLists[uri] = list;
-                  var table = toTable(list, indicator, cols);
-                  if (table) {
-                    self.historicalDataTables[uri] = table;
-                    table.order = dateProp;
-                    dfd.notify();
+                  if (self._isComparison) {
+                    if (_.size(self.historicalDataLists) == 2) {
+                      self.buildComparisonTable();
+                      dfd.notify();
+                    }
+                  }
+                  else {
+                    var table = toTable(list, indicator, cols);
+                    if (table) {
+                      self.historicalDataTables[uri] = table;
+                      table.order = dateProp;
+                      // if (_.size(self.historicalDataLists) > 1) {
+                      //   self.historicalDataLists._comparison = getComparisonTable(self.historicalDataLists.values().concat(cols));
+                      // }
+
+                      dfd.notify();
+                    }
                   }
                 }
               }
@@ -189,6 +213,70 @@ define('views/HistoricalDataView', [
       });
 
       return (this._historicalDataPromise = dfd.promise());
+    },
+
+    buildComparisonTable: function() {
+      var i1 = this.indicators[this.resource.get('indicator')],
+          i2 = this.indicators[this.resource.get('compareWith')],
+          // heading = "% Difference", //cleanIndicatorName(i1) + " - " + cleanIndicatorName(i2),
+          l1 = this.historicalDataLists[i1.getUri()],
+          l2 = this.historicalDataLists[i2.getUri()],
+          cols1 = getCols(U.getModel(getVariantUri(i1)), i1),
+          cols2 = getCols(U.getModel(getVariantUri(i2)), i2),
+          cols = [cols1.date, i1.getDisplayName(), i2.getDisplayName(), '% Difference'],
+          p1 = cols1.value.shortName,
+          p2 = cols2.value.shortName,
+          d1 = cols1.date.shortName,
+          d2 = cols2.date.shortName,
+          data = {
+            date: [],
+            v1: [],
+            v2: [],
+            diff: []
+          };
+
+          // dates = _.uniq(l1.pluck(cols1.date.shortName).concat(cols2.date.shortName)).sort(function(a, b) { return a - b; });
+
+      l1.models.sort(function(a, b) { return b.get(d1) - a.get(d1); });
+      l2.models.sort(function(a, b) { return b.get(d2) - a.get(d2); });
+
+      var i = 0, j = 0, k = 0;
+      for (; i < l1.length || j < l2.length; k++) {
+        var m1 = l1.models[i],
+            m2 = l2.models[j],
+            date1 = m1 && m1.get(d1),
+            date2 = m2 && m2.get(d2),
+            date = date1 && date2 ? Math.max(date1, date2) : date1 || date2,
+            v1 = date == date1 && m1.get(p1) || '',
+            v2 = date == date2 && m2.get(p2) || '',
+            diff = '';
+
+        if (typeof v1 == 'number' && typeof v2 == 'number') {
+          if (v1 === 0) {
+            diff = v2 == 0 ? 0 : v2 > 0 ? -Infinity : Infinity;
+          }
+          else {
+            diff = 100 * (v2 - v1) / Math.abs(v1);
+          }
+        }
+
+        data.date[k] = date;
+        data.v1[k] = v1;
+        data.v2[k] = v2;
+        data.diff[k] = diff;
+
+        if (date == date1)
+          i++;
+
+        if (date == date2)
+          j++;
+      }
+
+      this.comparisonTable = {
+        // heading: heading,
+        cols: cols,
+        colData: data
+      };
     },
 
     drawChart: function() {
@@ -214,10 +302,8 @@ define('views/HistoricalDataView', [
 
       // dataEl.$html(this.historicalDataTemplate({ cols: props.map(function(p) { return meta[p]; }), resources: models }));
 
-      this.html(this.template({
-        tables: this.historicalDataTables
-      }));
-
+      var data = this._isComparison ? this.comparisonTable : { tables: this.historicalDataTables };
+      this.html(this.template(data));
       this.getPageView().invalidateSize();
       this.finish();
     }

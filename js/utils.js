@@ -1854,6 +1854,54 @@ define('utils', [
       return (month < 10 ? '0' + month : month) + '/' + (day < 10 ? '0' + day : day) + '/' + date.getFullYear();
     },
 
+    prettyNum: function(n) {
+      if (isNaN(n))
+        return n;
+
+      if (n == Infinity)
+        return '&#8734;';
+      else if (n == -Infinity)
+        return '-&#8734';
+
+      var s = '';
+      if (n > 1e12) {
+        n /= 1e12;
+        s = 'T';
+      }
+      else if (n > 1e9) {
+        n /= 1e9;
+        s = 'B';
+      }
+      else if (n > 1e6) {
+        n /= 1e6;
+        s = 'M';
+      }
+      else if (n > 1e3) {
+        n /= 1e3;
+        s = 'K';
+      }
+
+      return n.toLocaleString(navigator.language, { maximumSignificantDigits: 3}) + s;
+    },
+
+    // addCommas: function(n) {
+    //   return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+    // },
+
+    round: function(n, m, floor) {
+      m = m || 1;
+      if (n < m)
+        return n;
+
+      var roundMethod = floor ? 'floor' : 'ceil';
+      if (m > 1)
+        return Math[roundMethod](n / m) * m;
+      else {
+        // division with floats is inaccurate: 100000002 * 1e-3 for example evaluates to 100000.00200000001
+        return parseFloat((Math[roundMethod](n / m) * m).toFixed(-Math.round(Math.log(m) / Math.LN10)));
+      }
+    },
+
     getShortName: function(uri) {
       return uri.slice(uri.lastIndexOf('/') + 1); // if lastIndexOf is -1, return original string
     },

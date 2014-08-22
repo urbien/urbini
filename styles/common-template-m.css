@@ -1843,6 +1843,10 @@ li.invalid[data-role="fieldcontain"] {
   font-size: 1rem;
 }
 
+.historicalData [data-diff], .historicalData [data-value] {
+  text-align: right;
+}
+
 @media all and (min-width: 480px) {
   .historicalData {
     font-size: 1.5rem;

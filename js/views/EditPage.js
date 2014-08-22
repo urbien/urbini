@@ -100,6 +100,7 @@ define('views/EditPage', [
 //      'click': 'click',
       'click #homeBtn': 'home',
       'click .historicalData [data-value]': 'onChoseHistoricalValue',
+      // 'click .historicalData [data-diff]': 'onChoseHistoricalDiff',
       'click .saveBtn': 'submit',
       'click .cancelBtn': 'cancel'
     },
@@ -110,10 +111,18 @@ define('views/EditPage', [
     },
 
     onChoseHistoricalValue: function(e) {
-      var input = this.$('input[type="text"]')[0];
+      var input = this.editView.$('input[type="text"]')[0];
       if (input)
         input.value = e.selectorTarget.$data('value');
     },
+
+    // onChoseHistoricalDiff: function(e) {
+    //   var input = this.editView.$('input[type="range"]')[0];
+    //   if (input) {
+    //     input.value = Math.min(Math.max(e.selectorTarget.$data('diff'), 0), 100);
+    //     input.$trigger('input');
+    //   }
+    // },
 
     submit: function() {
       this.editView.submit.apply(this.editView, arguments);

@@ -110,7 +110,7 @@ define('views/ChatPage', [
             return headerDfd.resolve();
 
           var mainGroupArr = mainGroup[0]['propertyGroupList'].splitAndTrim(',');
-          mainGroupArr = mainGroupArr.sort(function(a, b) {return a.index < b.index});
+          mainGroupArr = mainGroupArr.sort(function(a, b) {return a.index - b.index});
           var mainBacklinks = [];
           for (var i=0; i<mainGroupArr.length; i++) {
             var p = mainGroupArr[i];

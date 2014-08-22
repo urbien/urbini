@@ -2452,11 +2452,11 @@
 {{ var numTables = _.size(tables); }}
 {{ for (var indicator in tables) { }}
 {{ var table = tables[indicator], cols = table.cols, resources = table.resources, heading = table.heading; }}
-<table class="span_1_of_{{= numTables }}" data-indicator="{{= indicator }}">
+<table class="span_1_of_{{= numTables }}" data-indicator="{{= indicator }}" style="max-width: 500px;">
   {{ if (table.heading) { }}
     <thead>
       <tr>
-        <th colspan="{{= _.size(cols) }}">{{= heading }}</th>
+        <th colspan="{{= _.size(cols) }}">{{= table.heading }}</th>
       </tr>
       <tr>
          <th data-shortname="{{= cols.date.shortName }}">Date</th>
@@ -2469,12 +2469,43 @@
     {{   var r = resources[i], time = U.getValue(r, cols.date.shortName), val = U.getValue(r, cols.value.shortName); }}
          <tr>
            <td data-time="{{= time }}">{{= U.getFormattedDate1(time) }}</td>
-           <td data-value="{{= val }}">{{= Math.abs(val) > 10000 ? val.toExponential() : val }}</td>
+           <td data-value="{{= val }}">{{= U.prettyNum(val) }}</td>
          </tr>
     {{ }                                       }}
   </tbody>
 </table>
 {{ } }}
+</div>
+</script>
+
+<script type="text/template" id="historicalDataTemplate1">
+<div class="group">
+<h2 style="text-align:center;">Historical Data</h2>
+<table class="span_1_of_1">
+  <thead>
+{{ if (obj.heading) { }}
+    <tr>
+      <th colspan="{{= _.size(cols) }}" style="text-align:center;">{{= heading }}</th>
+    </tr>
+{{ } }}
+    <tr>
+    {{ for (var i = 0; i < cols.length; i++) { }}
+       <th data-shortname="{{= cols[i].shortName || cols[i] }}">{{= cols[i].shortName ? U.getPropDisplayName(cols[i]) : cols[i] }}</th>
+    {{ }                                       }}
+    </tr>
+  </thead>
+  <tbody>
+    {{ for (var i = 0; i < colData.date.length; i++) { }}
+    {{ var date = colData.date[i], v1 = colData.v1[i], v2 = colData.v2[i], diff = colData.diff[i]; }}
+         <tr>
+           <td data-time="{{= date }}">{{= U.getFormattedDate1(date) }}</td>
+           <td data-value="{{= v1 }}">{{= U.prettyNum(v1) }}</td>
+           <td data-value="{{= v2 }}">{{= U.prettyNum(v2) }}</td>
+           <td data-diff="{{= diff }}">{{= typeof diff == 'number' ? U.prettyNum(diff) + '%' : '' }}</td>
+         </tr>
+    {{ }                                       }}
+  </tbody>
+</table>
 </div>
 </script>
 

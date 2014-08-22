@@ -1336,7 +1336,10 @@ define('views/ControlPanel', [
       var mainGroupArr = mainGroup &&  mainGroup.length ? mainGroup[0]['propertyGroupList'].splitAndTrim(',') : null;
       var propGroups = this.isMainGroup &&  mainGroup ?  mainGroup : U.getArrayOfPropertiesWith(meta, "propertyGroupList");
 
-      propGroups = propGroups.sort(function(a, b) {return a.index < b.index});
+      propGroups.sort(function(a, b) {
+        return a.index - b.index;
+      });
+
       var backlinks = U.getBacklinks(meta);
 //      var displayInline = !this.isMainGroup && U.getPropertiesWith(this.vocModel.properties, [{name: "displayInline", value: true}, {name: "backLink"}]);
 //      if (displayInline && _.size(displayInline)) {
