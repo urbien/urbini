@@ -1894,6 +1894,15 @@ section[data-backlink="indicators"] li:not([data-action="add"]) {
   font-size:2rem;
   padding-bottom:.8rem;
 }
+.cta .cnt {
+  text-transform:none;
+  text-align:center;
+  color:cornsilk;
+  font-weight:bold;
+  font-size:1.2rem;
+  padding-top:1.2rem;
+}
+
 @media all and (min-width: 600px) {
   section[data-backlink] {
     font-size: 4rem;

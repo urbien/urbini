@@ -774,13 +774,23 @@ define('views/ControlPanel', [
         isCancelable = canceledProp && U.isPropEditable(list.models[0], canceledProp);
       }
 
+      var indicatorsCount = this.resource.get('indicatorsCount');
       if (!list.length) {
         if ((isTrade && !this.resource.inlineLists['orders'].length)  ||  (isRule  && !this.resource.inlineLists['tradleRules'].length)) {
+          var v = propDisplayName;
+          if (isRule) {
+            if  (indicatorsCount) {
+              v += '<div class="cnt">Indicators ';
+              v += this.resource.get('indicatorsCount');
+              v += '</div>';
+            }
+          }  
           U.addToFrag(frag, this.propGroupsDividerTemplate({
-            value: propDisplayName, // + (isRule ? ' <span style="color:#3777a1;text-transform:none;text-align:center;font-weight:normal">(no rules yet)</span>' : ''),
+            value: v,
             add: canAdd,
             shortName: getBacklinkSub(vocModel, name),
             style: prop.propertyStyle,
+            indicatorsCount: isRule ? indicatorsCount : 0,
             actionBtn: this.isActionButton(prop)
           }));
 
@@ -826,9 +836,16 @@ define('views/ControlPanel', [
 
         }
         else {
+          var v = propDisplayName;
+          if  (isRule  &&  indicatorsCount) {
+            v += '<div class="cnt">Indicators ';
+            v += indicatorsCount;
+            v += '</div>';
+          }
           U.addToFrag(frag, this.propGroupsDividerTemplate({
-            value: propDisplayName,
+            value: v,
             add: canAdd,
+            indicatorsCount: isRule ? indicatorsCount : 0,
             shortName: getBacklinkSub(vocModel, name),
             actionBtn: this.isActionButton(prop),
             style: prop.propertyStyle
