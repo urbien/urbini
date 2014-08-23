@@ -31,6 +31,11 @@ define('views/ControlPanel', [
     return true;
   };
 
+  function getIndicatorsCount(res) {
+    var count = typeof res == 'number' ? res : res.get('indicatorsCount');
+    return '<div class="cnt">Indicators<span class="cntBadge">' + count + '</span></div>';
+  }
+
   var SLIDER_CL = 'slider';
   var SLIDER_ACTIVE_CL = 'slider-active';
   var CLICK_INDICATOR = 'Click an indicator to create a rule with it';
@@ -780,11 +785,9 @@ define('views/ControlPanel', [
           var v = propDisplayName;
           if (isRule) {
             if  (indicatorsCount) {
-              v += '<div class="cnt">Indicators ';
-              v += this.resource.get('indicatorsCount');
-              v += '</div>';
+              v += getIndicatorsCount(indicatorsCount);
             }
-          }  
+          }
           U.addToFrag(frag, this.propGroupsDividerTemplate({
             value: v,
             add: canAdd,
@@ -838,9 +841,7 @@ define('views/ControlPanel', [
         else {
           var v = propDisplayName;
           if  (isRule  &&  indicatorsCount) {
-            v += '<div class="cnt">Indicators ';
-            v += indicatorsCount;
-            v += '</div>';
+            v += getIndicatorsCount(indicatorsCount);
           }
           U.addToFrag(frag, this.propGroupsDividerTemplate({
             value: v,
