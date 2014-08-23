@@ -261,7 +261,7 @@
   style="text-align:center;padding:0;border:none;" class="trades"
 {{ } }}
  >
-  <a href="{{= href }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="{{= (!isIndicator  &&  obj.img) || obj.needsAlignment ? '' : 'padding:1rem 0;'}} {{= obj.noclick ? 'cursor:default;' : 'cursor:pointer;' }}{{= isTrade ? 'font-size:inherit;' : 'font-size:1.6rem' }}">
+  <a href="{{= href }}" data-uri="{{= resource.getUri() }}" data-backlink="{{= backlink }}" {{= obj._problematic ? 'class="problematic"' : '' }} style="{{= !isIndicator  &&  (obj.img || obj.needsAlignment) ? '' : 'padding:1rem 0;'}} {{= obj.noclick ? 'cursor:default;' : 'cursor:pointer;' }}{{= isTrade ? 'font-size:inherit;' : 'font-size:1.6rem' }}">
     {{ if (!isIndicator  &&  obj.img) { }}
       <img data-lazysrc="{{= img.indexOf('/Image') == 0 ? img.slice(6) : img }}"
       {{ if (obj.top) { }}
@@ -275,10 +275,10 @@
       data-for="{{= U.getImageAttribute(resource, imageProperty) }}"
       class="lazyImage" />
     {{ } }}
-    {{ if ((isIndicator  ||  !obj.img)  &&  obj.needsAlignment) { }}
+    {{ if ((!isIndicator  &&  !obj.img)  &&  obj.needsAlignment) { }}
       <img src="{{= G.getBlankImgSrc() }}" height="80" style="vertical-align:middle;"/>
     {{ } }}
-    <span style="{{= (!isIndicator  &&  obj.img) || obj.needsAlignment ? 'position:absolute;padding:10px;' : ''}}font-weight:bold;">{{= obj.gridCols  ? (obj.gridCols.indexOf(name) == -1 ? name + '<br/>' + gridCols : gridCols) : name }}</span>
+    <span style="{{= !isIndicator  &&  (obj.img || obj.needsAlignment) ? 'position:absolute;padding:10px;' : ''}}font-weight:bold;">{{= obj.gridCols  ? (obj.gridCols.indexOf(name) == -1 ? name + '<br/>' + gridCols : gridCols) : name }}</span>
   </a>
   {{ if (typeof comment != 'undefined') { }}
     <p>{{= comment }}</p>
