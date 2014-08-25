@@ -174,36 +174,6 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
   var elementProto = Element.prototype;
   var $matches = elementProto.matches || elementProto.webkitMatchesSelector || elementProto.mozMatchesSelector || elementProto.msMatchesSelector;
 
-  function removeEventListeners(el, event, listeners, _listener) {
-    var i = listeners.length,
-        listener;
-
-    while (i--) {
-      listener = listeners[i];
-      if (_listener) {
-        if (listener.listener == _listener) {
-          G.removeEventListener(el, event, listener.proxy);
-          Array.removeFromTo(listeners, i, i + 1);
-//          removed = true;
-          break;
-        }
-      }
-      else {
-        G.removeEventListener(el, event, listener.proxy);
-//        removed = true;
-      }
-
-    }
-
-    if (!_listener)
-      listeners.length = 0;
-
-//    if (!removed)
-//      console.log("FAILED TO REMOVE EVENT LISTENER", event, _listener._listenerId, listeners.map(function(l) { return l.listener._listenerId }).join(','));
-//    else
-//      console.log("REMOVED EVENT LISTENER", event, _listener._listenerId);
-  };
-
   (function extendNodeAndNodeList(win, doc) {
     var NodeAndNodeListAug = {
       $matches: $matches,
@@ -260,7 +230,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
                 el = el.parentElement;
               }
             }
-          }
+          };
 
           G.addEventListener(this, event, proxyInfo.proxy, capture);
         }
@@ -290,16 +260,33 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
           selector = null;
         }
 
-        var proxyInfo = this._$handlers[event];
+        var proxyInfo = this._$handlers[event],
+            selectors;
+
         if (proxyInfo) {
-          if (selector)
-            removeEventListeners(this, event, proxyInfo.selectors[selector], listener);
-          else {
-            var selectors = proxyInfo.selectors;
-            for (var selector in selectors) {
-              removeEventListeners(this, event, selectors[selector], listener);
+          selectors = proxyInfo.selectors;
+          var removeSelectors = selector ? [selector] : _.keys(selectors),
+              i = removeSelectors.length,
+              s;
+
+          while (i--) {
+            s = removeSelectors[i];
+            if (!listener)
+              delete selectors[s];
+            else {
+              var listeners = selectors[s];
+              if (listeners) {
+                Array.remove(listeners, listener);
+                if (!listeners.length)
+                  delete selectors[s];
+              }
+              else
+                delete selectors[s];
             }
           }
+
+          if (_.isEmpty(selectors))
+            G.removeEventListener(this, event, proxyInfo.proxy);
         }
 
         return this;
