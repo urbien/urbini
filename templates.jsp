@@ -342,9 +342,11 @@
         {{ if (resource.get('tradleFeed')) { }}
         {{ var feed =  resource.get('feed') || ''; }}
         {{ var isStock = ~feed.indexOf('/Stock?'); }}
-        {{ var isIndexOrStock = isStock || resource.get('tradleFeed.displayName').charAt(0) == '^'; }}
-        <div class="tradleFeed" {{= isIndexOrStock ? 'style="font-size:4rem;line-height:3rem;font-weight:bold;"' : '' }}><!-- href="{{= U.makeMobileUrl('view', resource.get('tradleFeed')) }}"-->
-          {{= isStock ? feed.slice(feed.lastIndexOf('=') + 1) : resource.get('feed.displayName') }}
+        {{ var isIndex = ~feed.indexOf('/Index?'); }}
+        {{ var dn = resource.get('feed.displayName'); }}
+        <div class="tradleFeed" {{= isIndex || isStock ? 'style="font-size:4rem;line-height:3rem;font-weight:bold;"' : '' }}><!-- href="{{= U.makeMobileUrl('view', resource.get('tradleFeed')) }}"-->
+          {{= isStock || isIndex ? dn.split(' ')[0] : dn }}
+          {{= (isStock || isIndex) && dn.indexOf(' ') != -1 ? '<div style="font-size:1.2rem;font-weight:normal;">' + dn.slice(dn.indexOf(' ')) + '</div>' : '' }}
         </div>
         {{ }                               }}
       </div>
@@ -374,9 +376,11 @@
         {{ if (resource.get('compareWithTradleFeed')) { }}
         {{ var cmpFeed =  resource.get('compareWithFeed') || ''; }}
         {{ var isStock = ~cmpFeed.indexOf('/Stock?'); }}
-        {{ var isIndexOrStock = isStock || cmpFeed.charAt(0) == '^'; }}
-        <div {{= isIndexOrStock ? 'style="font-size:4rem;line-height:3rem;font-weight:bold;"' : '' }}  class="tradleFeed"> <!--href="{{= U.makeMobileUrl('view', resource.get('compareWithTradleFeed')) }}" class="tradleFeed"-->
-          {{= isStock ? cmpFeed.slice(cmpFeed.lastIndexOf('=') + 1) : resource.get('compareWithFeed.displayName') }}
+        {{ var isIndex = ~cmpFeed.indexOf('/Index?'); }}
+        {{ var dn = resource.get('compareWithFeed.displayName'); }}
+        <div {{= isIndex || isStock ? 'style="font-size:4rem;line-height:3rem;font-weight:bold;"' : '' }}  class="tradleFeed"> <!--href="{{= U.makeMobileUrl('view', resource.get('compareWithTradleFeed')) }}" class="tradleFeed"-->
+          {{= isStock || isIndex ? dn.split(' ')[0] : dn }}
+          {{= (isStock || isIndex) && dn.indexOf(' ') != -1 ? '<div style="font-size:1.2rem;font-weight:normal;">' + dn.slice(dn.indexOf(' ')) + '</div>' : '' }}
         </div>
         {{ }                               }}
       </div>
