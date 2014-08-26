@@ -786,7 +786,7 @@ define('views/BasicPageView', [
 
         header.render();
         self.el.$prepend(header.el);
-        Events.once('endRTCCall', header.destroy.bind(header));
+        self.listenTo(Events, 'endRTCCall', header.destroy.bind(header));
       });
     },
 
@@ -795,12 +795,6 @@ define('views/BasicPageView', [
         if (/^messageBar/.test(name))
           this.children[name].destroy();
       }
-    },
-
-    _onDestroyed: function() {
-//      this.removeFromWorld();
-      console.log("DESTROYED: " + this.TAG + this.cid);
-      return BasicView.prototype._onDestroyed.apply(this, arguments);
     },
 
     _checkAutoClose: function() {

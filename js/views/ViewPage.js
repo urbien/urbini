@@ -307,7 +307,7 @@ define('views/ViewPage', [
     edit: function(e) {
       Events.stopEvent(e);
 //      e.preventDefault();
-      this.router.navigate('edit/' + _.encode(this.resource.getUri()), {trigger: true});
+      Events.trigger('navigate', U.makeMobileUrl('edit', this.resource.getUri()));
       return this;
     },
 

@@ -86,11 +86,14 @@ define('models/Resource', [
 //
 //      this.checkIfLoaded();
 
-      if (this.isNew())
+      if (this.isNew()) {
         this.set({ _new: true }, { silent: true });
+        // this.buildUri()
+      }
     },
 
-    selfDestruct: function() {
+    /** Overrides Backbone.Model.prototype.destroy, for garbage collection rather than destroying the resource on the server **/
+    destroy: function() {
       this.stopListening();
       this.collection && this.collection.remove(this);
     },
@@ -418,12 +421,12 @@ define('models/Resource', [
 
       this._deleting = true;
       var preventDelete = false;
-      Events.on('preventDelete', function() {
+      this.listenTo(Events, 'preventDelete', function() {
         preventDelete = true;
       });
 
-      Events.trigger('delete', this, options);
-      Events.trigger('delete:' + this.getUri(), this, options);
+      this.listenTo(Events, 'delete', this, options);
+      this.listenTo(Events, 'delete:' + this.getUri(), this, options);
       if (preventDelete) {
         delete this._deleting;
         return;
@@ -1435,33 +1438,7 @@ define('models/Resource', [
           saved;
 
       if (!this.get('_uri')) {
-        var uri = U.buildUri(this);
-        if (!uri) {
-          var pks = U.getPrimaryKeys(this.vocModel),
-              props = this.vocModel.properties,
-              modified = false;
-
-          for (var i = 0; i < pks.length; i++) {
-            var prop = props[pks[i]];
-            if (prop.facet == 'uuid' && !this.get(prop.shortName)) {
-              this.set(prop.shortName, uuid.v4(), { silent: true });
-              modified = true;
-            }
-          }
-
-          if (modified)
-            uri = U.buildUri(this);
-        }
-
-        if (uri) {
-          this.set({
-            _uri: uri
-          }, {
-            silent: true
-          });
-        }
-        else
-          debugger; // should never happen
+        this.buildUri();
       }
 
       if (isNew)
@@ -1496,6 +1473,36 @@ define('models/Resource', [
 //      else {
 //        res.set(attrs, options);
 //      }
+    },
+
+    buildUri: function() {
+      var uri = U.buildUri(this);
+      if (!uri) {
+        var pks = U.getPrimaryKeys(this.vocModel),
+            props = this.vocModel.properties,
+            modified = false;
+
+        for (var i = 0; i < pks.length; i++) {
+          var prop = props[pks[i]];
+          if (prop.facet == 'uuid' && !this.get(prop.shortName)) {
+            this.set(prop.shortName, uuid.v4(), { silent: true });
+            modified = true;
+          }
+        }
+
+        if (modified)
+          uri = U.buildUri(this);
+      }
+
+      if (uri) {
+        this.set({
+          _uri: uri
+        }, {
+          silent: true
+        });
+      }
+      else
+        debugger; // should never happen
     },
 
     unset: function(attr, options) {

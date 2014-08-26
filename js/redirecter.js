@@ -577,28 +577,10 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
       }
 
       Voc.getModels(U.getTypeUri(eventClassRangeUri)).done(function(eventModel) {
-        var props = eventModel.properties,
-            userRole = U.getUserRole(),
-            isIndexEvent = U.isAssignableFrom(eventModel, 'commerce/trading/IndexEvent'),
-            isSECEvent = U.isAssignableFrom(eventModel, 'commerce/trading/SECForm4'),
-            secIgnore = ['title', 'xmlUrl'],
-            $in = 'name';
-
-        for (var shortName in props) {
-          var prop = props[shortName];
-          if (!prop.backLink &&
-              (!prop.subPropertyOf || !prop.subPropertyOf.endsWith('/feed')) &&
-              (!isIndexEvent || shortName != 'index') &&
-              U.isNativeModelParameter(shortName) &&
-              !U.isDateProp(prop) &&
-              (!isSECEvent || !_.contains(secIgnore, shortName)) &&
-              U.isNativeModelParameter(shortName) &&
-              U.isPropVisible(null, prop, userRole)) {
-            $in += ',' + shortName;
-          }
-        }
-
-        var title,
+        var userRole = U.getUserRole(),
+            eventCols = U.getEventCols(eventModel),
+            $in = 'name,' + eventCols.join(','),
+            title,
             feedDisplayName = res.get('feed.displayName');
 
         title = feedDisplayName ? CHOOSE_INDICATOR_FOR + ' ' + feedDisplayName : CHOOSE_INDICATOR;
@@ -1175,7 +1157,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
   //            applicableToResource: tfParams.feed
             }),
             and2 = _.param({
-//              parentFolder: G.currentApp._uri,
+              parentFolderPath: G.hostName + '/voc/dev/Technicals',
               $in: 'name,RawValue,PreviousValue'
             }),
             title = CHOOSE_VALUES_FOR;

@@ -9,6 +9,8 @@ define('views/MenuPanel', [
   'physicsBridge',
   'lib/fastdom'
 ], function(G, U, Events, Voc, BasicView, DOM, Physics, Q) {
+  var TRANSITION_DURATION = 200;
+
   return BasicView.extend({
 //    role: 'data-panel',
 //    id: 'menuPanel',
@@ -40,7 +42,7 @@ define('views/MenuPanel', [
       var self = this,
           type = this.modelType;
 
-      _.bindAll(this, 'show', 'hide');
+      _.bindAll(this, 'show', 'hide', '_finishTransition');
       BasicView.prototype.initialize.apply(this, arguments);
       this.tagName = options.tagName;
       this.makeTemplate('menuItemTemplate', 'menuItemTemplate', type);
@@ -56,7 +58,7 @@ define('views/MenuPanel', [
       });
 
       document.$on('tap', this.hide);
-      this.on('destroy', function() {
+      this.on('destroyed', function() {
         document.$off('tap', self.hide);
       });
     },
@@ -75,7 +77,18 @@ define('views/MenuPanel', [
       return this._hidden;
     },
 
+    isTransitioning: function() {
+      return this._transitioning;
+    },
+
+    _prepareTransition: function() {
+      clearTimeout(this._transitionTimeout);
+      this._transitioning = true;
+      this._transitionTimeout = setTimeout(this._finishTransition, TRANSITION_DURATION + 20);
+    },
+
     _finishTransition: function() {
+      clearTimeout(this._transitionTimeout);
       this._transitioning = false;
       if (this._repositionAfterTransition) {
         this._repositionAfterTransition = false;
@@ -85,7 +98,7 @@ define('views/MenuPanel', [
 
     show: function(e) {
       var self = this;
-      if (this._hidden) {
+      if (this.isHidden() && !this.isTransitioning()) {
         if (e)
           Events.stopEvent(e);
 
@@ -105,7 +118,7 @@ define('views/MenuPanel', [
         var accActionId = _.uniqueId('accAction');
 
         this._hidden = false;
-        this._transitioning = true;
+        this._prepareTransition();
         Physics.there.chain(
           {
             method: 'style',
@@ -145,7 +158,7 @@ define('views/MenuPanel', [
               body: this.getContainerBodyId(),
               property: 'opacity',
               end: DOM.maxOpacity,
-              duration: 200
+              duration: TRANSITION_DURATION
 //              trackAction: {
 //                body: this.getContainerRailBodyId(),
 //                action: accActionId
@@ -164,15 +177,14 @@ define('views/MenuPanel', [
     },
 
     hide: function(e) {
-      if (!this._hidden) {
+      if (!this.isHidden() && !this.isTransitioning()) {
         if (e)
           Events.stopEvent(e);
 
         var self = this,
             accActionId = _.uniqueId('accAction');
 
-        this._hidden = true;
-        this._transitioning = true;
+        this._prepareTransition();
 //        if (G.isJQM())
 //          this.$el.closest('[data-role="panel"]').panel('close');
 
@@ -189,6 +201,7 @@ define('views/MenuPanel', [
               drag: this._drag,
 //              a: this._acceleration,
               oncomplete: function() {
+                self._hidden = true;
                 self._finishTransition();
                 Physics.there.style(self.getContainerBodyId(), {
                   'z-index': 0,

@@ -166,7 +166,7 @@ define('views/ResourceView', [
       var cbType = bl.range;
       var props = {};
       props[bl.backLink] = res.getUri();
-      return this.router.navigate(U.makeMobileUrl('make', U.getLongUri1(cbType), props));
+      return Events.trigger('navigate', U.makeMobileUrl('make', U.getLongUri1(cbType), props));
     },
     refresh: function(resource, options) {
       options = options || {};

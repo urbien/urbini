@@ -4119,14 +4119,19 @@ var API = {
 
   style: function(bodyId, style) {
     var body = getBody(bodyId);
-    for (var prop in style) {
-      body.state.renderData.set(prop, style[prop]);
+    if (body) {
+      for (var prop in style) {
+        body.state.renderData.set(prop, style[prop]);
+      }
     }
   },
 
   animateStyle: function(options) {
-    var body = getBody(options.body),
-        completeCallback = options.oncomplete,
+    var body = getBody(options.body);
+    if (!body)
+      return;
+
+    var completeCallback = options.oncomplete,
         cancelCallback = options.oncancel,
         unit = options.unit,
         prop = options.property,
@@ -4668,8 +4673,11 @@ var API = {
 //  },
 
   snapTo: function(options) {
+    var body = getBody(options.body);
+    if (!body)
+      return;
+
     var self = this,
-        body = getBody(options.body),
         completeCallback = options.oncomplete,
         cancelCallback = options.oncancel,
         stiffness = options.stiffness,
@@ -4826,7 +4834,10 @@ var API = {
   },
 
   removeBodies: function(/* ids */) {
-    getBodies.apply(null, arguments).map(world.removeBody.bind(world));
+    getBodies.apply(null, arguments).map(function(body) {
+      if (body)
+        world.removeBody(body);
+    });
   },
 
   removeBody: function(id) {

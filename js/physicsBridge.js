@@ -3,7 +3,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       jsBase = G.serverName + '/js/',
       physicsModuleInfo = G.files['lib/physicsjs-custom.js'],
       masonryModuleInfo = G.files['lib/jquery.masonry.js'],
-      commonMethods = ['step', 'addBody', 'removeBody', 'distanceConstraint', 'drag', 'dragend', 'benchBodies', 'unbenchBodies', 'style', 'animateStyle', 'track', 'trackDrag', 'page'],
+      commonMethods = ['step', 'addBody', 'removeBody', 'removeBodies', 'distanceConstraint', 'drag', 'dragend', 'benchBodies', 'unbenchBodies', 'style', 'animateStyle', 'track', 'trackDrag', 'page'],
       layoutMethods = ['addBricks', 'setLimit', 'unsetLimit', 'sleep', 'wake', 'continue', 'home', 'end', 'resize', 'setBounds', 'lock', 'unlock', 'isLocked', 'destroy', 'reset', 'page', 'snapTo', 'snapBy'],
       LOCK_STEP = false, // if true, step the world through postMessage, if false let the world run its own clock
       PHYSICS_TIME = _.now(), // from here on in,
@@ -882,6 +882,10 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     callbacks[cbId] = callback;
     return cbId;
   };
+
+  function removeSubscription(id) {
+    delete subscriptions[id];
+  }
 
   function addSubscription(callback) {
     var cbId = _.uniqueId('physicsSubscription');
@@ -1767,7 +1771,8 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     ID_TO_LAYOUT_MANAGER[options.container] = this;
     this.id = _.uniqueId('layoutManager');
     this.containerId = options.container;
-    THERE.rpc(null, 'layout.init', [this.id, options, addSubscription(callback)]);
+    this._subscriptionId = addSubscription(callback);
+    THERE.rpc(null, 'layout.init', [this.id, options, this._subscriptionId]);
   };
 
 //  LayoutManager.prototype = {
@@ -1825,6 +1830,9 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
         return;
       case 'isLocked':
         return this._handlingRangeRequest;
+      case 'destroy':
+        removeSubscription(this._subscriptionId);
+        break;
       }
 
 //      console.debug.apply(console, ["LIST VIEW CALLING WORKER", method].concat(_.toArray(arguments)));
@@ -1832,5 +1840,6 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     };
   });
 
+  window.ID_TO_EL = ID_TO_EL;
   return Physics;
 });

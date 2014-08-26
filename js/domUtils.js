@@ -3,7 +3,6 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
       LAZY_DATA_ATTR = G.lazyImgSrcAttr,
       LAZY_ATTR = LAZY_DATA_ATTR.slice(5),
       MAX_OPACITY = 0.999999,
-      isFF = G.browser.firefox,
       vendorPrefixes = ['-moz-', '-ms-', '-o-', '-webkit-'],
       ArrayProto = Array.prototype,
       resizeTimeout,
@@ -43,9 +42,23 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         }
       },
       isMoz = G.browser.mozilla,
-      elId = 1;
+      elId = 1,
+      inputIsFocused;
+
 //      ,
 //      HAMMER_EVENTS = 'touch release hold tap doubletap dragstart drag dragend dragleft dragright dragup dragdown swipe swipeleft swiperight swipeup swipedown transformstart transform transformend rotate pinch pinchin pinchout'.split(' ');
+
+  if (G.browser.mobile) {
+    document.$on('focus input', function() {
+      inputIsFocused = true;
+      fireResizeEvent();
+    }, true);
+
+    document.$on('blur input', function() {
+      inputIsFocused = false;
+      fireResizeEvent();
+    }, true);
+  }
 
   window.addEventListener('resize', function(e) {
     clearTimeout(resizeTimeout);
@@ -82,12 +95,32 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
     return width;
   };
 
-  function fireResizeEvent(force) {
+  function getVirtualKeyboardHeight() {
+    var sx = document.body.scrollLeft,
+        sy = document.body.scrollTop,
+        naturalHeight = window.innerHeight,
+        keyboardHeight;
+
+    window.scrollTo(sx, document.body.scrollHeight);
+    keyboardHeight = naturalHeight - window.innerHeight;
+    window.scrollTo(sx, sy);
+    return keyboardHeight;
+  };
+
+  function getWindowHeight() {
+    var height = window.innerHeight;
+    if (inputIsFocused)
+      height -= getVirtualKeyboardHeight();
+
+    return height;
+  };
+
+  function fireResizeEvent() {
     var v = G.viewport,
         width = getWindowWidth(),
-        height = window.innerHeight,
-        heightChanged = force || v.height != height,
-        widthChanged = force || v.width != width;
+        height = getWindowHeight(),
+        heightChanged = v.height != height,
+        widthChanged = v.width != width;
 
     if (heightChanged || widthChanged) {
       saveViewportSize(width, height);
@@ -285,8 +318,12 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
             }
           }
 
-          if (_.isEmpty(selectors))
+          if (_.isEmpty(selectors)) {
             G.removeEventListener(this, event, proxyInfo.proxy);
+            delete this._$handlers[event];
+            if (_.isEmpty(this._$handlers))
+              delete this._$handlers;
+          }
         }
 
         return this;
@@ -542,7 +579,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         var i = arguments.length;
         while (i--) {
           var htmlOrFrag = arguments[i];
-          if (htmlOrFrag instanceof Array || htmlOrFrag instanceof NodeList) {
+          if (isElementCollection(htmlOrFrag)) {
             this.$prepend.apply(this, htmlOrFrag);
             continue;
           }
@@ -838,7 +875,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         z = arguments[2];
       }
 
-      return 'translate3d(' + (x || 0) + 'px, ' + (y || 0) + 'px, ' + (z || 0) + 'px)'; //+ (isFF ? ' rotate(0.01deg)' : '');
+      return 'translate3d(' + (x || 0) + 'px, ' + (y || 0) + 'px, ' + (z || 0) + 'px)';
     },
 
     _zeroTranslation: {

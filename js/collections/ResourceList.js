@@ -887,7 +887,7 @@ define('collections/ResourceList', [
       delete this._fetchDeferreds[url];
     },
 
-    selfDestruct: function() {
+    destroy: function() {
       this.stopListening();
       var models = this.models;
       for (var i = 0, num = models.length; i < num; i++) {
