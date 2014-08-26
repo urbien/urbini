@@ -278,6 +278,19 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         if (!this._$handlers)
           return this;
 
+        if (!arguments.length) {
+          for (var event in this._$handlers) {
+            var proxyInfo = this._$handlers[event],
+                proxy = proxyInfo && proxyInfo.proxy;
+
+            if (proxy)
+              G.removeEventListener(this, event, proxyInfo.proxy);
+          }
+
+          delete this._$handlers;
+          return;
+        }
+
         if (~event.indexOf(' ')) {
           var self = this;
           event.split(' ').map(function(event) {

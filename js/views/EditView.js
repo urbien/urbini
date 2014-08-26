@@ -13,13 +13,18 @@ define('views/EditView', [
         name: 'loading edit view'
       },
 //      scrollerClass = 'i-txt',
-      switchClass = 'boolean';
+      switchClass = 'boolean',
+      LIMIT_ORDER_TYPES = ['Stop Limit', 'Limit'];
 //      ,
 //      secs = [/* week seconds */604800, /* day seconds */ 86400, /* hour seconds */ 3600, /* minute seconds */ 60, /* second seconds */ 1];
 
   function mobiscroll(scroller) {
     return $.fn.mobiscroll.apply(scroller, _.rest(arguments));
   };
+
+  function isLimitOrder(type) {
+    return LIMIT_ORDER_TYPES.indexOf(type) != -1;
+  }
 
   function clearForm(forms) {
     var i = forms.length;
@@ -179,6 +184,21 @@ define('views/EditView', [
       'change select'                     :'onSelected',
       'change input[type="checkbox"]'     :'onSelected',
       'change input[type="date"]'         :'onSelected'
+    },
+
+    myEvents: {
+      '.editView destroyed': '_onEditViewDestroyed'
+    },
+
+    // unbind
+    _onEditViewDestroyed: function() {
+      var ins = this.inputs;
+      if (ins) {
+        var i = ins.length;
+        while (i--) {
+          ins[i].$off();
+        }
+      }
     },
 
     onRangeChange: function(input) {
@@ -1263,7 +1283,53 @@ define('views/EditView', [
       if (onInvalid)
         res.off('invalid', onInvalid);
 
+      this.adjustForm();
       return set;
+    },
+
+    adjustForm: function() {
+      var r = this.resource;
+      if (r.isAssignableFrom("commerce/trading/Order")) {
+        this.adjustOrderForm();
+      }
+    },
+
+    adjustOrderForm: function() {
+      var r = this.resource;
+      if (isLimitOrder(r.get('orderType')))
+        this.$('[data-shortname="limitPrice"]').$show();
+      else
+        this.$('[data-shortname="limitPrice"]').$hide();
+
+      // var quantity = r.get('quantity');
+      // if (!quantity)
+      //   return;
+
+      // if (this.latestSecurityEvent) {
+      //   var price = this.latestSecurityEvent.get('open');
+      //   var li = this.$('li[data-shortname="quantity"]')[0];
+      //   var comment = li.$('comment');
+      //   if (!comment) {
+      //     comment = document.createElement('comment');
+      //     comment.className = 'propertyComment';
+      //     li.$append(comment);
+      //   }
+
+      //   comment.innerHTML = '$' + price + ' at the current price';
+      //   return;
+      // }
+
+      // if (this.fetchSecurityEvent)
+      //   return;
+
+      // var sec = r.get('security');
+      // if (!sec)
+      //   return;
+
+      // this.fetchSecurityEvent = Voc.getModels('commerce/trading/StockEvent').then(function(stockEventModel) {
+      //   var stockEvent =
+      //   U.getResourcePromise(sec).done();
+      // }).then(this.adjustOrderForm.bind(this));
     },
 
     addProp: function(info) {
@@ -1725,6 +1791,7 @@ define('views/EditView', [
 //        form.find('label[for="{0}"]'.format(this.id)).addClass('req');
 //      });
 
+      this.adjustForm();
       return this;
     },
 

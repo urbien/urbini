@@ -675,17 +675,17 @@ define('views/BasicPageView', [
       var events = ['tap', 'drag'];
       function removeTooltips() {
         events.map(function(event) {
-          document.$off(event, removeTooltips, true);
+          doc.$off(event, removeTooltips, true);
         });
 
         self.removeTooltips();
       };
 
       events.map(function(event) {
-        removeTooltips._id = G.nextId();
-        document.$on(event, removeTooltips, true);
-        self.on('destroyed', document.$off.bind(document, removeTooltips));
+        doc.$on(event, removeTooltips, true);
       });
+
+      this.on('destroyed', removeTooltips);
     },
 
     _getTooltipBaseElement: function(tooltipEl) {
