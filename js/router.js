@@ -1407,12 +1407,12 @@ define('router', [
 
       U.modalDialog({
         id: 'cloneDialog',
-        header: 'Would you like to copy this {0} to your profile for free?'.format(vocModel.displayName),
-        ok: 'Copy',
+        header: 'Would you like to clone this {0} to your profile for free?'.format(vocModel.displayName),
+        ok: 'Clone',
         cancel: 'Cancel',
         onok: function onok() {
           debugger;
-          U.alert("Please be patient while we copy this {0} to your profile...".format(vocModel.displayName));
+          U.alert("Please be patient while we clone this {0} to your profile...".format(vocModel.displayName));
           var cloneParams = {};
           cloneParams[U.getCloneOf(vocModel, 'Templatable.basedOnTemplate')[0]] = uri;
           var tradle = new vocModel(cloneParams);
