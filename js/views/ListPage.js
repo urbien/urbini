@@ -257,7 +257,7 @@ define('views/ListPage', [
           colParams[forClass[0]] = params['$type'];
       }
       if (!U.isAssignableFrom(this.vocModel, 'Intersection')) {
-        this.router.navigate('make/' + encodeURIComponent(this.vocModel.type) + '?' + _.param(colParams), {trigger: true});
+        Events.trigger('navigate', U.makeMobileUrl('make', this.vocModel.type, colParams));
         return this;
       }
 
@@ -266,7 +266,7 @@ define('views/ListPage', [
       var aUri = colParams[a];
       var bUri = colParams[b];
       if (!aUri  &&  !bUri) {
-        this.router.navigate('make/' + encodeURIComponent(this.vocModel.type) + '?' + _.param(colParams), {trigger: true});
+        Events.trigger('navigate', U.makeMobileUrl('make', this.vocModel.type, colParams));
         return this;
       }
 
@@ -280,7 +280,7 @@ define('views/ListPage', [
             $title: title
           }, U.getWhereParams(prop));
 
-      this.router.navigate('chooser/' + encodeURIComponent(prop.range) + "?" + _.param(params) , {trigger: true});
+      Events.trigger('navigate', U.makeMobileUrl('chooser', prop.range, params));
       return this;
     },
 

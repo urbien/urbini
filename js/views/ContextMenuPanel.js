@@ -200,7 +200,7 @@ define('views/ContextMenuPanel', [
       if (isWaitingRoom)
         redirectOptions.transition = 'none';
 
-      this.router.navigate(chatPageUrl.slice(chatPageUrl.indexOf('#') + 1), redirectOptions);
+      Events.trigger('navigate', chatPageUrl.slice(chatPageUrl.indexOf('#') + 1), redirectOptions);
       this.hide();
     },
 

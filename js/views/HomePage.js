@@ -38,7 +38,10 @@ define('views/HomePage', [
       }
 
       if (G.currentApp.appPath == 'Tradle') {
-        Events.trigger('navigate', U.makeMobileUrl('make', 'commerce/trading/Tradle'));
+        Events.trigger('navigate', U.makeMobileUrl('make', 'commerce/trading/Tradle', {
+          owner: '_me'
+        }));
+
         return;
       }
 

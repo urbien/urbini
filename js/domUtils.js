@@ -3,7 +3,6 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
       LAZY_DATA_ATTR = G.lazyImgSrcAttr,
       LAZY_ATTR = LAZY_DATA_ATTR.slice(5),
       MAX_OPACITY = 0.999999,
-      isFF = G.browser.firefox,
       vendorPrefixes = ['-moz-', '-ms-', '-o-', '-webkit-'],
       ArrayProto = Array.prototype,
       resizeTimeout,
@@ -43,9 +42,23 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         }
       },
       isMoz = G.browser.mozilla,
-      elId = 1;
+      elId = 1,
+      inputIsFocused;
+
 //      ,
 //      HAMMER_EVENTS = 'touch release hold tap doubletap dragstart drag dragend dragleft dragright dragup dragdown swipe swipeleft swiperight swipeup swipedown transformstart transform transformend rotate pinch pinchin pinchout'.split(' ');
+
+  if (G.browser.mobile) {
+    document.$on('focus input', function() {
+      inputIsFocused = true;
+      fireResizeEvent();
+    }, true);
+
+    document.$on('blur input', function() {
+      inputIsFocused = false;
+      fireResizeEvent();
+    }, true);
+  }
 
   window.addEventListener('resize', function(e) {
     clearTimeout(resizeTimeout);
@@ -82,12 +95,32 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
     return width;
   };
 
-  function fireResizeEvent(force) {
+  function getVirtualKeyboardHeight() {
+    var sx = document.body.scrollLeft,
+        sy = document.body.scrollTop,
+        naturalHeight = window.innerHeight,
+        keyboardHeight;
+
+    window.scrollTo(sx, document.body.scrollHeight);
+    keyboardHeight = naturalHeight - window.innerHeight;
+    window.scrollTo(sx, sy);
+    return keyboardHeight;
+  };
+
+  function getWindowHeight() {
+    var height = window.innerHeight;
+    if (inputIsFocused)
+      height -= getVirtualKeyboardHeight();
+
+    return height;
+  };
+
+  function fireResizeEvent() {
     var v = G.viewport,
         width = getWindowWidth(),
-        height = window.innerHeight,
-        heightChanged = force || v.height != height,
-        widthChanged = force || v.width != width;
+        height = getWindowHeight(),
+        heightChanged = v.height != height,
+        widthChanged = v.width != width;
 
     if (heightChanged || widthChanged) {
       saveViewportSize(width, height);
@@ -174,36 +207,6 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
   var elementProto = Element.prototype;
   var $matches = elementProto.matches || elementProto.webkitMatchesSelector || elementProto.mozMatchesSelector || elementProto.msMatchesSelector;
 
-  function removeEventListeners(el, event, listeners, _listener) {
-    var i = listeners.length,
-        listener;
-
-    while (i--) {
-      listener = listeners[i];
-      if (_listener) {
-        if (listener.listener == _listener) {
-          G.removeEventListener(el, event, listener.proxy);
-          Array.removeFromTo(listeners, i, i + 1);
-//          removed = true;
-          break;
-        }
-      }
-      else {
-        G.removeEventListener(el, event, listener.proxy);
-//        removed = true;
-      }
-
-    }
-
-    if (!_listener)
-      listeners.length = 0;
-
-//    if (!removed)
-//      console.log("FAILED TO REMOVE EVENT LISTENER", event, _listener._listenerId, listeners.map(function(l) { return l.listener._listenerId }).join(','));
-//    else
-//      console.log("REMOVED EVENT LISTENER", event, _listener._listenerId);
-  };
-
   (function extendNodeAndNodeList(win, doc) {
     var NodeAndNodeListAug = {
       $matches: $matches,
@@ -260,7 +263,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
                 el = el.parentElement;
               }
             }
-          }
+          };
 
           G.addEventListener(this, event, proxyInfo.proxy, capture);
         }
@@ -290,15 +293,36 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
           selector = null;
         }
 
-        var proxyInfo = this._$handlers[event];
+        var proxyInfo = this._$handlers[event],
+            selectors;
+
         if (proxyInfo) {
-          if (selector)
-            removeEventListeners(this, event, proxyInfo.selectors[selector], listener);
-          else {
-            var selectors = proxyInfo.selectors;
-            for (var selector in selectors) {
-              removeEventListeners(this, event, selectors[selector], listener);
+          selectors = proxyInfo.selectors;
+          var removeSelectors = selector ? [selector] : _.keys(selectors),
+              i = removeSelectors.length,
+              s;
+
+          while (i--) {
+            s = removeSelectors[i];
+            if (!listener)
+              delete selectors[s];
+            else {
+              var listeners = selectors[s];
+              if (listeners) {
+                Array.remove(listeners, listener);
+                if (!listeners.length)
+                  delete selectors[s];
+              }
+              else
+                delete selectors[s];
             }
+          }
+
+          if (_.isEmpty(selectors)) {
+            G.removeEventListener(this, event, proxyInfo.proxy);
+            delete this._$handlers[event];
+            if (_.isEmpty(this._$handlers))
+              delete this._$handlers;
           }
         }
 
@@ -555,7 +579,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         var i = arguments.length;
         while (i--) {
           var htmlOrFrag = arguments[i];
-          if (htmlOrFrag instanceof Array || htmlOrFrag instanceof NodeList) {
+          if (isElementCollection(htmlOrFrag)) {
             this.$prepend.apply(this, htmlOrFrag);
             continue;
           }
@@ -851,7 +875,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
         z = arguments[2];
       }
 
-      return 'translate3d(' + (x || 0) + 'px, ' + (y || 0) + 'px, ' + (z || 0) + 'px)'; //+ (isFF ? ' rotate(0.01deg)' : '');
+      return 'translate3d(' + (x || 0) + 'px, ' + (y || 0) + 'px, ' + (z || 0) + 'px)';
     },
 
     _zeroTranslation: {

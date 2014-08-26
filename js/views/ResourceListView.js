@@ -166,6 +166,10 @@ define('views/ResourceListView', [
         tail: G.viewport[this.options.horizontal ? 'width' : 'height']
       };
 
+      this.on('destroyed', function() {
+        self._childEls.length = 0;
+      });
+
       this.originalParams = _.clone(this.collection.params);
       this.originalModel = this.collection.vocModel;
       this.setDisplayModel(this.originalModel);

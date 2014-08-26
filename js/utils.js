@@ -2017,6 +2017,20 @@ define('utils', [
       return obj;
     },
 
+    // tryToDestroy: function(r) {
+    //   var prevented = false,
+    //       prevent = function() {
+    //         prevented = true;
+    //       };
+
+    //   Events.on('preventDestroy:' + r.cid, prevent);
+    //   Events.trigger('destroy:' + r.cid);
+    //   if (!prevented)
+    //     r.destroy();
+
+    //   Events.off('preventDestroy:' + r.cid, prevent);
+    // },
+
     fetchCurrentUser: function(sync) {
       var p = G.currentUser._fetchPromise;
       if (p)
@@ -2586,6 +2600,9 @@ define('utils', [
 
 //      var encOptions = {delimiter: '&amp;'};
       params = params || {};
+      if (typeof params == 'string')
+        params = _.toQueryParams(params);
+
       if (typeOrUriParts[1])
         _.extend(params, _.toQueryParams(typeOrUriParts[1]));
 
@@ -5179,6 +5196,31 @@ define('utils', [
       frag.$('.headerLeft')[0].$html(back);
       frag.$('.headerRight')[0].$html(menu);
       el.$html(frag);
+    },
+
+    getEventCols: function(eventModel) {
+      var props = eventModel.properties,
+          isIndexEvent = U.isAssignableFrom(eventModel, 'commerce/trading/IndexEvent'),
+          isSECEvent = U.isAssignableFrom(eventModel, 'commerce/trading/SECForm4'),
+          secIgnore = ['title', 'xmlUrl'],
+          userRole = U.getUserRole(),
+          cols = [];
+
+      for (var shortName in props) {
+        var prop = props[shortName];
+        if (!prop.backLink &&
+            (!prop.subPropertyOf || !prop.subPropertyOf.endsWith('/feed')) &&
+            (!isIndexEvent || shortName != 'index') &&
+            U.isNativeModelParameter(shortName) &&
+            !U.isDateProp(prop) &&
+            (!isSECEvent || !_.contains(secIgnore, shortName)) &&
+            U.isNativeModelParameter(shortName) &&
+            U.isPropVisible(null, prop, userRole)) {
+          cols.push(shortName);
+        }
+      }
+
+      return cols;
     }
   };
 

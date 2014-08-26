@@ -1,7 +1,7 @@
 //'use strict';
 define('views/CommentListItemView', [
   'globals',
-  'underscore', 
+  'underscore',
   'events',
   'utils',
   'views/BasicView'
@@ -13,7 +13,7 @@ define('views/CommentListItemView', [
       _.bindAll(this, 'render', "like"); // fixes loss of context for 'this' within methods
       BasicView.prototype.initialize.apply(this, arguments);
       this.makeTemplate('comment-item', 'template', this.vocModel.type);
-      
+
       // resourceListView will call render on this element
   //    this.model.on('change', this.render, this);
       return this;
@@ -21,11 +21,11 @@ define('views/CommentListItemView', [
     events: {
       'click .like': 'like',
       'click #reply': 'reply'
-        
+
     },
     like: function(e) {
       var likeModel = U.getModel('Vote');
-      if (!likeModel) 
+      if (!likeModel)
         return;
       Events.stopEvent(e);
       var r = new likeModel();
@@ -36,19 +36,20 @@ define('views/CommentListItemView', [
       r.save(props, {
         userEdit: true,
         success: function(resource, response, options) {
-          self.router.navigate(window.location.hash, options);
-        }, 
+          // self.router.navigate(window.location.hash, options);
+          window.location.reload(); // ?
+        },
         error: function(model, xhr, options) {
           var error = U.getJSON(xhr.responseText);
           if (!error) {
             self.log('error', 'couldn\'t create like item, no error info from server');
             return;
           }
-          
+
           Errors.errDialog({msg: error.details});
           self.log('error', 'couldn\'t create like');
         }
-      });      
+      });
     },
     reply: function(e) {
       Events.stopEvent(e);
@@ -61,11 +62,11 @@ define('views/CommentListItemView', [
       };
 
       params[prop.backLink] = this.resource.getUri();
-      this.router.navigate(U.makeMobileUrl('make', prop.range, params), {trigger: true});
+      Events.trigger('navigate', U.makeMobileUrl('make', prop.range, params));
     },
 
 //    tap: Events.defaultTapHandler,
-//    click: Events.defaultClickHandler,  
+//    click: Events.defaultClickHandler,
     render: function(options) {
       var json = _.pick(this.resource.attributes, 'submitter', 'submitter.displayName', 'submitter.thumb', 'submitTime', 'title', 'description', 'votes');
       var thumb = json['submitter.thumb'];
@@ -85,7 +86,7 @@ define('views/CommentListItemView', [
             w = s.substring(0, idx);
             h = s.substring(idx + 1);
           }
-          var maxDim = w > h ? w : h;  
+          var maxDim = w > h ? w : h;
           var clip = U.clipToFrame(60, 60, w, h, maxDim);
           if (clip) {
             json.top = clip.clip_top;
@@ -101,11 +102,11 @@ define('views/CommentListItemView', [
         this._html = '<{0}>{1}</{0}>'.format(this.tagName, html);
       else
         this.el.$html(html);
-      
+
       U.recycle(json);
       return this;
     }
   }, {
     displayName: 'CommentListItemView'
-  });  
+  });
 });

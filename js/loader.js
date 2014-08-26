@@ -82,6 +82,11 @@ define('globals', function() {
     browser.opera = window.opera && Object.prototype.toString.call(window.opera) === '[object Opera]';
     browser.chrome = browser.webkit && !!window.chrome;
     browser.safari = browser.webkit && !window.chrome;
+    if (browser.safari) {
+      // Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.78.2 (KHTML, like Gecko) Version/7.0.6 Safari/537.78.2
+      browser.version = userAgent.match(/Version\/(\d+\.\d+)/)[1];
+    }
+
     browser.ios = userAgent.match(/(iPad|iPhone|iPod)/i);
     var mobile = browser.ios || userAgent.match(/(Android|webOS|BlackBerry|IEMobile|Opera Mini|Opera Mobi)/);
     if (mobile) {
@@ -98,7 +103,7 @@ define('globals', function() {
                         browser.opera ? 'o' :
                           browser.ms ? 'ms' : '';
 
-    browser.supported = browser.chrome || browser.mozilla || browser.safari || browser.ios || (browser.msie && parseInt(browser.version) >= 10);
+    browser.supported = browser.chrome || browser.mozilla || (browser.safari && parseFloat(browser.version) > 5.2) || browser.ios || (browser.msie && parseInt(browser.version) >= 10);
     return browser;
   })();
 
@@ -1516,7 +1521,7 @@ define('globals', function() {
     showSpinner: function(options) {
       if (document.$)
         document.$('.spinner_bg').$remove();
-      
+
       options = options || {};
       if (typeof options === 'string')
         options = {name: options};

@@ -589,9 +589,13 @@ define('views/BasicPageView', [
 
     _fixTooltips: function() {
       var self = this,
-          remove = [];
+          remove = [],
+          tooltips = this.getTooltips();
 
-      this.getTooltips().$forEach(function(tooltip) {
+      if (!tooltips)
+        return;
+
+      tooltips.$forEach(function(tooltip) {
         var el = self._getTooltipBaseElement(tooltip);
         if (!el) {
           remove.push(tooltip);
@@ -622,7 +626,7 @@ define('views/BasicPageView', [
     },
 
     getTooltips: function() {
-      return this.el.$('.play');
+      return this.el && this.el.$('.play');
     },
 
     removeTooltips: function() {
@@ -669,15 +673,16 @@ define('views/BasicPageView', [
       page.$prepend(tooltipEl);
 
       var events = ['tap', 'drag'];
+      function removeTooltips() {
+        events.map(function(event) {
+          document.$off(event, removeTooltips, true);
+        });
+
+        self.removeTooltips();
+      };
+
       events.map(function(event) {
-        function removeTooltips() {
-          events.map(function(event) {
-            document.$off(event, removeTooltips, true);
-          });
-
-          self.removeTooltips();
-        };
-
+        removeTooltips._id = G.nextId();
         document.$on(event, removeTooltips, true);
         self.on('destroyed', document.$off.bind(document, removeTooltips));
       });
@@ -781,7 +786,7 @@ define('views/BasicPageView', [
 
         header.render();
         self.el.$prepend(header.el);
-        Events.once('endRTCCall', header.destroy.bind(header));
+        self.listenTo(Events, 'endRTCCall', header.destroy.bind(header));
       });
     },
 
@@ -790,12 +795,6 @@ define('views/BasicPageView', [
         if (/^messageBar/.test(name))
           this.children[name].destroy();
       }
-    },
-
-    _onDestroyed: function() {
-//      this.removeFromWorld();
-      console.log("DESTROYED: " + this.TAG + this.cid);
-      return BasicView.prototype._onDestroyed.apply(this, arguments);
     },
 
     _checkAutoClose: function() {

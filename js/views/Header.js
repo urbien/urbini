@@ -1123,7 +1123,9 @@ define('views/Header', [
     },
 
     renderPhysics: function() {
-      this.physicsConstantsEl = this.el.querySelector('.physicsConstants');
+      if (!this.physicsConstantsEl)
+        this.physicsConstantsEl = this.el.querySelector('.physicsConstants');
+
       this.physicsConstantsEl.innerHTML = this.physicsConstantsTemplate(this.getPhysicsTemplateData());
     },
 

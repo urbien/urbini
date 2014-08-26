@@ -100,8 +100,9 @@ define('views/BasicView', [
       this._taskQueue = [];
       this._templates = [];
       this._templateMap = {};
+      // this.els = {}; // keep element refs here, so they can be cleaned easily
 
-      var res = this.data = this.model = this.model || options.resource || options.collection;
+      var res = this.model = this.model || options.resource || options.collection;
       if (res) {
         if (this.model instanceof Backbone.Collection) {
           this.collection = res;
@@ -130,8 +131,8 @@ define('views/BasicView', [
 
 //      this.on('destroyed', this._onDestroyed);
       this.loc = G.localize;
-      if (this.model)
-        this.listenTo(Events, 'preparingModelForDestruction.' + this.model.cid, this._preventModelDeletion);
+      // if (this.model)
+      //   this.listenTo(Events, 'preparingModelForDestruction.' + this.model.cid, this._preventModelDeletion);
 
       this.children = {};
       this._dimensions = {};
@@ -140,6 +141,8 @@ define('views/BasicView', [
 //        this._viewBrick._uri = U.getShortUri(this.resource.getUri(), this.vocModel);
 //
 //      G.log(this.TAG, 'new view', this.getPageTitle());
+
+      // this.keepAlive(this.resource || this.collection);
       return this;
     },
 
@@ -287,8 +290,7 @@ define('views/BasicView', [
 
     myEvents: {
       '.default active': '_onActive',
-      '.default inactive': '_onInactive',
-      '.default destroyed': '_onDestroyed'
+      '.default inactive': '_onInactive'
     },
 
     globalEvents: {},
@@ -299,9 +301,9 @@ define('views/BasicView', [
       'viewportdimensions': '_onViewportDimensionsChanged'
     },
 
-    _preventModelDeletion: function() {
-      Events.trigger('saveModelFromUntimelyDeath.' + this.model.cid);
-    },
+    // _preventModelDeletion: function() {
+    //   Events.trigger('saveModelFromUntimelyDeath.' + this.model.cid);
+    // },
 
     _updateHashInfo: function() {
       this._hashInfo = U.getCurrentUrlInfo();
@@ -474,20 +476,13 @@ define('views/BasicView', [
         return;
 
       this._destroyed = true;
-      this.trigger('destroyed', keepEl);
-    },
-
-    isDestroyed: function() {
-      return this._destroyed;
-    },
-
-    _onDestroyed: function(keepEl) {
-//      Events.trigger('garbage', this);
-      this.trigger('inactive');
+      this.trigger('destroyed', keepEl); // trigger before we stop listening
+            this.trigger('inactive');
       for (var cid in this.children) {
         this.children[cid].destroy();
       }
 
+      delete this.children;
 //      if (this.parentView)
 //        delete this.parentView.children[this.cid];
 //
@@ -517,6 +512,7 @@ define('views/BasicView', [
 
       if (this._draggable)
         Physics.removeDraggable(this.getContainerBodyId());
+
       if (this.mason)
         this.mason.destroy();
 
@@ -524,11 +520,43 @@ define('views/BasicView', [
         this.el.$remove();
 
       this.$el = this.el = this._hammer = this._hammered = null;
+      this.removeFromWorld();
+
+      // remove internal references to any DOM elements
+      for (var p in this) {
+        var val = this[p];
+        if (val && (val instanceof Node ||
+                    val instanceof NodeList ||
+                    val instanceof Backbone.Model ||
+                    val instanceof Backbone.Collection ||
+                    val instanceof Backbone.View)) {
+          p = p;
+          delete this[p];
+        }
+      }
+
+      // if (this.resource) {
+      //   U.tryToDestroy(this.resource);
+      // }
+
+      // if (this.collection) {
+      //   U.tryToDestroy(this.collection);
+      // }
 
 //      if (this._bodies.length)
 //        Physics.removeBodies.apply(Physics, this._bodies);
 //      if (this._draggables.length)
 //        Physics.removeDraggables.apply(Physics, this._draggables);
+    },
+
+    isDestroyed: function() {
+      return this._destroyed;
+    },
+
+    keepAlive: function(r) {
+      this.listenTo(Events, 'destroy:' + r.cid, function() {
+        Events.trigger('preventDestroy:' + r.cid);
+      });
     },
 
     _onModelChanged: function() {
@@ -1514,7 +1542,13 @@ define('views/BasicView', [
     },
 
     removeFromWorld: function() {
-      Physics.there.removeBody(this.getBodyId());
+      var bodies = [this.getBodyId(), this.getContainerBodyId()];
+      if (this.scrollbar)
+        bodies.push(this.getScrollbarId());
+
+      Physics.there.removeBodies.apply(Physics.there, bodies);
+      Physics.here.removeBodies.apply(Physics.here, bodies);
+
       this._addedToWorld = false;
     },
 
