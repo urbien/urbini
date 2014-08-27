@@ -1,4 +1,101 @@
 (function() {
+  // From jQuery.browser (deprecated in 1.3, removed in 1.9.1)
+  // Use of jQuery.browser is frowned upon.
+  // More details: http://docs.jquery.com/Utilities/jQuery.browser
+  var browser = (function detectBrowser() {
+    var browser = {},
+        rwebkit = /(webkit)[ \/]([\w.]+)/,
+        ropera = /(opera)(?:.*version)?[ \/]([\w.]+)/,
+        rmsie = /(msie) ([\w.]+)/,
+        rmozilla = /(mozilla)(?:.*? rv:([\w.]+))?/,
+        userAgent = navigator.userAgent;
+
+    function uaMatch( ua ) {
+      ua = ua.toLowerCase();
+
+      var match = rwebkit.exec( ua ) ||
+                  ropera.exec( ua )  ||
+                  rmsie.exec( ua )   ||
+                  ua.indexOf("compatible") < 0 && rmozilla.exec( ua ) ||
+                  [];
+
+      return { browser: match[1] || "", version: match[2] || "0" };
+    };
+
+    var browserMatch = uaMatch( userAgent );
+    if ( browserMatch.browser ) {
+      browser[ browserMatch.browser ] = true;
+      browser.version = browserMatch.version;
+    }
+
+    browser.opera = window.opera && Object.prototype.toString.call(window.opera) === '[object Opera]';
+    browser.chrome = browser.webkit && !!window.chrome;
+    browser.safari = browser.webkit && !window.chrome;
+    if (browser.safari) {
+      // Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.78.2 (KHTML, like Gecko) Version/7.0.6 Safari/537.78.2
+      browser.version = userAgent.match(/Version\/(\d+\.\d+)/)[1];
+      if (parseFloat(browser.version) < 5.2) {
+        browser.supported = false;
+        return browser;
+      }
+    }
+
+    browser.ios = userAgent.match(/(iPad|iPhone|iPod)/i);
+    var mobile = browser.ios || userAgent.match(/(Android|webOS|BlackBerry|IEMobile|Opera Mini|Opera Mobi)/);
+    if (mobile) {
+      browser.mobile = true;
+      browser[mobile[1].toLowerCase()] = true;
+    }
+
+    browser.ios = !!browser.ios;
+    browser.touch = 'ontouchstart' in window;
+    browser.firefox = browser.mozilla;
+    browser.name = browser.chrome ? 'chrome' : browser.firefox ? 'firefox' : browser.safari ? 'safari' : 'unknown';
+    browser.prefix = browser.webkit ? 'webkit' :
+                      browser.mozilla ? 'moz' :
+                        browser.opera ? 'o' :
+                          browser.ms ? 'ms' : '';
+
+    browser.supported = browser.chrome || browser.mozilla || browser.ios || (browser.msie && parseInt(browser.version) >= 10);
+    console.log("1 " + browser.supported);
+    return browser;
+  })();
+
+  if (!browser.supported) {
+    document.body.innerHTML = document.querySelector('.globalLogo').outerHTML;
+    setTimeout(function() {
+      alert("Alas, we don't yet support the version of the browser you're using. Please try Chrome, Firefox, Safari (5.2+) or IE10+.");
+    }, 1);
+    
+    return;
+  }
+
+  Lablz.browser = browser;
+
+  if (!Function.prototype.bind) {
+    Function.prototype.bind = function (oThis) {
+      if (typeof this !== "function") {
+        // closest thing possible to the ECMAScript 5
+        // internal IsCallable function
+        throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
+      }
+
+      var aArgs = Array.prototype.slice.call(arguments, 1),
+          fToBind = this,
+          fNOP = function () {},
+          fBound = function () {
+            return fToBind.apply(this instanceof fNOP && oThis
+                   ? this
+                   : oThis,
+                   aArgs.concat(Array.prototype.slice.call(arguments)));
+          };
+
+      fNOP.prototype = this.prototype;
+      fBound.prototype = new fNOP();
+
+      return fBound;
+    };
+  }
 
   // Baseline setup
   // --------------
@@ -2119,6 +2216,7 @@
 
 (function(_) {
   /* TODO remove after jQuery removal migration -- START */
+  console.log("0.05")
   window.$ = function(selector, context) {
     if (selector == document || selector == window || selector instanceof HTMLElement || selector instanceof HTMLCollection || selector instanceof Node || selector instanceof NodeList)
       return selector;

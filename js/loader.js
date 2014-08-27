@@ -1,6 +1,7 @@
 (function(window, doc, undefined) {
 var __started = new Date(),
-    ArrayProto = Array.prototype;
+    ArrayProto = Array.prototype,
+    browser = Lablz.browser;
 
 _.extend($, {
   RESOLVED_PROMISE: $.Deferred().resolve().promise(),
@@ -49,68 +50,6 @@ define('globals', function() {
   /**
    * @param constantTimeout: if specified, this will always be the timeout for this function, otherwise the first param of the returned async function will be the timeout
    */
-
-  // From jQuery.browser (deprecated in 1.3, removed in 1.9.1)
-  // Use of jQuery.browser is frowned upon.
-  // More details: http://docs.jquery.com/Utilities/jQuery.browser
-  var browser = (function detectBrowser() {
-    var browser = {},
-        rwebkit = /(webkit)[ \/]([\w.]+)/,
-        ropera = /(opera)(?:.*version)?[ \/]([\w.]+)/,
-        rmsie = /(msie) ([\w.]+)/,
-        rmozilla = /(mozilla)(?:.*? rv:([\w.]+))?/,
-        userAgent = navigator.userAgent;
-
-    function uaMatch( ua ) {
-      ua = ua.toLowerCase();
-
-      var match = rwebkit.exec( ua ) ||
-                  ropera.exec( ua )  ||
-                  rmsie.exec( ua )   ||
-                  ua.indexOf("compatible") < 0 && rmozilla.exec( ua ) ||
-                  [];
-
-      return { browser: match[1] || "", version: match[2] || "0" };
-    };
-
-    var browserMatch = uaMatch( userAgent );
-    if ( browserMatch.browser ) {
-      browser[ browserMatch.browser ] = true;
-      browser.version = browserMatch.version;
-    }
-
-    browser.opera = window.opera && Object.prototype.toString.call(window.opera) === '[object Opera]';
-    browser.chrome = browser.webkit && !!window.chrome;
-    browser.safari = browser.webkit && !window.chrome;
-    if (browser.safari) {
-      // Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_4) AppleWebKit/537.78.2 (KHTML, like Gecko) Version/7.0.6 Safari/537.78.2
-      browser.version = userAgent.match(/Version\/(\d+\.\d+)/)[1];
-    }
-
-    browser.ios = userAgent.match(/(iPad|iPhone|iPod)/i);
-    var mobile = browser.ios || userAgent.match(/(Android|webOS|BlackBerry|IEMobile|Opera Mini|Opera Mobi)/);
-    if (mobile) {
-      browser.mobile = true;
-      browser[mobile[1].toLowerCase()] = true;
-    }
-
-    browser.ios = !!browser.ios;
-    browser.touch = 'ontouchstart' in window;
-    browser.firefox = browser.mozilla;
-    browser.name = browser.chrome ? 'chrome' : browser.firefox ? 'firefox' : browser.safari ? 'safari' : 'unknown';
-    browser.prefix = browser.webkit ? 'webkit' :
-                      browser.mozilla ? 'moz' :
-                        browser.opera ? 'o' :
-                          browser.ms ? 'ms' : '';
-
-    browser.supported = browser.chrome || browser.mozilla || (browser.safari && parseFloat(browser.version) > 5.2) || browser.ios || (browser.msie && parseInt(browser.version) >= 10);
-    return browser;
-  })();
-
-  if (!browser.supported) {
-    alert("Alas, we don't yet support the version of the browser you're using. Please try Chrome, Firefox, Safari or IE10+.");
-    return;
-  }
 
   function hasLocalStorage() {
     var supported = false;

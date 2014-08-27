@@ -142,8 +142,8 @@ var cleanInterface = false;
      * 1) Using the cycle/decycle functions from:
      *    https://github.com/douglascrockford/JSON-js/blob/master/cycle.js
      * 2) Serializing/deserializing objects to/from string that don't work with
-     *    JSON.stringify and JSON.parse by using object specific logic (eg use 
-     *    the FileReader API to convert a Blob or File object to a data URL.   
+     *    JSON.stringify and JSON.parse by using object specific logic (eg use
+     *    the FileReader API to convert a Blob or File object to a data URL.
      * 3) JSON.stringify and JSON.parse do the final conversion to/from string.
      */
     var Sca = (function(){
@@ -186,7 +186,7 @@ var cleanInterface = false;
                 function checkForCompletion() {
                     if (queuedObjects.length === 0) {
                         returnCallback(derezObj);
-                    }    
+                    }
                 }
 
                 /**
@@ -198,7 +198,7 @@ var cleanInterface = false;
                     var reader = new FileReader();
                     reader.onloadend = function(loadedEvent) {
                         var dataURL = loadedEvent.target.result;
-                        var blobtype = 'blob'; 
+                        var blobtype = 'blob';
                         if (blob instanceof File) {
                             //blobtype = 'file';
                         }
@@ -206,7 +206,7 @@ var cleanInterface = false;
                     };
                     reader.readAsDataURL(blob);
                 }
-                
+
                 /**
                  * Async handler to update a blob object to a data URL for encoding.
                  * @param {String} dataURL
@@ -298,17 +298,17 @@ var cleanInterface = false;
                         value = {
                             '$type': 'regex',
                             '$enc': value.toString()
-                        }; 
+                        };
                     }
                     return value;
                 }
                 var derezObj = derez(object, '$');
                 checkForCompletion();
             },
-                
+
             retrocycle: function retrocycle($) {
                 //From: https://github.com/douglascrockford/JSON-js/blob/master/cycle.js
-                // Contains additional logic to convert strings to the following object types 
+                // Contains additional logic to convert strings to the following object types
                 // so that they can properly be decoded:
                 //  *Boolean
                 //  *Date
@@ -336,7 +336,7 @@ var cleanInterface = false;
                 // produces an array containing a single element which is the array itself.
 
                 var px = /^\$(?:\[(?:\d+|\"(?:[^\\\"\u0000-\u001f]|\\([\\\"\/bfnrt]|u[0-9a-zA-Z]{4}))*\")\])*$/;
-                
+
                 function rez(value) {
                     // The rez function walks recursively through the object looking for $ref
                     // properties. When it finds one that has a value that is a path, then it
@@ -362,7 +362,7 @@ var cleanInterface = false;
                             if (value.$type !== undefined) {
                                 switch(value.$type) {
                                     case 'blob':
-                                    case 'file': 
+                                    case 'file':
                                         value = dataURLToBlob(value.$enc);
                                         break;
                                     case 'bool':
@@ -390,7 +390,7 @@ var cleanInterface = false;
                                                 value[name] = rez(item);
                                             }
                                         }
-                                    }   
+                                    }
                                 }
                             }
                         }
@@ -414,9 +414,9 @@ var cleanInterface = false;
                 function finishEncode(val) {
                     callback(JSON.stringify(val));
                 }
-                this.decycle(val, finishEncode);                        
+                this.decycle(val, finishEncode);
             },
-                    
+
             /**
              * Deserialize the specified string to an object
              * @param {String} val the serialized string
@@ -451,7 +451,7 @@ var cleanInterface = false;
             }
         };
     };
-    
+
     var types = {
         "number": getGenericEncoder("number"), // decoder will fail for NaN
         "boolean": getGenericEncoder(),
@@ -473,7 +473,7 @@ var cleanInterface = false;
             }
         }
     };
-  
+
     var Key = (function(){
         return {
             encode: function(key){
@@ -525,10 +525,10 @@ var cleanInterface = false;
         this.onblocked = this.onupgradeneeded = null;
     };
     IDBOpenRequest.prototype = IDBRequest;
-    
+
     idbModules.IDBRequest = IDBRequest;
     idbModules.IDBOpenRequest = IDBOpenRequest;
-    
+
 }(idbModules));
 
 /*jshint globalstrict: true*/
@@ -548,11 +548,11 @@ var cleanInterface = false;
         this.lowerOpen = lowerOpen;
         this.upperOpen = upperOpen;
     };
-    
+
     IDBKeyRange.only = function(value){
         return new IDBKeyRange(value, value, false, false);
     };
-    
+
     IDBKeyRange.lowerBound = function(value, open){
         return new IDBKeyRange(value, undefined, open, undefined);
     };
@@ -562,9 +562,9 @@ var cleanInterface = false;
     IDBKeyRange.bound = function(lower, upper, lowerOpen, upperOpen){
         return new IDBKeyRange(lower, upper, lowerOpen, upperOpen);
     };
-    
+
     idbModules.IDBKeyRange = IDBKeyRange;
-    
+
 }(idbModules));
 
 /*jshint globalstrict: true*/
@@ -766,17 +766,17 @@ var cleanInterface = false;
     function IDBIndex(indexName, idbObjectStore, optionalParams){
         this.indexName = this.name = indexName;
         this.__idbObjectStore = this.objectStore = this.source = idbObjectStore;
-        
+
         var indexList = idbObjectStore.__storeProps && idbObjectStore.__storeProps.indexList;
         indexList && (indexList = JSON.parse(indexList));
-        
+
         this.keyPath = ((indexList && indexList[indexName] && indexList[indexName].keyPath) || indexName);
         optionalParams = optionalParams || {};
         ['multiEntry','unique'].forEach(function(prop){
             this[prop] = optionalParams[prop] || !!indexList && !!indexList[indexName] && !!indexList[indexName].optionalParams && !!indexList[indexName].optionalParams[prop];
         }, this);
     }
-    
+
     IDBIndex.prototype.__createIndex = function(indexName, keyPath, optionalParameters){
 //      console.debug("createIndex", arguments);
       var me = this;
@@ -820,7 +820,7 @@ var cleanInterface = false;
                                     tx.executeSql("UPDATE " + idbModules.util.quote(me.__idbObjectStore.name) + " set " + columnName + " = ? where key = ?", [idbModules.Key.encode(indexKey), data.rows.item(i).key], function(tx, data){
                                         initIndexForRow(i + 1);
                                     }, error);
-                                } 
+                                }
                                 catch (e) {
                                     // Not a valid value to insert into index, so just continue
                                     initIndexForRow(i + 1);
@@ -843,19 +843,19 @@ var cleanInterface = false;
         }
       });
     };
-    
+
     IDBIndex.prototype.openCursor = function(range, direction){
         var cursorRequest = new idbModules.IDBRequest();
         var cursor = new idbModules.IDBCursor(range, direction, this.source, cursorRequest, this.indexName, "value");
         return cursorRequest;
     };
-    
+
     IDBIndex.prototype.openKeyCursor = function(range, direction){
         var cursorRequest = new idbModules.IDBRequest();
         var cursor = new idbModules.IDBCursor(range, direction, this.source, cursorRequest, this.indexName, "key");
         return cursorRequest;
     };
-    
+
     IDBIndex.prototype.__fetchIndexData = function(key, opType){
         var me = this;
         return me.__idbObjectStore.transaction.__addToTransactionQueue(function(tx, args, success, error){
@@ -871,11 +871,11 @@ var cleanInterface = false;
                 if (opType === "count") {
                     d = data.rows.length;
                 }
-                else 
+                else
                     if (data.rows.length === 0) {
                         d = undefined;
                     }
-                    else 
+                    else
                         if (opType === "key") {
                             d = idbModules.Key.decode(data.rows.item(0).key);
                         }
@@ -886,19 +886,19 @@ var cleanInterface = false;
             }, error);
         });
     };
-    
+
     IDBIndex.prototype.get = function(key){
         return this.__fetchIndexData(key, "value");
     };
-    
+
     IDBIndex.prototype.getKey = function(key){
         return this.__fetchIndexData(key, "key");
     };
-    
+
     IDBIndex.prototype.count = function(key){
         return this.__fetchIndexData(key, "count");
     };
-    
+
     idbModules.IDBIndex = IDBIndex;
 }(idbModules));
 
@@ -919,7 +919,7 @@ var cleanInterface = false;
         this.__setReadyState("createObjectStore", typeof ready === "undefined" ? true : ready);
         this.indexNames = new idbModules.util.StringList();
     };
-    
+
     /**
      * Need this flag as createObjectStore is synchronous. So, we simply return when create ObjectStore is called
      * but do the processing in the background. All other operations should wait till ready is set
@@ -928,7 +928,7 @@ var cleanInterface = false;
     IDBObjectStore.prototype.__setReadyState = function(key, val){
         this.__ready[key] = val;
     };
-    
+
     /**
      * Called by all operations on the object store, waits till the store is ready, and then performs the operation
      * @param {Object} callback
@@ -945,7 +945,7 @@ var cleanInterface = false;
                 }
             }
         }
-        
+
         if (ready) {
             callback();
         }
@@ -957,7 +957,7 @@ var cleanInterface = false;
             }, 100);
         }
     };
-    
+
     /**
      * Gets (and optionally caches) the properties like keyPath, autoincrement, etc for this objectStore
      * @param {Object} callback
@@ -990,7 +990,7 @@ var cleanInterface = false;
             }
         }, waitOnProperty);
     };
-    
+
     /**
      * From the store properties and object, extracts the value for the key in hte object Store
      * If the table has auto increment, get the next in sequence
@@ -1011,7 +1011,7 @@ var cleanInterface = false;
                 idbModules.util.throwDOMException(0, "Data Error - Could not get the auto increment value for key", error);
             });
         }
-        
+
         var me = this;
         me.__getStoreProps(tx, function(props){
             if (!props) {
@@ -1035,7 +1035,7 @@ var cleanInterface = false;
                         else {
                             callback(primaryKey);
                         }
-                    } 
+                    }
                     catch (e) {
                         idbModules.util.throwDOMException(0, "Data Error - Could not eval key from keyPath", e);
                     }
@@ -1060,7 +1060,7 @@ var cleanInterface = false;
             }
         });
     };
-    
+
     IDBObjectStore.prototype.__insertData = function(tx, encoded, value, primaryKey, success, error){
         var paramMap = {};
         if (typeof primaryKey !== "undefined") {
@@ -1070,7 +1070,7 @@ var cleanInterface = false;
         for (var key in indexes) {
             try {
                 paramMap[indexes[key].columnName] = idbModules.Key.encode(value[indexes[key].keyPath]);
-            } 
+            }
             catch (e) {
                 error(e);
             }
@@ -1087,9 +1087,9 @@ var cleanInterface = false;
         sqlStart.push("value )");
         sqlEnd.push("?)");
         sqlValues.push(encoded);
-        
+
         var sql = sqlStart.join(" ") + sqlEnd.join(" ");
-        
+
         idbModules.DEBUG && console.log("SQL for adding", sql, sqlValues);
         tx.executeSql(sql, sqlValues, function(tx, data){
             success(primaryKey);
@@ -1097,7 +1097,7 @@ var cleanInterface = false;
             error(err);
         });
     };
-    
+
     IDBObjectStore.prototype.add = function(value, key){
         var me = this,
             request = me.transaction.__createRequest(function(){}); //Stub request
@@ -1110,7 +1110,7 @@ var cleanInterface = false;
         });
         return request;
     };
-    
+
     IDBObjectStore.prototype.put = function(value, key){
         var me = this,
             request = me.transaction.__createRequest(function(){}); //Stub request
@@ -1130,7 +1130,7 @@ var cleanInterface = false;
         });
         return request;
     };
-    
+
     IDBObjectStore.prototype.get = function(key){
         // TODO Key should also be a key range
         var me = this;
@@ -1145,9 +1145,9 @@ var cleanInterface = false;
                         if (0 === data.rows.length) {
                             return success();
                         }
-                        
+
                         success(idbModules.Sca.decode(data.rows.item(0).value));
-                    } 
+                    }
                     catch (e) {
                         idbModules.DEBUG && console.log(e);
                         // If no result is returned, or error occurs when parsing JSON
@@ -1159,7 +1159,7 @@ var cleanInterface = false;
             });
         });
     };
-    
+
     IDBObjectStore.prototype["delete"] = function(key){
         // TODO key should also support key ranges
         var me = this;
@@ -1176,7 +1176,7 @@ var cleanInterface = false;
             });
         });
     };
-    
+
     IDBObjectStore.prototype.clear = function(){
         var me = this;
         return me.transaction.__addToTransactionQueue(function(tx, args, success, error){
@@ -1190,7 +1190,7 @@ var cleanInterface = false;
             });
         });
     };
-    
+
     IDBObjectStore.prototype.count = function(key){
         var me = this;
         return me.transaction.__addToTransactionQueue(function(tx, args, success, error){
@@ -1206,23 +1206,23 @@ var cleanInterface = false;
             });
         });
     };
-    
+
     IDBObjectStore.prototype.openCursor = function(range, direction){
         var cursorRequest = new idbModules.IDBRequest();
         var cursor = new idbModules.IDBCursor(range, direction, this, cursorRequest, "key", "value");
         return cursorRequest;
     };
-    
+
     IDBObjectStore.prototype.openKeyCursor = function(range, direction){
       var cursorRequest = new idbModules.IDBRequest();
       var cursor = new idbModules.IDBCursor(range, direction, this, cursorRequest, "key", "key");
       return cursorRequest;
     };
-    
+
     IDBObjectStore.prototype.index = function(indexName){
         return new idbModules.IDBIndex(indexName, this);
     };
-    
+
     IDBObjectStore.prototype.createIndex = function(indexName, keyPath, optionalParameters){
         var me = this;
         optionalParameters = optionalParameters || {};
@@ -1234,13 +1234,13 @@ var cleanInterface = false;
         me.indexNames.push(indexName);
         return result;
     };
-    
+
     IDBObjectStore.prototype.deleteIndex = function(indexName){
         var result = new idbModules.IDBIndex(indexName, this, false);
         result.__deleteIndex(indexName);
         return result;
     };
-    
+
     idbModules.IDBObjectStore = IDBObjectStore;
 }(idbModules));
 
@@ -1258,13 +1258,13 @@ var cleanInterface = false;
     var READ = 0;
     var READ_WRITE = 1;
     var VERSION_TRANSACTION = 2;
-    
+
     var IDBTransaction = function(storeNames, mode, db){
         if (typeof mode === "number") {
             this.mode = mode;
             (mode !== 2) && idbModules.DEBUG && console.log("Mode should be a string, but was specified as ", mode);
         }
-        else 
+        else
             if (typeof mode === "string") {
                 switch (mode) {
                     case "readwrite":
@@ -1278,7 +1278,7 @@ var cleanInterface = false;
                         break;
                 }
             }
-        
+
         this.storeNames = typeof storeNames === "string" ? [storeNames] : storeNames;
         for (var i = 0; i < this.storeNames.length; i++) {
             if (!db.objectStoreNames.contains(this.storeNames[i])) {
@@ -1294,7 +1294,7 @@ var cleanInterface = false;
         this.onabort = this.onerror = this.oncomplete = null;
         var me = this;
     };
-    
+
     IDBTransaction.prototype.__executeRequests = function(){
         if (this.__running && this.mode !== VERSION_TRANSACTION) {
             idbModules.DEBUG && console.log("Looks like the request set is already running", this.mode);
@@ -1322,7 +1322,7 @@ var cleanInterface = false;
                     i++;
                     executeRequest();
                 }
-                
+
                 function error(errorVal){
                     q.req.readyState = "done";
                     q.req.error = "DOMError";
@@ -1342,7 +1342,7 @@ var cleanInterface = false;
                 }
                 try {
                     executeRequest();
-                } 
+                }
                 catch (e) {
                     idbModules.DEBUG && console.log("An exception occured in transaction", arguments);
                     typeof me.onerror === "function" && me.onerror();
@@ -1356,23 +1356,23 @@ var cleanInterface = false;
             });
         }, 1);
     };
-    
+
     IDBTransaction.prototype.__addToTransactionQueue = function(callback, args){
         if (!this.__active && this.mode !== VERSION_TRANSACTION) {
             idbModules.util.throwDOMException(0, "A request was placed against a transaction which is currently not active, or which is finished.", this.__mode);
         }
         var request = this.__createRequest();
-        this.__pushToQueue(request, callback, args);       
+        this.__pushToQueue(request, callback, args);
         return request;
     };
-    
+
     IDBTransaction.prototype.__createRequest = function(){
         var request = new idbModules.IDBRequest();
         request.source = this.db;
         request.transaction = this;
         return request;
     };
-    
+
     IDBTransaction.prototype.__pushToQueue = function(request, callback, args) {
         this.__requests.push({
             "op": callback,
@@ -1382,20 +1382,20 @@ var cleanInterface = false;
         // Start the queue for executing the requests
         this.__executeRequests();
     };
-    
+
     IDBTransaction.prototype.objectStore = function(objectStoreName){
         return new idbModules.IDBObjectStore(objectStoreName, this);
     };
-    
+
     IDBTransaction.prototype.abort = function(){
         !this.__active && idbModules.util.throwDOMException(0, "A request was placed against a transaction which is currently not active, or which is finished", this.__active);
-        
+
     };
-    
+
     IDBTransaction.prototype.READ_ONLY = 0;
     IDBTransaction.prototype.READ_WRITE = 1;
     IDBTransaction.prototype.VERSION_CHANGE = 2;
-    
+
     idbModules.IDBTransaction = IDBTransaction;
 }(idbModules));
 
@@ -1419,14 +1419,14 @@ var cleanInterface = false;
         this.name = name;
         this.onabort = this.onerror = this.onversionchange = null;
     };
-    
+
     IDBDatabase.prototype.createObjectStore = function(storeName, createOptions){
 //      console.debug("createObjectStore", arguments);
         var me = this;
         createOptions = createOptions || {};
         createOptions.keyPath = createOptions.keyPath || null;
         var result = new idbModules.IDBObjectStore(storeName, me.__versionTransaction, false);
-        
+
         var transaction = me.__versionTransaction;
       transaction.tq.queueTask({
         name: "create object store " + storeName,
@@ -1439,7 +1439,7 @@ var cleanInterface = false;
                   defer.reject();
                   idbModules.util.throwDOMException(0, "Could not create new object store", arguments);
               }
-              
+
               if (!me.__versionTransaction) {
                   defer.reject();
                   idbModules.util.throwDOMException(0, "Invalid State error", me.transaction);
@@ -1458,13 +1458,13 @@ var cleanInterface = false;
           });
         }
       });
-        
+
         // The IndexedDB Specification needs us to return an Object Store immediatly, but WebSQL does not create and return the store immediatly
         // Hence, this can technically be unusable, and we hack around it, by setting the ready value to false
         me.objectStoreNames.push(storeName);
         return result;
     };
-    
+
     IDBDatabase.prototype.deleteObjectStore = function(storeName){
       debugger;
       var me = this;
@@ -1481,7 +1481,7 @@ var cleanInterface = false;
           };
           !me.objectStoreNames.contains(storeName) && error("Object Store does not exist");
           me.objectStoreNames.splice(me.objectStoreNames.indexOf(storeName), 1);
-          
+
           var transaction = me.__versionTransaction;
           transaction.__addToTransactionQueue(function(tx, args, success, failure){
               if (!me.__versionTransaction) {
@@ -1500,16 +1500,16 @@ var cleanInterface = false;
         }
       });
     };
-    
+
     IDBDatabase.prototype.close = function(){
         // Don't do anything coz the database automatically closes
     };
-    
+
     IDBDatabase.prototype.transaction = function(storeNames, mode){
         var transaction = new idbModules.IDBTransaction(storeNames, mode || 1, this);
         return transaction;
     };
-    
+
     idbModules.IDBDatabase = IDBDatabase;
 }(idbModules));
 
@@ -1518,14 +1518,16 @@ var cleanInterface = false;
 (function(idbModules){
     function fireInitEvent() {
       console.log("IndexedDB Shim INITIALIZED!");
-      window.dispatchEvent(new Event("IndexedDBShimInit"));
+      var e = document.createEvent("Event");
+      e.initEvent("IndexedDBShimInit", true, true);
+      window.dispatchEvent(e);
     };
-    
+
     var DEFAULT_DB_SIZE = 4 * 1024 * 1024;
     if (!window.openDatabase) {
         return;
     }
-    
+
     // The sysDB to keep track of version numbers for databases
     var sysdb = window.openDatabase("__sysdb__", 1, "System Database", DEFAULT_DB_SIZE);
     sysdb.transaction(function(tx){
@@ -1544,7 +1546,7 @@ var cleanInterface = false;
         // sysdb Transaction failed
        idbModules.DEBUG && console.log("Error in sysdb transaction - when selecting from dbVersions", arguments);
     });
-    
+
     var shimIndexedDB = {
         /**
          * The IndexedDB Method to create a new database and return the DB
@@ -1554,7 +1556,7 @@ var cleanInterface = false;
         open: function(name, version){
             var req = new idbModules.IDBOpenRequest();
             var calledDbCreateError = false;
-            
+
             function dbCreateError(){
                 if (calledDbCreateError) {
                     return;
@@ -1565,7 +1567,7 @@ var cleanInterface = false;
                 idbModules.util.callback("onerror", req, e);
                 calledDbCreateError = true;
             }
-            
+
             function openDB(oldVersion){
                 var db = window.openDatabase(name, 1, name, DEFAULT_DB_SIZE);
                 req.readyState = "done";
@@ -1575,14 +1577,14 @@ var cleanInterface = false;
                 if (version <= 0 || oldVersion > version) {
                     idbModules.util.throwDOMException(0, "An attempt was made to open a database using a lower version than the existing version.", version);
                 }
-                
+
                 db.transaction(function(tx){
                     tx.executeSql("CREATE TABLE IF NOT EXISTS __sys__ (name VARCHAR(255), keyPath VARCHAR(255), autoInc BOOLEAN, indexList BLOB)", [], function(){
                         tx.executeSql("SELECT * FROM __sys__", [], function(tx, data){
                             var e = idbModules.Event("success");
                             req.source = req.result = new idbModules.IDBDatabase(db, name, version, data);
                             if (oldVersion < version) {
-                                // DB Upgrade in progress 
+                                // DB Upgrade in progress
                                 sysdb.transaction(function(systx){
                                     systx.executeSql("UPDATE dbVersions set version = ? where name = ?", [version, name], function(){
                                         var e = idbModules.Event("upgradeneeded");
@@ -1612,7 +1614,7 @@ var cleanInterface = false;
                     }, dbCreateError);
                 }, dbCreateError);
             }
-            
+
             sysdb.transaction(function(tx){
                 tx.executeSql("SELECT * FROM dbVersions where name = ?", [name], function(tx, data){
                     if (data.rows.length === 0) {
@@ -1625,10 +1627,10 @@ var cleanInterface = false;
                     }
                 }, dbCreateError);
             }, dbCreateError);
-            
+
             return req;
         },
-        
+
         "deleteDatabase": function(name){
             var req = new idbModules.IDBOpenRequest();
             var calledDBError = false;
@@ -1700,7 +1702,7 @@ var cleanInterface = false;
             return idbModules.Key.encode(key1) > idbModules.Key.encode(key2) ? 1 : key1 === key2 ? 0 : -1;
         }
     };
-    
+
     idbModules.shimIndexedDB = shimIndexedDB;
 }(idbModules));
 
@@ -1731,14 +1733,14 @@ var cleanInterface = false;
             };
         }
     }
-    
+
     /*
     prevent error in Firefox
     */
     if(!('indexedDB' in window)) {
         window.indexedDB = window.indexedDB || window.webkitIndexedDB || window.mozIndexedDB || window.oIndexedDB || window.msIndexedDB;
     }
-    
+
     /*
     detect browsers with known IndexedDb issues (e.g. Android pre-4.4)
     */
@@ -1772,6 +1774,6 @@ var cleanInterface = false;
           } catch (e) {}
         }
     }
-    
+
 }(window, idbModules));
 })

@@ -1555,7 +1555,8 @@ define('models/Resource', [
           model = this.vocModel,
           params = urlInfo ? urlInfo.getParams() : {},
           editProps = params['$editCols'] && params['$editCols'].splitAndTrim(','),
-          mkResourceCols = isMake && model['mkResourceCols'];
+          mkResourceCols = isMake && model['mkResourceCols'],
+          propsForEdit;
 
       if (!editProps) {
         propsForEdit = model.propertiesForEdit;
