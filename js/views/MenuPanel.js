@@ -57,15 +57,11 @@ define('views/MenuPanel', [
         self.show();
       });
 
-      document.$on('tap', this.hide);
-      this.on('destroyed', function() {
-        document.$off('tap', self.hide);
-      });
+      this.$on(document, 'tap', this.hide);
     },
 
     pageEvents: {
       'page_beforehide': 'hide',
-      'page_hide': 'destroy',
       'tap': 'hide'
     },
 

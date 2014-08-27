@@ -32,9 +32,19 @@ define('views/ControlPanel', [
   };
 
   function getIndicatorsCount(res) {
-    var count = typeof res == 'number' ? res : res.get('indicatorsCount');
-    return '<div class="cnt">Indicators<span class="cntBadge">' + count + '</span></div>';
-  }
+    if (typeof res == 'number')
+      return res;
+
+    var il = res.getInlineList('indicators');
+    if (il)
+      return il.length;
+
+    return res.get('indicatorsCount');
+  };
+
+  function getIndicatorsCountBlock(res) {
+    return '<div class="cnt">INDICATORS<span class="cntBadge">' + getIndicatorsCount(res) + '</span></div>';
+  };
 
   var SLIDER_CL = 'slider';
   var SLIDER_ACTIVE_CL = 'slider-active';
@@ -779,13 +789,13 @@ define('views/ControlPanel', [
         isCancelable = canceledProp && U.isPropEditable(list.models[0], canceledProp);
       }
 
-      var indicatorsCount = this.resource.get('indicatorsCount');
+      var indicatorsCount = getIndicatorsCount(this.resource);
       if (!list.length) {
         if ((isTrade && !this.resource.inlineLists['orders'].length)  ||  (isRule  && !this.resource.inlineLists['tradleRules'].length)) {
           var v = propDisplayName;
           if (isRule) {
             if  (indicatorsCount) {
-              v += getIndicatorsCount(indicatorsCount);
+              v += getIndicatorsCountBlock(indicatorsCount);
             }
           }
           U.addToFrag(frag, this.propGroupsDividerTemplate({
@@ -841,7 +851,7 @@ define('views/ControlPanel', [
         else {
           var v = propDisplayName;
           if  (isRule  &&  indicatorsCount) {
-            v += getIndicatorsCount(indicatorsCount);
+            v += getIndicatorsCountBlock(indicatorsCount);
           }
           U.addToFrag(frag, this.propGroupsDividerTemplate({
             value: v,
@@ -874,8 +884,11 @@ define('views/ControlPanel', [
 
       var hasImages;
       for (var i = 0, l = resources.length; i < l; i++) {
-        var iRes = resources[i],
-            params = {
+        var iRes = resources[i];
+        if (!iRes.getUri())
+          continue;
+
+        var params = {
               viewId: this.cid,
               comment: iRes.comment,
               _problematic: iRes.get('_error'),

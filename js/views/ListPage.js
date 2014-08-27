@@ -460,7 +460,7 @@ define('views/ListPage', [
 
       this.filter = this.$('.filter')[0];
       if (this.filter) {
-        this.filter.$on('keydown', function(e) {
+        this.$on(this.filter, 'keydown', function(e) {
           self.filter.$trigger('change', {
             view: self.filter,
             bubbles: false,

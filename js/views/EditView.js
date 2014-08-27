@@ -186,21 +186,6 @@ define('views/EditView', [
       'change input[type="date"]'         :'onSelected'
     },
 
-    myEvents: {
-      '.editView destroyed': '_onEditViewDestroyed'
-    },
-
-    // unbind
-    _onEditViewDestroyed: function() {
-      var ins = this.inputs;
-      if (ins) {
-        var i = ins.length;
-        while (i--) {
-          ins[i].$off();
-        }
-      }
-    },
-
     onRangeChange: function(input) {
       var text = input.nextElementSibling,
           val;
@@ -1239,6 +1224,9 @@ define('views/EditView', [
     },
 
     setValues: function(key, val, options) {
+      if (this.isDestroyed())
+        return;
+
       var atts;
       if (_.isObject(key)) {
         atts = key;
@@ -1669,7 +1657,7 @@ define('views/EditView', [
           if (input.type != 'range')
             setValues = _.debounce(setValues, 200);
 
-          input.$on('input', function() {
+          self.$on(input, 'input', function() {
             if (input.$data('codemirror'))
               return;
 
@@ -1677,7 +1665,7 @@ define('views/EditView', [
             setValues.apply(this, arguments);
           });
 
-          input.$on('blur', setValues);
+          self.$on(input, 'blur', setValues);
         });
 //        $in.keyup(onFocusout);
       };

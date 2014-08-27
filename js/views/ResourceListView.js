@@ -813,7 +813,7 @@ define('views/ResourceListView', [
     * @return a promise
     */
     _addBricks: function(from, to, force) {
-      if (this._resetting)
+      if (this._resetting || this.isDestroyed())
         return;
 
       if (!this._currentAddBatch)
@@ -906,7 +906,7 @@ define('views/ResourceListView', [
     },
 
     _doAddBricks: function(from, to) {
-      if (this._resetting) {
+      if (this._resetting || this.isDestroyed()) {
         console.log("1. LIST VIEW - GOT BRICKS BUT NOT ADDING DUE TO ASYNC RESET");
         return;
       }
