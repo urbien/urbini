@@ -48,18 +48,6 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
 //      ,
 //      HAMMER_EVENTS = 'touch release hold tap doubletap dragstart drag dragend dragleft dragright dragup dragdown swipe swipeleft swiperight swipeup swipedown transformstart transform transformend rotate pinch pinchin pinchout'.split(' ');
 
-  if (G.browser.mobile) {
-    document.$on('focus input', function() {
-      inputIsFocused = true;
-      fireResizeEvent();
-    }, true);
-
-    document.$on('blur input', function() {
-      inputIsFocused = false;
-      fireResizeEvent();
-    }, true);
-  }
-
   window.addEventListener('resize', function(e) {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(fireResizeEvent, 100);
@@ -1530,6 +1518,18 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
     hideStyle: HIDE_STYLE,
     showStyle: SHOW_STYLE
   };
+
+  if (G.browser.mobile) {
+    document.$on('focusin', 'input', function() {
+      inputIsFocused = true;
+      fireResizeEvent();
+    }, true);
+
+    document.$on('focusout', 'input', function() {
+      inputIsFocused = false;
+      fireResizeEvent();
+    }, true);
+  }
 
   return (Lablz.DOM = DOM);
 });
