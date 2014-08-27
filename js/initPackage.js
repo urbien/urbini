@@ -1,3 +1,4 @@
+
 (function() {
   // From jQuery.browser (deprecated in 1.3, removed in 1.9.1)
   // Use of jQuery.browser is frowned upon.
@@ -57,7 +58,6 @@
                           browser.ms ? 'ms' : '';
 
     browser.supported = browser.chrome || browser.mozilla || browser.ios || (browser.msie && parseInt(browser.version) >= 10);
-    console.log("1 " + browser.supported);
     return browser;
   })();
 
@@ -66,7 +66,7 @@
     setTimeout(function() {
       alert("Alas, we don't yet support the version of the browser you're using. Please try Chrome, Firefox, Safari (5.2+) or IE10+.");
     }, 1);
-    
+
     return;
   }
 
@@ -2216,7 +2216,6 @@
 
 (function(_) {
   /* TODO remove after jQuery removal migration -- START */
-  console.log("0.05")
   window.$ = function(selector, context) {
     if (selector == document || selector == window || selector instanceof HTMLElement || selector instanceof HTMLCollection || selector instanceof Node || selector instanceof NodeList)
       return selector;
