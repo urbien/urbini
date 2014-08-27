@@ -1376,12 +1376,15 @@ define('router', [
         this.changePage(view);
 //        Events.trigger('navigateToResource:' + res.cid, res);
 //        G.whenNotRendering(function() {
+
+        if (!res.isNew())
           res.fetch({forceFetch: forceFetch});
 //        });
 
 //        if (wasTemp && !isTemp)
 //          this.navigate(U.makeMobileUrl(action, newUri), {trigger: false, replace: true});
 
+        this.checkClone(model);
         return this;
       }
 
@@ -1395,10 +1398,15 @@ define('router', [
       });
 
       this.changePage(view);
+      this.checkClone(model);
 
       // see if we want to clone
-      var params = hashInfo.params,
-          vocModel = model,
+      return this;
+    },
+
+    checkClone: function(vocModel) {
+      var urlInfo = U.getCurrentUrlInfo(),
+          params = urlInfo.params,
           name = params.$title,
           clone = params.$clone;
 
@@ -1438,8 +1446,6 @@ define('router', [
           Events.trigger('navigate', U.replaceParam(window.location.href, '$clone', null), {trigger: false, replace: true});
         }
       });
-
-      return this;
     },
 
 //    tour: function(path) {
