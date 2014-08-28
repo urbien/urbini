@@ -20,7 +20,7 @@ define('views/BasicPageView', [
       viewport = G.viewport,
       MainMenuPanel,
       ContextMenuPanel,
-      DESTOY_WHEN_INACTIVE_FOR = 3;
+      DESTROY_WHEN_INACTIVE_FOR = 3;
 
 //  ,
 //      mixins = [];
@@ -416,7 +416,7 @@ define('views/BasicPageView', [
         if (this.active)
           this.trigger('inactive');
         else {
-          if (this._inactiveFor > DESTOY_WHEN_INACTIVE_FOR) {
+          if (this._inactiveFor > DESTROY_WHEN_INACTIVE_FOR) {
             this.destroy();
           }
         }
@@ -675,17 +675,17 @@ define('views/BasicPageView', [
       var events = ['tap', 'drag'];
       function removeTooltips() {
         events.map(function(event) {
-          document.$off(event, removeTooltips, true);
+          self.$off(doc, event, removeTooltips, true);
         });
 
         self.removeTooltips();
       };
 
       events.map(function(event) {
-        removeTooltips._id = G.nextId();
-        document.$on(event, removeTooltips, true);
-        self.on('destroyed', document.$off.bind(document, removeTooltips));
+        self.$on(doc, event, removeTooltips, true);
       });
+
+      this.on('destroyed', removeTooltips);
     },
 
     _getTooltipBaseElement: function(tooltipEl) {

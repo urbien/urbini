@@ -166,7 +166,12 @@ define('views/ResourceImageView', [
           };
 
           _.each(G.media_events, function(e) {
-            self.video.$once(e, checkSize);
+            function checkOnce() {
+              self.$off(video, e, checkOnce);
+              checkSize();
+            }
+
+            self.$on(video, e, checkOnce);
           });
         }
         else {

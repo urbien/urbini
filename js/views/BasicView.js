@@ -118,8 +118,6 @@ define('views/BasicView', [
         this.modelType = this.vocModel.type;
       }
 
-      this.router = window.router || Backbone.history; //G.Router || Backbone.history;
-
       this._doRefresh = this.refresh;
       this.refresh = this._refresh;
 
@@ -471,13 +469,146 @@ define('views/BasicView', [
 //      return this._update.apply(this, arguments);
     },
 
+    $on: function(el, event, selector, listener, capture) {
+      var self = this;
+
+      if (~event.indexOf(' ')) {
+        event.split(' ').map(function(e) {
+          self.$on(el, e, selector, listener, capture);
+        });
+
+        return this;
+      }
+
+      if (typeof selector == 'function') {
+        capture = listener;
+        listener = selector;
+        selector = '';
+      }
+
+      if (!this._domEventHandlers)
+        this._domEventHandlers = {};
+
+      var id = el.$getUniqueId(),
+          cache = this._domEventHandlers[id],
+          eventHandlers;
+
+      if (!cache) {
+        cache = this._domEventHandlers[id] = {};
+        cache.el = el;
+        cache.events = {};
+      }
+
+      eventHandlers = cache.events[event];
+      if (!eventHandlers)
+        eventHandlers = cache.events[event] = {};
+
+      if (!eventHandlers[selector])
+        eventHandlers[selector] = [];
+
+      eventHandlers[selector].push({
+        fn: listener,
+        capture: capture
+      });
+
+      el.$on(event, selector, listener, capture);
+    },
+
+    // $once: function(el) {
+    //   this.$on.apply(this, arguments);
+    // },
+
+    $off: function(el, event, selector, listener, capture) {
+      if (!this._domEventHandlers)
+        return;
+
+      var self = this,
+          id = el.$getUniqueId(),
+          cache = this._domEventHandlers[id],
+          eventHandlers,
+          handlers;
+
+      if (!cache)
+        return;
+
+      if (~event.indexOf(' ')) {
+        event.split(' ').map(function(e) {
+          self.$on(el, e, selector, listener, capture);
+        });
+
+        return this;
+      }
+
+      eventHandlers = cache.events[event];
+      if (!eventHandlers)
+        return;
+
+      if (typeof selector == 'function') {
+        capture = listener;
+        listener = selector;
+        selector = '';
+      }
+
+      handlers = eventHandlers[selector];
+      if (!handlers)
+        return;
+
+      for (var i = 0; i < handlers.length; i++) {
+        var h = handlers[i];
+        if (h.fn == listener) {
+          el.$off(event, selector, listener, h.capture);
+          Array.removeFromTo(handlers, i, i + 1);
+          if (!handlers.length) {
+            delete eventHandlers[selector];
+            if (_.isEmpty(cache.events[event])) {
+              delete cache.events[event];
+              if (_.isEmpty(cache.events)) {
+                delete this._domEventHandlers[id];
+              }
+            }
+          }
+
+          break;
+        }
+      }
+    },
+
+    unbindChildEls: function() {
+      if (!this._domEventHandlers)
+        return;
+
+      for (var id in this._domEventHandlers) {
+        var cache = this._domEventHandlers[id],
+            el = cache.el,
+            events = cache.events,
+            selectors,
+            listeners;
+
+        for (var event in events) {
+          selectors = events[event];
+          for (var selector in selectors) {
+            listeners = selectors[selector];
+            var i = listeners.length,
+                listener;
+
+            while (i--) {
+              listener = listeners[i];
+              el.$off(event, selector, listener.fn, listener.capture);
+            }
+          }
+        }
+      }
+
+      delete this._domEventHandlers;
+    },
+
     destroy: function(keepEl) {
       if (this.isDestroyed())
         return;
 
       this._destroyed = true;
       this.trigger('destroyed', keepEl); // trigger before we stop listening
-            this.trigger('inactive');
+      this.trigger('inactive');
       for (var cid in this.children) {
         this.children[cid].destroy();
       }
@@ -516,10 +647,14 @@ define('views/BasicView', [
       if (this.mason)
         this.mason.destroy();
 
-      if (!keepEl && this.el)
-        this.el.$remove();
+      if (this.el) {
+        this.el.$off();
+        if (!keepEl && this.el)
+          this.el.$remove();
+      }
 
       this.$el = this.el = this._hammer = this._hammered = null;
+      this.unbindChildEls();
       this.removeFromWorld();
 
       // remove internal references to any DOM elements

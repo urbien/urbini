@@ -48,18 +48,6 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
 //      ,
 //      HAMMER_EVENTS = 'touch release hold tap doubletap dragstart drag dragend dragleft dragright dragup dragdown swipe swipeleft swiperight swipeup swipedown transformstart transform transformend rotate pinch pinchin pinchout'.split(' ');
 
-  if (G.browser.mobile) {
-    document.$on('focus input', function() {
-      inputIsFocused = true;
-      fireResizeEvent();
-    }, true);
-
-    document.$on('blur input', function() {
-      inputIsFocused = false;
-      fireResizeEvent();
-    }, true);
-  }
-
   window.addEventListener('resize', function(e) {
     clearTimeout(resizeTimeout);
     resizeTimeout = setTimeout(fireResizeEvent, 100);
@@ -277,6 +265,19 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
       $off: function(event, selector, listener, capture) {
         if (!this._$handlers)
           return this;
+
+        if (!arguments.length) {
+          for (var event in this._$handlers) {
+            var proxyInfo = this._$handlers[event],
+                proxy = proxyInfo && proxyInfo.proxy;
+
+            if (proxy)
+              G.removeEventListener(this, event, proxyInfo.proxy);
+          }
+
+          delete this._$handlers;
+          return;
+        }
 
         if (~event.indexOf(' ')) {
           var self = this;
@@ -1517,6 +1518,18 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
     hideStyle: HIDE_STYLE,
     showStyle: SHOW_STYLE
   };
+
+  if (G.browser.mobile) {
+    document.$on('focusin', 'input', function() {
+      inputIsFocused = true;
+      fireResizeEvent();
+    }, true);
+
+    document.$on('focusout', 'input', function() {
+      inputIsFocused = false;
+      fireResizeEvent();
+    }, true);
+  }
 
   return (Lablz.DOM = DOM);
 });

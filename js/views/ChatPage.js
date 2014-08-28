@@ -541,8 +541,8 @@ define('views/ChatPage', [
       this.$('canvas').$remove();
       var vid = this.el.getElementsByTagName('video')[0];
       if (vid) {
-        vid.$off('play', this._addCanvasForVideo); // just in case
-        vid.$on('play', this._addCanvasForVideo);
+        this.$off(vid, 'play', this._addCanvasForVideo); // just in case
+        this.$on(vid, 'play', this._addCanvasForVideo);
       }
     },
 
