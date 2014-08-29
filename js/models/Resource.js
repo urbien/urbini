@@ -420,13 +420,15 @@ define('models/Resource', [
         return;
 
       this._deleting = true;
-      var preventDelete = false;
-      this.listenTo(Events, 'preventDelete', function() {
-        preventDelete = true;
-      });
-
-      this.listenTo(Events, 'delete', this, options);
-      this.listenTo(Events, 'delete:' + this.getUri(), this, options);
+      var preventDelete = false,
+          prevent = function() {
+            preventDelete = true;
+          };
+          
+      this.listenTo(Events, 'preventDelete', prevent);
+      this.trigger(Events, 'delete', this, options);
+      this.trigger(Events, 'delete:' + this.getUri(), this, options);
+      this.stopListening(Events, 'preventDelete', prevent); 
       if (preventDelete) {
         delete this._deleting;
         return;
