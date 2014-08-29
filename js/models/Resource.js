@@ -426,8 +426,8 @@ define('models/Resource', [
           };
           
       this.listenTo(Events, 'preventDelete', prevent);
-      this.trigger(Events, 'delete', this, options);
-      this.trigger(Events, 'delete:' + this.getUri(), this, options);
+      Events.trigger('delete', this, options);
+      Events.trigger('delete:' + this.getUri(), this, options);
       this.stopListening(Events, 'preventDelete', prevent); 
       if (preventDelete) {
         delete this._deleting;
