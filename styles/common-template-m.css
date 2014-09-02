@@ -1472,12 +1472,12 @@ section[id^="view"] {
   content:"."
 }
 
-.subClasses {
+.bookmarks {
   background: rgba(40, 146, 198, 0.25);
   margin-bottom: 1rem;
 }
 
-.subClass {
+.bookmark {
   cursor: pointer;
   padding: 3px;
   display: inline-block;
@@ -1485,11 +1485,11 @@ section[id^="view"] {
   padding: 4px 10px;
 }
 
-label.subClass {
+label.bookmark {
   font-size: 1.5rem;
 }
 
-.subClass input {
+.bookmark input {
   display: none;
 }
 
@@ -1845,10 +1845,19 @@ li.invalid[data-role="fieldcontain"] {
 .historicalData {
   margin: 1rem;
   font-size: 1rem;
+  text-align: center;
 }
 
 .historicalData [data-diff], .historicalData [data-value] {
   text-align: right;
+}
+
+.historicalData td {
+  text-align: right;
+}
+
+.historicalData td:nth-child(1) {
+  text-align: left;
 }
 
 @media all and (min-width: 480px) {

@@ -64,9 +64,13 @@ define('views/Header', [
         self.buttonViews = {};
       });
 
-      this.filterParams = {};
+      this._filter = {
+        type: U.getTypeUri('commerce/trading/Feed'),
+        params: {}
+      };
+      
       this.searchMeta = this.collection && U.filterObj(this.collection.params, U.isMetaParameter);
-      if (this.filter) {
+      if (this.hasFilter) {
         this.makeTemplate('searchTemplate', 'searchTemplate', type);
         this.makeTemplate('filterTemplate', 'filterTemplate', type);
         this.makeTemplate('filterConditionTemplate', 'filterConditionTemplate', type);
@@ -272,7 +276,7 @@ define('views/Header', [
         'keyup .filterConditionInput input'          : 'onFilter',
         'change .filterConditionInput select'        : 'onFilter',
         'change .filterConditionInput input'         : 'onFilter',
-        'click .subClass'                            : 'onChoseSubClass',
+        'click .bookmark'                            : 'loadBookmark',
         'click .searchBar .ui-icon-cancel'           : 'toggleFilter',
         'click.header .quickstart .ui-icon-remove'   : 'hideQuickstart',
         'click i.help'                               : 'showQuickstart',
@@ -533,7 +537,7 @@ define('views/Header', [
     toggleFilter: function(e) {
       Events.stopEvent(e);
       // this.filterContainer.$empty();
-      this.filterParams = _.pick(this.filterParams, 'type');
+      this._filter = _.pick(this._filter, 'type');
 
       switch (this.filterType) {
       case null:
@@ -568,7 +572,7 @@ define('views/Header', [
 
     doFilter: _.debounce(function() {
       // HACK
-      this.pageView.listView.doFilter(this.filterParams);
+      this.pageView.doFilter(this._filter);
     }, 100),
 
     initFilter: function() {
@@ -717,18 +721,19 @@ define('views/Header', [
     },
 
     search: _.debounce(function(e) {
+      var params = this._filter.params;
       if (e.target.value) {
         var newValue = 'davDisplayName,' + e.target.value;
-        if (this.filterParams.$like == newValue)
+        if (params.$like == newValue)
           return;
 
-        this.filterParams.$like = newValue;
+        params.$like = newValue;
       }
       else {
-        if (!this.filterParams.$like)
+        if (!params.$like)
           return;
 
-        delete this.filterParams.$like;
+        delete params.$like;
       }
 
       this.doFilter();
@@ -739,7 +744,7 @@ define('views/Header', [
           filter,
           propName,
           value,
-          params = this.filterParams,
+          params = this._filter.params,
           i = filters.length;
 
       while (i--) {
@@ -794,16 +799,16 @@ define('views/Header', [
         }
       }
 
-      if (this.filter) {
+      if (this.hasFilter) {
         this.categories = false; // HACK for now, search is more important at the moment
         right.$('.filterToggle').$hide();
         this.getFetchPromise().done(function() {
           if (self.collection.models.length > 10) {
             self.$('.filterToggle').$show();
-            if (self.filter)
-              self.filter = self.$('.filterToggle')[0];
+            if (self.hasFilter)
+              self.filterEl = self.$('.filterToggle')[0];
 
-            if (self.filter) {
+            if (self.filterEl) {
               if (self._showSearchOnLoad || self.hashParams.$search == 'y')
                 self.showSearch();
             }
@@ -1140,96 +1145,82 @@ define('views/Header', [
         this._activatable = this.activatedProp && U.isPropEditable(this.resource, this.activatedProp);
     },
 
-    renderSubclasses: function() {
-      if (!this.vocModel.type.endsWith('commerce/trading/Feed'))
+    renderBookmarks: function() {
+      if (!U.getCurrentUrlInfo().type.endsWith('commerce/trading/Feed'))
         return;
 
-      this.subClassesEl = this.$('.subClasses')[0];
-      if (!this.categoriesTemplate)
-        this.makeTemplate('subClassesTemplate', 'subClassesTemplate', this.vocModel.type);
+      this.bookmarksEl = this.$('.bookmarks')[0];
+      if (!this.bookmarksTemplate)
+        this.makeTemplate('bookmarksTemplate', 'bookmarksTemplate', this.vocModel.type);
 
-      if (!this.subClasses) {
-        var sCls = this.vocModel.subClasses,
-            sCl,
-            i = sCls.length;
-
-        if (!i)
-          return;
-
-        this.subClasses = [{
+      if (!this.bookmarks) {
+        this.bookmarks = [{
           name: 'All',
-          on: true
-        }];
-
-//        if (this.vocModel.type.endsWith('commerce/trading/Feed')) {
-          this.subClasses.push({
-            name: 'Stocks',
-            type: U.getLongUri1('commerce/trading/Stock')
-          }, {
-            name: 'Indexes',
-            type: U.getLongUri1('commerce/trading/Index')
-          }, {
-            name: 'Commodities',
-            type: U.getLongUri1('commerce/trading/Commodity')
-          }, {
-            name: 'Macro',
-            type: U.getLongUri1('commerce/trading/FREDFeed')
+          on: true,
+          type: U.getTypeUri('commerce/trading/Feed')
+        }, {
+          name: 'Stocks',
+          type: U.getTypeUri('commerce/trading/Stock')
+        }, {
+          name: 'Indexes',
+          type: U.getTypeUri('commerce/trading/Index')
+        }, {
+          name: 'Commodities',
+          type: U.getTypeUri('commerce/trading/Commodity')
+        }, {
+          name: 'Macro',
+          type: U.getTypeUri('commerce/trading/FREDFeed')
+        }, {
+          name: 'This Tradle',
+          type: U.getTypeUri('system/designer/WebProperty'),
+          params: {
+            domainUri: U.getTypeUri('commerce/trading/TradleEvent'),
+            avoidDisplaying: false,
+            allowRoles: null,
+            subPropertyOf: null,
+            propertyType: '!Date' 
           }
-          );
-//        }
-//        else {
-//          while (i-- > 1) {
-//            sCl = sCls[i];
-//            this.subClasses[i] = {
-//              name: U.getPlural(sCl.displayName),
-//              type: 'subClassOf:' + U.getLongUri1(sCl.type)
-//            };
-//          }
-//        }
+        }, {
+          name: 'Tradles',
+          type: U.getTypeUri('commerce/trading/Tradle')
+        }];
       }
 
-      this.subClassesEl.$show().$html(this.subClassesTemplate({
-        subClasses: this.subClasses
+      this.bookmarksEl.$show().$html(this.bookmarksTemplate({
+        bookmarks: this.bookmarks
       }));
     },
 
-    onChoseSubClass: function(e) {
+    loadBookmark: function(e) {
       var self = this,
           input = e.selectorTarget.$('input')[0],
-          type = input.$data('type'),
-          sClName = input.value,
-          sCls = this.subClassesEl.$('input[type="radio"]'),
-          filter = this.filterParams,
-          i = sCls.length,
+          bookmarkName = input.value,
+          bookmarks = this.bookmarksEl.$('input[type="radio"]'),
+          bookmark = _.find(this.bookmarks, function(b) { 
+            return b.name == bookmarkName; 
+          }),
+          type = bookmark.type,
+          filter = this._filter.params,
+          i = bookmarks.length,
           model,
           runFilter = function() {
             self.updateSearchBar(model);
+            while (i--) {
+              var b = bookmarks[i];
+              b.parentElement.classList[b.checked ? 'add' : 'remove']('actionBtn');
+            }
+            
             for (var p in filter) {
-              if (U.isNativeModelParameter(p))
+              if (U.isNativeModelParameter(p) || U.whereParams[p])
                 delete filter[p];
             }
-
-            if (type)
-              filter.type = type;
-
+            
+            if (bookmark.params)
+              _.extend(filter, bookmark.params);
+            
+            self._filter.type = type;
             filter.$offset = 0;
-/*            if (self.searchMeta.$orderBy) {
-              var p = U.getSubpropertyOf(model, self.searchMeta.$orderBy);
-              if (p) {
-                filter.$orderBy = p.shortName;
-                filter.$asc = self.searchMeta.$asc;
-              }
-              else {
-                delete filter.$orderBy;
-                delete filter.$asc;
-              }
-            }
-*/
             self.doFilter();
-            while (i--) {
-              var sCl = sCls[i];
-              sCl.parentElement.classList[sCl.checked ? 'add' : 'remove']('actionBtn');
-            }
           };
 
       if (this.$('.search-active').length) {
@@ -1239,8 +1230,8 @@ define('views/Header', [
       }
 
       input.checked = true;
-      this._lastSubClass = input;
-      if (sClName == 'All')
+      this._lastBookmark = input;
+      if (bookmarkName == 'All')
         model = this.vocModel;
       else {
         model = U.getModel(type);
@@ -1250,7 +1241,7 @@ define('views/Header', [
 
           this._fetchingFilterType = type;
           Voc.getModels(type).done(function(m) {
-            if (input == self._lastSubClass) {
+            if (input == self._lastBookmark) {
               model = m;
               runFilter();
             }
@@ -1270,8 +1261,15 @@ define('views/Header', [
       if (!input)
         return;
 
-      if (model)
-        searchPlaceholder += ' ' + U.getPlural(model);
+      if (model) {
+        var plural;
+        if (U.isAssignableFrom(model, 'system/designer/WebProperty'))
+          plural = 'Indicators';
+        else
+          plural = U.getPlural(model);
+        
+        searchPlaceholder += ' ' + plural; 
+      }
 
       searchPlaceholder += '...';
       input.$attr('placeholder', searchPlaceholder);
@@ -1391,7 +1389,7 @@ define('views/Header', [
 
 //      this.renderError();
       this.renderSpecialButtons();
-      this.renderSubclasses();
+      this.renderBookmarks();
 
 //      if (G.isJQM())
 //        this.$el.trigger('create');

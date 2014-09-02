@@ -105,9 +105,10 @@ define('collections/ResourceList', [
           if (self == fromList)
             return;
 
-          setTimeout(function() {
-            Q.nonDom(self.filterAndAddResources.bind(self, [resource]), self);
-          }, 1000);
+          self.filterAndAddResources([resource]);
+//          setTimeout(function() {
+//            Q.nonDom(self.filterAndAddResources.bind(self, [resource]), self);
+//          }, 1000);
         });
 
         this.listenTo(Events, 'newResources:' + this.type, function(resources, fromList) {
@@ -115,18 +116,20 @@ define('collections/ResourceList', [
           if (self == fromList)
             return;
 
-          setTimeout(function() {
-            Q.nonDom(self.filterAndAddResources.bind(self, resources), self);
-          }, 1000);
+          self.filterAndAddResources(resources);
+//          setTimeout(function() {
+//            Q.nonDom(self.filterAndAddResources.bind(self, resources), self);
+//          }, 1000);
         });
 
         this.listenTo(Events, 'newResourceList:' + this.type, function(list) {
           if (self == list)
             return;
 
-          setTimeout(function() {
-            Q.nonDom(self.filterAndAddResources.bind(self, list.models), self);
-          }, 1000);
+          self.filterAndAddResources(list.models);
+//          setTimeout(function() {
+//            Q.nonDom(self.filterAndAddResources.bind(self, list.models), self);
+//          }, 1000);
         });
       }
 
@@ -290,7 +293,7 @@ define('collections/ResourceList', [
       if (this['final'] && this.models.length)
         throw "This list is locked, it cannot be changed";
 
-      options = _.defaults({}, options, { silent: true, parse: true });
+      options = _.defaults({}, options, { silent: false, parse: true });
       var self = this,
           colModel = this.vocModel,
           colType = colModel.type,
@@ -889,12 +892,17 @@ define('collections/ResourceList', [
 
     destroy: function() {
       this.stopListening();
-      var models = this.models;
-      for (var i = 0, num = models.length; i < num; i++) {
-        models[i].collection = null;
+      this.remove(this.models);
+    },
+    
+    getResourceInstance: function(model, atts, options) {
+      if (arguments.length == 2) {
+        atts = model;
+        options = atts;
+        model = this.vocModel
       }
-
-      models.length = 0;
+        
+      return U.getResourceInstance(model, atts, options);
     }
   }, {
     displayName: 'ResourceList'

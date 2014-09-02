@@ -123,36 +123,6 @@ define('views/ResourceListView', [
       var self = this,
           col = this.collection;
 
-      ['reset'].forEach(function(event) {
-        self.stopListening(col, event);
-        self.listenTo(col, event, function(resources) {
-          resources = U.isCollection(resources) ? resources.models : U.isModel(resources) ? [resources] : resources;
-          var options = {
-            resources: resources
-          };
-
-          options[event] = true;
-          if (event == 'reset') {
-            console.log("RESETTING LIST VIEW MASON");
-            self._outOfData = false;
-            if (self._pagingDeferred.state() == 'pending')
-              self._pagingDeferred.reject();
-            else
-              self._pagingPromise._canceled = true;
-
-            self._removeBricks(self._displayedRange.from, self._displayedRange.to);
-            self.$('.masonry-brick').$remove();
-            self.setDisplayedRange(0, 0);
-            self._resetting = 1;
-            self.mason.reset();
-//            if (self.mason.isLocked())
-//              self.mason['continue']();
-          }
-
-//          self.refresh(options);
-        });
-      });
-
       this._displayedRange = {
         from: 0,
         to: 0
@@ -170,10 +140,12 @@ define('views/ResourceListView', [
         self._childEls.length = 0;
       });
 
-      this.originalParams = _.clone(this.collection.params);
-      this.originalModel = this.collection.vocModel;
-      this.setDisplayModel(this.originalModel);
-
+      this.originalFilter = {
+        type: col.vocModel.type,
+        params: _.clone(col.params)
+      };
+      
+      this.originalModel = col.vocModel;
 //      Physics.here.on('translate.' + this.axis.toLowerCase(), this.getBodyId(), this.onScroll);
 //
 //      this.listenTo(this.collection, 'endOfList', function() {
@@ -183,19 +155,6 @@ define('views/ResourceListView', [
 //      }, this);
 
       return this;
-    },
-
-    getDisplayModel: function(vocModel) {
-      return this.displayModel;
-    },
-
-    setDisplayModel: function(vocModel) {
-      this.itemViewCache.map(function(v) {
-        v.destroy();
-      });
-
-      this.itemViewCache.length = 0;
-      this.displayModel = vocModel;
     },
 
     isPaging: function() {
@@ -228,80 +187,83 @@ define('views/ResourceListView', [
       'filterList': 'doFilter'
     },
 
-    doFilter: function(filterParams) {
-      // TODO: filter similar to search, except per property instead of for displayName, maybe generalize it so it works for search too
-      console.log("1. FILTER", value);
-      if (!this._filterParams)
-        this._filterParams = _.clone(this.originalParams);
+    setCollection: function(col) {
+      this.collection = col;
+      this.redelegateModelEvents();
+    },
+    
+    resetMason: function() {
+      console.log("RESETTING LIST VIEW MASON");
+      this._outOfData = false;
+      if (this._pagingDeferred.state() == 'pending')
+        this._pagingDeferred.reject();
+      else
+        this._pagingPromise._canceled = true;
 
-      if (_.isEqual(this._filterParams, filterParams)) {
-        console.log("2. FILTER - ALREADY FILTERED " + JSON.stringify(filterParams));
+      this._removeBricks(this._displayedRange.from, this._displayedRange.to);
+      this.$('.masonry-brick').$remove();
+      this.setDisplayedRange(0, 0);
+      this._resetting = 1;
+      this.mason.reset();      
+    },
+    
+    doFilter: function(filter) {
+      // TODO: filter similar to search, except per property instead of for displayName, maybe generalize it so it works for search too
+      if (!this._filter)
+        this._filter = _.clone(this.originalFilter);
+
+      if (_.isEqual(this._filter, filter)) {
+        console.log("2. FILTER - ALREADY FILTERED " + JSON.stringify(filter));
         return;
       }
 
       if (this.mason.isLocked()) {
-        console.log("3. FILTER LOCKED", value);
+//        console.log("3. FILTER LOCKED", value);
         var self = this;
         clearTimeout(this._delayTimeout);
         this._delayTimeout = setTimeout(function() {
-          self.doFilter(filterParams);
+          self.doFilter(filter);
         }, ++this._timesDelayed * 100);
       }
 
       clearTimeout(this._delayTimeout);
       this._timesDelayed = 0;
-      console.log("FILTERING", filterParams);
-      this._filterParams = _.clone(filterParams);
-      var col = this.getPageView().collection,
-          filtered = this.collection,
-          value = this._searchValue,
-          valueLowerCase,
-          resourceMatches,
-          numResults,
-          indicatorId,
-          hideIndicator;
+      console.log("FILTERING", filter);
+//      var col = this.getPageView().collection,
+//          colChanged = this._filter.type != filterParams.type,
+//          filtered = this.collection,
+//          value = this._searchValue,
+//          valueLowerCase,
+//          resourceMatches,
+//          numResults,
+//          indicatorId,
+//          hideIndicator;
 
-//      if (this._filterParams.type)
-//        this.setDisplayModel(U.getModel(this._filterParams.type));
+      var colChanged = this._filter.type != filter.type;
+      this._filter = _.deepExtend({}, filter);
+//      if (_.isEmpty(filterParams)) {
+//        console.log("4. FILTER - resetting to original collection", value);
+//        indicatorId = this.showLoadingIndicator(3000); // 3 second timeout
+//        hideIndicator = this.hideLoadingIndicator.bind(this, indicatorId);
+//
+////        this.setDisplayModel(col.vocModel);
+//        filtered.reset(col.models, {
+//          params: this.originalFilter
+//        });
+//
+//        return;
+//      }
 
-      if (_.isEmpty(filterParams)) {
-        console.log("4. FILTER - resetting to original collection", value);
-        indicatorId = this.showLoadingIndicator(3000); // 3 second timeout
-        hideIndicator = this.hideLoadingIndicator.bind(this, indicatorId);
-
-//        this.setDisplayModel(col.vocModel);
-        filtered.reset(col.models, {
-          params: this.originalParams
+      if (!colChanged) {
+        this.collection.reset([], {
+//          params: _.defaults(this._filter.params, this.originalFilter.params)
+          params: this._filter.params
         });
-
-        return;
+  
+        this.collection.filterAndAddResources(this.getPageView().collection.models);
       }
-
-      if (typeof value == 'string')
-        valueLowerCase = value.toLowerCase();
-
-//      resourceMatches = col.models.filter(function(res) {
-//        var dn = U.getDisplayName(res);
-//        return dn && ~dn.toLowerCase().indexOf(valueLowerCase);
-//      });
-
-//      console.log("5. FILTER - resetting", value);
-      filtered.reset([], {
-        params: _.defaults(this._filterParams, this.originalParams)
-      });
-
-//      var l = filtered.length;
-//      console.debug("6. FILTER - readding from " + l, filtered.models.slice(), _.clone(filtered.params));
-
-//      if (!this.shouldUseSync())
-        filtered.filterAndAddResources(col.models);
-
-//      console.debug("7. FILTER - readded", filtered.models.slice(l));
-//      filtered.belongsInCollection = U.buildValueTester(this._filterParams, this.vocModel) || G.trueFn;
-//      resourceMatches = col.models.filter(filtered.belongsInCollection.bind(filtered));
-//      filtered.reset(resourceMatches, {
-//        params: _.defaults(this._filterParams, this.originalParams)
-//      });
+      
+      this.resetMason();
     },
 
     shouldUseSync: function() {
@@ -484,6 +446,7 @@ define('views/ResourceListView', [
           type,
           isWebCl,
           isImplementor,
+          isTradleSelfFeed,
           cloned,
           viewId,
           dataUri;
@@ -540,6 +503,20 @@ define('views/ResourceListView', [
       Events.stopEvent(e);
       parentView = this;
       type = params['$type'];
+      isTradleSelfFeed = type && type.endsWith('commerce/trading/TradleFeed') && U.isAssignableFrom(itemView.vocModel, G.commonTypes.WebProperty);
+      if (isTradleSelfFeed) {
+        var tradleUri = params.$forResource,
+            pk = tradleUri.slice(tradleUri.indexOf('?') + 1),
+            prop = itemView.resource,
+            tradleFeed = U.makeUri(type, pk + '&' + pk);
+        
+        U.makeTradleToTradleIndicator(tradleUri, tradleFeed, prop).done(function() {
+          Events.trigger('navigate', U.makeMobileUrl('view', tradleUri));        
+        });
+        
+        return;
+      }
+      
       isWebCl = itemView.doesModelSubclass(G.commonTypes.WebClass);
       isImplementor = type && type.endsWith('system/designer/InterfaceImplementor');
       cloned = itemView.clonedProperties;
@@ -596,14 +573,17 @@ define('views/ResourceListView', [
         if (params  &&  type  &&   p1  &&  p2/*isIntersection*/) {
           Events.stopEvent(e);
           var rParams = {};
-          var pRange = U.getModel(t).properties[p1].range;
-          if (U.isAssignableFrom(itemView.vocModel, pRange)) {
-            rParams[p1] = itemView.resource.get('_uri');
-            rParams[p2] = params['$forResource'];
+          var p1Range = U.getModel(t).properties[p1].range,
+              v1 = itemView.resource.get('_uri'),
+              v2 = params['$forResource'];
+          
+          if (U.isAssignableFrom(itemView.vocModel, p1Range) && U.getTypeUri(v1) != U.getTypeUri(v2)) {
+            rParams[p1] = v1;
+            rParams[p2] = v2;
           }
           else {
-            rParams[p1] = params['$forResource'];
-            rParams[p2] = itemView.resource.get('_uri');
+            rParams[p1] = v2;
+            rParams[p2] = v1;
           }
           itemView.forResource = params['$forResource'];
           rParams.$title = itemView.resource.get('davDisplayName');

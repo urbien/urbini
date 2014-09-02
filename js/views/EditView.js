@@ -14,7 +14,7 @@ define('views/EditView', [
       },
 //      scrollerClass = 'i-txt',
       switchClass = 'boolean',
-      LIMIT_ORDER_TYPES = ['Stop Limit', 'Limit'];
+      LIMIT_ORDER_TYPES = ['Stop', 'Stop Limit', 'Limit'];
 //      ,
 //      secs = [/* week seconds */604800, /* day seconds */ 86400, /* hour seconds */ 3600, /* minute seconds */ 60, /* second seconds */ 1];
 
@@ -1289,9 +1289,26 @@ define('views/EditView', [
       else
         this.$('[data-shortname="limitPrice"]').$hide();
 
-      // var quantity = r.get('quantity');
-      // if (!quantity)
-      //   return;
+      var quantity = r.get('quantity');
+      if (!quantity)
+        return;
+
+      Events.trigger('getStockQuote:' + r.get('security'), function saveQuote(lastTradePrice) {
+        debugger;
+        var quantityContainer = self.$('li[data-shortname="quantity"] ._prim')[0],
+            amountEl;
+
+        if (quantityContainer) {
+          amountEl = quantityContainer.$('[data-amount]')[0];
+          if (!amountEl) {
+            amountEl = document.createElement('div');
+            amountEl.className = 'propertyComment';
+            quantityContainer.$append(amountEl);
+          }
+
+          amountEl.innerHTML = quantity + ' shares cost $' + (quantity * lastTradePrice) + ' at the current stock price';
+        }
+      });
 
       // if (this.latestSecurityEvent) {
       //   var price = this.latestSecurityEvent.get('open');

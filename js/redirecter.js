@@ -18,8 +18,9 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
       rClass = /\/[^\/]+\/([^\/]+)\/value/;
 
   function getTradleUri(tradleFeed) {
+    var interTradle = tradleFeed.match(/uuid=(.*)\&uuid=(.*)/);
     return U.makeUri(U.getTypeUri('commerce/trading/Tradle'), {
-      uuid: _.toQueryParams(tradleFeed).uuid
+      uuid: interTradle ? _.decode(interTradle[1]) : _.toQueryParams(tradleFeed).uuid
     });
   };
 
@@ -1113,8 +1114,17 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
           eventPropertyUri = valueRes.get('davPropertyUri'),
           propertyType = valueRes.get('propertyType'),
           isNumeric = U.isNumericType(propertyType),
-          tfParams = _.toQueryParams(params.$tradleFeedParams);
+          tfParams = _.toQueryParams(params.$tradleFeedParams),
+          tradleUri = getTradleUri(tfParams.tradleFeed);
 
+      if (~eventPropertyUri.indexOf('commerce/trading/TradleEvent/')) {
+        U.makeTradleToTradleIndicator(tradleUri, tfParams.tradleFeed, valueRes).done(function() {
+          Events.trigger('navigate', U.makeMobileUrl('view', tradleUri));
+        });
+        
+        return;
+      }
+        
       if (U.getTypeUri(eventProperty).endsWith('commerce/trading/FREDSeries')) {
         tfParams.eventPropertyUri = G.DEV_PACKAGE_PATH + 'FRED/' + valueRes.get('id') + '/value';
         var title = valueRes.get('title'),
@@ -1150,17 +1160,15 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
       tfParams.eventPropertyUri = eventPropertyUri;
       tfParams.name = U.getDisplayName(valueRes);
       if (isNumeric) {
-            and1 = _.param({
-              applicableToProperty: eventPropertyUri,
-//              applicableToModel: tfParams.eventClass,
-              applicableToClass: tfParams.eventClassRangeUri
-  //            applicableToResource: tfParams.feed
-            }),
-            and2 = _.param({
-              parentFolderPath: G.hostName + '/voc/dev/Technicals',
-              $in: 'name,RawValue,PreviousValue'
-            }),
-            title = CHOOSE_VALUES_FOR;
+        and1 = _.param({
+          applicableToProperty: eventPropertyUri,
+          applicableToClass: tfParams.eventClassRangeUri
+        }),
+        and2 = _.param({
+          parentFolderPath: G.hostName + '/voc/dev/Technicals',
+          $in: 'name,RawValue,PreviousValue'
+        }),
+        title = CHOOSE_VALUES_FOR;
 
         var tradleFeed = U.getResource(tfParams.tradleFeed);
         if (tradleFeed)
@@ -1187,7 +1195,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
         new iModel(tfParams).save();
       });
 
-      Events.trigger('navigate', U.makeMobileUrl('view', getTradleUri(tfParams.tradleFeed)));
+      Events.trigger('navigate', U.makeMobileUrl('view', tradleUri));
 //      , {
 //        '-gluedInfo': CLICK_INDICATOR_TO_CREATE_RULE
 //      }));
@@ -1206,7 +1214,19 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
 
       Array.remove(merged, propName);
       props[propName] = valueRes.getUri();
-      if (forRes.vocModel.type.endsWith('commerce/trading/TradleIndicator')) {
+      if (propName == 'compareWith' && forRes.isAssignableFrom('commerce/trading/Rule')) {
+        ['tradleFeed', 'feed', 'feedImage'].forEach(function(p) {
+          var P = p.capitalizeFirst(),
+              val = forRes.get(p),
+              dn = forRes.get(p + '.displayName');
+          
+          if (val)
+            props['compareWith' + P] = val;
+          if (dn)
+            props['compareWith' + P + '.displayName'] = dn;
+        });
+      }
+      else if (forRes.isAssignableFrom('commerce/trading/TradleIndicator')) {
         if (forRes.get('eventProperty')) {
           forRes.save(props, { userEdit: true });
           Events.trigger('back', 'back from choosing TradleIndicator variant');

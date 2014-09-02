@@ -1423,7 +1423,7 @@ define('router', [
           U.alert("Please be patient while we clone this {0} to your profile...".format(vocModel.displayName));
           var cloneParams = {};
           cloneParams[U.getCloneOf(vocModel, 'Templatable.basedOnTemplate')[0]] = uri;
-          var tradle = new vocModel(cloneParams);
+          var tradle = U.getResourceInstance(vocModel, cloneParams);
           tradle.save(null, {
             sync: true,
             success: function() {

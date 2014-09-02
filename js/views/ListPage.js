@@ -5,12 +5,12 @@ define('views/ListPage', [
   'utils',
   'error',
   'vocManager',
+  'collections/ResourceList',
   'views/BasicPageView',
-  'views/ResourceListView',
   'views/Header',
   'lib/fastdom',
   'domUtils'
-], function(G, Events, U, Errors, Voc, BasicPageView, ResourceListView, Header, Q, DOM) {
+], function(G, Events, U, Errors, Voc, ResourceList, BasicPageView, Header, Q, DOM) {
   var MapView,
       SPECIAL_INTERSECTIONS = [G.commonTypes.Handler, G.commonTypes.Friend, U.getLongUri1('model/social/NominationForConnection') /*, commonTypes.FriendApp*/],
       CAN_SHOW_ADD_BUTTON = true;
@@ -178,7 +178,7 @@ define('views/ListPage', [
       this.header = new Header(_.extend({
         buttons: this.headerButtons,
         viewId: this.cid,
-        filter: true
+        hasFilter: true
       }, commonParams));
 
       this.addChild(this.header);
@@ -200,7 +200,9 @@ define('views/ListPage', [
 
       this.ready = readyDfd.promise();
       U.require('views/' + listViewType).done(function(listViewCl) {
-        self.listView = new listViewCl(_.extend({mode: self.mode, displayMode: isMasonry || isModification ? 'masonry' : 'vanillaList'}, self.options, commonParams));
+        self.listViewCl = listViewCl;
+        self.listViewOptions = _.extend({mode: self.mode, displayMode: isMasonry || isModification ? 'masonry' : 'vanillaList'}, self.options, commonParams);
+        self.listView = new listViewCl(self.listViewOptions);
         self.addChild(self.listView);
         readyDfd.resolve();
       });
@@ -472,6 +474,26 @@ define('views/ListPage', [
 //      this.addToWorld(null, true);
       this.finish();
       return this;
+    },
+
+    doFilter: function(filterParams) {
+      if (filterParams.type != this.vocModel.type) {
+        this.collection.destroy();
+        this.filteredCollection.destroy();
+        this.stopListening(this.collection);
+        this.stopListening(this.filteredCollection);
+
+        this.vocModel = U.getModel(filterParams.type);
+        this.collection = new ResourceList(null, {
+          model: this.vocModel,
+          params: _.clone(filterParams.params)
+        });
+
+        this.filteredCollection = this.collection.clone();
+        this.listView.setCollection(this.filteredCollection);
+      }
+
+      this.listView.doFilter(filterParams);
     }
 
 //    ,

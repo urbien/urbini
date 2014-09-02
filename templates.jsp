@@ -181,7 +181,7 @@
     {{ }                       }}
     {{ if (currentStep == 2) { }}
     <li>
-      <a class="mini-cta" href="#" data-selector="li[data-backlink=&quot;orders&quot;],header[data-shortname=&quot;orders&quot;]" data-tooltip="Click here to add trades" data-direction="bottom">Add trades</a> to be executed when your tradle fires
+      <a class="mini-cta" href="#" data-selector="li[data-backlink=&quot;orders&quot;],header[data-shortname=&quot;orders&quot;]" data-tooltip="Click here to add trades" data-direction="bottom" data-offset-top="25">Add trades</a> to be executed when your tradle fires
     </li>
     {{ }                       }}
   </ul>
@@ -343,10 +343,9 @@
         {{ var feed =  resource.get('feed') || ''; }}
         {{ var isStock = ~feed.indexOf('/Stock?'); }}
         {{ var isIndex = ~feed.indexOf('/Index?'); }}
-        {{ var dn = resource.get('feed.displayName'); }}
+        {{ var dn = isStock || isIndex ? _.toQueryParams(feed).symbol : resource.get('feed.displayName'); }}
         <div class="tradleFeed" {{= isIndex || isStock ? 'style="font-size:4rem;line-height:3rem;font-weight:bold;"' : '' }}><!-- href="{{= U.makeMobileUrl('view', resource.get('tradleFeed')) }}"-->
-          {{= isStock || isIndex ? dn.split(' ')[0] : dn }}
-          {{= (isStock || isIndex) && dn.indexOf(' ') != -1 ? '<div style="font-size:1.2rem;font-weight:normal;">' + dn.slice(dn.indexOf(' ')) + '</div>' : '' }}
+          {{= dn }}
         </div>
         {{ }                               }}
       </div>
@@ -377,10 +376,9 @@
         {{ var cmpFeed =  resource.get('compareWithFeed') || ''; }}
         {{ var isStock = ~cmpFeed.indexOf('/Stock?'); }}
         {{ var isIndex = ~cmpFeed.indexOf('/Index?'); }}
-        {{ var dn = resource.get('compareWithFeed.displayName'); }}
+        {{ var dn = isStock || isIndex ? _.toQueryParams(cmpFeed).symbol : resource.get('compareWithFeed.displayName'); }}
         <div {{= isIndex || isStock ? 'style="font-size:4rem;line-height:3rem;font-weight:bold;"' : '' }}  class="tradleFeed"> <!--href="{{= U.makeMobileUrl('view', resource.get('compareWithTradleFeed')) }}" class="tradleFeed"-->
-          {{= isStock || isIndex ? dn.split(' ')[0] : dn }}
-          {{= (isStock || isIndex) && dn.indexOf(' ') != -1 ? '<div style="font-size:1.2rem;font-weight:normal;">' + dn.slice(dn.indexOf(' ')) + '</div>' : '' }}
+          {{= dn }}
         </div>
         {{ }                               }}
       </div>
@@ -1993,16 +1991,16 @@
   </div>
 </div>
 <div class="physicsConstants" style="display:none; background-color: #606060; color:#FFFFFF; display:none;"></div>
-<div class="subClasses" style="display:none; padding: 5px;"></div>
-{{= this.filter ? "<div class='filter'></div>" : "" }}
+<div class="bookmarks" style="display:none; padding: 5px;"></div>
+{{= this.showFilter ? "<div class='filter'></div>" : "" }}
 <div class="quickstart"></div>
 </script>
 
-<script type="text/template" id="subClassesTemplate">
-{{ for (var i = 0; i < subClasses.length; i++) {  }}
-{{  var c = subClasses[i];                        }}
-  <label class="subClass {{= c.on ? 'actionBtn' : '' }}">
-    <input type="radio" name="subClass" data-type="{{= c.type || '' }}" data-on="{{= !!c.on }}" value="{{= c.name }}" />
+<script type="text/template" id="bookmarksTemplate">
+{{ for (var i = 0; i < bookmarks.length; i++) {  }}
+{{  var c = bookmarks[i];                        }}
+  <label class="bookmark {{= c.on ? 'actionBtn' : '' }}">
+    <input type="radio" name="bookmark" data-type="{{= c.type || '' }}" data-on="{{= !!c.on }}" value="{{= c.name }}" />
     {{= c.name }}
   </label>
 {{ }                                              }}
@@ -2513,6 +2511,37 @@
 </div>
 </script>
 
+<script type="text/template" id="tableTemplate">
+<div>
+<h2 style="text-align:center;">{{= title }}</h2>
+<table>
+    <thead>
+  {{ if (obj.heading) { }}
+      <tr>
+        <th colspan="{{= _.size(cols) }}">{{= heading }}</th>
+      </tr>
+  {{ } }}
+      <tr>
+      {{ for (var i = 0, l = cols.length; i < l; i++) { }}
+      {{ var col = cols[i], colDN = typeof col == 'object' ? U.getPropDisplayName(col) : col; }}
+         <th {{= col.shortName ? "data-shortname='" + col.shortName + "'" : '' }} data-col="{{= col.shortName || col }}">{{= colDN }}</th>
+      {{ }                                              }}
+      </tr>
+    </thead>
+  <tbody>
+      {{ for (var i = 0, l = rows.length; i < l; i++) { }}
+        {{ var row = rows[i];                             }}
+        <tr>
+        {{ for (var j = 0; j < row.length; j++) {     }}
+           <td data-col="{{= cols[j] }}">{{= j == 0 ? U.getFormattedDate1(row[j]) : U.prettyNum(row[j]) }}</td>
+        {{ }                                              }}
+        </tr>
+      {{ }                                              }}
+  </tbody>
+</table>
+</div>
+</script>
+
 <script type="text/template" id="mvListItem">
 <!-- a multivalue input for edit forms -->
 {{ var id = G.nextId() }}
@@ -2585,7 +2614,7 @@
 <script type="text/template" id="timesPET">
 <div class="_prim">
   <label for="{{= id }}"  class="ui-input-text" >{{= name }}</label>
-  {{= obj.releaseFrequency ? '<div>' + releaseFrequency  + '</div>' : ''}} 
+  {{= obj.releaseFrequency ? '<div>' + releaseFrequency  + '</div>' : ''}}
   <input type="range" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '0' }}" {{= rules }} data-mini="true" max="100" min="0" style="width:65%;vertical-align:middle;" onchange="document.getElementById(this.id + '_text').innerHTML = this.value;"/>
   <div id="{{= id }}_text" style="display:inline-block;vertical-align:middle;padding-left:.5rem;font-size:2rem;color:#7aaac3;font-weight:bold;"></div>
 </div>

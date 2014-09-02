@@ -30,7 +30,7 @@ define('views/EditPage', [
           res = this.resource,
           type = this.vocModel.type;
 
-      this.hasHistoricalData = res.isAssignableFrom('commerce/trading/NumericRule');
+      this.hasHistoricalData = res.isAssignableFrom('commerce/trading/NumericRule') || res.isAssignableFrom('commerce/trading/Order');
       if (this.hasHistoricalData) {
         U.require('views/HistoricalDataView').done(function(HDV) {
           self.historicalDataView = new HDV({model: res, parentView: self});

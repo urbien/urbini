@@ -357,7 +357,7 @@
       // Trigger all relevant attribute changes.
       if (!silent) {
         if (changes.length) this._pending = true;
-        
+
         if (perPropertyEvents) {
           for (var i = 0, l = changes.length; i < l; i++) {
             this.trigger('change:' + changes[i], this, current[changes[i]], options);
@@ -566,7 +566,7 @@
       if (!options.validate || !this.validate) return true;
       if (options.validateAll)
         attrs = _.extend({}, this.attributes, attrs);
-      
+
       var error = this.validationError = this.validate(attrs, options) || null;
       if (!error) return true;
       this.trigger('invalid', this, error, _.extend(options || {}, {validationError: error}));
@@ -911,7 +911,8 @@
       }
       options || (options = {});
       options.collection = this;
-      var model = new this.model(attrs, options);
+//      var model = new this.model(attrs, options);
+      var model = this.getResourceInstance(this.model, attrs, options);
       if (!model._validate(attrs, options)) {
         this.trigger('invalid', this, attrs, options);
         return false;
@@ -1015,7 +1016,7 @@
     _getCID: function(options) {
       return _.uniqueId('view');
     },
-    
+
     // Initialize is an empty function by default. Override it with your own
     // initialization logic.
     initialize: function(){},
@@ -1534,13 +1535,13 @@
         oldVal,
         newValType,
         oldValType;
-    
+
     for (var i = 1; i < arguments.length; i++) {
       source = arguments[i];
       for (prop in source) {
         if (prop == '__super__')
           continue;
-        
+
         newVal = source[prop];
         oldVal = target[prop];
         oldValType = Object.prototype.toString.call(oldVal);
@@ -1553,7 +1554,7 @@
 //          else
             target[prop] = newVal;
         }
-        
+
   //      if (val == null) {
   //        target = val; // allow override with null
   //        continue;
@@ -1563,13 +1564,13 @@
   //        target[prop] = val;
   //        continue;
   //      }
-  //      
+  //
   //      oldValType = Object.prototype.toString.call(val);
   //      newValType = Object.prototype.toString.call(target[prop]);
-  //      
+  //
   //      if (oldValType !== newValType) {
   //        target[prop] = val;
-  //        continue;          
+  //        continue;
   //      }
   //
   //      if (oldValType == '[object Object]')
@@ -1579,7 +1580,7 @@
       }
     }
   };
-  
+
   // Helper function to correctly set up the prototype chain, for subclasses.
   // Similar to `goog.inherits`, but uses a hash of prototype properties and
   // class properties to be extended.

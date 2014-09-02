@@ -2067,6 +2067,18 @@ define('utils', [
       return dfd.promise();
     },
 
+    getResourceInstance: function(vocModel, atts, options) {
+      var cached = atts && atts._uri && U.getResource(atts._uri);
+      if (cached) {
+        if (atts)
+          cached.set(atts);
+
+        return cached;
+      }
+
+      return new vocModel(atts, options);
+    },
+
     getModel: function(type) {
       var arg0 = arguments[0],
           argType = Object.prototype.toString.call(arg0),
@@ -3502,8 +3514,10 @@ define('utils', [
       if (_.size(keyVals) != primaryKeys.length)
         return null;
 
-      for (var key in keyVals) {
-        var val = keyVals[key];
+      for (var i = 0; i < primaryKeys.length; i++) {
+        var key = primaryKeys[i],
+            val = keyVals[key];
+
         if (val == null)
           return null;
 
@@ -5052,7 +5066,8 @@ define('utils', [
     },
 
     isHeterogeneousEvent: function(model) {
-      return U.isAssignableFrom(model, 'commerce/trading/StockEvent', 'commerce/trading/CommodityEvent', 'commerce/trading/IndexEvent');
+      return U.isAssignableFrom(model, 'commerce/trading/StockEvent', 'commerce/trading/CommodityEvent', 'commerce/trading/IndexEvent') ||
+             (/^(Index|Stock|Commodity)Event/.test(model.shortName) && model.type.startsWith(G.DEV_PACKAGE_PATH + 'Technicals'));
     },
 
     getTwitterLink: function(res) {
@@ -5209,7 +5224,8 @@ define('utils', [
       for (var shortName in props) {
         var prop = props[shortName];
         if (!prop.backLink &&
-            (!prop.subPropertyOf || !prop.subPropertyOf.endsWith('/feed')) &&
+//            (!prop.subPropertyOf || !prop.subPropertyOf.endsWith('/feed')) &&
+            !prop.subPropertyOf &&
             (!isIndexEvent || shortName != 'index') &&
             U.isNativeModelParameter(shortName) &&
             !U.isDateProp(prop) &&
@@ -5221,6 +5237,23 @@ define('utils', [
       }
 
       return cols;
+    },
+    
+    makeTradleToTradleIndicator: function(tradleUri, tradleFeed, prop) {
+      return U.require('vocManager').then(function(Voc) {
+        Voc.getModels('commerce/trading/TradleIndicator').done(function(iModel) {
+          indicator = new iModel({
+            name: prop.get('label'),
+            tradle: tradleUri,
+            tradleFeed: tradleFeed,
+            variantUri: G.DEV_PACKAGE_PATH + 'Technicals/RawValue',
+            eventPropertyUri: prop.get('davPropertyUri'),
+            eventPropertyName: prop.get('name') 
+          });
+        
+          indicator.save();
+        })
+      });
     }
   };
 

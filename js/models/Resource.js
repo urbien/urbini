@@ -90,12 +90,28 @@ define('models/Resource', [
         this.set({ _new: true }, { silent: true });
         // this.buildUri()
       }
+      
+      this.collections = [];
+      this.on('remove', function(me, col, options) {
+        Array.remove(self.collections, col);
+        if (self.collection == col)
+          delete self.collection;
+        
+        if (!self.collections.length && !self.collection)
+          self.destroy();
+      });
+
+      this.on('add', function(me, col, options) {
+        _.pushUniq(self.collections, col);        
+      });
     },
 
     /** Overrides Backbone.Model.prototype.destroy, for garbage collection rather than destroying the resource on the server **/
     destroy: function() {
+      this._destroyed = true;
       this.stopListening();
       this.collection && this.collection.remove(this);
+      this.collections.length = 0;
     },
 
     isLoaded: function() {
@@ -344,8 +360,8 @@ define('models/Resource', [
         silent: true
       })
 
-      this.listenTo(Events, 'getResource:' + uri, this.onSearch);
-      this.listenTo(Events, 'delete:' + uri, this['delete']);
+      this.myListenTo(Events, 'getResource', this.onSearch);
+      this.myListenTo(Events, 'delete', this['delete']);
 //      if (!this.collection) {
 //        var self = this;
 //        U.getTypes(this.vocModel).forEach(function(type) {
@@ -354,8 +370,20 @@ define('models/Resource', [
 //        });
 //      }
 
-      this.listenTo(Events, 'updateBacklinkCounts:' + uri, this.updateCounts);
+      this.myListenTo(Events, 'updateBacklinkCounts', this.updateCounts);
       this._hasUri = true;
+    },
+    
+    myListenTo: function(obj, event, fn) {
+      fn._id = G.nextId();
+      var uri = this.getUri(),
+          suffix = ':' + uri;
+      
+      if (!event.endsWith(suffix))
+        event = event + suffix;
+      
+      this.stopListening(obj, event, fn, this);
+      this.listenTo(obj, event, fn, this);
     },
 
     onSearch: function(cb) {
@@ -426,8 +454,8 @@ define('models/Resource', [
           };
           
       this.listenTo(Events, 'preventDelete', prevent);
-      this.trigger(Events, 'delete', this, options);
-      this.trigger(Events, 'delete:' + this.getUri(), this, options);
+      Events.trigger('delete', this, options);
+      Events.trigger('delete:' + this.getUri(), this, options);
       this.stopListening(Events, 'preventDelete', prevent); 
       if (preventDelete) {
         delete this._deleting;
@@ -692,10 +720,10 @@ define('models/Resource', [
       var self = this;
 //      list.on("all", onChange);
       ['updated', 'added', 'reset', 'removed'].forEach(function(event) {
-        self.stopListening(list, event);
-        self.listenTo(list, event,  function(arg) {
+        self.stopListening(list, event, null, self);
+        self.listenTo(list, event, function(arg) {
           self.trigger('inlineList', self, propName, event, arg);
-        });
+        }, self);
       });
 
       self.trigger('inlineList', self, propName, 'new');
@@ -1811,6 +1839,10 @@ define('models/Resource', [
         shortName: '_shortUri',
         range: "Resource"
       }
+    },
+    
+    getInstanceOf: function(model, atts, options) {
+      return U.getResourceInstance.apply(U, arguments);
     }
   });
 

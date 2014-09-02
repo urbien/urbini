@@ -422,20 +422,33 @@ define('backboneMixins', ['globals', 'underscore', 'backbone', 'events', 'utils'
           }
         }
 
-        if (modelEvents) {
-          var delegated = this._delegatedModelEvents = this._delegatedModelEvents || {};
-          for (var key in modelEvents) {
-            if (!_.has(delegated, key)) {
-              var eventName = getEventName(key),
-                  fn = getFunction.call(this, modelEvents, key);
-              
-              delegated[key] = fn;
-              this.listenTo(this.model, eventName, fn, this);
-            }
+        if (modelEvents)
+          this.delegateModelEvents();
+      },
+
+      redelegateModelEvents: function() {
+        this.stopListening(this.model);
+        this.delegateModelEvents();
+      },
+
+      delegateModelEvents: function() {
+        var delegated = this._delegatedModelEvents = this._delegatedModelEvents || {},
+            modelEvents = this.modelEvents;
+        
+        if (!modelEvents)
+          return;
+        
+        for (var key in modelEvents) {
+          if (!_.has(delegated, key)) {
+            var eventName = getEventName(key),
+                fn = getFunction.call(this, modelEvents, key);
+            
+            delegated[key] = fn;
+            this.listenTo(this.model, eventName, fn, this);
           }
         }
       },
-
+      
       /**
        * delegates DOM (from events, pageEvents blocks) and non-DOM (from windowEvents, globalEvents, myEvents blocks) events from this view
        */
