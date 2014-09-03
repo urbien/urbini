@@ -65,7 +65,7 @@ define('views/Header', [
       });
 
       this._filter = {
-        type: U.getTypeUri('commerce/trading/Feed'),
+        type: this.vocModel.type,
         params: {}
       };
       
