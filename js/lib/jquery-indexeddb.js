@@ -53,7 +53,7 @@ define('jqueryIndexedDB', ['globals'].concat(Lablz.dbType == 'shim' ? 'indexedDB
       Array.removeFromTo(pendingTransactions, idx, idx + 1);
     
     if (!pendingTransactions.length)
-      pendingTransDfd.resolve();
+      pendingTransDfd && pendingTransDfd.resolve();
   };
 
   _.extend($, {

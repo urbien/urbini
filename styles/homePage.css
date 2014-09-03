@@ -60,8 +60,8 @@ html {
 
 .section.dark, .section.dark .section-title {
   background-color: #2e3b4e;
-  /*color: #ffddcc;*/
-  color: #FFA989;
+  color: #ffddcc;
+  /*color: #FFA989;*/
 }
 
 .section.dark h4, .section.dark a {
@@ -546,7 +546,7 @@ body > .section:not([data-role="page"]) {
   }
 }
 
-@media only screen and (min-width: 440px) and (min-height: 500px) {
+@media only screen and (min-width: 440px) and (min-height: 620px) {
   .cta {
     padding: 25px 50px;
   }
@@ -769,6 +769,7 @@ body > .section:not([data-role="page"]) {
   border: 2px solid #C7C7FF;
   /*box-shadow: rgba(0, 0, 0, 0.49) 1px 1px 3px 0px;*/
   width: 100%;
+  max-width: 250px;
 }
 
 .headshot, .headshot1 {
@@ -830,10 +831,10 @@ body > .section:not([data-role="page"]) {
 }
 
 @media only screen and (min-width: 480px) {
-  .section .span_1_of_4, .section .span_1_of_3 {
+/*  .section .span_1_of_4, .section .span_1_of_3 {
     min-height: 400px;
   }
-
+*/
   .pricing-section .span_1_of_3 {
     min-height: 550px;
   }

@@ -1,10 +1,11 @@
 define('views/HistoricalDataView', [
   'globals',
   'utils',
+  'events',
   'views/BasicView',
   'vocManager',
   'collections/ResourceList'
-], function(G, U, BasicView, Voc, ResourceList) {
+], function(G, U, Events, BasicView, Voc, ResourceList) {
 
   var RawValue = G.DEV_PACKAGE_PATH + 'Technicals/RawValue';
   var PreviousValue = G.DEV_PACKAGE_PATH + 'Technicals/PreviousValue';
@@ -78,18 +79,39 @@ define('views/HistoricalDataView', [
     var listModel = options.list.vocModel,
         listProps = listModel.properties,
         cols = options.cols[0].shortName ? _.pluck(options.cols, 'shortName') : options.cols,
+        colsWithValues = [],
         rows = options.list.map(function(model) {
-          var row = [];
+          var row = [],
+              hasNonZeroes = false,
+              val;
+          
           for (var i = 0; i < cols.length; i++) {
-            row.push(model.get(cols[i]));
+            val = model.get(cols[i]);
+            row.push(val);
+            if (!U.isDateProp(listProps[cols[i]]))
+              hasNonZeroes = hasNonZeroes || val;
+            
+            colsWithValues[i] = colsWithValues[i] || val;
           }
 
-          return row;
-        });
-
-    return _.extend({
+          return hasNonZeroes ? row : null;
+        }),
+        i = cols.length;
+        
+    rows = _.compact(rows);
+        
+    while (i--) {
+      if (!colsWithValues[i]) {
+        cols.splice(i, 1);
+        for (var j = 0; j < rows.length; j++) {
+          rows[j].splice(i, 1);
+        }
+      }
+    }
+        
+    return _.defaults({
       rows: rows,
-      cols: options.cols.map(function(c) { return typeof c == 'string' ? listProps[c] : c; })
+      cols: cols.map(function(c) { return typeof c == 'string' ? listProps[c] : c; })
     }, options);
   };
 
@@ -119,6 +141,9 @@ define('views/HistoricalDataView', [
     },
 
     _sortBy: function(shortName) {
+      if (true)
+        return;
+      
       if (table.order == shortName) {
         table.resources.reverse();
       }
@@ -170,6 +195,9 @@ define('views/HistoricalDataView', [
     },
 
     loadHistoricalDataForOrder: function() {
+//      if (U.getUserRole() != 'siteOwner' && U.getUserRole() != 'admin')
+//        return;
+      
       var self = this,
           order = this.resource,
           securityUri = order.get('security'),
@@ -180,7 +208,8 @@ define('views/HistoricalDataView', [
           model: eventModel,
           params: {
             feed: securityUri,
-            $select: 'lastTradePrice,ask,bid'
+            $orderBy: 'dateOccurred',
+            $asc: 0
           }
         });
 
@@ -189,11 +218,12 @@ define('views/HistoricalDataView', [
             if (events.length) {
               self._table = toTableData({
                 list: events,
-                cols: U.getEventCols(eventModel),
+                cols: ['dateOccurred'].concat(U.getEventCols(eventModel)),
                 title: 'Historical Data'
               });
 
               self.subscribeToDataQueries();
+              dfd.resolve();
             }
           }
         });
@@ -244,7 +274,7 @@ define('views/HistoricalDataView', [
                 params = {
                   $orderBy: dateProp,
                   $select: dateProp + ',' + valProp,
-                  $asc: false
+                  $asc: 0
                 };
 
             if (U.isAssignableFrom(model, 'commerce/trading/Event'))
@@ -268,7 +298,7 @@ define('views/HistoricalDataView', [
                   if (self._isComparison) {
                     if (_.size(self.historicalDataLists) == 2) {
                       self._table = self.buildComparisonTable();
-                      dfd.notify();
+                      dfd.resolve();
                     }
                   }
                   else {
@@ -287,10 +317,15 @@ define('views/HistoricalDataView', [
                       //   self.historicalDataLists._comparison = getComparisonTable(self.historicalDataLists.values().concat(cols));
                       // }
 
-                      dfd.notify();
+                      dfd.resolve();
                     }
                   }
                 }
+              },
+              
+              error: function() {
+                debugger;
+                dfd.reject();
               }
             });
           });
@@ -314,7 +349,7 @@ define('views/HistoricalDataView', [
           latestEvent = dateOccurred && events.max(function(event) {
             return event.get(dateOccurred.shortName);
           }),
-          lastTradePrice = U.isModel(latestEvent) && lastEvent.get('lastTradePrice');
+          lastTradePrice = U.isModel(latestEvent) && (latestEvent.get('lastTradePrice') || latestEvent.get('open'));
 
       if (lastTradePrice) {
         this.listenTo(Events, 'getStockQuote:' + this.resource.get('security'), function(cb) {
@@ -406,7 +441,7 @@ define('views/HistoricalDataView', [
     },
 
     render: function() {
-      this.loadHistoricalData().progress(this.renderHelper); // repaint when new data arrives
+      this.loadHistoricalData().done(this.renderHelper); // repaint when new data arrives
     },
 
     renderHelper: function() {

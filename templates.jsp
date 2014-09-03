@@ -795,6 +795,12 @@
 
 <script type="text/template" id="advisorsPageTemplate">
   <div class="section" id="section_bg">
+    <section data-type="sidebar" class="menuLeft"></section>
+    <section data-type="sidebar" class="menuRight"></section>
+    <div class="headerDiv">
+      <ul class="headerUl">
+      </ul>
+    </div>
     <div class="section-content" style="margin:0 auto; padding-left:20px;padding-right:20px;">
       <div class="title-block">
         <h1 class="section-title">Our Advisors</h1>

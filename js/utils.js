@@ -1863,7 +1863,9 @@ define('utils', [
       else if (n == -Infinity)
         return '-&#8734';
 
-      var s = '';
+      var s = '',
+          sigFigs = 3;
+      
       if (n > 1e12) {
         n /= 1e12;
         s = 'T';
@@ -1880,8 +1882,11 @@ define('utils', [
         n /= 1e3;
         s = 'K';
       }
+      else {
+        sigFigs = n.toString().indexOf('.') + 2;
+      }
 
-      return n.toLocaleString(navigator.language, { maximumSignificantDigits: 3}) + s;
+      return n.toLocaleString(navigator.language, { maximumSignificantDigits: sigFigs}) + s;
     },
 
     // addCommas: function(n) {
@@ -2442,7 +2447,7 @@ define('utils', [
               val += "<a href='" + G.serverName + '/' + G.pageRoot + '#' + uri + "'>" + t + "</a>";
             }
           }
-          else if (prop.facet != 'emailAddress'  &&  val.indexOf('<') == -1)
+          else if (prop.facet != 'emailAddress' && prop.facet != 'phone' &&  val.indexOf('<') == -1)
             val = "<span>" + val + "</span>";
           else if (!isView  &&  prop.maxSize > 1000) {
             var color;

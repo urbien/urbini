@@ -982,7 +982,7 @@ define('views/EditView', [
         if (prevHash && !prevHash.startsWith('chooser/'))
           Events.trigger('back', 'going back from edit view (after submit with no properties set by the user) 1');
         else
-          Events.trigger('navigate', U.makeMobileUrl('view', this.resource));
+          Events.trfigger('navigate', U.makeMobileUrl('view', this.resource));
 
         return;
       }
@@ -1294,19 +1294,20 @@ define('views/EditView', [
         return;
 
       Events.trigger('getStockQuote:' + r.get('security'), function saveQuote(lastTradePrice) {
-        debugger;
         var quantityContainer = self.$('li[data-shortname="quantity"] ._prim')[0],
-            amountEl;
+            amountEl,
+            price = (quantity * lastTradePrice * 100 | 0) / 100;
 
         if (quantityContainer) {
           amountEl = quantityContainer.$('[data-amount]')[0];
           if (!amountEl) {
             amountEl = document.createElement('div');
             amountEl.className = 'propertyComment';
+            amountEl.$data('amount', price);
             quantityContainer.$append(amountEl);
           }
 
-          amountEl.innerHTML = quantity + ' shares cost $' + (quantity * lastTradePrice) + ' at the current stock price';
+          amountEl.innerHTML = quantity + ' shares cost $' + price + ' at the current stock price';
         }
       });
 
