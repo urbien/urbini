@@ -109,6 +109,9 @@ define('views/HistoricalDataView', [
       }
     }
 
+    if (!rows.length || !rows[0].length)
+      return null;
+
     return _.defaults({
       rows: rows,
       cols: cols.map(function(c) { return typeof c == 'string' ? listProps[c] : c; })
@@ -216,13 +219,16 @@ define('views/HistoricalDataView', [
 
         events.fetch({
           success: function() {
-            if (events.length) {
-              self._table = toTableData({
-                list: events,
-                cols: ['dateOccurred'].concat(U.getEventCols(eventModel)),
-                title: 'Historical Data'
-              });
+            if (!events.length)
+              return;
 
+            self._table = toTableData({
+              list: events,
+              cols: ['dateOccurred'].concat(U.getEventCols(eventModel)),
+              title: 'Historical Data'
+            });
+
+            if (self._table) {
               self.subscribeToDataQueries();
               dfd.resolve();
             }
@@ -297,31 +303,36 @@ define('views/HistoricalDataView', [
                 if (list.length) {
                   self.historicalDataLists[uri] = list;
                   if (self._isComparison && _.size(self.historicalDataLists) == 2) {
-                    self._table = self.buildComparisonTable();
-                    dfd.resolve();
-                  }
-                  else {
-                    self._table = toTableData({
-                      list: list,
-                      cols: [cols.date, cols.value],
-                      title: 'Historical Data',
-                      heading: cleanIndicatorName(indicator)
-                    });
-
-                    // var table = toTable(list, indicator, cols);
-                    if (self._table) {
-                      self.historicalDataTables[uri] = self._table;
-                      self._table.order = dateProp;
-                      // if (_.size(self.historicalDataLists) > 1) {
-                      //   self.historicalDataLists._comparison = getComparisonTable(self.historicalDataLists.values().concat(cols));
-                      // }
-
-                      if (self._isComparison)
-                        dfd.notify();
-                      else
-                        dfd.resolve();
+                    var table = self.buildComparisonTable();
+                    if (table) {
+                      self._table = table;
+                      dfd.resolve();
                     }
+
+                    return;
                   }
+
+                  self._table = toTableData({
+                    list: list,
+                    cols: [cols.date, cols.value],
+                    title: 'Historical Data',
+                    heading: cleanIndicatorName(indicator)
+                  });
+
+                  // var table = toTable(list, indicator, cols);
+                  if (!self._table)
+                    return;
+
+                  self.historicalDataTables[uri] = self._table;
+                  self._table.order = dateProp;
+                  // if (_.size(self.historicalDataLists) > 1) {
+                  //   self.historicalDataLists._comparison = getComparisonTable(self.historicalDataLists.values().concat(cols));
+                  // }
+
+                  if (self._isComparison)
+                    dfd.notify();
+                  else
+                    dfd.resolve();
                 }
               },
 
@@ -393,14 +404,19 @@ define('views/HistoricalDataView', [
             date1 = m1 && m1.get(d1),
             date2 = m2 && m2.get(d2),
             date = date1 && date2 ? Math.max(date1, date2) : date1 || date2,
-            v1 = date == date1 && m1.get(p1) || '',
-            v2 = date == date2 && m2.get(p2) || '',
+            v1 = date == date1 && m1.get(p1),
+            v2 = date == date2 && m2.get(p2),
+            v1IsNum = typeof v1 == 'number',
+            v2IsNum = typeof v2 == 'number',
             diff = '',
             row = [],
             left = this._leftMinusRight ? v1 : v2,
             right = this._leftMinusRight ? v2 : v1;
 
-        if (typeof v1 == 'number' && typeof v2 == 'number') {
+        if (!v1IsNum && !v2IsNum)
+          continue;
+
+        if (v1IsNum && v2IsNum) {
           if (right === 0) {
             diff = left == 0 ? 0 : left > 0 ? Infinity : -Infinity;
           }
@@ -413,7 +429,13 @@ define('views/HistoricalDataView', [
         // row[cols[1]] = v1;
         // row[cols[2]] = v2;
         // row[cols[3]] = diff;
-        row.push(date, v1, v2, diff);
+        row.push(
+          date,
+          v1IsNum ? v1 : '',
+          v2IsNum ? v2 : '',
+          diff
+        );
+
         rows.push(row);
 
         // data.date[k] = date;
