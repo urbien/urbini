@@ -84,22 +84,22 @@ define('views/HistoricalDataView', [
           var row = [],
               hasNonZeroes = false,
               val;
-          
+
           for (var i = 0; i < cols.length; i++) {
             val = model.get(cols[i]);
             row.push(val);
             if (!U.isDateProp(listProps[cols[i]]))
               hasNonZeroes = hasNonZeroes || val;
-            
+
             colsWithValues[i] = colsWithValues[i] || val;
           }
 
           return hasNonZeroes ? row : null;
         }),
         i = cols.length;
-        
+
     rows = _.compact(rows);
-        
+
     while (i--) {
       if (!colsWithValues[i]) {
         cols.splice(i, 1);
@@ -108,7 +108,7 @@ define('views/HistoricalDataView', [
         }
       }
     }
-        
+
     return _.defaults({
       rows: rows,
       cols: cols.map(function(c) { return typeof c == 'string' ? listProps[c] : c; })
@@ -143,7 +143,7 @@ define('views/HistoricalDataView', [
     _sortBy: function(shortName) {
       if (true)
         return;
-      
+
       if (table.order == shortName) {
         table.resources.reverse();
       }
@@ -197,7 +197,7 @@ define('views/HistoricalDataView', [
     loadHistoricalDataForOrder: function() {
 //      if (U.getUserRole() != 'siteOwner' && U.getUserRole() != 'admin')
 //        return;
-      
+
       var self = this,
           order = this.resource,
           securityUri = order.get('security'),
@@ -208,6 +208,7 @@ define('views/HistoricalDataView', [
           model: eventModel,
           params: {
             feed: securityUri,
+            $limit: 100,
             $orderBy: 'dateOccurred',
             $asc: 0
           }
@@ -295,11 +296,9 @@ define('views/HistoricalDataView', [
               success: function() {
                 if (list.length) {
                   self.historicalDataLists[uri] = list;
-                  if (self._isComparison) {
-                    if (_.size(self.historicalDataLists) == 2) {
-                      self._table = self.buildComparisonTable();
-                      dfd.resolve();
-                    }
+                  if (self._isComparison && _.size(self.historicalDataLists) == 2) {
+                    self._table = self.buildComparisonTable();
+                    dfd.resolve();
                   }
                   else {
                     self._table = toTableData({
@@ -317,12 +316,15 @@ define('views/HistoricalDataView', [
                       //   self.historicalDataLists._comparison = getComparisonTable(self.historicalDataLists.values().concat(cols));
                       // }
 
-                      dfd.resolve();
+                      if (self._isComparison)
+                        dfd.notify();
+                      else
+                        dfd.resolve();
                     }
                   }
                 }
               },
-              
+
               error: function() {
                 debugger;
                 dfd.reject();
@@ -441,23 +443,11 @@ define('views/HistoricalDataView', [
     },
 
     render: function() {
-      this.loadHistoricalData().done(this.renderHelper); // repaint when new data arrives
+      this.loadHistoricalData().progress(this.renderHelper)
+                               .done(this.renderHelper); // repaint when new data arrives
     },
 
     renderHelper: function() {
-      // var list = this.historicalData.models,
-      //     model = this.historicalData.vocModel,
-      //     meta = model.properties,
-      //     l = list.length,
-      //     props,
-      //     data;
-
-      // if (!l || !dataEl)
-      //   return;
-
-      // dataEl.$html(this.historicalDataTemplate({ cols: props.map(function(p) { return meta[p]; }), resources: models }));
-
-      // var data = this._isComparison ? this.comparisonTable : { tables: this.historicalDataTables };
       this.html(this.template(this._table));
       this.getPageView().invalidateSize();
       this.finish();
@@ -466,4 +456,3 @@ define('views/HistoricalDataView', [
     displayName: 'HistoricalDataView'
   });
 });
-
