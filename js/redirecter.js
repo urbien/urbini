@@ -1048,8 +1048,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
                 variantUri: isTechnical ? '{0}{1}/{2}'.format(G.DEV_PACKAGE_PATH, 'Technicals', clName) : vRes.get('davClassUri')
               }, common),
               indicator;
-
-
+          
           if (iParams.name && name != 'RawValue') {
             iParams.name = iParams.name + ' (' + (isTechnical ? U.getDisplayName(vRes) : vRes.get('label')) + ')';
           }
@@ -1117,14 +1116,14 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
           tfParams = _.toQueryParams(params.$tradleFeedParams),
           tradleUri = getTradleUri(tfParams.tradleFeed);
 
-      if (~eventPropertyUri.indexOf('commerce/trading/TradleEvent/')) {
+      if (eventPropertyUri && ~eventPropertyUri.indexOf('commerce/trading/TradleEvent/')) {
         U.makeTradleToTradleIndicator(tradleUri, tfParams.tradleFeed, valueRes).done(function() {
           Events.trigger('navigate', U.makeMobileUrl('view', tradleUri));
         });
-        
+
         return;
       }
-        
+
       if (U.getTypeUri(eventProperty).endsWith('commerce/trading/FREDSeries')) {
         tfParams.eventPropertyUri = G.DEV_PACKAGE_PATH + 'FRED/' + valueRes.get('id') + '/value';
         var title = valueRes.get('title'),
@@ -1219,7 +1218,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
           var P = p.capitalizeFirst(),
               val = forRes.get(p),
               dn = forRes.get(p + '.displayName');
-          
+
           if (val)
             props['compareWith' + P] = val;
           if (dn)

@@ -568,10 +568,6 @@ define('views/ControlPanel', [
       case 'YesNo':
         subClassOf = 'commerce/trading/BooleanRule';
         break;
-//      case 'Numeric':
-//      case 'Fraction':
-//      case 'Percent':
-//      case 'Money':
 //      /* falls through */
       default:
         subClassOf = 'commerce/trading/NumericRule';
@@ -608,6 +604,11 @@ define('views/ControlPanel', [
         // HACK!
         // ruleParams.name = "!MoreThanIndicatorByRule";
         // ruleParams.davClassUri = "!" + U.getTypeUri('commerce/trading/LessThanIndicatorByRule');
+      }
+      
+      if (propType == 'Percent') {
+        var and = 'name=' + _.encode('!RoseMoreThanRule') + '&' + 'name=' + _.encode('!FellMoreThanRule');
+        ruleParams.$and = ruleParams.$and ? ruleParams.$and + '&' + and : and; 
       }
 
       Events.trigger('navigate', U.makeMobileUrl('chooser', 'system/designer/WebClass', ruleParams));
@@ -988,9 +989,11 @@ define('views/ControlPanel', [
         else {
           if (grid) {
             var gridCols = '';
-            for (var row in grid)
+            for (var row in grid) {
               gridCols += grid[row].value;
+            }
 
+            // make self-referential indicators: color: rgba(40, 146, 198, 0.65);
             params.gridCols = gridCols;
           }
           if (U.isA(listVocModel, 'ImageResource')) {

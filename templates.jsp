@@ -402,7 +402,7 @@
 <!-- Social Links -->
   {{ var r = this.resource, uri = r.getUri(), owner = r.get('owner'), submittedBy = r.get('submittedBy'), user = G.currentUser._uri, isOwner = user && user == (owner || submittedBy); }}
   {{ if (user && (user == owner || user == submittedBy)) { }}
-    <a class="socialAction" href="{{= U.makePageUrl('edit', r.getUri(), {$editCols: 'activated,title,description,isPublic'}) }}"><span class="ui-icon-edit" data-url="{{= uri }}">&#160;EDIT</span></a>
+    <a class="socialAction" href="{{= U.makePageUrl('edit', r.getUri()) }}"><span class="ui-icon-edit" data-url="{{= uri }}">&#160;EDIT</span></a>
   {{ } }}
   {{ if (U.getBacklinkCount(r, 'tradleRules')) { }}
     <a href="{{= U.getTwitterLink(r) }}" class="socialAction" data-url="{{= uri }}"><span class="ui-icon-twitter" target="_blank">&#160;TWEET</span></a>

@@ -1589,18 +1589,27 @@ define('utils', [
     getRuleDisplayName: function(rule, model) {
       model = model || rule.vocModel;
       var dn1 = rule.get('indicator.displayName'),
+          fdn1 = U.getValueDisplayName(rule, 'feed'),
           op = U.getRuleOperator(rule),
           atts = rule.attributes;
 
       if (!dn1)
         return;
 
-      parts = [dn1, op];
+      parts = [];
+      if (fdn1 && !dn1.startsWith(fdn1))
+        parts.push(fdn1);
+
+      parts.push(dn1, op);
       if (rule.get('compareWith')) {
         var dn2 = rule.get('compareWith.displayName'),
+            fdn2 = U.getValueDisplayName(rule, 'compareWithFeed'),
             percent = rule.get('percentValue');
 
         if (dn2) {
+          if (fdn2 && !dn2.startsWith(fdn2))
+            parts.push(fdn2);
+
           parts.push(dn2);
           if (rule.vocModel.shortName.endsWith('ByRule')) {
             parts.push('by', percent !== undefined ? percent + '%' : '...');
@@ -1865,7 +1874,7 @@ define('utils', [
 
       var s = '',
           sigFigs = 3;
-      
+
       if (n > 1e12) {
         n /= 1e12;
         s = 'T';
@@ -2258,11 +2267,16 @@ define('utils', [
     },
 
     getValueDisplayName: function(res, propName) {
-      var prop = res.vocModel.properties[propName];
-      if (prop && (U.isResourceProp(prop) || prop.multiValue))
-        return res.get(propName + '.displayName');
+      var prop = res.vocModel.properties[propName],
+          val = res.get(propName);
 
-      var val = res.get(propName);
+      if (prop && (U.isResourceProp(prop) || prop.multiValue)) {
+        if (val && /commerce\/trading\/(Stock|Index)$/.test(U.getTypeUri(val)))
+          return _.toQueryParams(val).symbol;
+
+        return res.get(propName + '.displayName');
+      }
+
       if (val == undefined)
         return val;
 
@@ -2485,14 +2499,19 @@ define('utils', [
         }
       }
 
-      val = val || res.get(propName) || '';
+      val = val === undefined ? res.get(propName) || '' : val;
       if (prop.code) {
         val = '<textarea id="{0}" data-code="{1}" name="code" readonly="readonly" onfocus="this.blur()">{2}</textarea>'.format(G.nextId() + propName, prop.code, prop.code === 'html' ? _.htmlEscape(val) : val);
 //        val = '<div id="{0}_numbers" style="float: left; width: 2em; margin-right: .5em; text-align: right; font-family: monospace; color: #CCC;"></div>'.format(propName)
 //            + '<pre>{0}</pre>'.format(prop.code === 'html' ? _.htmlEscape(val) : val);
       }
 
-      var displayName = res.get(propName + '.displayName');
+      var displayName;
+      if (propName == 'feed' && res.isAssignableFrom('commerce/trading/TradleIndicator') && val == res.get('tradle'))
+        displayName = '<span style="color:rgba(40, 146, 198, 0.7);">This Tradle</span>';
+      else
+        displayName = res.get(propName + '.displayName');
+
       if (displayName) {
         val = (prop.multiValue) ? {value: displayName} : {value: val, displayName: displayName};
       }
@@ -5243,7 +5262,12 @@ define('utils', [
 
       return cols;
     },
-    
+
+    isSelfTradleFeed: function(tradleFeedUri) {
+      var uuids = tradleFeedUri.split('?')[1].split('&');
+      return uuids[0] == uuids[1];
+    },
+
     makeTradleToTradleIndicator: function(tradleUri, tradleFeed, prop) {
       return U.require('vocManager').then(function(Voc) {
         Voc.getModels('commerce/trading/TradleIndicator').done(function(iModel) {
@@ -5253,9 +5277,9 @@ define('utils', [
             tradleFeed: tradleFeed,
             variantUri: G.DEV_PACKAGE_PATH + 'Technicals/RawValue',
             eventPropertyUri: prop.get('davPropertyUri'),
-            eventPropertyName: prop.get('name') 
+            eventPropertyName: prop.get('name')
           });
-        
+
           indicator.save();
         })
       });
