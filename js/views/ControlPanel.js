@@ -544,7 +544,8 @@ define('views/ControlPanel', [
             feed: indicator.get('feed'),
             tradle: indicator.get('tradle'),
             tradleFeed: indicator.get('tradleFeed'),
-            'tradleFeed.displayName': indicator.get('tradleFeed.displayName')
+            'tradleFeed.displayName': indicator.get('tradleFeed.displayName'),
+            sustainFrequency: indicator.get('pollFrequency')
           },
           subClassOf;
 
