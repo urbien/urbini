@@ -25,8 +25,10 @@ define('views/ControlPanel', [
     if (!res)
       return false;
 
-    if (res.isAssignableFrom('commerce/trading/Tradle') && blProp.shortName == 'notifications')
-      return false;
+    if (res.isAssignableFrom('commerce/trading/Tradle')) {
+      if (blProp.shortName == 'notifications' || !U.isPropEditable(res, blProp))
+        return false;
+    }
 
     return true;
   };
@@ -537,6 +539,7 @@ define('views/ControlPanel', [
           indicator = indicators.get(link.$data('uri')),
           propRange = indicator.get('eventPropertyRangeUri'),
           eventRange = indicator.get('eventClassRangeUri'),
+          eventPropertyUri = indicator.get('eventPropertyUri'),
           isEnum = /\/EnumProperty$/.test(propRange),
           propType = indicator.get('propertyType'),
           params = {
@@ -586,7 +589,7 @@ define('views/ControlPanel', [
         subClassOfUri: G.defaultVocPath + subClassOf,
         $createInstance: 'y',
         $props: _.param(params),
-        $title: indicator.get('feed.displayName') + ' ' + U.getDisplayName(indicator)
+        $title: (indicator.get('feed.displayName') || '') + ' ' + U.getDisplayName(indicator)
       };
 
       var showCompareWithRules = indicators.any(function(i) {
@@ -605,10 +608,10 @@ define('views/ControlPanel', [
         // ruleParams.name = "!MoreThanIndicatorByRule";
         // ruleParams.davClassUri = "!" + U.getTypeUri('commerce/trading/LessThanIndicatorByRule');
       }
-      
-      if (propType == 'Percent') {
+
+      if (propType == 'Percent' || (eventPropertyUri && eventPropertyUri).endsWith('/commerce/trading/TradleEvent/timesFiredSinceActivation')) {
         var and = 'name=' + _.encode('!RoseMoreThanRule') + '&' + 'name=' + _.encode('!FellMoreThanRule');
-        ruleParams.$and = ruleParams.$and ? ruleParams.$and + '&' + and : and; 
+        ruleParams.$and = ruleParams.$and ? ruleParams.$and + '&' + and : and;
       }
 
       Events.trigger('navigate', U.makeMobileUrl('chooser', 'system/designer/WebClass', ruleParams));

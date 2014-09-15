@@ -133,37 +133,37 @@ define('views/HistoricalDataView', [
       this.isRule = this.resource.isAssignableFrom('commerce/trading/Rule');
     },
 
-    events: {
-      'click th[data-shortname]': 'sortBy'
-    },
+    // events: {
+    //   'click th[data-shortname]': 'sortBy'
+    // },
 
-    sortBy: function(e) {
-      var shortName = e.selectorTarget.$data('shortname');
-      if (shortName)
-        this._sortBy(shortName);
-    },
+    // sortBy: function(e) {
+    //   var shortName = e.selectorTarget.$data('shortname');
+    //   if (shortName)
+    //     this._sortBy(shortName);
+    // },
 
-    _sortBy: function(shortName) {
-      if (true)
-        return;
+    // _sortBy: function(shortName) {
+    //   if (true)
+    //     return;
 
-      if (table.order == shortName) {
-        table.resources.reverse();
-      }
-      else {
-        table.order = shortName;
-        // this.historicalData.sortBy(this._sortBy);
-        table.rows.sort(function(a, b) {
-          return a[shortName] - b[shortName];
-        });
+    //   if (table.order == shortName) {
+    //     table.resources.reverse();
+    //   }
+    //   else {
+    //     table.order = shortName;
+    //     // this.historicalData.sortBy(this._sortBy);
+    //     table.rows.sort(function(a, b) {
+    //       return a[shortName] - b[shortName];
+    //     });
 
-        // if (_.isEqual(sorted, table.resources))
-        //   sorted.reverse();
-        // table.resources = sorted;
-      }
+    //     // if (_.isEqual(sorted, table.resources))
+    //     //   sorted.reverse();
+    //     // table.resources = sorted;
+    //   }
 
-      this.render();
-    },
+    //   this.render();
+    // },
 
     loadHistoricalData: function() {
       if (this._historicalDataPromise)

@@ -2996,9 +2996,6 @@ define('utils', [
         debugger;
         return false;
       }
-
-//      return err ? propName + ' ' + err : true;
-      return true;
     },
 
     /**

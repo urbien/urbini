@@ -12,6 +12,15 @@ define('collections/ResourceList', [
     G.log.apply(G, args);
   };
 
+  var DEFAULT_UPDATE_OPTIONS = {
+    partOfUpdate: true
+  };
+
+  var DEFAULT_UPDATE_OPTIONS_NO_VALIDATION = {
+    partOfUpdate: true,
+    validateMembership: false
+  };
+
   var tsProp = 'davGetLastModified';
   var listParams = ['perPage', 'offset'];
   var ResourceList = Backbone.Collection.extend({
@@ -275,7 +284,7 @@ define('collections/ResourceList', [
 
     onResourceChange: function(resource, options) {
       var removed;
-      if (!this.belongsInCollection(resource))
+      if (options.validateMembership !== false && !this.belongsInCollection(resource))
         removed = this.remove(resource);
 
       options = options || {};
@@ -507,7 +516,7 @@ define('collections/ResourceList', [
     },
 
     set: function(resources, options) {
-      options = _.defaults(options || {}, {partOfUpdate: true});
+      options = _.defaults(options || {}, DEFAULT_UPDATE_OPTIONS);
 //      var start = _.now();
 //      try {
         return Backbone.Collection.prototype.set.call(this, resources, options);
@@ -844,9 +853,7 @@ define('collections/ResourceList', [
         if ((forceMerge && newModelProps && _.size(newModelProps)) || !newLastModified || newLastModified > ts) {
           if (saved) {
             saved.loadInlined(newData);
-            saved.set(newData, {
-              partOfUpdate: true  // to avoid updating collection (and thus views) 20 times
-            });
+            saved.set(newData, DEFAULT_UPDATE_OPTIONS_NO_VALIDATION);
 
             updated.push(saved);
           }
@@ -894,14 +901,14 @@ define('collections/ResourceList', [
       this.stopListening();
       this.remove(this.models);
     },
-    
+
     getResourceInstance: function(model, atts, options) {
       if (arguments.length == 2) {
         atts = model;
         options = atts;
         model = this.vocModel
       }
-        
+
       return U.getResourceInstance(model, atts, options);
     }
   }, {

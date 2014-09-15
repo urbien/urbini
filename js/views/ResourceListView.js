@@ -144,7 +144,7 @@ define('views/ResourceListView', [
         type: col.vocModel.type,
         params: _.clone(col.params)
       };
-      
+
       this.originalModel = col.vocModel;
 //      Physics.here.on('translate.' + this.axis.toLowerCase(), this.getBodyId(), this.onScroll);
 //
@@ -191,7 +191,7 @@ define('views/ResourceListView', [
       this.collection = col;
       this.redelegateModelEvents();
     },
-    
+
     resetMason: function() {
       console.log("RESETTING LIST VIEW MASON");
       this._outOfData = false;
@@ -204,9 +204,9 @@ define('views/ResourceListView', [
       this.$('.masonry-brick').$remove();
       this.setDisplayedRange(0, 0);
       this._resetting = 1;
-      this.mason.reset();      
+      this.mason.reset();
     },
-    
+
     doFilter: function(filter) {
       // TODO: filter similar to search, except per property instead of for displayName, maybe generalize it so it works for search too
       if (!this._filter)
@@ -259,10 +259,10 @@ define('views/ResourceListView', [
 //          params: _.defaults(this._filter.params, this.originalFilter.params)
           params: this._filter.params
         });
-  
+
         this.collection.filterAndAddResources(this.getPageView().collection.models);
       }
-      
+
       this.resetMason();
     },
 
@@ -509,14 +509,14 @@ define('views/ResourceListView', [
             pk = tradleUri.slice(tradleUri.indexOf('?') + 1),
             prop = itemView.resource,
             tradleFeed = U.makeUri(type, pk + '&' + pk);
-        
+
         U.makeTradleToTradleIndicator(tradleUri, tradleFeed, prop).done(function() {
-          Events.trigger('navigate', U.makeMobileUrl('view', tradleUri));        
+          Events.trigger('navigate', U.makeMobileUrl('view', tradleUri));
         });
-        
+
         return;
       }
-      
+
       isWebCl = itemView.doesModelSubclass(G.commonTypes.WebClass);
       isImplementor = type && type.endsWith('system/designer/InterfaceImplementor');
       cloned = itemView.clonedProperties;
@@ -576,7 +576,7 @@ define('views/ResourceListView', [
           var p1Range = U.getModel(t).properties[p1].range,
               v1 = itemView.resource.get('_uri'),
               v2 = params['$forResource'];
-          
+
           if (U.isAssignableFrom(itemView.vocModel, p1Range) && U.getTypeUri(v1) != U.getTypeUri(v2)) {
             rParams[p1] = v1;
             rParams[p2] = v2;
@@ -735,7 +735,7 @@ define('views/ResourceListView', [
 //    },
 
     _resetSlidingWindow: function() {
-      debugger;
+      // debugger;
 //      this._outOfData = false;
 //      this._displayedRange.from = this._displayedRange.to = 0;
 //      this.el.$empty();

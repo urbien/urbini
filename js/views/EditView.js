@@ -700,7 +700,7 @@ define('views/EditView', [
       clearForm(this.$('form'));
     },
     getInputs: function() {
-      return this.getForm().$('[data-formEl]');
+      return this.getForm().$('input[name],[data-formEl]');
     },
 
     getScrollers: function() {

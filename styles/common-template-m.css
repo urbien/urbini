@@ -1786,6 +1786,12 @@ li.anim-overlay-active {
   font-weight: normal;
 }
 
+.quickstart-options {
+  -webkit-margin-before: 0;
+  -webkit-margin-after: 0;
+  -webkit-padding-start: 0;
+}
+
 .quickstart .ui-icon-remove {
   position: absolute;
   padding: 5px;

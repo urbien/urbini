@@ -57,7 +57,7 @@
                         browser.opera ? 'o' :
                           browser.ms ? 'ms' : '';
 
-    browser.supported = browser.chrome || browser.mozilla || browser.ios || (browser.msie && parseInt(browser.version) >= 10);
+    browser.supported = browser.webkit || browser.mozilla || browser.ios || (browser.msie && parseInt(browser.version) >= 10);
     return browser;
   })();
 
@@ -1967,7 +1967,7 @@
 //    },
 
     validatePhone: function(phone) {
-      return /^(\+?\d{0,3})\s*((\(\d{3}\)|\d{3})\s*)?\d{3}(-{0,1}|\s{0,1})\d{2}(-{0,1}|\s{0,1})\d{2}$/.test(phone);
+      return /^(\+?\d{0,3})-?\s*((\(\d{3}\)|\d{3})\s*)?\d{3}(-{0,1}|\s{0,1})\d{2}(-{0,1}|\s{0,1})\d{2}$/.test(phone);
     },
 
     validateZip: function(zip) {
