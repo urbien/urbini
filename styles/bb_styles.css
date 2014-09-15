@@ -242,6 +242,10 @@ div.ui-input-text, input.ui-input-text, textarea {
   font-size: 1.6rem;
   box-sizing: border-box;
 }
+input.times {
+  width: 30%;
+  display: inline-block;
+}
 
 textarea {
   border-radius: 1rem;
@@ -314,7 +318,9 @@ fieldset {
   input[data-date="true"] {
     width: auto;
   }
-
+  input.times {
+    width: 30%;
+  }
 }
 
 fieldset div {

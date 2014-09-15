@@ -2599,8 +2599,9 @@
   {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 250, tag = isInput ? 'input' : 'textarea'; }}
   {{ if (obj.name) { }}
     ><label for="{{= id }}" class="ui-input-text" style="{{= isInput ? '' : 'vertical-align:top;' }}color:{{= G.darkColor }};">{{= name }}</label>
-    <{{= isInput ? 'input type="text"' : 'textarea rows="3" cols="20" ' }} name="{{= shortName }}" id="{{= id }}" placeholder="{{= prop.sample || '' }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}  class="ui-input-text">{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= tag }}>
+    <{{= isInput ? 'input type="text"' : 'textarea rows="3" cols="20" ' }} name="{{= shortName }}" id="{{= id }}" placeholder="{{= prop.sample || '' }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}  class="ui-input-text{{= prop.facet  &&  prop.facet == 'times' ? ' times' : '' }}">{{= typeof value != 'undefined' && !isInput ? value : '' }} {{= prop.facet  &&  prop.facet == 'times' ? (sustainFrequency ? sustainFrequency : 'days' ) : '' }}</{{= tag }}>
   {{ } }}
+  
   {{ if (!obj.name) { }}
   style="text-align:center;"><div>
     <{{= isInput ? 'input type="text"' : 'textarea  rows="10" style="width:95%;"' }} name="{{= shortName }}" id="{{= id }}" placeholder="{{= prop.sample || '' }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}>{{= typeof value != 'undefined' && !isInput ? value : '' }}</{{= tag }}>
@@ -2617,14 +2618,14 @@
 </div>
 </script>
 
-<script type="text/template" id="timesPET">
+<!--script type="text/template" id="timesPET">
 <div class="_prim">
   <label for="{{= id }}"  class="ui-input-text" >{{= name }}</label>
   {{= obj.releaseFrequency ? '<div>' + releaseFrequency  + '</div>' : ''}}
   <input type="range" name="{{= shortName }}" id="{{= id }}" value="{{= obj.value ? value : '0' }}" {{= rules }} data-mini="true" max="100" min="0" style="width:65%;vertical-align:middle;" onchange="document.getElementById(this.id + '_text').innerHTML = this.value;"/>
   <div id="{{= id }}_text" style="display:inline-block;vertical-align:middle;padding-left:.5rem;font-size:2rem;color:#7aaac3;font-weight:bold;"></div>
 </div>
-</script>
+</script-->
 
 <script type="text/template" id="booleanPET">
 <div class="_prim">

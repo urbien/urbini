@@ -2752,6 +2752,37 @@ define('utils', [
           val.type = 'email';
         else if (facet.toLowerCase().endsWith('phone'))
           val.type = 'tel';
+        else if (facet == 'times') {
+          var f = res.get('sustainFrequency');
+          if (f) {
+            switch (f.charAt(0)) {
+            case 'H':
+              val.sustainFrequency = 'hours';
+              break;
+            case 'W':
+            case 'B':  // bi-weekly
+            case 'E':  // every 6 weeks
+              val.sustainFrequency = 'weeks';
+              break;
+            case 'M':
+              if (f == 'Minutes')
+                val.sustainFrequency = 'minutes';
+              else              
+                val.sustainFrequency = 'months';
+              break;
+            case 'Q':
+              val.sustainFrequency = 'quarters';
+              break;
+            case 'A':
+            case 'S': //SemiAnnual  
+              val.sustainFrequency = 'years';
+              break;
+            default:
+              val.sustainFrequency = 'days';
+              break;
+            }            
+          }
+        }
       }
 //      if (prop.comment)
 //        val.comment = prop.comment;
