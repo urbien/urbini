@@ -618,8 +618,11 @@ define('views/ResourceListItemView', [
         var comments = cpProps.comments;
         if (comments) { 
           var pMeta = meta[comments];
-          var cnt = tmpl_data[pMeta.shortName] && tmpl_data[pMeta.shortName].count;
-          tmpl_data.v_showCommentsFor = { uri: _.encode(U.getLongUri1(atts['_uri'])), count: cnt }; //_.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          // Exception happens because Tradle has comments and Feed does not and resources of the both of the types appear in the list for feed for indicator chooser 
+          if (pMeta) {
+            var cnt = tmpl_data[pMeta.shortName] && tmpl_data[pMeta.shortName].count;
+            tmpl_data.v_showCommentsFor = { uri: _.encode(U.getLongUri1(atts['_uri'])), count: cnt }; //_.encode(U.getLongUri1(rUri)); // + '&m_p=' + comments[0] + '&b_p=' + pMeta.backLink);
+          }
         }
       }
     },
