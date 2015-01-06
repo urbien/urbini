@@ -1350,9 +1350,11 @@
   {{ if (!obj.right && obj.image) { }}
     style="max-height: 80px;position:absolute;max-height: 80px;max-width: 80px;margin-left:-90px; margin-top:-0.7em"
   {{ } }}
+  {{= !obj.right  &&  !obj.image ? 'style="display:block;"' : '' }}
   data-for="{{= U.getImageAttribute(this.resource, this.imageProperty) }}"
   class="lazyImage" />
   {{= viewCols }}
+  {{= obj.addType ? '<div style="font-size:1.2rem;margin:5px 0;color:#888;">' + addType + '</div>' : '' }}
 </div>
 </div>
 </script>
