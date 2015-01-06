@@ -298,6 +298,11 @@ define('views/ResourceListItemView', [
       if (this.resource.has('_defaultValue'))
         data.defaultValue = this.resource.get('_defaultValue');
       
+      if (options.addType) {
+        var dtype = U.getTypeUri(data._uri);
+        var dm = U.getModel(dtype);
+        data.addType = dm ? dm.displayName : U.getShortName(dtype);
+      }
       var html = this.template(data, options.unlazifyImages);
       if (options && options.renderToHtml)
         this._html = this.renderHtml(html);
