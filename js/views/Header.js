@@ -930,7 +930,7 @@ define('views/Header', [
     refreshTitle: function() {
       this.recalcTitle();
       this.titleContainer.innerHTML = this.title;
-      var title = this.$('.pageTitle')[0],
+      var title = this.$('.pageTitle')[0] || this.$('#pageTitle')[0],
           length = this.title.length,
           fontSize;
 
@@ -1340,7 +1340,9 @@ define('views/Header', [
 //      }
 
       this.html(this.template(tmpl_data));
-      this.titleContainer = this.$('.pageTitle')[0];
+      var tc = this.$('.pageTitle');
+      this.titleContainer = tc.length ? this.$('.pageTitle')[0] : this.$('#pageTitle')[0];
+      
       this.renderPhysics();
       this.refreshTitle();
       this.refreshActivated();
