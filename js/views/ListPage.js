@@ -73,7 +73,7 @@ define('views/ListPage', [
       var meta = vocModel.properties;
 
       var showAddButton;
-      if (CAN_SHOW_ADD_BUTTON && !this.vocModel.adapter  &&  !isChooser  &&  !isMV  &&  !U.isA(this.vocModel, 'GenericMessage')) {
+      if (CAN_SHOW_ADD_BUTTON && !this.vocModel.adapter  &&  (!isChooser  ||  isMV)  &&  !U.isA(this.vocModel, 'GenericMessage')) {
         if (this.vocModel['skipAccessControl']) {
           showAddButton = type.endsWith('/App')                      ||
                           U.isAnAppClass(vocModel)                       ||
@@ -82,7 +82,7 @@ define('views/ListPage', [
           if (!showAddButton) {
             var p = U.getContainerProperty(vocModel);
             if (!p)
-              showAddButton = U.isUserInRole(U.getUserRole(), 'siteOwner');
+              showAddButton = (isMV  &&  !G.currentUser.guest) || U.isUserInRole(U.getUserRole(), 'siteOwner');
             else if (params[p]) {
               var self = this;
               Voc.getModels(this.vocModel.properties[p].range).done(function(m) {
