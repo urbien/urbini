@@ -1345,7 +1345,13 @@ define('views/ResourceListView', [
         this._renderItemOptions = {};
 
       this._renderItemOptions.unlazifyImages = !this._scrollable;
-
+      
+      
+      var subTabs = this.el.parentNode.parentNode.querySelector('.bookmark.actionBtn');
+      if (subTabs)
+        this._renderItemOptions.addType = subTabs.childNodes[subTabs.childNodes.length - 1].textContent.trim() == 'All';
+        
+      
       if (this.isMultiValueChooser) {
         options.checked = _.contains(this.mvVals, res.get('davDisplayName'));
       }
