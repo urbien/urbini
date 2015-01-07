@@ -1229,7 +1229,7 @@ define('globals', function() {
   }, false);
 
   _.extend(G, {
-    _widgetLibrary: G.currentApp.widgetLibrary || 'topcoat',
+    _widgetLibrary: G.currentApp.widgetLibrary || 'Building Blocks',
     _pageIsVisible: true,
     browser: browser,
     isVisible: function() {
@@ -1636,9 +1636,15 @@ define('globals', function() {
     },
     classMap: G.classMap || {},
     defaultVocPath: 'http://www.hudsonfog.com/voc/',
+    contextual: function(shortName) {
+      if (!G.vocContext)
+        return shortName;
+      
+      return G.vocContext[shortName];
+    },
     commonTypes: {
       App: 'model/social/App',
-      Urbien: 'commerce/urbien/Urbien',
+      Urbien: 'commerce/trading/Tradler',
       Friend: 'model/company/Friend',
       FriendApp: 'model/social/FriendApp',
       Theme: 'model/social/Theme',
