@@ -71,6 +71,13 @@ define('utils', [
             error: 'acceptable values are True and False'
           }
         };
+      })(),
+      TRADLE_ORDERS = (function getOrdersProp() {
+        var appPath = G.currentApp.appPath;
+        if (appPath == 'Tradle')
+          return 'orders';
+         else if (appPath == 'Restaurant')
+          return 'restaurantOrders';
       })();
 
 //      MONTHS = [ "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December" ],
@@ -1892,7 +1899,13 @@ define('utils', [
         s = 'K';
       }
       else {
-        sigFigs = n.toString().indexOf('.') + 2;
+        var str = n.toString(),
+            dIdx = str.indexOf('.');
+        
+        if (dIdx == -1)
+          sigFigs = str.length;
+        else
+        sigFigs = dIdx + 2;
       }
 
       return n.toLocaleString(navigator.language, { maximumSignificantDigits: sigFigs}) + s;
@@ -2416,7 +2429,7 @@ define('utils', [
               val = "<span style='color:" + cc + "'>" + val + "</span>";
           }
         }
-        else if (prop.facet  &&  prop.facet == 'iconFont') {
+        else if (prop.facet == 'iconFont') {
           var s = val.split(';');
           var v = '';
           for (var i=0; i<s.length; i++)
@@ -2425,7 +2438,7 @@ define('utils', [
           noName = true;
           val = v;
         }
-        else if (prop.facet  &&  prop.facet == 'src') {
+        else if (prop.facet == 'src') {
           var s = val.split(';');
           var v = '';
           for (var i=0; i<s.length; i++)
@@ -2434,6 +2447,8 @@ define('utils', [
           noName = true;
           val = v;
         }
+        else if (prop.facet == 'href')
+          val = v;
         else if (val && prop.range == 'string') {
           var href = window.location.hash;
           var isView = href.startsWith("#view/");
@@ -2645,6 +2660,8 @@ define('utils', [
       if (!G.currentUser.guest)
         params['-ref'] = U.getUserReferralParam();
 
+      if (typeOrUri.charAt(0) == '/')
+        typeOrUri = typeOrUri.substring(1);
       url = action + '/' + (HAS_PUSH_STATE ? typeOrUri : encodeURIComponent(typeOrUri));
       if (!_.isEmpty(params)) {
         if (HAS_PUSH_STATE) {
@@ -5139,7 +5156,7 @@ define('utils', [
         params.url = G.serverName + '/media/media.html?uri=' + _.encode(res.getUri());
 //        hashtags = 'tradle';
 
-        var orders = res.getInlineList('orders');
+        var orders = res.getInlineList(U.getTradleOrdersProp());
         if (orders && orders.length) {
           orders = _.compact(_.uniq(orders.pluck('security')));
           if (orders.length)
@@ -5311,6 +5328,15 @@ define('utils', [
           indicator.save();
         })
       });
+    },
+    
+    contextual: function(shortName) {
+      var type = G.contextual(shortName);
+      return type && U.getTypeUri(type);
+    },
+    
+    getTradleOrdersProp: function() {
+      return TRADLE_ORDERS;
     }
   };
 
