@@ -94,7 +94,12 @@ button {
   font-size: 1.8rem;
   font-weight: bold;
 }
-
+.impersonation {
+  margin: 10px 0; 
+}
+.impersonation a {
+  color: #2892c6;
+}
 .headerButtons a[role="button"] {
   width: auto;
   height: 2.3rem;
