@@ -747,9 +747,10 @@ define('views/ResourceListItemView', [
           viewCols += '</div>';
         }
         else {
+          var ps = prop.propertyStyle;
           var s = s.trim();
-          if (firstProp)
-            viewCols += s.charAt('0') != '<' ?'<span>' + s + '</span>' : s;
+          if (firstProp) // Added propertyStyle check to distinguish displaying of comments
+            viewCols += s.charAt('0') != '<' ?'<span' + (ps ? ' style="' + ps + '"' : '') + '>' + s + '</span>' : s;
           else 
             viewCols += s.charAt('0') != '<' ? '<span style="font-weight:normal">' + s + '</span>' : s;
           
