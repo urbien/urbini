@@ -324,7 +324,7 @@
 <script type="text/template" id="rightMenuButtonTemplate">
   <!-- button that toggles the object properties panel -->
   <button class="topcoat-button-bar__button">
-  <a target="#" href="#{{= viewId }}"><i class="ui-icon-reorder"></i></a><!--{{= '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}-->
+  <a target="#"><i class="ui-icon-reorder"></i></a><!--{{= '<span class="menuBadge">{0}</span>'.format(obj.count || '') }}-->
     {{= '<span class="topcoat-notification">{0}</span>'.format(obj.newAlerts || '') }}
     </a>
   <!--span style="position: absolute;font-size:14px;top:-0.2rem;"><i class="ui-icon-sort"></i></span-->
