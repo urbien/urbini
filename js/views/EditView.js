@@ -1276,8 +1276,9 @@ define('views/EditView', [
     },
 
     adjustForm: function() {
-      var r = this.resource;
-      if (r.isAssignableFrom("commerce/trading/Order")) {
+      var r = this.resource,
+          order = U.contextual('Order');
+      if (order  &&  r.isAssignableFrom(order)) {
         this.adjustOrderForm();
       }
     },
@@ -1289,6 +1290,7 @@ define('views/EditView', [
       else
         this.$('[data-shortname="limitPrice"]').$hide();
 
+      this.getPageView().invalidateSize();
       var quantity = r.get('quantity');
       if (!quantity)
         return;
@@ -1307,35 +1309,10 @@ define('views/EditView', [
             quantityContainer.$append(amountEl);
           }
 
-          amountEl.innerHTML = quantity + ' shares cost $' + price + ' at the current stock price';
+          amountEl.innerHTML = '$' + price + ' at the current stock price';
         }
       });
 
-      // if (this.latestSecurityEvent) {
-      //   var price = this.latestSecurityEvent.get('open');
-      //   var li = this.$('li[data-shortname="quantity"]')[0];
-      //   var comment = li.$('comment');
-      //   if (!comment) {
-      //     comment = document.createElement('comment');
-      //     comment.className = 'propertyComment';
-      //     li.$append(comment);
-      //   }
-
-      //   comment.innerHTML = '$' + price + ' at the current price';
-      //   return;
-      // }
-
-      // if (this.fetchSecurityEvent)
-      //   return;
-
-      // var sec = r.get('security');
-      // if (!sec)
-      //   return;
-
-      // this.fetchSecurityEvent = Voc.getModels('commerce/trading/StockEvent').then(function(stockEventModel) {
-      //   var stockEvent =
-      //   U.getResourcePromise(sec).done();
-      // }).then(this.adjustOrderForm.bind(this));
     },
 
     addProp: function(info) {
