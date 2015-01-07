@@ -129,7 +129,8 @@ define('views/HistoricalDataView', [
 
       // this.makeTemplate(this._isComparison ? 'historicalDataTemplate1' : 'historicalDataTemplate', 'template', this.vocModel.type);
       this.makeTemplate('tableTemplate', 'template', this.vocModel.type);
-      this.isOrder = this.resource.isAssignableFrom('commerce/trading/Order');
+      var order = U.contextual('Order');
+      this.isOrder = order &&  this.resource.isAssignableFrom(order);
       this.isRule = this.resource.isAssignableFrom('commerce/trading/Rule');
     },
 
@@ -189,9 +190,9 @@ define('views/HistoricalDataView', [
     },
 
     _loadHistoricalData: function() {
-      if (this.resource.isAssignableFrom('commerce/trading/Rule'))
+      if (this.isRule)
         return this.loadHistoricalDataForRule();
-      else if (this.resource.isAssignableFrom('commerce/trading/Order'))
+      else if (this.isOrder)
         return this.loadHistoricalDataForOrder();
       else
         return G.getRejectedPromise();

@@ -79,8 +79,18 @@ define('views/Header', [
 
       this.makeTemplate('physicsConstantsTemplate', 'physicsConstantsTemplate', vocModel && vocModel.type);
 
-      if (this.resource && /^view/.test(this.hash) && this.resource.isA('Activatable'))
-        this.activatedProp = vocModel.properties[U.getCloneOf(vocModel, 'Activatable.activated')[0]];
+      if (this.resource && /^view/.test(this.hash)){
+        if (this.resource.isA('Activatable'))
+          this.activatedProp = vocModel.properties[U.getCloneOf(vocModel, 'Activatable.activated')[0]];
+        else {
+          var order = U.contextual('Order');
+          if (order  &&  this.resource.isAssignableFrom(order)) {
+            this.executable = {
+              backLink: this.vocModel.properties.executedOrders
+            };
+          }
+        }
+      }
 
 //      if (this.collection) {
 //        var self = this,
@@ -280,13 +290,23 @@ define('views/Header', [
         'click .searchBar .ui-icon-cancel'           : 'toggleFilter',
         'click.header .quickstart .ui-icon-remove'   : 'hideQuickstart',
         'click i.help'                               : 'showQuickstart',
-        'click .pageTitle'                           : 'onClickTitle'
+        'click .pageTitle'                           : 'onClickTitle',
+        'click .executable'                          : 'execute'
   //      'click.header'                                 : 'checkHideQuickstart'
       };
 
       events[TOUCHEND + ' .filterToggle'] = 'toggleFilter'; // input focus trick for mobile browsers (call input.focus() on 'touchend')
       return events;
     })(),
+    
+    execute: function(e) {
+      Events.stopEvent(e);
+      var blName = e.selectorTarget.$data('backlink');
+      var blProp = this.vocModel.properties[blName];
+      var params = {};
+      params[blProp.backLink] = this.resource.getUri();
+      Events.trigger('navigate', U.makeMobileUrl('make', blProp.range, params));
+    },
 
 //    modelEvents: {
 //      'change': 'updateQuickstart',
@@ -469,6 +489,10 @@ define('views/Header', [
       Physics.there.set(type, e.target.name, val);
     },
 
+    getTradleOrdersProp: function() {
+      return G.currentAppPath
+    },
+    
     fileUpload: function(e) {
       Events.stopEvent(e);
       debugger;
@@ -1154,7 +1178,31 @@ define('views/Header', [
         this.makeTemplate('bookmarksTemplate', 'bookmarksTemplate', this.vocModel.type);
 
       if (!this.bookmarks) {
-        this.bookmarks = [{
+        this.bookmarks = this.getBookmarks();
+      }
+      
+      this.bookmarksEl.$show().$html(this.bookmarksTemplate({
+        bookmarks: this.bookmarks
+      }));
+    },
+    
+    getBookmarks: function() {
+      var appPath = G.currentApp.appPath;
+      if (appPath == 'Restaurant') {
+        return [{
+          name: 'All',
+          on: true,
+          type: U.getTypeUri('commerce/trading/Feed')
+        }, {
+          name: 'Inventory',
+          type: U.getTypeUri('commerce/restaurant/InventoryItem'),
+          params: {
+            appPath: 'Restaurant'
+          }
+        }];
+      }
+      else if (appPath == 'Tradle') {
+        return [{
           name: 'All',
           on: true,
           type: U.getTypeUri('commerce/trading/Feed')
@@ -1185,12 +1233,8 @@ define('views/Header', [
           type: U.getTypeUri('commerce/trading/Tradle')
         }];
       }
-
-      this.bookmarksEl.$show().$html(this.bookmarksTemplate({
-        bookmarks: this.bookmarks
-      }));
     },
-
+    
     loadBookmark: function(e) {
       var self = this,
           input = e.selectorTarget.$('input')[0],
@@ -1326,6 +1370,7 @@ define('views/Header', [
       var tmpl_data = this.getBaseTemplateData();
 
       tmpl_data.activatedProp = this.activatedProp;
+      tmpl_data.executable = this.executable;
       tmpl_data.folder = this.folder;
 
 //      tmpl_data.physics = this.getPhysicsConstants(); //Physics.scrollerConstants[this._scrollerType]);
@@ -1490,9 +1535,6 @@ define('views/Header', [
     },
 
     hasQuickstart: function() {
-      if (G.currentApp.appPath != 'Tradle')
-        return false;
-
       var route = this._hashInfo.route;
       return (route == 'view' || route == 'chooser') && !!this.getQuickstartTemplate();
     },

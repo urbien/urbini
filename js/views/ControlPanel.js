@@ -10,6 +10,13 @@ define('views/ControlPanel', [
   'lib/fastdom',
   'physicsBridge'
 ], function(G, _, Events, U, BasicView, Voc, ResourceList, Q, Physics) {
+ 
+  var ORDERS = U.getTradleOrdersProp(),
+      appPath = G.currentApp.appPath,
+      ORDERS_NAME = appPath == 'Restaurant' ? 'ORDERS' : 'TRADES',
+      ADD_ORDERS_HINT = 'ADD ' + ORDERS_NAME + ' TO BE EXECUTED WHEN THIS TRADLE FIRES',
+      ADD_ORDERS_BTN_TEXT = '+ADD ' + ORDERS_NAME;
+  
   function getLi(el) {
     return el.tagName == 'LI' ? el : el.$closest('li');
   };
@@ -20,6 +27,7 @@ define('views/ControlPanel', [
 
     return bl;
   };
+  
 
   function shouldPaintOverlay(res, blProp) {
     if (!res)
@@ -291,7 +299,7 @@ define('views/ControlPanel', [
     },
 
     getTradesBlock: function() {
-      return this.$('section[data-backlink="orders"]');
+      return this.$('section[data-backlink="{0}"]'.format(ORDERS));
     },
 
     hideIndicators: function(e) {
@@ -384,9 +392,9 @@ define('views/ControlPanel', [
         add.$remove();
       else {
         add = this.inlineAddTemplate({
-          backlink: 'orders',
-          hint: 'ADD TRADES TO BE EXECUTED WHEN THIS TRADLE FIRES',
-          action : '+ADD TRADES'
+          backlink: ORDERS,
+          hint: ADD_ORDERS_HINT,
+          action : ADD_ORDERS_BTN_TEXT
         });
 
         block.$append(add);
@@ -405,7 +413,7 @@ define('views/ControlPanel', [
           shortName = t.$data('shortname');
 
       Events.stopEvent(e);
-      if (shortName == 'orders')
+      if (shortName == ORDERS)
         return this.toggleTrades();
 
       if (shortName == 'tradleRules')
@@ -547,11 +555,14 @@ define('views/ControlPanel', [
             feed: indicator.get('feed'),
             tradle: indicator.get('tradle'),
             tradleFeed: indicator.get('tradleFeed'),
-            'tradleFeed.displayName': indicator.get('tradleFeed.displayName'),
-            sustainFrequency: indicator.get('pollFrequency')
+            'tradleFeed.displayName': indicator.get('tradleFeed.displayName')
           },
           subClassOf;
 
+      var sf = indicator.get('pollFrequency');
+
+      if (sf)
+        params.sustainFrequency = sf;
       if (propRange)
         params.eventPropertyRangeUri = propRange;
       if (eventRange)
@@ -772,7 +783,8 @@ define('views/ControlPanel', [
           isRule = U.isAssignableFrom(listVocModel, 'commerce/trading/Rule'),
           isNotification = U.isAssignableFrom(listVocModel, 'commerce/trading/Notification'),
           isIndicator = U.isAssignableFrom(listVocModel, 'commerce/trading/TradleIndicator'),
-          isTrade = U.isAssignableFrom(listVocModel, 'commerce/trading/Order'),
+          order = U.contextual('Order'),
+          isTrade = order  &&  U.isAssignableFrom(listVocModel, order),
           addTradeSection = isTrade && function() {
             var el = document.createElement('section');
             el.$data('backlink', name);
@@ -796,7 +808,7 @@ define('views/ControlPanel', [
 
       var indicatorsCount = getIndicatorsCount(this.resource);
       if (!list.length) {
-        if ((isTrade && !this.resource.inlineLists['orders'].length)  ||  (isRule  && !this.resource.inlineLists['tradleRules'].length)) {
+        if ((isTrade && !this.resource.inlineLists[ORDERS].length)  ||  (isRule  && !this.resource.inlineLists['tradleRules'].length)) {
           var v = propDisplayName;
           if (isRule) {
             if  (indicatorsCount) {
@@ -921,7 +933,10 @@ define('views/ControlPanel', [
 //            iRes.attributes.davDisplayName = idx == -1 ? title : title.substring(idx + 2);
 //          }
 //          else {
+          if (G.currentApp.appPath == 'Tradle')
             iRes.attributes.davDisplayName = iRes.get('action') + " " + iRes.get('quantity') + " " + iRes.get('security.displayName');
+          else if (G.currentApp.appPath == 'Restaurant')
+            iRes.attributes.davDisplayName = iRes.get('title');
 //          }
           params.name = iRes.attributes.davDisplayName;
         }
@@ -1252,8 +1267,12 @@ define('views/ControlPanel', [
     },
 
     renderFT: _.debounce(function() {
-      if (!this.isMainGroup  &&  this.resource.getInlineList('tradleRules')  &&  this.resource.getInlineList('tradleRules').length)
+      if (!this.isMainGroup  &&  
+          G.currentApp.appPath == 'Tradle' &&
+          this.resource.getInlineList('tradleRules')  &&  
+          this.resource.getInlineList('tradleRules').length) {
         this.fetchFTArticles().done(this.doRenderFT);
+      }
     }, 500),
 
     fetchFTArticles: function() {
@@ -1480,13 +1499,17 @@ define('views/ControlPanel', [
           return prop.dataProviderPropertyIndex;
         });
 
-        var indicators, trades = 'orders';
+        var indicators;
         for (var i=0; i<props.length; i++) {
           var name = props[i].shortName;
           if (name == 'indicators')
             indicators = name;
-          else
+          else {
+            if (~name.toLowerCase().indexOf('orders') && name != ORDERS)
+              continue;
+            
             this.renderInlineList(name, frag, displayedProps);
+          }
         }
 
         if (indicators) {
