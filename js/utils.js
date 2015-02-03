@@ -27,6 +27,9 @@ define('utils', [
       ModalDialog,
       $w,
       SOCIAL_SIGNUP_HOME = G.serverName + '/social/socialsignup',
+      blockchainTypes = [
+        'http://www.hudsonfog.com/voc/commerce/trading/Lead'
+      ],
       articleModeTypes = [
        'software/crm/Feature',
        'media/publishing/Article',
@@ -238,6 +241,54 @@ define('utils', [
           useWorker = hasWebWorkers && options.async !== false, // && !opts.sync,
           worker;
 
+      if (G.inWebview && opts.url.startsWith(G.apiUrl)) {
+        var modelType = _.decode(opts.url.slice(G.apiUrl.length).split('?')[0]);
+        if (/^(m|e)/.test(modelType)) modelType = modelType.slice(2);
+        
+        if (blockchainTypes.indexOf(modelType) !== -1) {
+          return U.require('chrome')
+            .then(function(chrome) {
+              var defer = $.Deferred();
+              var prunedOpts = _.pick(opts, 'type', 'url', 'data');
+              chrome.tradle.ajax(prunedOpts, function(err, resp) {
+                if (err) return defer.reject(err);
+                
+                if (opts['for']) opts['for']._setLastFetchOrigin('server');
+                
+                if (resp[0]) {
+                  // resp can be an array, and you can't send naked arrays
+                  var arr = [];
+                  var i = 0;
+                  while (resp[i]) {
+                    if (resp[i]._uri) // hack
+                      arr.push(resp[i]);
+                    
+                    i++;
+                  }
+                  
+                  resp = arr;
+                }
+                
+                var headers = {};
+                var xhr = {
+                  code: 200,
+                  status: 200,
+                  getResponseHeader: function(name) {
+                    return headers[name];
+                  }
+                };
+
+                defer.resolve(resp, 200, xhr);
+              });
+              
+              if (options.success) defer.done(opts.success);
+              if (options.error) defer.fail(opts.error);
+              
+              return defer.promise();
+            });
+        }
+      }
+      
 //      opts.cors = (/(https?:)?\/\//.test(options.url) && options.url.indexOf();
       opts.type = opts.method || opts.type;
       opts.dataType = opts.dataType || 'JSON';

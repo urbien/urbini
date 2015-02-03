@@ -39,8 +39,8 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
   function onMessageFromApp(e) {
     if (e.origin.indexOf('chrome-extension://') != 0)
       return;
-    
-    U.rpc('log', 'got message', e.data);
+
+//    U.rpc('log', 'got message', e.data);
     console.debug('message from app:', e);
     G.appWindow = G.appWindow || e.source;
     G.appOrigin = G.appOrigin || e.origin;
@@ -104,12 +104,10 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
   var chrome = {
     notifications: {
       create: function(id, options, callback) {
-        var args = arguments;
         if (callback)
           callback = createCallbackEvent(callback);
           
-        [].unshift.call(args, this._path);
-        U.rpc.apply(this._path, args);
+        U.rpc(this._path, id, options, callback);
       },
       onButtonClicked: function(callback) {
         U.rpc(this._path, createCallbackEvent(callback));        
@@ -125,8 +123,6 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
       }
     },
     _setup: function() {      
-      Events.on('messageFromApp:push', onpush);
-      Events.on('messageToApp', sendMessageToApp);
 //      var currentApp = G.currentApp,
       var channelId = G.pushChannelId,
           appInstall = G.currentUser.appInstall,      
@@ -153,11 +149,32 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
           chrome.webstore.install(G.chromeManifestPath, defer.resolve, defer.reject);
         }
       }).promise();
+    },
+    tradle: {
+      ajax: function(options, callback) {
+        if (callback)
+          callback = createCallbackEvent(callback);
+        
+        U.rpc(this._path, options, callback);
+      },
+      sign: function(pojo, callback) {
+        if (callback)
+          callback = createCallbackEvent(callback);
+        
+        U.rpc(this._path, pojo, callback);        
+      }
     }
   };
   
   setPaths(chrome);
   window.addEventListener('message', onMessageFromApp);
   Events.on('messageToApp', sendMessageToApp);
+  Events.on('messageFromApp:push', onpush);
+  Events.on('messageFromApp:ping', function() {
+    Events.trigger('messageToApp', { type: 'ping:response' });
+  });
+  
+  if (G.DEBUG) G.chromeApp = chrome;
+  
   return chrome;
 });
