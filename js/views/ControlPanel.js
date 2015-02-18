@@ -1523,9 +1523,10 @@ define('views/ControlPanel', [
           }
         }
       }
+      var vCols = this.hashParams.$viewCols ? this.hashParams.$viewCols.split(',') : null;
 
       if (propGroups.length) {
-        var tmpl_data = {};
+//        var tmpl_data = {};
         for (var i = 0; i < propGroups.length; i++) {
           var grMeta = propGroups[i];
           if (!this.isMainGroup  &&  grMeta.mainGroup)
@@ -1539,6 +1540,9 @@ define('views/ControlPanel', [
             var p = props[j].trim();
             if (!/^[a-zA-Z]/.test(p))
               continue;
+            if (vCols  &&  vCols.indexOf(p) == -1)
+              continue;
+
 
             var prop = meta[p];
             if (!prop || prop.displayInline || displayedProps[p] || !_.has(backlinks, p))
@@ -1604,6 +1608,7 @@ define('views/ControlPanel', [
             }
             else
               icon = prop['icon'];
+            var tmpl_data = {};
 
             tmpl_data.prop = prop;
             tmpl_data.icon = null;
@@ -1662,11 +1667,13 @@ define('views/ControlPanel', [
       }
       if (!this.isMainGroup) {
         groupNameDisplayed = false;
-        var tmpl_data = {};
+//        var tmpl_data = {};
         var cnt = 0;
         for (var p in meta) {
           cnt++;
           if (!/^[a-zA-Z]/.test(p))
+            continue;
+          if (vCols  &&  vCols.indexOf(p) == -1)
             continue;
 
           var prop = meta[p];
@@ -1754,6 +1761,9 @@ define('views/ControlPanel', [
   //          var uri = U.getShortUri(res.getUri(), vocModel);
             var uri = res.getUri();
             var t = title + "&nbsp;&nbsp;<span class='ui-icon-caret-right'></span>&nbsp;&nbsp;" + n;
+
+            var tmpl_data = {};
+
             tmpl_data.prop = prop;
             tmpl_data.range = range;
             tmpl_data.shortName = p;

@@ -126,10 +126,11 @@ define('views/MainMenuPanel', [
       var ul = this.ul = this.$('#menuItems')[0];
       var html = "";
 
+      var isKYC = G.currentApp.appPath === 'KYC';
       if (G.currentUser.guest)
         html += this.menuItemTemplate({title: this.loc('login'), icon: 'user', mobileUrl: 'view/profile', homePage: 'y', id: 'login'});
       else {
-        var mobileUrl = 'view/profile';
+        var mobileUrl = 'view/profile' + (isKYC ? '?$viewCols=myDocuments,receivedVerifications,verifiedByMe,sentToVerify,receivedToVerify,pendingVerifications,notVerified' : '');
         if (!hash  ||  hash != mobileUrl) {
           var params = {
             title: this.loc('profile'),
@@ -162,10 +163,13 @@ define('views/MainMenuPanel', [
 //          U.addToFrag(frag, this.menuItemTemplate(params));
         }
       }
-
+      // KYC specific
+      var notAuthority = isKYC  &&  (!G.currentUser.organization  ||  G.currentUser.organization.indexOf('commerce/kyc/FinancialOrganization') == -1);
       if (G.tabs) {
         var tabs = _.clone(G.tabs);
         for (var name in tabs) {
+          if (isKYC  &&  notAuthority  &&  tabs[name].title.toLowerCase() == 'requests to sign')
+            continue;
           var t = tabs[name];
           t.pageUrl = t.hash;
 //          U.addToFrag(frag, this.menuItemTemplate(t));

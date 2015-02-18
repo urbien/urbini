@@ -27,9 +27,10 @@ define('utils', [
       ModalDialog,
       $w,
       SOCIAL_SIGNUP_HOME = G.serverName + '/social/socialsignup',
-      blockchainTypes = [
-        'http://www.hudsonfog.com/voc/commerce/trading/Lead'
-      ],
+//      blockchainTypes = [
+//        'http://www.hudsonfog.com/voc/commerce/trading/Lead',
+//        'http://www.hudsonfog.com/voc/commerce/kyc/Attestation'
+//      ],
       articleModeTypes = [
        'software/crm/Feature',
        'media/publishing/Article',
@@ -109,6 +110,20 @@ define('utils', [
     return name;
   };
 
+  function shouldAjaxViaWebview(opts) {
+    if (!G.inWebview || !opts.url.startsWith(G.apiUrl)) return false;
+    
+    var reqPath = _.decode(opts.url.slice(G.apiUrl.length).split('?')[0]);
+    if (!/\/(m|e)\//.test(reqPath)) return false;
+    
+    if (!opts['for'] || !opts['for'].isA('OnChain')) return false;
+    
+    var txHashProp = U.getCloneOf(opts['for'].vocModel, 'OnChain.transactionHash')[0];
+    if (!txHashProp) return false;
+    
+    return !opts.data[txHashProp]; // if we're not sending txHash, we haven't synced via blockchain yet
+  }
+  
 //  Array.prototype.remove = function() {
 //    var what, a = arguments, L = a.length, ax;
 //    while (L && this.length) {
@@ -240,53 +255,13 @@ define('utils', [
           opts = _.clone(options),
           useWorker = hasWebWorkers && options.async !== false, // && !opts.sync,
           worker;
-
-      if (G.inWebview && opts.url.startsWith(G.apiUrl)) {
-        var modelType = _.decode(opts.url.slice(G.apiUrl.length).split('?')[0]);
-        if (/^(m|e)/.test(modelType)) modelType = modelType.slice(2);
-        
-        if (blockchainTypes.indexOf(modelType) !== -1) {
-          return U.require('chrome')
-            .then(function(chrome) {
-              var defer = $.Deferred();
-              var prunedOpts = _.pick(opts, 'type', 'url', 'data');
-              chrome.tradle.ajax(prunedOpts, function(err, resp) {
-                if (err) return defer.reject(err);
-                
-                if (opts['for']) opts['for']._setLastFetchOrigin('server');
-                
-                if (resp[0]) {
-                  // resp can be an array, and you can't send naked arrays
-                  var arr = [];
-                  var i = 0;
-                  while (resp[i]) {
-                    if (resp[i]._uri) // hack
-                      arr.push(resp[i]);
-                    
-                    i++;
-                  }
-                  
-                  resp = arr;
-                }
-                
-                var headers = {};
-                var xhr = {
-                  code: 200,
-                  status: 200,
-                  getResponseHeader: function(name) {
-                    return headers[name];
-                  }
-                };
-
-                defer.resolve(resp, 200, xhr);
-              });
-              
-              if (options.success) defer.done(opts.success);
-              if (options.error) defer.fail(opts.error);
-              
-              return defer.promise();
-            });
-        }
+      
+      if (shouldAjaxViaWebview(opts)) {
+        return U.putOnChain(opts)
+          .then(function(updated) {
+            opts.data = updated;
+            return U.ajax(opts);
+          });
       }
       
 //      opts.cors = (/(https?:)?\/\//.test(options.url) && options.url.indexOf();
@@ -307,7 +282,6 @@ define('utils', [
           if (useWorker) {
             var attachmentsUrlProp = U.getCloneOf(resource.vocModel, "FileSystem.attachmentsUrl")[0];
             if (!attachmentsUrlProp) {
-              debugger;
               Events.trigger('error', {
                 resource: resource,
                 error: "{0} don't support an attachments".format(U.getPlural(resource.vocModel.displayName))
@@ -446,6 +420,50 @@ define('utils', [
       }).promise();
     },
 
+    putOnChain: function(opts) {
+      console.log('ajax via blockchain');
+      return U.require('chrome')
+        .then(function(chrome) {
+          var defer = $.Deferred();
+          var prunedOpts = _.pick(opts, 'type', 'url', 'data');
+          chrome.tradle.ajax(prunedOpts, function(err, resp) {
+            if (err) return defer.reject(err);
+            else return defer.resolve(resp);
+//            if (opts['for']) opts['for']._setLastFetchOrigin('server');
+//            
+//            if (resp[0]) {
+//              // resp can be an array, and you can't send naked arrays
+//              var arr = [];
+//              var i = 0;
+//              while (resp[i]) {
+//                if (resp[i]._uri) // hack
+//                  arr.push(resp[i]);
+//                
+//                i++;
+//              }
+//              
+//              resp = arr;
+//            }
+//            
+//            var headers = {};
+//            var xhr = {
+//              code: 200,
+//              status: 200,
+//              getResponseHeader: function(name) {
+//                return headers[name];
+//              }
+//            };
+//    
+//            defer.resolve(resp, 200, xhr);
+          });
+          
+//          if (options.success) defer.done(opts.success);
+//          if (options.error) defer.fail(opts.error);
+          
+          return defer.promise();
+        })
+    },
+    
     getJSON: function(strOrJson) {
       if (typeof strOrJson == 'string') {
         try {
@@ -2505,10 +2523,13 @@ define('utils', [
           var isView = href.startsWith("#view/");
 
           if (isDisplayName) {
-            if (prop.setLinkTo)
-              val = "<a href='" + res.get(prop.setLinkTo) + "'><span>" + val + "</span></a>";
+            var style = prop.propertyStyle;
+            if (prop.setLinkTo) {
+              var link = res.get(prop.setLinkTo);
+              val = "<a href='" + link + "'><span" + (style ? " style='" + style + "'" : "") + ">" + val + "</span></a>";
+            }
             else
-              val = val.charAt(0) == '<' ? val : "<span>" + val + "</span>";
+              val = val.charAt(0) == '<' ? val : "<span" + (style ? " style='" + style + "'" : "") + ">" + val + "</span>";
           }
 //            val = "<span style='font-size: 18px;font-weight:normal;'>" + val + "</span>";
           else if (prop.facet  &&  prop.facet == 'tags') {
@@ -4424,6 +4445,34 @@ define('utils', [
       });
     },
 
+    permission: function(resource, params, noDialog) {
+      U.getModels("commerce/kyc/VerificationRequest").done(function() {
+        var m = U.getModel('commerce/kyc/VerificationRequest');
+        var att = new m();
+
+        var docs;
+        if (params.$doc) 
+          docs = params.$doc.split(',');
+        else
+          docs = [resource.getUri()];
+        docs.forEach(function(doc) {
+          var props = {};
+          props.owner = G.currentUser._uri;
+          props.document = doc;
+          
+          props.verifyingOrganization = params.$validVerifier ? params.$validVerifier : resource.getUri();
+          att.save(props, {
+            success: function() {
+              console.log('ok');
+            },
+            error: function(err) {
+              console.log(err);
+            }  
+          })
+        })
+      })
+    },
+    
     deposit: function(params) {
       return $.Deferred(function(defer) {
         var trType = G.commonTypes.Transaction;

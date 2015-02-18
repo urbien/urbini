@@ -82,6 +82,17 @@ define('views/Header', [
       if (this.resource && /^view/.test(this.hash)){
         if (this.resource.isA('Activatable'))
           this.activatedProp = vocModel.properties[U.getCloneOf(vocModel, 'Activatable.activated')[0]];
+        else if (this.resource.isA('Bookable')) {
+          var seller = vocModel.properties[U.getCloneOf(vocModel, 'Bookable.seller')[0]];
+          // seller should not be booking it's own listing :)
+          if (this.resource.attributes[seller.shortName] != G.currentUser._uri) {
+            var bookProp = vocModel.properties[U.getCloneOf(vocModel, 'Bookable.bookings')[0]];
+            var bParams = {'$backLink' : bookProp.backLink};
+            bParams[bookProp.backLink] = this.resource.getUri();
+            var bookUri = U.makeMobileUrl('make', bookProp.range, bParams);
+            this.booking = {"bookProp" : bookProp, "bookUri": bookUri};
+          }
+        }
         else {
           var order = U.contextual('Order');
           if (order  &&  this.resource.isAssignableFrom(order)) {
@@ -256,6 +267,11 @@ define('views/Header', [
             title = U.getPlural(res);
           else {
             title = U.getDisplayName(res);
+            if (G.currentApp.appPath == 'KYC'  &&  res.isAssignableFrom('model/company/ContactBySocial')) {
+              var org = res.get('organization');
+              if (org)
+                title += ' : ' + res.get('organization.displayName');
+            }
             if (this._hashInfo.route != 'make') {
               if (!U.isAssignableFrom(this.vocModel, "Contact"))
                 this.pageTitle = res.isLoaded() ? this.vocModel['displayName'] + ": " + title : title;
@@ -1372,6 +1388,7 @@ define('views/Header', [
       tmpl_data.activatedProp = this.activatedProp;
       tmpl_data.executable = this.executable;
       tmpl_data.folder = this.folder;
+      tmpl_data.booking = this.booking;
 
 //      tmpl_data.physics = this.getPhysicsConstants(); //Physics.scrollerConstants[this._scrollerType]);
       if (U.isChatPage()) {

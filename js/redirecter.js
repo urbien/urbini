@@ -796,10 +796,12 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
   Redirecter.prototype._multivalueChooser = function(res, prop, e, options) {
     var params = {},
         vocModel = res.vocModel,
-        type = vocModel.type,
+        isPropertyListGroup = prop.facet && prop.facet == 'webPropertyList',
+        domain = res.get('domain'),
+        type = isPropertyListGroup ? U.getTypeUri(prop.lookupFromType) : vocModel.type,
         prName = prop.displayName,
         lookupFrom = prop.lookupFrom,
-        uri = res.get('_uri'),
+        uri = isPropertyListGroup ? domain : res.get('_uri'),
         p = prop.shortName;
 
     if (!prName)
@@ -813,6 +815,8 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
         if (bl)
           params[bl.backLink] = uri;
       }
+      else if (isPropertyListGroup)
+        params.domain = uri;
 
       params.$forResource = uri;
     }
@@ -1064,8 +1068,8 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
     }
 
     var info = getForResourceInfo();
-    info.promise.done(function(forRes) {
-      var editableProps = forRes.getEditableProps(urlInfo),
+    info.promise.done(function(res) {
+      var editableProps = res.getEditableProps(urlInfo),
           merged = getEditableProps(editableProps) || [],
           props = {};
 

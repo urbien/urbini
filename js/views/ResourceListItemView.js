@@ -39,8 +39,13 @@ define('views/ResourceListItemView', [
       
       this.checked = options.checked;
 //      this.listenTo(this.resource, 'saved', this.render);
-      if (!this.isEdit)
-        this.makeTemplate('listItemTemplate', 'template', this.vocModel.type, true); // don't fall back to default, we want to know if no template was found for this type
+      this.isKYC = G.currentApp.appPath == 'KYC';
+      if (!this.isEdit) {
+        if (this.isKYC  &&  U.isAssignableFrom(this.model, 'model/portal/SharedFile')) 
+          this.makeTemplate('documentListItemTemplate', 'template', null, true); // don't fall back to default, we want to know if no template was found for this type
+        else          
+          this.makeTemplate('listItemTemplate', 'template', this.vocModel.type, true); // don't fall back to default, we want to know if no template was found for this type
+      }
 //      this.makeTemplate('likesAndComments', 'likesAndComments', this.vocModel.type);
       if (this.template) 
         this.isCommonTemplate = false;
@@ -99,7 +104,55 @@ define('views/ResourceListItemView', [
     events: {
 //      'click': 'click',
 //      'click .recipeShoppingList': 'recipeShoppingListHack',
+      
+      'click .verify':     'callVerify',
       'click .cancelItem': 'cancelItem'
+    },
+    
+    callVerify: function (e) { 
+      if (!this.hashParams.$doc) 
+        return;
+      e && Events.stopEvent(e);
+      var docs = this.hashParams.$doc.split(',');
+      var self = this;
+      
+      var docList = '';
+      var dfd = $.Deferred(),
+          promise = dfd.promise();
+      docs.forEach(function(doc) {
+        U.getResourcePromise(doc).done(function(res) {
+          var dn = res.get('davDisplayName');
+          docList = docList.length ? docList + '<br/>' + dn : dn; 
+          if (doc == docs[docs.length - 1])
+            dfd.resolve();
+        })
+      })
+      promise.done(function() {
+        U.modalDialog({
+          id: 'signingDialog',
+          header: 'Submit for verification<br/><span style="font-weight:bold;color:#2892c6;">' + docList + '</span>',
+  //        cancel: false,
+          img: self.hashParams.$doc ? self.resource.get('bigImage') : null,
+//            details: '<p style="width:100%; text-align:center; font-size:1.6rem;"><span style="font-weight:bold;color:#2892c6;">' + docList + '</span></p>',
+          ok: 'Submit',              // aknowlegement of receiving document
+          onok: function() {
+            U.hideModalDialog();
+            var i = 0;
+            docs.forEach(function(doc) {
+              self.hashParams.$doc = doc;
+              U.permission(self.resource, self.hashParams);
+              i++;
+              if (i == docs.length) {
+                var params = {
+                  forResource: G.currentUser._uri,
+                  $title: 'My documents'
+                }    
+                Events.trigger('navigate', 'view/profile?$viewCols=myDocuments,receivedVerifications,verifiedByMe,sentToVerify,receivedToVerify,pendingVerifications,notVerified');        
+              }
+            })
+          }
+        })
+      })
     },
     
     cancelItem: function(e) {
@@ -533,8 +586,25 @@ define('views/ResourceListItemView', [
           superclasses = this['extends'],
           cloned = this.clonedProperties;
       
-      if (!this.commonBlockProps.length) { 
-        json.viewCols = viewCols  &&  viewCols.length ? viewCols : '<div class="commonLI">' + json.davDisplayName + '</div>'; 
+      if (!this.commonBlockProps.length) {
+        var isVV = this.isKYC  &&  U.isA(this.vocModel, 'ValidVerifier');
+        json.viewCols = viewCols  &&  viewCols.length ? viewCols : '<div class="commonLI">' + json.davDisplayName;
+        if (isVV) {
+          if (this.hashParams.$doc) {
+            json.viewCols = '<div class="commonLI"><a id="sign" class="button verify" href="#" style="float:right;margin:1rem;">Ask to Verify</a>';
+          }
+          else {
+            var params = {
+              forResource: G.currentUser._uri,
+              $validVerifier: this.resource.getUri(),
+              $verifierPhoto: this.resource.attributes['smallImage'],
+              $title: 'My Documents'
+            }
+            json.viewCols = '<div class="commonLI"><a class="button verify" href="' + U.makePageUrl('list', 'model/portal/SharedFile', params) + '" style="float:right;margin:1rem;">Request Verification</a>';
+          }
+        }
+          
+        json.viewCols += '</div>'; 
         return viewCols;
       }
       var isSubmission = this.doesModelImplement('Submission');

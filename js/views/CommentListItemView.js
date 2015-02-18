@@ -68,12 +68,28 @@ define('views/CommentListItemView', [
 //    tap: Events.defaultTapHandler,
 //    click: Events.defaultClickHandler,
     render: function(options) {
-      var json = _.pick(this.resource.attributes, 'submitter', 'submitter.displayName', 'submitter.thumb', 'submitTime', 'title', 'description', 'votes');
-      var thumb = json['submitter.thumb'];
+      var s = U.getCloneOf(this.vocModel, 'Note.submitter');
+      var st = U.getCloneOf(this.vocModel, 'Note.submitTime');
+      var t = U.getCloneOf(this.vocModel, 'Note.title');
+      var d = U.getCloneOf(this.vocModel, 'Note.description');
+      var v = U.getCloneOf(this.vocModel, 'Note.votes');
+
+      var json = {};
+      json.submitter = this.resource.attributes[s];
+      json['submitter.displayName'] = this.resource.attributes[s + '.displayName'];
+      json['submitter.thumb'] = this.resource.attributes[s + '.thumb'];
+      json.submitTime = this.resource.attributes[st];
+      json.title = this.resource.attributes[t];
+      json.description = this.resource.attributes[d];
+      json.votes = this.resource.attributes[v];
+
+      
+//      var json = _.pick(this.resource.attributes, 'submitter', 'submitter.displayName', 'submitter.thumb', 'submitTime', 'title', 'description', 'votes');
+      var thumb = json[s + '.thumb'];
       if (thumb) {
         var idx = thumb.indexOf('=');
         thumb = thumb.slice(idx + 1);
-        json['submitter.thumb'] = thumb;
+        json[s + '.thumb'] = thumb;
 
         var idx = thumb.indexOf('_thumbnail.');
         if (idx > 0) {

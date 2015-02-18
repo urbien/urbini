@@ -1154,6 +1154,7 @@ define('models/Resource', [
         return; // for now
 
       var self = this;
+      var myUri = this.getUri();
       var resUri = res.getUri();
       var resJSON;
       var blVocModel = res.vocModel;
@@ -1165,6 +1166,9 @@ define('models/Resource', [
       for (var bl in meta) {
         var blProp = meta[bl];
         if (!blProp)
+          continue;
+
+        if (res.get(blProp.backLink) !== myUri) 
           continue;
 
         var range = U.getTypeUri(blProp.range);

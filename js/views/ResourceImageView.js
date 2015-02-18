@@ -194,7 +194,6 @@ define('views/ResourceImageView', [
     renderHelper: function(options) {
       if (!this.isImage && !this.isVideo && !this.isAudio)
         return false;
-
       var self = this;
       var res = this.resource;
       var meta = this.vocModel.properties;
@@ -371,7 +370,7 @@ define('views/ResourceImageView', [
       if (oWidth) {
         metaDim = Math.min(oWidth, metaDim);
 //        if (this.isImageCover)
-          clip = U.clipToFrame(140, 140, oWidth, oHeight, metaDim);
+        clip = U.clipToFrame(140, 140, oWidth, oHeight, metaDim);
 //        else {
 //          clip = U.clipToFrame(winW, winH, oWidth, oHeight, metaDim);
 //          if (!clip) {
@@ -476,7 +475,7 @@ define('views/ResourceImageView', [
         else if (this.isImageCover  &&  metaDim == 140  &&  oWidth) {
           li = '<div style="border: solid #ccc;width:140px;left:15px;position:absolute">{0}</div>'.format(iTemplate);
         }
-        else
+        else  
           li = '<div style="left:15px;position:absolute;' + (this.isImageCover ? '' : 'top:95px;') + (h ? 'height:' + h  + 'px;' : 'max-height:140px;') +'">{0}</div>'.format(iTemplate);
       }
 
