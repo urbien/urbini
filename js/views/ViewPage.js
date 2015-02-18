@@ -53,7 +53,8 @@ define('views/ViewPage', [
       this.addChild(this.header);
 
 
-      if (!this.isAbout  &&  !isTradle) {
+      var isKYCDocument = G.currentApp.appPath === 'KYC'  &&  U.isAssignableFrom(this.vocModel, 'model/portal/SharedFile'); 
+      if (!this.isAbout  &&  !isTradle &&  !isKYCDocument) {
         var viewType, viewDiv;
         if (res.isA('Intersection')) {
           var aFeatured = U.getCloneOf(this.vocModel, 'Intersection.aFeatured')[0];
@@ -104,9 +105,11 @@ define('views/ViewPage', [
 //      }
 
 //      this.cpMain = new ControlPanel(_.extend(commonParams, {el: $('div#mainGroup', this.el), isMainGroup: true}));
-      if (!isAbout) {
-        // this.cpMain = new ControlPanel(_.extend({isMainGroup: true}, commonParams));
-        // this.addChild(this.cpMain);
+      if (!isAbout  &&  !isKYCDocument) {
+        if (G.currentApp['appPath'] != 'Tradle') {
+           this.cpMain = new ControlPanel(_.extend({isMainGroup: true}, commonParams));
+           this.addChild(this.cpMain);
+        }
         this.cp = new ControlPanel(_.extend({isMainGroup: false}, commonParams));
         this.addChild(this.cp);
       }
@@ -119,6 +122,7 @@ define('views/ViewPage', [
       this.isImageCover = U.isA(this.vocModel, 'ImageCover')  &&  U.getCloneOf(this.vocModel, 'ImageCover.coverPhoto');
 
       this.resourceView = new ResourceView(commonParams);
+      
       this.addChild(this.resourceView);
       this.photogridDfd = $.Deferred();
       this.photogridPromise = this.photogridDfd.promise();

@@ -4,7 +4,35 @@ html {
 .headerUl > li > a {
   line-height: inherit;
 }
-
+.label {
+  opacity: .7;
+}
+.signable a, .signable input, .bookable a, .commonLI .button  {
+  font-weight:normal;
+  width: inherit;
+  font-size:1.7rem;
+  border-color:#2892c6;
+  font-weight: 500;
+  border-radius: 1rem;
+  color: #0670a0;
+  background-color: #fff;
+  border-width: 1px;
+}
+.signable input {
+  padding: 1rem 1.5rem;
+}
+/*
+.bookable a, .commonLI .button {
+  font-weight:normal;
+  width: inherit;
+  font-size:1.7rem;
+  background-color:#2892c6;
+  border-color:#2892c6;
+  color: #fff;
+  font-weight: 500;
+  border-radius: 1rem;
+}
+*/
 #sidebar div.dateLI {
   position:absolute;
   top:.25rem;
@@ -216,6 +244,23 @@ sidebar:after, .header section[role="region"] > header:first-child:after {
 [data-type="list"] li > a {
   height: auto;
   color: #606060;
+}
+
+#interfaceProps, #mvChooser {
+  border: none;
+}
+
+#interfaceProps label div.commonLI, #mvChooser label div.commonLI {
+  font-size: 1.5rem;
+  margin-left: 0;
+}
+
+#interfaceProps label div, #mvChooser label div {
+  font-size: 1.2rem;margin-top: -1.3rem;margin-left: 7rem;
+}
+
+#interfaceProps label, #mvChooser label {
+  font-size: 1.4rem;
 }
 
 li label.ui-input-text, li label.select {
