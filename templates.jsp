@@ -38,8 +38,8 @@
       </div>
     </form>
     <form data-ajax="false" id="editRlForm" action="#">
-      <input type="submit" id="editRlSubmit" value="Submit" />
-      <ul data-role="listview" id="editRlList" class="action-list" data-inset="true">
+      <div class="signable"><input type="submit" id="editRlSubmit" value="Submit" /></div>
+      <div data-type="list" id="editRlList" class="action-list">
       </ul>
     </form>
   </div>
@@ -62,7 +62,7 @@
 <div class="headerDiv"></div>
 <div id="resourceViewHolder">
   <div style="width: 100%;position:relative;padding-right:10px;overflow:hidden;margin-left:0;" class="container_16">
-
+    {{ var isKYCDocument = G.currentApp.appPath === 'KYC'  &&  U.isAssignableFrom(this.vocModel, 'model/portal/SharedFile'); }} 
     {{ if (this.isImageCover) { }}
       <div id="resourceImage" style="margin:0;position:absolute;z-index:1" class="grid_3"></div>
       <div data-role="footer" class="thumb-gal-header hidden"
@@ -71,8 +71,8 @@
       </div>
       <div id="mainGroup" style="padding-right:5px;" {{= U.isAssignableFrom(this.vocModel, 'Tradle') ? 'class="grid_10"' : ''}}></div>
     {{ } }}
-    {{ if (!this.isImageCover) { }}
-      <div id="resourceImage" style="width:50%;float:left;margin:0; padding:0;{{= U.getArrayOfPropertiesWith(this.vocModel.properties, "mainGroup") &&  U.isA(this.vocModel, 'ImageResource') ? 'min-height:160px;' : ''}}" ><!-- style="width:auto" --></div>
+    {{ if (!this.isImageCover  &&  !isKYCDocument) { }}
+      <div id="resourceImage" style="width:50%;float:left;margin:0;' padding:0;{{= U.getArrayOfPropertiesWith(this.vocModel.properties, "mainGroup") &&  U.isA(this.vocModel, 'ImageResource') ? 'min-height:160px;' : ''}}" ><!-- style="width:auto" --></div>
       <div id="mainGroup" style="padding-right:5px;"></div>
     {{ } }}
 
@@ -124,6 +124,18 @@
     </li>
   </ol>
 </div>
+</script>
+
+
+<script type="text/template" id="requestForVerification">
+  {{ if (obj.signable) { }}
+    <section class="signable" style="text-align:center;">
+      <a id="sign" href="#" class="button {{= obj.verifyId }}"  style="{{= obj.$verifierPhoto ? 'padding-left:0;' : '' }}height:inherit;">
+        {{= obj.$verifierPhoto ? '<img src="' + obj.$verifierPhoto + '"' + ' style="vertical-align:middle;" width="50" height="50"/>&#160;' : '' }}
+        {{= !obj.verifyId ||  obj.verifyId == 'askToVerify' ?  'Ask to verify' : 'Verify' }}
+      </a>
+    </section>
+  {{ }                     }}
 </script>
 
 <script type="text/template" id="indicatorChooserQuickstartTemplate">
@@ -1493,6 +1505,30 @@
   </li>
 </script>
 
+<script type="text/template" id="documentTemplate">
+{{ if (obj.pdf) { }}
+	<object data="{{= obj.url }}" type="application/pdf" width="100%" height="600">
+	  <p>It appears you don't have a PDF plugin for this browser.
+	  No biggie... you can <a href="{{= obj.url }}">click here to
+	  download the PDF file.</a></p>
+	</object>
+{{ } }}
+{{ if (obj.img) { }}
+	<div style="text-align:center;"><img src="{{= obj.url }}" style="max-width:600px;box-shadow:2px 2px 10px rgba(0,0,0,0.5);"></img></div>
+{{ } }}
+</script>
+
+<script type="text/template" id="documentListItemTemplate">
+<div style="margin:0" data-viewid="{{= viewId }}">
+  <label class="pack-checkbox">
+    <input data-formel="true" data-mini="true" type="checkbox" {{= obj.disabled ? 'disabled' : '' }} name="validVerifiers" value="{{= this.resource.getUri() }}" {{= obj._checked ? 'checked="checked"' : '' }} />
+    <span></span>
+  </label>
+  <span  style="font-size:1.7rem;">{{= obj.viewCols ? viewCols : this.resource.attributes.davDisplayName }}</span>
+  {{= obj.addType ? '<div style="font-size:1.2rem;margin:5px 0;color:#888;">' + addType + '</div>' : '' }}
+</div>
+</script>
+
 <script type="text/template" id="propRowTemplate">
 <!-- wrapper for one row on a list page (short) -->
 <li class="section group" data-shortname="{{= shortName }}" {{= obj.rules || '' }}>
@@ -1545,6 +1581,7 @@
 <p>
      {{ var params = {}; }}
      {{ params[backlink] = _uri; }}
+     {{ if (obj.prop && prop.where) _.extend(params, U.getQueryParams(prop.where)); }}
      {{ _.copyInto(params, obj, '$orderBy', '$asc'); }}
      <a href="{{= U.makePageUrl('list', range, _.extend(params, {'$title': title})) }}" class="cpA">{{= name }}
 
@@ -1757,7 +1794,7 @@
   <!--div class="modal-popup" style="height: auto; background:{{= G.lightColor }}; color:{{= G.darkColor }};"-->
   <div class="modal-popup" style="height: auto; color: black; background: white;{{= obj.media ? 'margin:0;padding:0;width:100%;' : '' }}{{= obj.style || '' }}">
     {{ if (obj.header) { }}
-      <h2 style="margin-bottom: 0; padding: 1rem 1rem; background:#eee; text-align:center;">{{= header }}</h2>
+      <h2 style="margin-bottom: 0; padding: 1rem 1rem; background:#eee; text-align:center;{{= obj.bgImg ? 'background:url(' + obj.bgImg + ');' : ''}}">{{= header }}</h2>
     {{ }                 }}
 
     {{ if (obj.media) { }}
@@ -1994,6 +2031,11 @@
           <input type="checkbox" name="{{= activatedProp.shortName }}" class="formElement boolean" {{= this.resource.get(activatedProp.shortName) ? 'checked="checked"' : '' }} />
           <span></span>
         </label>
+      </section>
+    {{ }                     }}
+    {{ if (booking) { }}
+      <section class="bookable" style="float: right; margin-left: 3px;">
+        <a href="{{= booking.bookUri }}" class="button">Book</a>
       </section>
     {{ }                     }}
   </div>
@@ -2431,9 +2473,9 @@
     <div name="errors" style="float:left"></div>
     {{ if (this.resource.isAssignableFrom("InterfaceImplementor")) { }}
     <div data-role="fieldcontain" id="ip">
-      <fieldset class="ui-grid-a">
-        <div class="ui-block-a"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true">{{= loc('checkAll') }}</a></div>
-        <div class="ui-block-b"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true">{{= loc('uncheckAll') }}</a></div>
+      <fieldset style="padding:1rem 0; border: none;">
+        <button style="width:49%;"><a target="#" id="check-all" data-icon="check" data-role="button" data-mini="true">{{= loc('checkAll') }}</a></button>
+        <button style="width:49%;float:right"><a target="#" id="uncheck-all" data-icon="sign-blank" data-role="button" data-mini="true">{{= loc('uncheckAll') }}</a></button>
       </fieldset>
       <fieldset data-role="controlgroup" id="interfaceProps">
       </fieldset>
@@ -2554,7 +2596,7 @@
 <!-- a multivalue input for edit forms -->
 {{ var id = G.nextId() }}
 <label class="pack-checkbox">
-  <input type="checkbox" name="davDisplayName" id="{{= id }}" value="{{= _uri }}" {{= obj._checked ? 'checked="checked"' : '' }} />
+  <input type="checkbox" name="{{= name }}" id="{{= id }}" value="{{= _uri }}" {{= obj._checked ? 'checked="checked"' : '' }} />
   <span></span>
 </label>
 <label for="{{= id }}">{{= this.hashParams.$gridCols && viewCols ? viewCols : davDisplayName }}<!-- {{= obj._thumb ? '<img src="' + _thumb + '" style="float:right;max-height:40px;" />' : '' }}--></label>
@@ -2565,11 +2607,14 @@
   <div class="ui-controlgroup-controls">
     {{ var id = G.nextId() }}
     <!-- input data-formel="true" type="checkbox" name="interfaceClass.properties" id="{{= id }}" value="{{= interfaceProps }}" {{= typeof _checked === 'undefined' ? '' : 'checked="checked"' }} / -->
-    <input data-formel="true" data-mini="true" type="checkbox" {{= obj.disabled ? 'disabled' : '' }} name="interfaceProperties" id="{{= id }}" value="{{= interfaceProps }}" {{= obj._checked ? 'checked="checked"' : '' }} />
+    <label class="pack-checkbox">
+      <input data-formel="true" data-mini="true" type="checkbox" {{= obj.disabled ? 'disabled' : '' }} name="interfaceProperties" id="{{= id }}" value="{{= interfaceProps }}" {{= obj._checked ? 'checked="checked"' : '' }} />
+      <span></span>
+    </label>
     <label for="{{= id }}">
       {{= davDisplayName }}
       {{= obj.required ? '(Required)' : '' }}
-      {{= obj.comment ? '<br><span style="font-size:12px;font-weight:normal;">' + comment + '</span>' : '' }}
+      {{= obj.comment ? '<div>' + comment + '</div>' : '' }}
     </label>
   </div>
 </script>
