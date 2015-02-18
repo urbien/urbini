@@ -58,6 +58,7 @@ define('templates', [
       "phone": "telPT",
       "mobilePhone": "telPT",
       "Url": "UrlPT",
+      "href": "hrefPT",
       "Duration": "durationPT",
       "system/primitiveTypes/Duration": "durationPT",
       "date": "datePT",
