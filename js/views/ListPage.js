@@ -184,10 +184,13 @@ define('views/ListPage', [
       this.addChild(this.header);
 
       var isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
-      var isComment = this.isComment = !isModification  &&  !isMasonry &&  U.isAssignableFrom(vocModel, U.getLongUri1('model/portal/Comment'));
+      var isComment = this.isComment = !isModification  &&  !isMasonry &&  /*U.isA(vocModel, 'Note');*/U.isAssignableFrom(vocModel, U.getLongUri1('model/portal/Comment'));
 
-      this.isEdit = (params  &&  params['$editList'] != null); // || U.isAssignableFrom(vocModel, G.commonTypes.CloneOfProperty);
-      this.listContainer = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : (this.isEdit ? '#editRlList' : '#sidebar'));
+      var isKYCDocument = G.currentApp.appPath == 'KYC'  &&  U.isAssignableFrom(this.model, 'model/portal/SharedFile'); 
+      // For KYC we need to be able to choose several documents for verification
+      this.isEdit = isKYCDocument || (params  &&  params['$editList'] != null); // || U.isAssignableFrom(vocModel, G.commonTypes.CloneOfProperty);
+
+      this.listContainer = isMV ? '#mvChooser' : (isModification || isMasonry ? '#nabs_grid' : (isComment) ? '#comments' : (this.isEdit || isKYCDocument ? '#editRlList' : '#sidebar'));
       var listViewType;
       if (this.isSpecialIntersection)
         listViewType = 'IntersectionListView';
@@ -232,8 +235,9 @@ define('views/ListPage', [
 
     events: {
       'click'            : 'click',
+
 //      'click #nextPage'  : 'getNextPage',
-      'click #homeBtn'   : 'home',
+      'click #homeBtn'    : 'home',
       'submit'            : 'submit',
       'click .add'        : 'add'
     },
@@ -311,7 +315,8 @@ define('views/ListPage', [
       e && Events.stopEvent(e);
       var checked = this.listView.$('input:checked');
       if (checked.length) {
-        Events.trigger('choseMulti', this.hashParams.$multiValue, this.filteredCollection, checked);
+        if (!this.checkKYC(checked))
+          Events.trigger('choseMulti', this.hashParams.$multiValue, this.filteredCollection, checked);
         return;
       }
 
@@ -346,6 +351,41 @@ define('views/ListPage', [
       */
 //      this.redirect({trigger: true, replace: true, removeFromView: true});
     },
+    
+    checkKYC: function(checked) {
+      if (G.currentApp.appPath != 'KYC'  ||  !U.isAssignableFrom(this.model, 'model/portal/SharedFile')) 
+        return false;
+      if (this.hashParams.$validVerifier) {
+        if (this.resource)      
+          U.permission(this.resource, this.hashParams);
+        else {                  // route: chose Org, check docs to verify, submit
+          var self = this;
+          var arr = [];
+          for (var i=0; i<checked.length; i++) 
+            arr.push(checked[i].value);
+          
+          this.collection.models.forEach(function(resource) {
+            if (arr.indexOf(resource.getUri()) != -1) 
+              U.permission(resource, self.hashParams, true);
+          })
+        }
+      }
+      else {  // route: chose docs, choseOrg
+        var docs = '';
+        for (var i=0; i<checked.length; i++) {
+          if (docs.length)
+            docs += ',';
+          docs += checked[i].value;
+        } 
+        var params = {
+            $doc: docs,
+            $title: 'Choose the verifying organization'
+          }
+        Events.trigger('navigate', U.makeMobileUrl('list', 'commerce/kyc/FinancialOrganization', params));
+      }
+      return true;
+    },
+    
     home: function() {
       var here = window.location.href;
       Events.trigger('navigate', here.slice(0, here.indexOf('#')));
@@ -375,7 +415,7 @@ define('views/ListPage', [
 //          return true;
 //        }
 //      }
-      if (!U.isA(this.vocModel, 'Buyable') || ((buyLink = $(e.target).closest($('#buyLink'))).length == 0  &&  (tryLink = $(e.target).closest($('#tryLink'))).length == 0)) {
+      if (!U.isA(this.vocModel, 'Buyable') || (!(buyLink = e.target.$closest('#buyLink')) || buyLink.length == 0)  &&  (!(tryLink = e.target.$closest('#tryLink')) || tryLink.length == 0)) {
 //        Events.defaultClickHandler(e);
         return true;
       }

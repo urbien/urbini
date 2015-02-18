@@ -451,6 +451,11 @@ define('views/ResourceListView', [
           viewId,
           dataUri;
 
+      if (top.tagName.toLowerCase() === 'label'  &&  
+          top.className === 'pack-checkbox'      &&  
+          G.currentApp.appPath == 'KYC'          &&  U.isAssignableFrom(this.model, 'model/portal/SharedFile')) 
+        return;
+      
       while (top && top != this.el && !(viewId = top.$data('viewid'))) {
 //        dataUri = top.$data('uri');
 //        if (dataUri) {
@@ -691,7 +696,12 @@ define('views/ResourceListView', [
           }
 
           var action = U.isAssignableFrom(m, "InterfaceImplementor") ? 'edit' : 'view';
-          Events.trigger('navigate', U.makeMobileUrl(action, itemView.resource.getUri()), navOptions); //, {trigger: true, forceFetch: true});
+          var params = _.getParamMap(window.location.href);
+          var vv = params['$validVerifier'];
+          if (vv)
+            Events.trigger('navigate', U.makeMobileUrl(action, itemView.resource.getUri(), {$validVerifier: vv}), navOptions); //, {trigger: true, forceFetch: true});
+          else
+            Events.trigger('navigate', U.makeMobileUrl(action, itemView.resource.getUri()), navOptions); //, {trigger: true, forceFetch: true});
     //          else {
     //            var r = _.getParamMap(window.location.href);
     //            this.router.navigate('view/' + encodeURIComponent(r[pr[0]]), {trigger: true, forceFetch: true});
