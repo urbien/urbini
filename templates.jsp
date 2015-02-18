@@ -92,7 +92,7 @@
   </div>
   {{= this.hasSocialLinks ? '<div class="socialLinks"></div>' : '' }}
   {{ if (this.vocModel.type.endsWith("Impersonations")) { }}
-     <div style="padding:10px;"><a data-role="button" class="ui-btn-hover-c" data-icon="heart" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></div>
+     <button  class="impersonation"><a data-role="button" data-icon="heart" href="{{= U.makePageUrl('make', 'http://www.hudsonfog.com/voc/model/portal/Comment', {$editCols: 'description', forum: this.resource.get('_uri'), '-makeId': G.nextId()}) }}">{{= loc('wooMe') }}</a></button>
   {{ } }}
 
   <div class="stockCharts hidden"></div>
@@ -162,7 +162,7 @@
 <script type="text/template" id="tradleViewQuickstartTemplate">
 <div class="quickstart-content">
   {{ var res = this.resource, name = res.get('title'), desc = res.get('description'), ils = res.getInlineLists() || {}, rules = ils.tradleRules, nRules = rules && rules.length, indicators = ils.indicators, nIndicators = indicators && indicators.length; }}
-  {{ var alerts = ils.notifications, trades = ils.orders, nTrades = trades && trades.length, nAnything = nIndicators || nRules || nTrades, activated = res.get('activated'), isPublic = res.get('isPublic'); }}
+  {{ var alerts = ils.notifications, trades = ils[U.getTradleOrdersProp()], nTrades = trades && trades.length, nAnything = nIndicators || nRules || nTrades, activated = res.get('activated'), isPublic = res.get('isPublic'); }}
   {{ var currentStep = !nIndicators ? 0 : !nRules ? 1 : !nTrades ? 2 : 3; }}
   <i class="ui-icon-remove"></i>
   <h2>Quickstart
@@ -193,7 +193,7 @@
     {{ }                       }}
     {{ if (currentStep == 2) { }}
     <li>
-      <a class="mini-cta" href="#" data-selector="li[data-backlink=&quot;orders&quot;],header[data-shortname=&quot;orders&quot;]" data-tooltip="Click here to add trades" data-direction="bottom" data-offset-top="25">Add trades</a> to be executed when your tradle fires
+      <a class="mini-cta" href="#" data-selector="li[data-backlink=&quot;{{= U.getTradleOrdersProp() }}&quot;],header[data-shortname=&quot;{{= U.getTradleOrdersProp() }}&quot;]" data-tooltip="Click here to add trades" data-direction="bottom" data-offset-top="25">Add trades</a> to be executed when your tradle fires
     </li>
     {{ }                       }}
   </ul>
@@ -807,9 +807,9 @@
 
 <script type="text/template" id="advisorsPageTemplate">
   <div class="section" id="section_bg">
-    <section data-type="sidebar" class="menuLeft"></section>
-    <section data-type="sidebar" class="menuRight"></section>
-    <div class="headerDiv">
+    <sidebar class="menuLeft"></sidebar>
+    <sidebar class="menuRight"></sidebar>
+    <div class="headerDiv" style="position:absolute;top:0px;width: 100%;">
       <ul class="headerUl">
       </ul>
     </div>
@@ -1259,6 +1259,10 @@
 
 <script type="text/template" id="UrlPT">
   <a href="{{= value.href }}">{{= value.linkText }}</a>
+</script>
+
+<script type="text/template" id="hrefPT">
+  <a href="{{= value }}" target="_blank">{{= value.length > 40 ? value.slice(0, 37) + "..." : value }}</a>
 </script>
 
 <script type="text/template" id="telPT">
@@ -2036,6 +2040,9 @@
     {{ if (booking) { }}
       <section class="bookable" style="float: right; margin-left: 3px;">
         <a href="{{= booking.bookUri }}" class="button">Book</a>
+    {{ if (obj.executable) { }}
+      <section class="executable contrast" data-backlink="{{= executable.backLink.shortName }}" style="font-size:28px;cursor:pointer;">
+        <span class="ui-icon-lightning-bolt"></span>
       </section>
     {{ }                     }}
   </div>
@@ -2646,7 +2653,7 @@
   {{ var isInput =  _.isUndefined(prop.maxSize) ||  prop.maxSize < 250, tag = isInput ? 'input' : 'textarea'; }}
   {{ if (obj.name) { }}
     ><label for="{{= id }}" class="ui-input-text" style="{{= isInput ? '' : 'vertical-align:top;' }}color:{{= G.darkColor }};">{{= name }}</label>
-    <{{= isInput ? 'input type="text"' : 'textarea rows="3" cols="20" ' }} name="{{= shortName }}" id="{{= id }}" placeholder="{{= prop.sample || '' }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}  class="ui-input-text{{= prop.facet  &&  prop.facet == 'times' ? ' times' : '' }}">{{= typeof value != 'undefined' && !isInput ? value : '' }} {{= prop.facet  &&  prop.facet == 'times' ? (sustainFrequency ? sustainFrequency : 'days' ) : '' }}</{{= tag }}>
+    <{{= isInput ? 'input type="text"' : 'textarea rows="3" cols="20" ' }} name="{{= shortName }}" id="{{= id }}" placeholder="{{= prop.sample || '' }}" value="{{= typeof value === 'undefined' ? '' : _.htmlEscape(value) }}" {{= rules }}  class="ui-input-text{{= prop.facet  &&  prop.facet == 'times' ? ' times' : '' }}">{{= typeof value != 'undefined' && !isInput ? value : '' }} {{= prop.facet  &&  prop.facet == 'times' ? (obj.sustainFrequency ? sustainFrequency : 'days' ) : '' }}</{{= tag }}>
   {{ } }}
   
   {{ if (!obj.name) { }}
