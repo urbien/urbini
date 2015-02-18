@@ -814,8 +814,12 @@ define('views/EditView', [
         else
           val = input.value === 'Yes' ? true : false;
       }
-      else if (p && p.multiValue)
-        val = this.getResourceInputValue(input); //input.innerHTML;
+      else if (p && p.multiValue) {
+        if (this.isForInterfaceImplementor)
+          val = input.value;
+        else  
+          val = this.getResourceInputValue(input); //input.innerHTML;
+      }
       else if (p && U.isDateProp(p)) {
         if (/[^\d]/.test(input.value))
           val = Date.parse(input.value);
@@ -930,13 +934,12 @@ define('views/EditView', [
         if (val && name.indexOf('_select') == -1  &&  meta[name]  &&  meta[name].multiValue) { //((meta[name]  &&  meta[name].multiValue)  ||  (input.type == 'checkbox'  &&  input.checked))) {
           atts[name] = res.get(name);
           var v = val.split(',');
-          atts[name + '_select'] = v;
-//          var v = atts[name];
-//          if (!v) {
-//            v = [];
-//            atts[name] = v;
-//          }
-//          v.push(val);
+//          atts[name + '_select'] = v;
+          var vv = atts[name + '_select'];
+          if (!vv) 
+            atts[name + 'select'] = v;
+          else
+            atts[name + 'select'] += v;
         }
         else if (input.$data('code')) {
           atts[name] = $(input).data('codemirror').getValue();
@@ -1163,7 +1166,7 @@ define('views/EditView', [
     onSelected: function(e) {
       var atts = {},
           res = this.resource,
-          input;
+          input = e.target;
 
 //      if (arguments.length > 1)
 //        e = arguments[1];
@@ -1216,7 +1219,6 @@ define('views/EditView', [
 //      }
 //      else {
 
-        input = e.target;
         atts[input.name] = this.getValue(input);
 //      }
 
@@ -1250,7 +1252,7 @@ define('views/EditView', [
 
       for (var p in atts) {
         var prop = meta[p];
-        if (!U.validateValue(prop, atts[p])) {
+        if (prop  &&  !U.validateValue(prop, atts[p])) {
           errors[prop.shortName] = true;
           onInvalid(res, errors);
           return false;
