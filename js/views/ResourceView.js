@@ -74,7 +74,8 @@ define('views/ResourceView', [
         this.makeTemplate('gaugesTemplate', 'gaugesTemplate', this.vocModel.type)
 
       this.toggleVisibility(true); // set to invisible until it's rendered
-      if (G.currentApp.appPath == 'KYC') {
+      this.isKYC = G.currentApp.appPath == 'KYC';
+      if (this.isKYC) {
         if (U.isAssignableFrom(this.vocModel, 'model/portal/SharedFile')) { 
           if (this.resource.get('owner') == G.currentUser._uri)
             this.verifyId = 'askToVerify';
