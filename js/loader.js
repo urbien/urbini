@@ -1417,7 +1417,6 @@ define('globals', function() {
 
     _preferredStorageMedium: 'indexedDB',
     getPreferredStorage: function() {
-      debugger;
       var type = this._preferredStorageMedium;
       if (type == 'indexedDB') {
         if (this.dbType == 'none' || DB_OPEN_DFD.state() != 'resolved') {
