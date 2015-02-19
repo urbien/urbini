@@ -155,7 +155,8 @@ define('collectionSynchronizer', ['globals', 'underscore', 'utils', 'synchronize
       if (this._isStale(lastFetchedTS, this._getNow()))
         return this._delayedFetch();
     } finally {
-      this._success(results, 'success', {
+      this._success(results, 200, {
+        status: 200,
         getResponseHeader: function(p) {
           if (p == 'X-Pagination')
             return JSON.stringify(pagination);
