@@ -37,7 +37,8 @@ define('views/HomePage', [
         return;
       }
 
-      if (G.currentApp.appPath == 'Tradle') {
+      var appPath = G.currentApp.appPath;
+      if (appPath == 'Tradle' || appPath == 'Restaurant') {
         Events.trigger('navigate', U.makeMobileUrl('make', 'commerce/trading/Tradle', {
           owner: '_me'
         }));

@@ -30,7 +30,7 @@ define('views/EditPage', [
           res = this.resource,
           type = this.vocModel.type;
 
-      this.hasHistoricalData = res.isAssignableFrom('commerce/trading/NumericRule') || res.isAssignableFrom('commerce/trading/Order');
+      this.hasHistoricalData = G.currentApp.appPath == 'Tradle' && (res.isAssignableFrom('commerce/trading/NumericRule') || res.isAssignableFrom(U.contextual('Order')));
       if (this.hasHistoricalData) {
         U.require('views/HistoricalDataView').done(function(HDV) {
           self.historicalDataView = new HDV({model: res, parentView: self});
@@ -44,8 +44,8 @@ define('views/EditPage', [
   //    json.viewId = this.cid;
       this.settings = {viewId: this.cid};
       if (U.isAssignableFrom(res, "AppInstall")) {
-        settings.submit = this.loc('allow');
-        settings.cancel = this.loc('deny');
+        this.settings.submit = this.loc('allow');
+        this.settings.cancel = this.loc('deny');
         this.editOptions.saveOnBack = false;
 //        settings.noCancel = true;
       }
