@@ -2,7 +2,7 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
   var doc = document,
       LAZY_DATA_ATTR = G.lazyImgSrcAttr,
       LAZY_ATTR = LAZY_DATA_ATTR.slice(5),
-      MAX_OPACITY = 0.999999,
+      MAX_OPACITY = 0.999999,// G.inWebview ? 1 : 0.999999,
       vendorPrefixes = ['-moz-', '-ms-', '-o-', '-webkit-'],
       ArrayProto = Array.prototype,
       resizeTimeout,
@@ -1516,7 +1516,8 @@ define('domUtils', ['globals', 'lib/fastdom', 'events'], function(G, Q, Events) 
     transparentStyle: TRANSPARENT_STYLE,
     opaqueStyle: OPAQUE_STYLE,
     hideStyle: HIDE_STYLE,
-    showStyle: SHOW_STYLE
+    showStyle: SHOW_STYLE,
+    MAX_OPACITY: MAX_OPACITY
   };
 
   if (G.browser.mobile) {

@@ -1650,6 +1650,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       init: function() {
         window.addEventListener('viewportdimensions', this.updateBounds.bind(this));
         this.postMessage({
+          maxOpacity: DOM.MAX_OPACITY,
           edgeBounce: !!G.browser.mobile,
           physicsJSUrl: jsBase + (physicsModuleInfo.fullName || physicsModuleInfo.name),
           masonryUrl: jsBase + (masonryModuleInfo.fullName || masonryModuleInfo.name),
@@ -1841,5 +1842,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
   });
 
   window.ID_TO_EL = ID_TO_EL;
+  if (G.DEBUG) G.Physics = Physics;
+  
   return Physics;
 });

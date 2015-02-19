@@ -81,7 +81,7 @@ var ArrayProto = Array.prototype,
       down: null
     },
     RERENDER = false,
-    MAX_OPACITY = 0.999999,
+    MAX_OPACITY,
     HEAD_STR = "head (top / left)",
     TAIL_STR = "tail (bottom / right)",
     BUFFERS = [],
@@ -424,6 +424,7 @@ function _onmessage(e) {
     log("IMPORTING: " + masonryUrl);
     importScripts(masonryUrl);
     DEBUG = data.debug;
+    MAX_OPACITY = data.maxOpacity || 0.999999;
     EDGE_BOUNCE = data.edgeBounce;
 //    with (data.styleInfo) {
       // Transfer protocol props
