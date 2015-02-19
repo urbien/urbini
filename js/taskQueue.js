@@ -5,7 +5,7 @@ define('taskQueue', ['globals', 'underscore', 'events'], function(G, _, Events) 
       STATE_PAUSED = 'paused',  
       STATE_OPEN = 'open',
       taskQueues = [],
-      DEFAULT_TIMEOUT = 10000;
+      DEFAULT_TIMEOUT = 100000;
   
   window.taskQueues = taskQueues;
 

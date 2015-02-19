@@ -363,7 +363,7 @@ define('resourceSynchronizer', [
         type = vocModel.type,
         atts = U.filterObj(ref, U.isNativeModelParameter),
         isNew = resource.isNew(),
-        timeout = setTimeout(dfd.reject, 10000);
+        timeout = setTimeout(dfd.reject, 100000);
 
     promise.done(function() {
       clearTimeout(timeout);
