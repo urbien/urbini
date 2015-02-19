@@ -2040,6 +2040,7 @@
     {{ if (booking) { }}
       <section class="bookable" style="float: right; margin-left: 3px;">
         <a href="{{= booking.bookUri }}" class="button">Book</a>
+    {{ }                     }}
     {{ if (obj.executable) { }}
       <section class="executable contrast" data-backlink="{{= executable.backLink.shortName }}" style="font-size:28px;cursor:pointer;">
         <span class="ui-icon-lightning-bolt"></span>

@@ -52,8 +52,8 @@ define('views/ViewPage', [
 
       this.addChild(this.header);
 
-
-      var isKYCDocument = G.currentApp.appPath === 'KYC'  &&  U.isAssignableFrom(this.vocModel, 'model/portal/SharedFile'); 
+      var isKYC = G.currentApp.appPath === 'KYC';
+      var isKYCDocument = isKYC  &&  U.isAssignableFrom(this.vocModel, 'model/portal/SharedFile'); 
       if (!this.isAbout  &&  !isTradle &&  !isKYCDocument) {
         var viewType, viewDiv;
         if (res.isA('Intersection')) {
@@ -168,6 +168,7 @@ define('views/ViewPage', [
           friendProp = isMovie ? 'movie' : 'impression';
         }
 
+        if (!isKYC) {
         this.onload(function() {
           U.require(['collections/ResourceList', 'vocManager', 'views/HorizontalListView'], function(ResourceList, Voc, HorizontalListView) {
             Voc.getModels(friendType).done(function(friendModel) {
@@ -214,7 +215,7 @@ define('views/ViewPage', [
           });
         });
       }
-
+      }
       this.hasSocialLinks = isTradle && !G.currentUser.guest;
       if (this.hasSocialLinks) {
         self.socialLinksPromise = U.require('views/SocialLinksView', function(viewMod) {
