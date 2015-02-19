@@ -510,7 +510,7 @@ define('router', [
                 title: 'IP and Patent Attorney',
                 company: 'Gearhart Law, LLC',
                 linkedin: 'https://www.linkedin.com/in/davidpostolski',
-                featured: 'https://media.licdn.com/mpr/mpr/wc_200_200/p/7/005/021/2cb/05dcbfb.jpg'
+                featured: 'https://media.licdn.com/mpr/mpr/wc_200_200/p/3/005/080/103/1b55775.jpg' // 'https://media.licdn.com/mpr/mpr/wc_200_200/p/7/005/021/2cb/05dcbfb.jpg'
               }
             ]
           };
