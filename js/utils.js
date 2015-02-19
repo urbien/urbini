@@ -4445,16 +4445,23 @@ define('utils', [
       });
     },
 
-    permission: function(resource, params, noDialog) {
+    permission: function(resource, params, doc) {
       U.getModels("commerce/kyc/VerificationRequest").done(function() {
         var m = U.getModel('commerce/kyc/VerificationRequest');
         var att = new m();
 
-        var docs;
-        if (params.$doc) 
-          docs = params.$doc.split(',');
-        else
-          docs = [resource.getUri()];
+        var docs, noDialog;
+        if (doc) {
+          if (doc == true)
+            noDialog = true;
+          docs = [doc];
+        }
+        else {
+          if (params.$doc) 
+            docs = params.$doc.split(',');
+          else
+            docs = [resource.getUri()];
+        }
         docs.forEach(function(doc) {
           var props = {};
           props.owner = G.currentUser._uri;

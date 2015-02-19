@@ -139,8 +139,7 @@ define('views/ResourceListItemView', [
             U.hideModalDialog();
             var i = 0;
             docs.forEach(function(doc) {
-              self.hashParams.$doc = doc;
-              U.permission(self.resource, self.hashParams);
+              U.permission(self.resource, self.hashParams, doc);
               i++;
               if (i == docs.length) {
                 var params = {
