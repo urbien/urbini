@@ -4451,7 +4451,7 @@ define('utils', [
         var att = new m();
 
         var docs, noDialog;
-        if (doc) {
+        if (typeof doc == 'boolean') {
           if (doc == true)
             noDialog = true;
           docs = [doc];
