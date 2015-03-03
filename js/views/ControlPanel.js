@@ -1592,7 +1592,7 @@ define('views/ControlPanel', [
               continue;
             }
             if (!this.isMainGroup  &&  !groupNameDisplayed) {
-              U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName, style: prop.propertyStyle}));
+              U.addToFrag(frag, this.propGroupsDividerTemplate({value: pgName, style: grMeta.propertyStyle}));
               groupNameDisplayed = true;
             }
 
@@ -1669,6 +1669,7 @@ define('views/ControlPanel', [
         groupNameDisplayed = false;
 //        var tmpl_data = {};
         var cnt = 0;
+        var isSCM = G.currentApp.appPath == 'SCM';
         for (var p in meta) {
           cnt++;
           if (!/^[a-zA-Z]/.test(p))
@@ -1724,7 +1725,7 @@ define('views/ControlPanel', [
             else {
               if (atts[p].count)
                 count = atts[p].count;
-              else if (prop.range.indexOf('/voc/dev/') == -1)
+              else if (!isSCM  &&  prop.range.indexOf('/voc/dev/') == -1)
                 continue;
             }
           }
