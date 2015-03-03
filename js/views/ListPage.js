@@ -41,7 +41,6 @@ define('views/ListPage', [
       var self = this;
       var rl = this.collection;
       var filtered = this.filteredCollection = rl.clone();
-      var readyDfd = $.Deferred();
 
       var commonParams = {
         model: filtered,
@@ -55,7 +54,7 @@ define('views/ListPage', [
       var isList = this.isList = (typeof viewMode != 'undefined'  &&  viewMode == 'List');
       var isChooser = this._hashInfo.route == 'chooser';
       var isMasonry = this.isMasonry = !isChooser  &&  U.isMasonryModel(vocModel); //  ||  vocModel.type.endsWith('/Vote'); //!isList  &&  U.isMasonry(vocModel);
-      var isOwner = !G.currentUser.guest  &&  G.currentUser._uri == G.currentApp.creator;
+//      var isOwner = !G.currentUser.guest  &&  G.currentUser._uri == G.currentApp.creator;
       this.isSpecialIntersection = _.contains(SPECIAL_INTERSECTIONS, type);
       /*
       if (!this.isSpecialIntersection) {
@@ -72,116 +71,27 @@ define('views/ListPage', [
       var isMV = this.isMV = params['$multiValue'] != null;
       var meta = vocModel.properties;
 
-      var showAddButton;
-      if (CAN_SHOW_ADD_BUTTON && !this.vocModel.adapter  &&  (!isChooser  ||  isMV)  &&  !U.isA(this.vocModel, 'GenericMessage')) {
-        if (this.vocModel['skipAccessControl']) {
-          showAddButton = type.endsWith('/App')                      ||
-                          U.isAnAppClass(vocModel)                       ||
-                          vocModel.properties['autocreated'];
-//                            U.isUserInRole(U.getUserRole(), 'siteOwner');
-          if (!showAddButton) {
-            var p = U.getContainerProperty(vocModel);
-            if (!p)
-              showAddButton = (isMV  &&  !G.currentUser.guest) || U.isUserInRole(U.getUserRole(), 'siteOwner');
-            else if (params[p]) {
-              var self = this;
-              Voc.getModels(this.vocModel.properties[p].range).done(function(m) {
-                var bp = U.getPropertiesWith(m.properties, 'backLink');
-                for (var cp in bp) {
-                  var prop = bp[cp];
-                  if (prop.range == self.vocModel.type  &&  !prop.readOnly) {
-                    showAddButton = true;
-                    break;
-                  }
-                }
-              });
-            }
-          }
+      var showAddButtonPromise =  (!(!isChooser  ||  isMV)) ? G.getResolvedPromise() : this.detectAddButton(params);
+      showAddButtonPromise = showAddButtonPromise.then(function() {
+        if (self.hashParams.$indicator) {
+          self.headerButtons = ['cancel', 'save'];
+          self.el.$data('action', 'make');
         }
-  //                           (vocModel.skipAccessControl  &&  (isOwner  ||  U.isUserInRole(U.getUserRole(), 'siteOwner'))));
-        if (showAddButton) {
-          if (U.isAssignableFrom(this.vocModel, "Assessment"))
-            showAddButton = false;
-          else if (U.isA(this.vocModel, "Reference")  &&  U.isAnAppClass(vocModel))
-            showAddButton = false;
-          else if (U.isA(this.vocModel, "Intersection")) {
-            showAddButton = false;
-            // Check if there are other then cloneOf properties
-            for (var p in meta) {
-              var prop = meta[p];
-              if (prop.autoincrement  ||  p.charAt(0) == '_'  ||  p == 'davDisplayName'  ||  p == 'davGetLastModified')
-                continue;
-              if (prop.cloneOf  &&  prop.cloneOf.indexOf('Intersection.') == 0)
-                continue;
-              showAddButton = true;
-              break;
-            }
-          }
+        else {
+          self.headerButtons = ['back', 'search'];
+          if (self.showAddButton)
+            self.headerButtons.push('add');
+  
+          self.headerButtons.push('rightMenu');
         }
-        else if (isOwner  &&  !isChooser) {
-          Voc.getModels("model/social/App").done(function() {
-            var m = U.getModel("App");
-            var arr = U.getPropertiesWith(m.properties, [{name: "backLink"}, {name: 'range', values: type}], true);
-            if (arr  &&  arr.length  &&  !arr[0].readOnly /*&&  U.isPropEditable(null, arr[0], userRole)*/)
-              showAddButton = true;
-          });
-        }
-        var idx;
-        if (!isChooser  &&  !showAddButton  &&  _.size(params)) {
-          var wasContainer;
-          for (var p in params) {
-            var prop = vocModel.properties[p],
-                val = params[p];
-
-            if (!prop  ||  !prop.containerMember)
-              continue;
-            wasContainer = true;
-            var type = U.getLongUri1(prop.range);
-            var cM = U.getModel(type);
-            if (!cM) {
-              var rType = U.getTypeUri(decodeURIComponent(val));
-              if (rType)
-                cM = U.getModel(rType);
-              if (!cM)
-                continue;
-            }
-            var blProps = U.getPropertiesWith(cM.properties, 'backLink');
-            var bl = [];
-            for (var p in blProps) {
-              var b = blProps[p];
-              if (!b.readOnly  &&  U.getLongUri1(b.range) == vocModel.type)
-                bl.push(b);
-            }
-
-            if (bl.length > 0) {
-              showAddButton = true;
-              break;
-            }
-          }
-          if (!wasContainer  &&  !G.currentUser.guest  &&  U.isAssignableFrom(this.vocModel, 'AccessControl'))
-            showAddButton = true;
-        }
-      }
-
-      if (this.hashParams.$indicator) {
-        this.headerButtons = ['cancel', 'save'];
-        this.el.$data('action', 'make');
-      }
-      else {
-        this.headerButtons = ['back', 'search'];
-        if (showAddButton)
-          this.headerButtons.push('add');
-
-        this.headerButtons.push('rightMenu');
-      }
-
-      this.header = new Header(_.extend({
-        buttons: this.headerButtons,
-        viewId: this.cid,
-        hasFilter: true
-      }, commonParams));
-
-      this.addChild(this.header);
+        self.header = new Header(_.extend({
+          buttons: self.headerButtons,
+          viewId: self.cid,
+          hasFilter: true
+        }, commonParams));
+  
+        self.addChild(self.header);
+      });
 
       var isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
       var isComment = this.isComment = !isModification  &&  !isMasonry &&  /*U.isA(vocModel, 'Note');*/U.isAssignableFrom(vocModel, U.getLongUri1('model/portal/Comment'));
@@ -201,15 +111,14 @@ define('views/ListPage', [
       else
         listViewType = 'ResourceListView';
 
-      this.ready = readyDfd.promise();
-      U.require('views/' + listViewType).done(function(listViewCl) {
+      var getListView = U.require('views/' + listViewType).then(function(listViewCl) {
         self.listViewCl = listViewCl;
         self.listViewOptions = _.extend({mode: self.mode, displayMode: isMasonry || isModification ? 'masonry' : 'vanillaList'}, self.options, commonParams);
         self.listView = new listViewCl(self.listViewOptions);
         self.addChild(self.listView);
-        readyDfd.resolve();
       });
 
+      this.ready = $.when(showAddButtonPromise, getListView);
       this.canSearch = !this.isSpecialIntersection; // for now - search + photogrid results in something HORRIBLE, try it if you're feeling brave
 
       // setup filtering
@@ -222,6 +131,103 @@ define('views/ListPage', [
 //      });
 
 //      this.onload(this.buildMockViewPage, this);
+    },
+    
+    detectAddButton: function(params) {
+      if (!CAN_SHOW_ADD_BUTTON ||  this.vocModel.adapter  ||  U.isA(this.vocModel, 'GenericMessage')) 
+        return G.getResolvedPromise();
+
+      var promise,
+          self = this,
+          wasContainer,
+          isChooser = this._hashInfo.route == 'chooser',
+          type = this.vocModel.type,
+          isOwner = !G.currentUser.guest  &&  G.currentUser._uri == G.currentApp.creator;
+      
+
+      if (this.vocModel['skipAccessControl']) {
+        this.showAddButton = type.endsWith('/App')                      ||
+                        U.isAnAppClass(this.vocModel)                       ||
+                        this.vocModel.properties['autocreated'];
+//                            U.isUserInRole(U.getUserRole(), 'siteOwner');
+        if (!this.showAddButton) {
+          var p = U.getContainerProperty(this.vocModel);
+          if (!p)
+            this.showAddButton = (isMV  &&  !G.currentUser.guest) || U.isUserInRole(U.getUserRole(), 'siteOwner');
+          else if (params[p]) {
+            var range = this.vocModel.properties[p].range;
+            promise = Voc.getModels(range).then(function() {
+              var m = U.getModel(range);
+              var bp = U.getPropertiesWith(m.properties, 'backLink');
+              for (var cp in bp) {
+                var prop = bp[cp];
+                if (prop.range == self.vocModel.type  &&  !prop.readOnly) {
+                  this.showAddButton = true;
+                  break;
+                }
+              }
+            });
+          }
+        }
+      }
+      
+      if (!promise)
+        promise = G.getResolvedPromise();
+      
+      return promise.then(function() {
+        if (self.showAddButton) {
+          if (U.isAssignableFrom(self.vocModel, "Assessment"))
+            self.showAddButton = false;
+          else if (U.isA(self.vocModel, "Reference")  &&  U.isAnAppClass(self.vocModel))
+            self.showAddButton = false;
+          else if (U.isA(self.vocModel, "Intersection")) {
+            self.showAddButton = false;
+            // Check if there are other then cloneOf properties
+            for (var p in meta) {
+              var prop = meta[p];
+              if (prop.autoincrement  ||  p.charAt(0) == '_'  ||  p == 'davDisplayName'  ||  p == 'davGetLastModified')
+                continue;
+              if (prop.cloneOf  &&  prop.cloneOf.indexOf('Intersection.') == 0)
+                continue;
+              self.showAddButton = true;
+              break;
+            }
+          }
+        }
+        else if (isOwner  &&  !isChooser) {
+          return Voc.getModels("model/social/App").then(function() {
+            var m = U.getModel("App");
+            var arr = U.getPropertiesWith(m.properties, [{name: "backLink"}, {name: 'range', values: type}], true);
+            if (arr  &&  arr.length  &&  !arr[0].readOnly /*&&  U.isPropEditable(null, arr[0], userRole)*/)
+              self.showAddButton = true;
+          });
+        }
+      }).then(function() {
+        if (isChooser  ||  self.showAddButton  ||  !_.size(params)) return;
+
+        for (var p in params) {
+          var prop = self.vocModel.properties[p],
+              val = params[p];
+
+          if (!prop  ||  !prop.containerMember)
+            continue;
+          wasContainer = true;
+          var rType = U.getTypeUri(decodeURIComponent(val));
+          return Voc.getModels(rType).then(function(cM) {
+            var blProps = U.getPropertiesWith(cM.properties, 'backLink');
+            for (var p in blProps) {
+              var b = blProps[p];
+              if (!b.readOnly  &&  U.getLongUri1(b.range) == self.vocModel.type) {
+                self.showAddButton = true;
+                break;
+              }
+            }
+          });
+        }
+      }).then(function() {
+        if (!wasContainer  &&  !G.currentUser.guest  &&  U.isAssignableFrom(self.vocModel, 'AccessControl'))
+          self.showAddButton = true;
+      });
     },
 
     setMode: function(mode) {
@@ -381,7 +387,7 @@ define('views/ListPage', [
             $doc: docs,
             $title: 'Choose the verifying organization'
           }
-        Events.trigger('navigate', U.makeMobileUrl('list', 'commerce/kyc/FinancialOrganization', params));
+        Events.trigger('navigate', U.makeMobileUrl('list', isKYC ? 'commerce/kyc/FinancialOrganization' : 'dev/scm/Validator', params));
       }
       return true;
     },
