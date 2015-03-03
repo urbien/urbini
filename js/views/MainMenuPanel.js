@@ -130,7 +130,9 @@ define('views/MainMenuPanel', [
       if (G.currentUser.guest)
         html += this.menuItemTemplate({title: this.loc('login'), icon: 'user', mobileUrl: 'view/profile', homePage: 'y', id: 'login'});
       else {
-        var mobileUrl = 'view/profile' + (isKYC ? '?$viewCols=myDocuments,receivedVerifications,verifiedByMe,sentToVerify,receivedToVerify,pendingVerifications,notVerified' : '');
+        var mobileUrl = 'view/profile';
+        if (isKYC)
+          mobileUrl += '?$viewCols=myDocuments,receivedVerifications,verifiedByMe,sentToVerify,receivedToVerify,pendingVerifications,notVerified,sentForVerification';
         if (!hash  ||  hash != mobileUrl) {
           var params = {
             title: this.loc('profile'),
@@ -213,7 +215,7 @@ define('views/MainMenuPanel', [
 */
 
       if (!G.currentUser.guest) {
-        html += self.groupHeaderTemplate({value: this.loc('account')});
+        html += self.groupHeaderTemplate({value: this.loc('account'), menu: true});
 //        U.addToFrag(frag, self.groupHeaderTemplate({value: this.loc('account')}));
 
 //        var mobileUrl = 'view/profile';
