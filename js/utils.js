@@ -114,7 +114,7 @@ define('utils', [
     if (!G.inWebview || !opts.url.startsWith(G.apiUrl)) return false;
     
     var reqPath = _.decode(opts.url.slice(G.apiUrl.length).split('?')[0]);
-    if (!/\/(m|e)\//.test(reqPath)) return false;
+    if (!/^(m|e)\//.test(reqPath)) return false;
     
     if (!opts['for'] || !opts['for'].isA('OnChain')) return false;
     
@@ -422,43 +422,24 @@ define('utils', [
 
     putOnChain: function(opts) {
       console.log('ajax via blockchain');
+      var propsOnly = {};
+      var otherProps = {};
+      for (var p in opts.data) {
+        if (/^[a-zA-Z_]+/.test(p)) propsOnly[p] = opts.data[p];
+        else otherProps[p] = opts.data[p];
+      }
+      
       return U.require('chrome')
         .then(function(chrome) {
           var defer = $.Deferred();
-          var prunedOpts = _.pick(opts, 'type', 'url', 'data');
+          var prunedOpts = _.pick(opts, 'type', 'url');
+          prunedOpts.data = propsOnly;
           chrome.tradle.ajax(prunedOpts, function(err, resp) {
             if (err) return defer.reject(err);
-            else return defer.resolve(resp);
-//            if (opts['for']) opts['for']._setLastFetchOrigin('server');
-//            
-//            if (resp[0]) {
-//              // resp can be an array, and you can't send naked arrays
-//              var arr = [];
-//              var i = 0;
-//              while (resp[i]) {
-//                if (resp[i]._uri) // hack
-//                  arr.push(resp[i]);
-//                
-//                i++;
-//              }
-//              
-//              resp = arr;
-//            }
-//            
-//            var headers = {};
-//            var xhr = {
-//              code: 200,
-//              status: 200,
-//              getResponseHeader: function(name) {
-//                return headers[name];
-//              }
-//            };
-//    
-//            defer.resolve(resp, 200, xhr);
+            
+            _.extend(resp, otherProps);
+            defer.resolve(resp);
           });
-          
-//          if (options.success) defer.done(opts.success);
-//          if (options.error) defer.fail(opts.error);
           
           return defer.promise();
         })
@@ -2521,9 +2502,17 @@ define('utils', [
         else if (val && prop.range == 'string') {
           var href = window.location.hash;
           var isView = href.startsWith("#view/");
+          var style = prop.propertyStyle;
+////          if (!style) {
+//            var t = res.getType();
+//            if (res.vocModel.type != t) {
+//              var m = U.getModel(t);
+//              if (m)
+//                style += m.properties[propName].propertyStyle;
+//            }  
+////          }  
 
           if (isDisplayName) {
-            var style = prop.propertyStyle;
             if (prop.setLinkTo) {
               var link = res.get(prop.setLinkTo);
               val = "<a href='" + link + "'><span" + (style ? " style='" + style + "'" : "") + ">" + val + "</span></a>";
@@ -2549,7 +2538,7 @@ define('utils', [
             }
           }
           else if (prop.facet != 'emailAddress' && prop.facet != 'phone' &&  val.indexOf('<') == -1)
-            val = "<span>" + val + "</span>";
+            val = "<span" + (style ? ' style="' + style + '"': '') + ">" + val + "</span>";
           else if (!isView  &&  prop.maxSize > 1000) {
             var color;
             color = G.darkColor;
@@ -4457,15 +4446,17 @@ define('utils', [
           docs = [doc];
         }
         else {
-          if (params.$doc) 
-            docs = params.$doc.split(',');
+          if (doc)
+            docs = [doc];
+//          if (params.$doc) 
+//            docs = params.$doc.split(',');
           else
             docs = [resource.getUri()];
         }
         docs.forEach(function(doc) {
           var props = {};
           props.owner = G.currentUser._uri;
-          props.document = doc;
+          props.forResource = doc;
           
           props.verifyingOrganization = params.$validVerifier ? params.$validVerifier : resource.getUri();
           att.save(props, {
