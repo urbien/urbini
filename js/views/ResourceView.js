@@ -75,7 +75,8 @@ define('views/ResourceView', [
 
       this.toggleVisibility(true); // set to invisible until it's rendered
       this.isKYC = G.currentApp.appPath == 'KYC';
-      if (this.isKYC) {
+      this.isSCM = G.currentApp.appPath == 'SCM';
+      if (this.isKYC || this.isSCM) {
         if (U.isAssignableFrom(this.vocModel, 'model/portal/SharedFile')) { 
           if (this.resource.get('owner') == G.currentUser._uri)
             this.verifyId = 'askToVerify';
@@ -142,9 +143,9 @@ define('views/ResourceView', [
           var doc = JSON.parse(result.doc);
           
           return U.require('vocManager').then(function(Voc) {
-            Voc.getModels("commerce/kyc/Attestation").done(function() {
-  
-              var m = U.getModel('commerce/kyc/Attestation');
+            Voc.getModels(["commerce/kyc/Attestation", "dev/scm/Verification"]).done(function() {
+              var m = self.isKYC ? U.getModel('commerce/kyc/Attestation') : U.getModel('dev/scm/Verification');
+              
               var att = new m();
               var props = {};
               props.signedBySignature = sig;
@@ -157,11 +158,13 @@ define('views/ResourceView', [
               props.verificationStatus = 'Verified';
               props.organization = G.currentUser._organization;
               props.signedBy = G.currentUser._uri;
-              var isPermission = self.resource.isA('Permission');
+              var isVerificationRequest = self.resource.isA('Permission');
               
-              if (isPermission) {
-                props.document = doc.document;
-                props.permission = doc._uri;
+              if (isVerificationRequest) {
+                var verifiableForResource = U.getCloneOf(m, 'Verifiable.forResource')[0];
+                var permissionForResource = U.getCloneOf(self.vocModel, 'Permission.forResource')[0];
+                props[verifiableForResource] = doc[permissionForResource];
+                props.verificationRequest = doc._uri;
               }
               else
                 props.document = doc._uri;
@@ -170,7 +173,7 @@ define('views/ResourceView', [
                 success: function() {
                   U.modalDialog({
                     id: 'signingDialog',
-                    header: 'Document "' + self.resource.get('davDisplayName') + '" was successfully Verified',
+                    header: '"' + self.resource.get('davDisplayName') + '" was successfully Verified',
                     cancel: false,
   //                  img: params.$doc ? resource.attributes.bigImage : null,
   //                  details: '<p style="width:100%; text-align:center; font-size:1.6rem;">' + resource.attributes.davDisplayName + '</p>',
@@ -182,7 +185,7 @@ define('views/ResourceView', [
                         verificationStatus: null,
                         $title: 'Not Verified requests'
                       }    
-                      Events.trigger('navigate', U.makeMobileUrl('list', 'commerce/kyc/VerificationRequest', params));         
+                      Events.trigger('navigate', U.makeMobileUrl('list', self.isKYC ? 'commerce/kyc/VerificationRequest' : 'dev/scm/RequestForVerification', params));         
   //                    Events.trigger('navigate', U.makeMobileUrl('list', 'model/portal/SharedFile', params));        
                     }
                   })
@@ -349,7 +352,10 @@ define('views/ResourceView', [
         }
         else  if (this.resource.get('owner') != G.currentUser._uri) { 
           U.addToFrag(frag, this.requestForVerification(t));
-          this.hashParams.$viewCols = "verificationStatus,dateRequested,owner";
+          if (this.isKYC)
+            this.hashParams.$viewCols = "verificationStatus,dateRequested,owner";
+          else 
+            this.hashParams.$viewCols = this.vocModel.viewCols;
         }
       }
       var self = this;
@@ -456,7 +462,9 @@ define('views/ResourceView', [
       var isJQM = G.isJQM();
       var isBB = G.isBB();
       var drawGauges;
-      var vCols = this.hashParams.$viewCols ? this.hashParams.$viewCols.split(',') : null;
+      var vCols = this.hashParams.$viewCols;
+      if (vCols  &&  typeof vCols == 'string') 
+        vCols = this.hashParams.$viewCols.split(',');
 
       if (propGroups.length) {
         var grCollapsed, gr;
@@ -627,15 +635,23 @@ define('views/ResourceView', [
 
       if (this.signable  &&  U.isA(this.vocModel, 'Permission')) {
         var t = {};
-        var doc = this.resource.get('document');
+        var pr = U.getCloneOf(this.vocModel, "Permission.forResource")[0];
+        var doc = this.resource.get(pr);
         if (doc.indexOf('model/portal/Pdf') != -1) 
           t.pdf = true;
         else if (doc.indexOf('model/portal/Image') != -1)
           t.img = true;
-        var idx = doc.indexOf('?url=wf');
-        t.url = doc.substring(idx + 5);
-        t._uri = doc;
-        U.addToFrag(frag, this.documentTemplate(t));
+        else {
+          t.url = this.resource.get('image');
+          if (t.url) 
+            t.img = true;
+        }
+        if (t.img || t.pdf) {
+          var idx = doc.indexOf('?url=wf');
+          t.url = t.url ? t.url : doc.substring(idx + 5);
+          t._uri = doc;
+          U.addToFrag(frag, this.documentTemplate(t));
+        }
       }
 
       this.el.$html(frag);
