@@ -1020,7 +1020,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
       }
     }
 
-    if (resourceProp) {
+    if (resourceProp  &&  !res.get(resourceProp.shortName)) {
       Events.trigger('loadChooser', res, resourceProp, null, {replace: true});
       return true;
     }
