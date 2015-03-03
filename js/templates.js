@@ -49,6 +49,7 @@ define('templates', [
     templates: {},
     propTemplates: {
       "string": "stringPT",
+      "href": "hrefPT",
       "boolean": "booleanPT",
       "int": "intPT",
       "float": "intPT",
