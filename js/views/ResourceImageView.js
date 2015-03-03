@@ -231,6 +231,8 @@ define('views/ResourceImageView', [
           imageProp = imagePropName && meta[imagePropName],
           image = imagePropName && res.get(imagePropName);
 
+      if (!image)
+        return this;
       if (this.isTradle) {
         if (this.resource.get('maxDrawdown') || this.resource.get('profit')) {
           this.el.$html('<div class="gauges">' + this.gaugesTemplate({
@@ -318,7 +320,7 @@ define('views/ResourceImageView', [
           }
         }
       }
-      else {
+      else  {
         var range, iProp;
         if (imageProp.shortName.charAt(0) == 'a') {
           oWidth = res.get('Intersection.aOriginalWidth');
@@ -428,7 +430,10 @@ define('views/ResourceImageView', [
         if (l)
           iTemplate += '<a href="#cameraPopup" class="cameraCapture" target="#" data-icon="camera" data-prop="'+ cOf[0] + '"></a>';
 //        imgAtts.style = 'position:absolute; clip: rect(' + t + 'px,' + r + 'px,' + b + 'px,' + l + 'px); left:' + left + 'px; '; // + (top ? 'top: ' + top + 'px;' : '');
-        imgAtts.style = 'position:absolute; clip: rect(' + clip.clip_top + 'px,' + clip.clip_right + 'px,' + clip.clip_bottom + 'px,' + clip.clip_left + 'px); left:-' + clip.clip_left + 'px; top:-' + clip.clip_top + 'px;'; // + (top ? 'top: ' + top + 'px;' : '');
+//prev        imgAtts.style = 'position:absolute; clip: rect(' + clip.clip_top + 'px,' + clip.clip_right + 'px,' + clip.clip_bottom + 'px,' + clip.clip_left + 'px); left:-' + clip.clip_left + 'px; top:-' + clip.clip_top + 'px;'; // + (top ? 'top: ' + top + 'px;' : '');
+        imgAtts.style = 'clip: rect(' + clip.clip_top + 'px,' + clip.clip_right + 'px,' + clip.clip_bottom + 'px,' + clip.clip_left + 'px); left:-' + clip.clip_left + 'px; top:-' + clip.clip_top + 'px;'; // + (top ? 'top: ' + top + 'px;' : '');
+        if (this.isImageCover)
+          imgAtts.style += 'position:absolute;';
       }
       else if (!isIntersection) {
         if (w) imgAtts.width = w;
@@ -467,7 +472,8 @@ define('views/ResourceImageView', [
               li = '<div style="border: solid #ccc;width:140px;height:' + Math.floor(hIfImgWidth) + 'px;left:15px;position:absolute">{0}</div>'.format(iTemplate);
           }
           else if (oWidth)
-            li = '<div style="left:10px;position:absolute;max-height:140px;top:10px;' +'">{0}</div>'.format(iTemplate);
+            li = '<div style="left:10px;max-height:140px;top:10px;' + '">{0}</div>'.format(iTemplate);
+//previous            li = '<div style="left:10px;position:absolute;max-height:140px;top:10px;' +'">{0}</div>'.format(iTemplate);
 //            li = '<div style="left:15px;position:absolute;max-height:140px;top:60px;' +'">{0}</div>'.format(iTemplate);
           else
             li = '<div style="position:relative;height:' + (clip.clip_bottom - clip.clip_top) + 'px">{0}</div>'.format(iTemplate);
