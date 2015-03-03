@@ -1244,6 +1244,10 @@
   {{ } }}
 </script>
 
+<script type="text/template" id="hrefPT">
+  <a href="{{= value }}">{{= value }}</a>
+</script>
+
 <script type="text/template" id="longStringPT">
   {{ if (typeof value != 'undefined' && value.indexOf('<span') == -1) { }}
      <span style="white-space: normal; font-size:16px; color: #777;">{{= value }}</span>
@@ -1432,9 +1436,9 @@
 <script type="text/template" id="propGroupsDividerTemplate">
 <!-- row divider / property group header in resource view -->
 {{ var sn = obj.shortName ? 'data-shortname="{0}"'.format(shortName) : ''; }}
-<header style="position:relative;{{= obj.style ? obj.style : G.coverImage ? 'color:' + G.coverImage.background + ';' : '' }}" class="{{= obj.class }}" {{= sn }}>
+<header style="position:relative;{{= obj.style ? obj.style : G.coverImage ? 'color:' + G.coverImage.background + ';' : (obj.menu ? '' : 'background-color:rgba(40, 148, 198, .05);') }}" class="{{= obj.class }}" {{= sn }}>
 {{= obj.displayCollapsed ? '<i class="ui-icon-collapsable"></i> ': '' }}
-{{= obj.style && !obj.actionBtn ? '<div style="padding:1rem;display:inline-block;">' : '' }}
+{{= obj.style && !obj.actionBtn ? '<div style="padding:1px;display:inline-block;">' : '' }}
 {{= obj.actionBtn ? '<div class="cta' + (actionBtn.editable ? '' : ' disabled') + '"style="width:220px;' + (obj.indicatorsCount ? 'padding-bottom: 5px;' : '') + '" ' + sn + '>' : '' }}
 {{= value }}
 {{= obj.style || obj.actionBtn ? '</div>' : '' }}
