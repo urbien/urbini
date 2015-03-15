@@ -132,10 +132,10 @@ define('views/ArticlePage', [
         title: this.resource.get('Submission.subject'),
         subTitle: byLine + dateLine,
         cols: [{
-          icon: {
-            'class': 'ui-icon-tradle',
-            color: ICON_COLORS[0]
-          },
+//          icon: {
+//            'class': 'ui-icon-tradle',
+//            color: ICON_COLORS[0]
+//          },
           body: this.resource.get('Submission.description'),
           link: moreByText ? {
             text: moreByText,
