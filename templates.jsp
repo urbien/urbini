@@ -2312,10 +2312,10 @@
     <div data-role="fieldcontain">
       <input {{= rules }} type="file" name="{{= name }}" id="file" />
       <input {{= rules }} type="hidden" name="uri" value="{{= forResource }}" />
-      <input name="-$action" type="hidden" value="upload" />
+      <!--input name="-$action" type="hidden" value="upload" /-->
       <input name="type" type="hidden" value="{{= type }}" />
       <input name="location" type="hidden" value="{{= G.serverName + '/wf/' + location }}" />
-      <input name="$returnUri" type="hidden" value="{{= U.getReturnUrl() }}" />
+      <!--input name="$returnUri" type="hidden" value="{{= U.getReturnUrl() }}" /-->
     </div>
   </form>
 </script>
