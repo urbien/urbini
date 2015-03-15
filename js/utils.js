@@ -3992,7 +3992,8 @@ define('utils', [
       if (!prop)
         return function() {return true};
 
-      if (U.isResourceProp(prop) && bound === '_me') {
+      // handle conditions with _me or _me.somePropertyName
+      if (U.isResourceProp(prop) && (bound || '').startsWith('_me')) {
         if (G.currentUser.guest) {
 //          Events.trigger('req-login'); // exit search?
 //          return function() {
@@ -4000,8 +4001,11 @@ define('utils', [
 //          };
           throw G.Errors.Login;
         }
-        else
-          bound = G.currentUser._uri;
+        else {
+          var pName = bound.split('.')[1] || '_uri';
+          bound = G.currentUser[pName];
+          bound = bound && U.getLongUri1(bound);
+        }
       }
 
       var range = prop.range;
@@ -4435,8 +4439,8 @@ define('utils', [
     },
 
     permission: function(resource, params, doc) {
-      U.getModels("commerce/kyc/VerificationRequest").done(function() {
-        var m = U.getModel('commerce/kyc/VerificationRequest');
+      U.getModels("dev/kyc/VerificationRequest").done(function() {
+        var m = U.getModel('dev/kyc/VerificationRequest');
         var att = new m();
 
         var docs, noDialog;
@@ -4453,10 +4457,11 @@ define('utils', [
           else
             docs = [resource.getUri()];
         }
+        var forResource = U.getCloneOf(m, "Permission.forResource")[0];
         docs.forEach(function(doc) {
           var props = {};
           props.owner = G.currentUser._uri;
-          props.forResource = doc;
+          props[forResource] = doc;
           
           props.verifyingOrganization = params.$validVerifier ? params.$validVerifier : resource.getUri();
           att.save(props, {
