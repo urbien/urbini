@@ -41,7 +41,8 @@ define('views/ResourceListItemView', [
 //      this.listenTo(this.resource, 'saved', this.render);
       this.isKYC = G.currentApp.appPath == 'KYC';
       if (!this.isEdit) {
-        if (this.isKYC  &&  U.isAssignableFrom(this.model, 'model/portal/SharedFile')) 
+        var route = this._hashInfo.route;
+        if (this.isKYC  &&  U.isAssignableFrom(this.model, 'model/portal/SharedFile') && route != 'chooser') 
           this.makeTemplate('documentListItemTemplate', 'template', null, true); // don't fall back to default, we want to know if no template was found for this type
         else          
           this.makeTemplate('listItemTemplate', 'template', this.vocModel.type, true); // don't fall back to default, we want to know if no template was found for this type
