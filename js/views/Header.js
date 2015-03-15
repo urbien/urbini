@@ -514,18 +514,29 @@ define('views/Header', [
     
     fileUpload: function(e) {
       Events.stopEvent(e);
-      debugger;
-      self.fileUpload.action = G.apiUrl + 'm/' + this.vocModel.type.slice(this.vocModel.type.indexOf('/voc/') + 5);
-//      var returnUri = $('[$returnUri]');
-//      if (returnUri) {
-//        var fn = $(':file').value;
-//        var idx = fn.lastIndexOf('/');
-//        returnUri.attr('value', returnUri + '&originalImage=' + encodeURIComponent(G.pageRoot + '/wf/' + params['$location']) + fn.slice(idx));
-//      }
-      
+//      debugger;
       var isChooser = this._hashInfo.route == 'chooser';
+      var inputs = self.fileUpload.$('input[name]');
+
+      var formData = new FormData();
+//
+      // HTML file input user's choice...
+      var fileInputElement = self.fileUpload.$('input[type="file"]')[0];
+      formData.append("file", fileInputElement.files[0]);
+      var url = G.apiUrl + 'm/' + this.vocModel.type.slice(this.vocModel.type.indexOf('/voc/') + 5);
+      for (var i=0; i<inputs.length; i++) {
+        formData.append(inputs[i].name, inputs[i].value);
+      }
+      var request = new XMLHttpRequest();
+      request.open("POST", url);
+      request.send(formData);
+      if (isChooser)
+        Events.trigger('navigate', U.makeMobileUrl('chooser', this.vocModel.type, this.hashParams), {trigger: true, replace: true, forceFetch: true});
+      else
+        Events.trigger('navigate', U.makeMobileUrl('list', this.vocModel.type, this.hashParams), {trigger: true, replace: true, forceFetch: true});
+        
       
-      document.forms["fileUpload"].submit();
+//      document.forms["fileUpload"].submit();
       /*
       $.ajax({
         url     : G.serverName + '/mkresource',
