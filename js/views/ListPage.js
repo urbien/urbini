@@ -96,7 +96,7 @@ define('views/ListPage', [
       var isModification = U.isAssignableFrom(vocModel, U.getLongUri1('system/changeHistory/Modification'));
       var isComment = this.isComment = !isModification  &&  !isMasonry &&  /*U.isA(vocModel, 'Note');*/U.isAssignableFrom(vocModel, U.getLongUri1('model/portal/Comment'));
 
-      var isKYCDocument = G.currentApp.appPath == 'KYC'  &&  U.isAssignableFrom(this.model, 'model/portal/SharedFile'); 
+      var isKYCDocument = G.currentApp.appPath == 'KYC'  &&  U.isAssignableFrom(this.model, 'model/portal/SharedFile') && !isChooser; 
       // For KYC we need to be able to choose several documents for verification
       this.isEdit = isKYCDocument || (params  &&  params['$editList'] != null); // || U.isAssignableFrom(vocModel, G.commonTypes.CloneOfProperty);
 
@@ -134,7 +134,7 @@ define('views/ListPage', [
     },
     
     detectAddButton: function(params) {
-      if (!CAN_SHOW_ADD_BUTTON ||  this.vocModel.adapter  ||  U.isA(this.vocModel, 'GenericMessage')) 
+      if (!CAN_SHOW_ADD_BUTTON ||  this.vocModel.adapter  ||  U.isA(this.vocModel, 'GenericMessage') || U.isAssignableFrom(this.vocModel, 'SharedFile')) 
         return G.getResolvedPromise();
 
       var promise,
@@ -142,6 +142,7 @@ define('views/ListPage', [
           wasContainer,
           isChooser = this._hashInfo.route == 'chooser',
           type = this.vocModel.type,
+          isMV = this.isMV = params['$multiValue'] != null,
           isOwner = !G.currentUser.guest  &&  G.currentUser._uri == G.currentApp.creator;
       
 
@@ -387,7 +388,7 @@ define('views/ListPage', [
             $doc: docs,
             $title: 'Choose the verifying organization'
           }
-        Events.trigger('navigate', U.makeMobileUrl('list', isKYC ? 'commerce/kyc/FinancialOrganization' : 'dev/scm/Validator', params));
+        Events.trigger('navigate', U.makeMobileUrl('list', (G.currentApp.appPath == 'KYC') ? 'dev/kyc/FinancialOrganization' : 'dev/scm/Validator', params));
       }
       return true;
     },
