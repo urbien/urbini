@@ -435,14 +435,26 @@ define('views/ControlPanel', [
 
     cpTemplate: function(data) {
       var action = 'list',
+          self = this,
+          prop = data.prop,
+          isEditable = U.isPropEditable(this.resource, data.prop, U.getUserRole()),
           params = {
             $title: data.title
           };
 
       params[data.backlink] = data._uri;
-      if (U.isPropEditable(this.resource, data.prop, U.getUserRole()) && !data.prop.lookupFrom && !U.getBacklinkCount(this.resource, data.shortName)) {
+      if (isEditable && !data.prop.lookupFrom && !U.getBacklinkCount(this.resource, data.shortName)) {
         params.$backLink = data.backlink;
         action = 'make';
+        var attProp;
+      }
+      
+      if (U.isA(this.vocModel, 'FileSystem')) {
+        attProp = U.getCloneOf(this.vocModel, 'FileSystem.attachmentsUrl');
+        if (attProp.length) {
+          params.$location = this.resource.get(attProp[0]);
+          params.$prop = data.prop.shortName;
+        }
       }
 
       data.params = params;
@@ -1623,6 +1635,7 @@ define('views/ControlPanel', [
             tmpl_data.borderColor = isTradle ? "#000" : borderColor[colorIdx];
             tmpl_data.color = isTradle ? "rgba(64, 64, 64, 0.7);" : color[colorIdx];
             tmpl_data.chat = isChat;
+            
             if (prop.propertyStyle)
               tmpl_data.style = prop.propertyStyle;
             var bl = prop.backLinkSortDescending;
@@ -1786,7 +1799,6 @@ define('views/ControlPanel', [
               tmpl_data['$orderBy'] = bl;
               tmpl_data['$asc'] = !!bla;
             }
-
 //            var common = {range: range, shortName: p, backlink: prop.backLink, value: cnt, _uri: uri, title: t, comment: comment, name: n};
             if (isPropEditable) {
               if (U.isCloneOf(prop, 'Templatable.clones', this.vocModel)) {
