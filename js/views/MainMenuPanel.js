@@ -127,12 +127,15 @@ define('views/MainMenuPanel', [
       var html = "";
 
       var isKYC = G.currentApp.appPath === 'KYC';
+      var isSCM = G.currentApp.appPath === 'SCM';
       if (G.currentUser.guest)
         html += this.menuItemTemplate({title: this.loc('login'), icon: 'user', mobileUrl: 'view/profile', homePage: 'y', id: 'login'});
       else {
         var mobileUrl = 'view/profile';
         if (isKYC)
           mobileUrl += '?$viewCols=myDocuments,receivedVerifications,verifiedByMe,sentToVerify,receivedToVerify,pendingVerifications,notVerified,sentForVerification';
+        else if (isSCM)
+          mobileUrl += '?$viewCols=organization,receivedVerifications,verifiedByMe,sentForVerification,receivedForVerification,waitingVerifications,notYetVerified';
         if (!hash  ||  hash != mobileUrl) {
           var params = {
             title: this.loc('profile'),
@@ -166,12 +169,14 @@ define('views/MainMenuPanel', [
         }
       }
       // KYC specific
-      var notAuthority = isKYC  &&  (!G.currentUser.organization  ||  G.currentUser.organization.indexOf('commerce/kyc/FinancialOrganization') == -1);
+      var notAuthority = isKYC  &&  (!G.currentUser.organization  ||  G.currentUser.organization.indexOf('dev/kyc/FinancialOrganization') == -1);
       if (G.tabs) {
         var tabs = _.clone(G.tabs);
         for (var name in tabs) {
-          if (isKYC  &&  notAuthority  &&  tabs[name].title.toLowerCase() == 'requests to sign')
-            continue;
+          if (isKYC  &&  notAuthority) {
+            if (tabs[name].title.toLowerCase() == 'requests to sign')
+             continue;
+          }
           var t = tabs[name];
           t.pageUrl = t.hash;
 //          U.addToFrag(frag, this.menuItemTemplate(t));
