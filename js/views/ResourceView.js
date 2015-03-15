@@ -117,7 +117,7 @@ define('views/ResourceView', [
           $doc: this.resource.getUri(),
           $title: 'Choose the verifying organization'
         }
-        Events.trigger('navigate', U.makeMobileUrl('list', 'commerce/kyc/FinancialOrganization', params));        
+        Events.trigger('navigate', U.makeMobileUrl('list', 'dev/kyc/FinancialOrganization', params));        
       }
       else {
         this.signing('verified', this);
@@ -143,8 +143,8 @@ define('views/ResourceView', [
           var doc = JSON.parse(result.doc);
           
           return U.require('vocManager').then(function(Voc) {
-            Voc.getModels(["commerce/kyc/Attestation", "dev/scm/Verification"]).done(function() {
-              var m = self.isKYC ? U.getModel('commerce/kyc/Attestation') : U.getModel('dev/scm/Verification');
+            Voc.getModels(["dev/kyc/Attestation", "dev/scm/Verification"]).done(function() {
+              var m = self.isKYC ? U.getModel('dev/kyc/Attestation') : U.getModel('dev/scm/Verification');
               
               var att = new m();
               var props = {};
@@ -156,7 +156,7 @@ define('views/ResourceView', [
                 props.owner = doc['owner'];              
               }
               props.verificationStatus = 'Verified';
-              props.organization = G.currentUser._organization;
+              props.organization = G.currentUser.organization;
               props.signedBy = G.currentUser._uri;
               var isVerificationRequest = self.resource.isA('Permission');
               
@@ -185,7 +185,7 @@ define('views/ResourceView', [
                         verificationStatus: null,
                         $title: 'Not Verified requests'
                       }    
-                      Events.trigger('navigate', U.makeMobileUrl('list', self.isKYC ? 'commerce/kyc/VerificationRequest' : 'dev/scm/RequestForVerification', params));         
+                      Events.trigger('navigate', U.makeMobileUrl('list', self.isKYC ? 'dev/kyc/VerificationRequest' : 'dev/scm/RequestForVerification', params));         
   //                    Events.trigger('navigate', U.makeMobileUrl('list', 'model/portal/SharedFile', params));        
                     }
                   })
