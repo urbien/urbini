@@ -826,7 +826,7 @@ define('views/EditView', [
         else
           val = parseInt(input.value);
       }
-      else if (U.isPercentProp(p)) {
+      else if (p && U.isPercentProp(p)) {
         // var text = input.nextElementSibling;
         // if (text)
         //   val = parseFloat(text.textContent.trim().replace('%', '') || 0);
