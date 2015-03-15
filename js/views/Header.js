@@ -78,7 +78,10 @@ define('views/Header', [
       }
 
       this.makeTemplate('physicsConstantsTemplate', 'physicsConstantsTemplate', vocModel && vocModel.type);
-
+      
+      var isChooser = this._hashInfo.route == 'chooser';
+      if (/*isChooser  &&*/  U.isAssignableFrom(this.vocModel, "SharedFile")) 
+        this.makeTemplate('fileUpload', 'fileUploadTemplate', type);
       if (this.resource && /^view/.test(this.hash)){
         if (this.resource.isA('Activatable'))
           this.activatedProp = vocModel.properties[U.getCloneOf(vocModel, 'Activatable.activated')[0]];
@@ -512,13 +515,16 @@ define('views/Header', [
     fileUpload: function(e) {
       Events.stopEvent(e);
       debugger;
-      $('#fileUpload').attr('action', G.serverName + '/mkresource');
+      self.fileUpload.action = G.apiUrl + 'm/' + this.vocModel.type.slice(this.vocModel.type.indexOf('/voc/') + 5);
 //      var returnUri = $('[$returnUri]');
 //      if (returnUri) {
 //        var fn = $(':file').value;
 //        var idx = fn.lastIndexOf('/');
 //        returnUri.attr('value', returnUri + '&originalImage=' + encodeURIComponent(G.pageRoot + '/wf/' + params['$location']) + fn.slice(idx));
 //      }
+      
+      var isChooser = this._hashInfo.route == 'chooser';
+      
       document.forms["fileUpload"].submit();
       /*
       $.ajax({
@@ -1049,13 +1055,14 @@ define('views/Header', [
     },
 
     renderSpecialButtons: function() {
-      if (true) // for now
-        return;
+//      if (true) // for now
+//        return;
 
       if (this.isEdit || this.isChat)
         return;
 
       var self = this;
+/*
       SPECIAL_BUTTONS.forEach(function(btn) {
         var el = self.$('#{0}Btn'.format(btn));
         if (el) {
@@ -1084,10 +1091,9 @@ define('views/Header', [
           self.$(selector)[method]();
         });
       }
-
-      var hash = window.location.hash;
-      var isChooser =  hash  &&  hash.indexOf('#chooser/') == 0;
-      if (isChooser  &&  U.isAssignableFrom(this.vocModel, "Image")) {
+*/
+      var isChooser = this._hashInfo.route == 'chooser';
+      if (/*isChooser  && */ U.isAssignableFrom(this.vocModel, "SharedFile")) {
         var forResource = this.hashParams['forResource'];
         var location = this.hashParams['$location'];
         var returnUri = this.hashParams['$returnUri'];
