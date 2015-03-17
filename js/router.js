@@ -926,6 +926,10 @@ define('router', [
           params = U.getHashParams(),
           makeId = params['-makeId'];
 
+      if (U.isAssignableFrom(vocModel, 'model/portal/SharedFile')) {
+        Events.trigger('navigate', U.makeMobileUrl('list', type, params), {replace: true});
+        return;
+      }
       if (params.$template) {
         Events.trigger('navigate', U.makeMobileUrl('chooser', type, params), {replace: true});
         return;
