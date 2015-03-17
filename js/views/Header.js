@@ -516,12 +516,13 @@ define('views/Header', [
       Events.stopEvent(e);
 //      debugger;
       var isChooser = this._hashInfo.route == 'chooser';
-      var inputs = self.fileUpload.$('input[name]');
+      var fuForm = this.$('#fileUpload')[0];
+      var inputs = fuForm.$('input[name]');
 
       var formData = new FormData();
 //
       // HTML file input user's choice...
-      var fileInputElement = self.fileUpload.$('input[type="file"]')[0];
+      var fileInputElement = fuForm.$('input[type="file"]')[0];
       formData.append("file", fileInputElement.files[0]);
       var url = G.apiUrl + 'm/' + this.vocModel.type.slice(this.vocModel.type.indexOf('/voc/') + 5);
       for (var i=0; i<inputs.length; i++) {
