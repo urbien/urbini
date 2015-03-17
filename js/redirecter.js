@@ -372,6 +372,7 @@ define('redirecter', ['globals', 'underscore', 'utils', 'events', 'vocManager', 
       }
     }
 
+    options.forceFetch = false;
     Events.trigger('navigate', U.makeMobileUrl(info.route || 'view', uri, info.params), options);
   };
 

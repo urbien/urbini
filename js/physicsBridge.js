@@ -280,6 +280,13 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     else if (href) {
       if (canNavigate(a)) {
         if (U.isExternalUrl(absoluteHref)) {
+          if (G.inWebview) {
+            Events.stopEvent(e);
+            return U.require('chrome').then(function(chrome) {
+              chrome.newWindow(absoluteHref);
+            });
+          }            
+          
           window.open(absoluteHref, '_blank');
           return;
         }

@@ -1,6 +1,6 @@
 define('synchronizer', ['globals', 'underscore', 'utils', 'backbone', 'events', 'indexedDB'], function(G, _, U, Backbone, Events, IndexedDBModule) {
 
-  var MAX_DATA_AGE = G.MAX_DATA_AGE = 180000,
+  var MAX_DATA_AGE = G.MAX_DATA_AGE = 10000,
       NO_DB = G.dbType === 'none',
       RESOLVED_PROMISE = G.getResolvedPromise(),
       REJECTED_PROMISE = G.getRejectedPromise(),

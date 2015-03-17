@@ -822,7 +822,12 @@ define('models/Resource', [
         if (!prop)
           continue;
 
-        if (!prop.backLink)
+        if (prop.backLink) {
+          var oldVal = this.get(shortName);
+          // hack to avoid overwriting notified backlinks
+          if (this.lastFetchOrigin != 'server' && oldVal && val.count < oldVal.count) continue;
+        }
+        else
           props[shortName] = U.getFlatValue(prop, val);
 
         isResourceProp = U.isResourceProp(prop);
@@ -1240,8 +1245,10 @@ define('models/Resource', [
         doSet = true;
       }
 
-      if (doSet)
+      if (doSet) {
         this.set(atts, {skipValidation: true});
+        Events.trigger('updatedResources', [this]);
+      }
     },
 
     checkIfLoaded: function() {

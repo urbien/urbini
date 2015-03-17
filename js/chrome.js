@@ -163,6 +163,10 @@ define('chrome', ['globals', 'underscore', 'events', 'utils', 'collections/Resou
         
         U.rpc(this._path, pojo, callback);        
       }
+    },
+    
+    newWindow: function(url) {
+      return U.rpc(this._path, url);
     }
   };
   
