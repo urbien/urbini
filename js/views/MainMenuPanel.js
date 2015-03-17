@@ -133,7 +133,7 @@ define('views/MainMenuPanel', [
       else {
         var mobileUrl = 'view/profile';
         if (isKYC)
-          mobileUrl += '?$viewCols=myDocuments,receivedVerifications,verifiedByMe,sentToVerify,receivedToVerify,pendingVerifications,notVerified,sentForVerification';
+          mobileUrl += '?$viewCols=myDocuments,receivedVerifications,verifiedByMe,sentToVerify,pendingVerifications,sentForVerification';
         else if (isSCM)
           mobileUrl += '?$viewCols=organization,receivedVerifications,verifiedByMe,sentForVerification,receivedForVerification,waitingVerifications,notYetVerified';
         if (!hash  ||  hash != mobileUrl) {

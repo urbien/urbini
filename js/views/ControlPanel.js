@@ -1682,7 +1682,9 @@ define('views/ControlPanel', [
         groupNameDisplayed = false;
 //        var tmpl_data = {};
         var cnt = 0;
-        var isSCM = G.currentApp.appPath == 'SCM';
+        var isSCM = G.currentApp.appPath == 'SCM',
+            isKYC = G.currentApp.appPath == 'KYC';
+       
         for (var p in meta) {
           cnt++;
           if (!/^[a-zA-Z]/.test(p))
@@ -1738,7 +1740,7 @@ define('views/ControlPanel', [
             else {
               if (atts[p].count)
                 count = atts[p].count;
-              else if (!isSCM  &&  prop.range.indexOf('/voc/dev/') == -1)
+              else if (!isSCM  &&  !isKYC  && prop.range.indexOf('/voc/dev/') == -1)
                 continue;
             }
           }
