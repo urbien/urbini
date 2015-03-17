@@ -482,7 +482,8 @@ define('globals', function() {
       }
     }
 
-    if (params[param] == 'y') {
+    // chrome app can helpfully override user agent string with 'UA + in a webview'
+    if (params[param] == 'y' || navigator.userAgent.toLowerCase().indexOf('in a webview') !== -1) {
       setParent();
       G.localStorage.put(param, 'y');
     }

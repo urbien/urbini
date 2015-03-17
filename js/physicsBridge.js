@@ -10,7 +10,11 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       NOW = PHYSICS_TIME,     // these diverge
       UNRENDERED = {},
 //      UNRENDERED,
-      hammerOptions = {},
+      hammerOptions = {
+          stop_browser_behavior: _.defaults({
+            userSelect: G.browser.mobile ? 'none' : 'auto'
+          }, Hammer.defaults.stop_browser_behavior)
+      },
       hammer = new Hammer(document.body, hammerOptions),
       dHammer = new Hammer(document, hammerOptions),
       Physics,
@@ -280,13 +284,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     else if (href) {
       if (canNavigate(a)) {
         if (U.isExternalUrl(absoluteHref)) {
-          if (G.inWebview) {
-            Events.stopEvent(e);
-            return U.require('chrome').then(function(chrome) {
-              chrome.newWindow(absoluteHref);
-            });
-          }            
-          
+          Events.stopEvent(e);
           window.open(absoluteHref, '_blank');
           return;
         }
@@ -693,16 +691,16 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
     scrolling.curDelta = event.wheelDelta ? -event.wheelDelta / 120 : event.detail / 3;
     time = +new Date();
     if (scrolling.last < time - scrolling.resetTime) {
-      scrolling.delta = 0;
+      scrolling.curDelta = 0;
     }
 
     scrolling.last = time;
-    scrolling.delta += scrolling.curDelta;
-    if (Math.abs(scrolling.delta) < 1) {
+//    scrolling.delta += scrolling.curDelta;
+    if (Math.abs(scrolling.curDelta) < 0.1) {
       scrolling.finalDelta = 0;
     } else {
-      scrolling.finalDelta = Math.round(scrolling.delta / 1);
-      scrolling.delta %= 1;
+      scrolling.finalDelta = scrolling.curDelta; //Math.round(scrolling.delta / 1);
+//      scrolling.delta %= 1;
     }
 
     return scrolling.finalDelta;
@@ -710,6 +708,7 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
 
   MouseWheelHandler = {
     _vector: [0, 0, 0],
+    _timeouts: {},
     handleEvent: function(e) {
       if (!isScrollable(e.target)) {
 //        console.log("1. MOUSE WHEEL FAIL");
@@ -757,14 +756,26 @@ define('physicsBridge', ['globals', 'underscore', 'FrameWatch', 'lib/fastdom', '
       v[0] = v[1] = 0;
 //      delta = getArrowDragMag() * Math.max(-1, Math.min(1, (e.wheelDelta || -e.detail)));
       delta = -absCeil(normalizeWheelDelta(e), 3);
-      v[axis == 'x' ? 0 : 1] = 0.1 * getWheelDragMag() * delta;
+      var axisIdx = axis == 'x' ? 0 : 1;
+      v[axisIdx] = 0.5 * getWheelDragMag() * delta;
+      dragend(draggable, mult(v, 10), false); // if true, will prevent coast
       drag(draggable, v);
-//      if (Math.abs(e.delta) < 1) {
-//        console.log("ENDING DRAG", delta);
-        dragend(draggable, mult(v, 10), false); // if true, will prevent coast
+      clearTimeout(MouseWheelHandler._timeouts[draggable.getId()]);
+//      if (Math.abs(v[axisIdx]) < 0.1) {
+        MouseWheelHandler._timeouts[draggable.getId()] = setTimeout(function() {
+          dragend(draggable, mult(v, 0), false); // if true, will prevent coast
+          v[0] = v[1] = 0;
+        }, 200)
 //      }
-//      else
-//        console.log("1. NOT ENDING DRAG");
+
+//      v[axis == 'x' ? 0 : 1] = 0.1 * getWheelDragMag() * delta;
+//      drag(draggable, v);
+////      if (Math.abs(e.delta) < 1) {
+////        console.log("ENDING DRAG", delta);
+//        dragend(draggable, mult(v, 10), false); // if true, will prevent coast
+////      }
+////      else
+////        console.log("1. NOT ENDING DRAG");
     }
   };
 

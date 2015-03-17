@@ -1682,20 +1682,9 @@ define('views/ControlPanel', [
         groupNameDisplayed = false;
 //        var tmpl_data = {};
         var cnt = 0;
-<<<<<<< Updated upstream
         var isSCM = G.currentApp.appPath == 'SCM',
             isKYC = G.currentApp.appPath == 'KYC';
        
-=======
-        var isSCM = G.currentApp.appPath == 'SCM';
-        var isKYC = G.currentApp.appPath == 'KYC';
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
         for (var p in meta) {
           cnt++;
           if (!/^[a-zA-Z]/.test(p))
