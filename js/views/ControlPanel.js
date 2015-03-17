@@ -1689,6 +1689,9 @@ define('views/ControlPanel', [
 =======
         var isSCM = G.currentApp.appPath == 'SCM';
         var isKYC = G.currentApp.appPath == 'KYC';
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
         for (var p in meta) {
           cnt++;
@@ -1745,7 +1748,11 @@ define('views/ControlPanel', [
             else {
               if (atts[p].count)
                 count = atts[p].count;
+<<<<<<< Updated upstream
               else if (!isSCM  &&  !isKYC  && prop.range.indexOf('/voc/dev/') == -1)
+=======
+              else if (!isSCM  &&  !isKYC  &&  prop.range.indexOf('/voc/dev/') == -1)
+>>>>>>> Stashed changes
                 continue;
             }
           }
