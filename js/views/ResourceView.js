@@ -136,9 +136,13 @@ define('views/ResourceView', [
         
         chrome.tradle.sign(msg, function(err, result) {
           if (err) {
-            err = err;
+            Events.trigger('messageBar', 'error', {
+              message: err.message
+            });
+            
             return;
           }
+          
           var sig = result.sig;
           var doc = JSON.parse(result.doc);
           
@@ -181,7 +185,7 @@ define('views/ResourceView', [
                     onok: function() {
                       U.hideModalDialog();
                       var params = {
-                        verifier: self.resource.get('verifier'),
+                        verifyingOrganization: self.resource.get('verifyingOrganization'),
                         verificationStatus: null,
                         $title: 'Not Verified requests'
                       }    
