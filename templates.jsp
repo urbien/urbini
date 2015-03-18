@@ -1529,7 +1529,7 @@
 <script type="text/template" id="documentListItemTemplate">
 <div style="margin:0" data-viewid="{{= viewId }}">
   <label class="pack-checkbox">
-    <input data-formel="true" data-mini="true" type="checkbox" {{= obj.disabled ? 'disabled' : '' }} name="validVerifiers" value="{{= this.resource.getUri() }}" {{= obj._checked ? 'checked="checked"' : '' }} />
+    <input data-formel="true" data-mini="true" type="radio" {{= obj.disabled ? 'disabled' : '' }} name="validVerifiers" value="{{= this.resource.getUri() }}" /><!--{{= obj._checked ? 'checked="checked"' : '' }} /-->
     <span></span>
   </label>
   <span  style="font-size:1.7rem;">{{= obj.viewCols ? viewCols : this.resource.attributes.davDisplayName }}</span>
