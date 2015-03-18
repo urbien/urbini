@@ -464,6 +464,8 @@ define('collections/ResourceList', [
               }
             }
 
+            if (val === 'null') val = null;
+            
             strict[name] = val;
           }
         }
