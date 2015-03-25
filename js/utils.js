@@ -112,18 +112,18 @@ define('utils', [
 
   function shouldAjaxViaWebview(opts) {
     if (!G.inWebview || !opts.url.startsWith(G.apiUrl)) return false;
-    
+
     var reqPath = _.decode(opts.url.slice(G.apiUrl.length).split('?')[0]);
     if (!/^(m|e)\//.test(reqPath)) return false;
-    
+
     if (!opts['for'] || !opts['for'].isA('OnChain')) return false;
-    
+
     var txHashProp = U.getCloneOf(opts['for'].vocModel, 'OnChain.transactionHash')[0];
     if (!txHashProp) return false;
-    
+
     return !opts.data[txHashProp]; // if we're not sending txHash, we haven't synced via blockchain yet
   }
-  
+
 //  Array.prototype.remove = function() {
 //    var what, a = arguments, L = a.length, ax;
 //    while (L && this.length) {
@@ -255,15 +255,11 @@ define('utils', [
           opts = _.clone(options),
           useWorker = hasWebWorkers && options.async !== false, // && !opts.sync,
           worker;
-      
+
       if (shouldAjaxViaWebview(opts)) {
-        return U.putOnChain(opts)
-          .then(function(updated) {
-            opts.data = updated;
-            return U.ajax(opts);
-          });
+        U.putOnChain(opts);
       }
-      
+
 //      opts.cors = (/(https?:)?\/\//.test(options.url) && options.url.indexOf();
       opts.type = opts.method || opts.type;
       opts.dataType = opts.dataType || 'JSON';
@@ -428,23 +424,16 @@ define('utils', [
         if (/^[a-zA-Z_]+/.test(p)) propsOnly[p] = opts.data[p];
         else otherProps[p] = opts.data[p];
       }
-      
-      return U.require('chrome')
+
+      U.require('chrome')
         .then(function(chrome) {
           var defer = $.Deferred();
           var prunedOpts = _.pick(opts, 'type', 'url');
           prunedOpts.data = propsOnly;
-          chrome.tradle.ajax(prunedOpts, function(err, resp) {
-            if (err) return defer.reject(err);
-            
-            _.extend(resp, otherProps);
-            defer.resolve(resp);
-          });
-          
-          return defer.promise();
-        })
+          chrome.tradle.queueOnChain(prunedOpts);
+        });
     },
-    
+
     getJSON: function(strOrJson) {
       if (typeof strOrJson == 'string') {
         try {
@@ -1951,7 +1940,7 @@ define('utils', [
       else {
         var str = n.toString(),
             dIdx = str.indexOf('.');
-        
+
         if (dIdx == -1)
           sigFigs = str.length;
         else
@@ -2509,8 +2498,8 @@ define('utils', [
 //              var m = U.getModel(t);
 //              if (m)
 //                style += m.properties[propName].propertyStyle;
-//            }  
-////          }  
+//            }
+////          }
 
           if (isDisplayName) {
             if (prop.setLinkTo) {
@@ -2845,20 +2834,20 @@ define('utils', [
             case 'M':
               if (f == 'Minutes')
                 val.sustainFrequency = 'minutes';
-              else              
+              else
                 val.sustainFrequency = 'months';
               break;
             case 'Q':
               val.sustainFrequency = 'quarters';
               break;
             case 'A':
-            case 'S': //SemiAnnual  
+            case 'S': //SemiAnnual
               val.sustainFrequency = 'years';
               break;
             default:
               val.sustainFrequency = 'days';
               break;
-            }            
+            }
           }
         }
       }
@@ -4452,7 +4441,7 @@ define('utils', [
         else {
           if (doc)
             docs = [doc];
-//          if (params.$doc) 
+//          if (params.$doc)
 //            docs = params.$doc.split(',');
           else
             docs = [resource.getUri()];
@@ -4462,7 +4451,7 @@ define('utils', [
           var props = {};
           props.owner = G.currentUser._uri;
           props[forResource] = doc;
-          
+
           props.verifyingOrganization = params.$validVerifier ? params.$validVerifier : resource.getUri();
           att.save(props, {
             success: function() {
@@ -4470,12 +4459,12 @@ define('utils', [
             },
             error: function(err) {
               console.log(err);
-            }  
+            }
           })
         })
       })
     },
-    
+
     deposit: function(params) {
       return $.Deferred(function(defer) {
         var trType = G.commonTypes.Transaction;
@@ -5432,12 +5421,12 @@ define('utils', [
         })
       });
     },
-    
+
     contextual: function(shortName) {
       var type = G.contextual(shortName);
       return type && U.getTypeUri(type);
     },
-    
+
     getTradleOrdersProp: function() {
       return TRADLE_ORDERS;
     }
